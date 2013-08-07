@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNet.WebPages</id>
+    <version>2.0.20710.0</version>
+    <title>Microsoft ASP.NET Web Pages 2</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/WebPages_2_eula_ENU.htm</licenseUrl>
+    <projectUrl>http://www.asp.net/web-pages</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>This package contains core runtime assemblies shared between ASP.NET MVC and ASP.NET Web Pages.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet WebPages AspNetWebPages</tags>
+    <dependencies>
+      <dependency id="Microsoft.Web.Infrastructure" version="1.0.0.0" />
+      <dependency id="Microsoft.AspNet.Razor" version="[2.0.20710.0, 2.1)" />
+    </dependencies>
+  </metadata>
+</package>

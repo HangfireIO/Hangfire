@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNet.Mvc.FixedDisplayModes</id>
+    <version>1.0.0</version>
+    <title>Microsoft ASP.NET MVC Fixed DisplayModes</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/mvc4extensions_prerelease_eula.htm</licenseUrl>
+    <projectUrl>http://www.asp.net/mvc</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>This package contains a workaround for a bug affecting mobile view caching in ASP.NET MVC 4. More information is available at http://www.asp.net/whitepapers/mvc4-release-notes.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet Mvc AspNetMvc</tags>
+    <dependencies>
+      <dependency id="Microsoft.AspNet.Mvc" version="[4.0.20710.0, 4.1)" />
+    </dependencies>
+  </metadata>
+</package>

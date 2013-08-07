@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNet.WebApi</id>
+    <version>4.0.20710.0</version>
+    <title>Microsoft ASP.NET Web API</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/MVC_4_eula_ENU.htm</licenseUrl>
+    <projectUrl>http://www.asp.net/web-api</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>This package contains everything you need to host ASP.NET Web API on IIS. ASP.NET Web API is a framework that makes it easy to build HTTP services that reach a broad range of clients, including browsers and mobile devices. ASP.NET Web API is an ideal platform for building RESTful applications on the .NET Framework.</description>
+    <language>en-US</language>
+    <tags>Microsoft AspNet WebApi AspNetWebApi</tags>
+    <dependencies>
+      <dependency id="Microsoft.AspNet.WebApi.WebHost" version="[4.0.20710.0, 4.1)" />
+    </dependencies>
+  </metadata>
+</package>

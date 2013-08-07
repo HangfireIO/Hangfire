@@ -1,0 +1,377 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>ASP.NET Universal Providers Readme</title>
+
+
+<style type="text/css">
+body{
+	margin-left:1in;
+	margin-top:.75in;
+	margin-right:1.7in;
+	font-family:calibri;
+	font-size:11pt;
+	line-height:1.15em;
+	background-color:white;
+}
+
+h1{
+	margin-left:-.2in;
+	font-family:Arial, Verdana, sans-serif;
+	font-size:20pt;
+}
+
+h2{
+	margin-left:-.2in;
+	margin-top:1.8em;
+	font-family:Arial, Verdana, sans-serif;
+	font-size:16pt;
+}
+
+h3{
+	margin-left:-.2in;
+	font-family:Verdana, sans-serif;
+	font-size:13.5pt;
+}
+
+table{
+	border:thin gray groove;
+}
+
+thead{
+	background-color:black;
+	color:white;
+	font-weight:bold;
+	text-align:center;
+}
+
+td{
+	border:1px solid black;
+}
+
+p.indent1{
+	margin-left:.25in;
+}
+
+
+code{
+	font-family:"Courier New";
+	font-size:10pt;
+	color:#006600;
+}
+
+pre{
+	font-family:"Courier New";
+	font-size:10pt;
+	padding:8px;
+	color:#006600;
+}
+
+span.highlight{
+    background-color:Yellow;
+	
+}
+</style>
+
+</head>
+<body>
+<h1>ASP.NET Universal Providers</h1>
+
+<p>Last update: 15 August 2012</p>
+
+
+<p>The 
+<a href="http://msdn.microsoft.com/en-us/library/system.web.security.sqlmembershipprovider.aspx">SqlMembershipProvider</a>, 
+<a href="http://msdn.microsoft.com/en-us/library/system.web.security.sqlroleprovider.aspx">SqlRoleProvider</a>, 
+<a href="http://msdn.microsoft.com/en-us/library/system.web.profile.sqlprofileprovider.aspx">SqlProfileProvider</a> classes that shipped in ASP.NET through version 4 support only Microsoft SQL Server and Microsoft SQL Server Express. They do not support newer offerings such as 
+<a href="http://msdn.microsoft.com/en-us/library/ee336241.aspx">Microsoft SQL Azure</a> and 
+<a href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=033cfb76-5382-44fb-bc7e-b3c8174832e2">Microsoft SQL Server Compact</a>. </p>
+<p>ASP.NET Universal Providers have been created in order to extend support to all editions of SQL Server 2005 and later and to SQL Azure. If you use these providers to develop your application, the application will be ready for cloud environments like Azure.</p>
+<p>Other than supporting additional storage options, the providers work like the existing SQL-based providers. Except as noted below, using ASP.NET Universal Providers requires no change in any of your applications.</p>
+<ul>
+	<li><a href="#Installing_and_Configuring_ASP.NET_Unive">Installing and 
+	Configuring ASP.NET Universal Providers</a></li>
+	<li><a href="#Selecting_a_Data_Store">Selecting a Data Store</a></li>
+	<li><a href="#Storing_Data_in_Session_State_using_ASP">Storing Data in 
+	Session State using ASP.NET Universal Providers</a></li>
+	<li><a href="#Deploying_to_a_Cloud_Environment">Deploying to a Cloud 
+	Environment</a></li>
+	<li><a href="#Known_Issues">Known Issues</a></li>
+	<li><a href="#Additional_Resources">Additional Resources</a></li>
+	<li><a href="#Disclaimer">Disclaimer</a><br />
+	</li>
+</ul>
+
+<h2><a name="Installing_and_Configuring_ASP.NET_Unive">Installing and Configuring ASP.NET Universal Providers</a></h2>
+
+
+
+<p>To install ASP.NET Universal Providers, you use a NuGet package, which installs all required files (including this documentation). The NuGet package automatically enables the new providers when it is installed. By default, the NuGet package configures provider to use SQL Server Express. To use SQL Server Compact or SQL Azure, you must change the connection string for the provider, as explained 
+<a href="#Selecting_a_Data_Store">later in this document</a>.</p>
+
+<p>To enable the providers, the NuGet package adds configuration entries in the 
+<em>web.config</em> file. The configuration for these providers is the same as the existing 
+<code>SqlMembershipProvider</code> class, but the <code>type</code> parameter is set to the type of the new providers, as shown in the following table:</p>
+
+
+<table>
+	<thead>
+		<td>SQL Provider Types</td>
+		<td>Equivalent Type for Universal Providers</td>
+	</thead>
+	<tr>
+		<td ><code>System.Web.Security.SqlMembershipProvider</code></td>
+		<td ><code>System.Web.Providers.DefaultMembershipProvider</code></td>
+	</tr>
+	<tr>
+		<td><code>System.Web.Profile.SqlProfileProvider</code></td>
+		<td><code>System.Web.Providers.DefaultProfileProvider</code></td>
+	</tr>
+	<tr>
+		<td><code>System.Web.Security.SqlRoleProvider</code></td>
+		<td><code>System.Web.Providers.DefaultRoleProvider</code></td>
+	</tr>
+	<tr>
+		<td>(Built into default provider)</td>
+		<td><code>System.Web.Providers.DefaultSessionStateProvider</code></td>
+	</tr>
+</table>
+<p>In the <em>web.config</em> file, the configuration looks like the following example (the connection string has been wrapped for readability). The differences from the configuration for older SQL-based providers are highlighted. Notice that a section has been added to define custom session-state handling using a custom provider, as described later under 
+<a href="#Storing_Data_in_Session_State_using_ASP">Storing Data in Session State using ASP.NET Universal Providers</a>.</p>
+<pre>&lt;configuration&gt;
+&lt;connectionStrings&gt;
+  &lt;add name="DefaultConnection"
+    connectionString="Data Source=.\SQLEXPRESS;Initial Catalog=aspnetdb;Integrated Security=True"
+    providerName="System.Data.SqlClient" /&gt;
+  &lt;/connectionStrings&gt;
+
+  &lt;system.web&gt;
+    &lt;membership <span class="highlight">defaultProvider="DefaultMembershipProvider"</span>&gt;
+      &lt;providers&gt;
+        &lt;clear /&gt;
+        &lt;add name="DefaultMembershipProvider"
+             <span class="highlight">type="System.Web.Providers.DefaultMembershipProvider, System.Web.Providers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" 
+</span>             connectionStringName="DefaultConnection"
+             enablePasswordRetrieval="false"
+             enablePasswordReset="true"
+             requiresQuestionAndAnswer="false"
+             requiresUniqueEmail="false"
+             maxInvalidPasswordAttempts="5"
+             minRequiredPasswordLength="6"
+             minRequiredNonalphanumericCharacters="0"
+             passwordAttemptWindow="10"
+             applicationName="/" /&gt;
+      &lt;/providers&gt;
+    &lt;/membership&gt;
+
+    &lt;profile <span class="highlight">defaultProvider="DefaultProfileProvider"</span>&gt;
+      &lt;providers&gt;
+        &lt;clear /&gt;
+        &lt;add name="DefaultProfileProvider"
+             <span class="highlight">type="System.Web.Providers.DefaultProfileProvider, System.Web.Providers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" 
+</span>             connectionStringName="DefaultConnection"
+             applicationName="/" /&gt;
+      &lt;/providers&gt;
+    &lt;/profile&gt;
+
+    &lt;roleManager <span class="highlight">defaultProvider="DefaultRoleProvider"</span> enabled="false"&gt;
+      &lt;providers&gt;
+        &lt;clear /&gt;
+        &lt;add name="DefaultRoleProvider"
+             <span class="highlight">type="System.Web.Providers.DefaultRoleProvider, System.Web.Providers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"
+</span>             connectionStringName="DefaultConnection"
+             applicationName="/" /&gt;
+      &lt;/providers&gt;
+    &lt;/roleManager&gt;
+
+    &lt;sessionState mode="Custom" customProvider="DefaultSessionProvider"&gt;
+      &lt;providers&gt;
+        &lt;add name="DefaultSessionProvider"
+           <span class="highlight">type="System.Web.Providers.DefaultSessionStateProvider, System.Web.Providers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35"
+</span>           connectionStringName="DefaultConnection"
+           applicationName="/" /&gt;
+      &lt;/providers&gt;
+    &lt;/sessionState&gt;
+  &lt;/system.web&gt;&nbsp;</pre>
+
+<h2><a name="Selecting_a_Data_Store">Selecting a Data Store</a></h2>
+<p>If you want to use SQL Server LocalDB database,change the connection string as shown in the following example:</p>
+<pre>
+&lt;connectionStrings&gt;
+  &lt;add name="DefaultConnection" providerName="System.Data.SqlClient" 
+connectionString="Data Source=(LocalDb)\v11.0;
+Initial Catalog=aspnet-ProjectName-GUID;Integrated Security=SSPI;
+AttachDBFilename=|DataDirectory|\aspnet-ProjectName-GUID.mdf" /&gt;
+&lt;connectionStrings&gt;
+</pre>
+<p>If you want to use SQL Server Express database,change the connection string as shown in the following example:</p>
+<pre>
+&lt;connectionStrings&gt;
+  &lt;add name="DefaultConnection" providerName="System.Data.SqlClient" 
+connectionString="Data Source=.\SQLEXPRESS;Initial Catalog=aspnetdb;
+    Integrated Security=True" providerName="System.Data.SqlClient"/&gt;
+&lt;connectionStrings&gt;
+</pre>
+
+<p>If you want to use SQL Server Compact, change the connection string as shown in the following example:</p>
+
+<pre>&lt;connectionStrings&gt;
+  &lt;add name="DefaultConnection" connectionString="Data Source=|DataDirectory|\aspnet.sdf" 
+      providerName="System.Data.SqlServerCe.4.0"/&gt;
+&lt;/connectionStrings&gt;</pre>
+<p>If you want to use SQL Azure, change the connection string as shown in the 
+following example (wrapped for readability):</p>
+<pre>&lt;connectionStrings&gt;
+  &lt;add name="DefaultConnection" 
+     connectionString="data source=myDNSName;
+         User ID=myUserName;Password=myPassword;
+         Encrypt=true;Trusted_Connection=false=false"
+     providerName="System.Data.SqlClient"/&gt;
+&lt;connectionStrings&gt;</pre>
+
+<h2><a name="Storing_Data_in_Session_State_using_ASP">Storing Data in Session State using ASP.NET Universal Providers</a></h2>
+
+<p>By default, ASP.NET stores session data using an in-process (in-memory) session provider. This provider allows you to put any object in session state, because session state simply holds a reference to the object, not the object itself.</p>
+<p>However, cloud environments might run your application on multiple computers. Therefore, for cloud-based applications, the application must store session state in some form of storage (like a database) that be accessed by more than one machine. This puts some restrictions on what data you store in session state — essentially, the data must be serializable. </p>
+<p>When you install ASP.NET Universal Providers, the installation process configures session state to use the 
+<code>System.Web.Providers.DefaultSessionStateProvider</code> type, as shown in the 
+<em>web.config</em> file example earlier. This type stores session state in a database.</p> 
+<p>Session data must be serializable. If you attempt to store something in session state that is not serializable, you will receive the following error: </p>
+
+<p class="indent1"><code>Unable to serialize the session state. In 'StateServer' and 'SQLServer' mode, ASP.NET will serialize the session state objects, and as a result non-serializable objects or MarshalByRef objects are not permitted. the same restriction applies if similar serialization is done by the custom session state store in 'Custom' mode. </code></p>
+
+<p>There are two ways to resolve this issue: by marking the type as serializable or by using a surrogate serializer.</p>
+
+<h3>Marking Types as Serializable</h3>
+
+<p>If you have access to the source code for the type that is being stored in session state, you can mark the type using the 
+<code>Serializable</code> attribute, as in the following example. If the type contains additional classes, all the contained classes must be serializable as well.</p>
+<pre><span class="highlight">[Serializable]</span>
+public class Address { }
+
+<span class="highlight">[Serializable]</span>
+public class Person { 
+     public Address Work;
+     public Address Home; 
+}</pre>
+
+<h3>Using a Surrogate Serializer in .NET Framework 4.5</h3>
+
+<p>If it's not practical to mark the type as serializable in source code, and if you are using .NET Framework 4.5, you can use a surrogate serializer. (This technique does not work in .NET Framework 4.)</p>
+<p>Create a class that implements the 
+<a href="http://msdn.microsoft.com/en-us/library/system.runtime.serialization.iserializationsurrogate.aspx">ISerializationSurrogate</a> interface.  In this class, you implement 
+<a href="http://msdn.microsoft.com/en-us/library/system.runtime.serialization.iserializationsurrogate.getobjectdata.aspx">GetObjectData</a> and 
+<a href="http://msdn.microsoft.com/en-us/library/system.runtime.serialization.iserializationsurrogate.setobjectdata.aspx">SetObjectData</a> methods in order to serialize and deserialze the data, respectively. In 
+<code>GetObjectData</code> you invoke 
+<a href="http://msdn.microsoft.com/en-us/library/system.runtime.serialization.serializationinfo.addvalue.aspx">SerializationInfo.AddValue</a> (using the appropriate overload for the data type of your data) to add individual fields of the object to serialize to a 
+<a href="http://msdn.microsoft.com/en-us/library/system.runtime.serialization.serializationinfo.aspx">SerializationInfo</a> object. In 
+<code>SetObjectData</code> you extract the serialized version back to its original value in the object. Here's an example:</p>
+
+
+
+
+
+
+
+
+
+
+<pre>public class EmployeeSerializationSurrogate : ISerializationSurrogate
+{
+    // Serialize the Employee object to save the object name and address fields.
+    public void GetObjectData(Object obj, SerializationInfo info, StreamingContext context)
+    {
+        Employee emp = (Employee)obj;
+        info.AddValue("name", emp.name);
+        info.AddValue("address", emp.address);
+    }
+
+    // Deserialize the Employee object to set the object name and address fields.
+    public Object SetObjectData(Object obj, SerializationInfo info, StreamingContext context,
+        ISurrogateSelector selector)
+    {
+        Employee emp = (Employee)obj;
+        emp.name = info.GetString("name");
+        emp.address = info.GetString("address");
+        return null;
+    }
+}</pre>
+<p>You then register the serializer and the class to be serialized using the 
+<a href="http://msdn.microsoft.com/en-us/library/system.runtime.serialization.surrogateselector.aspx">SurrogateSelector</a> class in code, like this:</p>
+<pre>protected void Page_Load(object sender, EventArgs e)
+{
+    SurrogateSelector ss = new SurrogateSelector();
+    ss.AddSurrogate(typeof(Employee), new StreamingContext(StreamingContextStates.All), new EmployeeSerializationSurrogate());
+    SessionStateUtility.SerializationSurrogateSelector = ss;
+}</pre>
+<h2><a name="Deploying_to_a_Cloud_Environment">Deploying to a Cloud Environment</a></h2>
+
+<p>If you are deploying to a cloud environment that has multiple web server instances, you should change session state mode from "InProc" to "Custom".  In addition, change the connection string named "DefaultConnection" to connect to an instance of SQL Server (including SQL Azure and SQL  Compact) instead of to SQL Server Express.</p>
+
+<h2><a name="Known_Issues">Known Issues</a></h2>
+
+<ul>
+
+
+
+<li>
+<p>During the installation process, NuGet performs an exact match on items in the 
+<em>web.config</em> file. If you have customized any of the elements in <em>web.config</em> that are updated by the installation process for ASP.NET Universal Providers, the installation process will not find these elements. Instead of updating the elements, the installation process will assume that they do not exist and add them. As a result, the 
+<em>web.config</em> will effectively contain duplicate elements.</p>
+<p>If your application is experiencing issues that indicate problems in the <em>web.config</em> file, make sure that the file contains the elements that are illustrated earlier in this document and remove any duplicate elements.</p>
+</li>
+
+<li>
+<p>If you are working in Visual Studio and use <strong>Server Explorer</strong> to open the database that contains the membership, role, profile, or session provider tables, and if you then try to run the application, you might see an error like the following: </p>
+<p><code>Cannot open database "aspnet" requested by the login. The login failed. Login failed for user 'yourname.'</code></p>
+<p>To resolve this issue, right-click the database in <strong>Server Explorer</strong> and then click 
+<strong>Close Connection</strong>. </p>
+</li>
+
+
+<li>
+<p>The new providers do not use the same tables, stored procedures, and database objects as the SQL-based providers. If you switch to the new providers in an existing application, the data from the existing tables will not be available. We are considering creating a conversion utility to help you move existing applications to the new providers.</p>
+</li>
+
+
+<li>
+<p>Web Parts personalization will not work with Universal Providers. You must use the SQL Personalization provider. That in turn does not work with LocalDB, so you must use SQL Server Express.</p>
+</li>
+
+<li>
+<p>This release requires that the ASP.NET application be running under full trust.</p>
+</li>
+
+</ul>
+
+
+<h2><a name="Additional_Resources">Additional Resources</a></h2>
+
+<ul>
+<li><a href="http://msdn.microsoft.com/en-us/library/tw292whz.aspx">Managing Users by Using Membership</a></li>
+<li><a href="http://msdn.microsoft.com/en-us/library/9ab2fxh0.aspx">Managing Authorization Using Roles</a></li>
+<li><a href="http://msdn.microsoft.com/en-us/library/014bec1k.aspx">ASP.NET Profile Providers</a></li>
+<li><a href="http://msdn.microsoft.com/en-us/library/ee336241.aspx">Microsoft SQL Azure</a></li>
+<li>
+<a href="http://www.microsoft.com/downloads/en/details.aspx?FamilyID=033cfb76-5382-44fb-bc7e-b3c8174832e2">Microsoft SQL Server Compact</a></li>
+<li>
+<a href="http://docs.nuget.org/docs/creating-packages/configuration-file-and-source-code-transformations">Configuration File and Source Code Transformations</a></li>
+<li><a href="http://go.microsoft.com/fwlink/?LinkId=261899">Migration for user accounts from the SQL MembershipProvider to the Universal Providers</a></li>
+</ul>
+<h2><a name="Disclaimer">Disclaimer</a></h2>
+
+
+<p>This is a preliminary document and may be changed substantially prior to final commercial release of the software described herein.</p>
+<p>The information contained in this document represents the current view of Microsoft Corporation on the issues discussed as of the date of publication. Because Microsoft must respond to changing market conditions, it should not be interpreted to be a commitment on the part of Microsoft, and Microsoft cannot guarantee the accuracy of any information presented after the date of publication.</p>
+<p>This White Paper is for informational purposes only. MICROSOFT MAKES NO WARRANTIES, EXPRESS, IMPLIED OR STATUTORY, AS TO THE INFORMATION IN THIS DOCUMENT.
+<p>Complying with all applicable copyright laws is the responsibility of the user. Without limiting the rights under copyright, no part of this document may be reproduced, stored in or introduced into a retrieval system, or transmitted in any form or by any means (electronic, mechanical, photocopying, recording, or otherwise), or for any purpose, without the express written permission of Microsoft Corporation.</p>
+<p>Microsoft may have patents, patent applications, trademarks, copyrights, or other intellectual property rights covering subject matter in this document. Except as expressly provided in any written license agreement from Microsoft, the furnishing of this document does not give you any license to these patents, trademarks, copyrights, or other intellectual property.</p>
+<p>Unless otherwise noted, the example companies, organizations, products, domain names, e-mail addresses, logos, people, places and events depicted herein are fictitious, and no association with any real company, organization, product, domain name, email address, logo, person, place or event is intended or should be inferred.</p>
+<p>&copy; 2011 Microsoft Corporation. All rights reserved.</p>
+<p>Microsoft and Windows are either registered trademarks or trademarks of Microsoft Corporation in the United States and/or other countries.</p>
+<p>The names of actual companies and products mentioned herein may be the trademarks of their respective owners.</p>
+</body>
+</html>
+

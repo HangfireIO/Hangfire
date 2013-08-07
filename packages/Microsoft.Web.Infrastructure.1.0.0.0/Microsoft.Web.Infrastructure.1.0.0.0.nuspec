@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Web.Infrastructure</id>
+    <version>1.0.0.0</version>
+    <title>Microsoft.Web.Infrastructure</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=214339</licenseUrl>
+    <projectUrl>http://www.asp.net</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This package contains the Microsoft.Web.Infrastructure assembly that lets you dynamically register HTTP modules at run time.</description>
+    <language>en-US</language>
+  </metadata>
+</package>
