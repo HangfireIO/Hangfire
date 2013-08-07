@@ -45,10 +45,9 @@ namespace HangFire
 
         private void DoWork()
         {
-            _manager.NotifyFreeProcessor(this);
-
             while (true)
             {
+                _manager.NotifyFreeProcessor(this);
                 // TODO: handle manager stop.
                 _jobIsReady.Wait();
 
@@ -66,12 +65,23 @@ namespace HangFire
                 }
                 catch (Exception ex)
                 {
-                    
+                    // Возможные причины:
+                    // 1. Произошла ошибка при десериализации.
+                    //    - Записан какой-то мусор.
+                    //    - Старый формат класса Job.
+                    // 2. Ошибка при создании экземпляра нужного Worker'а.
+                    //    - Невозможно найти нужный класс
+                    //    - Невозможно сконструировать нужный класс
+                    // 3. Произошла необработанная ошибка в пользовательском коде Worker'а.
+                    _logger.Error(
+                        "Failed to process the job: unexpected exception caught. Job JSON:"
+                        + Environment.NewLine
+                        + _currentJob, 
+                        ex);
                 }
                 finally
                 {
                     _jobIsReady.Reset();
-                    _manager.NotifyFreeProcessor(this);    
                 }
             }
         }
