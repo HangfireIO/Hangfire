@@ -28,7 +28,7 @@ namespace HangFire.Hosts
             const int concurrency = 100;
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            var manager = new Manager(concurrency);
+            var manager = new Host(concurrency);
             manager.Start();
             Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 

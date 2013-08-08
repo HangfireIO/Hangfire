@@ -4,28 +4,31 @@ using System.Threading;
 
 namespace HangFire
 {
-    public class Manager
+    internal class JobFetcher
     {
-        private readonly JobDispatcherPool _pool;
         private readonly Thread _fetcherThread;
         private readonly Thread _jobCompletionHandlerThread;
 
         private readonly BlockingCollection<Tuple<string, Exception>> _completed
-            = new BlockingCollection<Tuple<string, Exception>>();  
+            = new BlockingCollection<Tuple<string, Exception>>();
 
-        public Manager(int concurrency)
+        public JobFetcher()
         {
-            _pool = new JobDispatcherPool(concurrency);
-            _pool.JobCompleted += PoolOnJobCompleted;
-
             _fetcherThread = new Thread(FetchNextTask) { IsBackground = true };
             _jobCompletionHandlerThread = new Thread(HandleJobCompletion) { IsBackground = true };
         }
+
+        public event EventHandler<string> JobFetched; 
 
         public void Start()
         {
             _fetcherThread.Start();
             _jobCompletionHandlerThread.Start();
+        }
+
+        public void Process(Tuple<string, Exception> e)
+        {
+            _completed.Add(e);
         }
 
         private void FetchNextTask()
@@ -36,7 +39,11 @@ namespace HangFire
                 while (true)
                 {
                     var serializedJob = redis.BlockingDequeueItemFromList("queue:default", null);
-                    _pool.Process(serializedJob);
+                    var onFetched = JobFetched;
+                    if (onFetched != null)
+                    {
+                        onFetched(this, serializedJob);
+                    }
                 }
             }
         }
@@ -55,11 +62,6 @@ namespace HangFire
                     }
                 }
             }
-        }
-
-        private void PoolOnJobCompleted(object sender, Tuple<string, Exception> e)
-        {
-            _completed.Add(e);
         }
     }
 }
