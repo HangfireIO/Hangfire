@@ -29,10 +29,6 @@ namespace HangFire
                     + serializedJob,
                     ex);
             }
-            finally
-            {
-                
-            }
         }
     }
 }

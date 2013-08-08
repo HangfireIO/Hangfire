@@ -54,6 +54,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="Factory.cs" />
     <Compile Include="Job.cs" />
+    <Compile Include="JobDispatcherPool.cs" />
     <Compile Include="JobProcessor.cs" />
     <Compile Include="JsonHelper.cs" />
     <Compile Include="Manager.cs" />

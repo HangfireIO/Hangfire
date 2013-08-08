@@ -1,10 +1,11 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace HangFire
 {
     internal class JobDispatcher
     {
-        private readonly Manager _manager;
+        private readonly JobDispatcherPool _pool;
         private readonly JobProcessor _processor = new JobProcessor();
         private Thread _thread;
         private readonly ManualResetEventSlim _jobIsReady 
@@ -12,20 +13,16 @@ namespace HangFire
 
         private volatile string _currentJob;
 
-        public JobDispatcher(Manager manager)
+        public JobDispatcher(JobDispatcherPool pool)
         {
-            _manager = manager;
-        }
-
-        public void Start()
-        {
-            _thread = new Thread(DoWork);
+            _pool = pool;
+            
+            _thread = new Thread(DoWork) { IsBackground = true };
             _thread.Start();
         }
 
         public void Process(string serializedJob)
         {
-            // TODO: Possible race condition
             _currentJob = serializedJob;
             _jobIsReady.Set();
         }
@@ -34,7 +31,7 @@ namespace HangFire
         {
             while (true)
             {
-                _manager.NotifyFreeProcessor(this);
+                _pool.NotifyReady(this);
                 _jobIsReady.Wait();
 
                 try
