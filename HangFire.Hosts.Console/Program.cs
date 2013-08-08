@@ -13,6 +13,14 @@ namespace HangFire.Hosts
         }
     }
 
+    public class ErrorWorker : Worker
+    {
+        public override void Perform()
+        {
+            throw new InvalidOperationException("Error!");
+        }
+    }
+
     public static class Program
     {
         public static void Main()
@@ -42,6 +50,15 @@ namespace HangFire.Hosts
                     for (var i = 0; i < workCount; i++)
                     {
                         Perform.Async<ConsoleWorker>(new { Number = count++ });
+                    }
+                }
+
+                if (command.StartsWith("error", StringComparison.OrdinalIgnoreCase))
+                {
+                    var workCount = int.Parse(command.Substring(6));
+                    for (var i = 0; i < workCount; i++)
+                    {
+                        Perform.Async<ErrorWorker>();
                     }
                 }
             }
