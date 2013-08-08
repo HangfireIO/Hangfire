@@ -1,21 +1,18 @@
-﻿using System;
-using System.Threading;
-using ServiceStack.Logging;
+﻿using System.Threading;
 
 namespace HangFire
 {
-    internal class Processor
+    internal class JobDispatcher
     {
-        private readonly ILog _logger = LogManager.GetLogger(typeof (Processor));
-
         private readonly Manager _manager;
+        private readonly JobProcessor _processor = new JobProcessor();
         private Thread _thread;
         private readonly ManualResetEventSlim _jobIsReady 
             = new ManualResetEventSlim(false);
 
         private volatile string _currentJob;
 
-        public Processor(Manager manager)
+        public JobDispatcher(Manager manager)
         {
             _manager = manager;
         }
@@ -42,23 +39,7 @@ namespace HangFire
 
                 try
                 {
-                    var job = JsonHelper.Deserialize<Job>(_currentJob);
-
-                    using (var worker = Factory.CreateWorker(job.WorkerType))
-                    {
-                        worker.Args = job.Args;
-
-                        // TODO: server middleware
-                        worker.Perform();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(
-                        "Failed to process the job: unexpected exception caught. Job JSON:"
-                        + Environment.NewLine
-                        + _currentJob, 
-                        ex);
+                    _processor.ProcessJob(_currentJob);
                 }
                 finally
                 {
