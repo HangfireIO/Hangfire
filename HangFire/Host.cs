@@ -18,7 +18,7 @@ namespace HangFire
                 };
 
             _pool = new JobDispatcherPool(concurrency);
-            _pool.JobCompleted += PoolOnJobCompleted;
+            _pool.JobFailed += PoolOnJobFailed;
 
             _fetcher = new JobFetcher();
         }
@@ -40,12 +40,9 @@ namespace HangFire
             _managerThread.Start();
         }
 
-        private void PoolOnJobCompleted(object sender, Tuple<string, Exception> tuple)
+        private void PoolOnJobFailed(object sender, Tuple<string, Exception> tuple)
         {
-            if (tuple.Item2 != null)
-            {
-                _fetcher.AddToFailedQueue(tuple.Item1);
-            }
+            _fetcher.AddToFailedQueue(tuple.Item1);
         }
     }
 }

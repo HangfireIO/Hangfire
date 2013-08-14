@@ -44,7 +44,6 @@ namespace HangFire
                 try
                 {
                     _processor.ProcessJob(_currentJob);
-                    _pool.NotifyCompleted(_currentJob, null);
                 }
                 catch (Exception ex)
                 {
@@ -53,7 +52,7 @@ namespace HangFire
                         + Environment.NewLine
                         + _currentJob,
                         ex);
-                    _pool.NotifyCompleted(_currentJob, ex);
+                    _pool.NotifyFailed(_currentJob, ex);
 
                 }
                 finally
