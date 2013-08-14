@@ -37,13 +37,15 @@ namespace HangFire
 
         public void Start()
         {
-            _fetcher.Start();
             _managerThread.Start();
         }
 
         private void PoolOnJobCompleted(object sender, Tuple<string, Exception> tuple)
         {
-            _fetcher.Process(tuple);
+            if (tuple.Item2 != null)
+            {
+                _fetcher.AddToFailedQueue(tuple.Item1);
+            }
         }
     }
 }
