@@ -12,8 +12,7 @@ namespace HangFire
         public JobDispatcherPool(int count)
         {
             _dispatchers = new List<JobDispatcher>(count);
-            _freeDispatchers = new BlockingCollection<JobDispatcher>(
-                new ConcurrentQueue<JobDispatcher>());
+            _freeDispatchers = new BlockingCollection<JobDispatcher>();
 
             for (var i = 0; i < count; i++)
             {
