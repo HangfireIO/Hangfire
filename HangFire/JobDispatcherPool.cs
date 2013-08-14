@@ -17,7 +17,7 @@ namespace HangFire
 
             for (var i = 0; i < count; i++)
             {
-                var dispatcher = new JobDispatcher(this);
+                var dispatcher = new JobDispatcher(this, String.Format("HangFire.Dispatcher.{0}", i));
                 _dispatchers.Add(dispatcher);
             }
         }

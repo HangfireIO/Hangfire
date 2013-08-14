@@ -11,7 +11,11 @@ namespace HangFire
 
         public Host(int concurrency)
         {
-            _managerThread = new Thread(Work) { IsBackground = true };
+            _managerThread = new Thread(Work)
+                {
+                    Name = "HangFire.Manager", 
+                    IsBackground = true
+                };
 
             _pool = new JobDispatcherPool(concurrency);
             _pool.JobCompleted += PoolOnJobCompleted;

@@ -8,7 +8,7 @@ namespace HangFire
     {
         private readonly JobDispatcherPool _pool;
         private readonly JobProcessor _processor = new JobProcessor();
-        private Thread _thread;
+        private readonly Thread _thread;
         private readonly ManualResetEventSlim _jobIsReady 
             = new ManualResetEventSlim(false);
 
@@ -16,11 +16,15 @@ namespace HangFire
 
         private volatile string _currentJob;
 
-        public JobDispatcher(JobDispatcherPool pool)
+        public JobDispatcher(JobDispatcherPool pool, string name)
         {
             _pool = pool;
             
-            _thread = new Thread(DoWork) { IsBackground = true };
+            _thread = new Thread(DoWork)
+                {
+                    Name = name,
+                    IsBackground = true
+                };
             _thread.Start();
         }
 

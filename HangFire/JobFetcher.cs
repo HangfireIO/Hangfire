@@ -13,7 +13,11 @@ namespace HangFire
 
         public JobFetcher()
         {
-            _jobCompletionHandlerThread = new Thread(HandleJobCompletion) { IsBackground = true };
+            _jobCompletionHandlerThread = new Thread(HandleJobCompletion)
+                {
+                    Name = "HangFire.JobCompletionHandler",
+                    IsBackground = true
+                };
         }
 
         public void Start()
