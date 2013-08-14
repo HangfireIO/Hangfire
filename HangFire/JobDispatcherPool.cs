@@ -22,12 +22,11 @@ namespace HangFire
             }
         }
 
-        public event EventHandler<Tuple<string, Exception>> JobCompleted; 
+        public event EventHandler<Tuple<string, Exception>> JobCompleted;
 
-        public void Process(string serializedJob)
+        public JobDispatcher TakeFree()
         {
-            var freeDispatcher = _freeDispatchers.Take();
-            freeDispatcher.Process(serializedJob);
+            return _freeDispatchers.Take();
         }
 
         internal void NotifyReady(JobDispatcher dispatcher)

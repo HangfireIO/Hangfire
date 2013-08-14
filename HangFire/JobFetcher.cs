@@ -6,7 +6,6 @@ namespace HangFire
 {
     internal class JobFetcher
     {
-        private readonly Thread _fetcherThread;
         private readonly Thread _jobCompletionHandlerThread;
 
         private readonly BlockingCollection<Tuple<string, Exception>> _completed
@@ -14,16 +13,21 @@ namespace HangFire
 
         public JobFetcher()
         {
-            _fetcherThread = new Thread(FetchNextTask) { IsBackground = true };
             _jobCompletionHandlerThread = new Thread(HandleJobCompletion) { IsBackground = true };
         }
 
-        public event EventHandler<string> JobFetched; 
-
         public void Start()
         {
-            _fetcherThread.Start();
             _jobCompletionHandlerThread.Start();
+        }
+
+        public string TakeNext()
+        {
+            // TODO: handle redis exceptions
+            using (var redis = Factory.CreateRedisClient())
+            {
+                return redis.BlockingDequeueItemFromList("queue:default", null);
+            }
         }
 
         public void Process(Tuple<string, Exception> e)
@@ -31,32 +35,15 @@ namespace HangFire
             _completed.Add(e);
         }
 
-        private void FetchNextTask()
-        {
-            // TODO: handle connection exceptions.
-            using (var redis = Factory.CreateRedisClient())
-            {
-                while (true)
-                {
-                    var serializedJob = redis.BlockingDequeueItemFromList("queue:default", null);
-                    var onFetched = JobFetched;
-                    if (onFetched != null)
-                    {
-                        onFetched(this, serializedJob);
-                    }
-                }
-            }
-        }
-
         private void HandleJobCompletion()
         {
-            // TODO: Handle connection exceptions
-            using (var redis = Factory.CreateRedisClient())
+            while (true)
             {
-                while (true)
+                var completedJob = _completed.Take();
+                if (completedJob.Item2 != null)
                 {
-                    var completedJob = _completed.Take();
-                    if (completedJob.Item2 != null)
+                    // TODO: handle redis exceptions
+                    using (var redis = Factory.CreateRedisClient())
                     {
                         redis.EnqueueItemOnList("jobs:failed", completedJob.Item1);
                     }
