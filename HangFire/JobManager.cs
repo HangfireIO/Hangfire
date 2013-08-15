@@ -29,29 +29,30 @@ namespace HangFire
 
         private void Work()
         {
-            var blockingClient = new RedisClient();
-            
-            while (true)
+            using (var blockingClient = new RedisClient())
             {
-                var dispatcher = _pool.TakeFree();
+                while (true)
+                {
+                    var dispatcher = _pool.TakeFree();
 
-                try
-                {
-                    var redis = blockingClient.Connection;
-                    var job = redis.BlockingDequeueItemFromList("hangfire:queue:default", null);
+                    try
+                    {
+                        var redis = blockingClient.Connection;
+                        var job = redis.BlockingDequeueItemFromList("hangfire:queue:default", null);
 
-                    dispatcher.Process(job);
-                }
-                catch (IOException ex)
-                {
-                    _logger.Error("Exception occured while fetching the job.", ex);
-                    Thread.Sleep(_reconnectTimeout);
-                    blockingClient.Reconnect();
-                }
-                catch (RedisException)
-                {
-                    Thread.Sleep(_reconnectTimeout);
-                    blockingClient.Reconnect();
+                        dispatcher.Process(job);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.Error("Could not fetch next job.", ex);
+                        Thread.Sleep(_reconnectTimeout);
+                        blockingClient.Reconnect();
+                    }
+                    catch (RedisException)
+                    {
+                        Thread.Sleep(_reconnectTimeout);
+                        blockingClient.Reconnect();
+                    }
                 }
             }
         }
