@@ -22,6 +22,7 @@ namespace HangFire
         private readonly object _crashedLock = new object();
         private bool _crashed;
         private bool _started;
+        private bool _disposed;
 
         private readonly ILog _logger;
 
@@ -42,6 +43,8 @@ namespace HangFire
 
         public void Start()
         {
+            if (_disposed) throw new ObjectDisposedException(GetType().Name);
+
             if (_started)
             {
                 throw new InvalidOperationException("Dispatcher has been already started.");
@@ -53,13 +56,15 @@ namespace HangFire
 
         public void Stop()
         {
+            if (_disposed) throw new ObjectDisposedException(GetType().Name);
+
             if (_started)
             {
                 _cts.Cancel();
             }
         }
 
-        public bool Crashed
+        internal bool Crashed
         {
             get
             {
@@ -79,16 +84,26 @@ namespace HangFire
 
         public void Process(string serializedJob)
         {
+            if (_disposed) throw new InvalidOperationException(GetType().Name);
+
             _currentJob = serializedJob;
             _jobIsReady.Set();
         }
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
             if (_started)
             {
                 _thread.Join();
             }
+
+            _cts.Dispose();
+            _jobIsReady.Dispose();
         }
 
         private void DoWork()

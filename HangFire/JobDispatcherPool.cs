@@ -11,6 +11,7 @@ namespace HangFire
         private readonly List<JobDispatcher> _dispatchers;
         private readonly BlockingCollection<JobDispatcher> _freeDispatchers;
         private readonly ILog _log = LogManager.GetLogger("HangFire.JobDispatcherPool");
+        private bool _disposed;
 
         public JobDispatcherPool(int count)
         {
@@ -27,6 +28,9 @@ namespace HangFire
 
         public JobDispatcher TakeFree(CancellationToken cancellationToken)
         {
+            if (_disposed)
+                throw new ObjectDisposedException(GetType().Name);
+
             JobDispatcher dispatcher;
             do
             {
@@ -39,6 +43,11 @@ namespace HangFire
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
             _log.Info("Stopping dispatchers...");
             foreach (var dispatcher in _dispatchers)
             {
@@ -50,10 +59,14 @@ namespace HangFire
                 dispatcher.Dispose();
             }
             _log.Info("Dispatchers were stopped.");
+
+            _freeDispatchers.Dispose();
         }
 
         internal void NotifyReady(JobDispatcher dispatcher)
         {
+            if (_disposed) throw new ObjectDisposedException(GetType().Name);
+
             _freeDispatchers.Add(dispatcher);
         }
     }

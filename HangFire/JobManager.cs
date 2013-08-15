@@ -12,6 +12,7 @@ namespace HangFire
         private readonly Thread _managerThread;
         private readonly JobDispatcherPool _pool;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private bool _disposed;
 
         private readonly TimeSpan _reconnectTimeout = TimeSpan.FromSeconds(5);
 
@@ -31,11 +32,17 @@ namespace HangFire
 
         public void Dispose()
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
             _logger.Info("Stopping manager thread...");
             _cts.Cancel();
             _managerThread.Join();
 
             _pool.Dispose();
+            _cts.Dispose();
         }
 
         private void Work()
