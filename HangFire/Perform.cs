@@ -1,4 +1,6 @@
-﻿using System;
+﻿using System.IO;
+
+using ServiceStack.Redis;
 
 namespace HangFire
 {
@@ -23,9 +25,24 @@ namespace HangFire
             // exception to the client.
             var serialized = JsonHelper.Serialize(job);
 
-            var redis = _client.GetConnection();
-            var result = redis.Lists.AddFirst(0, String.Format("hangfire:queue:default"), serialized);
-            redis.Wait(result);
+            lock (_client)
+            {
+                try
+                {
+                    var redis = _client.Connection;
+                    redis.EnqueueItemOnList("hangfire:queue:default", serialized);
+                }
+                catch (IOException)
+                {
+                    _client.Reconnect();
+                    throw;
+                }
+                catch (RedisException)
+                {
+                    _client.Reconnect();
+                    throw;
+                }
+            }
         }
     }
 }

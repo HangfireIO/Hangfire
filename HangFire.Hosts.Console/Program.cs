@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -9,7 +10,7 @@ namespace HangFire.Hosts
     {
         public override void Perform()
         {
-            Console.WriteLine("Running task: " + Args["Number"]);
+            Console.WriteLine("Finished task: " + Args["Number"]);
         }
     }
 
@@ -28,7 +29,7 @@ namespace HangFire.Hosts
             const int concurrency = 100;
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            var manager = new Host(concurrency);
+            var manager = new JobManager(concurrency);
             manager.Start();
             Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 
@@ -46,11 +47,18 @@ namespace HangFire.Hosts
 
                 if (command.StartsWith("add", StringComparison.OrdinalIgnoreCase))
                 {
-                    var workCount = int.Parse(command.Substring(4));
-                    for (var i = 0; i < workCount; i++)
+                    try
                     {
-                        Perform.Async<ConsoleWorker>(new { Number = count++ });
+                        var workCount = int.Parse(command.Substring(4));
+                        for (var i = 0; i < workCount; i++)
+                        {
+                            Perform.Async<ConsoleWorker>(new { Number = count++ });
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }   
                 }
 
                 if (command.StartsWith("error", StringComparison.OrdinalIgnoreCase))
