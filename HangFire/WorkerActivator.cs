@@ -4,7 +4,7 @@ namespace HangFire
 {
     public class WorkerActivator
     {
-        public Worker CreateWorker(Type workerType)
+        public virtual Worker CreateWorker(Type workerType)
         {
             return (Worker)Activator.CreateInstance(workerType);
         }
