@@ -6,7 +6,7 @@ namespace HangFire
 {
     public static class Perform
     {
-        private static readonly RedisClient _client = new RedisClient();
+        private static readonly RedisClient Client = new RedisClient();
 
         public static void Async<TWorker>()
             where TWorker : Worker
@@ -25,21 +25,21 @@ namespace HangFire
             // exception to the client.
             var serialized = JsonHelper.Serialize(job);
 
-            lock (_client)
+            lock (Client)
             {
                 try
                 {
-                    var redis = _client.Connection;
+                    var redis = Client.Connection;
                     redis.EnqueueItemOnList("hangfire:queue:default", serialized);
                 }
                 catch (IOException)
                 {
-                    _client.Reconnect();
+                    Client.Reconnect();
                     throw;
                 }
                 catch (RedisException)
                 {
-                    _client.Reconnect();
+                    Client.Reconnect();
                     throw;
                 }
             }

@@ -32,7 +32,6 @@ namespace HangFire.Hosts
             Configuration.Configure(x => { x.RedisPort = 6379; });
             
             var manager = new JobManager(concurrency);
-            manager.Start();
             Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 
             var count = 1;
@@ -70,6 +69,11 @@ namespace HangFire.Hosts
                     {
                         Perform.Async<ErrorWorker>();
                     }
+                }
+
+                if (command.Equals("dispose", StringComparison.OrdinalIgnoreCase))
+                {
+                    manager.Dispose();
                 }
             }
         }

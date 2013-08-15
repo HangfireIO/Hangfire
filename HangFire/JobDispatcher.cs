@@ -4,18 +4,24 @@ using ServiceStack.Logging;
 
 namespace HangFire
 {
-    internal class JobDispatcher
+    internal class JobDispatcher : IDisposable
     {
         private readonly JobDispatcherPool _pool;
         private readonly string _name;
 
-        private readonly JobProcessor _processor = new JobProcessor(Configuration.Instance.WorkerActivator);
+        private readonly JobProcessor _processor = new JobProcessor(
+            Configuration.Instance.WorkerActivator);
+
         private readonly Thread _thread;
-        private readonly ManualResetEventSlim _jobIsReady 
+
+        private readonly ManualResetEventSlim _jobIsReady
             = new ManualResetEventSlim(false);
 
-        private readonly object _errorLock = new object();
-        private bool _isError;
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+        private readonly object _crashedLock = new object();
+        private bool _crashed;
+        private bool _started;
 
         private readonly ILog _logger;
 
@@ -32,23 +38,41 @@ namespace HangFire
                     Name = name,
                     IsBackground = true
                 };
-            _thread.Start();
         }
 
-        public bool IsStopped
+        public void Start()
+        {
+            if (_started)
+            {
+                throw new InvalidOperationException("Dispatcher has been already started.");
+            }
+
+            _thread.Start();
+            _started = true;
+        }
+
+        public void Stop()
+        {
+            if (_started)
+            {
+                _cts.Cancel();
+            }
+        }
+
+        public bool Crashed
         {
             get
             {
-                lock (_errorLock)
+                lock (_crashedLock)
                 {
-                    return _isError;
+                    return _crashed;
                 }
             }
             private set
             {
-                lock (_errorLock)
+                lock (_crashedLock)
                 {
-                    _isError = value;
+                    _crashed = value;
                 }
             }
         }
@@ -59,6 +83,14 @@ namespace HangFire
             _jobIsReady.Set();
         }
 
+        public void Dispose()
+        {
+            if (_started)
+            {
+                _thread.Join();
+            }
+        }
+
         private void DoWork()
         {
             try
@@ -66,7 +98,7 @@ namespace HangFire
                 while (true)
                 {
                     _pool.NotifyReady(this);
-                    _jobIsReady.Wait();
+                    _jobIsReady.Wait(_cts.Token);
 
                     try
                     {
@@ -87,11 +119,14 @@ namespace HangFire
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+            }
             catch (Exception ex)
             {
-                IsStopped = true;
+                Crashed = true;
                 _logger.Fatal(
-                    String.Format("Unexpected exception caught in the job dispatcher '{0}'. It will be stopped.", _name), 
+                    String.Format("Unexpected exception caught in the job dispatcher '{0}'. It will be stopped.", _name),
                     ex);
             }
         }

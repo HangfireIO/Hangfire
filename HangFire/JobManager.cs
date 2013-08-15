@@ -7,10 +7,11 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class JobManager
+    public class JobManager : IDisposable
     {
         private readonly Thread _managerThread;
         private readonly JobDispatcherPool _pool;
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         private readonly TimeSpan _reconnectTimeout = TimeSpan.FromSeconds(5);
 
@@ -25,11 +26,16 @@ namespace HangFire
                 };
 
             _pool = new JobDispatcherPool(concurrency);
+            _managerThread.Start();
         }
 
-        public void Start()
+        public void Dispose()
         {
-            _managerThread.Start();
+            _logger.Info("Stopping manager thread...");
+            _cts.Cancel();
+            _managerThread.Join();
+
+            _pool.Dispose();
         }
 
         private void Work()
@@ -40,12 +46,21 @@ namespace HangFire
                 {
                     while (true)
                     {
-                        var dispatcher = _pool.TakeFree();
+                        var dispatcher = _pool.TakeFree(_cts.Token);
 
                         try
                         {
                             var redis = blockingClient.Connection;
-                            var job = redis.BlockingDequeueItemFromList("hangfire:queue:default", null);
+                            string job;
+
+                            do
+                            {
+                                job = redis.BlockingDequeueItemFromList("hangfire:queue:default", TimeSpan.FromSeconds(1));    
+                                if (_cts.IsCancellationRequested)
+                                {
+                                    throw new OperationCanceledException();
+                                }
+                            } while (job == null);
 
                             dispatcher.Process(job);
                         }
@@ -62,6 +77,10 @@ namespace HangFire
                         }
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Info("Shutdown has been requested. Exiting...");
             }
             catch (Exception ex)
             {
