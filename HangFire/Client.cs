@@ -1,18 +1,14 @@
 ﻿using System;
-using ServiceStack.Redis;
+using System.Threading.Tasks;
+using BookSleeve;
 
 namespace HangFire
 {
-    internal class Client : IDisposable
+    internal static class Client
     {
-        private readonly IRedisClient _redis;
+        private static readonly RedisConnection _redis = RedisClient.CreateConnection();
 
-        public Client(IRedisClient redis)
-        {
-            _redis = redis;
-        }
-
-        public void Enqueue(Type workerType, object arg)
+        public static Task Enqueue(Type workerType, object arg)
         {
             var job = new Job(workerType, arg);
             var queue = "default";
@@ -24,17 +20,12 @@ namespace HangFire
             var serialized = JsonHelper.Serialize(job);
 
             // TODO: handle Redis exception. Do we need to try it again?
-            _redis.PrependItemToList(GetQueueKey(queue), serialized);
+            return _redis.Lists.AddFirst(0, GetQueueKey(queue), serialized);
         }
 
         private static string GetQueueKey(string queueName)
         {
             return String.Format("queue:{0}", queueName);
-        }
-
-        public void Dispose()
-        {
-            _redis.Dispose();
         }
     }
 }

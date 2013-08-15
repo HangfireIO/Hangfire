@@ -11,10 +11,7 @@
         public static void Async<TWorker>(object arg)
             where TWorker : Worker
         {
-            using (var client = Factory.CreateClient())
-            {
-                client.Enqueue(typeof (TWorker), arg);
-            }
+            Client.Enqueue(typeof (TWorker), arg);
         }
     }
 }
