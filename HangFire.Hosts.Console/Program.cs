@@ -27,6 +27,10 @@ namespace HangFire.Hosts
         {
             const int concurrency = 100;
             LogManager.LogFactory = new ConsoleLogFactory();
+            HangFireConfiguration.Configure(x =>
+                {
+                    x.Redis
+                })
 
             var manager = new Host(concurrency);
             manager.Start();
