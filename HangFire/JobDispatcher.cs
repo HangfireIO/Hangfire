@@ -7,7 +7,7 @@ namespace HangFire
     internal class JobDispatcher
     {
         private readonly JobDispatcherPool _pool;
-        private readonly JobProcessor _processor = new JobProcessor();
+        private readonly JobProcessor _processor = new JobProcessor(Configuration.Instance.WorkerActivator);
         private readonly Thread _thread;
         private readonly ManualResetEventSlim _jobIsReady 
             = new ManualResetEventSlim(false);

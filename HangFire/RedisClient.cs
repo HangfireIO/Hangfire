@@ -37,7 +37,8 @@ namespace HangFire
 
         private static IRedisClient CreateConnection()
         {
-            return new ServiceStack.Redis.RedisClient("127.0.0.1");
+            var config = Configuration.Instance;
+            return new ServiceStack.Redis.RedisClient(config.RedisHost, config.RedisPort, config.RedisPassword, config.RedisDb);
         }
     }
 }

@@ -51,7 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Factory.cs" />
+    <Compile Include="Configuration.cs" />
+    <Compile Include="WorkerActivator.cs" />
     <Compile Include="JobManager.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="JobDispatcherPool.cs" />

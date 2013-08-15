@@ -29,6 +29,8 @@ namespace HangFire.Hosts
             const int concurrency = 100;
             LogManager.LogFactory = new ConsoleLogFactory();
 
+            Configuration.Configure(x => { x.RedisPort = 6379; });
+
             var manager = new JobManager(concurrency);
             manager.Start();
             Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");

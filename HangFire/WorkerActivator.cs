@@ -2,9 +2,9 @@
 
 namespace HangFire
 {
-    internal static class Factory
+    public class WorkerActivator
     {
-        public static Worker CreateWorker(Type workerType)
+        public Worker CreateWorker(Type workerType)
         {
             return (Worker)Activator.CreateInstance(workerType);
         }
