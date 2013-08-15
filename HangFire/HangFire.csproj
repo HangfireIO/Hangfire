@@ -51,7 +51,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
     <Compile Include="Factory.cs" />
     <Compile Include="Host.cs" />
     <Compile Include="Job.cs" />
