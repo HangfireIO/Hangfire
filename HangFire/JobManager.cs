@@ -28,6 +28,8 @@ namespace HangFire
 
             _pool = new JobDispatcherPool(concurrency);
             _managerThread.Start();
+
+            _logger.Info("Manager thread has been started.");
         }
 
         public void Dispose()

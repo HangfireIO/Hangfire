@@ -10,7 +10,7 @@ namespace HangFire
     {
         private readonly List<JobDispatcher> _dispatchers;
         private readonly BlockingCollection<JobDispatcher> _freeDispatchers;
-        private readonly ILog _log = LogManager.GetLogger("HangFire.JobDispatcherPool");
+        private readonly ILog _logger = LogManager.GetLogger("HangFire.JobDispatcherPool");
         private bool _disposed;
 
         public JobDispatcherPool(int count)
@@ -18,12 +18,16 @@ namespace HangFire
             _dispatchers = new List<JobDispatcher>(count);
             _freeDispatchers = new BlockingCollection<JobDispatcher>();
 
+            _logger.Info(String.Format("Starting {0} dispatchers...", count));
+
             for (var i = 0; i < count; i++)
             {
                 var dispatcher = new JobDispatcher(this, String.Format("HangFire.Dispatcher.{0}", i));
                 dispatcher.Start();
                 _dispatchers.Add(dispatcher);
             }
+
+            _logger.Info("Dispatchers were started.");
         }
 
         public JobDispatcher TakeFree(CancellationToken cancellationToken)
@@ -48,7 +52,7 @@ namespace HangFire
 
             _disposed = true;
 
-            _log.Info("Stopping dispatchers...");
+            _logger.Info("Stopping dispatchers...");
             foreach (var dispatcher in _dispatchers)
             {
                 dispatcher.Stop();
@@ -58,7 +62,7 @@ namespace HangFire
             {
                 dispatcher.Dispose();
             }
-            _log.Info("Dispatchers were stopped.");
+            _logger.Info("Dispatchers were stopped.");
 
             _freeDispatchers.Dispose();
         }

@@ -26,7 +26,7 @@ namespace HangFire.Hosts
     {
         public static void Main()
         {
-            const int concurrency = 100;
+            int concurrency = Environment.ProcessorCount * 2;
             LogManager.LogFactory = new ConsoleLogFactory();
 
             Configuration.Configure(x => { x.RedisPort = 6379; });
