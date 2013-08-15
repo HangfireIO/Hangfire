@@ -65,7 +65,7 @@ namespace HangFire
                             do
                             {
                                 job = redis.BlockingDequeueItemFromList("hangfire:queue:default", TimeSpan.FromSeconds(1));    
-                                if (_cts.IsCancellationRequested)
+                                if (job == null && _cts.IsCancellationRequested)
                                 {
                                     throw new OperationCanceledException();
                                 }
