@@ -25,7 +25,14 @@ namespace HangFire
 
         public JobDispatcher TakeFree()
         {
-            return _freeDispatchers.Take();
+            JobDispatcher dispatcher;
+            do
+            {
+                dispatcher = _freeDispatchers.Take();
+            }
+            while (dispatcher.IsStopped);
+
+            return dispatcher;
         }
 
         internal void NotifyReady(JobDispatcher dispatcher)
