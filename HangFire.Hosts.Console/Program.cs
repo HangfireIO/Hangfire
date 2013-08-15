@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading;
+
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 

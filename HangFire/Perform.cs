@@ -1,12 +1,10 @@
 ﻿using System;
 
-using BookSleeve;
-
 namespace HangFire
 {
     public static class Perform
     {
-        private static readonly RedisConnection _redis = RedisClient.CreateConnection();
+        private static readonly RedisClient _client = new RedisClient();
 
         public static void Async<TWorker>()
             where TWorker : Worker
@@ -25,9 +23,9 @@ namespace HangFire
             // exception to the client.
             var serialized = JsonHelper.Serialize(job);
 
-            // TODO: handle Redis exception. Do we need to try it again?
-            var result = _redis.Lists.AddFirst(0, String.Format("queue:default"), serialized);
-            _redis.Wait(result);
+            var redis = _client.GetConnection();
+            var result = redis.Lists.AddFirst(0, String.Format("hangfire:queue:default"), serialized);
+            redis.Wait(result);
         }
     }
 }

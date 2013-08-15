@@ -57,7 +57,6 @@
     <Compile Include="JobDispatcherPool.cs" />
     <Compile Include="JobProcessor.cs" />
     <Compile Include="JsonHelper.cs" />
-    <Compile Include="JobFetcher.cs" />
     <Compile Include="Perform.cs" />
     <Compile Include="JobDispatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
