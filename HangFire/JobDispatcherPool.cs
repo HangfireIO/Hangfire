@@ -21,8 +21,6 @@ namespace HangFire
             }
         }
 
-        public event EventHandler<Tuple<string, Exception>> JobFailed;
-
         public JobDispatcher TakeFree()
         {
             JobDispatcher dispatcher;
@@ -38,15 +36,6 @@ namespace HangFire
         internal void NotifyReady(JobDispatcher dispatcher)
         {
             _freeDispatchers.Add(dispatcher);
-        }
-
-        internal void NotifyFailed(string job, Exception ex)
-        {
-            var onJobCompleted = JobFailed;
-            if (onJobCompleted != null)
-            {
-                onJobCompleted(this, new Tuple<string, Exception>(job, ex));
-            }
         }
     }
 }

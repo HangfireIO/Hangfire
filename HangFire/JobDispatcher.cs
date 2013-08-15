@@ -79,7 +79,6 @@ namespace HangFire
                             + Environment.NewLine
                             + _currentJob,
                             ex);
-                        _pool.NotifyFailed(_currentJob, ex);
 
                     }
                     finally
