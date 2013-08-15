@@ -27,6 +27,11 @@ namespace HangFire
             _pool = new JobDispatcherPool(concurrency);
         }
 
+        public void Start()
+        {
+            _managerThread.Start();
+        }
+
         private void Work()
         {
             try
@@ -62,11 +67,6 @@ namespace HangFire
             {
                 _logger.Fatal("Unexpected exception caught in the manager thread. Jobs will not be processed.", ex);
             }
-        }
-
-        public void Start()
-        {
-            _managerThread.Start();
         }
     }
 }

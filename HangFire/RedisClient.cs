@@ -8,15 +8,15 @@ namespace HangFire
     {
         private IRedisClient _connection;
 
-        public RedisClient()
-        {
-            _connection = CreateConnection();
-        }
-
         public IRedisClient Connection
         {
             get
             {
+                if (_connection == null)
+                {
+                    Reconnect();
+                }
+
                 return _connection;
             }
         }
