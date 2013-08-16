@@ -39,7 +39,7 @@ namespace HangFire
             {
                 while (true)
                 {
-                    _client.TryToDo(redis =>
+                    _client.TryToDo(storage =>
                     {
                         while (true)
                         {
@@ -48,7 +48,14 @@ namespace HangFire
                                 if (_stopped) { return; }
                             }
 
-                            if (!TryToPeekAndProcessNextJob(redis))
+                            var now = DateTime.UtcNow.ToTimestamp();
+
+                            var scheduledJob = storage.GetScheduledJob(now);
+                            if (scheduledJob != null)
+                            {
+                                storage.EnqueueJob(scheduledJob);
+                            }
+                            else
                             {
                                 break;
                             }
@@ -60,25 +67,6 @@ namespace HangFire
             catch (ThreadInterruptedException)
             {
             }
-        }
-
-        private static bool TryToPeekAndProcessNextJob(IRedisClient redis)
-        {
-            var now = DateTime.UtcNow.ToTimestamp();
-            var scheduledJob =
-                redis.GetRangeFromSortedSetByLowestScore("hangfire:schedule", Double.NegativeInfinity, now, 0, 1)
-                    .FirstOrDefault();
-
-            if (scheduledJob == null)
-            {
-                return false;
-            }
-
-            if (redis.RemoveItemFromSortedSet("hangfire:schedule", scheduledJob))
-            {
-                redis.EnqueueItemOnList("hangfire:queue:default", scheduledJob);
-            }
-            return true;
         }
     }
 }

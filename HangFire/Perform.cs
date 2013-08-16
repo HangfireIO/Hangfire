@@ -34,7 +34,7 @@ namespace HangFire
             lock (Client)
             {
                 Client.TryToDo(
-                    redis => redis.EnqueueItemOnList("hangfire:queue:default", serializedJob),
+                    storage => storage.EnqueueJob(serializedJob),
                     reconnectOnNextUse: true);
             }
         }
@@ -67,7 +67,7 @@ namespace HangFire
             lock (Client)
             {
                 Client.TryToDo(
-                    redis => redis.AddItemToSortedSet("hangfire:schedule", serializedJob, at),
+                    storage => storage.ScheduleJob(serializedJob, at),
                     reconnectOnNextUse: true);
             }
         }

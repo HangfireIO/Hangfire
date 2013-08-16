@@ -60,13 +60,14 @@ namespace HangFire
                     var dispatcher = _pool.TakeFree(_cts.Token);
 
                     _client.TryToDo(
-                        redis =>
+                        storage =>
                         {
                             string job;
 
                             do
                             {
-                                job = redis.BlockingDequeueItemFromList("hangfire:queue:default", TimeSpan.FromSeconds(1));
+                                job = storage.DequeueJob();
+
                                 if (job == null && _cts.IsCancellationRequested)
                                 {
                                     throw new OperationCanceledException();

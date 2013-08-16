@@ -13,12 +13,12 @@ namespace HangFire
 
         private readonly Configuration _config = Configuration.Instance;
 
-        public void TryToDo(Action<IRedisClient> action, bool reconnectOnNextUse = false)
+        public void TryToDo(Action<RedisStorage> action, bool reconnectOnNextUse = false)
         {
             try
             {
                 var connection = GetConnection();
-                action(connection);
+                action(new RedisStorage(connection));
             }
             catch (IOException)
             {
