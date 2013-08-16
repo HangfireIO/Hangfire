@@ -7,7 +7,12 @@ namespace HangFire
 {
     public class Configuration
     {
-        internal static Configuration Instance = new Configuration();
+        public static Configuration Instance { get; private set; }
+
+        static Configuration()
+        {
+            Instance = new Configuration();
+        }
 
         public static void Configure(Action<Configuration> action)
         {
