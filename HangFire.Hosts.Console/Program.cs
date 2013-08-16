@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -30,50 +29,46 @@ namespace HangFire.Hosts
             LogManager.LogFactory = new ConsoleLogFactory();
 
             Configuration.Configure(x => { x.RedisPort = 6379; });
-            
-            var manager = new JobManager(concurrency);
-            Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 
-            var count = 1;
-
-            while (true)
+            using (var manager = new JobManager(concurrency))
             {
-                var command = Console.ReadLine();
+                Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 
-                if (command == null ||
-                    command.Equals("stop", StringComparison.OrdinalIgnoreCase))
-                {
-                    break;
-                }
+                var count = 1;
 
-                if (command.StartsWith("add", StringComparison.OrdinalIgnoreCase))
+                while (true)
                 {
-                    try
+                    var command = Console.ReadLine();
+
+                    if (command == null || command.Equals("stop", StringComparison.OrdinalIgnoreCase))
                     {
-                        var workCount = int.Parse(command.Substring(4));
-                        for (var i = 0; i < workCount; i++)
+                        break;
+                    }
+
+                    if (command.StartsWith("add", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
                         {
-                            Perform.Async<ConsoleWorker>(new { Number = count++ });
+                            var workCount = int.Parse(command.Substring(4));
+                            for (var i = 0; i < workCount; i++)
+                            {
+                                Perform.Async<ConsoleWorker>(new { Number = count++ });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }   
-                }
 
-                if (command.StartsWith("error", StringComparison.OrdinalIgnoreCase))
-                {
-                    var workCount = int.Parse(command.Substring(6));
-                    for (var i = 0; i < workCount; i++)
+                    if (command.StartsWith("error", StringComparison.OrdinalIgnoreCase))
                     {
-                        Perform.Async<ErrorWorker>();
+                        var workCount = int.Parse(command.Substring(6));
+                        for (var i = 0; i < workCount; i++)
+                        {
+                            Perform.Async<ErrorWorker>();
+                        }
                     }
-                }
-
-                if (command.Equals("dispose", StringComparison.OrdinalIgnoreCase))
-                {
-                    manager.Dispose();
                 }
             }
         }
