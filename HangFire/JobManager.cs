@@ -11,6 +11,7 @@ namespace HangFire
     {
         private readonly Thread _managerThread;
         private readonly JobDispatcherPool _pool;
+        private readonly JobSchedulePoller _schedule;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private bool _disposed;
 
@@ -30,6 +31,8 @@ namespace HangFire
             _managerThread.Start();
 
             _logger.Info("Manager thread has been started.");
+
+            _schedule = new JobSchedulePoller();
         }
 
         public void Dispose()
@@ -38,6 +41,8 @@ namespace HangFire
                 return;
 
             _disposed = true;
+
+            _schedule.Dispose();
 
             _logger.Info("Stopping manager thread...");
             _cts.Cancel();

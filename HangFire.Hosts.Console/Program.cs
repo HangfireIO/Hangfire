@@ -77,6 +77,12 @@ namespace HangFire.Hosts
                             Perform.Async<ErrorWorker>();
                         }
                     }
+
+                    if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var seconds = int.Parse(command.Substring(2));
+                        Perform.In<ConsoleWorker>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
+                    }
                 }
             }
         }

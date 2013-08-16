@@ -57,6 +57,7 @@
     <Compile Include="Interceptors\IInterceptor.cs" />
     <Compile Include="Interceptors\IPerformInterceptor.cs" />
     <Compile Include="Interceptors\I18NMiddleware.cs" />
+    <Compile Include="JobSchedulePoller.cs" />
     <Compile Include="WorkerActivator.cs" />
     <Compile Include="JobManager.cs" />
     <Compile Include="Job.cs" />

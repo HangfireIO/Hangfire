@@ -28,6 +28,8 @@ namespace HangFire
             RedisPassword = null;
             RedisDb = 0;
 
+            PollInterval = TimeSpan.FromSeconds(15);
+
             PerformInterceptors = new List<IPerformInterceptor>();
             EnqueueInterceptors = new List<IEnqueueInterceptor>();
 
@@ -40,6 +42,8 @@ namespace HangFire
         public int RedisPort { get; set; }
         public string RedisPassword { get; set; }
         public long RedisDb { get; set; }
+
+        public TimeSpan PollInterval { get; set; }
 
         public List<IPerformInterceptor> PerformInterceptors { get; private set; }
         public List<IEnqueueInterceptor> EnqueueInterceptors { get; private set; }
