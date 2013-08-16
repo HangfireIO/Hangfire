@@ -31,10 +31,12 @@ namespace HangFire
                 return;
             }
 
+            var queue = Worker.GetQueueName(workerType);
+
             lock (Client)
             {
                 Client.TryToDo(
-                    storage => storage.EnqueueJob(serializedJob),
+                    storage => storage.EnqueueJob(queue, serializedJob),
                     reconnectOnNextUse: true);
             }
         }

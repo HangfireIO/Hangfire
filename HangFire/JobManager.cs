@@ -7,6 +7,7 @@ namespace HangFire
 {
     public class JobManager : IDisposable
     {
+        private readonly string _queue;
         private readonly Thread _managerThread;
         private readonly JobDispatcherPool _pool;
         private readonly JobSchedulePoller _schedule;
@@ -17,8 +18,9 @@ namespace HangFire
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
-        public JobManager(int concurrency)
+        public JobManager(int concurrency, string queue)
         {
+            _queue = queue;
             _managerThread = new Thread(Work)
                 {
                     Name = "HangFire.Manager", 
@@ -66,7 +68,7 @@ namespace HangFire
 
                             do
                             {
-                                job = storage.DequeueJob();
+                                job = storage.DequeueJob(_queue);
 
                                 if (job == null && _cts.IsCancellationRequested)
                                 {

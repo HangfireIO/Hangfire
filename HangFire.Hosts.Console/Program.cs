@@ -5,6 +5,7 @@ using ServiceStack.Logging.Support.Logging;
 
 namespace HangFire.Hosts
 {
+    [Queue("qqq")]
     public class ConsoleWorker : Worker
     {
         public override void Perform()
@@ -36,7 +37,7 @@ namespace HangFire.Hosts
                     x.AddInterceptor(new BasicRetryInterceptor());
                 });
 
-            using (var manager = new JobManager(concurrency))
+            using (var manager = new JobManager(concurrency, "qqq"))
             {
                 Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 

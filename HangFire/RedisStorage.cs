@@ -4,7 +4,7 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class RedisStorage
+    internal class RedisStorage
     {
         private readonly IRedisClient _redis;
 
@@ -35,15 +35,16 @@ namespace HangFire
             return null;
         }
 
-        public void EnqueueJob(string job)
+        public void EnqueueJob(string queue, string job)
         {
-            _redis.EnqueueItemOnList("hangfire:queue:default", job);
+            _redis.EnqueueItemOnList(
+                String.Format("hangfire:queue:{0}", queue), job);
         }
 
-        public string DequeueJob()
+        public string DequeueJob(string queue)
         {
             return _redis.BlockingDequeueItemFromList(
-                "hangfire:queue:default", TimeSpan.FromSeconds(1));
+                String.Format("hangfire:queue:{0}", queue), TimeSpan.FromSeconds(1));
         }
     }
 }
