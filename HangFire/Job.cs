@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace HangFire
 {
-    internal class Job
+    public class Job
     {
         public Job(Type workerType, object args)
         {
-            Jid = Guid.NewGuid().ToString(); // TODO: convert it to 21 symb. string
+            Jid = Guid.NewGuid().ToString();
             WorkerType = workerType;
             Args = new Dictionary<string, string>();
             EnqueuedAt = DateTime.UtcNow;
@@ -16,10 +17,18 @@ namespace HangFire
             AddValues(Args, args);
         }
 
-        public string Jid { get; set; }
-        public Type WorkerType { get; set; }
-        public IDictionary<string, string> Args { get; set; }
-        public DateTime EnqueuedAt { get; set; }
+        public string Jid { get; internal set; }
+        public Type WorkerType { get; internal set; }
+        public IDictionary<string, string> Args { get; internal set; }
+        public DateTime EnqueuedAt { get; internal set; }
+
+        [IgnoreDataMember]
+        public bool Cancelled { get; private set; }
+
+        public void Cancel()
+        {
+            Cancelled = true;
+        }
 
         private static void AddValues(IDictionary<string, string> dictionary, object values)
         {

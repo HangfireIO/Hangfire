@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+
+using HangFire.Interceptors;
 
 namespace HangFire
 {
@@ -14,11 +17,16 @@ namespace HangFire
         internal Configuration()
         {
             WorkerActivator = new WorkerActivator();
-
+            
             RedisHost = "localhost";
             RedisPort = 6379;
             RedisPassword = null;
             RedisDb = 0;
+
+            PerformInterceptors = new List<IPerformInterceptor>();
+            EnqueueInterceptors = new List<IEnqueueInterceptor>();
+
+            AddInterceptor(new I18NInterceptor());
         }
 
         public WorkerActivator WorkerActivator { get; set; }
@@ -27,5 +35,23 @@ namespace HangFire
         public int RedisPort { get; set; }
         public string RedisPassword { get; set; }
         public long RedisDb { get; set; }
+
+        public List<IPerformInterceptor> PerformInterceptors { get; private set; }
+        public List<IEnqueueInterceptor> EnqueueInterceptors { get; private set; }
+
+        public void AddInterceptor(IInterceptor interceptor)
+        {
+            var serverMiddleware = interceptor as IPerformInterceptor;
+            if (serverMiddleware != null)
+            {
+                PerformInterceptors.Add(serverMiddleware);
+            }
+
+            var clientMiddleware = interceptor as IEnqueueInterceptor;
+            if (clientMiddleware != null)
+            {
+                EnqueueInterceptors.Add(clientMiddleware);
+            }
+        }
     }
 }

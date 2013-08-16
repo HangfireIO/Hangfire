@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 
 using ServiceStack.Redis;
 
@@ -18,6 +19,12 @@ namespace HangFire
             where TWorker : Worker
         {
             var job = new Job(typeof(TWorker), arg);
+
+            InvokeInterceptors(job);
+            if (job.Cancelled)
+            {
+                return;
+            }
 
             // TODO: handle serialization exceptions.
             // Either properties or args can not be serialized if
@@ -42,6 +49,16 @@ namespace HangFire
                     Client.Reconnect();
                     throw;
                 }
+            }
+        }
+
+        public static void InvokeInterceptors(Job job)
+        {
+            var interceptors = Configuration.Instance.EnqueueInterceptors;
+
+            foreach (var interceptor in interceptors)
+            {
+                interceptor.InterceptEnqueue(job);
             }
         }
     }

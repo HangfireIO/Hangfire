@@ -1,5 +1,7 @@
 ﻿using System;
 
+using HangFire.Interceptors;
+
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
@@ -17,6 +19,7 @@ namespace HangFire.Hosts
     {
         public override void Perform()
         {
+            Console.WriteLine("Beginning error task...");
             throw new InvalidOperationException("Error!");
         }
     }
@@ -28,7 +31,12 @@ namespace HangFire.Hosts
             int concurrency = Environment.ProcessorCount * 2;
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            Configuration.Configure(x => { x.RedisPort = 6379; });
+            Configuration.Configure(
+                x =>
+                {
+                    x.RedisPort = 6379;
+                    x.AddInterceptor(new BasicRetryInterceptor());
+                });
 
             using (var manager = new JobManager(concurrency))
             {
