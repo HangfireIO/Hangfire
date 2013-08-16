@@ -15,24 +15,16 @@ namespace HangFire
         public static void Async<TWorker>(object args)
             where TWorker : Worker
         {
-            var job = new Job(typeof(TWorker), args);
-
-            InvokeInterceptors(job);
-            if (job.Cancelled)
+            var serializedJob = InterceptAndSerializeJob(typeof(TWorker), args);
+            if (serializedJob == null)
             {
                 return;
             }
 
-            // TODO: handle serialization exceptions.
-            // Either properties or args can not be serialized if
-            // it's type is unserializable. We need to throw this
-            // exception to the client.
-            var serialized = JsonHelper.Serialize(job);
-
             lock (Client)
             {
                 Client.TryToDo(
-                    redis => redis.EnqueueItemOnList("hangfire:queue:default", serialized),
+                    redis => redis.EnqueueItemOnList("hangfire:queue:default", serializedJob),
                     reconnectOnNextUse: true);
             }
         }
@@ -46,25 +38,34 @@ namespace HangFire
         {
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
 
-            var job = new Job(typeof(TWorker), args);
+            var serializedJob = InterceptAndSerializeJob(typeof(TWorker), args);
+            if (serializedJob == null)
+            {
+                return;
+            }
+
+            lock (Client)
+            {
+                Client.TryToDo(
+                    redis => redis.AddItemToSortedSet("hangfire:schedule", serializedJob, at),
+                    reconnectOnNextUse: true);
+            }
+        }
+
+        private static string InterceptAndSerializeJob(Type workerType, object args)
+        {
+            var job = new Job(workerType, args);
             InvokeInterceptors(job);
             if (job.Cancelled)
             {
-                return;
+                return null;
             }
 
             // TODO: handle serialization exceptions.
             // Either properties or args can not be serialized if
             // it's type is unserializable. We need to throw this
             // exception to the client.
-            var serialized = JsonHelper.Serialize(job);
-
-            lock (Client)
-            {
-                Client.TryToDo(
-                    redis => redis.AddItemToSortedSet("hangfire:schedule", serialized, at),
-                    reconnectOnNextUse: true);
-            }
+            return JsonHelper.Serialize(job);
         }
 
         private static void InvokeInterceptors(Job job)
