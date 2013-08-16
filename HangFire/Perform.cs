@@ -15,7 +15,17 @@ namespace HangFire
         public static void Async<TWorker>(object args)
             where TWorker : Worker
         {
-            var serializedJob = InterceptAndSerializeJob(typeof(TWorker), args);
+            Async(typeof(TWorker), args);
+        }
+
+        public static void Async(Type workerType, object args = null)
+        {
+            if (workerType == null)
+            {
+                throw new ArgumentNullException("workerType");
+            }
+
+            var serializedJob = InterceptAndSerializeJob(workerType, args);
             if (serializedJob == null)
             {
                 return;
@@ -36,9 +46,19 @@ namespace HangFire
 
         public static void In<TWorker>(TimeSpan interval, object args)
         {
+            In(typeof(TWorker), interval, args);
+        }
+
+        public static void In(Type workerType, TimeSpan interval, object args = null)
+        {
+            if (workerType == null)
+            {
+                throw new ArgumentNullException("workerType");
+            }
+
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
 
-            var serializedJob = InterceptAndSerializeJob(typeof(TWorker), args);
+            var serializedJob = InterceptAndSerializeJob(workerType, args);
             if (serializedJob == null)
             {
                 return;
@@ -56,7 +76,7 @@ namespace HangFire
         {
             var job = new Job(workerType, args);
             InvokeInterceptors(job);
-            if (job.Cancelled)
+            if (job.Canceled)
             {
                 return null;
             }

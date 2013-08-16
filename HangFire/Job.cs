@@ -23,11 +23,11 @@ namespace HangFire
         public DateTime EnqueuedAt { get; internal set; }
 
         [IgnoreDataMember]
-        public bool Cancelled { get; private set; }
+        public bool Canceled { get; private set; }
 
         public void Cancel()
         {
-            Cancelled = true;
+            Canceled = true;
         }
 
         private static void AddValues(IDictionary<string, string> dictionary, object values)

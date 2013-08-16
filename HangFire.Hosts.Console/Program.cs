@@ -1,7 +1,5 @@
 ﻿using System;
 
-using HangFire.Interceptors;
-
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using HangFire.Interceptors;
-
 namespace HangFire
 {
     public class Configuration
@@ -16,6 +14,11 @@ namespace HangFire
 
         public static void Configure(Action<Configuration> action)
         {
+            if (action == null)
+            {
+                throw new ArgumentNullException("action");
+            }
+
             action(Instance);
         }
 
@@ -45,8 +48,8 @@ namespace HangFire
 
         public TimeSpan PollInterval { get; set; }
 
-        public List<IPerformInterceptor> PerformInterceptors { get; private set; }
-        public List<IEnqueueInterceptor> EnqueueInterceptors { get; private set; }
+        public IList<IPerformInterceptor> PerformInterceptors { get; private set; }
+        public IList<IEnqueueInterceptor> EnqueueInterceptors { get; private set; }
 
         public void AddInterceptor(IInterceptor interceptor)
         {

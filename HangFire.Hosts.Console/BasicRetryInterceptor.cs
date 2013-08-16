@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace HangFire.Interceptors
+namespace HangFire.Hosts
 {
     public class BasicRetryInterceptor : IPerformInterceptor
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HangFire.Interceptors
+namespace HangFire
 {
     public interface IPerformInterceptor : IInterceptor
     {

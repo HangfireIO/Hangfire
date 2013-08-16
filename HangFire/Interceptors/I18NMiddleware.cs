@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Threading;
 
-namespace HangFire.Interceptors
+namespace HangFire
 {
     public class I18NInterceptor : IPerformInterceptor, IEnqueueInterceptor
     {

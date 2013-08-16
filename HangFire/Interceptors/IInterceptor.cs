@@ -1,4 +1,4 @@
-﻿namespace HangFire.Interceptors
+﻿namespace HangFire
 {
     public interface IInterceptor
     {
