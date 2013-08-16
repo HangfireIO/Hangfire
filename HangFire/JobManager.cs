@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 
 namespace HangFire
 {
@@ -12,10 +10,10 @@ namespace HangFire
         private readonly Thread _managerThread;
         private readonly JobDispatcherPool _pool;
         private readonly JobSchedulePoller _schedule;
+        private readonly RedisClient _client = new RedisClient();
+
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private bool _disposed;
-
-        private readonly TimeSpan _reconnectTimeout = TimeSpan.FromSeconds(5);
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
@@ -50,26 +48,25 @@ namespace HangFire
 
             _pool.Dispose();
             _cts.Dispose();
+            _client.Dispose();
         }
 
         private void Work()
         {
             try
             {
-                using (var blockingClient = new RedisClient())
+                while (true)
                 {
-                    while (true)
-                    {
-                        var dispatcher = _pool.TakeFree(_cts.Token);
+                    var dispatcher = _pool.TakeFree(_cts.Token);
 
-                        try
+                    _client.TryToDo(
+                        redis =>
                         {
-                            var redis = blockingClient.Connection;
                             string job;
 
                             do
                             {
-                                job = redis.BlockingDequeueItemFromList("hangfire:queue:default", TimeSpan.FromSeconds(1));    
+                                job = redis.BlockingDequeueItemFromList("hangfire:queue:default", TimeSpan.FromSeconds(1));
                                 if (job == null && _cts.IsCancellationRequested)
                                 {
                                     throw new OperationCanceledException();
@@ -77,19 +74,7 @@ namespace HangFire
                             } while (job == null);
 
                             dispatcher.Process(job);
-                        }
-                        catch (IOException ex)
-                        {
-                            _logger.Error("Could not fetch next job.", ex);
-                            Thread.Sleep(_reconnectTimeout);
-                            blockingClient.Reconnect();
-                        }
-                        catch (RedisException)
-                        {
-                            Thread.Sleep(_reconnectTimeout);
-                            blockingClient.Reconnect();
-                        }
-                    }
+                        });
                 }
             }
             catch (OperationCanceledException)

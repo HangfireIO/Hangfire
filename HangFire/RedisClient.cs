@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Threading;
 
 using ServiceStack.Redis;
 
@@ -7,23 +9,39 @@ namespace HangFire
     internal class RedisClient : IDisposable
     {
         private IRedisClient _connection;
+        private readonly TimeSpan _reconnectTimeout = TimeSpan.FromSeconds(5);
 
-        public IRedisClient Connection
+        private readonly Configuration _config = Configuration.Instance;
+
+        public void TryToDo(Action<IRedisClient> action, bool reconnectOnNextUse = false)
         {
-            get
+            try
             {
-                if (_connection == null)
+                var connection = GetConnection();
+                action(connection);
+            }
+            catch (IOException)
+            {
+                if (reconnectOnNextUse)
                 {
-                    Reconnect();
+                    _connection = null;
+                    throw;
                 }
 
-                return _connection;
+                Thread.Sleep(_reconnectTimeout);
+                Reconnect();
             }
-        }
+            catch (RedisException)
+            {
+                if (reconnectOnNextUse)
+                {
+                    _connection = null;
+                    throw;
+                }
 
-        public void Reconnect()
-        {
-            _connection = CreateConnection();
+                Thread.Sleep(_reconnectTimeout);
+                Reconnect();
+            }
         }
 
         public void Dispose()
@@ -35,10 +53,24 @@ namespace HangFire
             }
         }
 
-        private static IRedisClient CreateConnection()
+        private IRedisClient GetConnection()
         {
-            var config = Configuration.Instance;
-            return new ServiceStack.Redis.RedisClient(config.RedisHost, config.RedisPort, config.RedisPassword, config.RedisDb);
+            if (_connection == null)
+            {
+                Reconnect();
+            }
+
+            return _connection;
+        }
+
+        private void Reconnect()
+        {
+            _connection = CreateConnection();
+        }
+
+        private IRedisClient CreateConnection()
+        {
+            return new ServiceStack.Redis.RedisClient(_config.RedisHost, _config.RedisPort, _config.RedisPassword, _config.RedisDb);
         }
     }
 }

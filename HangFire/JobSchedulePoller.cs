@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading;
 
+using ServiceStack.Redis;
+
 namespace HangFire
 {
     public class JobSchedulePoller : IDisposable
@@ -33,54 +35,50 @@ namespace HangFire
 
         private void Work()
         {
-            while (true)
+            try
             {
-                try
+                while (true)
                 {
-                    var redis = _client.Connection;
-
-                    while (true)
+                    _client.TryToDo(redis =>
                     {
-                        lock (_locker)
+                        while (true)
                         {
-                            if (_stopped)
+                            lock (_locker)
                             {
-                                return;
+                                if (_stopped) { return; }
+                            }
+
+                            if (!TryToPeekAndProcessNextJob(redis))
+                            {
+                                break;
                             }
                         }
-
-                        var now = DateTime.UtcNow.ToTimestamp();
-                        var scheduledJob =
-                            redis.GetRangeFromSortedSetByLowestScore(
-                                "hangfire:schedule",
-                                Double.NegativeInfinity,
-                                now,
-                                0,
-                                1).FirstOrDefault();
-
-                        if (scheduledJob == null)
-                        {
-                            break;
-                        }
-
-                        if (redis.RemoveItemFromSortedSet("hangfire:schedule", scheduledJob))
-                        {
-                            redis.EnqueueItemOnList("hangfire:queue:default", scheduledJob);
-                        }
-                    }
-
+                    });
                     Thread.Sleep(_pollInterval);
                 }
-                catch (ThreadInterruptedException)
-                {
-                }
-                catch (Exception)
-                {
-                    Thread.Sleep(TimeSpan.FromSeconds(5));
-                    _client.Reconnect();
-                    throw;
-                }
             }
+            catch (ThreadInterruptedException)
+            {
+            }
+        }
+
+        private static bool TryToPeekAndProcessNextJob(IRedisClient redis)
+        {
+            var now = DateTime.UtcNow.ToTimestamp();
+            var scheduledJob =
+                redis.GetRangeFromSortedSetByLowestScore("hangfire:schedule", Double.NegativeInfinity, now, 0, 1)
+                    .FirstOrDefault();
+
+            if (scheduledJob == null)
+            {
+                return false;
+            }
+
+            if (redis.RemoveItemFromSortedSet("hangfire:schedule", scheduledJob))
+            {
+                redis.EnqueueItemOnList("hangfire:queue:default", scheduledJob);
+            }
+            return true;
         }
     }
 }

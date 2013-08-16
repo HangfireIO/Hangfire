@@ -1,8 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-
-using ServiceStack.Redis;
 
 namespace HangFire
 {
@@ -35,21 +31,9 @@ namespace HangFire
 
             lock (Client)
             {
-                try
-                {
-                    var redis = Client.Connection;
-                    redis.EnqueueItemOnList("hangfire:queue:default", serialized);
-                }
-                catch (IOException)
-                {
-                    Client.Reconnect();
-                    throw;
-                }
-                catch (RedisException)
-                {
-                    Client.Reconnect();
-                    throw;
-                }
+                Client.TryToDo(
+                    redis => redis.EnqueueItemOnList("hangfire:queue:default", serialized),
+                    reconnectOnNextUse: true);
             }
         }
 
@@ -77,23 +61,9 @@ namespace HangFire
 
             lock (Client)
             {
-                try
-                {
-                    var redis = Client.Connection;
-
-                    // TODO: check return value?
-                    redis.AddItemToSortedSet("hangfire:schedule", serialized, at);
-                }
-                catch (IOException)
-                {
-                    Client.Reconnect();
-                    throw;
-                }
-                catch (RedisException)
-                {
-                    Client.Reconnect();
-                    throw;
-                }
+                Client.TryToDo(
+                    redis => redis.AddItemToSortedSet("hangfire:schedule", serialized, at),
+                    reconnectOnNextUse: true);
             }
         }
 
