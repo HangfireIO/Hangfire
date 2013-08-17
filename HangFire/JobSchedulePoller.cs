@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
-
-using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class JobSchedulePoller : IDisposable
+    internal class JobSchedulePoller : IDisposable
     {
         private readonly Thread _pollerThread;
 
