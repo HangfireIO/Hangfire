@@ -3,7 +3,7 @@ using System.Web;
 
 namespace HangFire.Web
 {
-    class WebTemplateBase : RazorTemplateBase, IHttpHandler
+    internal class WebTemplateBase : RazorTemplateBase, IHttpHandler
     {
         private HttpContextBase _context;
         private bool _isContextFrozen;

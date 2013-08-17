@@ -45,10 +45,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DashboardPage.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="DelegatingHttpHandler.cs" />
     <Compile Include="HangFireAspNetHost.cs" />
     <Compile Include="HangFirePageFactory.cs" />
+    <Compile Include="ManifestResourceHandler.cs" />
+    <Compile Include="ManifestResourceHelper.cs" />
+    <Compile Include="MoreEnumerable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RazorTemplateBase.cs" />
+    <Compile Include="StylesheetHelper.cs" />
     <Compile Include="WebTemplateBase.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -62,6 +67,12 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="bootstrap.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="hangfire.css" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

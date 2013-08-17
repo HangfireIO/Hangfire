@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Web;
 
 namespace HangFire.Web
@@ -23,7 +24,13 @@ namespace HangFire.Web
 
         public IHttpHandler FindHandler(string resource)
         {
-            return resource.Length == 0 ? new DashboardPage() : null;
+            switch (resource)
+            {
+                case "css":
+                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.GetEncoding("Windows-1252"), true));
+                default:
+                    return resource.Length == 0 ? new DashboardPage() : null;
+            }
         }
 
         public void ReleaseHandler(IHttpHandler handler)
