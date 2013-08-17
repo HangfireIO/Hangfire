@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 
 using ServiceStack.Logging;
@@ -10,10 +11,13 @@ namespace HangFire
         private readonly string _iid;
         private readonly string _queue;
         private readonly Thread _managerThread;
+        private readonly Thread _completionHandlerThread;
         private readonly JobDispatcherPool _pool;
         private readonly JobSchedulePoller _schedule;
         private readonly RedisClient _blockingClient = new RedisClient();
         private readonly RedisClient _client = new RedisClient();
+        private readonly BlockingCollection<string> _completedJobs 
+            = new BlockingCollection<string>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private bool _disposed;
@@ -24,28 +28,27 @@ namespace HangFire
         {
             _iid = iid;
             _queue = queue;
-            _managerThread = new Thread(Work)
+
+            _completionHandlerThread = new Thread(HandleCompletedJobs)
                 {
-                    Name = "HangFire.Manager", 
+                    Name = "HangFire.CompletionHandler",
                     IsBackground = true
                 };
-
+            _completionHandlerThread.Start();
+            
             _pool = new JobDispatcherPool(concurrency);
             _pool.JobCompleted += PoolOnJobCompleted;
+
+            _managerThread = new Thread(Work)
+                {
+                    Name = "HangFire.Manager",
+                    IsBackground = true
+                };
             _managerThread.Start();
 
             _logger.Info("Manager thread has been started.");
 
             _schedule = new JobSchedulePoller();
-        }
-
-        private void PoolOnJobCompleted(object sender, string job)
-        {
-            // TODO: заменить на очередь и рабочий поток.
-            lock (_client)
-            {
-                _client.TryToDo(storage => storage.RemoveProcessingJob(_iid, _queue, job));
-            }
         }
 
         public void Dispose()
@@ -62,7 +65,13 @@ namespace HangFire
             _managerThread.Join();
 
             _pool.Dispose();
+            
+            // TODO: stop completion thread
+            _completionHandlerThread.Join();
+
+            _completedJobs.Dispose();
             _cts.Dispose();
+
             _blockingClient.Dispose();
             _client.Dispose();
         }
@@ -121,6 +130,39 @@ namespace HangFire
             {
                 _logger.Fatal("Unexpected exception caught in the manager thread. Jobs will not be processed.", ex);
             }
+        }
+
+        private void HandleCompletedJobs()
+        {
+            try
+            {
+                while (true)
+                {
+                    var completedJob = _completedJobs.Take(_cts.Token);
+                    bool removed = false;
+                    while (true)
+                    {
+                        _client.TryToDo(storage =>
+                            {
+                                storage.RemoveProcessingJob(_iid, _queue, completedJob);
+                                removed = true;
+                            });
+                        if (removed) break;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal("Unexpected exception.", ex);
+            }
+        }
+
+        private void PoolOnJobCompleted(object sender, string job)
+        {
+            _completedJobs.Add(job);
         }
     }
 }

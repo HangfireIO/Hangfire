@@ -73,7 +73,8 @@ namespace HangFire
         {
             _redis.RemoveItemFromList(
                 String.Format("hangfire:processing:{0}:{1}", iid, queue),
-                job);
+                job,
+                -1);
         }
     }
 }
