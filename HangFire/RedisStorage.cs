@@ -30,7 +30,7 @@ namespace HangFire
                 if (_redis.RemoveItemFromSortedSet("hangfire:schedule", scheduledJob))
                 {
                     return scheduledJob;
-                }    
+                }
             }
 
             return null;
@@ -45,25 +45,38 @@ namespace HangFire
         public string DequeueJob(string iid, string queue, TimeSpan? timeOut)
         {
             return _redis.BlockingPopAndPushItemBetweenLists(
-                String.Format("hangfire:queue:{0}", queue),
-                String.Format("hangfire:processing:{0}:{1}", iid, queue),
-                timeOut);
+                    String.Format("hangfire:queue:{0}", queue),
+                    String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                    timeOut);
         }
 
-        public int RequeueProcessingJobs(string iid, string queue, CancellationToken cancellationToken)
+        public int RequeueProcessingJobs(string iid, string currentQueue, CancellationToken cancellationToken)
         {
+            var queues = _redis.GetAllItemsFromSet(String.Format("hangfire:server:{0}:queues", iid));
+
             int requeued = 0;
 
-            // TODO: А вдруг при перезапуске изменится имя очереди?
-            while (_redis.PopAndPushItemBetweenLists(
-                String.Format("hangfire:processing:{0}:{1}", iid, queue),
-                String.Format("hangfire:queue:{0}", queue)) != null)
+            foreach (var queue in queues)
             {
-                requeued++;
-                if (cancellationToken.IsCancellationRequested)
+                while (_redis.PopAndPushItemBetweenLists(
+                    String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                    String.Format("hangfire:queue:{0}", queue)) != null)
                 {
-                    break;
+                    requeued++;
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
                 }
+            }
+
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:server:{0}:queues", iid)));
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    String.Format("hangfire:server:{0}:queues", iid), currentQueue));
+                transaction.Commit();
             }
 
             return requeued;

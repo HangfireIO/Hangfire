@@ -66,7 +66,6 @@ namespace HangFire
 
             _pool.Dispose();
             
-            // TODO: stop completion thread
             _completionHandlerThread.Join();
 
             _completedJobs.Dispose();
