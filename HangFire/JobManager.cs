@@ -12,6 +12,7 @@ namespace HangFire
         private readonly Thread _managerThread;
         private readonly JobDispatcherPool _pool;
         private readonly JobSchedulePoller _schedule;
+        private readonly RedisClient _blockingClient = new RedisClient();
         private readonly RedisClient _client = new RedisClient();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -30,11 +31,21 @@ namespace HangFire
                 };
 
             _pool = new JobDispatcherPool(concurrency);
+            _pool.JobCompleted += PoolOnJobCompleted;
             _managerThread.Start();
 
             _logger.Info("Manager thread has been started.");
 
             _schedule = new JobSchedulePoller();
+        }
+
+        private void PoolOnJobCompleted(object sender, string job)
+        {
+            // TODO: заменить на очередь и рабочий поток.
+            lock (_client)
+            {
+                _client.TryToDo(storage => storage.RemoveProcessingJob(_iid, _queue, job));
+            }
         }
 
         public void Dispose()
@@ -52,6 +63,7 @@ namespace HangFire
 
             _pool.Dispose();
             _cts.Dispose();
+            _blockingClient.Dispose();
             _client.Dispose();
         }
 
@@ -64,7 +76,7 @@ namespace HangFire
                 bool finished = false;
                 while (true)
                 {
-                    _client.TryToDo(storage =>
+                    _blockingClient.TryToDo(storage =>
                         {
                             requeued += storage.RequeueProcessingJobs(_iid, _queue, _cts.Token);
                             finished = true;
@@ -82,7 +94,7 @@ namespace HangFire
                 {
                     var dispatcher = _pool.TakeFree(_cts.Token);
 
-                    _client.TryToDo(
+                    _blockingClient.TryToDo(
                         storage =>
                         {
                             string job;

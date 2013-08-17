@@ -30,6 +30,8 @@ namespace HangFire
             _logger.Info("Dispatchers were started.");
         }
 
+        public event EventHandler<string> JobCompleted; 
+
         public JobDispatcher TakeFree(CancellationToken cancellationToken)
         {
             if (_disposed)
@@ -43,6 +45,15 @@ namespace HangFire
             while (dispatcher.Crashed);
 
             return dispatcher;
+        }
+
+        internal void NotifyCompleted(string job)
+        {
+            var onCompleted = JobCompleted;
+            if (onCompleted != null)
+            {
+                onCompleted(this, job);
+            }
         }
 
         public void Dispose()

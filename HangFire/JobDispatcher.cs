@@ -133,6 +133,8 @@ namespace HangFire
                     {
                         _jobIsReady.Reset();
                     }
+
+                    _pool.NotifyCompleted(_currentJob);
                 }
             }
             catch (OperationCanceledException)

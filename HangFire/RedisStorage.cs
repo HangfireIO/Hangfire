@@ -68,5 +68,12 @@ namespace HangFire
 
             return requeued;
         }
+
+        public void RemoveProcessingJob(string iid, string queue, string job)
+        {
+            _redis.RemoveItemFromList(
+                String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                job);
+        }
     }
 }
