@@ -7,6 +7,7 @@ namespace HangFire
 {
     public class JobManager : IDisposable
     {
+        private readonly string _iid;
         private readonly string _queue;
         private readonly Thread _managerThread;
         private readonly JobDispatcherPool _pool;
@@ -18,8 +19,9 @@ namespace HangFire
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
-        public JobManager(int concurrency, string queue)
+        public JobManager(string iid, int concurrency, string queue)
         {
+            _iid = iid;
             _queue = queue;
             _managerThread = new Thread(Work)
                 {
@@ -57,6 +59,25 @@ namespace HangFire
         {
             try
             {
+                _logger.Info("Starting to requeue processing jobs...");
+                int requeued = 0;
+                bool finished = false;
+                while (true)
+                {
+                    _client.TryToDo(storage =>
+                        {
+                            requeued += storage.RequeueProcessingJobs(_iid, _queue, _cts.Token);
+                            finished = true;
+                        });
+                    if (finished) break;
+                }
+                _logger.Info(String.Format("Requeued {0} jobs.", requeued));
+
+                if (_cts.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 while (true)
                 {
                     var dispatcher = _pool.TakeFree(_cts.Token);
@@ -68,7 +89,7 @@ namespace HangFire
 
                             do
                             {
-                                job = storage.DequeueJob(_queue);
+                                job = storage.DequeueJob(_iid, _queue, TimeSpan.FromSeconds(5));
 
                                 if (job == null && _cts.IsCancellationRequested)
                                 {

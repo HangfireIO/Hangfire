@@ -37,7 +37,7 @@ namespace HangFire.Hosts
                     x.AddInterceptor(new BasicRetryInterceptor());
                 });
 
-            using (var manager = new JobManager(concurrency, "qqq"))
+            using (var manager = new JobManager("hijack!", concurrency, "qqq"))
             {
                 Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 

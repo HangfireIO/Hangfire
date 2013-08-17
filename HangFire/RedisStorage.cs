@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using ServiceStack.Redis;
 
 namespace HangFire
@@ -41,10 +42,31 @@ namespace HangFire
                 String.Format("hangfire:queue:{0}", queue), job);
         }
 
-        public string DequeueJob(string queue)
+        public string DequeueJob(string iid, string queue, TimeSpan? timeOut)
         {
-            return _redis.BlockingDequeueItemFromList(
-                String.Format("hangfire:queue:{0}", queue), TimeSpan.FromSeconds(1));
+            return _redis.BlockingPopAndPushItemBetweenLists(
+                String.Format("hangfire:queue:{0}", queue),
+                String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                timeOut);
+        }
+
+        public int RequeueProcessingJobs(string iid, string queue, CancellationToken cancellationToken)
+        {
+            int requeued = 0;
+
+            // TODO: А вдруг при перезапуске изменится имя очереди?
+            while (_redis.PopAndPushItemBetweenLists(
+                String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                String.Format("hangfire:queue:{0}", queue)) != null)
+            {
+                requeued++;
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+            }
+
+            return requeued;
         }
     }
 }
