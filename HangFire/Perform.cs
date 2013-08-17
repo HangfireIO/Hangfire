@@ -37,7 +37,7 @@ namespace HangFire
             {
                 Client.TryToDo(
                     storage => storage.EnqueueJob(queue, serializedJob),
-                    reconnectOnNextUse: true);
+                    throwOnError: true);
             }
         }
 
@@ -70,7 +70,7 @@ namespace HangFire
             {
                 Client.TryToDo(
                     storage => storage.ScheduleJob(serializedJob, at),
-                    reconnectOnNextUse: true);
+                    throwOnError: true);
             }
         }
 

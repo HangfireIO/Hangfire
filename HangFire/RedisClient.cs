@@ -13,7 +13,7 @@ namespace HangFire
 
         private readonly Configuration _config = Configuration.Instance;
 
-        public void TryToDo(Action<RedisStorage> action, bool reconnectOnNextUse = false)
+        public void TryToDo(Action<RedisStorage> action, bool throwOnError = false)
         {
             try
             {
@@ -22,25 +22,25 @@ namespace HangFire
             }
             catch (IOException)
             {
-                if (reconnectOnNextUse)
-                {
-                    _connection = null;
+                _connection = null;
+
+                if (throwOnError)
+                {  
                     throw;
                 }
 
                 Thread.Sleep(_reconnectTimeout);
-                Reconnect();
             }
             catch (RedisException)
             {
-                if (reconnectOnNextUse)
+                _connection = null;
+
+                if (throwOnError)
                 {
-                    _connection = null;
                     throw;
                 }
 
                 Thread.Sleep(_reconnectTimeout);
-                Reconnect();
             }
         }
 
@@ -55,17 +55,7 @@ namespace HangFire
 
         private IRedisClient GetConnection()
         {
-            if (_connection == null)
-            {
-                Reconnect();
-            }
-
-            return _connection;
-        }
-
-        private void Reconnect()
-        {
-            _connection = CreateConnection();
+            return _connection ?? (_connection = CreateConnection());
         }
 
         private IRedisClient CreateConnection()
