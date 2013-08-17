@@ -9,7 +9,7 @@ namespace HangFire.MvcSample.App_Start
     {
         public static void Start()
         {
-            HangFireAspNetHost.Instance.Start();
+            //HangFireAspNetHost.Instance.Start();
         }
     }
 }

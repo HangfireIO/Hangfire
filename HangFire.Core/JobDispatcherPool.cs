@@ -30,7 +30,7 @@ namespace HangFire
             _logger.Info("Dispatchers were started.");
         }
 
-        public event EventHandler<string> JobCompleted; 
+        public event EventHandler<string> JobCompleted;
 
         public JobDispatcher TakeFree(CancellationToken cancellationToken)
         {

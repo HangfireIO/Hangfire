@@ -1,0 +1,61 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@inherits WebTemplateBase
+              
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+    <title>HangFire</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css" />
+</head>
+<body>
+    <!-- Wrap all page content here -->
+    <div id="wrap">
+
+        <!-- Fixed navbar -->
+        <div class="navbar navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">HangFire Monitor</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="#">Dashboard</a></li>
+                        <li><a href="#about">Queues</a></li>
+                        <li><a href="#contact">Schedule</a></li>
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
+            </div>
+        </div>
+
+        <!-- Begin page content -->
+        @RenderBody()
+    </div>
+
+    <div id="footer">
+        <div class="container">
+            <ul class="list-inline credit">
+                <li>
+                    <a href="http://github.io/odinserj/hangfire" target="_blank">
+                        HangFire 0.1.3
+                    </a>    
+                </li>
+                <li>
+                    Redis: localhost:6379
+                </li>
+                <li>
+                    Time: 23:13 UTC
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

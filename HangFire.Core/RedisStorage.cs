@@ -38,8 +38,13 @@ namespace HangFire
 
         public void EnqueueJob(string queue, string job)
         {
-            _redis.EnqueueItemOnList(
-                String.Format("hangfire:queue:{0}", queue), job);
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queue));
+                transaction.QueueCommand(x => x.EnqueueItemOnList(
+                    String.Format("hangfire:queue:{0}", queue), job));
+                transaction.Commit();
+            }
         }
 
         public string DequeueJob(string iid, string queue, TimeSpan? timeOut)
@@ -91,6 +96,18 @@ namespace HangFire
                 String.Format("hangfire:processing:{0}:{1}", iid, queue),
                 job,
                 -1);
+        }
+
+        public long GetScheduledCount()
+        {
+            return _redis.GetSortedSetCount("hangfire:schedule");
+        }
+
+        public long GetEnqueuedCount()
+        {
+            var queues = _redis.GetAllItemsFromSet("hangfire:queues");
+            return queues.Sum(queue => _redis.GetListCount(
+                String.Format("hangfire:queue:{0}", queue)));
         }
     }
 }

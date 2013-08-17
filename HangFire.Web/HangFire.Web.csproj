@@ -48,6 +48,11 @@
     <Compile Include="DelegatingHttpHandler.cs" />
     <Compile Include="HangFireAspNetHost.cs" />
     <Compile Include="HangFirePageFactory.cs" />
+    <Compile Include="LayoutPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>LayoutPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="ManifestResourceHandler.cs" />
     <Compile Include="ManifestResourceHelper.cs" />
     <Compile Include="MoreEnumerable.cs" />
@@ -66,6 +71,10 @@
     <None Include="DashboardPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="LayoutPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>LayoutPage.generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>

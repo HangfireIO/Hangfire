@@ -58,6 +58,7 @@
     <Compile Include="Interceptors\IInterceptor.cs" />
     <Compile Include="Interceptors\IPerformInterceptor.cs" />
     <Compile Include="Interceptors\I18NMiddleware.cs" />
+    <Compile Include="Storage.cs" />
     <Compile Include="JobSchedulePoller.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="RedisStorage.cs" />
