@@ -61,6 +61,7 @@ namespace HangFire.Hosts
                             {
                                 Perform.Async<ConsoleWorker>(new { Number = count++ });
                             }
+                            Console.WriteLine("Jobs enqueued.");
                         }
                         catch (Exception ex)
                         {

@@ -34,6 +34,7 @@ namespace HangFire
                     Name = "HangFire.CompletionHandler",
                     IsBackground = true
                 };
+
             _completionHandlerThread.Start();
             
             _pool = new JobDispatcherPool(concurrency);

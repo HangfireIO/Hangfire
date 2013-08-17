@@ -59,9 +59,9 @@
     <Compile Include="BasicRetryInterceptor.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HangFire\HangFire.csproj">
+    <ProjectReference Include="..\HangFire\HangFire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
-      <Name>HangFire</Name>
+      <Name>HangFire.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
