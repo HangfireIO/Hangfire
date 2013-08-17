@@ -6,6 +6,8 @@ namespace HangFire
 {
     internal class JobDispatcher : IDisposable
     {
+        private static readonly RedisClient Client = new RedisClient();
+
         private readonly JobDispatcherPool _pool;
         private readonly string _name;
 
@@ -122,24 +124,41 @@ namespace HangFire
 
                     lock (_jobLock)
                     {
+                        lock (Client)
+                        {
+                            Client.TryToDo(x => x.IncreaseProcessing());
+                        }
+
                         try
                         {
                             _processor.ProcessJob(_currentJob);
                         }
                         catch (Exception ex)
                         {
+                            lock (Client)
+                            {
+                                Client.TryToDo(x => x.IncrementFailed());
+                            }
+
                             _logger.Error(
                                 "Failed to process the job: unexpected exception caught. Job JSON:"
                                 + Environment.NewLine
                                 + _currentJob,
                                 ex);
-
                         }
                         finally
                         {
                             _jobIsReady.Reset();
                         }
 
+                        lock (Client)
+                        {
+                            Client.TryToDo(x =>
+                                {
+                                    x.IncreaseSucceeded();
+                                    x.DecreaseProcessing();
+                                });
+                        }
                         _pool.NotifyCompleted(_currentJob);
                     }
                 }

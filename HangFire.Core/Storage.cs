@@ -23,5 +23,35 @@
                 return count;
             }
         }
+
+        public static long SucceededCount()
+        {
+            lock (_client)
+            {
+                long count = 0;
+                _client.TryToDo(x => count = x.GetSucceededCount());
+                return count;
+            }
+        }
+
+        public static long FailedCount()
+        {
+            lock (_client)
+            {
+                long count = 0;
+                _client.TryToDo(x => count = x.GetFailedCount());
+                return count;
+            }
+        }
+
+        public static long ProcessingCount()
+        {
+            lock (_client)
+            {
+                long count = 0;
+                _client.TryToDo(x => count = x.GetProcessingCount());
+                return count;
+            }
+        }
     }
 }

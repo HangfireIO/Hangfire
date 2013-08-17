@@ -98,6 +98,26 @@ namespace HangFire
                 -1);
         }
 
+        public void IncreaseSucceeded()
+        {
+            _redis.IncrementValue("hangfire:stats:succeeded");
+        }
+
+        public void IncrementFailed()
+        {
+            _redis.IncrementValue("hangfire:stats:failed");
+        }
+
+        public void IncreaseProcessing()
+        {
+            _redis.IncrementValue("hangfire:stats:processing");
+        }
+
+        public void DecreaseProcessing()
+        {
+            _redis.DecrementValue("hangfire:stats:processing");
+        }
+
         public long GetScheduledCount()
         {
             return _redis.GetSortedSetCount("hangfire:schedule");
@@ -108,6 +128,24 @@ namespace HangFire
             var queues = _redis.GetAllItemsFromSet("hangfire:queues");
             return queues.Sum(queue => _redis.GetListCount(
                 String.Format("hangfire:queue:{0}", queue)));
+        }
+
+        public long GetSucceededCount()
+        {
+            return long.Parse(
+                _redis.GetValue("hangfire:stats:succeeded") ?? "0");
+        }
+
+        public long GetFailedCount()
+        {
+            return long.Parse(
+                _redis.GetValue("hangfire:stats:failed") ?? "0");
+        }
+
+        public long GetProcessingCount()
+        {
+            return long.Parse(
+                _redis.GetValue("hangfire:stats:processing") ?? "0");
         }
     }
 }

@@ -11,15 +11,21 @@
     <div class="col-md-3">
         <ul class="list-group">
             <li class="list-group-item">
-                <span class="label label-success pull-right">4,865,144</span>
+                <span class="label label-success pull-right">
+                    @String.Format("{0:n0}", Storage.SucceededCount())
+                </span>
                 Completed
             </li>
             <li class="list-group-item">
-                <span class="label label-danger pull-right">422,133</span>
+                <span class="label label-danger pull-right">
+                    @String.Format("{0:n0}", Storage.FailedCount())
+                </span>
                 Failed
             </li>
             <li class="list-group-item">
-                <span class="label label-warning pull-right">143</span>
+                <span class="label label-warning pull-right">
+                    @String.Format("{0:n0}", Storage.ProcessingCount())
+                </span>
                 Processing
             </li>
             <li class="list-group-item">
