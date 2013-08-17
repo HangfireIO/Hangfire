@@ -5,6 +5,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Hosts.Console", "H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Core", "HangFire.Core\HangFire.Core.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Web", "HangFire.Web\HangFire.Web.csproj", "{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.MvcSample", "HangFire.MvcSample\HangFire.MvcSample.csproj", "{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +23,14 @@ Global
 		{C995EA9E-56EE-4951-8260-D94260A7F4C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C995EA9E-56EE-4951-8260-D94260A7F4C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C995EA9E-56EE-4951-8260-D94260A7F4C2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
