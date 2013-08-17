@@ -70,13 +70,16 @@ namespace HangFire
                 }
             }
 
-            using (var transaction = _redis.CreateTransaction())
+            if (!cancellationToken.IsCancellationRequested)
             {
-                transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}:queues", iid)));
-                transaction.QueueCommand(x => x.AddItemToSet(
-                    String.Format("hangfire:server:{0}:queues", iid), currentQueue));
-                transaction.Commit();
+                using (var transaction = _redis.CreateTransaction())
+                {
+                    transaction.QueueCommand(x => x.RemoveEntry(
+                        String.Format("hangfire:server:{0}:queues", iid)));
+                    transaction.QueueCommand(x => x.AddItemToSet(
+                        String.Format("hangfire:server:{0}:queues", iid), currentQueue));
+                    transaction.Commit();
+                }
             }
 
             return requeued;
