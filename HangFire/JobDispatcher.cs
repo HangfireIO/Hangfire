@@ -21,6 +21,7 @@ namespace HangFire
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         private readonly object _crashedLock = new object();
+        private readonly object _jobLock = new object();
         private bool _crashed;
         private bool _started;
         private bool _disposed;
@@ -87,7 +88,10 @@ namespace HangFire
         {
             if (_disposed) throw new InvalidOperationException(GetType().Name);
 
-            _currentJob = serializedJob;
+            lock (_jobLock)
+            {
+                _currentJob = serializedJob;
+            }
             _jobIsReady.Set();
         }
 
@@ -116,25 +120,28 @@ namespace HangFire
                     _pool.NotifyReady(this);
                     _jobIsReady.Wait(_cts.Token);
 
-                    try
+                    lock (_jobLock)
                     {
-                        _processor.ProcessJob(_currentJob);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(
-                            "Failed to process the job: unexpected exception caught. Job JSON:"
-                            + Environment.NewLine
-                            + _currentJob,
-                            ex);
+                        try
+                        {
+                            _processor.ProcessJob(_currentJob);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(
+                                "Failed to process the job: unexpected exception caught. Job JSON:"
+                                + Environment.NewLine
+                                + _currentJob,
+                                ex);
 
-                    }
-                    finally
-                    {
-                        _jobIsReady.Reset();
-                    }
+                        }
+                        finally
+                        {
+                            _jobIsReady.Reset();
+                        }
 
-                    _pool.NotifyCompleted(_currentJob);
+                        _pool.NotifyCompleted(_currentJob);
+                    }
                 }
             }
             catch (OperationCanceledException)
