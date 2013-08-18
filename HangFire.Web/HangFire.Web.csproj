@@ -48,15 +48,26 @@
     <Compile Include="DelegatingHttpHandler.cs" />
     <Compile Include="HangFireAspNetHost.cs" />
     <Compile Include="HangFirePageFactory.cs" />
+    <Compile Include="LayoutPage.cs" />
     <Compile Include="LayoutPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>LayoutPage.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="LinkHelper.cs" />
     <Compile Include="ManifestResourceHandler.cs" />
     <Compile Include="ManifestResourceHelper.cs" />
     <Compile Include="MoreEnumerable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <None Include="QueuesPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
+    </None>
+    <Compile Include="QueuesPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QueuesPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="RazorTemplateBase.cs" />
     <Compile Include="StylesheetHelper.cs" />
     <Compile Include="WebTemplateBase.cs" />

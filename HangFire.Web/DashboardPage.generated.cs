@@ -47,91 +47,17 @@ WriteLiteral("              \r\n");
             
             #line 6 "..\..\DashboardPage.cshtml"
   
-    Layout = new LayoutPage() { Context = Context };
+    Layout = new LayoutPage()
+        {
+            Context = Context,
+            Title = "Dashboard"
+        };
 
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n<div class=\"container\">\r\n    <div class=\"col-md-3\">\r\n        <ul class=\"list-gr" +
-"oup\">\r\n            <li class=\"list-group-item\">\r\n                <span class=\"la" +
-"bel label-success pull-right\">\r\n                    ");
-
-
-            
-            #line 15 "..\..\DashboardPage.cshtml"
-               Write(String.Format("{0:n0}", Storage.SucceededCount()));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                </span>\r\n                Completed\r\n            </li>\r\n        " +
-"    <li class=\"list-group-item\">\r\n                <span class=\"label label-dange" +
-"r pull-right\">\r\n                    ");
-
-
-            
-            #line 21 "..\..\DashboardPage.cshtml"
-               Write(String.Format("{0:n0}", Storage.FailedCount()));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                </span>\r\n                Failed\r\n            </li>\r\n           " +
-" <li class=\"list-group-item\">\r\n                <span class=\"label label-warning " +
-"pull-right\">\r\n                    ");
-
-
-            
-            #line 27 "..\..\DashboardPage.cshtml"
-               Write(String.Format("{0:n0}", Storage.ProcessingCount()));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                </span>\r\n                Processing\r\n            </li>\r\n       " +
-"     <li class=\"list-group-item\">\r\n                <span class=\"label label-prim" +
-"ary pull-right\">\r\n                    ");
-
-
-            
-            #line 33 "..\..\DashboardPage.cshtml"
-               Write(String.Format("{0:n0}", Storage.ScheduledCount()));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                </span>\r\n                Scheduled\r\n            </li>\r\n        " +
-"    <li class=\"list-group-item\">\r\n                <span class=\"label label-defau" +
-"lt pull-right\">\r\n                    ");
-
-
-            
-            #line 39 "..\..\DashboardPage.cshtml"
-               Write(String.Format("{0:n0}", Storage.EnqueuedCount()));
-
-            
-            #line default
-            #line hidden
-WriteLiteral(@"
-                </span>
-                Enqueued
-            </li>
-        </ul>
-        
-        <label>Test jobs</label>
-        <div class=""input-group"">
-            <input type=""text"" class=""form-control"">
-            <span class=""input-group-btn"">
-                <button class=""btn btn-default"" type=""button"">Go</button>
-            </span>
-        </div>
-    </div>
-    <div class=""col-md-9"">
-        <h1 class=""page-header"">Dashboard</h1>
-    </div>
-</div>
-");
+WriteLiteral("\r\n");
 
 
         }

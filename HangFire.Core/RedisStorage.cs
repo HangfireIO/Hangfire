@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ServiceStack.Redis;
@@ -147,5 +148,21 @@ namespace HangFire
             return long.Parse(
                 _redis.GetValue("hangfire:stats:processing") ?? "0");
         }
+
+        public IEnumerable<QueueDto> GetQueues()
+        {
+            var queueNames = _redis.GetAllItemsFromSet("hangfire:queues");
+            return queueNames.Select(queueName => new QueueDto
+                {
+                    Name = queueName, 
+                    Length = _redis.GetListCount(String.Format("hangfire:queue:{0}", queueName))
+                }).ToList();
+        }
+    }
+
+    public class QueueDto
+    {
+        public string Name { get; set; }
+        public long Length { get; set; }
     }
 }

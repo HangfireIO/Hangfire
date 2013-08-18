@@ -4,53 +4,10 @@
 @inherits WebTemplateBase
               
 @{
-    Layout = new LayoutPage() { Context = Context };
+    Layout = new LayoutPage()
+        {
+            Context = Context,
+            Title = "Dashboard"
+        };
 }
 
-<div class="container">
-    <div class="col-md-3">
-        <ul class="list-group">
-            <li class="list-group-item">
-                <span class="label label-success pull-right">
-                    @String.Format("{0:n0}", Storage.SucceededCount())
-                </span>
-                Completed
-            </li>
-            <li class="list-group-item">
-                <span class="label label-danger pull-right">
-                    @String.Format("{0:n0}", Storage.FailedCount())
-                </span>
-                Failed
-            </li>
-            <li class="list-group-item">
-                <span class="label label-warning pull-right">
-                    @String.Format("{0:n0}", Storage.ProcessingCount())
-                </span>
-                Processing
-            </li>
-            <li class="list-group-item">
-                <span class="label label-primary pull-right">
-                    @String.Format("{0:n0}", Storage.ScheduledCount())
-                </span>
-                Scheduled
-            </li>
-            <li class="list-group-item">
-                <span class="label label-default pull-right">
-                    @String.Format("{0:n0}", Storage.EnqueuedCount())
-                </span>
-                Enqueued
-            </li>
-        </ul>
-        
-        <label>Test jobs</label>
-        <div class="input-group">
-            <input type="text" class="form-control">
-            <span class="input-group-btn">
-                <button class="btn btn-default" type="button">Go</button>
-            </span>
-        </div>
-    </div>
-    <div class="col-md-9">
-        <h1 class="page-header">Dashboard</h1>
-    </div>
-</div>

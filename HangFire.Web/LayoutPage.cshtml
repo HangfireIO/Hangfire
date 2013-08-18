@@ -1,14 +1,14 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
 @inherits WebTemplateBase
-              
 <!DOCTYPE html>
 
 <html lang="ru">
 <head>
-    <title>HangFire</title>
+    <title>@Title - HangFire</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css" />
+    <link rel="stylesheet" href="@Request.LinkTo("css")" />
 </head>
 <body>
     <!-- Wrap all page content here -->
@@ -27,8 +27,13 @@
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <li class="active"><a href="#">Dashboard</a></li>
-                        <li><a href="#about">Queues</a></li>
+                        <li class="@(Request.PathInfo.Equals("/") ? "active" : null)">
+                            <a href="@Request.LinkTo("")">Dashboard</a>
+                        </li>
+                        <li><a href="#">Workers</a></li>
+                        <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">
+                            <a href="@Request.LinkTo("queues")">Queues</a>
+                        </li>
                         <li><a href="#contact">Schedule</a></li>
                     </ul>
                 </div>
@@ -37,22 +42,67 @@
         </div>
 
         <!-- Begin page content -->
-        @RenderBody()
+
+        <div class="container">
+            <div class="col-md-3">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <span class="label label-success pull-right">
+                            @String.Format("{0:n0}", Storage.SucceededCount())
+                        </span>
+                        Completed
+                    </li>
+                    <li class="list-group-item">
+                        <span class="label label-danger pull-right">
+                            @String.Format("{0:n0}", Storage.FailedCount())
+                        </span>
+                        Failed
+                    </li>
+                    <li class="list-group-item">
+                        <span class="label label-warning pull-right">
+                            @String.Format("{0:n0}", Storage.ProcessingCount())
+                        </span>
+                        Processing
+                    </li>
+                    <li class="list-group-item">
+                        <span class="label label-primary pull-right">
+                            @String.Format("{0:n0}", Storage.ScheduledCount())
+                        </span>
+                        Scheduled
+                    </li>
+                    <li class="list-group-item">
+                        <span class="label label-default pull-right">
+                            @String.Format("{0:n0}", Storage.EnqueuedCount())
+                        </span>
+                        Enqueued
+                    </li>
+                </ul>
+
+                <label>Test jobs</label>
+                <div class="input-group">
+                    <input type="text" class="form-control">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button">Go</button>
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <h1 class="page-header">@Title</h1>
+                @RenderBody()
+            </div>
+        </div>
     </div>
 
     <div id="footer">
         <div class="container">
             <ul class="list-inline credit">
                 <li>
-                    <a href="http://github.io/odinserj/hangfire" target="_blank">
-                        HangFire 0.1.3
-                    </a>    
+                    <a href="http://github.io/odinserj/hangfire" target="_blank">HangFire 0.1.3
+                    </a>
                 </li>
-                <li>
-                    Redis: localhost:6379
+                <li>Redis: localhost:6379
                 </li>
-                <li>
-                    Time: 23:13 UTC
+                <li>Time: 23:13 UTC
                 </li>
             </ul>
         </div>

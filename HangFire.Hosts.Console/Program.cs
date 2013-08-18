@@ -10,7 +10,7 @@ namespace HangFire.Hosts
     {
         public override void Perform()
         {
-            Console.WriteLine("Finished task: " + Args["Number"]);
+            //Console.WriteLine("Finished task: " + Args["Number"]);
         }
     }
 

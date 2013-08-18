@@ -1,4 +1,7 @@
-﻿namespace HangFire
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace HangFire
 {
     public static class Storage
     {
@@ -51,6 +54,16 @@
                 long count = 0;
                 _client.TryToDo(x => count = x.GetProcessingCount());
                 return count;
+            }
+        }
+
+        public static IEnumerable<QueueDto> Queues()
+        {
+            lock (_client)
+            {
+                IEnumerable<QueueDto> queues = Enumerable.Empty<QueueDto>();
+                _client.TryToDo(x => queues = x.GetQueues());
+                return queues;
             }
         }
     }

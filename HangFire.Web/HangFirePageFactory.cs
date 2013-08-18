@@ -12,7 +12,7 @@ namespace HangFire.Web
             var resource = request.PathInfo.Length == 0
                 ? String.Empty
                 : request.PathInfo.Substring(1).ToLowerInvariant();
-
+            
             var handler = FindHandler(resource);
             if (handler == null)
             {
@@ -26,6 +26,8 @@ namespace HangFire.Web
         {
             switch (resource)
             {
+                case "queues":
+                    return new QueuesPage();
                 case "css":
                     return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.GetEncoding("Windows-1252"), true));
                 default:

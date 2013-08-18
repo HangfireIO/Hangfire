@@ -11,7 +11,12 @@
 
 namespace HangFire.Web
 {
+    
+    #line 2 "..\..\LayoutPage.cshtml"
     using System;
+    
+    #line default
+    #line hidden
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
@@ -28,15 +33,29 @@ namespace HangFire.Web
 WriteLiteral("\r\n");
 
 
-WriteLiteral(@"              
-<!DOCTYPE html>
 
-<html lang=""ru"">
-<head>
-    <title>HangFire</title>
-    <meta charset=""utf-8"" />
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-    <link rel=""stylesheet"" href=""css"" />
+WriteLiteral("<!DOCTYPE html>\r\n\r\n<html lang=\"ru\">\r\n<head>\r\n    <title>");
+
+
+            
+            #line 8 "..\..\LayoutPage.cshtml"
+      Write(Title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" - HangFire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" cont" +
+"ent=\"width=device-width, initial-scale=1.0\">\r\n    <link rel=\"stylesheet\" href=\"");
+
+
+            
+            #line 11 "..\..\LayoutPage.cshtml"
+                            Write(Request.LinkTo("css"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@""" />
 </head>
 <body>
     <!-- Wrap all page content here -->
@@ -55,8 +74,49 @@ WriteLiteral(@"
                 </div>
                 <div class=""collapse navbar-collapse"">
                     <ul class=""nav navbar-nav"">
-                        <li class=""active""><a href=""#"">Dashboard</a></li>
-                        <li><a href=""#about"">Queues</a></li>
+                        <li class=""");
+
+
+            
+            #line 30 "..\..\LayoutPage.cshtml"
+                               Write(Request.PathInfo.Equals("/") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            <a href=\"");
+
+
+            
+            #line 31 "..\..\LayoutPage.cshtml"
+                                Write(Request.LinkTo(""));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">Dashboard</a>\r\n                        </li>\r\n                        <li><a hr" +
+"ef=\"#\">Workers</a></li>\r\n                        <li class=\"");
+
+
+            
+            #line 34 "..\..\LayoutPage.cshtml"
+                               Write(Request.PathInfo.Equals("/queues") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            <a href=\"");
+
+
+            
+            #line 35 "..\..\LayoutPage.cshtml"
+                                Write(Request.LinkTo("queues"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@""">Queues</a>
+                        </li>
                         <li><a href=""#contact"">Schedule</a></li>
                     </ul>
                 </div>
@@ -65,32 +125,124 @@ WriteLiteral(@"
         </div>
 
         <!-- Begin page content -->
-        ");
+
+        <div class=""container"">
+            <div class=""col-md-3"">
+                <ul class=""list-group"">
+                    <li class=""list-group-item"">
+                        <span class=""label label-success pull-right"">
+                            ");
 
 
             
-            #line 40 "..\..\LayoutPage.cshtml"
-   Write(RenderBody());
+            #line 51 "..\..\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", Storage.SucceededCount()));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </span>\r\n                        Completed\r\n           " +
+"         </li>\r\n                    <li class=\"list-group-item\">\r\n              " +
+"          <span class=\"label label-danger pull-right\">\r\n                        " +
+"    ");
+
+
+            
+            #line 57 "..\..\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", Storage.FailedCount()));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </span>\r\n                        Failed\r\n              " +
+"      </li>\r\n                    <li class=\"list-group-item\">\r\n                 " +
+"       <span class=\"label label-warning pull-right\">\r\n                          " +
+"  ");
+
+
+            
+            #line 63 "..\..\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", Storage.ProcessingCount()));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </span>\r\n                        Processing\r\n          " +
+"          </li>\r\n                    <li class=\"list-group-item\">\r\n             " +
+"           <span class=\"label label-primary pull-right\">\r\n                      " +
+"      ");
+
+
+            
+            #line 69 "..\..\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", Storage.ScheduledCount()));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </span>\r\n                        Scheduled\r\n           " +
+"         </li>\r\n                    <li class=\"list-group-item\">\r\n              " +
+"          <span class=\"label label-default pull-right\">\r\n                       " +
+"     ");
+
+
+            
+            #line 75 "..\..\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", Storage.EnqueuedCount()));
 
             
             #line default
             #line hidden
 WriteLiteral(@"
+                        </span>
+                        Enqueued
+                    </li>
+                </ul>
+
+                <label>Test jobs</label>
+                <div class=""input-group"">
+                    <input type=""text"" class=""form-control"">
+                    <span class=""input-group-btn"">
+                        <button class=""btn btn-default"" type=""button"">Go</button>
+                    </span>
+                </div>
+            </div>
+            <div class=""col-md-9"">
+                <h1 class=""page-header"">");
+
+
+            
+            #line 90 "..\..\LayoutPage.cshtml"
+                                   Write(Title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</h1>\r\n                ");
+
+
+            
+            #line 91 "..\..\LayoutPage.cshtml"
+           Write(RenderBody());
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@"
+            </div>
+        </div>
     </div>
 
     <div id=""footer"">
         <div class=""container"">
             <ul class=""list-inline credit"">
                 <li>
-                    <a href=""http://github.io/odinserj/hangfire"" target=""_blank"">
-                        HangFire 0.1.3
-                    </a>    
+                    <a href=""http://github.io/odinserj/hangfire"" target=""_blank"">HangFire 0.1.3
+                    </a>
                 </li>
-                <li>
-                    Redis: localhost:6379
+                <li>Redis: localhost:6379
                 </li>
-                <li>
-                    Time: 23:13 UTC
+                <li>Time: 23:13 UTC
                 </li>
             </ul>
         </div>
