@@ -209,6 +209,25 @@ namespace HangFire
 
             return result;
         }
+
+        public IEnumerable<ScheduleDto> GetSchedule()
+        {
+            var schedule = _redis.GetAllWithScoresFromSortedSet("hangfire:schedule");
+            var result = new List<ScheduleDto>();
+            foreach (var scheduled in schedule)
+            {
+                var job = JsonHelper.Deserialize<Job>(scheduled.Key);
+                result.Add(new ScheduleDto
+                    {
+                        TimeStamp = scheduled.Value.ToString(),
+                        Args = JsonHelper.Serialize(job.Args),
+                        Queue = Worker.GetQueueName(job.WorkerType),
+                        Type = job.WorkerType.Name
+                    });
+            }
+
+            return result;
+        }
     }
 
     public class QueueDto
@@ -223,5 +242,13 @@ namespace HangFire
         public string Type { get; set; }
         public string Args { get; set; }
         public string StartedAt { get; set; }
+    }
+
+    public class ScheduleDto
+    {
+        public string TimeStamp { get; set; }
+        public string Type { get; set; }
+        public string Queue { get; set; }
+        public string Args { get; set; }
     }
 }

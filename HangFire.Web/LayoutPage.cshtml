@@ -31,13 +31,15 @@
                         <li class="@(Request.PathInfo.Equals("/") ? "active" : null)">
                             <a href="@Request.LinkTo("/")">Dashboard</a>
                         </li>
-                        <li class="@(Request.PathInfo.Equals("/dispatchers") ? "active" : null)">
-                            <a href="@Request.LinkTo("/dispatchers")">Dispatchers</a>
-                        </li>
                         <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">
                             <a href="@Request.LinkTo("/queues")">Queues</a>
                         </li>
-                        <li><a href="#contact">Schedule</a></li>
+                        <li class="@(Request.PathInfo.Equals("/schedule") ? "active" : null)">
+                            <a href="@Request.LinkTo("/schedule")">Schedule</a>
+                        </li>
+                        <li class="@(Request.PathInfo.Equals("/dispatchers") ? "active" : null)">
+                            <a href="@Request.LinkTo("/dispatchers")">Dispatchers</a>
+                        </li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->

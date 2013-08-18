@@ -76,5 +76,15 @@ namespace HangFire
                 return dispatchers;
             }
         }
+
+        public static IEnumerable<ScheduleDto> Schedule()
+        {
+            lock (_client)
+            {
+                var schedule = Enumerable.Empty<ScheduleDto>();
+                _client.TryToDo(x => schedule = x.GetSchedule());
+                return schedule;
+            }
+        }
     }
 }

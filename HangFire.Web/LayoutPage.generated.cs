@@ -114,27 +114,6 @@ WriteLiteral("\">Dashboard</a>\r\n                        </li>\r\n             
 
             
             #line 34 "..\..\LayoutPage.cshtml"
-                               Write(Request.PathInfo.Equals("/dispatchers") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <a href=\"");
-
-
-            
-            #line 35 "..\..\LayoutPage.cshtml"
-                                Write(Request.LinkTo("/dispatchers"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">Dispatchers</a>\r\n                        </li>\r\n                        <li cla" +
-"ss=\"");
-
-
-            
-            #line 37 "..\..\LayoutPage.cshtml"
                                Write(Request.PathInfo.Equals("/queues") ? "active" : null);
 
             
@@ -144,15 +123,55 @@ WriteLiteral("\">\r\n                            <a href=\"");
 
 
             
-            #line 38 "..\..\LayoutPage.cshtml"
+            #line 35 "..\..\LayoutPage.cshtml"
                                 Write(Request.LinkTo("/queues"));
 
             
             #line default
             #line hidden
-WriteLiteral(@""">Queues</a>
+WriteLiteral("\">Queues</a>\r\n                        </li>\r\n                        <li class=\"");
+
+
+            
+            #line 37 "..\..\LayoutPage.cshtml"
+                               Write(Request.PathInfo.Equals("/schedule") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            <a href=\"");
+
+
+            
+            #line 38 "..\..\LayoutPage.cshtml"
+                                Write(Request.LinkTo("/schedule"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">Schedule</a>\r\n                        </li>\r\n                        <li class=" +
+"\"");
+
+
+            
+            #line 40 "..\..\LayoutPage.cshtml"
+                               Write(Request.PathInfo.Equals("/dispatchers") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            <a href=\"");
+
+
+            
+            #line 41 "..\..\LayoutPage.cshtml"
+                                Write(Request.LinkTo("/dispatchers"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@""">Dispatchers</a>
                         </li>
-                        <li><a href=""#contact"">Schedule</a></li>
                     </ul>
                 </div>
                 <!--/.nav-collapse -->
@@ -170,7 +189,7 @@ WriteLiteral(@""">Queues</a>
 
 
             
-            #line 54 "..\..\LayoutPage.cshtml"
+            #line 56 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.SucceededCount()));
 
             
@@ -183,7 +202,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Com
 
 
             
-            #line 60 "..\..\LayoutPage.cshtml"
+            #line 62 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.FailedCount()));
 
             
@@ -196,7 +215,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Fai
 
 
             
-            #line 66 "..\..\LayoutPage.cshtml"
+            #line 68 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.Dispatchers().Count()));
 
             
@@ -209,7 +228,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Pro
 
 
             
-            #line 72 "..\..\LayoutPage.cshtml"
+            #line 74 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.ScheduledCount()));
 
             
@@ -222,7 +241,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Sch
 
 
             
-            #line 78 "..\..\LayoutPage.cshtml"
+            #line 80 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.EnqueuedCount()));
 
             
@@ -247,7 +266,7 @@ WriteLiteral(@"
 
 
             
-            #line 93 "..\..\LayoutPage.cshtml"
+            #line 95 "..\..\LayoutPage.cshtml"
                                    Write(Title);
 
             
@@ -257,7 +276,7 @@ WriteLiteral("</h1>\r\n                ");
 
 
             
-            #line 94 "..\..\LayoutPage.cshtml"
+            #line 96 "..\..\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -280,7 +299,7 @@ WriteLiteral(@"
 
 
             
-            #line 107 "..\..\LayoutPage.cshtml"
+            #line 109 "..\..\LayoutPage.cshtml"
                Write(String.Format("{0}:{1}/{2}", Configuration.Instance.RedisHost, Configuration.Instance.RedisPort, Configuration.Instance.RedisDb));
 
             
@@ -290,7 +309,7 @@ WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
 
 
             
-            #line 109 "..\..\LayoutPage.cshtml"
+            #line 111 "..\..\LayoutPage.cshtml"
                      Write(DateTime.UtcNow.ToString());
 
             

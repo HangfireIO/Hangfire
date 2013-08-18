@@ -1,0 +1,30 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@inherits WebTemplateBase
+              
+@{
+    Layout = new LayoutPage()
+        {
+            Context = Context,
+            Title = "Schedule"
+        };
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Type</th>
+            <th>Queue</th>
+            <th>Args</th>
+        </tr>
+    </thead>
+    @foreach (var scheduled in Storage.Schedule())
+    {
+        <tr>
+            <td>@scheduled.TimeStamp</td>
+            <td>@scheduled.Type</td>
+            <td>@scheduled.Queue</td>
+            <td>@scheduled.Args</td>
+        </tr>
+    }
+</table>

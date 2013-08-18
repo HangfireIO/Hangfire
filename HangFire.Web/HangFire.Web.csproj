@@ -74,6 +74,15 @@
       <DependentUpon>QueuesPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="RazorTemplateBase.cs" />
+    <None Include="SchedulePage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>SchedulePage.generated.cs</LastGenOutput>
+    </None>
+    <Compile Include="SchedulePage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SchedulePage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="StylesheetHelper.cs" />
     <Compile Include="WebTemplateBase.cs" />
     <None Include="DispatchersPage.cshtml">
