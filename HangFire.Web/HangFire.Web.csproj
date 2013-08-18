@@ -48,6 +48,7 @@
     <Compile Include="DelegatingHttpHandler.cs" />
     <Compile Include="HangFireAspNetHost.cs" />
     <Compile Include="HangFirePageFactory.cs" />
+    <Compile Include="JavaScriptHelper.cs" />
     <Compile Include="LayoutPage.cs" />
     <Compile Include="LayoutPage.generated.cs">
       <AutoGen>True</AutoGen>
@@ -111,6 +112,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="hangfire.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="hangfire.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="jquery-1.8.2.min.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

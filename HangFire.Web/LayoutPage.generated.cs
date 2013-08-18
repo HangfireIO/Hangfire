@@ -315,8 +315,18 @@ WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
             
             #line default
             #line hidden
-WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n</bod" +
-"y>\r\n</html>\r\n");
+WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n    \r" +
+"\n    <script src=\"");
+
+
+            
+            #line 117 "..\..\LayoutPage.cshtml"
+            Write(Request.LinkTo("/js"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"></script>\r\n</body>\r\n</html>\r\n");
 
 
         }

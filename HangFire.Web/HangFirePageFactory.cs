@@ -32,8 +32,10 @@ namespace HangFire.Web
                     return new DispatchersPage();
                 case "schedule":
                     return new SchedulePage();
+                case "js":
+                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(JavaScriptHelper.JavaScriptResourceNames, "application/javascript", Encoding.UTF8, true));
                 case "css":
-                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.GetEncoding("Windows-1252"), true));
+                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.UTF8, true));
                 default:
                     return resource.Length == 0 ? new DashboardPage() : null;
             }
