@@ -148,6 +148,10 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HangFire.Hosts.Console\HangFire.Hosts.Console.csproj">
+      <Project>{c02bb718-2ae4-434c-8668-c894ff663fce}</Project>
+      <Name>HangFire.Hosts.Console</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HangFire.Web\HangFire.Web.csproj">
       <Project>{bc4ab33f-67c8-41b1-bb1a-cd62f44587aa}</Project>
       <Name>HangFire.Web</Name>

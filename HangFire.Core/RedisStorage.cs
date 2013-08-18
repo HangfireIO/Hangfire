@@ -99,6 +99,37 @@ namespace HangFire
                 -1);
         }
 
+        public void AddProcessingDispatcher(string name, string type, string args)
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x =>
+                    x.AddItemToSet("hangfire:dispatchers", name));
+                transaction.QueueCommand(x =>
+                    x.SetEntryInHash(String.Format("hangfire:dispatcher:{0}", name), "type", type));
+                transaction.QueueCommand(x => 
+                    x.SetEntryInHash(String.Format("hangfire:dispatcher:{0}", name), "args", args));
+                transaction.QueueCommand(x =>
+                    x.SetEntryInHash(String.Format("hangfire:dispatcher:{0}", name), "started-at", DateTime.UtcNow.ToString()));
+                transaction.QueueCommand(x =>
+                    x.ExpireEntryIn(String.Format("hangfire:dispatcher:{0}", name), TimeSpan.FromSeconds(20)));
+
+                transaction.Commit();
+            }
+        }
+
+        public void RemoveProcessingDispatcher(string name)
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x =>
+                    x.RemoveItemFromSet("hangfire:dispatchers", name));
+                transaction.QueueCommand(x =>
+                    x.RemoveEntry(String.Format("hangfire:dispatcher:{0}", name)));
+                transaction.Commit();
+            }
+        }
+
         public void IncreaseSucceeded()
         {
             _redis.IncrementValue("hangfire:stats:succeeded");
@@ -158,11 +189,39 @@ namespace HangFire
                     Length = _redis.GetListCount(String.Format("hangfire:queue:{0}", queueName))
                 }).ToList();
         }
+
+        public IEnumerable<DispatcherDto> GetDispatchers()
+        {
+            var dispatchers = _redis.GetAllItemsFromSet("hangfire:dispatchers");
+            var result = new List<DispatcherDto>();
+            foreach (var dispatcher in dispatchers)
+            {
+                var entry = _redis.GetAllEntriesFromHash(String.Format("hangfire:dispatcher:{0}", dispatcher));
+                if (entry.Count == 0) continue;
+                result.Add(new DispatcherDto
+                    {
+                        Name = dispatcher,
+                        Args = entry["args"],
+                        Type = entry["type"],
+                        StartedAt = entry["started-at"]
+                    });
+            }
+
+            return result;
+        }
     }
 
     public class QueueDto
     {
         public string Name { get; set; }
         public long Length { get; set; }
+    }
+
+    public class DispatcherDto
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Args { get; set; }
+        public string StartedAt { get; set; }
     }
 }

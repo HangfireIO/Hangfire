@@ -10,6 +10,7 @@ namespace HangFire
 
         private readonly JobDispatcherPool _pool;
         private readonly string _name;
+        private readonly string _name2;
 
         private readonly JobProcessor _processor = new JobProcessor(
             Configuration.Instance.WorkerActivator,
@@ -32,11 +33,12 @@ namespace HangFire
 
         private volatile string _currentJob;
 
-        public JobDispatcher(JobDispatcherPool pool, string name)
+        public JobDispatcher(JobDispatcherPool pool, string name, string name2)
         {
             _logger = LogManager.GetLogger(name);
             _pool = pool;
             _name = name;
+            _name2 = name2;
 
             _thread = new Thread(DoWork)
                 {
@@ -124,9 +126,12 @@ namespace HangFire
 
                     lock (_jobLock)
                     {
+                        var job = JsonHelper.Deserialize<Job>(_currentJob);
+
                         lock (Client)
                         {
                             Client.TryToDo(x => x.IncreaseProcessing());
+                            Client.TryToDo(x => x.AddProcessingDispatcher(_name2, job.WorkerType.Name, JsonHelper.Serialize(job.Args)));
                         }
 
                         try
@@ -157,6 +162,7 @@ namespace HangFire
                                 {
                                     x.IncreaseSucceeded();
                                     x.DecreaseProcessing();
+                                    x.RemoveProcessingDispatcher(_name2);
                                 });
                         }
                         _pool.NotifyCompleted(_currentJob);

@@ -59,6 +59,11 @@
     <Compile Include="ManifestResourceHelper.cs" />
     <Compile Include="MoreEnumerable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DispatchersPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DispatchersPage.cshtml</DependentUpon>
+    </Compile>
     <None Include="QueuesPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
@@ -71,6 +76,10 @@
     <Compile Include="RazorTemplateBase.cs" />
     <Compile Include="StylesheetHelper.cs" />
     <Compile Include="WebTemplateBase.cs" />
+    <None Include="DispatchersPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>DispatchersPage.generated.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">

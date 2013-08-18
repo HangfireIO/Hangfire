@@ -8,9 +8,18 @@ namespace HangFire.Hosts
     [Queue("qqq")]
     public class ConsoleWorker : Worker
     {
+        private static readonly Random _random = new Random();
+
         public override void Perform()
         {
-            //Console.WriteLine("Finished task: " + Args["Number"]);
+            int time;
+            lock (_random)
+            {
+                time = _random.Next(10);
+            }
+
+            Thread.Sleep(TimeSpan.FromSeconds(5 + time));
+            Console.WriteLine("Finished task: " + Args["Number"]);
         }
     }
 

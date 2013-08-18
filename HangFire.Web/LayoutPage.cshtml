@@ -1,5 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
+@using System.Linq
 @inherits WebTemplateBase
 <!DOCTYPE html>
 
@@ -23,16 +24,18 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">HangFire Monitor</a>
+                    <a class="navbar-brand" href="@Request.LinkTo("/")">HangFire Monitor</a>
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li class="@(Request.PathInfo.Equals("/") ? "active" : null)">
-                            <a href="@Request.LinkTo("")">Dashboard</a>
+                            <a href="@Request.LinkTo("/")">Dashboard</a>
                         </li>
-                        <li><a href="#">Workers</a></li>
+                        <li class="@(Request.PathInfo.Equals("/dispatchers") ? "active" : null)">
+                            <a href="@Request.LinkTo("/dispatchers")">Dispatchers</a>
+                        </li>
                         <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">
-                            <a href="@Request.LinkTo("queues")">Queues</a>
+                            <a href="@Request.LinkTo("/queues")">Queues</a>
                         </li>
                         <li><a href="#contact">Schedule</a></li>
                     </ul>
@@ -60,7 +63,7 @@
                     </li>
                     <li class="list-group-item">
                         <span class="label label-warning pull-right">
-                            @String.Format("{0:n0}", Storage.ProcessingCount())
+                            @String.Format("{0:n0}", Storage.Dispatchers().Count())
                         </span>
                         Processing
                     </li>
@@ -100,9 +103,10 @@
                     <a href="http://github.io/odinserj/hangfire" target="_blank">HangFire 0.1.3
                     </a>
                 </li>
-                <li>Redis: localhost:6379
+                <li>Redis: 
+                    @String.Format("{0}:{1}/{2}", Configuration.Instance.RedisHost, Configuration.Instance.RedisPort, Configuration.Instance.RedisDb)
                 </li>
-                <li>Time: 23:13 UTC
+                <li>Time: @DateTime.UtcNow.ToString() UTC
                 </li>
             </ul>
         </div>

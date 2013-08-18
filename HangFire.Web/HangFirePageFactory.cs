@@ -28,6 +28,8 @@ namespace HangFire.Web
             {
                 case "queues":
                     return new QueuesPage();
+                case "dispatchers":
+                    return new DispatchersPage();
                 case "css":
                     return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.GetEncoding("Windows-1252"), true));
                 default:

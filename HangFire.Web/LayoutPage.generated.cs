@@ -18,7 +18,12 @@ namespace HangFire.Web
     #line default
     #line hidden
     using System.Collections.Generic;
+    
+    #line 3 "..\..\LayoutPage.cshtml"
     using System.Linq;
+    
+    #line default
+    #line hidden
     using System.Text;
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
@@ -34,11 +39,12 @@ WriteLiteral("\r\n");
 
 
 
+
 WriteLiteral("<!DOCTYPE html>\r\n\r\n<html lang=\"ru\">\r\n<head>\r\n    <title>");
 
 
             
-            #line 8 "..\..\LayoutPage.cshtml"
+            #line 9 "..\..\LayoutPage.cshtml"
       Write(Title);
 
             
@@ -49,7 +55,7 @@ WriteLiteral(" - HangFire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta
 
 
             
-            #line 11 "..\..\LayoutPage.cshtml"
+            #line 12 "..\..\LayoutPage.cshtml"
                             Write(Request.LinkTo("css"));
 
             
@@ -70,15 +76,23 @@ WriteLiteral(@""" />
                         <span class=""icon-bar""></span>
                         <span class=""icon-bar""></span>
                     </button>
-                    <a class=""navbar-brand"" href=""#"">HangFire Monitor</a>
-                </div>
-                <div class=""collapse navbar-collapse"">
-                    <ul class=""nav navbar-nav"">
-                        <li class=""");
+                    <a class=""navbar-brand"" href=""");
 
 
             
-            #line 30 "..\..\LayoutPage.cshtml"
+            #line 27 "..\..\LayoutPage.cshtml"
+                                             Write(Request.LinkTo("/"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">HangFire Monitor</a>\r\n                </div>\r\n                <div class=\"colla" +
+"pse navbar-collapse\">\r\n                    <ul class=\"nav navbar-nav\">\r\n        " +
+"                <li class=\"");
+
+
+            
+            #line 31 "..\..\LayoutPage.cshtml"
                                Write(Request.PathInfo.Equals("/") ? "active" : null);
 
             
@@ -88,19 +102,19 @@ WriteLiteral("\">\r\n                            <a href=\"");
 
 
             
-            #line 31 "..\..\LayoutPage.cshtml"
-                                Write(Request.LinkTo(""));
+            #line 32 "..\..\LayoutPage.cshtml"
+                                Write(Request.LinkTo("/"));
 
             
             #line default
             #line hidden
-WriteLiteral("\">Dashboard</a>\r\n                        </li>\r\n                        <li><a hr" +
-"ef=\"#\">Workers</a></li>\r\n                        <li class=\"");
+WriteLiteral("\">Dashboard</a>\r\n                        </li>\r\n                        <li class" +
+"=\"");
 
 
             
             #line 34 "..\..\LayoutPage.cshtml"
-                               Write(Request.PathInfo.Equals("/queues") ? "active" : null);
+                               Write(Request.PathInfo.Equals("/dispatchers") ? "active" : null);
 
             
             #line default
@@ -110,7 +124,28 @@ WriteLiteral("\">\r\n                            <a href=\"");
 
             
             #line 35 "..\..\LayoutPage.cshtml"
-                                Write(Request.LinkTo("queues"));
+                                Write(Request.LinkTo("/dispatchers"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">Dispatchers</a>\r\n                        </li>\r\n                        <li cla" +
+"ss=\"");
+
+
+            
+            #line 37 "..\..\LayoutPage.cshtml"
+                               Write(Request.PathInfo.Equals("/queues") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            <a href=\"");
+
+
+            
+            #line 38 "..\..\LayoutPage.cshtml"
+                                Write(Request.LinkTo("/queues"));
 
             
             #line default
@@ -135,7 +170,7 @@ WriteLiteral(@""">Queues</a>
 
 
             
-            #line 51 "..\..\LayoutPage.cshtml"
+            #line 54 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.SucceededCount()));
 
             
@@ -148,7 +183,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Com
 
 
             
-            #line 57 "..\..\LayoutPage.cshtml"
+            #line 60 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.FailedCount()));
 
             
@@ -161,8 +196,8 @@ WriteLiteral("\r\n                        </span>\r\n                        Fai
 
 
             
-            #line 63 "..\..\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", Storage.ProcessingCount()));
+            #line 66 "..\..\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", Storage.Dispatchers().Count()));
 
             
             #line default
@@ -174,7 +209,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Pro
 
 
             
-            #line 69 "..\..\LayoutPage.cshtml"
+            #line 72 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.ScheduledCount()));
 
             
@@ -187,7 +222,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Sch
 
 
             
-            #line 75 "..\..\LayoutPage.cshtml"
+            #line 78 "..\..\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", Storage.EnqueuedCount()));
 
             
@@ -212,7 +247,7 @@ WriteLiteral(@"
 
 
             
-            #line 90 "..\..\LayoutPage.cshtml"
+            #line 93 "..\..\LayoutPage.cshtml"
                                    Write(Title);
 
             
@@ -222,7 +257,7 @@ WriteLiteral("</h1>\r\n                ");
 
 
             
-            #line 91 "..\..\LayoutPage.cshtml"
+            #line 94 "..\..\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -240,16 +275,29 @@ WriteLiteral(@"
                     <a href=""http://github.io/odinserj/hangfire"" target=""_blank"">HangFire 0.1.3
                     </a>
                 </li>
-                <li>Redis: localhost:6379
-                </li>
-                <li>Time: 23:13 UTC
-                </li>
-            </ul>
-        </div>
-    </div>
-</body>
-</html>
-");
+                <li>Redis: 
+                    ");
+
+
+            
+            #line 107 "..\..\LayoutPage.cshtml"
+               Write(String.Format("{0}:{1}/{2}", Configuration.Instance.RedisHost, Configuration.Instance.RedisPort, Configuration.Instance.RedisDb));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
+
+
+            
+            #line 109 "..\..\LayoutPage.cshtml"
+                     Write(DateTime.UtcNow.ToString());
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n</bod" +
+"y>\r\n</html>\r\n");
 
 
         }

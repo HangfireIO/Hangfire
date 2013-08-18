@@ -37,7 +37,7 @@ namespace HangFire
 
             _completionHandlerThread.Start();
             
-            _pool = new JobDispatcherPool(concurrency);
+            _pool = new JobDispatcherPool(concurrency, iid);
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)

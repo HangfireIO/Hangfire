@@ -1,0 +1,31 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@inherits WebTemplateBase
+@{
+    Layout = new LayoutPage()
+        {
+            Context = Context,
+            Title = "Dispatchers"
+        };
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Args</th>
+            <th>Started</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var dispatcher in Storage.Dispatchers())
+        {
+            <tr>
+                <td>@dispatcher.Name</td>
+                <td>@dispatcher.Type</td>
+                <td>@dispatcher.Args</td>
+                <td>@dispatcher.StartedAt</td>
+            </tr>
+        }
+    </tbody>
+</table>
