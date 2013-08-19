@@ -11,7 +11,7 @@ namespace HangFire.Web
             var request = context.Request;
             var resource = request.PathInfo.Length == 0
                 ? String.Empty
-                : request.PathInfo.Substring(1).ToLowerInvariant();
+                : request.PathInfo.ToLowerInvariant();
             
             var handler = FindHandler(resource);
             if (handler == null)
@@ -26,16 +26,20 @@ namespace HangFire.Web
         {
             switch (resource)
             {
-                case "queues":
+                case "/queues":
                     return new QueuesPage();
-                case "dispatchers":
+                case "/dispatchers":
                     return new DispatchersPage();
-                case "schedule":
+                case "/schedule":
                     return new SchedulePage();
-                case "js":
+                case "/scripts.js":
                     return new DelegatingHttpHandler(ManifestResourceHandler.Create(JavaScriptHelper.JavaScriptResourceNames, "application/javascript", Encoding.UTF8, true));
-                case "css":
+                case "/styles.css":
                     return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.UTF8, true));
+                case "/stats":
+                    return new DelegatingHttpHandler(JsonStats.StatsResponse);
+                case "/":
+                    return new DashboardPage();
                 default:
                     return resource.Length == 0 ? new DashboardPage() : null;
             }

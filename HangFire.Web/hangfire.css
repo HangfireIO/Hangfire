@@ -29,7 +29,7 @@ html, body {
 /* Not required for template or sticky footer method. */
 
 #wrap > .container {
-  padding: 70px 15px 0;
+  padding: 70px 15px 20px;
 }
 .container .credit {
   margin: 20px 0;

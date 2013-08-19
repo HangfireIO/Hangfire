@@ -57,7 +57,7 @@ WriteLiteral("              \r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n");
+WriteLiteral("\r\n<div id=\"realtime\"></div>");
 
 
         }

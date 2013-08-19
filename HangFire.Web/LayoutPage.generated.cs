@@ -56,7 +56,7 @@ WriteLiteral(" - HangFire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta
 
             
             #line 12 "..\..\LayoutPage.cshtml"
-                            Write(Request.LinkTo("css"));
+                            Write(Request.LinkTo("/styles.css"));
 
             
             #line default
@@ -182,10 +182,19 @@ WriteLiteral(@""">Dispatchers</a>
 
         <div class=""container"">
             <div class=""col-md-3"">
-                <ul class=""list-group"">
-                    <li class=""list-group-item"">
-                        <span class=""label label-success pull-right"">
-                            ");
+                <ul id=""stats"" class=""list-group"" data-refresh-url=""");
+
+
+            
+            #line 53 "..\..\LayoutPage.cshtml"
+                                                               Write(Request.LinkTo("/stats"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                    <li class=\"list-group-item\">\r\n                        <sp" +
+"an id=\"stats-succeeded\" class=\"label label-success pull-right\">\r\n               " +
+"             ");
 
 
             
@@ -195,10 +204,13 @@ WriteLiteral(@""">Dispatchers</a>
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </span>\r\n                        Completed\r\n           " +
-"         </li>\r\n                    <li class=\"list-group-item\">\r\n              " +
-"          <span class=\"label label-danger pull-right\">\r\n                        " +
-"    ");
+WriteLiteral(@"
+                        </span>
+                        Completed
+                    </li>
+                    <li class=""list-group-item"">
+                        <span id=""stats-failed"" class=""label label-danger pull-right"">
+                            ");
 
 
             
@@ -208,10 +220,13 @@ WriteLiteral("\r\n                        </span>\r\n                        Com
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </span>\r\n                        Failed\r\n              " +
-"      </li>\r\n                    <li class=\"list-group-item\">\r\n                 " +
-"       <span class=\"label label-warning pull-right\">\r\n                          " +
-"  ");
+WriteLiteral(@"
+                        </span>
+                        Failed
+                    </li>
+                    <li class=""list-group-item"">
+                        <span id=""stats-dispatchers"" class=""label label-warning pull-right"">
+                            ");
 
 
             
@@ -221,10 +236,13 @@ WriteLiteral("\r\n                        </span>\r\n                        Fai
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </span>\r\n                        Processing\r\n          " +
-"          </li>\r\n                    <li class=\"list-group-item\">\r\n             " +
-"           <span class=\"label label-primary pull-right\">\r\n                      " +
-"      ");
+WriteLiteral(@"
+                        </span>
+                        Processing
+                    </li>
+                    <li class=""list-group-item"">
+                        <span id=""stats-scheduled"" class=""label label-primary pull-right"">
+                            ");
 
 
             
@@ -234,10 +252,13 @@ WriteLiteral("\r\n                        </span>\r\n                        Pro
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </span>\r\n                        Scheduled\r\n           " +
-"         </li>\r\n                    <li class=\"list-group-item\">\r\n              " +
-"          <span class=\"label label-default pull-right\">\r\n                       " +
-"     ");
+WriteLiteral(@"
+                        </span>
+                        Scheduled
+                    </li>
+                    <li class=""list-group-item"">
+                        <span id=""stats-enqueued"" class=""label label-default pull-right"">
+                            ");
 
 
             
@@ -321,7 +342,7 @@ WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </di
 
             
             #line 117 "..\..\LayoutPage.cshtml"
-            Write(Request.LinkTo("/js"));
+            Write(Request.LinkTo("/scripts.js"));
 
             
             #line default

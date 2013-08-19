@@ -23,6 +23,7 @@ namespace HangFire.Hosts
         }
     }
 
+    [Queue("qqq")]
     public class ErrorWorker : Worker
     {
         public override void Perform()
@@ -36,7 +37,7 @@ namespace HangFire.Hosts
     {
         public static void Main()
         {
-            int concurrency = Environment.ProcessorCount * 2;
+            int concurrency = Environment.ProcessorCount * 20;
             LogManager.LogFactory = new ConsoleLogFactory();
 
             Configuration.Configure(

@@ -9,7 +9,7 @@
     <title>@Title - HangFire</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="@Request.LinkTo("css")" />
+    <link rel="stylesheet" href="@Request.LinkTo("/styles.css")" />
 </head>
 <body>
     <!-- Wrap all page content here -->
@@ -50,33 +50,33 @@
 
         <div class="container">
             <div class="col-md-3">
-                <ul class="list-group">
+                <ul id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
                     <li class="list-group-item">
-                        <span class="label label-success pull-right">
+                        <span id="stats-succeeded" class="label label-success pull-right">
                             @String.Format("{0:n0}", Storage.SucceededCount())
                         </span>
                         Completed
                     </li>
                     <li class="list-group-item">
-                        <span class="label label-danger pull-right">
+                        <span id="stats-failed" class="label label-danger pull-right">
                             @String.Format("{0:n0}", Storage.FailedCount())
                         </span>
                         Failed
                     </li>
                     <li class="list-group-item">
-                        <span class="label label-warning pull-right">
+                        <span id="stats-dispatchers" class="label label-warning pull-right">
                             @String.Format("{0:n0}", Storage.Dispatchers().Count())
                         </span>
                         Processing
                     </li>
                     <li class="list-group-item">
-                        <span class="label label-primary pull-right">
+                        <span id="stats-scheduled" class="label label-primary pull-right">
                             @String.Format("{0:n0}", Storage.ScheduledCount())
                         </span>
                         Scheduled
                     </li>
                     <li class="list-group-item">
-                        <span class="label label-default pull-right">
+                        <span id="stats-enqueued" class="label label-default pull-right">
                             @String.Format("{0:n0}", Storage.EnqueuedCount())
                         </span>
                         Enqueued
@@ -114,6 +114,6 @@
         </div>
     </div>
     
-    <script src="@Request.LinkTo("/js")"></script>
+    <script src="@Request.LinkTo("/scripts.js")"></script>
 </body>
 </html>

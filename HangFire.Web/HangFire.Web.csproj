@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Text, Version=3.9.58.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Text.3.9.58\lib\net35\ServiceStack.Text.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
@@ -49,6 +53,7 @@
     <Compile Include="HangFireAspNetHost.cs" />
     <Compile Include="HangFirePageFactory.cs" />
     <Compile Include="JavaScriptHelper.cs" />
+    <Compile Include="JsonStats.cs" />
     <Compile Include="LayoutPage.cs" />
     <Compile Include="LayoutPage.generated.cs">
       <AutoGen>True</AutoGen>
@@ -65,6 +70,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DispatchersPage.cshtml</DependentUpon>
     </Compile>
+    <None Include="packages.config" />
     <None Include="QueuesPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
@@ -118,6 +124,14 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="jquery-1.8.2.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="rickshaw.min.css" />
+    <EmbeddedResource Include="rickshaw.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="d3.layout.min.js" />
+    <EmbeddedResource Include="d3.min.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

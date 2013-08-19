@@ -11,7 +11,7 @@ namespace HangFire.Web
     {
         static string _styleSheetHash;
         static readonly ReadOnlyCollection<string> _styleSheetResourceNames 
-            = Array.AsReadOnly(new[] { "bootstrap.min.css", "hangfire.css" });
+            = Array.AsReadOnly(new[] { "bootstrap.min.css", "rickshaw.min.css", "hangfire.css" });
 
         public static string StyleSheetHash
         {
