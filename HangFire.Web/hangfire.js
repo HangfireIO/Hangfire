@@ -1,5 +1,5 @@
 ﻿$(function () {
-    (function() {
+    (function () {
         var graph = new Rickshaw.Graph({
             element: document.getElementById("realtime"),
             width: 800,
@@ -8,8 +8,8 @@
             interpolation: 'linear',
 
             series: new Rickshaw.Series.FixedDuration([
-                    { name: 'failed', color: '#B1003E' },
-                    { name: 'succeeded', color: '#006f68' }
+                    { name: 'failed', color: '#d9534f' },
+                    { name: 'succeeded', color: '#5cb85c' }
                 ],
                 undefined,
                 { timeInterval: 2000, maxDataPoints: 100 }
@@ -91,11 +91,11 @@
             interpolation: 'linear',
             series: [
                 {
-                    color: '#B1003E',
+                    color: '#d9534f',
                     data: failed,
                     name: 'Failed'
                 }, {
-                    color: '#006f68',
+                    color: '#5cb85c',
                     data: succeeded,
                     name: 'Succeeded'
                 }
