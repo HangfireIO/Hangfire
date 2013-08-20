@@ -37,7 +37,7 @@ namespace HangFire.Hosts
     {
         public static void Main()
         {
-            int concurrency = Environment.ProcessorCount * 20;
+            int concurrency = Environment.ProcessorCount * 2;
             LogManager.LogFactory = new ConsoleLogFactory();
 
             Configuration.Configure(

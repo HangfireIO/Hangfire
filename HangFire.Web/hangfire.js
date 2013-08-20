@@ -66,12 +66,10 @@
     (function () {
         var createSeries = function (obj) {
             var series = [];
-            console.log(obj);
             for (var date in obj) {
                 if (obj.hasOwnProperty(date)) {
                     var value = obj[date];
                     var point = { x: Date.parse(date) / 1000, y: value };
-                    console.log(point);
                     series.unshift(point);
                 }
             }
