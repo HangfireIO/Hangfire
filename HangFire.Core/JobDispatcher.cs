@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using ServiceStack.Logging;
 
@@ -49,7 +50,7 @@ namespace HangFire
 
         public void Start()
         {
-            if (_disposed) throw new ObjectDisposedException(GetType().Name);
+            Debug.Assert(!_disposed, "!_disposed");
 
             if (_started)
             {
@@ -62,7 +63,7 @@ namespace HangFire
 
         public void Stop()
         {
-            if (_disposed) throw new ObjectDisposedException(GetType().Name);
+            Debug.Assert(!_disposed, "!_disposed");
 
             if (_started)
             {
@@ -90,7 +91,7 @@ namespace HangFire
 
         public void Process(string serializedJob)
         {
-            if (_disposed) throw new InvalidOperationException(GetType().Name);
+            Debug.Assert(!_disposed, "!_disposed");
 
             lock (_jobLock)
             {

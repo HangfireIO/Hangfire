@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using ServiceStack.Logging;
 
@@ -37,8 +38,7 @@ namespace HangFire
 
         public JobDispatcher TakeFree(CancellationToken cancellationToken)
         {
-            if (_disposed)
-                throw new ObjectDisposedException(GetType().Name);
+            Debug.Assert(!_disposed, "!_disposed");
 
             JobDispatcher dispatcher;
             do
@@ -83,8 +83,6 @@ namespace HangFire
 
         internal void NotifyReady(JobDispatcher dispatcher)
         {
-            if (_disposed) throw new ObjectDisposedException(GetType().Name);
-
             _freeDispatchers.Add(dispatcher);
         }
     }
