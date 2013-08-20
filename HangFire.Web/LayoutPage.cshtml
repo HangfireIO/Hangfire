@@ -28,7 +28,7 @@
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <li class="@(Request.PathInfo.Equals("/") ? "active" : null)">
+                        <li class="@(Request.PathInfo.Equals("/") || Request.PathInfo.Equals("") ? "active" : null)">
                             <a href="@Request.LinkTo("/")">Dashboard</a>
                         </li>
                         <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">

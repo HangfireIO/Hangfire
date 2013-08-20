@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace HangFire
@@ -84,6 +85,26 @@ namespace HangFire
                 var schedule = Enumerable.Empty<ScheduleDto>();
                 _client.TryToDo(x => schedule = x.GetSchedule());
                 return schedule;
+            }
+        }
+
+        public static Dictionary<string, long> SucceededByDatesCount()
+        {
+            lock (_client)
+            {
+                var count = new Dictionary<string, long>();
+                _client.TryToDo(x => count = x.GetSucceededByDatesCount());
+                return count;
+            }
+        }
+
+        public static Dictionary<string, long> FailedByDatesCount()
+        {
+            lock (_client)
+            {
+                var count = new Dictionary<string, long>();
+                _client.TryToDo(x => count = x.GetFailedByDatesCount());
+                return count;
             }
         }
     }

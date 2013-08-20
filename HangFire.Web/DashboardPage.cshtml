@@ -1,14 +1,26 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
 @using System.Globalization
+@using ServiceStack.Text
 @inherits WebTemplateBase
               
 @{
-    Layout = new LayoutPage()
+    Layout = new LayoutPage
         {
             Context = Context,
             Title = "Dashboard"
         };
 }
 
+<h3>Realtime graph</h3>
 <div id="realtime"></div>
+
+@{
+    JsConfig.DateHandler = JsonDateHandler.ISO8601;
+}
+
+<h3>History graph</h3>
+<div id="history" 
+     data-succeeded="@JsonSerializer.SerializeToString(Storage.SucceededByDatesCount())" 
+     data-failed="@JsonSerializer.SerializeToString(Storage.FailedByDatesCount())">
+</div>

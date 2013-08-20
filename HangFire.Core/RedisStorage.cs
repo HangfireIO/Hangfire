@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using ServiceStack.Redis;
 
@@ -132,12 +133,23 @@ namespace HangFire
 
         public void IncreaseSucceeded()
         {
-            _redis.IncrementValue("hangfire:stats:succeeded");
+            using (var transaction = _redis.CreateTransaction())
+            {
+                _redis.IncrementValue("hangfire:stats:succeeded");
+                _redis.IncrementValue(
+                    String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
+                transaction.Commit();
+            }
         }
 
         public void IncrementFailed()
         {
-            _redis.IncrementValue("hangfire:stats:failed");
+            using (var transaction = _redis.CreateTransaction())
+            {
+                _redis.IncrementValue("hangfire:stats:failed");
+                _redis.IncrementValue(String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
+                transaction.Commit();
+            }
         }
 
         public void IncreaseProcessing()
@@ -224,6 +236,47 @@ namespace HangFire
                         Queue = Worker.GetQueueName(job.WorkerType),
                         Type = job.WorkerType.Name
                     });
+            }
+
+            return result;
+        }
+
+        public Dictionary<string, long> GetSucceededByDatesCount()
+        {
+            return GetTimelineStats("succeeded");
+        }
+
+        public Dictionary<string, long> GetFailedByDatesCount()
+        {
+            return GetTimelineStats("failed");
+        }
+
+        private Dictionary<string, long> GetTimelineStats(string type)
+        {
+            var endDate = DateTime.UtcNow.Date;
+            var startDate = endDate.AddDays(-7);
+            var dates = new List<DateTime>();
+
+            while (startDate <= endDate)
+            {
+                dates.Add(endDate);
+                endDate = endDate.AddDays(-1);
+            }
+
+            var stringDates = dates.Select(x => x.ToString("yyyy-MM-dd")).ToList();
+            var keys = stringDates.Select(x => String.Format("hangfire:stats:{0}:{1}", type, x)).ToList();
+
+            var valuesMap = _redis.GetValuesMap(keys);
+
+            var result = new Dictionary<string, long>();
+            for (var i = 0; i < stringDates.Count; i++)
+            {
+                long value;
+                if (!long.TryParse(valuesMap[valuesMap.Keys.ElementAt(i)], out value))
+                {
+                    value = 0;
+                }
+                result.Add(stringDates[i], value);
             }
 
             return result;
