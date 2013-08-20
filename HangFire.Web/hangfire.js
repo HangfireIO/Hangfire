@@ -32,7 +32,11 @@
         var i = 0;
         var hangFire = {};
 
+        $.getJSON($('#stats').data('refresh-url'), null, function(data) {
+        });
+
         setInterval(function () {
+            console.log('hell!');
             try {
                 $.getJSON($('#stats').data('refresh-url'), null, function (data) {
                     var succeeded, failed;

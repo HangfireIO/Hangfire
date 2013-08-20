@@ -11,7 +11,7 @@ namespace HangFire.Web
     {
         static string _styleSheetHash;
         static readonly ReadOnlyCollection<string> _javaScriptResourceNames
-            = Array.AsReadOnly(new[] { "jquery-1.8.2.min.js", "d3.min.js", "d3.layout.min.js", "rickshaw.min.js", "hangfire.js" });
+            = Array.AsReadOnly(new[] { "jquery-1.10.2.min.js", "d3.min.js", "d3.layout.min.js", "rickshaw.min.js", "hangfire.js" });
 
         public static string JavaScriptHash
         {
