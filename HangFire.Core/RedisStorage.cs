@@ -135,9 +135,9 @@ namespace HangFire
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                _redis.IncrementValue("hangfire:stats:succeeded");
-                _redis.IncrementValue(
-                    String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
+                transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
+                transaction.QueueCommand(x => x.IncrementValue(
+                    String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
                 transaction.Commit();
             }
         }
@@ -146,8 +146,9 @@ namespace HangFire
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                _redis.IncrementValue("hangfire:stats:failed");
-                _redis.IncrementValue(String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
+                transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
+                transaction.QueueCommand(x => x.IncrementValue(
+                    String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
                 transaction.Commit();
             }
         }
