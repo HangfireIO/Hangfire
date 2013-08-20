@@ -33,7 +33,7 @@
     setInterval(function () {
         $.getJSON($('#stats').data('refresh-url'), null, function (data) {
             var succeeded, failed;
-            console.log('asdasd');
+            
             for (var property in data) {
                 if (data.hasOwnProperty(property)) {
                     $('#stats-' + property).text(data[property]);

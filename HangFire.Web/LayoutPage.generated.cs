@@ -56,7 +56,7 @@ WriteLiteral(" - HangFire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta
 
             
             #line 12 "..\..\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/styles.css"));
+                            Write(Request.LinkTo("/styles.css?v1"));
 
             
             #line default
@@ -342,7 +342,7 @@ WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </di
 
             
             #line 117 "..\..\LayoutPage.cshtml"
-            Write(Request.LinkTo("/scripts.js"));
+            Write(Request.LinkTo("/scripts.js?v1"));
 
             
             #line default
