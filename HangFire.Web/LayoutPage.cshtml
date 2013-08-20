@@ -31,14 +31,22 @@
                         <li class="@(Request.PathInfo.Equals("/") || Request.PathInfo.Equals("") ? "active" : null)">
                             <a href="@Request.LinkTo("/")">Dashboard</a>
                         </li>
+                        <li class="@(Request.PathInfo.Equals("/servers") ? "active" : null)">
+                            <a href="@(Request.LinkTo("/servers"))">
+                                Servers
+                                <span class="badge">@Storage.Servers().Count()</span>
+                            </a>                            
+                        </li>
                         <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">
-                            <a href="@Request.LinkTo("/queues")">Queues</a>
+                            <a href="@Request.LinkTo("/queues")">
+                                Queues
+                                <span class="badge">@Storage.Queues().Count()</span>
+                            </a>
                         </li>
-                        <li class="@(Request.PathInfo.Equals("/schedule") ? "active" : null)">
-                            <a href="@Request.LinkTo("/schedule")">Schedule</a>
-                        </li>
-                        <li class="@(Request.PathInfo.Equals("/dispatchers") ? "active" : null)">
-                            <a href="@Request.LinkTo("/dispatchers")">Dispatchers</a>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="/">Back to site</a>
                         </li>
                     </ul>
                 </div>
@@ -50,38 +58,40 @@
 
         <div class="container">
             <div class="col-md-3">
-                <ul id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
-                    <li class="list-group-item">
+                <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
+                    <a class="list-group-item" href="#">
                         <span id="stats-succeeded" class="label label-success pull-right">
                             @String.Format("{0:n0}", Storage.SucceededCount())
                         </span>
                         Completed
-                    </li>
-                    <li class="list-group-item">
+                    </a>
+                    <a class="list-group-item" href="#">
                         <span id="stats-failed" class="label label-danger pull-right">
                             @String.Format("{0:n0}", Storage.FailedCount())
                         </span>
                         Failed
-                    </li>
-                    <li class="list-group-item">
+                    </a>
+                    <a class="list-group-item @(Request.PathInfo.Equals("/dispatchers") ? "active" : null)" 
+                        href="@Request.LinkTo("/dispatchers")">
                         <span id="stats-dispatchers" class="label label-warning pull-right">
                             @String.Format("{0:n0}", Storage.Dispatchers().Count())
                         </span>
                         Processing
-                    </li>
-                    <li class="list-group-item">
+                    </a>
+                    <a class="list-group-item @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
+                        href="@Request.LinkTo("/schedule")">
                         <span id="stats-scheduled" class="label label-primary pull-right">
                             @String.Format("{0:n0}", Storage.ScheduledCount())
                         </span>
                         Scheduled
-                    </li>
-                    <li class="list-group-item">
+                    </a>
+                    <a class="list-group-item" href="#">
                         <span id="stats-enqueued" class="label label-default pull-right">
                             @String.Format("{0:n0}", Storage.EnqueuedCount())
                         </span>
                         Enqueued
-                    </li>
-                </ul>
+                    </a>
+                </div>
 
                 <label>Test jobs</label>
                 <div class="input-group">

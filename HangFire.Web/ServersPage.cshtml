@@ -1,0 +1,30 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@inherits WebTemplateBase
+              
+@{
+    Layout = new LayoutPage()
+        {
+            Context = Context,
+            Title = "Servers"
+        };
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Iid</th>
+            <th>Queue</th>
+            <th>Concurrency</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var server in Storage.Servers())
+        {
+            <tr>
+                <td>@server.Iid</td>
+                <td>@server.Queue</td>
+                <td>@server.Concurrency</td>
+            </tr>
+        }
+    </tbody>
+</table>

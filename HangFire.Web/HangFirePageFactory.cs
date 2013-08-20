@@ -32,6 +32,8 @@ namespace HangFire.Web
                     return new DispatchersPage();
                 case "/schedule":
                     return new SchedulePage();
+                case "/servers":
+                    return new ServersPage();
                 case "/scripts.js":
                     return new DelegatingHttpHandler(ManifestResourceHandler.Create(JavaScriptHelper.JavaScriptResourceNames, "application/javascript", Encoding.UTF8, true));
                 case "/styles.css":

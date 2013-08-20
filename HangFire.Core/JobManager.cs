@@ -9,6 +9,7 @@ namespace HangFire
     public class JobManager : IDisposable
     {
         private readonly string _iid;
+        private readonly int _concurrency;
         private readonly string _queue;
         private readonly Thread _managerThread;
         private readonly Thread _completionHandlerThread;
@@ -27,6 +28,7 @@ namespace HangFire
         public JobManager(string iid, int concurrency, string queue)
         {
             _iid = iid;
+            _concurrency = concurrency;
             _queue = queue;
 
             _completionHandlerThread = new Thread(HandleCompletedJobs)
@@ -80,6 +82,8 @@ namespace HangFire
         {
             try
             {
+                _blockingClient.TryToDo(x => x.AnnounceServer(_iid, _concurrency, _queue));
+
                 _logger.Info("Starting to requeue processing jobs...");
                 int requeued = 0;
                 bool finished = false;
@@ -121,6 +125,8 @@ namespace HangFire
                             dispatcher.Process(job);
                         });
                 }
+
+                _blockingClient.TryToDo(x => x.HideServer(_iid));
             }
             catch (OperationCanceledException)
             {

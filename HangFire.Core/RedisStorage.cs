@@ -242,6 +242,40 @@ namespace HangFire
             return result;
         }
 
+        public void AnnounceServer(string iid, int concurrency, string queue)
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    "hangfire:servers", iid));
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:server:{0}", iid), 
+                    new Dictionary<string, string>
+                        {
+                            { "iid", iid },
+                            { "concurrency", concurrency.ToString() },
+                            { "queue", queue }
+                        }));
+                transaction.QueueCommand(x => x.ExpireEntryIn(
+                    String.Format("hangfire:server:{0}", iid), TimeSpan.FromSeconds(10)));
+
+                transaction.Commit();
+            }
+        }
+
+        public void HideServer(string iid)
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromSet(
+                    "hangfire:servers", iid));
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:server:{0}", iid)));
+
+                transaction.Commit();
+            }
+        }
+
         public Dictionary<string, long> GetSucceededByDatesCount()
         {
             return GetTimelineStats("succeeded");
@@ -282,6 +316,35 @@ namespace HangFire
 
             return result;
         }
+
+        public IEnumerable<ServerDto> GetServers()
+        {
+            var servers = _redis.GetAllItemsFromSet("hangfire:servers");
+            var result = new List<ServerDto>(servers.Count);
+            foreach (var serverIid in servers)
+            {
+                var server = _redis.GetAllEntriesFromHash(
+                    String.Format("hangfire:server:{0}", serverIid));
+                if (server.Count > 0)
+                {
+                    result.Add(new ServerDto
+                        {
+                            Iid = serverIid,
+                            Queue = server["queue"],
+                            Concurrency = int.Parse(server["concurrency"])
+                        });
+                }
+            }
+
+            return result;
+        }
+    }
+
+    public class ServerDto
+    {
+        public string Iid { get; set; }
+        public int Concurrency { get; set; }
+        public string Queue { get; set; }
     }
 
     public class QueueDto

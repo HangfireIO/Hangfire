@@ -70,11 +70,20 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DispatchersPage.cshtml</DependentUpon>
     </Compile>
+    <None Include="ServersPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>ServersPage.generated.cs</LastGenOutput>
+    </None>
     <None Include="packages.config" />
     <None Include="QueuesPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
     </None>
+    <Compile Include="ServersPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ServersPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="QueuesPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -107,5 +107,15 @@ namespace HangFire
                 return count;
             }
         }
+
+        public static IEnumerable<ServerDto> Servers()
+        {
+            lock (_client)
+            {
+                var servers = Enumerable.Empty<ServerDto>();
+                _client.TryToDo(x => servers = x.GetServers());
+                return servers;
+            }
+        }
     }
 }
