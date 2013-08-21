@@ -26,7 +26,6 @@ html, body {
 
 /* Custom page CSS
 -------------------------------------------------- */
-/* Not required for template or sticky footer method. */
 
 #wrap > .container {
   padding: 70px 15px 20px;
@@ -42,4 +41,29 @@ html, body {
 
 .page-header {
     margin-top: 0;
+}
+
+/* Statistics widget
+-------------------------------------------------- */
+
+#stats .list-group-item {
+    border-color: #e7e7e7;
+    background-color: #f8f8f8;
+}
+
+#stats a.list-group-item {
+    color: #777;
+}
+
+#stats a.list-group-item:hover,
+#stats a.list-group-item:focus {
+    color: #333;
+}
+
+#stats .list-group-item.active,
+#stats .list-group-item.active:hover,
+#stats .list-group-item.active:focus {
+    color: #555;
+    background-color: #e7e7e7;
+    border-color: #e7e7e7;
 }
