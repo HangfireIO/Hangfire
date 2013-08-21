@@ -29,7 +29,7 @@ namespace HangFire
         public DateTime? SucceededAt { get; internal set; }
         public DateTime? FailedAt { get; internal set; }
 
-        public TimeSpan? Latency
+        public TimeSpan Latency
         {
             get
             {
@@ -42,7 +42,7 @@ namespace HangFire
                     return FailedAt.Value.Subtract(EnqueuedAt);
                 }
 
-                return null;
+                return DateTime.UtcNow.Subtract(EnqueuedAt);
             }
         }
 

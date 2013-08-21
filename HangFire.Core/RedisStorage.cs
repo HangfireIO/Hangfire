@@ -339,7 +339,7 @@ namespace HangFire
                     Queue = Worker.GetQueueName(x.WorkerType),
                     Type = x.WorkerType.Name,
                     FailedAt = x.FailedAt.HasValue ? x.FailedAt.Value.ToString() : null,
-                    Latency = x.Latency.HasValue ? x.Latency.Value.ToString() : null
+                    Latency = x.Latency.ToString()
                 })
                 .ToList();
         }
@@ -355,7 +355,7 @@ namespace HangFire
                     Queue = Worker.GetQueueName(x.WorkerType),
                     Type = x.WorkerType.Name,
                     SucceededAt = x.SucceededAt.HasValue ? x.SucceededAt.Value.ToString() : null,
-                    Latency = x.Latency.HasValue ? x.Latency.Value.ToString() : null
+                    Latency = x.Latency.ToString()
                 })
                 .ToList();
         }
