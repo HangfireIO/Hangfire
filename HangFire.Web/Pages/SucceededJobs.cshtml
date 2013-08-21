@@ -1,4 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
 @using System.Linq
 @using HangFire.Web.Pages
 @inherits WebTemplateBase
@@ -45,7 +46,11 @@ else
                 <tr>
                     <td>@job.Type</td>
                     <td><span class="label label-primary">@job.Queue</span></td>
-                    <td><code>@job.Args</code></td>
+                    <td>
+                        <code>
+                            @String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
+                        </code>
+                    </td>
                     <td>@job.SucceededAt</td>
                     <td>@job.Latency</td>
                 </tr>

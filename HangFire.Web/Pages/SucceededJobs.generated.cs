@@ -11,17 +11,22 @@
 
 namespace HangFire.Web.Pages
 {
-    using System;
-    using System.Collections.Generic;
     
     #line 2 "..\..\Pages\SucceededJobs.cshtml"
+    using System;
+    
+    #line default
+    #line hidden
+    using System.Collections.Generic;
+    
+    #line 3 "..\..\Pages\SucceededJobs.cshtml"
     using System.Linq;
     
     #line default
     #line hidden
     using System.Text;
     
-    #line 3 "..\..\Pages\SucceededJobs.cshtml"
+    #line 4 "..\..\Pages\SucceededJobs.cshtml"
     using HangFire.Web.Pages;
     
     #line default
@@ -41,11 +46,12 @@ WriteLiteral("\r\n");
 
 
 
+
 WriteLiteral("              \r\n");
 
 
             
-            #line 6 "..\..\Pages\SucceededJobs.cshtml"
+            #line 7 "..\..\Pages\SucceededJobs.cshtml"
   
     Layout = new LayoutPage()
         {
@@ -63,7 +69,7 @@ WriteLiteral("\r\n<div class=\"alert alert-info\">\r\n    HangFire хранит 
 
 
             
-            #line 19 "..\..\Pages\SucceededJobs.cshtml"
+            #line 20 "..\..\Pages\SucceededJobs.cshtml"
   
     var succeededJobs = Storage.SucceededJobs();
 
@@ -75,7 +81,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 23 "..\..\Pages\SucceededJobs.cshtml"
+            #line 24 "..\..\Pages\SucceededJobs.cshtml"
  if (succeededJobs.Count == 0)
 {
 
@@ -87,7 +93,7 @@ WriteLiteral("    <div class=\"alert\">\r\n        <p>\r\n        Список �
 
 
             
-            #line 29 "..\..\Pages\SucceededJobs.cshtml"
+            #line 30 "..\..\Pages\SucceededJobs.cshtml"
 }
 else
 {
@@ -110,7 +116,7 @@ WriteLiteral(@"    <table class=""table"">
 
 
             
-            #line 43 "..\..\Pages\SucceededJobs.cshtml"
+            #line 44 "..\..\Pages\SucceededJobs.cshtml"
              foreach (var job in succeededJobs)
             {
 
@@ -121,7 +127,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 46 "..\..\Pages\SucceededJobs.cshtml"
+            #line 47 "..\..\Pages\SucceededJobs.cshtml"
                    Write(job.Type);
 
             
@@ -131,27 +137,29 @@ WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary
 
 
             
-            #line 47 "..\..\Pages\SucceededJobs.cshtml"
+            #line 48 "..\..\Pages\SucceededJobs.cshtml"
                                                      Write(job.Queue);
 
             
             #line default
             #line hidden
-WriteLiteral("</span></td>\r\n                    <td><code>");
+WriteLiteral("</span></td>\r\n                    <td>\r\n                        <code>\r\n         " +
+"                   ");
 
 
             
-            #line 48 "..\..\Pages\SucceededJobs.cshtml"
-                         Write(job.Args);
+            #line 51 "..\..\Pages\SucceededJobs.cshtml"
+                       Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
 
             
             #line default
             #line hidden
-WriteLiteral("</code></td>\r\n                    <td>");
+WriteLiteral("\r\n                        </code>\r\n                    </td>\r\n                   " +
+" <td>");
 
 
             
-            #line 49 "..\..\Pages\SucceededJobs.cshtml"
+            #line 54 "..\..\Pages\SucceededJobs.cshtml"
                    Write(job.SucceededAt);
 
             
@@ -161,7 +169,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 50 "..\..\Pages\SucceededJobs.cshtml"
+            #line 55 "..\..\Pages\SucceededJobs.cshtml"
                    Write(job.Latency);
 
             
@@ -171,7 +179,7 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 52 "..\..\Pages\SucceededJobs.cshtml"
+            #line 57 "..\..\Pages\SucceededJobs.cshtml"
             }
 
             
@@ -181,7 +189,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 55 "..\..\Pages\SucceededJobs.cshtml"
+            #line 60 "..\..\Pages\SucceededJobs.cshtml"
 }
             
             #line default

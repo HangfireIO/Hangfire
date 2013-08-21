@@ -11,12 +11,22 @@
 
 namespace HangFire.Web.Pages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     
     #line 2 "..\..\Pages\FailedJobsPage.cshtml"
+    using System;
+    
+    #line default
+    #line hidden
+    using System.Collections.Generic;
+    
+    #line 3 "..\..\Pages\FailedJobsPage.cshtml"
+    using System.Linq;
+    
+    #line default
+    #line hidden
+    using System.Text;
+    
+    #line 4 "..\..\Pages\FailedJobsPage.cshtml"
     using HangFire.Web.Pages;
     
     #line default
@@ -35,11 +45,13 @@ WriteLiteral("\r\n");
 
 
 
+
+
 WriteLiteral("              \r\n");
 
 
             
-            #line 5 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 7 "..\..\Pages\FailedJobsPage.cshtml"
   
     Layout = new LayoutPage()
         {
@@ -56,7 +68,7 @@ WriteLiteral("\r\n<div class=\"alert alert-info\">\r\n    HangFire записы�
 
 
             
-            #line 17 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 19 "..\..\Pages\FailedJobsPage.cshtml"
   
     var failedJobs = Storage.FailedJobs();
 
@@ -68,7 +80,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 21 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 23 "..\..\Pages\FailedJobsPage.cshtml"
  if (failedJobs.Count == 0)
 {
 
@@ -80,7 +92,7 @@ WriteLiteral("    <div class=\"alert alert-success\">\r\n        Список п
 
 
             
-            #line 26 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 28 "..\..\Pages\FailedJobsPage.cshtml"
 }
 else
 {
@@ -103,7 +115,7 @@ WriteLiteral(@"    <table class=""table"">
 
 
             
-            #line 40 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 42 "..\..\Pages\FailedJobsPage.cshtml"
              foreach (var job in failedJobs)
             {
 
@@ -114,7 +126,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 43 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 45 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.Type);
 
             
@@ -124,27 +136,29 @@ WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary
 
 
             
-            #line 44 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 46 "..\..\Pages\FailedJobsPage.cshtml"
                                                      Write(job.Queue);
 
             
             #line default
             #line hidden
-WriteLiteral("</span></td>\r\n                    <td><code>");
+WriteLiteral("</span></td>\r\n                    <td>\r\n                        <code>\r\n         " +
+"                   ");
 
 
             
-            #line 45 "..\..\Pages\FailedJobsPage.cshtml"
-                         Write(job.Args);
+            #line 49 "..\..\Pages\FailedJobsPage.cshtml"
+                       Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
 
             
             #line default
             #line hidden
-WriteLiteral("</code></td>\r\n                    <td>");
+WriteLiteral("\r\n                        </code>\r\n                    </td>\r\n                   " +
+" <td>");
 
 
             
-            #line 46 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 52 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.FailedAt);
 
             
@@ -154,7 +168,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 47 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 53 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.Latency);
 
             
@@ -164,7 +178,7 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 49 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 55 "..\..\Pages\FailedJobsPage.cshtml"
             }
 
             
@@ -174,7 +188,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 52 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 58 "..\..\Pages\FailedJobsPage.cshtml"
 }
             
             #line default

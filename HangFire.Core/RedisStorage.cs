@@ -335,11 +335,11 @@ namespace HangFire
                 .Reverse()
                 .Select(x => new FailedJobDto
                 {
-                    Args = JsonHelper.Serialize(x.Args),
+                    Args = new Dictionary<string, string>(x.Args),
                     Queue = Worker.GetQueueName(x.WorkerType),
-                    Type = x.WorkerType.Name,
-                    FailedAt = x.FailedAt.HasValue ? x.FailedAt.Value.ToString() : null,
-                    Latency = x.Latency.ToString()
+                    Type = x.WorkerType,
+                    FailedAt = x.FailedAt,
+                    Latency = x.Latency
                 })
                 .ToList();
         }
@@ -351,11 +351,11 @@ namespace HangFire
                 .Reverse()
                 .Select(x => new SucceededJobDto
                 {
-                    Args = JsonHelper.Serialize(x.Args),
+                    Args = new Dictionary<string, string>(x.Args),
                     Queue = Worker.GetQueueName(x.WorkerType),
-                    Type = x.WorkerType.Name,
-                    SucceededAt = x.SucceededAt.HasValue ? x.SucceededAt.Value.ToString() : null,
-                    Latency = x.Latency.ToString()
+                    Type = x.WorkerType,
+                    SucceededAt = x.SucceededAt,
+                    Latency = x.Latency
                 })
                 .ToList();
         }
@@ -392,19 +392,19 @@ namespace HangFire
 
     public class FailedJobDto
     {
-        public string Type { get; set; }
+        public Type Type { get; set; }
         public string Queue { get; set; }
-        public string Args { get; set; }
-        public string FailedAt { get; set; }
-        public string Latency { get; set; }
+        public Dictionary<String, String> Args { get; set; }
+        public DateTime? FailedAt { get; set; }
+        public TimeSpan Latency { get; set; }
     }
 
     public class SucceededJobDto
     {
-        public string Type { get; set; }
+        public Type Type { get; set; }
         public string Queue { get; set; }
-        public string Args { get; set; }
-        public string SucceededAt { get; set; }
-        public string Latency { get; set; }
+        public Dictionary<String, String> Args { get; set; }
+        public DateTime? SucceededAt { get; set; }
+        public TimeSpan Latency { get; set; }
     }
 }
