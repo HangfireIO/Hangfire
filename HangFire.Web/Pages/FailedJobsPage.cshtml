@@ -10,22 +10,43 @@
         };
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Type</th>
-            <th>Queue</th>
-            <th>Args</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var job in Storage.FailedJobs())
-        {
+<div class="alert alert-info">
+    HangFire записывает все проваленные задания в очередь <code>hangfire:failed</code>. 
+</div>
+
+@{
+    var failedJobs = Storage.FailedJobs();
+}
+
+@if (failedJobs.Count == 0)
+{
+    <div class="alert alert-success">
+        Список проваленных заданий пуст.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
             <tr>
-                <td>@job.Type</td>
-                <td>@job.Queue</td>
-                <td>@job.Args</td>
+                <th>Type</th>
+                <th>Queue</th>
+                <th>Args</th>
+                <th>Failed at</th>
+                <th>Latency</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var job in failedJobs)
+            {
+                <tr>
+                    <td>@job.Type</td>
+                    <td><span class="label label-primary">@job.Queue</span></td>
+                    <td>@job.Args</td>
+                    <td>@job.FailedAt</td>
+                    <td>@job.Latency</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

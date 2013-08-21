@@ -1,4 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System.Linq
 @using HangFire.Web.Pages
 @inherits WebTemplateBase
               
@@ -10,22 +11,45 @@
         };
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Type</th>
-            <th>Queue</th>
-            <th>Args</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var job in Storage.SucceededJobs())
-        {
+<div class="alert alert-info">
+    HangFire хранит последние 100 успешно выполненных  заданий в очереди <code>hangfire:succeeded</code> 
+    для более простой отладки работы фоновых задач.
+</div>
+
+@{
+    var succeededJobs = Storage.SucceededJobs();
+}
+
+@if (succeededJobs.Count == 0)
+{
+    <div class="alert">
+        <p>
+        Список завершенных заданий пуст.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
             <tr>
-                <td>@job.Type</td>
-                <td>@job.Queue</td>
-                <td>@job.Args</td>
+                <th>Type</th>
+                <th>Queue</th>
+                <th>Args</th>
+                <th>Succeeded at</th>
+                <th>Latency</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var job in succeededJobs)
+            {
+                <tr>
+                    <td>@job.Type</td>
+                    <td><span class="label label-primary">@job.Queue</span></td>
+                    <td>@job.Args</td>
+                    <td>@job.SucceededAt</td>
+                    <td>@job.Latency</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

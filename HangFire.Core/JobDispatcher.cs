@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using ServiceStack.Logging;
 
@@ -127,26 +128,25 @@ namespace HangFire
 
                     lock (_jobLock)
                     {
-                        var job = JsonHelper.Deserialize<Job>(_currentJob);
+                        // TODO: Handle deserialization errors.
+                        var job = Job.Deserialize(_currentJob);
 
+                        // TODO: Handle Redis exceptions.
                         lock (Client)
                         {
-                            Client.TryToDo(x => x.IncreaseProcessing());
-                            Client.TryToDo(x => x.AddProcessingDispatcher(_name2, job.WorkerType.Name, JsonHelper.Serialize(job.Args)));
+                            Client.TryToDo(x => x.AddProcessingDispatcher(
+                                _name2, job.WorkerType.Name, job.SerializeArgs()));
                         }
+
+                        Exception exception = null;
 
                         try
                         {
-                            _processor.ProcessJob(_currentJob);
-
-                            Client.TryToDo(x => x.IncrementSucceeded(_currentJob));
+                            _processor.ProcessJob(job);
                         }
                         catch (Exception ex)
                         {
-                            lock (Client)
-                            {
-                                Client.TryToDo(x => x.IncrementFailed(_currentJob));
-                            }
+                            exception = ex;
 
                             _logger.Error(
                                 "Failed to process the job: unexpected exception caught. Job JSON:"
@@ -154,20 +154,21 @@ namespace HangFire
                                 + _currentJob,
                                 ex);
                         }
-                        finally
-                        {
-                            _jobIsReady.Reset();
-                        }
 
+                        var now = DateTime.UtcNow;
+                        if (exception == null) job.SucceededAt = now;
+                        else job.FailedAt = now;
+
+                        // TODO: Handle Redis exceptions.
                         lock (Client)
                         {
-                            Client.TryToDo(x =>
-                                {
-                                    x.DecreaseProcessing();
-                                    x.RemoveProcessingDispatcher(_name2);
-                                });
+                            Client.TryToDo(x => x.RemoveProcessingDispatcher(_name2, job, exception));
                         }
+
+                        // We need unmodified job here.
                         _pool.NotifyCompleted(_currentJob);
+
+                        _jobIsReady.Reset();
                     }
                 }
             }

@@ -51,71 +51,114 @@ WriteLiteral("              \r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n            <th>Timestamp</th" +
-">\r\n            <th>Type</th>\r\n            <th>Queue</th>\r\n            <th>Args</" +
-"th>\r\n        </tr>\r\n    </thead>\r\n");
+WriteLiteral("\r\n");
+
+
+            
+            #line 13 "..\..\Pages\SchedulePage.cshtml"
+  
+    var scheduledJobs = Storage.Schedule();
+
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
+
+
+            
+            #line 17 "..\..\Pages\SchedulePage.cshtml"
+ if (scheduledJobs.Count == 0)
+{
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <div class=\"alert alert-success\">\r\n        Нет ни одного запланированного зад" +
+"ания.\r\n    </div>\r\n");
 
 
             
             #line 22 "..\..\Pages\SchedulePage.cshtml"
-     foreach (var scheduled in Storage.Schedule())
-    {
+}
+else
+{
 
             
             #line default
             #line hidden
-WriteLiteral("        <tr>\r\n            <td>");
+WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
+">Timestamp</th>\r\n                <th>Type</th>\r\n                <th>Queue</th>\r\n" +
+"                <th>Args</th>\r\n            </tr>\r\n        </thead>\r\n");
 
 
             
-            #line 25 "..\..\Pages\SchedulePage.cshtml"
-           Write(scheduled.TimeStamp);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n            <td>");
-
-
-            
-            #line 26 "..\..\Pages\SchedulePage.cshtml"
-           Write(scheduled.Type);
+            #line 34 "..\..\Pages\SchedulePage.cshtml"
+         foreach (var job in scheduledJobs)
+        {
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n            <td>");
+WriteLiteral("            <tr>\r\n                <td>");
 
 
             
-            #line 27 "..\..\Pages\SchedulePage.cshtml"
-           Write(scheduled.Queue);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n            <td>");
-
-
-            
-            #line 28 "..\..\Pages\SchedulePage.cshtml"
-           Write(scheduled.Args);
+            #line 37 "..\..\Pages\SchedulePage.cshtml"
+               Write(job.TimeStamp);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n        </tr>\r\n");
+WriteLiteral("</td>\r\n                <td>");
 
 
             
-            #line 30 "..\..\Pages\SchedulePage.cshtml"
-    }
+            #line 38 "..\..\Pages\SchedulePage.cshtml"
+               Write(job.Type);
 
             
             #line default
             #line hidden
-WriteLiteral("</table>");
+WriteLiteral("</td>\r\n                <td>");
 
+
+            
+            #line 39 "..\..\Pages\SchedulePage.cshtml"
+               Write(job.Queue);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td>");
+
+
+            
+            #line 40 "..\..\Pages\SchedulePage.cshtml"
+               Write(job.Args);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n            </tr>\r\n");
+
+
+            
+            #line 42 "..\..\Pages\SchedulePage.cshtml"
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    </table>\r\n");
+
+
+            
+            #line 44 "..\..\Pages\SchedulePage.cshtml"
+}
+            
+            #line default
+            #line hidden
 
         }
     }

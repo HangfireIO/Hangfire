@@ -104,6 +104,8 @@ namespace HangFire
         {
             using (var transaction = _redis.CreateTransaction())
             {
+                transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:processing"));
+
                 transaction.QueueCommand(x =>
                     x.AddItemToSet("hangfire:dispatchers", name));
                 transaction.QueueCommand(x =>
@@ -119,53 +121,35 @@ namespace HangFire
             }
         }
 
-        public void RemoveProcessingDispatcher(string name)
+        public void RemoveProcessingDispatcher(string name, Job job, Exception exception)
         {
             using (var transaction = _redis.CreateTransaction())
             {
+                transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:processing"));
+
                 transaction.QueueCommand(x =>
                     x.RemoveItemFromSet("hangfire:dispatchers", name));
                 transaction.QueueCommand(x =>
                     x.RemoveEntry(String.Format("hangfire:dispatcher:{0}", name)));
-                transaction.Commit();
-            }
-        }
 
-        public void IncreaseSucceeded(string job)
-        {
-            using (var transaction = _redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
-                transaction.QueueCommand(x => x.IncrementValue(
-                    String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-                transaction.QueueCommand(x => x.PushItemToList("hangfire:succeeded", job));
-                transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
-
-                transaction.Commit();
-            }
-        }
-
-        public void IncrementFailed(string job)
-        {
-            using (var transaction = _redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
-                transaction.QueueCommand(x => x.IncrementValue(
-                    String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-                transaction.QueueCommand(x => x.PushItemToList("hangfire:failed", job));
+                if (exception == null)
+                {
+                    transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
+                    transaction.QueueCommand(x => x.IncrementValue(
+                        String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
+                    transaction.QueueCommand(x => x.PushItemToList("hangfire:succeeded", job.Serialize()));
+                    transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
+                }
+                else
+                {
+                    transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
+                    transaction.QueueCommand(x => x.IncrementValue(
+                        String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
+                    transaction.QueueCommand(x => x.PushItemToList("hangfire:failed", job.Serialize()));
+                }
 
                 transaction.Commit();
             }
-        }
-
-        public void IncreaseProcessing()
-        {
-            _redis.IncrementValue("hangfire:stats:processing");
-        }
-
-        public void DecreaseProcessing()
-        {
-            _redis.DecrementValue("hangfire:stats:processing");
         }
 
         public long GetScheduledCount()
@@ -228,7 +212,7 @@ namespace HangFire
             return result;
         }
 
-        public IEnumerable<ScheduleDto> GetSchedule()
+        public IList<ScheduleDto> GetSchedule()
         {
             var schedule = _redis.GetAllWithScoresFromSortedSet("hangfire:schedule");
             var result = new List<ScheduleDto>();
@@ -344,28 +328,34 @@ namespace HangFire
             return result;
         }
 
-        public IEnumerable<FailedJobDto> GetFailedJobs()
+        public IList<FailedJobDto> GetFailedJobs()
         {
             var failed = _redis.GetAllItemsFromList("hangfire:failed");
             return failed.Select(JsonHelper.Deserialize<Job>)
+                .Reverse()
                 .Select(x => new FailedJobDto
                 {
                     Args = JsonHelper.Serialize(x.Args),
                     Queue = Worker.GetQueueName(x.WorkerType),
-                    Type = x.WorkerType.Name
+                    Type = x.WorkerType.Name,
+                    FailedAt = x.FailedAt.HasValue ? x.FailedAt.Value.ToString() : null,
+                    Latency = x.Latency.HasValue ? x.Latency.Value.ToString() : null
                 })
                 .ToList();
         }
 
-        public IEnumerable<SucceededJobDto> GetSucceededJobs()
+        public IList<SucceededJobDto> GetSucceededJobs()
         {
             var succeeded = _redis.GetAllItemsFromList("hangfire:succeeded");
-            return succeeded.Select(JsonHelper.Deserialize<Job>)
+            return succeeded.Select(Job.Deserialize)
+                .Reverse()
                 .Select(x => new SucceededJobDto
                 {
                     Args = JsonHelper.Serialize(x.Args),
                     Queue = Worker.GetQueueName(x.WorkerType),
-                    Type = x.WorkerType.Name
+                    Type = x.WorkerType.Name,
+                    SucceededAt = x.SucceededAt.HasValue ? x.SucceededAt.Value.ToString() : null,
+                    Latency = x.Latency.HasValue ? x.Latency.Value.ToString() : null
                 })
                 .ToList();
         }
@@ -405,6 +395,8 @@ namespace HangFire
         public string Type { get; set; }
         public string Queue { get; set; }
         public string Args { get; set; }
+        public string FailedAt { get; set; }
+        public string Latency { get; set; }
     }
 
     public class SucceededJobDto
@@ -412,5 +404,7 @@ namespace HangFire
         public string Type { get; set; }
         public string Queue { get; set; }
         public string Args { get; set; }
+        public string SucceededAt { get; set; }
+        public string Latency { get; set; }
     }
 }

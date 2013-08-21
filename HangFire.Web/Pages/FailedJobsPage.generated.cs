@@ -51,61 +51,134 @@ WriteLiteral("              \r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n            <th>Type</th>\r\n  " +
-"          <th>Queue</th>\r\n            <th>Args</th>\r\n        </tr>\r\n    </thead>" +
-"\r\n    <tbody>\r\n");
+WriteLiteral("\r\n<div class=\"alert alert-info\">\r\n    HangFire записывает все проваленные задания" +
+" в очередь <code>hangfire:failed</code>. \r\n</div>\r\n\r\n");
 
 
             
-            #line 22 "..\..\Pages\FailedJobsPage.cshtml"
-         foreach (var job in Storage.FailedJobs())
-        {
+            #line 17 "..\..\Pages\FailedJobsPage.cshtml"
+  
+    var failedJobs = Storage.FailedJobs();
 
-            
-            #line default
-            #line hidden
-WriteLiteral("            <tr>\r\n                <td>");
-
-
-            
-            #line 25 "..\..\Pages\FailedJobsPage.cshtml"
-               Write(job.Type);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral("\r\n");
+
+
+            
+            #line 21 "..\..\Pages\FailedJobsPage.cshtml"
+ if (failedJobs.Count == 0)
+{
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <div class=\"alert alert-success\">\r\n        Список проваленных заданий пуст.\r\n" +
+"    </div>\r\n");
 
 
             
             #line 26 "..\..\Pages\FailedJobsPage.cshtml"
-               Write(job.Queue);
+}
+else
+{
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral(@"    <table class=""table"">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Queue</th>
+                <th>Args</th>
+                <th>Failed at</th>
+                <th>Latency</th>
+            </tr>
+        </thead>
+        <tbody>
+");
 
 
             
-            #line 27 "..\..\Pages\FailedJobsPage.cshtml"
-               Write(job.Args);
+            #line 40 "..\..\Pages\FailedJobsPage.cshtml"
+             foreach (var job in failedJobs)
+            {
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n            </tr>\r\n");
+WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 29 "..\..\Pages\FailedJobsPage.cshtml"
-        }
+            #line 43 "..\..\Pages\FailedJobsPage.cshtml"
+                   Write(job.Type);
 
             
             #line default
             #line hidden
-WriteLiteral("    </tbody>\r\n</table>");
+WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary\">");
 
+
+            
+            #line 44 "..\..\Pages\FailedJobsPage.cshtml"
+                                                     Write(job.Queue);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</span></td>\r\n                    <td>");
+
+
+            
+            #line 45 "..\..\Pages\FailedJobsPage.cshtml"
+                   Write(job.Args);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td>");
+
+
+            
+            #line 46 "..\..\Pages\FailedJobsPage.cshtml"
+                   Write(job.FailedAt);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td>");
+
+
+            
+            #line 47 "..\..\Pages\FailedJobsPage.cshtml"
+                   Write(job.Latency);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                </tr>\r\n");
+
+
+            
+            #line 49 "..\..\Pages\FailedJobsPage.cshtml"
+            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        </tbody>\r\n    </table>\r\n");
+
+
+            
+            #line 52 "..\..\Pages\FailedJobsPage.cshtml"
+}
+            
+            #line default
+            #line hidden
 
         }
     }

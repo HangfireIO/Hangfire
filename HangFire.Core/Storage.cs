@@ -78,11 +78,11 @@ namespace HangFire
             }
         }
 
-        public static IEnumerable<ScheduleDto> Schedule()
+        public static IList<ScheduleDto> Schedule()
         {
             lock (_client)
             {
-                var schedule = Enumerable.Empty<ScheduleDto>();
+                IList<ScheduleDto> schedule = new List<ScheduleDto>();
                 _client.TryToDo(x => schedule = x.GetSchedule());
                 return schedule;
             }
@@ -118,21 +118,21 @@ namespace HangFire
             }
         }
 
-        public static IEnumerable<FailedJobDto> FailedJobs()
+        public static IList<FailedJobDto> FailedJobs()
         {
             lock (_client)
             {
-                var failed = Enumerable.Empty<FailedJobDto>();
+                IList<FailedJobDto> failed = new List<FailedJobDto>();
                 _client.TryToDo(x => failed = x.GetFailedJobs());
                 return failed;
             }
         }
 
-        public static IEnumerable<SucceededJobDto> SucceededJobs()
+        public static IList<SucceededJobDto> SucceededJobs()
         {
             lock (_client)
             {
-                var succeeded = Enumerable.Empty<SucceededJobDto>();
+                IList<SucceededJobDto> succeeded = new List<SucceededJobDto>();
                 _client.TryToDo(x => succeeded = x.GetSucceededJobs());
                 return succeeded;
             }

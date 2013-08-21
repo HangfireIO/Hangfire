@@ -10,22 +10,35 @@
         };
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Timestamp</th>
-            <th>Type</th>
-            <th>Queue</th>
-            <th>Args</th>
-        </tr>
-    </thead>
-    @foreach (var scheduled in Storage.Schedule())
-    {
-        <tr>
-            <td>@scheduled.TimeStamp</td>
-            <td>@scheduled.Type</td>
-            <td>@scheduled.Queue</td>
-            <td>@scheduled.Args</td>
-        </tr>
-    }
-</table>
+@{
+    var scheduledJobs = Storage.Schedule();
+}
+
+@if (scheduledJobs.Count == 0)
+{
+    <div class="alert alert-success">
+        Нет ни одного запланированного задания.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Queue</th>
+                <th>Args</th>
+            </tr>
+        </thead>
+        @foreach (var job in scheduledJobs)
+        {
+            <tr>
+                <td>@job.TimeStamp</td>
+                <td>@job.Type</td>
+                <td>@job.Queue</td>
+                <td>@job.Args</td>
+            </tr>
+        }
+    </table>
+}
