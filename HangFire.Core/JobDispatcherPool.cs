@@ -14,7 +14,7 @@ namespace HangFire
         private readonly ILog _logger = LogManager.GetLogger("HangFire.JobDispatcherPool");
         private bool _disposed;
 
-        public JobDispatcherPool(int count, string iid)
+        public JobDispatcherPool(int count, string serverName)
         {
             _dispatchers = new List<JobDispatcher>(count);
             _freeDispatchers = new BlockingCollection<JobDispatcher>();
@@ -26,7 +26,7 @@ namespace HangFire
                 var dispatcher = new JobDispatcher(
                     this, 
                     String.Format("HangFire.Dispatcher.{0}", i),
-                    String.Format("{0}.{1}", iid, i));
+                    String.Format("{0}.{1}", serverName, i));
                 dispatcher.Start();
                 _dispatchers.Add(dispatcher);
             }

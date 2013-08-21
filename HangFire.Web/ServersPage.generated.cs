@@ -44,9 +44,9 @@ WriteLiteral("              \r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n            <th>Iid</th>\r\n   " +
-"         <th>Queue</th>\r\n            <th>Concurrency</th>\r\n        </tr>\r\n    </" +
-"thead>\r\n    <tbody>\r\n");
+WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n            <th>Name</th>\r\n  " +
+"          <th>Queue</th>\r\n            <th>Concurrency</th>\r\n        </tr>\r\n    <" +
+"/thead>\r\n    <tbody>\r\n");
 
 
             
@@ -62,7 +62,7 @@ WriteLiteral("            <tr>\r\n                <td>");
 
             
             #line 24 "..\..\ServersPage.cshtml"
-               Write(server.Iid);
+               Write(server.Name);
 
             
             #line default

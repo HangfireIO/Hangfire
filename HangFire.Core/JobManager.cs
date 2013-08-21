@@ -8,7 +8,7 @@ namespace HangFire
 {
     public class JobManager : IDisposable
     {
-        private readonly string _iid;
+        private readonly string _serverName;
         private readonly int _concurrency;
         private readonly string _queue;
         private readonly Thread _managerThread;
@@ -25,9 +25,9 @@ namespace HangFire
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
-        public JobManager(string iid, int concurrency, string queue)
+        public JobManager(string serverName, int concurrency, string queue)
         {
-            _iid = iid;
+            _serverName = serverName;
             _concurrency = concurrency;
             _queue = queue;
 
@@ -39,7 +39,7 @@ namespace HangFire
 
             _completionHandlerThread.Start();
             
-            _pool = new JobDispatcherPool(concurrency, iid);
+            _pool = new JobDispatcherPool(concurrency, serverName);
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)
@@ -82,7 +82,7 @@ namespace HangFire
         {
             try
             {
-                _blockingClient.TryToDo(x => x.AnnounceServer(_iid, _concurrency, _queue));
+                _blockingClient.TryToDo(x => x.AnnounceServer(_serverName, _concurrency, _queue));
 
                 _logger.Info("Starting to requeue processing jobs...");
                 int requeued = 0;
@@ -91,7 +91,7 @@ namespace HangFire
                 {
                     _blockingClient.TryToDo(storage =>
                         {
-                            requeued += storage.RequeueProcessingJobs(_iid, _queue, _cts.Token);
+                            requeued += storage.RequeueProcessingJobs(_serverName, _queue, _cts.Token);
                             finished = true;
                         });
                     if (finished) break;
@@ -114,7 +114,7 @@ namespace HangFire
 
                             do
                             {
-                                job = storage.DequeueJob(_iid, _queue, TimeSpan.FromSeconds(5));
+                                job = storage.DequeueJob(_serverName, _queue, TimeSpan.FromSeconds(5));
 
                                 if (job == null && _cts.IsCancellationRequested)
                                 {
@@ -126,7 +126,7 @@ namespace HangFire
                         });
                 }
 
-                _blockingClient.TryToDo(x => x.HideServer(_iid));
+                _blockingClient.TryToDo(x => x.HideServer(_serverName));
             }
             catch (OperationCanceledException)
             {
@@ -150,7 +150,7 @@ namespace HangFire
                     {
                         _client.TryToDo(storage =>
                             {
-                                storage.RemoveProcessingJob(_iid, _queue, completedJob);
+                                storage.RemoveProcessingJob(_serverName, _queue, completedJob);
                                 removed = true;
                             });
                         if (removed) break;

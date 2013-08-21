@@ -49,24 +49,24 @@ namespace HangFire
             }
         }
 
-        public string DequeueJob(string iid, string queue, TimeSpan? timeOut)
+        public string DequeueJob(string serverName, string queue, TimeSpan? timeOut)
         {
             return _redis.BlockingPopAndPushItemBetweenLists(
                     String.Format("hangfire:queue:{0}", queue),
-                    String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                    String.Format("hangfire:processing:{0}:{1}", serverName, queue),
                     timeOut);
         }
 
-        public int RequeueProcessingJobs(string iid, string currentQueue, CancellationToken cancellationToken)
+        public int RequeueProcessingJobs(string serverName, string currentQueue, CancellationToken cancellationToken)
         {
-            var queues = _redis.GetAllItemsFromSet(String.Format("hangfire:server:{0}:queues", iid));
+            var queues = _redis.GetAllItemsFromSet(String.Format("hangfire:server:{0}:queues", serverName));
 
             int requeued = 0;
 
             foreach (var queue in queues)
             {
                 while (_redis.PopAndPushItemBetweenLists(
-                    String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                    String.Format("hangfire:processing:{0}:{1}", serverName, queue),
                     String.Format("hangfire:queue:{0}", queue)) != null)
                 {
                     requeued++;
@@ -82,9 +82,9 @@ namespace HangFire
                 using (var transaction = _redis.CreateTransaction())
                 {
                     transaction.QueueCommand(x => x.RemoveEntry(
-                        String.Format("hangfire:server:{0}:queues", iid)));
+                        String.Format("hangfire:server:{0}:queues", serverName)));
                     transaction.QueueCommand(x => x.AddItemToSet(
-                        String.Format("hangfire:server:{0}:queues", iid), currentQueue));
+                        String.Format("hangfire:server:{0}:queues", serverName), currentQueue));
                     transaction.Commit();
                 }
             }
@@ -92,10 +92,10 @@ namespace HangFire
             return requeued;
         }
 
-        public void RemoveProcessingJob(string iid, string queue, string job)
+        public void RemoveProcessingJob(string serverName, string queue, string job)
         {
             _redis.RemoveItemFromList(
-                String.Format("hangfire:processing:{0}:{1}", iid, queue),
+                String.Format("hangfire:processing:{0}:{1}", serverName, queue),
                 job,
                 -1);
         }
@@ -242,35 +242,35 @@ namespace HangFire
             return result;
         }
 
-        public void AnnounceServer(string iid, int concurrency, string queue)
+        public void AnnounceServer(string serverName, int concurrency, string queue)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.AddItemToSet(
-                    "hangfire:servers", iid));
+                    "hangfire:servers", serverName));
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:server:{0}", iid), 
+                    String.Format("hangfire:server:{0}", serverName), 
                     new Dictionary<string, string>
                         {
-                            { "iid", iid },
+                            { "server-name", serverName },
                             { "concurrency", concurrency.ToString() },
                             { "queue", queue }
                         }));
                 transaction.QueueCommand(x => x.ExpireEntryIn(
-                    String.Format("hangfire:server:{0}", iid), TimeSpan.FromSeconds(10)));
+                    String.Format("hangfire:server:{0}", serverName), TimeSpan.FromSeconds(10)));
 
                 transaction.Commit();
             }
         }
 
-        public void HideServer(string iid)
+        public void HideServer(string serverName)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromSet(
-                    "hangfire:servers", iid));
+                    "hangfire:servers", serverName));
                 transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}", iid)));
+                    String.Format("hangfire:server:{0}", serverName)));
 
                 transaction.Commit();
             }
@@ -319,17 +319,17 @@ namespace HangFire
 
         public IEnumerable<ServerDto> GetServers()
         {
-            var servers = _redis.GetAllItemsFromSet("hangfire:servers");
-            var result = new List<ServerDto>(servers.Count);
-            foreach (var serverIid in servers)
+            var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
+            var result = new List<ServerDto>(serverNames.Count);
+            foreach (var serverName in serverNames)
             {
                 var server = _redis.GetAllEntriesFromHash(
-                    String.Format("hangfire:server:{0}", serverIid));
+                    String.Format("hangfire:server:{0}", serverName));
                 if (server.Count > 0)
                 {
                     result.Add(new ServerDto
                         {
-                            Iid = serverIid,
+                            Name = serverName,
                             Queue = server["queue"],
                             Concurrency = int.Parse(server["concurrency"])
                         });
@@ -342,7 +342,7 @@ namespace HangFire
 
     public class ServerDto
     {
-        public string Iid { get; set; }
+        public string Name { get; set; }
         public int Concurrency { get; set; }
         public string Queue { get; set; }
     }
