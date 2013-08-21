@@ -138,6 +138,8 @@ namespace HangFire
                         try
                         {
                             _processor.ProcessJob(_currentJob);
+
+                            Client.TryToDo(x => x.IncrementSucceeded(_currentJob));
                         }
                         catch (Exception ex)
                         {
@@ -161,7 +163,6 @@ namespace HangFire
                         {
                             Client.TryToDo(x =>
                                 {
-                                    x.IncreaseSucceeded(_currentJob);
                                     x.DecreaseProcessing();
                                     x.RemoveProcessingDispatcher(_name2);
                                 });
