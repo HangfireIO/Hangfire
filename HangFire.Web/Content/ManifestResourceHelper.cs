@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace HangFire.Web
+namespace HangFire.Web.Content
 {
     public static class ManifestResourceHelper
     {

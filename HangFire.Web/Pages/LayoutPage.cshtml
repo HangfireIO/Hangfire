@@ -59,13 +59,15 @@
         <div class="container">
             <div class="col-md-3">
                 <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
-                    <a class="list-group-item" href="#">
+                    <a class="list-group-item @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
+                        href="@Request.LinkTo("/succeeded")">
                         <span id="stats-succeeded" class="label label-success pull-right">
                             @String.Format("{0:n0}", Storage.SucceededCount())
                         </span>
-                        Completed
+                        Succeeded
                     </a>
-                    <a class="list-group-item" href="#">
+                    <a class="list-group-item @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
+                        href="@Request.LinkTo("/failed")">
                         <span id="stats-failed" class="label label-danger pull-right">
                             @String.Format("{0:n0}", Storage.FailedCount())
                         </span>

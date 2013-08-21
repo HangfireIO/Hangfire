@@ -44,64 +44,82 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DashboardPage.generated.cs">
+    <Compile Include="Pages\DashboardPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DashboardPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="DelegatingHttpHandler.cs" />
+    <Compile Include="Pages\SucceededJobs.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SucceededJobs.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="HangFireAspNetHost.cs" />
     <Compile Include="HangFirePageFactory.cs" />
-    <Compile Include="JavaScriptHelper.cs" />
+    <Compile Include="Content\JavaScriptHelper.cs" />
     <Compile Include="JsonStats.cs" />
-    <Compile Include="LayoutPage.cs" />
-    <Compile Include="LayoutPage.generated.cs">
+    <Compile Include="Pages\LayoutPage.cs" />
+    <Compile Include="Pages\LayoutPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>LayoutPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="LinkHelper.cs" />
     <Compile Include="ManifestResourceHandler.cs" />
-    <Compile Include="ManifestResourceHelper.cs" />
+    <Compile Include="Content\ManifestResourceHelper.cs" />
     <Compile Include="MoreEnumerable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DispatchersPage.generated.cs">
+    <Compile Include="Pages\DispatchersPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DispatchersPage.cshtml</DependentUpon>
     </Compile>
-    <None Include="ServersPage.cshtml">
+    <None Include="Pages\SucceededJobs.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>SucceededJobs.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Pages\FailedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>FailedJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Pages\ServersPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>ServersPage.generated.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
-    <None Include="QueuesPage.cshtml">
+    <None Include="Pages\QueuesPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
     </None>
-    <Compile Include="ServersPage.generated.cs">
+    <Compile Include="Pages\FailedJobsPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FailedJobsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ServersPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ServersPage.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="QueuesPage.generated.cs">
+    <Compile Include="Pages\QueuesPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>QueuesPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="RazorTemplateBase.cs" />
-    <None Include="SchedulePage.cshtml">
+    <None Include="Pages\SchedulePage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>SchedulePage.generated.cs</LastGenOutput>
     </None>
-    <Compile Include="SchedulePage.generated.cs">
+    <Compile Include="Pages\SchedulePage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SchedulePage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="StylesheetHelper.cs" />
     <Compile Include="WebTemplateBase.cs" />
-    <None Include="DispatchersPage.cshtml">
+    <None Include="Pages\DispatchersPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>DispatchersPage.generated.cs</LastGenOutput>
     </None>
@@ -113,35 +131,36 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DashboardPage.cshtml">
+    <None Include="Pages\DashboardPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
     </None>
-    <None Include="LayoutPage.cshtml">
+    <None Include="Pages\LayoutPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>LayoutPage.generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="bootstrap.min.css" />
+    <EmbeddedResource Include="Content\bootstrap.min.css" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="hangfire.css" />
+    <EmbeddedResource Include="Content\hangfire.css" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="hangfire.js" />
+    <EmbeddedResource Include="Content\hangfire.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="rickshaw.min.css" />
-    <EmbeddedResource Include="rickshaw.min.js" />
+    <EmbeddedResource Include="Content\rickshaw.min.css" />
+    <EmbeddedResource Include="Content\rickshaw.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="d3.layout.min.js" />
-    <EmbeddedResource Include="d3.min.js" />
+    <EmbeddedResource Include="Content\d3.layout.min.js" />
+    <EmbeddedResource Include="Content\d3.min.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="jquery-1.10.2.min.js" />
+    <EmbeddedResource Include="Content\jquery-1.10.2.min.js" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

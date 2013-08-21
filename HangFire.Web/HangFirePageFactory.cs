@@ -2,6 +2,9 @@
 using System.Text;
 using System.Web;
 
+using HangFire.Web.Content;
+using HangFire.Web.Pages;
+
 namespace HangFire.Web
 {
     public class HangFirePageFactory : IHttpHandlerFactory
@@ -34,6 +37,10 @@ namespace HangFire.Web
                     return new SchedulePage();
                 case "/servers":
                     return new ServersPage();
+                case "/failed":
+                    return new FailedJobsPage();
+                case "/succeeded":
+                    return new SucceededJobs();
                 case "/scripts.js":
                     return new DelegatingHttpHandler(ManifestResourceHandler.Create(JavaScriptHelper.JavaScriptResourceNames, "application/javascript", Encoding.UTF8, true));
                 case "/styles.css":

@@ -117,5 +117,25 @@ namespace HangFire
                 return servers;
             }
         }
+
+        public static IEnumerable<FailedJobDto> FailedJobs()
+        {
+            lock (_client)
+            {
+                var failed = Enumerable.Empty<FailedJobDto>();
+                _client.TryToDo(x => failed = x.GetFailedJobs());
+                return failed;
+            }
+        }
+
+        public static IEnumerable<SucceededJobDto> SucceededJobs()
+        {
+            lock (_client)
+            {
+                var succeeded = Enumerable.Empty<SucceededJobDto>();
+                _client.TryToDo(x => succeeded = x.GetSucceededJobs());
+                return succeeded;
+            }
+        }
     }
 }

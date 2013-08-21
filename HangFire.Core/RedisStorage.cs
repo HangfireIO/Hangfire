@@ -131,24 +131,29 @@ namespace HangFire
             }
         }
 
-        public void IncreaseSucceeded()
+        public void IncreaseSucceeded(string job)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
                 transaction.QueueCommand(x => x.IncrementValue(
                     String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
+                transaction.QueueCommand(x => x.PushItemToList("hangfire:succeeded", job));
+                transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
+
                 transaction.Commit();
             }
         }
 
-        public void IncrementFailed()
+        public void IncrementFailed(string job)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
                 transaction.QueueCommand(x => x.IncrementValue(
                     String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
+                transaction.QueueCommand(x => x.PushItemToList("hangfire:failed", job));
+
                 transaction.Commit();
             }
         }
@@ -338,6 +343,32 @@ namespace HangFire
 
             return result;
         }
+
+        public IEnumerable<FailedJobDto> GetFailedJobs()
+        {
+            var failed = _redis.GetAllItemsFromList("hangfire:failed");
+            return failed.Select(JsonHelper.Deserialize<Job>)
+                .Select(x => new FailedJobDto
+                {
+                    Args = JsonHelper.Serialize(x.Args),
+                    Queue = Worker.GetQueueName(x.WorkerType),
+                    Type = x.WorkerType.Name
+                })
+                .ToList();
+        }
+
+        public IEnumerable<SucceededJobDto> GetSucceededJobs()
+        {
+            var succeeded = _redis.GetAllItemsFromList("hangfire:succeeded");
+            return succeeded.Select(JsonHelper.Deserialize<Job>)
+                .Select(x => new SucceededJobDto
+                {
+                    Args = JsonHelper.Serialize(x.Args),
+                    Queue = Worker.GetQueueName(x.WorkerType),
+                    Type = x.WorkerType.Name
+                })
+                .ToList();
+        }
     }
 
     public class ServerDto
@@ -364,6 +395,20 @@ namespace HangFire
     public class ScheduleDto
     {
         public string TimeStamp { get; set; }
+        public string Type { get; set; }
+        public string Queue { get; set; }
+        public string Args { get; set; }
+    }
+
+    public class FailedJobDto
+    {
+        public string Type { get; set; }
+        public string Queue { get; set; }
+        public string Args { get; set; }
+    }
+
+    public class SucceededJobDto
+    {
         public string Type { get; set; }
         public string Queue { get; set; }
         public string Args { get; set; }

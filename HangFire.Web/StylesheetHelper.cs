@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 
+using HangFire.Web.Content;
+
 namespace HangFire.Web
 {
     public static class StyleSheetHelper

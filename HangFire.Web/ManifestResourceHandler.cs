@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Web;
 
+using HangFire.Web.Content;
+
 namespace HangFire.Web
 {
     static class ManifestResourceHandler

@@ -1,0 +1,31 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using HangFire.Web.Pages
+@inherits WebTemplateBase
+              
+@{
+    Layout = new LayoutPage()
+        {
+            Context = Context,
+            Title = "Failed Jobs"
+        };
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Queue</th>
+            <th>Args</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var job in Storage.FailedJobs())
+        {
+            <tr>
+                <td>@job.Type</td>
+                <td>@job.Queue</td>
+                <td>@job.Args</td>
+            </tr>
+        }
+    </tbody>
+</table>

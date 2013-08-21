@@ -1,29 +1,30 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using HangFire.Web.Pages
 @inherits WebTemplateBase
               
 @{
     Layout = new LayoutPage()
         {
             Context = Context,
-            Title = "Servers"
+            Title = "Succeeded Jobs"
         };
 }
 
 <table class="table">
     <thead>
         <tr>
-            <th>Name</th>
+            <th>Type</th>
             <th>Queue</th>
-            <th>Concurrency</th>
+            <th>Args</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var server in Storage.Servers())
+        @foreach (var job in Storage.SucceededJobs())
         {
             <tr>
-                <td>@server.Name</td>
-                <td>@server.Queue</td>
-                <td>@server.Concurrency</td>
+                <td>@job.Type</td>
+                <td>@job.Queue</td>
+                <td>@job.Args</td>
             </tr>
         }
     </tbody>

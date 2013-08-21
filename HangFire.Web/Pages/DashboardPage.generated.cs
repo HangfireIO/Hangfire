@@ -9,25 +9,20 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HangFire.Web
+namespace HangFire.Web.Pages
 {
-    
-    #line 2 "..\..\DashboardPage.cshtml"
     using System;
-    
-    #line default
-    #line hidden
     using System.Collections.Generic;
-    
-    #line 3 "..\..\DashboardPage.cshtml"
-    using System.Globalization;
-    
-    #line default
-    #line hidden
     using System.Linq;
     using System.Text;
     
-    #line 4 "..\..\DashboardPage.cshtml"
+    #line 2 "..\..\Pages\DashboardPage.cshtml"
+    using HangFire.Web.Pages;
+    
+    #line default
+    #line hidden
+    
+    #line 3 "..\..\Pages\DashboardPage.cshtml"
     using ServiceStack.Text;
     
     #line default
@@ -47,12 +42,11 @@ WriteLiteral("\r\n");
 
 
 
-
 WriteLiteral("              \r\n");
 
 
             
-            #line 7 "..\..\DashboardPage.cshtml"
+            #line 6 "..\..\Pages\DashboardPage.cshtml"
   
     Layout = new LayoutPage
         {
@@ -68,7 +62,7 @@ WriteLiteral("\r\n<h3>Realtime graph</h3>\r\n<div id=\"realtime\"></div>\r\n\r\n
 
 
             
-            #line 18 "..\..\DashboardPage.cshtml"
+            #line 17 "..\..\Pages\DashboardPage.cshtml"
   
     JsConfig.DateHandler = JsonDateHandler.ISO8601;
 
@@ -80,7 +74,7 @@ WriteLiteral("\r\n<h3>History graph</h3>\r\n<div id=\"history\" \r\n     data-su
 
 
             
-            #line 24 "..\..\DashboardPage.cshtml"
+            #line 23 "..\..\Pages\DashboardPage.cshtml"
                 Write(JsonSerializer.SerializeToString(Storage.SucceededByDatesCount()));
 
             
@@ -90,7 +84,7 @@ WriteLiteral("\" \r\n     data-failed=\"");
 
 
             
-            #line 25 "..\..\DashboardPage.cshtml"
+            #line 24 "..\..\Pages\DashboardPage.cshtml"
              Write(JsonSerializer.SerializeToString(Storage.FailedByDatesCount()));
 
             

@@ -143,7 +143,7 @@ namespace HangFire
                         {
                             lock (Client)
                             {
-                                Client.TryToDo(x => x.IncrementFailed());
+                                Client.TryToDo(x => x.IncrementFailed(_currentJob));
                             }
 
                             _logger.Error(
@@ -161,7 +161,7 @@ namespace HangFire
                         {
                             Client.TryToDo(x =>
                                 {
-                                    x.IncreaseSucceeded();
+                                    x.IncreaseSucceeded(_currentJob);
                                     x.DecreaseProcessing();
                                     x.RemoveProcessingDispatcher(_name2);
                                 });
