@@ -13,7 +13,7 @@ namespace HangFire
 
         private readonly Configuration _config = Configuration.Instance;
 
-        public void TryToDo(Action<RedisStorage> action, bool throwOnError = false)
+        public bool TryToDo(Action<RedisStorage> action, bool throwOnError = false)
         {
             try
             {
@@ -42,6 +42,8 @@ namespace HangFire
 
                 Thread.Sleep(_reconnectTimeout);
             }
+
+            return _connection != null;
         }
 
         public void Dispose()

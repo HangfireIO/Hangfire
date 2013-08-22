@@ -131,11 +131,15 @@ namespace HangFire
                         // TODO: Handle deserialization errors.
                         var job = Job.Deserialize(_currentJob);
 
-                        // TODO: Handle Redis exceptions.
                         lock (Client)
                         {
-                            Client.TryToDo(x => x.AddProcessingDispatcher(
-                                _name2, job.WorkerType.Name, job.SerializeArgs()));
+                            // Пока нет связи с Redis, бессмысленно что-то начинать делать,
+                            // поэтому будем повторять действие до тех пор, пока не 
+                            // восстановится связь.
+                            while (!Client.TryToDo(x => x.AddProcessingDispatcher(
+                                _name2, job.WorkerType.Name, job.SerializeArgs())))
+                            {
+                            }
                         }
 
                         Exception exception = null;
@@ -162,7 +166,10 @@ namespace HangFire
                         // TODO: Handle Redis exceptions.
                         lock (Client)
                         {
-                            Client.TryToDo(x => x.RemoveProcessingDispatcher(_name2, job, exception));
+                            // См. комментарий к подобному блоку выше.
+                            while (!Client.TryToDo(x => x.RemoveProcessingDispatcher(_name2, job, exception)))
+                            {
+                            }
                         }
 
                         // We need unmodified job here.
