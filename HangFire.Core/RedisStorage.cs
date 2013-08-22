@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -243,7 +244,8 @@ namespace HangFire
                         {
                             { "server-name", serverName },
                             { "concurrency", concurrency.ToString() },
-                            { "queue", queue }
+                            { "queue", queue },
+                            { "started-at", DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) }
                         }));
                 transaction.QueueCommand(x => x.ExpireEntryIn(
                     String.Format("hangfire:server:{0}", serverName), TimeSpan.FromSeconds(10)));
@@ -306,7 +308,7 @@ namespace HangFire
             return result;
         }
 
-        public IEnumerable<ServerDto> GetServers()
+        public IList<ServerDto> GetServers()
         {
             var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
             var result = new List<ServerDto>(serverNames.Count);
@@ -320,7 +322,8 @@ namespace HangFire
                         {
                             Name = serverName,
                             Queue = server["queue"],
-                            Concurrency = int.Parse(server["concurrency"])
+                            Concurrency = int.Parse(server["concurrency"]),
+                            StartedAt = server["started-at"]
                         });
                 }
             }
@@ -366,6 +369,7 @@ namespace HangFire
         public string Name { get; set; }
         public int Concurrency { get; set; }
         public string Queue { get; set; }
+        public string StartedAt { get; set; }
     }
 
     public class QueueDto

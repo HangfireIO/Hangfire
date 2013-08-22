@@ -108,11 +108,11 @@ namespace HangFire
             }
         }
 
-        public static IEnumerable<ServerDto> Servers()
+        public static IList<ServerDto> Servers()
         {
             lock (_client)
             {
-                var servers = Enumerable.Empty<ServerDto>();
+                IList<ServerDto> servers = new List<ServerDto>();
                 _client.TryToDo(x => servers = x.GetServers());
                 return servers;
             }
