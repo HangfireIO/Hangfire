@@ -100,7 +100,7 @@ namespace HangFire
 
                 if (_cts.IsCancellationRequested)
                 {
-                    return;
+                    throw new OperationCanceledException();
                 }
 
                 while (true)
@@ -125,12 +125,11 @@ namespace HangFire
                             dispatcher.Process(job);
                         });
                 }
-
-                _blockingClient.TryToDo(x => x.HideServer(_serverName));
             }
             catch (OperationCanceledException)
             {
                 _logger.Info("Shutdown has been requested. Exiting...");
+                _blockingClient.TryToDo(x => x.HideServer(_serverName, _queue));
             }
             catch (Exception ex)
             {

@@ -189,7 +189,8 @@ namespace HangFire
             return queueNames.Select(queueName => new QueueDto
                 {
                     Name = queueName, 
-                    Length = _redis.GetListCount(String.Format("hangfire:queue:{0}", queueName))
+                    Length = _redis.GetListCount(String.Format("hangfire:queue:{0}", queueName)),
+                    Servers = _redis.GetAllItemsFromSet(String.Format("hangfire:queue:{0}:servers", queueName))
                 }).ToList();
         }
 
@@ -247,12 +248,14 @@ namespace HangFire
                             { "queue", queue },
                             { "started-at", DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) }
                         }));
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    String.Format("hangfire:queue:{0}:servers", queue), serverName));
 
                 transaction.Commit();
             }
         }
 
-        public void HideServer(string serverName)
+        public void HideServer(string serverName, string queue)
         {
             using (var transaction = _redis.CreateTransaction())
             {
@@ -260,6 +263,8 @@ namespace HangFire
                     "hangfire:servers", serverName));
                 transaction.QueueCommand(x => x.RemoveEntry(
                     String.Format("hangfire:server:{0}", serverName)));
+                transaction.QueueCommand(x => x.RemoveItemFromSet(
+                    String.Format("hangfire:queue:{0}:servers", queue), serverName));
 
                 transaction.Commit();
             }
@@ -374,6 +379,7 @@ namespace HangFire
     {
         public string Name { get; set; }
         public long Length { get; set; }
+        public HashSet<string> Servers { get; set; }
     }
 
     public class DispatcherDto

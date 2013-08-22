@@ -15,6 +15,7 @@
         <tr>
             <th>Queue</th>
             <th>Length</th>
+            <th>Servers</th>
         </tr>
     </thead>
     <tbody>
@@ -23,6 +24,7 @@
             <tr>
                 <td>@queue.Name</td>
                 <td>@queue.Length</td>
+                <td>@string.Join(", ", queue.Servers)</td>
             </tr>
         }
     </tbody>
