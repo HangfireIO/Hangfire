@@ -247,8 +247,6 @@ namespace HangFire
                             { "queue", queue },
                             { "started-at", DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) }
                         }));
-                transaction.QueueCommand(x => x.ExpireEntryIn(
-                    String.Format("hangfire:server:{0}", serverName), TimeSpan.FromSeconds(10)));
 
                 transaction.Commit();
             }
@@ -307,7 +305,7 @@ namespace HangFire
 
             return result;
         }
-
+         
         public IList<ServerDto> GetServers()
         {
             var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
