@@ -88,8 +88,8 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert\">\r\n        Список серверов пуст. Фоновые задания не будут о" +
-"брабатываться.\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-warning\">\r\n        Список серверов пуст. Фоновые зада" +
+"ния не будут обрабатываться.\r\n    </div>\r\n");
 
 
             

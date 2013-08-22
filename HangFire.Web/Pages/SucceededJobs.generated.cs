@@ -88,8 +88,8 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert\">\r\n        <p>\r\n        Список завершенных заданий пуст.\r\n " +
-"   </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-warning\">\r\n        <p>\r\n        Список завершенных за" +
+"даний пуст.\r\n    </div>\r\n");
 
 
             
