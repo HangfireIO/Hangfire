@@ -115,6 +115,14 @@ WriteLiteral(@"    <table class=""table failed-table"">
 
             
             #line 42 "..\..\Pages\FailedJobsPage.cshtml"
+               var index = 0; 
+
+            
+            #line default
+            #line hidden
+
+            
+            #line 43 "..\..\Pages\FailedJobsPage.cshtml"
              foreach (var job in failedJobs)
             {
 
@@ -125,7 +133,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 45 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 46 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.Type);
 
             
@@ -135,7 +143,7 @@ WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary
 
 
             
-            #line 46 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 47 "..\..\Pages\FailedJobsPage.cshtml"
                                                      Write(job.Queue);
 
             
@@ -146,7 +154,7 @@ WriteLiteral("</span></td>\r\n                    <td>\r\n                      
 
 
             
-            #line 49 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 50 "..\..\Pages\FailedJobsPage.cshtml"
                        Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
 
             
@@ -157,7 +165,7 @@ WriteLiteral("\r\n                        </code>\r\n                    </td>\r
 
 
             
-            #line 53 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 54 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.ExceptionMessage);
 
             
@@ -168,7 +176,7 @@ WriteLiteral(" <span class=\"caret\"></span>\r\n                    </td>\r\n   
 
 
             
-            #line 55 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 56 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.FailedAt);
 
             
@@ -178,7 +186,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 56 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 57 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.Latency);
 
             
@@ -188,12 +196,21 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
 
-WriteLiteral("                <tr style=\"display: none;\">\r\n                    <td colspan=\"6\">" +
-"\r\n                        ");
+WriteLiteral("                <tr style=\"");
 
 
             
-            #line 60 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 59 "..\..\Pages\FailedJobsPage.cshtml"
+                       Write(index++ > 0 ? "display: none;" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                    <td colspan=\"6\">\r\n                        ");
+
+
+            
+            #line 61 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.ExceptionType);
 
             
@@ -203,7 +220,7 @@ WriteLiteral("\r\n                        <br/>\r\n                        ");
 
 
             
-            #line 62 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 63 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.ExceptionMessage);
 
             
@@ -213,7 +230,7 @@ WriteLiteral("\r\n                        <br />\r\n                        ");
 
 
             
-            #line 64 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 65 "..\..\Pages\FailedJobsPage.cshtml"
                    Write(job.ExceptionStackTrace);
 
             
@@ -223,7 +240,7 @@ WriteLiteral("\r\n                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 67 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 68 "..\..\Pages\FailedJobsPage.cshtml"
             }
 
             
@@ -233,7 +250,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 70 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 71 "..\..\Pages\FailedJobsPage.cshtml"
 }
             
             #line default

@@ -39,6 +39,7 @@ else
             </tr>
         </thead>
         <tbody>
+            @{ var index = 0; }
             @foreach (var job in failedJobs)
             {
                 <tr>
@@ -55,7 +56,7 @@ else
                     <td>@job.FailedAt</td>
                     <td>@job.Latency</td>
                 </tr>
-                <tr style="display: none;">
+                <tr style="@(index++ > 0 ? "display: none;" : null)">
                     <td colspan="6">
                         @job.ExceptionType
                         <br/>
