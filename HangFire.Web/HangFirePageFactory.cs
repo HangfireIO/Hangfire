@@ -42,9 +42,9 @@ namespace HangFire.Web
                 case "/succeeded":
                     return new SucceededJobs();
                 case "/scripts.js":
-                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(JavaScriptHelper.JavaScriptResourceNames, "application/javascript", Encoding.UTF8, true));
+                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(JavaScriptHelper.JavaScriptResourceNames, "application/javascript", Encoding.UTF8, false));
                 case "/styles.css":
-                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.UTF8, true));
+                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.UTF8, false));
                 case "/stats":
                     return new DelegatingHttpHandler(JsonStats.StatsResponse);
                 case "/":

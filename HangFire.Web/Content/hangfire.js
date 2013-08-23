@@ -1,7 +1,9 @@
 ﻿$(function () {
     (function () {
+        var element = document.getElementById('realtime');
+        if (!element) return;
         var graph = new Rickshaw.Graph({
-            element: document.getElementById("realtime"),
+            element: element,
             width: 800,
             height: 200,
             renderer: 'line',
@@ -67,6 +69,9 @@
     })();
 
     (function () {
+        var element = document.getElementById('history');
+        if (!element) return;
+
         var createSeries = function (obj) {
             var series = [];
             for (var date in obj) {
@@ -79,11 +84,11 @@
             return series;
         };
 
-        var succeeded = createSeries($("#history").data("succeeded"));
-        var failed = createSeries($("#history").data("failed"));
+        var succeeded = createSeries($(element).data("succeeded"));
+        var failed = createSeries($(element).data("failed"));
 
         var graph = new Rickshaw.Graph({
-            element: document.getElementById('history'),
+            element: element,
             width: 800,
             height: 200,
             renderer: 'line',
@@ -115,4 +120,10 @@
             yFormatter: function(y) { return Math.floor(y); }
         });
     })();
+});
+
+$(function () {
+    $('.failed-table').on('click', '.expand-exception', function () {
+        $(this).closest('tr').next().slideToggle();
+    });
 });

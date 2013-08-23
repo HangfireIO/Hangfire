@@ -160,8 +160,17 @@ namespace HangFire
                         }
 
                         var now = DateTime.UtcNow;
-                        if (exception == null) job.SucceededAt = now;
-                        else job.FailedAt = now;
+                        if (exception == null)
+                        {
+                            job.SucceededAt = now;
+                        }
+                        else
+                        {
+                            job.FailedAt = now;
+                            job.ExceptionType = exception.GetType();
+                            job.ExceptionMessage = exception.Message;
+                            job.ExceptionStackTrace = exception.StackTrace;
+                        }
 
                         // TODO: Handle Redis exceptions.
                         lock (Client)

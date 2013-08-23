@@ -3,7 +3,6 @@
 @using System.Linq
 @using HangFire.Web.Pages
 @inherits WebTemplateBase
-              
 @{
     Layout = new LayoutPage()
         {
@@ -28,12 +27,13 @@
 }
 else
 {
-    <table class="table">
+    <table class="table failed-table">
         <thead>
             <tr>
                 <th>Type</th>
                 <th>Queue</th>
                 <th>Args</th>
+                <th>Exception</th>
                 <th>Failed at</th>
                 <th>Latency</th>
             </tr>
@@ -49,8 +49,20 @@ else
                             @String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
                         </code>
                     </td>
+                    <td class="expand-exception">
+                        @job.ExceptionMessage <span class="caret"></span>
+                    </td>
                     <td>@job.FailedAt</td>
                     <td>@job.Latency</td>
+                </tr>
+                <tr style="display: none;">
+                    <td colspan="6">
+                        @job.ExceptionType
+                        <br/>
+                        @job.ExceptionMessage
+                        <br />
+                        @job.ExceptionStackTrace
+                    </td>
                 </tr>
             }
         </tbody>

@@ -29,6 +29,10 @@ namespace HangFire
         public DateTime? SucceededAt { get; internal set; }
         public DateTime? FailedAt { get; internal set; }
 
+        public Type ExceptionType { get; internal set; }
+        public string ExceptionMessage { get; internal set; }
+        public string ExceptionStackTrace { get; internal set; }
+
         public TimeSpan Latency
         {
             get

@@ -417,7 +417,7 @@ WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </di
 
             
             #line 129 "..\..\Pages\LayoutPage.cshtml"
-            Write(Request.LinkTo("/scripts.js?v1"));
+            Write(Request.LinkTo("/scripts.js"));
 
             
             #line default

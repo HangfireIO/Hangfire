@@ -345,7 +345,10 @@ namespace HangFire
                     Queue = Worker.GetQueueName(x.WorkerType),
                     Type = x.WorkerType,
                     FailedAt = x.FailedAt,
-                    Latency = x.Latency
+                    Latency = x.Latency,
+                    ExceptionMessage = x.ExceptionMessage,
+                    ExceptionStackTrace = x.ExceptionStackTrace,
+                    ExceptionType = x.ExceptionType
                 })
                 .ToList();
         }
@@ -405,6 +408,9 @@ namespace HangFire
         public Dictionary<String, String> Args { get; set; }
         public DateTime? FailedAt { get; set; }
         public TimeSpan Latency { get; set; }
+        public Type ExceptionType { get; set; }
+        public string ExceptionMessage { get; set; }
+        public string ExceptionStackTrace { get; set; }
     }
 
     public class SucceededJobDto
