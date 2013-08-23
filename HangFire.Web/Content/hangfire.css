@@ -43,6 +43,10 @@ html, body {
     margin-top: 0;
 }
 
+.expand-exception {
+    cursor: pointer;
+}
+
 /* Statistics widget
 -------------------------------------------------- */
 

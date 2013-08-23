@@ -124,6 +124,6 @@
 
 $(function () {
     $('.failed-table').on('click', '.expand-exception', function () {
-        $(this).closest('tr').next().slideToggle();
+        $(this).closest('tr').next().toggle();
     });
 });
