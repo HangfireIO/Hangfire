@@ -137,5 +137,25 @@ namespace HangFire
                 return succeeded;
             }
         }
+
+        public static Dictionary<DateTime, long> HourlySucceededJobs()
+        {
+            lock (_client)
+            {
+                var result = new Dictionary<DateTime, long>();
+                _client.TryToDo(x => result = x.GetHourlySucceededCount());
+                return result;
+            }
+        }
+
+        public static Dictionary<DateTime, long> HourlyFailedJobs()
+        {
+            lock (_client)
+            {
+                var result = new Dictionary<DateTime, long>();
+                _client.TryToDo(x => result = x.GetHourlyFailedCount());
+                return result;
+            }
+        }
     }
 }

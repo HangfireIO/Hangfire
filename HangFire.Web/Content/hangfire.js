@@ -6,7 +6,7 @@
             element: element,
             width: 800,
             height: 200,
-            renderer: 'line',
+            renderer: 'bar',
             interpolation: 'linear',
 
             series: new Rickshaw.Series.FixedDuration([
@@ -91,8 +91,6 @@
             element: element,
             width: 800,
             height: 200,
-            renderer: 'line',
-            interpolation: 'linear',
             series: [
                 {
                     color: '#d9534f',

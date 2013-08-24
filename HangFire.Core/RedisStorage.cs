@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using ServiceStack.Redis;
 
@@ -138,8 +139,15 @@ namespace HangFire
                     transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
+
                     transaction.QueueCommand(x => x.PushItemToList("hangfire:succeeded", job.Serialize()));
                     transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
+
+                    var hourlySucceededKey = String.Format(
+                        "hangfire:stats:succeeded:{0}",
+                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
+                    transaction.QueueCommand(x => x.IncrementValue(hourlySucceededKey));
+                    transaction.QueueCommand(x => x.ExpireEntryIn(hourlySucceededKey, TimeSpan.FromDays(1)));
                 }
                 else
                 {
@@ -147,6 +155,15 @@ namespace HangFire
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
                     transaction.QueueCommand(x => x.PushItemToList("hangfire:failed", job.Serialize()));
+
+                    transaction.QueueCommand(x => x.IncrementValue(
+                        String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm"))));
+
+                    var hourlyFailedKey = String.Format(
+                        "hangfire:stats:failed:{0}",
+                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
+                    transaction.QueueCommand(x => x.IncrementValue(hourlyFailedKey));
+                    transaction.QueueCommand(x => x.ExpireEntryIn(hourlyFailedKey, TimeSpan.FromDays(1)));
                 }
 
                 transaction.Commit();
@@ -278,6 +295,44 @@ namespace HangFire
         public Dictionary<string, long> GetFailedByDatesCount()
         {
             return GetTimelineStats("failed");
+        }
+
+        public Dictionary<DateTime, long> GetHourlySucceededCount()
+        {
+            return GetHourlyTimelineStats("succeeded");
+        }
+
+        public Dictionary<DateTime, long> GetHourlyFailedCount()
+        {
+            return GetHourlyTimelineStats("failed");
+        }
+
+        private Dictionary<DateTime, long> GetHourlyTimelineStats(string type)
+        {
+            var endDate = DateTime.UtcNow;
+            var dates = new List<DateTime>();
+            for (var i = 0; i < 24; i++)
+            {
+                dates.Add(endDate);
+                endDate = endDate.AddHours(-1);
+            }
+
+            var keys = dates.Select(x => String.Format("hangfire:stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH"))).ToList();
+            var valuesMap = _redis.GetValuesMap(keys);
+
+            var result = new Dictionary<DateTime, long>();
+            for (var i = 0; i < dates.Count; i++)
+            {
+                long value;
+                if (!long.TryParse(valuesMap[valuesMap.Keys.ElementAt(i)], out value))
+                {
+                    value = 0;
+                }
+
+                result.Add(dates[i], value);
+            }
+
+            return result;
         }
 
         private Dictionary<string, long> GetTimelineStats(string type)

@@ -18,6 +18,11 @@ namespace HangFire.Hosts
                 time = _random.Next(10);
             }
 
+            if (time < 5)
+            {
+                throw new Exception("Unknown error");
+            }
+
             Thread.Sleep(TimeSpan.FromSeconds(5 + time));
             Console.WriteLine("Finished task: " + Args["Number"]);
         }
@@ -37,7 +42,7 @@ namespace HangFire.Hosts
     {
         public static void Main()
         {
-            int concurrency = Environment.ProcessorCount * 2;
+            int concurrency = Environment.ProcessorCount * 20;
             LogManager.LogFactory = new ConsoleLogFactory();
 
             Configuration.Configure(
