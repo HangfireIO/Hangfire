@@ -92,7 +92,7 @@ namespace HangFire
 
         private static void InvokeInterceptors(Job job)
         {
-            var interceptors = Configuration.Instance.EnqueueInterceptors;
+            var interceptors = HangFireConfiguration.Current.EnqueueInterceptors;
 
             foreach (var interceptor in interceptors)
             {

@@ -15,8 +15,8 @@ namespace HangFire
         private readonly string _name2;
 
         private readonly JobProcessor _processor = new JobProcessor(
-            Configuration.Instance.WorkerActivator,
-            Configuration.Instance.PerformInterceptors);
+            HangFireConfiguration.Current.WorkerActivator,
+            HangFireConfiguration.Current.PerformInterceptors);
 
         private readonly Thread _thread;
 

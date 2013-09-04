@@ -45,14 +45,14 @@ namespace HangFire.Hosts
             int concurrency = Environment.ProcessorCount * 20;
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            Configuration.Configure(
+            HangFireConfiguration.Configure(
                 x =>
                 {
                     x.RedisPort = 6379;
                     x.AddInterceptor(new BasicRetryInterceptor());
                 });
 
-            using (var manager = new JobManager("hijack!", concurrency, "qqq"))
+            using (var manager = new JobManager("hijack!", concurrency, "qqq", TimeSpan.FromSeconds(15)))
             {
                 Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 

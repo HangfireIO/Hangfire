@@ -25,7 +25,7 @@ namespace HangFire
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
-        public JobManager(string serverName, int concurrency, string queue)
+        public JobManager(string serverName, int concurrency, string queue, TimeSpan pollInterval)
         {
             _serverName = serverName;
             _concurrency = concurrency;
@@ -51,7 +51,7 @@ namespace HangFire
 
             _logger.Info("Manager thread has been started.");
 
-            _schedule = new JobSchedulePoller();
+            _schedule = new JobSchedulePoller(pollInterval);
         }
 
         public void Dispose()

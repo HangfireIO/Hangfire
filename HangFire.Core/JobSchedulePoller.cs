@@ -7,14 +7,15 @@ namespace HangFire
     {
         private readonly Thread _pollerThread;
 
-        private readonly TimeSpan _pollInterval = Configuration.Instance.PollInterval;
+        private readonly TimeSpan _pollInterval;
         private readonly RedisClient _client = new RedisClient();
 
         private bool _stopped;
         private readonly object _locker = new object();
 
-        public JobSchedulePoller()
+        public JobSchedulePoller(TimeSpan pollInterval)
         {
+            _pollInterval = pollInterval;
             _pollerThread = new Thread(Work) { IsBackground = true, Name = "HangFire.SchedulePoller" };
             _pollerThread.Start();
         }

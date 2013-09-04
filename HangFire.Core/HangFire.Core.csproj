@@ -63,7 +63,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Configuration.cs" />
+    <Compile Include="HangFireConfiguration.cs" />
     <Compile Include="Interceptors\IEnqueueInterceptor.cs" />
     <Compile Include="Interceptors\IInterceptor.cs" />
     <Compile Include="Interceptors\IPerformInterceptor.cs" />

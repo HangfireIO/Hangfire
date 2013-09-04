@@ -11,7 +11,7 @@ namespace HangFire
         private IRedisClient _connection;
         private readonly TimeSpan _reconnectTimeout = TimeSpan.FromSeconds(5);
 
-        private readonly Configuration _config = Configuration.Instance;
+        private readonly HangFireConfiguration _config = HangFireConfiguration.Current;
 
         public bool TryToDo(Action<RedisStorage> action, bool throwOnError = false)
         {

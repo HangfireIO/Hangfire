@@ -61,7 +61,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SucceededJobs.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="HangFireAspNetHost.cs" />
+    <Compile Include="HangFireAspNetServer.cs" />
     <Compile Include="HangFirePageFactory.cs" />
     <Compile Include="Content\JavaScriptHelper.cs" />
     <Compile Include="JsonStats.cs" />
