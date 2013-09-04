@@ -44,7 +44,7 @@ namespace HangFire
         {
             if (String.IsNullOrEmpty(serverName))
             {
-                throw new ArgumentNullException("serverName", "You should provide non-null and unique server name.");
+                throw new ArgumentNullException("serverName", "You must provide non-null and unique server name.");
             }
 
             if (String.IsNullOrEmpty(queueName))
@@ -54,12 +54,12 @@ namespace HangFire
 
             if (concurrency <= 0)
             {
-                throw new ArgumentOutOfRangeException("concurrency", "Concurrency value can not be negative or equal to zero.");
+                throw new ArgumentOutOfRangeException("concurrency", "Concurrency value can not be negative or zero.");
             }
 
             if (pollInterval != pollInterval.Duration())
             {
-                throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value should be positive.");
+                throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value must be positive.");
             }
 
             _serverName = serverName;
