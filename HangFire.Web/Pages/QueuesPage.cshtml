@@ -19,7 +19,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var queue in Storage.Queues())
+        @foreach (var queue in HangFireApi.Queues())
         {
             <tr>
                 <td>@queue.Name</td>

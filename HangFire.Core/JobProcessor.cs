@@ -7,9 +7,9 @@ namespace HangFire
     class JobProcessor
     {
         private readonly WorkerActivator _activator;
-        private readonly IEnumerable<IPerformInterceptor> _interceptors;
+        private readonly IEnumerable<IServerFilter> _interceptors;
 
-        public JobProcessor(WorkerActivator activator, IEnumerable<IPerformInterceptor> interceptors)
+        public JobProcessor(WorkerActivator activator, IEnumerable<IServerFilter> interceptors)
         {
             _activator = activator;
             _interceptors = interceptors;

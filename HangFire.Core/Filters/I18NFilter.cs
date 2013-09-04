@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace HangFire
 {
-    public class I18NInterceptor : IPerformInterceptor, IEnqueueInterceptor
+    public class I18NFilter : IServerFilter, IClientFilter
     {
         public void InterceptPerform(Worker worker, Action action)
         {

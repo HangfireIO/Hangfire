@@ -12,11 +12,11 @@ namespace HangFire.Web
         {
             var response = new
                 {
-                    succeeded = Storage.SucceededCount(),
-                    failed = Storage.FailedCount(),
-                    dispatchers = Storage.Dispatchers().Count(),
-                    scheduled = Storage.ScheduledCount(),
-                    enqueued = Storage.EnqueuedCount()
+                    succeeded = HangFireApi.SucceededCount(),
+                    failed = HangFireApi.FailedCount(),
+                    dispatchers = HangFireApi.Dispatchers().Count(),
+                    scheduled = HangFireApi.ScheduledCount(),
+                    enqueued = HangFireApi.EnqueuedCount()
                 };
 
             var serialized = JsonSerializer.SerializeToString(response);

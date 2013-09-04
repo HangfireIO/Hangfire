@@ -58,7 +58,7 @@ WriteLiteral("\n<table class=\"table\">\n    <thead>\n        <tr>\n            
 
             
             #line 22 "..\..\Pages\QueuesPage.cshtml"
-         foreach (var queue in Storage.Queues())
+         foreach (var queue in HangFireApi.Queues())
         {
 
             

@@ -2,7 +2,7 @@
 
 namespace HangFire
 {
-    public interface IPerformInterceptor : IInterceptor
+    public interface IServerFilter : IFilter
     {
         void InterceptPerform(Worker worker, Action action);
     }

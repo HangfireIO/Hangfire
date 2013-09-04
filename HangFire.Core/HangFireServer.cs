@@ -6,7 +6,7 @@ using ServiceStack.Logging;
 
 namespace HangFire
 {
-    public class JobManager : IDisposable
+    public class HangFireServer : IDisposable
     {
         private readonly string _serverName;
         private readonly int _concurrency;
@@ -25,7 +25,22 @@ namespace HangFire
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
-        public JobManager(string serverName, int concurrency, string queue, TimeSpan pollInterval)
+        public HangFireServer(string serverName)
+            : this(serverName, "default")
+        {
+        }
+
+        public HangFireServer(string serverName, string queue)
+            : this(serverName, queue, Environment.ProcessorCount * 2)
+        {
+        }
+
+        public HangFireServer(string serverName, string queueName, int concurrency)
+            : this(serverName, queueName, concurrency, TimeSpan.FromSeconds(15))
+        {
+        }
+
+        public HangFireServer(string serverName, string queue, int concurrency, TimeSpan pollInterval)
         {
             _serverName = serverName;
             _concurrency = concurrency;

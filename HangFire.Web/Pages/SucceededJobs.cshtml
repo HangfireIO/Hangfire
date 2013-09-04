@@ -18,7 +18,7 @@
 </div>
 
 @{
-    var succeededJobs = Storage.SucceededJobs();
+    var succeededJobs = HangFireApi.SucceededJobs();
 }
 
 @if (succeededJobs.Count == 0)

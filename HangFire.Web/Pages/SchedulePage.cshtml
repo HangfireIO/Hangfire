@@ -11,7 +11,7 @@
 }
 
 @{
-    var scheduledJobs = Storage.Schedule();
+    var scheduledJobs = HangFireApi.Schedule();
 }
 
 @if (scheduledJobs.Count == 0)

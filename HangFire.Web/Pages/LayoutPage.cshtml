@@ -37,13 +37,13 @@
                         <li class="@(Request.PathInfo.Equals("/servers") ? "active" : null)">
                             <a href="@(Request.LinkTo("/servers"))">
                                 Servers
-                                <span class="badge">@Storage.Servers().Count()</span>
+                                <span class="badge">@HangFireApi.Servers().Count()</span>
                             </a>                            
                         </li>
                         <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">
                             <a href="@Request.LinkTo("/queues")">
                                 Queues
-                                <span class="badge">@Storage.Queues().Count()</span>
+                                <span class="badge">@HangFireApi.Queues().Count()</span>
                             </a>
                         </li>
                     </ul>
@@ -65,34 +65,34 @@
                     <a class="list-group-item @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
                         href="@Request.LinkTo("/succeeded")">
                         <span id="stats-succeeded" class="label label-success pull-right">
-                            @String.Format("{0:n0}", Storage.SucceededCount())
+                            @String.Format("{0:n0}", HangFireApi.SucceededCount())
                         </span>
                         Succeeded
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
                         href="@Request.LinkTo("/failed")">
                         <span id="stats-failed" class="label label-danger pull-right">
-                            @String.Format("{0:n0}", Storage.FailedCount())
+                            @String.Format("{0:n0}", HangFireApi.FailedCount())
                         </span>
                         Failed
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/dispatchers") ? "active" : null)" 
                         href="@Request.LinkTo("/dispatchers")">
                         <span id="stats-dispatchers" class="label label-warning pull-right">
-                            @String.Format("{0:n0}", Storage.Dispatchers().Count())
+                            @String.Format("{0:n0}", HangFireApi.Dispatchers().Count())
                         </span>
                         Processing
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
                         href="@Request.LinkTo("/schedule")">
                         <span id="stats-scheduled" class="label label-primary pull-right">
-                            @String.Format("{0:n0}", Storage.ScheduledCount())
+                            @String.Format("{0:n0}", HangFireApi.ScheduledCount())
                         </span>
                         Scheduled
                     </a>
                     <a class="list-group-item" href="#">
                         <span id="stats-enqueued" class="label label-default pull-right">
-                            @String.Format("{0:n0}", Storage.EnqueuedCount())
+                            @String.Format("{0:n0}", HangFireApi.EnqueuedCount())
                         </span>
                         Enqueued
                     </a>

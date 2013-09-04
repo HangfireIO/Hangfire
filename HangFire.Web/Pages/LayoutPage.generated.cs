@@ -156,7 +156,7 @@ WriteLiteral("\">\r\n                                Servers\r\n                
 
             
             #line 40 "..\..\Pages\LayoutPage.cshtml"
-                                               Write(Storage.Servers().Count());
+                                               Write(HangFireApi.Servers().Count());
 
             
             #line default
@@ -188,7 +188,7 @@ WriteLiteral("\">\r\n                                Queues\r\n                 
 
             
             #line 46 "..\..\Pages\LayoutPage.cshtml"
-                                               Write(Storage.Queues().Count());
+                                               Write(HangFireApi.Queues().Count());
 
             
             #line default
@@ -247,7 +247,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-succeeded\" class=
 
             
             #line 68 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", Storage.SucceededCount()));
+                       Write(String.Format("{0:n0}", HangFireApi.SucceededCount()));
 
             
             #line default
@@ -279,7 +279,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-failed\" class=\"l
 
             
             #line 75 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", Storage.FailedCount()));
+                       Write(String.Format("{0:n0}", HangFireApi.FailedCount()));
 
             
             #line default
@@ -311,7 +311,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-dispatchers\" clas
 
             
             #line 82 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", Storage.Dispatchers().Count()));
+                       Write(String.Format("{0:n0}", HangFireApi.Dispatchers().Count()));
 
             
             #line default
@@ -343,7 +343,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-scheduled\" class=
 
             
             #line 89 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", Storage.ScheduledCount()));
+                       Write(String.Format("{0:n0}", HangFireApi.ScheduledCount()));
 
             
             #line default
@@ -359,7 +359,7 @@ WriteLiteral(@"
 
             
             #line 95 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", Storage.EnqueuedCount()));
+                       Write(String.Format("{0:n0}", HangFireApi.EnqueuedCount()));
 
             
             #line default

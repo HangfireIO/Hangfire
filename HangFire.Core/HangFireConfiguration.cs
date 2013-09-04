@@ -41,10 +41,10 @@ namespace HangFire
             RedisPassword = null;
             RedisDb = 0;
 
-            PerformInterceptors = new List<IPerformInterceptor>();
-            EnqueueInterceptors = new List<IEnqueueInterceptor>();
+            ServerFilters = new List<IServerFilter>();
+            ClientFilters = new List<IClientFilter>();
 
-            AddInterceptor(new I18NInterceptor());
+            AddFilter(new I18NFilter());
         }
 
         /// <summary>
@@ -73,21 +73,21 @@ namespace HangFire
         /// </summary>
         public long RedisDb { get; set; }
 
-        public IList<IPerformInterceptor> PerformInterceptors { get; private set; }
-        public IList<IEnqueueInterceptor> EnqueueInterceptors { get; private set; }
+        public IList<IServerFilter> ServerFilters { get; private set; }
+        public IList<IClientFilter> ClientFilters { get; private set; }
 
-        public void AddInterceptor(IInterceptor interceptor)
+        public void AddFilter(IFilter filter)
         {
-            var serverMiddleware = interceptor as IPerformInterceptor;
-            if (serverMiddleware != null)
+            var serverFilter = filter as IServerFilter;
+            if (serverFilter != null)
             {
-                PerformInterceptors.Add(serverMiddleware);
+                ServerFilters.Add(serverFilter);
             }
 
-            var clientMiddleware = interceptor as IEnqueueInterceptor;
-            if (clientMiddleware != null)
+            var clientFilter = filter as IClientFilter;
+            if (clientFilter != null)
             {
-                EnqueueInterceptors.Add(clientMiddleware);
+                ClientFilters.Add(clientFilter);
             }
         }
     }

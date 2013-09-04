@@ -1,6 +1,6 @@
 ﻿namespace HangFire
 {
-    public interface IInterceptor
+    public interface IFilter
     {
     }
 }

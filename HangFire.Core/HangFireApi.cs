@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace HangFire
 {
-    public static class Storage
+    public static class HangFireApi
     {
         private static readonly RedisClient _client = new RedisClient();
 

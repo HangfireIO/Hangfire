@@ -68,7 +68,7 @@ WriteLiteral("\r\n<div class=\"alert alert-info\">\r\n    HangFire записы�
             
             #line 18 "..\..\Pages\FailedJobsPage.cshtml"
   
-    var failedJobs = Storage.FailedJobs();
+    var failedJobs = HangFireApi.FailedJobs();
 
 
             

@@ -49,10 +49,10 @@ namespace HangFire.Hosts
                 x =>
                 {
                     x.RedisPort = 6379;
-                    x.AddInterceptor(new BasicRetryInterceptor());
+                    x.AddFilter(new BasicRetryFilter());
                 });
 
-            using (var manager = new JobManager("hijack!", concurrency, "qqq", TimeSpan.FromSeconds(15)))
+            using (var server = new HangFireServer("hijack!", "qqq", concurrency, TimeSpan.FromSeconds(15)))
             {
                 Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 
@@ -74,7 +74,7 @@ namespace HangFire.Hosts
                             var workCount = int.Parse(command.Substring(4));
                             for (var i = 0; i < workCount; i++)
                             {
-                                Perform.Async<ConsoleWorker>(new { Number = count++ });
+                                HangFireClient.PerformAsync<ConsoleWorker>(new { Number = count++ });
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
@@ -89,14 +89,14 @@ namespace HangFire.Hosts
                         var workCount = int.Parse(command.Substring(6));
                         for (var i = 0; i < workCount; i++)
                         {
-                            Perform.Async<ErrorWorker>();
+                            HangFireClient.PerformAsync<ErrorWorker>();
                         }
                     }
 
                     if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var seconds = int.Parse(command.Substring(2));
-                        Perform.In<ConsoleWorker>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
+                        HangFireClient.PerformIn<ConsoleWorker>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
                     }
                 }
             }

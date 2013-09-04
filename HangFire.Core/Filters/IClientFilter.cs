@@ -1,6 +1,6 @@
 ﻿namespace HangFire
 {
-    public interface IEnqueueInterceptor : IInterceptor
+    public interface IClientFilter : IFilter
     {
         void InterceptEnqueue(Job job);
     }

@@ -21,6 +21,6 @@
 
 <h3>History graph</h3>
 <div id="history" 
-     data-succeeded="@JsonSerializer.SerializeToString(Storage.HourlySucceededJobs())" 
-     data-failed="@JsonSerializer.SerializeToString(Storage.HourlyFailedJobs())">
+     data-succeeded="@JsonSerializer.SerializeToString(HangFireApi.HourlySucceededJobs())" 
+     data-failed="@JsonSerializer.SerializeToString(HangFireApi.HourlyFailedJobs())">
 </div>

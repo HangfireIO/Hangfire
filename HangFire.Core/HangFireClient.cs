@@ -2,23 +2,23 @@
 
 namespace HangFire
 {
-    public static class Perform
+    public static class HangFireClient
     {
         private static readonly RedisClient Client = new RedisClient();
 
-        public static void Async<TWorker>()
+        public static void PerformAsync<TWorker>()
             where TWorker : Worker
         {
-            Async<TWorker>(null);
+            PerformAsync<TWorker>(null);
         }
 
-        public static void Async<TWorker>(object args)
+        public static void PerformAsync<TWorker>(object args)
             where TWorker : Worker
         {
-            Async(typeof(TWorker), args);
+            PerformAsync(typeof(TWorker), args);
         }
 
-        public static void Async(Type workerType, object args = null)
+        public static void PerformAsync(Type workerType, object args = null)
         {
             if (workerType == null)
             {
@@ -41,17 +41,17 @@ namespace HangFire
             }
         }
 
-        public static void In<TWorker>(TimeSpan interval)
+        public static void PerformIn<TWorker>(TimeSpan interval)
         {
-            In<TWorker>(interval, null);
+            PerformIn<TWorker>(interval, null);
         }
 
-        public static void In<TWorker>(TimeSpan interval, object args)
+        public static void PerformIn<TWorker>(TimeSpan interval, object args)
         {
-            In(typeof(TWorker), interval, args);
+            PerformIn(typeof(TWorker), interval, args);
         }
 
-        public static void In(Type workerType, TimeSpan interval, object args = null)
+        public static void PerformIn(Type workerType, TimeSpan interval, object args = null)
         {
             if (workerType == null)
             {
@@ -92,7 +92,7 @@ namespace HangFire
 
         private static void InvokeInterceptors(Job job)
         {
-            var interceptors = HangFireConfiguration.Current.EnqueueInterceptors;
+            var interceptors = HangFireConfiguration.Current.ClientFilters;
 
             foreach (var interceptor in interceptors)
             {

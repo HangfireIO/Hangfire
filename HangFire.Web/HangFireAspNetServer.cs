@@ -9,7 +9,7 @@ namespace HangFire.Web
     /// </summary>
     public class HangFireAspNetServer : IRegisteredObject, IDisposable
     {
-        private JobManager _manager;
+        private HangFireServer _manager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HangFireAspNetServer"/>.
@@ -50,7 +50,7 @@ namespace HangFire.Web
         public void Start()
         {
             HostingEnvironment.RegisterObject(this);
-            _manager = new JobManager(ServerName, Concurrency, QueueName, PollInterval);
+            _manager = new HangFireServer(ServerName, Concurrency, QueueName, PollInterval);
         }
 
         /// <summary>

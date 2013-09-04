@@ -76,7 +76,7 @@ WriteLiteral("\r\n<h3>History graph</h3>\r\n<div id=\"history\" \r\n     data-su
 
             
             #line 24 "..\..\Pages\DashboardPage.cshtml"
-                Write(JsonSerializer.SerializeToString(Storage.HourlySucceededJobs()));
+                Write(JsonSerializer.SerializeToString(HangFireApi.HourlySucceededJobs()));
 
             
             #line default
@@ -86,7 +86,7 @@ WriteLiteral("\" \r\n     data-failed=\"");
 
             
             #line 25 "..\..\Pages\DashboardPage.cshtml"
-             Write(JsonSerializer.SerializeToString(Storage.HourlyFailedJobs()));
+             Write(JsonSerializer.SerializeToString(HangFireApi.HourlyFailedJobs()));
 
             
             #line default

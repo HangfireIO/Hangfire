@@ -56,7 +56,7 @@ WriteLiteral("\n<table class=\"table\">\n    <thead>\n        <tr>\n            
 
             
             #line 22 "..\..\Pages\DispatchersPage.cshtml"
-         foreach (var dispatcher in Storage.Dispatchers())
+         foreach (var dispatcher in HangFireApi.Dispatchers())
         {
 
             

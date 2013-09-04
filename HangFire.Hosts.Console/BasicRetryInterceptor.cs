@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace HangFire.Hosts
 {
-    public class BasicRetryInterceptor : IPerformInterceptor
+    public class BasicRetryFilter : IServerFilter
     {
         public void InterceptPerform(Worker worker, Action action)
         {

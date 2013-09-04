@@ -64,22 +64,22 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="HangFireConfiguration.cs" />
-    <Compile Include="Interceptors\IEnqueueInterceptor.cs" />
-    <Compile Include="Interceptors\IInterceptor.cs" />
-    <Compile Include="Interceptors\IPerformInterceptor.cs" />
-    <Compile Include="Interceptors\I18NMiddleware.cs" />
+    <Compile Include="Filters\IClientFilter.cs" />
+    <Compile Include="Filters\IFilter.cs" />
+    <Compile Include="Filters\IServerFilter.cs" />
+    <Compile Include="Filters\I18NFilter.cs" />
     <Compile Include="JobCompletedEventArgs.cs" />
-    <Compile Include="Storage.cs" />
+    <Compile Include="HangFireApi.cs" />
     <Compile Include="JobSchedulePoller.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="RedisStorage.cs" />
     <Compile Include="WorkerActivator.cs" />
-    <Compile Include="JobManager.cs" />
+    <Compile Include="HangFireServer.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="JobDispatcherPool.cs" />
     <Compile Include="JobProcessor.cs" />
     <Compile Include="JsonHelper.cs" />
-    <Compile Include="Perform.cs" />
+    <Compile Include="HangFireClient.cs" />
     <Compile Include="JobDispatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisClient.cs" />

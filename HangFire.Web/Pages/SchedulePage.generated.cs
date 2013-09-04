@@ -57,7 +57,7 @@ WriteLiteral("\n");
             
             #line 13 "..\..\Pages\SchedulePage.cshtml"
   
-    var scheduledJobs = Storage.Schedule();
+    var scheduledJobs = HangFireApi.Schedule();
 
 
             
