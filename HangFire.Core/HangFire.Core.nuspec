@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>HangFire.Core</id>
-    <version>0.1.0-alpha4</version>
+    <version>$version$</version>
     <title>$title$</title>
     <authors>odinserj</authors>
     <owners>odinserj</owners>
