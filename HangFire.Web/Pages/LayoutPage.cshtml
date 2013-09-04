@@ -1,6 +1,9 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
+@using System.Diagnostics
 @using System.Linq
+@using System.Reflection
+@using System.Web.Configuration
 @inherits WebTemplateBase
 <!DOCTYPE html>
 
@@ -114,7 +117,9 @@
         <div class="container">
             <ul class="list-inline credit">
                 <li>
-                    <a href="http://github.io/odinserj/hangfire" target="_blank">HangFire 0.1.3
+                    <a href="http://github.io/odinserj/hangfire" target="_blank">
+                        HangFire 
+                        @AssemblyName.GetAssemblyName(GetType().Assembly.Location).Version
                     </a>
                 </li>
                 <li>Redis: 

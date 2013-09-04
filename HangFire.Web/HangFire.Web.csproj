@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Pages\DashboardPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -81,6 +84,7 @@
     <None Include="HangFire.Web.nuspec" />
     <None Include="packages.config" />
     <None Include="package\content\HangFireConfig.cs.pp" />
+    <None Include="package\content\web.config.transform" />
     <None Include="Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>SucceededJobs.generated.cs</LastGenOutput>
