@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>HangFire</id>
-    <version>0.1.0-alpha3</version>
+    <version>0.1.0-alpha4</version>
     <title>HangFire</title>
     <authors>odinserj</authors>
     <owners>odinserj</owners>
@@ -10,11 +10,13 @@
     <description>$description$</description>
     <copyright>Copyright (c) 2013 Sergey Odinokov.</copyright>
 	<dependencies>
-		<dependency id="HangFire.Core" version="0.1.0-alpha3" />
+		<dependency id="HangFire.Core" version="0.1.0-alpha4" />
 		<dependency id="ServiceStack.Text" version="3.9.59" />
+    <dependency id="WebActivatorEx" version="2.0.1.0" />
 	</dependencies>
   </metadata>
   <files>
     <file src="package\content\HangFireConfig.cs.pp" target="content\App_Start" />
+    <file src="package\content\web.config.transform" target="content" />
   </files>
 </package>
