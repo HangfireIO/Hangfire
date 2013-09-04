@@ -58,6 +58,11 @@ namespace HangFire
                 throw new ArgumentNullException("workerType");
             }
 
+            if (interval != interval.Duration())
+            {
+                throw new ArgumentOutOfRangeException("interval", "Interval value can not be negative.");
+            }
+
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
 
             var serializedJob = InterceptAndSerializeJob(workerType, args);

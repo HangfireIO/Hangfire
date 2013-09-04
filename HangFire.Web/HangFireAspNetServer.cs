@@ -50,7 +50,7 @@ namespace HangFire.Web
         public void Start()
         {
             HostingEnvironment.RegisterObject(this);
-            _manager = new HangFireServer(ServerName, Concurrency, QueueName, PollInterval);
+            _manager = new HangFireServer(ServerName, QueueName, Concurrency, PollInterval);
         }
 
         /// <summary>

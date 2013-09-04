@@ -10,7 +10,7 @@ namespace HangFire
     {
         private readonly string _serverName;
         private readonly int _concurrency;
-        private readonly string _queue;
+        private readonly string _queueName;
         private readonly Thread _managerThread;
         private readonly Thread _completionHandlerThread;
         private readonly JobDispatcherPool _pool;
@@ -30,8 +30,8 @@ namespace HangFire
         {
         }
 
-        public HangFireServer(string serverName, string queue)
-            : this(serverName, queue, Environment.ProcessorCount * 2)
+        public HangFireServer(string serverName, string queueName)
+            : this(serverName, queueName, Environment.ProcessorCount * 2)
         {
         }
 
@@ -40,11 +40,31 @@ namespace HangFire
         {
         }
 
-        public HangFireServer(string serverName, string queue, int concurrency, TimeSpan pollInterval)
+        public HangFireServer(string serverName, string queueName, int concurrency, TimeSpan pollInterval)
         {
+            if (String.IsNullOrEmpty(serverName))
+            {
+                throw new ArgumentNullException("serverName", "You should provide non-null and unique server name.");
+            }
+
+            if (String.IsNullOrEmpty(queueName))
+            {
+                throw new ArgumentNullException("queueName", "Please specify the queue name you want to listen.");
+            }
+
+            if (concurrency <= 0)
+            {
+                throw new ArgumentOutOfRangeException("concurrency", "Concurrency value can not be negative or equal to zero.");
+            }
+
+            if (pollInterval != pollInterval.Duration())
+            {
+                throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value should be positive.");
+            }
+
             _serverName = serverName;
             _concurrency = concurrency;
-            _queue = queue;
+            _queueName = queueName;
 
             _completionHandlerThread = new Thread(HandleCompletedJobs)
                 {
@@ -97,7 +117,7 @@ namespace HangFire
         {
             try
             {
-                _blockingClient.TryToDo(x => x.AnnounceServer(_serverName, _concurrency, _queue));
+                _blockingClient.TryToDo(x => x.AnnounceServer(_serverName, _concurrency, _queueName));
 
                 _logger.Info("Starting to requeue processing jobs...");
                 int requeued = 0;
@@ -106,7 +126,7 @@ namespace HangFire
                 {
                     _blockingClient.TryToDo(storage =>
                         {
-                            requeued += storage.RequeueProcessingJobs(_serverName, _queue, _cts.Token);
+                            requeued += storage.RequeueProcessingJobs(_serverName, _queueName, _cts.Token);
                             finished = true;
                         });
                     if (finished) break;
@@ -129,7 +149,7 @@ namespace HangFire
 
                             do
                             {
-                                job = storage.DequeueJob(_serverName, _queue, TimeSpan.FromSeconds(5));
+                                job = storage.DequeueJob(_serverName, _queueName, TimeSpan.FromSeconds(5));
 
                                 if (job == null && _cts.IsCancellationRequested)
                                 {
@@ -144,7 +164,7 @@ namespace HangFire
             catch (OperationCanceledException)
             {
                 _logger.Info("Shutdown has been requested. Exiting...");
-                _blockingClient.TryToDo(x => x.HideServer(_serverName, _queue));
+                _blockingClient.TryToDo(x => x.HideServer(_serverName, _queueName));
             }
             catch (Exception ex)
             {
@@ -164,7 +184,7 @@ namespace HangFire
                     {
                         _client.TryToDo(storage =>
                             {
-                                storage.RemoveProcessingJob(_serverName, _queue, completedJob);
+                                storage.RemoveProcessingJob(_serverName, _queueName, completedJob);
                                 removed = true;
                             });
                         if (removed) break;
