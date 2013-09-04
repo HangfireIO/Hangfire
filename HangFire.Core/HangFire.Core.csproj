@@ -83,6 +83,7 @@
     <Compile Include="Worker.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="HangFire.Core.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

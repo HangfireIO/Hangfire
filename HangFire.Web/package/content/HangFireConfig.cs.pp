@@ -1,9 +1,9 @@
 ﻿using HangFire.Web;
 
 [assembly: WebActivatorEx.PreApplicationStartMethod(
-    typeof(HangFire.MvcSample.App_Start.HangFireConfig), "Start")]
+    typeof($rootnamespace$.HangFireConfig), "Start")]
 
-namespace HangFire.MvcSample.App_Start
+namespace $rootnamespace$
 {
     public class HangFireConfig
     {
