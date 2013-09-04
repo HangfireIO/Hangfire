@@ -165,9 +165,9 @@ namespace HangFire
             }
         }
 
-        private void PoolOnJobCompleted(object sender, string job)
+        private void PoolOnJobCompleted(object sender, JobCompletedEventArgs args)
         {
-            _completedJobs.Add(job);
+            _completedJobs.Add(args.SerializedJob);
         }
     }
 }

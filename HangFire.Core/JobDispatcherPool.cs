@@ -34,7 +34,7 @@ namespace HangFire
             _logger.Info("Dispatchers were started.");
         }
 
-        public event EventHandler<string> JobCompleted;
+        public event EventHandler<JobCompletedEventArgs> JobCompleted;
 
         public JobDispatcher TakeFree(CancellationToken cancellationToken)
         {
@@ -55,7 +55,7 @@ namespace HangFire
             var onCompleted = JobCompleted;
             if (onCompleted != null)
             {
-                onCompleted(this, job);
+                onCompleted(this, new JobCompletedEventArgs(job));
             }
         }
 

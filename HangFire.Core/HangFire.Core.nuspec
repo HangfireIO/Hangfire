@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>HangFire.Core</id>
+    <version>0.1.0-alpha2</version>
+    <title>$title$</title>
+    <authors>odinserj</authors>
+    <owners>odinserj</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>Copyright (c) 2013 Sergey Odinokov.</copyright>
+	<dependencies>
+		<dependency id="ServiceStack.Common" version="3.9.59" />
+		<dependency id="ServiceStack.Text" version="3.9.59" />
+		<dependency id="ServiceStack.Redis" version="3.9.59" />
+	</dependencies>
+  </metadata>
+</package>
