@@ -86,7 +86,7 @@ namespace HangFire
                         value = converter.ConvertToString(obj2);
                     }
 
-                    dictionary.Add(descriptor.Name, value);
+                    dictionary.Add(descriptor.Name.ToLowerInvariant(), value);
                 }
             }
         }
