@@ -42,7 +42,7 @@ namespace HangFire
             ServerFilters = new List<IServerFilter>();
             ClientFilters = new List<IClientFilter>();
 
-            AddFilter(new I18NFilter());
+            AddFilter(new CurrentCultureFilter());
         }
 
         /// <summary>

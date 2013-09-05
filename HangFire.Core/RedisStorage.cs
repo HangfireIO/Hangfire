@@ -242,7 +242,7 @@ namespace HangFire
                     {
                         TimeStamp = scheduled.Value.ToString(),
                         Args = JsonHelper.Serialize(job.Args),
-                        Queue = HangFireJob.GetQueueName(job.WorkerType),
+                        Queue = JobHelper.GetQueueName(job.WorkerType),
                         Type = job.WorkerType.Name
                     });
             }
@@ -397,7 +397,7 @@ namespace HangFire
                 .Select(x => new FailedJobDto
                 {
                     Args = new Dictionary<string, string>(x.Args),
-                    Queue = HangFireJob.GetQueueName(x.WorkerType),
+                    Queue = JobHelper.GetQueueName(x.WorkerType),
                     Type = x.WorkerType,
                     FailedAt = x.FailedAt,
                     Latency = x.Latency,
@@ -416,7 +416,7 @@ namespace HangFire
                 .Select(x => new SucceededJobDto
                 {
                     Args = new Dictionary<string, string>(x.Args),
-                    Queue = HangFireJob.GetQueueName(x.WorkerType),
+                    Queue = JobHelper.GetQueueName(x.WorkerType),
                     Type = x.WorkerType,
                     SucceededAt = x.SucceededAt,
                     Latency = x.Latency

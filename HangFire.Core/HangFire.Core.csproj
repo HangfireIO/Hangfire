@@ -85,7 +85,7 @@
     <Compile Include="Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisClient.cs" />
-    <Compile Include="HangFireJob.cs" />
+    <Compile Include="JobHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.Core.nuspec" />
