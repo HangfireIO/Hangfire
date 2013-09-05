@@ -65,8 +65,8 @@ namespace HangFire
         /// </summary>
         public long RedisDb { get; set; }
 
-        public IList<IServerFilter> ServerFilters { get; private set; }
-        public IList<IClientFilter> ClientFilters { get; private set; }
+        internal IList<IServerFilter> ServerFilters { get; private set; }
+        internal IList<IClientFilter> ClientFilters { get; private set; }
 
         public void AddFilter(IFilter filter)
         {
@@ -86,6 +86,12 @@ namespace HangFire
             {
                 ClientFilters.Add(clientFilter);
             }
+        }
+
+        public void ClearFilters()
+        {
+            ClientFilters.Clear();
+            ServerFilters.Clear();
         }
     }
 }

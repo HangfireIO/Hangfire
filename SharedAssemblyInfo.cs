@@ -12,4 +12,4 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant(true)]
 
 [assembly: AssemblyVersion("0.2")]
-[assembly: AssemblyInformationalVersion("0.2.0-alpha3")]
+[assembly: AssemblyInformationalVersion("0.2.0-alpha4")]
