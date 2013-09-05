@@ -138,7 +138,7 @@ namespace HangFire
                             // поэтому будем повторять действие до тех пор, пока не 
                             // восстановится связь.
                             while (!Client.TryToDo(x => x.AddProcessingDispatcher(
-                                _name2, job.WorkerType.Name, job.SerializeArgs())))
+                                _name2, job.JobType, job.SerializeArgs())))
                             {
                             }
                         }

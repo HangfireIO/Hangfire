@@ -22,7 +22,9 @@ namespace HangFire
             object job = null;
             try
             {
-                job = _activator.ActivateJob(jobDescription.WorkerType);
+                // TODO: what to do with type resolving exceptions?
+                var jobType = Type.GetType(jobDescription.JobType);
+                job = _activator.ActivateJob(jobType);
 
                 var jobArguments = new Dictionary<string, string>(
                     jobDescription.Args,

@@ -52,7 +52,7 @@ namespace HangFire
                             if (scheduledJob != null)
                             {
                                 var job = JsonHelper.Deserialize<JobDescription>(scheduledJob);
-                                var queue = JobHelper.GetQueueName(job.WorkerType);
+                                var queue = JobHelper.GetQueueName(job.JobType);
                                 storage.EnqueueJob(queue, scheduledJob);
                             }
                             else

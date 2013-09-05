@@ -242,8 +242,8 @@ namespace HangFire
                     {
                         TimeStamp = scheduled.Value.ToString(),
                         Args = JsonHelper.Serialize(job.Args),
-                        Queue = JobHelper.GetQueueName(job.WorkerType),
-                        Type = job.WorkerType.Name
+                        Queue = JobHelper.GetQueueName(job.JobType),
+                        Type = job.JobType
                     });
             }
 
@@ -397,8 +397,8 @@ namespace HangFire
                 .Select(x => new FailedJobDto
                 {
                     Args = new Dictionary<string, string>(x.Args),
-                    Queue = JobHelper.GetQueueName(x.WorkerType),
-                    Type = x.WorkerType,
+                    Queue = JobHelper.GetQueueName(x.JobType),
+                    Type = x.JobType,
                     FailedAt = x.FailedAt,
                     Latency = x.Latency,
                     ExceptionType = x.Properties["ExceptionType"],
@@ -416,8 +416,8 @@ namespace HangFire
                 .Select(x => new SucceededJobDto
                 {
                     Args = new Dictionary<string, string>(x.Args),
-                    Queue = JobHelper.GetQueueName(x.WorkerType),
-                    Type = x.WorkerType,
+                    Queue = JobHelper.GetQueueName(x.JobType),
+                    Type = x.JobType,
                     SucceededAt = x.SucceededAt,
                     Latency = x.Latency
                 })
@@ -458,7 +458,7 @@ namespace HangFire
 
     public class FailedJobDto
     {
-        public Type Type { get; set; }
+        public string Type { get; set; }
         public string Queue { get; set; }
         public Dictionary<String, String> Args { get; set; }
         public DateTime? FailedAt { get; set; }
@@ -470,7 +470,7 @@ namespace HangFire
 
     public class SucceededJobDto
     {
-        public Type Type { get; set; }
+        public string Type { get; set; }
         public string Queue { get; set; }
         public Dictionary<String, String> Args { get; set; }
         public DateTime? SucceededAt { get; set; }

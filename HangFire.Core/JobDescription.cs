@@ -15,7 +15,7 @@ namespace HangFire
         public JobDescription(Type workerType, object args)
         {
             Jid = Guid.NewGuid().ToString();
-            WorkerType = workerType;
+            JobType = workerType.AssemblyQualifiedName;
             Args = new Dictionary<string, string>();
             Properties = new Dictionary<string, string>();
             EnqueuedAt = DateTime.UtcNow;
@@ -24,7 +24,7 @@ namespace HangFire
         }
 
         public string Jid { get; internal set; }
-        public Type WorkerType { get; internal set; }
+        public string JobType { get; internal set; }
         public IDictionary<string, string> Args { get; internal set; }
         public IDictionary<string, string> Properties { get; internal set; } 
         public DateTime EnqueuedAt { get; internal set; }
