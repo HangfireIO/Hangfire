@@ -5,14 +5,14 @@ using System.Runtime.Serialization;
 
 namespace HangFire
 {
-    public class Job
+    public class JobDescription
     {
-        public static Job Deserialize(string serializedJob)
+        public static JobDescription Deserialize(string serializedJob)
         {
-            return JsonHelper.Deserialize<Job>(serializedJob);
+            return JsonHelper.Deserialize<JobDescription>(serializedJob);
         }
 
-        public Job(Type workerType, object args)
+        public JobDescription(Type workerType, object args)
         {
             Jid = Guid.NewGuid().ToString();
             WorkerType = workerType;

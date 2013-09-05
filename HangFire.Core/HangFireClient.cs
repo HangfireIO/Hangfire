@@ -2,36 +2,49 @@
 
 namespace HangFire
 {
+    /// <summary>
+    /// Represents a top-level class for enqueuing jobs.
+    /// </summary>
     public static class HangFireClient
     {
         private static readonly RedisClient Client = new RedisClient();
 
-        public static void PerformAsync<TWorker>()
-            where TWorker : Worker
+        /// <summary>
+        /// Puts specified job to the queue.
+        /// </summary>
+        /// <typeparam name="TJob">Job type</typeparam>
+        public static void PerformAsync<TJob>()
+            where TJob : HangFireJob
         {
-            PerformAsync<TWorker>(null);
+            PerformAsync<TJob>(null);
         }
 
-        public static void PerformAsync<TWorker>(object args)
-            where TWorker : Worker
+        public static void PerformAsync<TJob>(object args)
+            where TJob : HangFireJob
         {
-            PerformAsync(typeof(TWorker), args);
+            PerformAsync(typeof(TJob), args);
         }
 
-        public static void PerformAsync(Type workerType, object args = null)
+        public static void PerformAsync(Type jobType, object args = null)
         {
-            if (workerType == null)
+            if (jobType == null)
             {
-                throw new ArgumentNullException("workerType");
+                throw new ArgumentNullException("jobType");
             }
 
-            var serializedJob = InterceptAndSerializeJob(workerType, args);
+            if (!typeof(HangFireJob).IsAssignableFrom(jobType))
+            {
+                throw new ArgumentException(
+                    String.Format("Job type must be a descendant of the '{0}' class", typeof(HangFireJob).Name));
+            }
+
+            var serializedJob = InterceptAndSerializeJob(jobType, args);
             if (serializedJob == null)
             {
                 return;
             }
 
-            var queue = Worker.GetQueueName(workerType);
+            var queue = HangFireJob.GetQueueName(jobType);
 
             lock (Client)
             {
@@ -41,21 +54,29 @@ namespace HangFire
             }
         }
 
-        public static void PerformIn<TWorker>(TimeSpan interval)
+        public static void PerformIn<TJob>(TimeSpan interval)
+            where TJob : HangFireJob
         {
-            PerformIn<TWorker>(interval, null);
+            PerformIn<TJob>(interval, null);
         }
 
-        public static void PerformIn<TWorker>(TimeSpan interval, object args)
+        public static void PerformIn<TJob>(TimeSpan interval, object args)
+            where TJob : HangFireJob
         {
-            PerformIn(typeof(TWorker), interval, args);
+            PerformIn(typeof(TJob), interval, args);
         }
 
-        public static void PerformIn(Type workerType, TimeSpan interval, object args = null)
+        public static void PerformIn(Type jobType, TimeSpan interval, object args = null)
         {
-            if (workerType == null)
+            if (jobType == null)
             {
-                throw new ArgumentNullException("workerType");
+                throw new ArgumentNullException("jobType");
+            }
+
+            if (!typeof(HangFireJob).IsAssignableFrom(jobType))
+            {
+                throw new ArgumentException(
+                    String.Format("Job type must be a descendant of the '{0}' class", typeof(HangFireJob).Name));
             }
 
             if (interval != interval.Duration())
@@ -63,9 +84,15 @@ namespace HangFire
                 throw new ArgumentOutOfRangeException("interval", "Interval value can not be negative.");
             }
 
+            if (interval.Equals(TimeSpan.Zero))
+            {
+                PerformAsync(jobType, args);
+                return;
+            }
+
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
 
-            var serializedJob = InterceptAndSerializeJob(workerType, args);
+            var serializedJob = InterceptAndSerializeJob(jobType, args);
             if (serializedJob == null)
             {
                 return;
@@ -81,8 +108,8 @@ namespace HangFire
 
         private static string InterceptAndSerializeJob(Type workerType, object args)
         {
-            var job = new Job(workerType, args);
-            InvokeInterceptors(job);
+            var job = new JobDescription(workerType, args);
+            InvokeFilters(job);
             if (job.Canceled)
             {
                 return null;
@@ -95,13 +122,13 @@ namespace HangFire
             return JsonHelper.Serialize(job);
         }
 
-        private static void InvokeInterceptors(Job job)
+        private static void InvokeFilters(JobDescription jobDescription)
         {
-            var interceptors = HangFireConfiguration.Current.ClientFilters;
+            var filters = HangFireConfiguration.Current.ClientFilters;
 
-            foreach (var interceptor in interceptors)
+            foreach (var filter in filters)
             {
-                interceptor.InterceptEnqueue(job);
+                filter.InterceptEnqueue(jobDescription);
             }
         }
 

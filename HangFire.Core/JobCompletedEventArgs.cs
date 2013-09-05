@@ -2,7 +2,7 @@
 
 namespace HangFire
 {
-    public class JobCompletedEventArgs : EventArgs
+    internal class JobCompletedEventArgs : EventArgs
     {
         public JobCompletedEventArgs(string serializedJob)
         {

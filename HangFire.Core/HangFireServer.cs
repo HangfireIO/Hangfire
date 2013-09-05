@@ -6,6 +6,9 @@ using ServiceStack.Logging;
 
 namespace HangFire
 {
+    /// <summary>
+    /// Represents the top-level class for job queue dispatching.
+    /// </summary>
     public class HangFireServer : IDisposable
     {
         private readonly string _serverName;
@@ -13,8 +16,8 @@ namespace HangFire
         private readonly string _queueName;
         private readonly Thread _managerThread;
         private readonly Thread _completionHandlerThread;
-        private readonly JobDispatcherPool _pool;
-        private readonly JobSchedulePoller _schedule;
+        private readonly WorkerManager _pool;
+        private readonly SchedulePoller _schedule;
         private readonly RedisClient _blockingClient = new RedisClient();
         private readonly RedisClient _client = new RedisClient();
         private readonly BlockingCollection<string> _completedJobs 
@@ -25,22 +28,69 @@ namespace HangFire
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
+        /// <summary>
+        /// Initializes and starts a new instance of the <see cref="HangFireServer"/> class
+        /// with a specified server name.
+        /// </summary>
+        /// <param name="serverName">Server name.</param>
         public HangFireServer(string serverName)
             : this(serverName, "default")
         {
         }
 
+        /// <summary>
+        /// Initializes and starts a new instance of the <see cref="HangFireServer"/> class
+        /// with a specified server name and queue name that will be processed.
+        /// </summary>
+        /// <param name="serverName">Server name.</param>
+        /// <param name="queueName">Processing queue name.</param>
         public HangFireServer(string serverName, string queueName)
             : this(serverName, queueName, Environment.ProcessorCount * 2)
         {
         }
 
+        /// <summary>
+        /// Initializes and starts a new instance of the <see cref="HangFireServer"/> class
+        /// with a specified server name, queue name, amount of workers.
+        /// </summary>
+        /// <param name="serverName">Server name.</param>
+        /// <param name="queueName">Processing queue name.</param>
+        /// <param name="concurrency">Amount of workers that will work in parallel.</param>
         public HangFireServer(string serverName, string queueName, int concurrency)
             : this(serverName, queueName, concurrency, TimeSpan.FromSeconds(15))
         {
         }
 
+        /// <summary>
+        /// Initializes and starts a new instance of the <see cref="HangFireServer"/> class
+        /// with a specified server name, queue name, amount of workers and
+        /// polling interval.
+        /// </summary>
+        /// <param name="serverName">Server name.</param>
+        /// <param name="queueName">Processing queue name.</param>
+        /// <param name="concurrency">Amount of workers that will work in parallel.</param>
+        /// <param name="pollInterval">Polling interval for scheduled jobs.</param>
         public HangFireServer(string serverName, string queueName, int concurrency, TimeSpan pollInterval)
+            : this(serverName, queueName, concurrency, pollInterval, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes and starts a new instance of the <see cref="HangFireServer"/> class
+        /// with a specified server name, queue name, amount of workers, polling interval
+        /// and an instance of the <see cref="HangFireJobActivator"/> class.
+        /// </summary>
+        /// <param name="serverName">Server name.</param>
+        /// <param name="queueName">Processing queue name.</param>
+        /// <param name="concurrency">Amount of workers that will work in parallel.</param>
+        /// <param name="pollInterval">Polling interval for scheduled jobs.</param>
+        /// <param name="jobActivator">Instance of the <see cref="HangFireJobActivator"/> that will be used to activate jobs.</param>
+        public HangFireServer(
+            string serverName, 
+            string queueName, 
+            int concurrency, 
+            TimeSpan pollInterval, 
+            HangFireJobActivator jobActivator)
         {
             if (String.IsNullOrEmpty(serverName))
             {
@@ -74,7 +124,7 @@ namespace HangFire
 
             _completionHandlerThread.Start();
             
-            _pool = new JobDispatcherPool(concurrency, serverName);
+            _pool = new WorkerManager(concurrency, serverName, jobActivator ?? new HangFireJobActivator());
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)
@@ -86,9 +136,12 @@ namespace HangFire
 
             _logger.Info("Manager thread has been started.");
 
-            _schedule = new JobSchedulePoller(pollInterval);
+            _schedule = new SchedulePoller(pollInterval);
         }
 
+        /// <summary>
+        /// Stops to processing the queue and stops all the workers.
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)

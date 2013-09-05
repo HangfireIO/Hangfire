@@ -5,8 +5,8 @@ using ServiceStack.Logging.Support.Logging;
 
 namespace HangFire.Hosts
 {
-    [Queue("qqq")]
-    public class ConsoleWorker : Worker
+    [QueueName("qqq")]
+    public class ConsoleJob : HangFireJob
     {
         private static readonly Random _random = new Random();
 
@@ -28,8 +28,8 @@ namespace HangFire.Hosts
         }
     }
 
-    [Queue("qqq")]
-    public class ErrorWorker : Worker
+    [QueueName("qqq")]
+    public class ErrorJob : HangFireJob
     {
         public override void Perform()
         {
@@ -74,7 +74,7 @@ namespace HangFire.Hosts
                             var workCount = int.Parse(command.Substring(4));
                             for (var i = 0; i < workCount; i++)
                             {
-                                HangFireClient.PerformAsync<ConsoleWorker>(new { Number = count++ });
+                                HangFireClient.PerformAsync<ConsoleJob>(new { Number = count++ });
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
@@ -89,14 +89,14 @@ namespace HangFire.Hosts
                         var workCount = int.Parse(command.Substring(6));
                         for (var i = 0; i < workCount; i++)
                         {
-                            HangFireClient.PerformAsync<ErrorWorker>();
+                            HangFireClient.PerformAsync<ErrorJob>();
                         }
                     }
 
                     if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var seconds = int.Parse(command.Substring(2));
-                        HangFireClient.PerformIn<ConsoleWorker>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
+                        HangFireClient.PerformIn<ConsoleJob>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
                     }
                 }
             }

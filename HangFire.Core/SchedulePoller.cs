@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace HangFire
 {
-    internal class JobSchedulePoller : IDisposable
+    internal class SchedulePoller : IDisposable
     {
         private readonly Thread _pollerThread;
 
@@ -13,7 +13,7 @@ namespace HangFire
         private bool _stopped;
         private readonly object _locker = new object();
 
-        public JobSchedulePoller(TimeSpan pollInterval)
+        public SchedulePoller(TimeSpan pollInterval)
         {
             _pollInterval = pollInterval;
             _pollerThread = new Thread(Work) { IsBackground = true, Name = "HangFire.SchedulePoller" };
@@ -51,8 +51,8 @@ namespace HangFire
                             var scheduledJob = storage.GetScheduledJob(now);
                             if (scheduledJob != null)
                             {
-                                var job = JsonHelper.Deserialize<Job>(scheduledJob);
-                                var queue = Worker.GetQueueName(job.WorkerType);
+                                var job = JsonHelper.Deserialize<JobDescription>(scheduledJob);
+                                var queue = HangFireJob.GetQueueName(job.WorkerType);
                                 storage.EnqueueJob(queue, scheduledJob);
                             }
                             else

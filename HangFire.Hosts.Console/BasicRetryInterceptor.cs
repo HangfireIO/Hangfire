@@ -5,7 +5,7 @@ namespace HangFire.Hosts
 {
     public class BasicRetryFilter : IServerFilter
     {
-        public void InterceptPerform(Worker worker, Action action)
+        public void InterceptPerform(HangFireJob job, Action action)
         {
             var attemptsCount = 0;
             const int maxAttempts = 3;

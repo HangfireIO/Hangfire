@@ -4,6 +4,6 @@ namespace HangFire
 {
     public interface IServerFilter : IFilter
     {
-        void InterceptPerform(Worker worker, Action action);
+        void InterceptPerform(HangFireJob job, Action action);
     }
 }

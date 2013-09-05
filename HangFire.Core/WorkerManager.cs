@@ -7,26 +7,27 @@ using ServiceStack.Logging;
 
 namespace HangFire
 {
-    internal class JobDispatcherPool : IDisposable
+    internal class WorkerManager : IDisposable
     {
-        private readonly List<JobDispatcher> _dispatchers;
-        private readonly BlockingCollection<JobDispatcher> _freeDispatchers;
+        private readonly List<Worker> _dispatchers;
+        private readonly BlockingCollection<Worker> _freeDispatchers;
         private readonly ILog _logger = LogManager.GetLogger("HangFire.JobDispatcherPool");
         private bool _disposed;
 
-        public JobDispatcherPool(int count, string serverName)
+        public WorkerManager(int count, string serverName, HangFireJobActivator jobActivator)
         {
-            _dispatchers = new List<JobDispatcher>(count);
-            _freeDispatchers = new BlockingCollection<JobDispatcher>();
+            _dispatchers = new List<Worker>(count);
+            _freeDispatchers = new BlockingCollection<Worker>();
 
             _logger.Info(String.Format("Starting {0} dispatchers...", count));
 
             for (var i = 0; i < count; i++)
             {
-                var dispatcher = new JobDispatcher(
+                var dispatcher = new Worker(
                     this, 
                     String.Format("HangFire.Dispatcher.{0}", i),
-                    String.Format("{0}.{1}", serverName, i));
+                    String.Format("{0}.{1}", serverName, i),
+                    jobActivator);
                 dispatcher.Start();
                 _dispatchers.Add(dispatcher);
             }
@@ -36,11 +37,11 @@ namespace HangFire
 
         public event EventHandler<JobCompletedEventArgs> JobCompleted;
 
-        public JobDispatcher TakeFree(CancellationToken cancellationToken)
+        public Worker TakeFree(CancellationToken cancellationToken)
         {
             Debug.Assert(!_disposed, "!_disposed");
 
-            JobDispatcher dispatcher;
+            Worker dispatcher;
             do
             {
                 dispatcher = _freeDispatchers.Take(cancellationToken);
@@ -81,7 +82,7 @@ namespace HangFire
             _freeDispatchers.Dispose();
         }
 
-        internal void NotifyReady(JobDispatcher dispatcher)
+        internal void NotifyReady(Worker dispatcher)
         {
             _freeDispatchers.Add(dispatcher);
         }

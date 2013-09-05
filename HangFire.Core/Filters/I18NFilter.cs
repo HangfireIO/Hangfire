@@ -6,12 +6,12 @@ namespace HangFire
 {
     public class I18NFilter : IServerFilter, IClientFilter
     {
-        public void InterceptPerform(Worker worker, Action action)
+        public void InterceptPerform(HangFireJob job, Action action)
         {
             var currentThread = Thread.CurrentThread;
             var prevCulture = currentThread.CurrentCulture;
 
-            var cultureName = worker.Args.ContainsKey("Locale") ? worker.Args["Locale"] : null;
+            var cultureName = job.Args.ContainsKey("Locale") ? job.Args["Locale"] : null;
 
             try
             {
@@ -28,9 +28,9 @@ namespace HangFire
             }
         }
 
-        public void InterceptEnqueue(Job job)
+        public void InterceptEnqueue(JobDescription jobDescription)
         {
-            job.Args["Locale"] = Thread.CurrentThread.CurrentCulture.Name;
+            jobDescription.Args["Locale"] = Thread.CurrentThread.CurrentCulture.Name;
         }
     }
 }

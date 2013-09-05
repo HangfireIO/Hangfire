@@ -44,13 +44,19 @@ namespace HangFire.Web
         public TimeSpan PollInterval { get; set; }
 
         /// <summary>
+        /// Get or sets an instance of the <see cref="HangFireJobActivator"/> class
+        /// that will be used to instantinate jobs.
+        /// </summary>
+        public HangFireJobActivator JobActivator { get; set; }
+
+        /// <summary>
         /// Starts the server and places it in the list of registered
         /// objects in the application. 
         /// </summary>
         public void Start()
         {
             HostingEnvironment.RegisterObject(this);
-            _manager = new HangFireServer(ServerName, QueueName, Concurrency, PollInterval);
+            _manager = new HangFireServer(ServerName, QueueName, Concurrency, PollInterval, JobActivator);
         }
 
         /// <summary>

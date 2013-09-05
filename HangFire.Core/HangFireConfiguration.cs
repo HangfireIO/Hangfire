@@ -8,8 +8,6 @@ namespace HangFire
     /// </summary>
     public class HangFireConfiguration
     {
-        private WorkerActivator _workerActivator;
-
         /// <summary>
         /// Gets the current HangFire configuration.
         /// </summary>
@@ -36,8 +34,6 @@ namespace HangFire
 
         internal HangFireConfiguration()
         {
-            WorkerActivator = new WorkerActivator();
-            
             RedisHost = "localhost";
             RedisPort = 6379;
             RedisPassword = null;
@@ -47,26 +43,6 @@ namespace HangFire
             ClientFilters = new List<IClientFilter>();
 
             AddFilter(new I18NFilter());
-        }
-
-        /// <summary>
-        /// Gets or sets the instance of <see cref="WorkerActivator"/> that
-        /// will be used to as <see cref="Worker"/> instances resolver.
-        /// </summary>
-        public WorkerActivator WorkerActivator
-        {
-            get
-            {
-                return _workerActivator;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                _workerActivator = value;
-            }
         }
 
         /// <summary>

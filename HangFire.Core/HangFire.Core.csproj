@@ -70,20 +70,20 @@
     <Compile Include="Filters\I18NFilter.cs" />
     <Compile Include="JobCompletedEventArgs.cs" />
     <Compile Include="HangFireApi.cs" />
-    <Compile Include="JobSchedulePoller.cs" />
-    <Compile Include="QueueAttribute.cs" />
+    <Compile Include="SchedulePoller.cs" />
+    <Compile Include="QueueNameAttribute.cs" />
     <Compile Include="RedisStorage.cs" />
-    <Compile Include="WorkerActivator.cs" />
+    <Compile Include="HangFireJobActivator.cs" />
     <Compile Include="HangFireServer.cs" />
-    <Compile Include="Job.cs" />
-    <Compile Include="JobDispatcherPool.cs" />
-    <Compile Include="JobProcessor.cs" />
+    <Compile Include="JobDescription.cs" />
+    <Compile Include="WorkerManager.cs" />
+    <Compile Include="JobInvoker.cs" />
     <Compile Include="JsonHelper.cs" />
     <Compile Include="HangFireClient.cs" />
-    <Compile Include="JobDispatcher.cs" />
+    <Compile Include="Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisClient.cs" />
-    <Compile Include="Worker.cs" />
+    <Compile Include="HangFireJob.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.Core.nuspec" />

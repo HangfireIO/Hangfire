@@ -6,6 +6,7 @@
     <title>$title$</title>
     <authors>odinserj</authors>
     <owners>odinserj</owners>
+    <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <copyright>Copyright (c) 2013 Sergey Odinokov.</copyright>
