@@ -17,17 +17,17 @@ namespace HangFire
         /// Puts specified job to the queue.
         /// </summary>
         /// <typeparam name="TJob">Job type</typeparam>
-        public static void PerformAsync<TJob>()
+        public static string PerformAsync<TJob>()
         {
-            PerformAsync<TJob>(null);
+            return PerformAsync<TJob>(null);
         }
 
-        public static void PerformAsync<TJob>(object args)
+        public static string PerformAsync<TJob>(object args)
         {
-            PerformAsync(typeof(TJob), args);
+            return PerformAsync(typeof(TJob), args);
         }
 
-        public static void PerformAsync(Type jobType, object args = null)
+        public static string PerformAsync(Type jobType, object args = null)
         {
             if (jobType == null)
             {
@@ -48,19 +48,21 @@ namespace HangFire
             };
 
             InvokeFilters(jobDescription, enqueueAction);
+
+            return jobDescription.Jid;
         }
 
-        public static void PerformIn<TJob>(TimeSpan interval)
+        public static string PerformIn<TJob>(TimeSpan interval)
         {
-            PerformIn<TJob>(interval, null);
+            return PerformIn<TJob>(interval, null);
         }
 
-        public static void PerformIn<TJob>(TimeSpan interval, object args)
+        public static string PerformIn<TJob>(TimeSpan interval, object args)
         {
-            PerformIn(typeof(TJob), interval, args);
+            return PerformIn(typeof(TJob), interval, args);
         }
 
-        public static void PerformIn(Type jobType, TimeSpan interval, object args = null)
+        public static string PerformIn(Type jobType, TimeSpan interval, object args = null)
         {
             if (jobType == null)
             {
@@ -74,8 +76,7 @@ namespace HangFire
 
             if (interval.Equals(TimeSpan.Zero))
             {
-                PerformAsync(jobType, args);
-                return;
+                return PerformAsync(jobType, args);
             }
 
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
@@ -98,6 +99,8 @@ namespace HangFire
             };
 
             InvokeFilters(jobDescription, enqueueAction);
+
+            return jobDescription.Jid;
         }
 
         private static void InvokeFilters(
