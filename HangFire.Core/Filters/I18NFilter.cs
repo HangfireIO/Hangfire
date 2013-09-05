@@ -1,17 +1,23 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Threading;
 
 namespace HangFire
 {
-    public class I18NFilter : IServerFilter, IClientFilter
+    public class CurrentCultureFilter : IClientFilter, IServerFilter
     {
-        public void InterceptPerform(HangFireJob job, Action action)
+        public void ClientFilter(ClientFilterContext filterContext)
+        {
+            var properties = filterContext.JobDescription.Properties;
+            properties["CurrentCulture"] = Thread.CurrentThread.CurrentCulture.Name;
+        }
+
+        public void ServerFilter(ServerFilterContext filterContext)
         {
             var currentThread = Thread.CurrentThread;
             var prevCulture = currentThread.CurrentCulture;
 
-            var cultureName = job.Args.ContainsKey("Locale") ? job.Args["Locale"] : null;
+            var properties = filterContext.JobDescription.Properties;
+            var cultureName = properties.ContainsKey("CurrentCulture") ? properties["CurrentCulture"] : null;
 
             try
             {
@@ -20,17 +26,12 @@ namespace HangFire
                     currentThread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
                 }
 
-                action();
+                filterContext.PerformAction();
             }
             finally
             {
                 currentThread.CurrentCulture = prevCulture;
             }
-        }
-
-        public void InterceptEnqueue(JobDescription jobDescription)
-        {
-            jobDescription.Args["Locale"] = Thread.CurrentThread.CurrentCulture.Name;
         }
     }
 }

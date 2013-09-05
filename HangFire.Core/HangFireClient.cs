@@ -14,13 +14,11 @@ namespace HangFire
         /// </summary>
         /// <typeparam name="TJob">Job type</typeparam>
         public static void PerformAsync<TJob>()
-            where TJob : HangFireJob
         {
             PerformAsync<TJob>(null);
         }
 
         public static void PerformAsync<TJob>(object args)
-            where TJob : HangFireJob
         {
             PerformAsync(typeof(TJob), args);
         }
@@ -32,19 +30,13 @@ namespace HangFire
                 throw new ArgumentNullException("jobType");
             }
 
-            if (!typeof(HangFireJob).IsAssignableFrom(jobType))
-            {
-                throw new ArgumentException(
-                    String.Format("Job type must be a descendant of the '{0}' class", typeof(HangFireJob).Name));
-            }
-
             var serializedJob = InterceptAndSerializeJob(jobType, args);
             if (serializedJob == null)
             {
                 return;
             }
 
-            var queue = HangFireJob.GetQueueName(jobType);
+            var queue = JobHelper.GetQueueName(jobType);
 
             lock (Client)
             {
@@ -55,13 +47,11 @@ namespace HangFire
         }
 
         public static void PerformIn<TJob>(TimeSpan interval)
-            where TJob : HangFireJob
         {
             PerformIn<TJob>(interval, null);
         }
 
         public static void PerformIn<TJob>(TimeSpan interval, object args)
-            where TJob : HangFireJob
         {
             PerformIn(typeof(TJob), interval, args);
         }
@@ -71,12 +61,6 @@ namespace HangFire
             if (jobType == null)
             {
                 throw new ArgumentNullException("jobType");
-            }
-
-            if (!typeof(HangFireJob).IsAssignableFrom(jobType))
-            {
-                throw new ArgumentException(
-                    String.Format("Job type must be a descendant of the '{0}' class", typeof(HangFireJob).Name));
             }
 
             if (interval != interval.Duration())
@@ -128,7 +112,7 @@ namespace HangFire
 
             foreach (var filter in filters)
             {
-                filter.InterceptEnqueue(jobDescription);
+                filter.ClientFilter(new ClientFilterContext(jobDescription));
             }
         }
 

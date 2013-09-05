@@ -17,6 +17,7 @@ namespace HangFire
             Jid = Guid.NewGuid().ToString();
             WorkerType = workerType;
             Args = new Dictionary<string, string>();
+            Properties = new Dictionary<string, string>();
             EnqueuedAt = DateTime.UtcNow;
 
             AddValues(Args, args);
@@ -25,6 +26,7 @@ namespace HangFire
         public string Jid { get; internal set; }
         public Type WorkerType { get; internal set; }
         public IDictionary<string, string> Args { get; internal set; }
+        public IDictionary<string, string> Properties { get; internal set; } 
         public DateTime EnqueuedAt { get; internal set; }
         public DateTime? SucceededAt { get; internal set; }
         public DateTime? FailedAt { get; internal set; }
@@ -75,7 +77,16 @@ namespace HangFire
                 foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(values))
                 {
                     var obj2 = descriptor.GetValue(values);
-                    dictionary.Add(descriptor.Name, obj2 != null ? obj2.ToString() : null);
+                    string value = null;
+
+                    if (obj2 != null)
+                    {
+                        // TODO: handle conversion exception and display it in a friendly way.
+                        var converter = TypeDescriptor.GetConverter(obj2.GetType());
+                        value = converter.ConvertToString(obj2);
+                    }
+
+                    dictionary.Add(descriptor.Name, value);
                 }
             }
         }

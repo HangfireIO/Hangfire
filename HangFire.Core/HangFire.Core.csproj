@@ -63,6 +63,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Filters\ClientFilterContext.cs" />
+    <Compile Include="Filters\ServerFilterContext.cs" />
     <Compile Include="HangFireConfiguration.cs" />
     <Compile Include="Filters\IClientFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />

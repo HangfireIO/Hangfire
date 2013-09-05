@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 
 namespace HangFire
 {
@@ -17,16 +19,66 @@ namespace HangFire
 
         public void ProcessJob(JobDescription jobDescription)
         {
-            using (var worker = _activator.ActivateJob(jobDescription.WorkerType))
+            object job = null;
+            try
             {
-                worker.Args = jobDescription.Args;
+                job = _activator.ActivateJob(jobDescription.WorkerType);
 
-                // ReSharper disable once AccessToDisposedClosure
-                InvokeFilters(worker, worker.Perform);
+                var jobArguments = new Dictionary<string, string>(
+                    jobDescription.Args,
+                    StringComparer.InvariantCultureIgnoreCase);
+
+                // TODO: throw friendly exception when no "Perform" method is defined.
+                var methodInfo = job.GetType().GetMethod("Perform");
+                var parametersInfo = methodInfo.GetParameters();
+
+                var arguments = parametersInfo.Length > 0 ? new object[parametersInfo.Length] : null;
+
+                // TODO: what to do with redundant or absent parameters?
+                for (int i = 0; i < parametersInfo.Length; i++)
+                {
+                    var parameter = parametersInfo[i];
+                    object value = parameter.DefaultValue;
+                    if (jobArguments.ContainsKey(parameter.Name))
+                    {
+                        var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
+
+                        // TODO: handle deserialization exception and display it in a friendly way.
+                        value = converter.ConvertFromInvariantString(jobArguments[parameter.Name]);
+                    }
+
+                    // ReSharper disable once PossibleNullReferenceException
+                    arguments[i] = value;
+                }
+
+                Action performAction = () =>
+                {
+                    try
+                    {
+                        methodInfo.Invoke(job, arguments);
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        throw ex.GetBaseException();
+                    }
+                };
+
+                InvokeFilters(job, jobDescription, performAction);
+            }
+            finally
+            {
+                if (job != null)
+                {
+                    var disposable = job as IDisposable;
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
+                }
             }
         }
 
-        private void InvokeFilters(HangFireJob job, Action action)
+        private void InvokeFilters(object job, JobDescription jobDescription, Action action)
         {
             var commandAction = action;
 
@@ -35,10 +87,10 @@ namespace HangFire
 
             foreach (var entry in entries)
             {
-                var innerAction = commandAction;
                 var currentEntry = entry;
 
-                commandAction = () => currentEntry.InterceptPerform(job, innerAction);
+                var filterContext = new ServerFilterContext(job, jobDescription, action);
+                commandAction = () => currentEntry.ServerFilter(filterContext);
             }
 
             commandAction();

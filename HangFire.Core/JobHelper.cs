@@ -1,20 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace HangFire
 {
-    public abstract class HangFireJob : IDisposable
+    internal static class JobHelper
     {
-        public IDictionary<string, string> Args { get; set; }
-
-        public abstract void Perform();
-
-        public virtual void Dispose()
-        {
-        }
-
-        internal static string GetQueueName(Type workerType)
+        public static string GetQueueName(Type workerType)
         {
             var attribute = workerType
                 .GetCustomAttributes(true)

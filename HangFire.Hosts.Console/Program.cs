@@ -6,11 +6,11 @@ using ServiceStack.Logging.Support.Logging;
 namespace HangFire.Hosts
 {
     [QueueName("qqq")]
-    public class ConsoleJob : HangFireJob
+    public class ConsoleJob
     {
         private static readonly Random _random = new Random();
 
-        public override void Perform()
+        public void Perform(int number)
         {
             int time;
             lock (_random)
@@ -24,14 +24,14 @@ namespace HangFire.Hosts
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(5 + time));
-            Console.WriteLine("Finished task: " + Args["Number"]);
+            Console.WriteLine("Finished task: " + number);
         }
     }
 
     [QueueName("qqq")]
-    public class ErrorJob : HangFireJob
+    public class ErrorJob
     {
-        public override void Perform()
+        public void Perform()
         {
             Console.WriteLine("Beginning error task...");
             throw new InvalidOperationException("Error!");

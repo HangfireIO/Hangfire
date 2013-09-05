@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace HangFire
+﻿namespace HangFire
 {
     public interface IServerFilter : IFilter
     {
-        void InterceptPerform(HangFireJob job, Action action);
+        void ServerFilter(ServerFilterContext filterContext);
     }
 }
