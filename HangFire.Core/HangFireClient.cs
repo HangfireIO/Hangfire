@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HangFire
 {
@@ -8,6 +11,7 @@ namespace HangFire
     public static class HangFireClient
     {
         private static readonly RedisClient Client = new RedisClient();
+        private static readonly IList<IClientFilter> Filters = HangFireConfiguration.Current.ClientFilters;
 
         /// <summary>
         /// Puts specified job to the queue.
@@ -30,20 +34,20 @@ namespace HangFire
                 throw new ArgumentNullException("jobType");
             }
 
-            var serializedJob = InterceptAndSerializeJob(jobType, args);
-            if (serializedJob == null)
-            {
-                return;
-            }
+            var jobDescription = new JobDescription(jobType, args);
 
-            var queue = JobHelper.GetQueueName(jobType);
-
-            lock (Client)
+            Action enqueueAction = () =>
             {
-                Client.TryToDo(
-                    storage => storage.EnqueueJob(queue, serializedJob),
-                    throwOnError: true);
-            }
+                var serializedDescription = jobDescription.Serialize();
+                var queue = JobHelper.GetQueueName(jobType);
+
+                lock (Client)
+                {
+                    Client.TryToDo(storage => storage.EnqueueJob(queue, serializedDescription), throwOnError: true);
+                }
+            };
+
+            InvokeFilters(jobDescription, enqueueAction);
         }
 
         public static void PerformIn<TJob>(TimeSpan interval)
@@ -76,44 +80,44 @@ namespace HangFire
 
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
 
-            var serializedJob = InterceptAndSerializeJob(jobType, args);
-            if (serializedJob == null)
-            {
-                return;
-            }
+            var jobDescription = new JobDescription(jobType, args);
 
-            lock (Client)
+            Action enqueueAction = () =>
             {
-                Client.TryToDo(
-                    storage => storage.ScheduleJob(serializedJob, at),
-                    throwOnError: true);
-            }
+                var serializedDescription = jobDescription.Serialize();
+
+                lock (Client)
+                {
+                    lock (Client)
+                    {
+                        Client.TryToDo(
+                            storage => storage.ScheduleJob(serializedDescription, at),
+                            throwOnError: true);
+                    }
+                }
+            };
+
+            InvokeFilters(jobDescription, enqueueAction);
         }
 
-        private static string InterceptAndSerializeJob(Type workerType, object args)
+        private static void InvokeFilters(
+            JobDescription jobDescription, 
+            Action enqueueAction)
         {
-            var job = new JobDescription(workerType, args);
-            InvokeFilters(job);
-            if (job.Canceled)
+            var commandAction = enqueueAction;
+
+            var entries = Filters.ToList();
+            entries.Reverse();
+
+            foreach (var entry in entries)
             {
-                return null;
+                var currentEntry = entry;
+
+                var filterContext = new ClientFilterContext(jobDescription, commandAction);
+                commandAction = () => currentEntry.ClientFilter(filterContext);
             }
 
-            // TODO: handle serialization exceptions.
-            // Either properties or args can not be serialized if
-            // it's type is unserializable. We need to throw this
-            // exception to the client.
-            return JsonHelper.Serialize(job);
-        }
-
-        private static void InvokeFilters(JobDescription jobDescription)
-        {
-            var filters = HangFireConfiguration.Current.ClientFilters;
-
-            foreach (var filter in filters)
-            {
-                filter.ClientFilter(new ClientFilterContext(jobDescription));
-            }
+            commandAction();
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

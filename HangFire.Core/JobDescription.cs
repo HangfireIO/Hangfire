@@ -12,10 +12,10 @@ namespace HangFire
             return JsonHelper.Deserialize<JobDescription>(serializedJob);
         }
 
-        public JobDescription(Type workerType, object args)
+        public JobDescription(Type jobType, object args)
         {
             Jid = Guid.NewGuid().ToString();
-            JobType = workerType.AssemblyQualifiedName;
+            JobType = jobType.AssemblyQualifiedName;
             Args = new Dictionary<string, string>();
             Properties = new Dictionary<string, string>();
             EnqueuedAt = DateTime.UtcNow;
@@ -47,14 +47,6 @@ namespace HangFire
 
                 return DateTime.UtcNow.Subtract(EnqueuedAt);
             }
-        }
-
-        [IgnoreDataMember]
-        public bool Canceled { get; private set; }
-
-        public void Cancel()
-        {
-            Canceled = true;
         }
 
         public string Serialize()

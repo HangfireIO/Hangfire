@@ -69,7 +69,7 @@
     <Compile Include="Filters\IClientFilter.cs" />
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\IServerFilter.cs" />
-    <Compile Include="Filters\I18NFilter.cs" />
+    <Compile Include="Filters\CurrentCultureFilter.cs" />
     <Compile Include="JobCompletedEventArgs.cs" />
     <Compile Include="HangFireApi.cs" />
     <Compile Include="SchedulePoller.cs" />

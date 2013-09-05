@@ -91,7 +91,7 @@ namespace HangFire
             {
                 var currentEntry = entry;
 
-                var filterContext = new ServerFilterContext(job, jobDescription, action);
+                var filterContext = new ServerFilterContext(job, jobDescription, commandAction);
                 commandAction = () => currentEntry.ServerFilter(filterContext);
             }
 

@@ -9,6 +9,8 @@ namespace HangFire
         {
             var properties = filterContext.JobDescription.Properties;
             properties["CurrentCulture"] = Thread.CurrentThread.CurrentCulture.Name;
+
+            filterContext.EnqueueAction();
         }
 
         public void ServerFilter(ServerFilterContext filterContext)
