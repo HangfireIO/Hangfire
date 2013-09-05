@@ -83,7 +83,7 @@ namespace HangFire
                     {
                         // TODO: handle conversion exception and display it in a friendly way.
                         var converter = TypeDescriptor.GetConverter(obj2.GetType());
-                        value = converter.ConvertToString(obj2);
+                        value = converter.ConvertToInvariantString(obj2);
                     }
 
                     dictionary.Add(descriptor.Name.ToLowerInvariant(), value);
