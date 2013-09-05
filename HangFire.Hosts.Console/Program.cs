@@ -49,6 +49,7 @@ namespace HangFire.Hosts
                 x =>
                 {
                     x.RedisPort = 6379;
+                    x.RedisDb = 3;
                     x.AddFilter(new BasicRetryFilter());
                 });
 

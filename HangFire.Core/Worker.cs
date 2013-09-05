@@ -168,9 +168,9 @@ namespace HangFire
                         else
                         {
                             job.FailedAt = now;
-                            job.ExceptionType = exception.GetType();
-                            job.ExceptionMessage = exception.Message;
-                            job.ExceptionStackTrace = exception.StackTrace;
+                            job.Properties["ExceptionType"] = exception.GetType().FullName;
+                            job.Properties["ExceptionMessage"] = exception.Message;
+                            job.Properties["StackTrace"] = exception.StackTrace;
                         }
 
                         // TODO: Handle Redis exceptions.
