@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Tests", "HangFire.Tests\HangFire.Tests.csproj", "{EA0966B1-F2C9-4C65-834D-962FD78268F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Core.Tests", "HangFire.Tests\HangFire.Core.Tests.csproj", "{EA0966B1-F2C9-4C65-834D-962FD78268F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

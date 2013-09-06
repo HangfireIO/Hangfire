@@ -13,6 +13,8 @@ namespace HangFire
         private readonly string _name;
         private readonly string _name2;
 
+        private readonly HangFireJobActivator _jobActivator;
+
         private readonly JobInvoker _invoker;
 
         private readonly Thread _thread;
@@ -39,6 +41,7 @@ namespace HangFire
             _name = name;
             _name2 = name2;
 
+            _jobActivator = jobActivator;
             _invoker = new JobInvoker(
                 jobActivator,
                 HangFireConfiguration.Current.ServerFilters);
@@ -147,7 +150,7 @@ namespace HangFire
 
                         try
                         {
-                            _invoker.ProcessJob(job);
+                            _invoker.InvokeJob(job);
                         }
                         catch (Exception ex)
                         {

@@ -8,45 +8,95 @@ namespace HangFire
 {
     internal class JobInvoker
     {
+        private const string InvokeMethodName = "Perform";
+
         private readonly HangFireJobActivator _activator;
         private readonly IEnumerable<IServerFilter> _filters;
 
         public JobInvoker(HangFireJobActivator activator, IEnumerable<IServerFilter> filters)
         {
+            if (activator == null)
+            {
+                throw new ArgumentNullException("activator");
+            }
+            if (filters == null)
+            {
+                throw new ArgumentNullException("filters");
+            }
+
             _activator = activator;
             _filters = filters;
         }
 
-        public void ProcessJob(JobDescription jobDescription)
+        public void InvokeJob(JobDescription jobDescription)
         {
+            if (jobDescription == null)
+            {
+                throw new ArgumentNullException("jobDescription");
+            }
+
             object job = null;
             try
             {
-                // TODO: what to do with type resolving exceptions?
-                var jobType = Type.GetType(jobDescription.JobType);
-                job = _activator.ActivateJob(jobType);
+                try
+                {
+                    var jobType = Type.GetType(jobDescription.JobType, true, true);
+                    job = _activator.ActivateJob(jobType);
+                }
+                catch (Exception ex)
+                {
+                    throw new JobActivationException(
+                        String.Format(
+                            "An exception occured while trying to activate a job with the type '{0}'", 
+                            jobDescription.JobType),
+                        ex);
+                }
 
                 var jobArguments = new Dictionary<string, string>(
                     jobDescription.Args,
                     StringComparer.InvariantCultureIgnoreCase);
 
-                // TODO: throw friendly exception when no "Perform" method is defined.
-                var methodInfo = job.GetType().GetMethod("Perform");
-                var parametersInfo = methodInfo.GetParameters();
+                var methodInfo = job.GetType().GetMethod(InvokeMethodName);
+                if (methodInfo == null)
+                {
+                    throw new MissingMethodException(job.GetType().Name, InvokeMethodName);
+                }
 
+                var parametersInfo = methodInfo.GetParameters();
                 var arguments = parametersInfo.Length > 0 ? new object[parametersInfo.Length] : null;
 
-                // TODO: what to do with redundant or absent parameters?
+                var missingArguments = new List<String>();
+
                 for (int i = 0; i < parametersInfo.Length; i++)
                 {
                     var parameter = parametersInfo[i];
-                    object value = parameter.DefaultValue;
+                    object value;
                     if (jobArguments.ContainsKey(parameter.Name))
                     {
                         var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
 
                         // TODO: handle deserialization exception and display it in a friendly way.
                         value = converter.ConvertFromInvariantString(jobArguments[parameter.Name]);
+                    }
+                    else
+                    {
+                        if (parameter.IsOptional)
+                        {
+                            value = parameter.DefaultValue;
+                        }
+                        else
+                        {
+                            value = null;
+                            missingArguments.Add(parameter.Name);
+                        }
+                    }
+
+                    if (missingArguments.Count != 0)
+                    {
+                        throw new ArgumentException(
+                            String.Format(
+                                "Values for the following required arguments were not provided: {0}.",
+                                String.Join(", ", missingArguments.Select(x => "'" + x + "'"))));
                     }
 
                     // ReSharper disable once PossibleNullReferenceException
@@ -69,13 +119,10 @@ namespace HangFire
             }
             finally
             {
-                if (job != null)
+                var disposable = job as IDisposable;
+                if (disposable != null)
                 {
-                    var disposable = job as IDisposable;
-                    if (disposable != null)
-                    {
-                        disposable.Dispose();
-                    }
+                    disposable.Dispose();
                 }
             }
         }

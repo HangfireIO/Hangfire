@@ -72,6 +72,7 @@
     <Compile Include="Filters\CurrentCultureFilter.cs" />
     <Compile Include="JobCompletedEventArgs.cs" />
     <Compile Include="HangFireApi.cs" />
+    <Compile Include="JobInvocationException.cs" />
     <Compile Include="SchedulePoller.cs" />
     <Compile Include="QueueNameAttribute.cs" />
     <Compile Include="RedisStorage.cs" />
