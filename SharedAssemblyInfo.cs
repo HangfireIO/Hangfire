@@ -1,8 +1,3 @@
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
 [assembly: AssemblyProduct("HangFire")]
 [assembly: AssemblyCompany("Sergey Odinokov")]
 [assembly: AssemblyCopyright("Copyright © 2013, Sergey Odinokov")]

@@ -11,15 +11,9 @@
 
 namespace HangFire.Web.Pages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    
     #line 2 "..\..\Pages\ServersPage.cshtml"
-    using HangFire.Web.Pages;
-    
-    #line default
+
+#line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "1.5.3.0")]

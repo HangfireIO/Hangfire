@@ -17,19 +17,14 @@ namespace HangFire.Web.Pages
     
     #line default
     #line hidden
-    using System.Collections.Generic;
-    
-    #line 3 "..\..\Pages\FailedJobsPage.cshtml"
+#line 3 "..\..\Pages\FailedJobsPage.cshtml"
     using System.Linq;
     
     #line default
     #line hidden
-    using System.Text;
-    
-    #line 4 "..\..\Pages\FailedJobsPage.cshtml"
-    using HangFire.Web.Pages;
-    
-    #line default
+#line 4 "..\..\Pages\FailedJobsPage.cshtml"
+
+#line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "1.5.3.0")]
