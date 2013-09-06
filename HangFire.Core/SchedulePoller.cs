@@ -51,7 +51,7 @@ namespace HangFire
                             var scheduledJob = storage.GetScheduledJob(now);
                             if (scheduledJob != null)
                             {
-                                var job = JsonHelper.Deserialize<JobDescription>(scheduledJob);
+                                var job = JobDescription.Deserialize(scheduledJob);
                                 var queue = JobHelper.GetQueueName(job.JobType);
                                 storage.EnqueueJob(queue, scheduledJob);
                             }

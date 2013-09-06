@@ -235,11 +235,11 @@ namespace HangFire
             var result = new List<ScheduleDto>();
             foreach (var scheduled in schedule)
             {
-                var job = JsonHelper.Deserialize<JobDescription>(scheduled.Key);
+                var job = JobDescription.Deserialize(scheduled.Key);
                 result.Add(new ScheduleDto
                     {
                         TimeStamp = scheduled.Value.ToString(),
-                        Args = JsonHelper.Serialize(job.Args),
+                        Args = job.SerializeArgs(),
                         Queue = JobHelper.GetQueueName(job.JobType),
                         Type = job.JobType
                     });
@@ -390,7 +390,7 @@ namespace HangFire
         public IList<FailedJobDto> GetFailedJobs()
         {
             var failed = _redis.GetAllItemsFromList("hangfire:failed");
-            return failed.Select(JsonHelper.Deserialize<JobDescription>)
+            return failed.Select(JobDescription.Deserialize)
                 .Reverse()
                 .Select(x => new FailedJobDto
                 {
