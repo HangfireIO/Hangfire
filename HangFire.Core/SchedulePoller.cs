@@ -48,12 +48,16 @@ namespace HangFire
 
                             var now = DateTime.UtcNow.ToTimestamp();
 
-                            var scheduledJob = storage.GetScheduledJob(now);
-                            if (scheduledJob != null)
+                            var jobId = storage.GetScheduledJobId(now);
+                            if (jobId != null)
                             {
-                                var job = JobDescription.Deserialize(scheduledJob);
-                                var queue = JobHelper.GetQueueName(job.JobType);
-                                storage.EnqueueJob(queue, scheduledJob);
+                                var job = storage.GetJob(jobId);
+
+                                // TODO: move the job to the failed queue when type resolving failed.
+                                var type = Type.GetType(job["Type"]);
+                                var queue = JobHelper.GetQueueName(type);
+
+                                storage.EnqueueJob(queue, jobId, job);
                             }
                             else
                             {

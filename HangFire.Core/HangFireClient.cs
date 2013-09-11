@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace HangFire
@@ -61,22 +62,22 @@ namespace HangFire
                 throw new ArgumentNullException("jobType");
             }
 
-            var jobDescription = new JobDescription(jobType, args);
+            var jobId = GenerateId();
+            var job = InitializeJob(jobType, args);
 
             Action enqueueAction = () =>
             {
-                var serializedDescription = jobDescription.Serialize();
-                var queue = JobHelper.GetQueueName(jobType);
+                var queueName = JobHelper.GetQueueName(jobType);
 
                 lock (_client)
                 {
-                    _client.TryToDo(storage => storage.EnqueueJob(queue, serializedDescription), throwOnError: true);
+                    _client.TryToDo(storage => storage.EnqueueJob(queueName, jobId, job), throwOnError: true);
                 }
             };
 
-            InvokeFilters(jobDescription, enqueueAction);
+            InvokeFilters(jobId, job, enqueueAction);
 
-            return jobDescription.Jid;
+            return jobId;
         }
 
         public string In(TimeSpan interval, Type jobType, object args = null)
@@ -98,23 +99,22 @@ namespace HangFire
 
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
 
-            var jobDescription = new JobDescription(jobType, args);
+            var jobId = GenerateId();
+            var job = InitializeJob(jobType, args);
 
             Action enqueueAction = () =>
             {
-                var serializedDescription = jobDescription.Serialize();
-
                 lock (_client)
                 {
                     _client.TryToDo(
-                        storage => storage.ScheduleJob(serializedDescription, at),
+                        storage => storage.ScheduleJob(jobId, job, at),
                         throwOnError: true);
                 }
             };
 
-            InvokeFilters(jobDescription, enqueueAction);
+            InvokeFilters(jobId, job, enqueueAction);
 
-            return jobDescription.Jid;
+            return jobId;
         }
 
         public void Dispose()
@@ -122,8 +122,47 @@ namespace HangFire
             _client.Dispose();
         }
 
+        private Dictionary<string, string> InitializeJob(Type jobType, object args)
+        {
+            var job = new Dictionary<string, string>();
+            job["Type"] = jobType.AssemblyQualifiedName;
+            job["Args"] = SerializeArgs(args);
+
+            return job;
+        }
+
+        private string GenerateId()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        private string SerializeArgs(object args)
+        {
+            if (args == null) return null;
+
+            var dictionary = new Dictionary<string, string>();
+
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(args))
+            {
+                var obj2 = descriptor.GetValue(args);
+                string value = null;
+
+                if (obj2 != null)
+                {
+                    // TODO: handle conversion exception and display it in a friendly way.
+                    var converter = TypeDescriptor.GetConverter(obj2.GetType());
+                    value = converter.ConvertToInvariantString(obj2);
+                }
+
+                dictionary.Add(descriptor.Name.ToLowerInvariant(), value);
+            }
+
+            return JsonHelper.Serialize(dictionary);
+        }
+
         private void InvokeFilters(
-            JobDescription jobDescription,
+            string jobId,
+            Dictionary<string, string> job,
             Action enqueueAction)
         {
             var commandAction = enqueueAction;
@@ -135,7 +174,7 @@ namespace HangFire
             {
                 var currentEntry = entry;
 
-                var filterContext = new ClientFilterContext(jobDescription, commandAction);
+                var filterContext = new ClientFilterContext(jobId, job, commandAction);
                 commandAction = () => currentEntry.ClientFilter(filterContext);
             }
 

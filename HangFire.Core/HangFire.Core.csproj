@@ -79,7 +79,6 @@
     <Compile Include="RedisStorage.cs" />
     <Compile Include="HangFireJobActivator.cs" />
     <Compile Include="HangFireServer.cs" />
-    <Compile Include="JobDescription.cs" />
     <Compile Include="WorkerManager.cs" />
     <Compile Include="JobInvoker.cs" />
     <Compile Include="JsonHelper.cs" />

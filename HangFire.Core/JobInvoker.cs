@@ -28,38 +28,33 @@ namespace HangFire
             _filters = filters;
         }
 
-        public void InvokeJob(JobDescription jobDescription)
+        public void InvokeJob(string jobId, Dictionary<string, string> job)
         {
-            if (jobDescription == null)
-            {
-                throw new ArgumentNullException("jobDescription");
-            }
-
-            object job = null;
+            object jobInstance = null;
             try
             {
                 try
                 {
-                    var jobType = Type.GetType(jobDescription.JobType, true, true);
-                    job = _activator.ActivateJob(jobType);
+                    var jobType = Type.GetType(job["Type"], true, true);
+                    jobInstance = _activator.ActivateJob(jobType);
                 }
                 catch (Exception ex)
                 {
                     throw new JobActivationException(
                         String.Format(
                             "An exception occured while trying to activate a job with the type '{0}'", 
-                            jobDescription.JobType),
+                            job["Type"]),
                         ex);
                 }
 
                 var jobArguments = new Dictionary<string, string>(
-                    jobDescription.Args,
+                    JsonHelper.Deserialize<Dictionary<string, string>>(job["Args"]),
                     StringComparer.InvariantCultureIgnoreCase);
 
-                var methodInfo = job.GetType().GetMethod(InvokeMethodName);
+                var methodInfo = jobInstance.GetType().GetMethod(InvokeMethodName);
                 if (methodInfo == null)
                 {
-                    throw new MissingMethodException(job.GetType().Name, InvokeMethodName);
+                    throw new MissingMethodException(jobInstance.GetType().Name, InvokeMethodName);
                 }
 
                 var parametersInfo = methodInfo.GetParameters();
@@ -107,7 +102,7 @@ namespace HangFire
                 {
                     try
                     {
-                        methodInfo.Invoke(job, arguments);
+                        methodInfo.Invoke(jobInstance, arguments);
                     }
                     catch (TargetInvocationException ex)
                     {
@@ -115,11 +110,11 @@ namespace HangFire
                     }
                 };
 
-                InvokeFilters(job, jobDescription, performAction);
+                InvokeFilters(jobId, job, jobInstance, performAction);
             }
             finally
             {
-                var disposable = job as IDisposable;
+                var disposable = jobInstance as IDisposable;
                 if (disposable != null)
                 {
                     disposable.Dispose();
@@ -127,9 +122,13 @@ namespace HangFire
             }
         }
 
-        private void InvokeFilters(object job, JobDescription jobDescription, Action action)
+        private void InvokeFilters(
+            string jobId,
+            Dictionary<string, string> job,
+            object jobInstance,
+            Action performAction)
         {
-            var commandAction = action;
+            var commandAction = performAction;
 
             var entries = _filters.ToList();
             entries.Reverse();
@@ -138,7 +137,7 @@ namespace HangFire
             {
                 var currentEntry = entry;
 
-                var filterContext = new ServerFilterContext(job, jobDescription, commandAction);
+                var filterContext = new ServerFilterContext(jobId, job, jobInstance, performAction);
                 commandAction = () => currentEntry.ServerFilter(filterContext);
             }
 

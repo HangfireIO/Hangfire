@@ -16,45 +16,70 @@ namespace HangFire
             _redis = redis;
         }
 
-        public void ScheduleJob(string job, double at)
+        public void ScheduleJob(string jobId, Dictionary<string, string> job, double at)
         {
-            _redis.AddItemToSortedSet("hangfire:schedule", job, at);
+            using (var transaction = _redis.CreateTransaction())
+            {
+                job["ScheduledAt"] = JsonHelper.Serialize(DateTime.UtcNow);
+
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    job));
+
+                transaction.QueueCommand(x => x.AddItemToSortedSet(
+                    "hangfire:schedule", jobId, at));
+
+                transaction.Commit();
+            }
         }
 
-        public string GetScheduledJob(double now)
+        public string GetScheduledJobId(double now)
         {
-            var scheduledJob =
-                _redis.GetRangeFromSortedSetByLowestScore("hangfire:schedule", Double.NegativeInfinity, now, 0, 1)
-                    .FirstOrDefault();
+            var jobId = _redis
+                .GetRangeFromSortedSetByLowestScore("hangfire:schedule", Double.NegativeInfinity, now, 0, 1)
+                .FirstOrDefault();
 
-            if (scheduledJob != null)
+            if (jobId != null)
             {
-                if (_redis.RemoveItemFromSortedSet("hangfire:schedule", scheduledJob))
+                if (_redis.RemoveItemFromSortedSet("hangfire:schedule", jobId))
                 {
-                    return scheduledJob;
+                    return jobId;
                 }
             }
 
             return null;
         }
 
-        public void EnqueueJob(string queue, string job)
+        public void EnqueueJob(string queueName, string jobId, Dictionary<string, string> job)
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queue));
+                job["EnqueuedAt"] = JsonHelper.Serialize(DateTime.UtcNow);
+
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    job));
+
+                transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
                 transaction.QueueCommand(x => x.EnqueueItemOnList(
-                    String.Format("hangfire:queue:{0}", queue), job));
+                    String.Format("hangfire:queue:{0}", queueName),
+                    jobId));
+
                 transaction.Commit();
             }
         }
 
-        public string DequeueJob(string serverName, string queue, TimeSpan? timeOut)
+        public string DequeueJobId(string serverName, string queue, TimeSpan? timeOut)
         {
             return _redis.BlockingPopAndPushItemBetweenLists(
                     String.Format("hangfire:queue:{0}", queue),
                     String.Format("hangfire:processing:{0}:{1}", serverName, queue),
                     timeOut);
+        }
+
+        public Dictionary<string, string> GetJob(string jobId)
+        {
+            return _redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
         }
 
         public int RequeueProcessingJobs(string serverName, string currentQueue, CancellationToken cancellationToken)

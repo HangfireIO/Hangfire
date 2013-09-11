@@ -198,19 +198,19 @@ namespace HangFire
                     _blockingClient.TryToDo(
                         storage =>
                         {
-                            string job;
+                            string jobId;
 
                             do
                             {
-                                job = storage.DequeueJob(_serverName, _queueName, TimeSpan.FromSeconds(5));
+                                jobId = storage.DequeueJobId(_serverName, _queueName, TimeSpan.FromSeconds(5));
 
-                                if (job == null && _cts.IsCancellationRequested)
+                                if (jobId == null && _cts.IsCancellationRequested)
                                 {
                                     throw new OperationCanceledException();
                                 }
-                            } while (job == null);
+                            } while (jobId == null);
 
-                            dispatcher.Process(job);
+                            dispatcher.Process(jobId);
                         });
                 }
             }
