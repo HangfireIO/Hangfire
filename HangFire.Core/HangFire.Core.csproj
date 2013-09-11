@@ -63,6 +63,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="Filters\ClientFilterContext.cs" />
     <Compile Include="Filters\ServerFilterContext.cs" />
     <Compile Include="HangFireConfiguration.cs" />
