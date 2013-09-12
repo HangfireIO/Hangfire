@@ -73,7 +73,7 @@ namespace HangFire
             lock (_client)
             {
                 var dispatchers = Enumerable.Empty<DispatcherDto>();
-                _client.TryToDo(x => dispatchers = x.GetDispatchers());
+                _client.TryToDo(x => dispatchers = x.GetWorkers());
                 return dispatchers;
             }
         }

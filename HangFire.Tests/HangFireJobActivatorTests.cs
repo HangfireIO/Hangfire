@@ -23,18 +23,20 @@ namespace HangFire.Tests
             activator.ActivateJob(typeof(CustomConstructorJob));
         }
 
-        private class DefaultConstructorJob
+        public class DefaultConstructorJob : HangFireJob
         {
-            // ReSharper disable once UnusedMember.Local
-            public void Perform()
+            public override void Perform()
             {
             }
         }
 
-        private class CustomConstructorJob
+        public class CustomConstructorJob : HangFireJob
         {
-            // ReSharper disable once UnusedParameter.Local
             public CustomConstructorJob(string dependency)
+            {
+            }
+
+            public override void Perform()
             {
             }
         }

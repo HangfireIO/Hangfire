@@ -56,17 +56,17 @@ namespace HangFire.Tests
             Assert.AreEqual(1, HangFireApi.SucceededCount());
         }
 
-        public class TestJob
+        public class TestJob : HangFireJob
         {
-            public void Perform()
+            public override void Perform()
             {
                 _performed = true;
             }
         }
 
-        public class FailJob
+        public class FailJob : HangFireJob
         {
-            public void Perform()
+            public override void Perform()
             {
                 throw new Exception();
             }

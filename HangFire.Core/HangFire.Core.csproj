@@ -71,6 +71,7 @@
     <Compile Include="Filters\IFilter.cs" />
     <Compile Include="Filters\IServerFilter.cs" />
     <Compile Include="Filters\CurrentCultureFilter.cs" />
+    <Compile Include="HangFireJob.cs" />
     <Compile Include="JobCompletedEventArgs.cs" />
     <Compile Include="HangFireApi.cs" />
     <Compile Include="JobInvocationException.cs" />
@@ -79,11 +80,12 @@
     <Compile Include="RedisStorage.cs" />
     <Compile Include="HangFireJobActivator.cs" />
     <Compile Include="HangFireServer.cs" />
-    <Compile Include="WorkerManager.cs" />
+    <Compile Include="Worker.cs" />
+    <Compile Include="ThreadedWorkerManager.cs" />
     <Compile Include="JobInvoker.cs" />
     <Compile Include="JsonHelper.cs" />
     <Compile Include="HangFireClient.cs" />
-    <Compile Include="Worker.cs" />
+    <Compile Include="ThreadedWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisClient.cs" />
     <Compile Include="JobHelper.cs" />

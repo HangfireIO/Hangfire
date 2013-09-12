@@ -7,23 +7,23 @@ using ServiceStack.Logging;
 
 namespace HangFire
 {
-    internal class WorkerManager : IDisposable
+    internal class ThreadedWorkerManager : IDisposable
     {
-        private readonly List<Worker> _dispatchers;
-        private readonly BlockingCollection<Worker> _freeDispatchers;
+        private readonly List<ThreadedWorker> _dispatchers;
+        private readonly BlockingCollection<ThreadedWorker> _freeDispatchers;
         private readonly ILog _logger = LogManager.GetLogger("HangFire.JobDispatcherPool");
         private bool _disposed;
 
-        public WorkerManager(int count, string serverName, HangFireJobActivator jobActivator)
+        public ThreadedWorkerManager(int count, string serverName, HangFireJobActivator jobActivator)
         {
-            _dispatchers = new List<Worker>(count);
-            _freeDispatchers = new BlockingCollection<Worker>();
+            _dispatchers = new List<ThreadedWorker>(count);
+            _freeDispatchers = new BlockingCollection<ThreadedWorker>();
 
             _logger.Info(String.Format("Starting {0} dispatchers...", count));
 
             for (var i = 0; i < count; i++)
             {
-                var dispatcher = new Worker(
+                var dispatcher = new ThreadedWorker(
                     this, 
                     String.Format("HangFire.Dispatcher.{0}", i),
                     String.Format("{0}.{1}", serverName, i),
@@ -37,11 +37,11 @@ namespace HangFire
 
         public event EventHandler<JobCompletedEventArgs> JobCompleted;
 
-        public Worker TakeFree(CancellationToken cancellationToken)
+        public ThreadedWorker TakeFree(CancellationToken cancellationToken)
         {
             Debug.Assert(!_disposed, "!_disposed");
 
-            Worker dispatcher;
+            ThreadedWorker dispatcher;
             do
             {
                 dispatcher = _freeDispatchers.Take(cancellationToken);
@@ -51,12 +51,12 @@ namespace HangFire
             return dispatcher;
         }
 
-        internal void NotifyCompleted(string job)
+        internal void NotifyCompleted(string jobId)
         {
             var onCompleted = JobCompleted;
             if (onCompleted != null)
             {
-                onCompleted(this, new JobCompletedEventArgs(job));
+                onCompleted(this, new JobCompletedEventArgs(jobId));
             }
         }
 
@@ -82,7 +82,7 @@ namespace HangFire
             _freeDispatchers.Dispose();
         }
 
-        internal void NotifyReady(Worker dispatcher)
+        internal void NotifyReady(ThreadedWorker dispatcher)
         {
             _freeDispatchers.Add(dispatcher);
         }

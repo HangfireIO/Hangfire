@@ -9,6 +9,8 @@ namespace HangFire
 {
     internal class RedisStorage
     {
+        private readonly TimeSpan _workerStatusTimeout = TimeSpan.FromDays(1);
+
         private readonly IRedisClient _redis;
 
         public RedisStorage(IRedisClient redis)
@@ -20,11 +22,14 @@ namespace HangFire
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                job["ScheduledAt"] = JsonHelper.Serialize(DateTime.UtcNow);
-
                 transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format("hangfire:job:{0}", jobId),
                     job));
+
+                transaction.QueueCommand(x => x.SetEntryInHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "ScheduledAt",
+                    JsonHelper.Serialize(DateTime.UtcNow)));
 
                 transaction.QueueCommand(x => x.AddItemToSortedSet(
                     "hangfire:schedule", jobId, at));
@@ -54,11 +59,17 @@ namespace HangFire
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                job["EnqueuedAt"] = JsonHelper.Serialize(DateTime.UtcNow);
+                if (job != null)
+                {
+                    transaction.QueueCommand(x => x.SetRangeInHash(
+                        String.Format("hangfire:job:{0}", jobId),
+                        job));
+                }
 
-                transaction.QueueCommand(x => x.SetRangeInHash(
+                transaction.QueueCommand(x => x.SetEntryInHashIfNotExists(
                     String.Format("hangfire:job:{0}", jobId),
-                    job));
+                    "EnqueuedAt",
+                    JsonHelper.Serialize(DateTime.UtcNow)));
 
                 transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
                 transaction.QueueCommand(x => x.EnqueueItemOnList(
@@ -77,9 +88,11 @@ namespace HangFire
                     timeOut);
         }
 
-        public Dictionary<string, string> GetJob(string jobId)
+        public string GetJobType(string jobId)
         {
-            return _redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
+            return _redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", jobId),
+                "Type");
         }
 
         public int RequeueProcessingJobs(string serverName, string currentQueue, CancellationToken cancellationToken)
@@ -117,53 +130,62 @@ namespace HangFire
             return requeued;
         }
 
-        public void RemoveProcessingJob(string serverName, string queue, string job)
+        public void RemoveProcessingJob(string serverName, string queue, string jobId)
         {
             _redis.RemoveItemFromList(
                 String.Format("hangfire:processing:{0}:{1}", serverName, queue),
-                job,
+                jobId,
                 -1);
         }
 
-        public void AddProcessingDispatcher(string name, string type, string args)
+        public void AddProcessingWorker(string workerName, string jobId)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:processing"));
+                transaction.QueueCommand(x =>
+                    x.AddItemToSet("hangfire:workers", workerName));
 
-                transaction.QueueCommand(x =>
-                    x.AddItemToSet("hangfire:dispatchers", name));
-                transaction.QueueCommand(x =>
-                    x.SetEntryInHash(String.Format("hangfire:dispatcher:{0}", name), "type", type));
-                transaction.QueueCommand(x => 
-                    x.SetEntryInHash(String.Format("hangfire:dispatcher:{0}", name), "args", args));
-                transaction.QueueCommand(x =>
-                    x.SetEntryInHash(String.Format("hangfire:dispatcher:{0}", name), "started-at", DateTime.UtcNow.ToString()));
-                transaction.QueueCommand(x =>
-                    x.ExpireEntryIn(String.Format("hangfire:dispatcher:{0}", name), TimeSpan.FromSeconds(20)));
+                transaction.QueueCommand(x => x.SetEntry(
+                    String.Format("hangfire:worker:{0}", workerName),
+                    jobId));
+
+                transaction.QueueCommand(x => x.SetEntryInHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "StartedAt",
+                    JsonHelper.Serialize(DateTime.UtcNow)));
+
+                transaction.QueueCommand(x => x.ExpireEntryIn(
+                    String.Format("hangfire:worker:{0}", workerName), 
+                    _workerStatusTimeout));
 
                 transaction.Commit();
             }
         }
 
-        public void RemoveProcessingDispatcher(string name, JobDescription jobDescription, Exception exception)
+        public void RemoveProcessingDispatcher(string workerName, string jobId, Exception exception)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:processing"));
 
                 transaction.QueueCommand(x =>
-                    x.RemoveItemFromSet("hangfire:dispatchers", name));
+                    x.RemoveItemFromSet("hangfire:workers", workerName));
                 transaction.QueueCommand(x =>
-                    x.RemoveEntry(String.Format("hangfire:dispatcher:{0}", name)));
+                    x.RemoveEntry(String.Format("hangfire:workers:{0}", workerName)));
 
                 if (exception == null)
                 {
+                    transaction.QueueCommand(x => x.SetEntryInHash(
+                        String.Format("hangfire:job:{0}", jobId),
+                        "SucceededAt",
+                        JsonHelper.Serialize(DateTime.UtcNow)));
+
                     transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
 
-                    transaction.QueueCommand(x => x.PushItemToList("hangfire:succeeded", jobDescription.Serialize()));
+                    transaction.QueueCommand(x => x.PushItemToList("hangfire:succeeded", jobId));
                     transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
 
                     var hourlySucceededKey = String.Format(
@@ -174,10 +196,24 @@ namespace HangFire
                 }
                 else
                 {
+                    transaction.QueueCommand(x => x.SetEntryInHash(
+                        String.Format("hangfire:job:{0}", jobId),
+                        "FailedAt",
+                        JsonHelper.Serialize(DateTime.UtcNow)));
+
+                    transaction.QueueCommand(x => x.SetRangeInHash(
+                        String.Format("hangfire:job:{0}", jobId),
+                        new Dictionary<string, string>
+                            {
+                                { "ExceptionType", exception.GetType().FullName },
+                                { "ExceptionMessage", exception.Message },
+                                { "StackTrace", exception.StackTrace }
+                            }));
+
                     transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-                    transaction.QueueCommand(x => x.PushItemToList("hangfire:failed", jobDescription.Serialize()));
+                    transaction.QueueCommand(x => x.PushItemToList("hangfire:failed", jobId));
 
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm"))));
@@ -234,20 +270,23 @@ namespace HangFire
                 }).ToList();
         }
 
-        public IEnumerable<DispatcherDto> GetDispatchers()
+        public IEnumerable<DispatcherDto> GetWorkers()
         {
-            var dispatchers = _redis.GetAllItemsFromSet("hangfire:dispatchers");
+            var workers = _redis.GetAllItemsFromSet("hangfire:workers");
             var result = new List<DispatcherDto>();
-            foreach (var dispatcher in dispatchers)
+            foreach (var workerName in workers)
             {
-                var entry = _redis.GetAllEntriesFromHash(String.Format("hangfire:dispatcher:{0}", dispatcher));
-                if (entry.Count == 0) continue;
+                var jobId = _redis.GetValue(String.Format("hangfire:worker:{0}", workerName));
+                var job = _redis.GetValuesFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    new[] { "Type", "Args", "StartedAt" });
+
                 result.Add(new DispatcherDto
                     {
-                        Name = dispatcher,
-                        Args = entry["args"],
-                        Type = entry["type"],
-                        StartedAt = entry["started-at"]
+                        Name = workerName,
+                        Args = job[1],
+                        Type = job[0],
+                        StartedAt = job[2]
                     });
             }
 
@@ -256,17 +295,22 @@ namespace HangFire
 
         public IList<ScheduleDto> GetSchedule()
         {
-            var schedule = _redis.GetAllWithScoresFromSortedSet("hangfire:schedule");
+            // TODO: use ZRANGEBYSCORE and split results into pages.
+            var scheduledJobs = _redis.GetAllWithScoresFromSortedSet("hangfire:schedule");
             var result = new List<ScheduleDto>();
-            foreach (var scheduled in schedule)
+
+            foreach (var scheduledJob in scheduledJobs)
             {
-                var job = JobDescription.Deserialize(scheduled.Key);
+                var job = _redis.GetValuesFromHash(
+                    String.Format("hangfire:job:{0}", scheduledJob.Key),
+                    new[] { "Type", "Args" });
+
                 result.Add(new ScheduleDto
                     {
-                        TimeStamp = scheduled.Value.ToString(),
-                        Args = job.SerializeArgs(),
-                        Queue = JobHelper.GetQueueName(job.JobType),
-                        Type = job.JobType
+                        TimeStamp = scheduledJob.Value.ToString(),
+                        Args = job[1],
+                        Queue = JobHelper.GetQueueName(job[0]),
+                        Type = job[0]
                     });
             }
 
@@ -414,37 +458,82 @@ namespace HangFire
 
         public IList<FailedJobDto> GetFailedJobs()
         {
-            var failed = _redis.GetAllItemsFromList("hangfire:failed");
-            return failed.Select(JobDescription.Deserialize)
-                .Reverse()
-                .Select(x => new FailedJobDto
-                {
-                    Args = new Dictionary<string, string>(x.Args),
-                    Queue = JobHelper.GetQueueName(x.JobType),
-                    Type = x.JobType,
-                    FailedAt = x.FailedAt,
-                    Latency = x.Latency,
-                    ExceptionType = x.Properties["ExceptionType"],
-                    ExceptionMessage = x.Properties["ExceptionMessage"],
-                    ExceptionStackTrace = x.Properties["StackTrace"],
-                })
-                .ToList();
+            // TODO: use LRANGE and pages.
+            var failedJobIds = _redis.GetAllItemsFromList("hangfire:failed");
+            var result = new List<FailedJobDto>(failedJobIds.Count);
+
+            foreach (var jobId in failedJobIds)
+            {
+                var job = _redis.GetValuesFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    new[] { "Type", "Args", "FailedAt", "ExceptionType", "ExceptionMessage", "StackTrace" });
+
+                result.Add(new FailedJobDto
+                    {
+                        Type = job[0],
+                        Queue = JobHelper.GetQueueName(job[0]),
+                        Args = JsonHelper.Deserialize<Dictionary<string, string>>(job[1]),
+                        FailedAt = JsonHelper.Deserialize<DateTime>(job[2]),
+                        ExceptionType = job[3],
+                        ExceptionMessage = job[4],
+                        ExceptionStackTrace = job[5],
+                        Latency = TimeSpan.FromSeconds(1) // TODO: replace it with the correct value
+                    });
+            }
+
+            return result;
         }
 
         public IList<SucceededJobDto> GetSucceededJobs()
         {
-            var succeeded = _redis.GetAllItemsFromList("hangfire:succeeded");
-            return succeeded.Select(JobDescription.Deserialize)
-                .Reverse()
-                .Select(x => new SucceededJobDto
-                {
-                    Args = new Dictionary<string, string>(x.Args),
-                    Queue = JobHelper.GetQueueName(x.JobType),
-                    Type = x.JobType,
-                    SucceededAt = x.SucceededAt,
-                    Latency = x.Latency
-                })
-                .ToList();
+            // TODO: use LRANGE with paging.
+            var succeededJobIds = _redis.GetAllItemsFromList("hangfire:succeeded");
+            var result = new List<SucceededJobDto>(succeededJobIds.Count);
+
+            foreach (var jobId in succeededJobIds)
+            {
+                var job = _redis.GetValuesFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    new[] { "Type", "Args", "SucceededAt" });
+
+                result.Add(new SucceededJobDto
+                    {
+                        Type = job[0],
+                        Queue = JobHelper.GetQueueName(job[0]),
+                        Args = JsonHelper.Deserialize<Dictionary<string, string>>(job[1]),
+                        SucceededAt = JsonHelper.Deserialize<DateTime>(job[2]),
+                        Latency = TimeSpan.FromSeconds(2) // TODO: replace with the correct value.
+                    });
+            }
+
+            return result;
+        }
+
+        public void GetJobTypeAndArgs(string jobId, out string jobType, out Dictionary<string, string> jobArgs)
+        {
+            var result = _redis.GetValuesFromHash(
+                String.Format("hangfire:job:{0}", jobId),
+                new[] { "Type", "Args" });
+
+            jobType = result[0];
+            jobArgs = JsonHelper.Deserialize<Dictionary<string, string>>(result[1]);
+        }
+
+        public void SetJobProperty(string jobId, string propertyName, object value)
+        {
+            _redis.SetEntryInHash(
+                String.Format("hangfire:job:{0}", jobId),
+                propertyName,
+                JsonHelper.Serialize(value));
+        }
+
+        public T GetJobProperty<T>(string jobId, string propertyName)
+        {
+            var value = _redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", jobId),
+                propertyName);
+
+            return JsonHelper.Deserialize<T>(value);
         }
     }
 

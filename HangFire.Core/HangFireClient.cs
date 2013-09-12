@@ -18,11 +18,13 @@ namespace HangFire
         }
 
         public static string PerformAsync<TJob>()
+            where TJob : HangFireJob
         {
             return PerformAsync<TJob>(null);
         }
 
         public static string PerformAsync<TJob>(object args)
+            where TJob : HangFireJob
         {
             return PerformAsync(typeof(TJob), args);
         }
@@ -33,11 +35,13 @@ namespace HangFire
         }
 
         public static string PerformIn<TJob>(TimeSpan interval)
+            where TJob : HangFireJob
         {
             return PerformIn<TJob>(interval, null);
         }
 
         public static string PerformIn<TJob>(TimeSpan interval, object args)
+            where TJob : HangFireJob
         {
             return PerformIn(interval, typeof(TJob), args);
         }
@@ -60,6 +64,12 @@ namespace HangFire
             if (jobType == null)
             {
                 throw new ArgumentNullException("jobType");
+            }
+            if (!typeof (HangFireJob).IsAssignableFrom(jobType))
+            {
+                throw new ArgumentException(
+                    String.Format("The type '{0}' must inherit '{1}'.", jobType, typeof(HangFireJob)), 
+                    "jobType");
             }
 
             var jobId = GenerateId();
@@ -85,6 +95,12 @@ namespace HangFire
             if (jobType == null)
             {
                 throw new ArgumentNullException("jobType");
+            }
+            if (!typeof(HangFireJob).IsAssignableFrom(jobType))
+            {
+                throw new ArgumentException(
+                    String.Format("The type '{0}' must inherit '{1}'.", jobType, typeof(HangFireJob)),
+                    "jobType");
             }
 
             if (interval != interval.Duration())
@@ -138,23 +154,24 @@ namespace HangFire
 
         private string SerializeArgs(object args)
         {
-            if (args == null) return null;
-
             var dictionary = new Dictionary<string, string>();
 
-            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(args))
+            if (args != null)
             {
-                var obj2 = descriptor.GetValue(args);
-                string value = null;
-
-                if (obj2 != null)
+                foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(args))
                 {
-                    // TODO: handle conversion exception and display it in a friendly way.
-                    var converter = TypeDescriptor.GetConverter(obj2.GetType());
-                    value = converter.ConvertToInvariantString(obj2);
-                }
+                    var obj2 = descriptor.GetValue(args);
+                    string value = null;
 
-                dictionary.Add(descriptor.Name.ToLowerInvariant(), value);
+                    if (obj2 != null)
+                    {
+                        // TODO: handle conversion exception and display it in a friendly way.
+                        var converter = TypeDescriptor.GetConverter(obj2.GetType());
+                        value = converter.ConvertToInvariantString(obj2);
+                    }
+
+                    dictionary.Add(descriptor.Name, value);
+                }
             }
 
             return JsonHelper.Serialize(dictionary);

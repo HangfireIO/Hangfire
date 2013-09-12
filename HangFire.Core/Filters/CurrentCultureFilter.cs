@@ -7,8 +7,7 @@ namespace HangFire
     {
         public void ClientFilter(ClientFilterContext filterContext)
         {
-            var properties = filterContext.JobDescription.Properties;
-            properties["CurrentCulture"] = Thread.CurrentThread.CurrentCulture.Name;
+            filterContext.Job["CurrentCulture"] = Thread.CurrentThread.CurrentCulture.Name;
 
             filterContext.EnqueueAction();
         }
@@ -18,8 +17,7 @@ namespace HangFire
             var currentThread = Thread.CurrentThread;
             var prevCulture = currentThread.CurrentCulture;
 
-            var properties = filterContext.JobDescription.Properties;
-            var cultureName = properties.ContainsKey("CurrentCulture") ? properties["CurrentCulture"] : null;
+            var cultureName = filterContext.JobInstance.Get<string>("CurrentCulture");
 
             try
             {

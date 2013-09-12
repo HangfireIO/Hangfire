@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
+using ServiceStack.Text;
 
 namespace HangFire.Tests
 {
@@ -13,25 +14,15 @@ namespace HangFire.Tests
     public class JobInvokerTests
     {
         private JobInvoker _jobInvoker;
-        private Mock<HangFireJobActivator> _jobActivatorMock;
         private Mock<IEnumerable<IServerFilter>> _filtersMock;
 
         [TestInitialize]
         public void SetUp()
         {
-            _jobActivatorMock = new Mock<HangFireJobActivator> { CallBase = true };
             _filtersMock = new Mock<IEnumerable<IServerFilter>>();
             _filtersMock.Setup(x => x.GetEnumerator()).Returns(Enumerable.Empty<IServerFilter>().GetEnumerator);
 
-            _jobInvoker = new JobInvoker(_jobActivatorMock.Object, _filtersMock.Object);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void Ctor_ThrowsException_WhenNullActivatorWasProvided()
-        {
-            // ReSharper disable once UnusedVariable
-            var invoker = new JobInvoker(null, Enumerable.Empty<IServerFilter>());
+            _jobInvoker = new JobInvoker( _filtersMock.Object);
         }
 
         [TestMethod]
@@ -39,55 +30,44 @@ namespace HangFire.Tests
         public void Ctor_ThrowsException_WhenNullFiltersCollectionWasProvided()
         {
             // ReSharper disable once UnusedVariable
-            var invoker = new JobInvoker(new Mock<HangFireJobActivator>().Object, null);
+            var invoker = new JobInvoker(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void Invoke_ThrowsArgumentNullException_WhenNullJobDescriptionWasProvided()
+        public void Invoke_ThrowsArgumentNullException_WhenNullJobInstanceWasProvided()
         {
-            _jobInvoker.InvokeJob(null);
+            _jobInvoker.InvokeJob(null, new Dictionary<string, string>());
         }
 
         [TestMethod]
         public void Invoke_InvokesTheJob_WhenItIsCorrect()
         {
             var testJob = new CorrectJob();
-            _jobActivatorMock.Setup(x => x.ActivateJob(It.IsAny<Type>())).Returns(testJob);
-
-            var jobDescription = new JobDescription(typeof(CorrectJob), null);
-            _jobInvoker.InvokeJob(jobDescription);
+            _jobInvoker.InvokeJob(testJob, new Dictionary<string, string>());
 
             Assert.IsTrue(testJob.Performed);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(MissingMethodException))]
-        public void Invoke_ThrowsInvocationException_WhenInvokeMethodCanNotBeFound()
-        {
-            var jobDescription = new JobDescription(typeof(PerformlessJob), null);
-            _jobInvoker.InvokeJob(jobDescription);
-        }
-
-        [TestMethod]
+        /*[TestMethod]
         [ExpectedException(typeof(JobActivationException))]
         public void Invoke_ThrowsActivationException_WhenJobClassCanNotBeFound()
         {
             var jobDescription = new JobDescription(typeof(PerformlessJob), null);
             jobDescription.JobType = "HelloWorld";
             _jobInvoker.InvokeJob(jobDescription);
-        }
+        }*/
 
-        [TestMethod]
+        /*[TestMethod]
         [ExpectedException(typeof(JobActivationException))]
         public void Invoke_ThrowsActivationException_WhenJobActivatorThrowsAnyException()
         {
             _jobActivatorMock.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws<MissingMethodException>();
             var jobDescription = new JobDescription(typeof(PerformlessJob), null);
             _jobInvoker.InvokeJob(jobDescription);
-        }
+        }*/
 
-        [TestMethod]
+        /*[TestMethod]
         public void Invoke_CorrectlyDeserializesJobParameters()
         {
             var job = new ArgumentsJob();
@@ -98,9 +78,9 @@ namespace HangFire.Tests
 
             Assert.AreEqual(3, job.A);
             Assert.AreEqual("5", job.B);
-        }
+        }*/
 
-        [TestMethod]
+        /*[TestMethod]
         public void Invoke_UsesDefaultValuesOfArguments_WhenNoValueWasProvided()
         {
             var job = new ArgumentsJob();
@@ -195,19 +175,16 @@ namespace HangFire.Tests
 
             Assert.AreEqual("Outer", lastFilter);
         }
+         * */
 
-        public class CorrectJob
+        public class CorrectJob : HangFireJob
         {
             public bool Performed { get; set; }
 
-            public virtual void Perform()
+            public override void Perform()
             {
                 Performed = true;
             }
-        }
-
-        public class PerformlessJob
-        {
         }
 
         public class ArgumentsJob

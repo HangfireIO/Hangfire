@@ -16,11 +16,11 @@ namespace HangFire
         private readonly string _queueName;
         private readonly Thread _managerThread;
         private readonly Thread _completionHandlerThread;
-        private readonly WorkerManager _pool;
+        private readonly ThreadedWorkerManager _pool;
         private readonly SchedulePoller _schedule;
         private readonly RedisClient _blockingClient = new RedisClient();
         private readonly RedisClient _client = new RedisClient();
-        private readonly BlockingCollection<string> _completedJobs 
+        private readonly BlockingCollection<string> _completetJobIds 
             = new BlockingCollection<string>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -124,7 +124,7 @@ namespace HangFire
 
             _completionHandlerThread.Start();
             
-            _pool = new WorkerManager(concurrency, serverName, jobActivator ?? new HangFireJobActivator());
+            _pool = new ThreadedWorkerManager(concurrency, serverName, jobActivator ?? new HangFireJobActivator());
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)
@@ -159,7 +159,7 @@ namespace HangFire
             
             _completionHandlerThread.Join();
 
-            _completedJobs.Dispose();
+            _completetJobIds.Dispose();
             _cts.Dispose();
 
             _blockingClient.Dispose();
@@ -231,13 +231,13 @@ namespace HangFire
             {
                 while (true)
                 {
-                    var completedJob = _completedJobs.Take(_cts.Token);
+                    var jobId = _completetJobIds.Take(_cts.Token);
                     bool removed = false;
                     while (true)
                     {
                         _client.TryToDo(storage =>
                             {
-                                storage.RemoveProcessingJob(_serverName, _queueName, completedJob);
+                                storage.RemoveProcessingJob(_serverName, _queueName, jobId);
                                 removed = true;
                             });
                         if (removed) break;
@@ -255,7 +255,7 @@ namespace HangFire
 
         private void PoolOnJobCompleted(object sender, JobCompletedEventArgs args)
         {
-            _completedJobs.Add(args.SerializedJob);
+            _completetJobIds.Add(args.JobId);
         }
     }
 }

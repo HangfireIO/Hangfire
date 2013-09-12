@@ -51,13 +51,12 @@ namespace HangFire
                             var jobId = storage.GetScheduledJobId(now);
                             if (jobId != null)
                             {
-                                var job = storage.GetJob(jobId);
+                                var jobType = storage.GetJobType(jobId);
 
                                 // TODO: move the job to the failed queue when type resolving failed.
-                                var type = Type.GetType(job["Type"]);
-                                var queue = JobHelper.GetQueueName(type);
+                                var queue = JobHelper.GetQueueName(jobType);
 
-                                storage.EnqueueJob(queue, jobId, job);
+                                storage.EnqueueJob(queue, jobId, null);
                             }
                             else
                             {

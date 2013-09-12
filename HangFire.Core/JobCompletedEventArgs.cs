@@ -4,11 +4,11 @@ namespace HangFire
 {
     internal class JobCompletedEventArgs : EventArgs
     {
-        public JobCompletedEventArgs(string serializedJob)
+        public JobCompletedEventArgs(string jobId)
         {
-            SerializedJob = serializedJob;
+            JobId = jobId;
         }
 
-        public string SerializedJob { get; private set; }
+        public string JobId { get; private set; }
     }
 }

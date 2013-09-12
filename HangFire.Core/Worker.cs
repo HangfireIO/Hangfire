@@ -1,206 +1,97 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading;
+using System.Collections.Generic;
 using ServiceStack.Logging;
 
 namespace HangFire
 {
-    internal class Worker : IDisposable
+    internal class Worker
     {
         private static readonly RedisClient Client = new RedisClient();
 
-        private readonly WorkerManager _pool;
-        private readonly string _name;
-        private readonly string _name2;
+        protected readonly ILog Logger;
 
+        private readonly string _workerName;
         private readonly HangFireJobActivator _jobActivator;
 
         private readonly JobInvoker _invoker;
 
-        private readonly Thread _thread;
-
-        private readonly ManualResetEventSlim _jobIsReady
-            = new ManualResetEventSlim(false);
-
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-
-        private readonly object _crashedLock = new object();
-        private readonly object _jobLock = new object();
-        private bool _crashed;
-        private bool _started;
-        private bool _disposed;
-
-        private readonly ILog _logger;
-
-        private volatile string _currentJob;
-
-        public Worker(WorkerManager pool, string name, string name2, HangFireJobActivator jobActivator)
+        public Worker(string name, string workerName, HangFireJobActivator jobActivator)
         {
-            _logger = LogManager.GetLogger(name);
-            _pool = pool;
-            _name = name;
-            _name2 = name2;
-
+            Logger = LogManager.GetLogger(name);
+            _workerName = workerName;
             _jobActivator = jobActivator;
+
             _invoker = new JobInvoker(
-                jobActivator,
                 HangFireConfiguration.Current.ServerFilters);
+        }
 
-            _thread = new Thread(DoWork)
+        public virtual void Process(string jobId)
+        {
+            string jobType = null; 
+            Dictionary<string, string> jobArgs = null;
+
+            lock (Client)
+            {
+                // Пока нет связи с Redis, бессмысленно что-то начинать делать,
+                // поэтому будем повторять действие до тех пор, пока не 
+                // восстановится связь.
+                while (!Client.TryToDo(x =>
+                    {
+                        x.GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
+                        // TODO: what if the job doesn't exists?
+                        x.AddProcessingWorker(_workerName, jobId);
+                    }))
                 {
-                    Name = name,
-                    IsBackground = true
-                };
-        }
-
-        public void Start()
-        {
-            Debug.Assert(!_disposed, "!_disposed");
-
-            if (_started)
-            {
-                throw new InvalidOperationException("Dispatcher has been already started.");
-            }
-
-            _thread.Start();
-            _started = true;
-        }
-
-        public void Stop()
-        {
-            Debug.Assert(!_disposed, "!_disposed");
-
-            if (_started)
-            {
-                _cts.Cancel();
-            }
-        }
-
-        internal bool Crashed
-        {
-            get
-            {
-                lock (_crashedLock)
-                {
-                    return _crashed;
                 }
             }
-            private set
-            {
-                lock (_crashedLock)
-                {
-                    _crashed = value;
-                }
-            }
-        }
 
-        public void Process(string serializedJob)
-        {
-            Debug.Assert(!_disposed, "!_disposed");
-
-            lock (_jobLock)
-            {
-                _currentJob = serializedJob;
-            }
-            _jobIsReady.Set();
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-
-            if (_started)
-            {
-                _thread.Join();
-            }
-
-            _cts.Dispose();
-            _jobIsReady.Dispose();
-        }
-
-        private void DoWork()
-        {
+            Exception exception = null;
+            HangFireJob jobInstance = null;
             try
             {
-                while (true)
+                try
                 {
-                    _pool.NotifyReady(this);
-                    _jobIsReady.Wait(_cts.Token);
-
-                    lock (_jobLock)
-                    {
-                        // TODO: Handle deserialization errors.
-                        var job = JobDescription.Deserialize(_currentJob);
-
-                        lock (Client)
-                        {
-                            // Пока нет связи с Redis, бессмысленно что-то начинать делать,
-                            // поэтому будем повторять действие до тех пор, пока не 
-                            // восстановится связь.
-                            while (!Client.TryToDo(x => x.AddProcessingDispatcher(
-                                _name2, job.JobType, job.SerializeArgs())))
-                            {
-                            }
-                        }
-
-                        Exception exception = null;
-
-                        try
-                        {
-                            _invoker.InvokeJob(job);
-                        }
-                        catch (Exception ex)
-                        {
-                            exception = ex;
-
-                            _logger.Error(
-                                "Failed to process the job: unexpected exception caught. Job JSON:"
-                                + Environment.NewLine
-                                + _currentJob,
-                                ex);
-                        }
-
-                        var now = DateTime.UtcNow;
-                        if (exception == null)
-                        {
-                            job.SucceededAt = now;
-                        }
-                        else
-                        {
-                            job.FailedAt = now;
-                            job.Properties["ExceptionType"] = exception.GetType().FullName;
-                            job.Properties["ExceptionMessage"] = exception.Message;
-                            job.Properties["StackTrace"] = exception.StackTrace;
-                        }
-
-                        // TODO: Handle Redis exceptions.
-                        lock (Client)
-                        {
-                            // См. комментарий к подобному блоку выше.
-                            while (!Client.TryToDo(x => x.RemoveProcessingDispatcher(_name2, job, exception)))
-                            {
-                            }
-                        }
-
-                        // We need unmodified job here.
-                        _pool.NotifyCompleted(_currentJob);
-
-                        _jobIsReady.Reset();
-                    }
+                    var type = Type.GetType(jobType, true, true);
+                    jobInstance = _jobActivator.ActivateJob(type);
                 }
-            }
-            catch (OperationCanceledException)
-            {
+                catch (Exception ex)
+                {
+                    throw new JobActivationException(
+                        String.Format(
+                            "An exception occured while trying to activate a job with the type '{0}'",
+                            jobType),
+                        ex);
+                }
+
+                jobInstance.JobId = jobId;
+                jobInstance.Client = Client;
+
+                _invoker.InvokeJob(jobInstance, jobArgs);
             }
             catch (Exception ex)
             {
-                Crashed = true;
-                _logger.Fatal(
-                    String.Format("Unexpected exception caught in the job dispatcher '{0}'. It will be stopped.", _name),
-                    ex);
+                exception = ex;
+
+                Logger.Error(String.Format(
+                    "Failed to process the job '{0}': unexpected exception caught.",
+                    jobId));
+            }
+            finally
+            {
+                var disposable = jobInstance as IDisposable;
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
+
+            // TODO: Handle Redis exceptions.
+            lock (Client)
+            {
+                // См. комментарий к подобному блоку выше.
+                while (!Client.TryToDo(x => x.RemoveProcessingDispatcher(_workerName, jobId, exception)))
+                {
+                }
             }
         }
     }

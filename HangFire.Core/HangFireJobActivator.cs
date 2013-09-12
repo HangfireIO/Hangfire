@@ -4,9 +4,9 @@ namespace HangFire
 {
     public class HangFireJobActivator
     {
-        public virtual object ActivateJob(Type jobType)
+        public virtual HangFireJob ActivateJob(Type jobType)
         {
-            return Activator.CreateInstance(jobType);
+            return (HangFireJob)Activator.CreateInstance(jobType);
         }
     }
 }

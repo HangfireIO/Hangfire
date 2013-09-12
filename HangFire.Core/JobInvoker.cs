@@ -2,130 +2,47 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 
 namespace HangFire
 {
     internal class JobInvoker
     {
-        private const string InvokeMethodName = "Perform";
-
-        private readonly HangFireJobActivator _activator;
         private readonly IEnumerable<IServerFilter> _filters;
 
-        public JobInvoker(HangFireJobActivator activator, IEnumerable<IServerFilter> filters)
+        public JobInvoker(IEnumerable<IServerFilter> filters)
         {
-            if (activator == null)
-            {
-                throw new ArgumentNullException("activator");
-            }
             if (filters == null)
             {
                 throw new ArgumentNullException("filters");
             }
 
-            _activator = activator;
             _filters = filters;
         }
 
-        public void InvokeJob(string jobId, Dictionary<string, string> job)
+        public void InvokeJob(HangFireJob instance, Dictionary<string, string> args)
         {
-            object jobInstance = null;
-            try
+            if (instance == null) throw new ArgumentNullException("instance");
+            if (args == null) throw new ArgumentNullException("args");
+
+            foreach (var arg in args)
             {
-                try
+                var propertyInfo = instance.GetType().GetProperty(arg.Key);
+                if (propertyInfo != null)
                 {
-                    var jobType = Type.GetType(job["Type"], true, true);
-                    jobInstance = _activator.ActivateJob(jobType);
-                }
-                catch (Exception ex)
-                {
-                    throw new JobActivationException(
-                        String.Format(
-                            "An exception occured while trying to activate a job with the type '{0}'", 
-                            job["Type"]),
-                        ex);
-                }
+                    var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
 
-                var jobArguments = new Dictionary<string, string>(
-                    JsonHelper.Deserialize<Dictionary<string, string>>(job["Args"]),
-                    StringComparer.InvariantCultureIgnoreCase);
-
-                var methodInfo = jobInstance.GetType().GetMethod(InvokeMethodName);
-                if (methodInfo == null)
-                {
-                    throw new MissingMethodException(jobInstance.GetType().Name, InvokeMethodName);
-                }
-
-                var parametersInfo = methodInfo.GetParameters();
-                var arguments = parametersInfo.Length > 0 ? new object[parametersInfo.Length] : null;
-
-                var missingArguments = new List<String>();
-
-                for (int i = 0; i < parametersInfo.Length; i++)
-                {
-                    var parameter = parametersInfo[i];
-                    object value;
-                    if (jobArguments.ContainsKey(parameter.Name))
-                    {
-                        var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-
-                        // TODO: handle deserialization exception and display it in a friendly way.
-                        value = converter.ConvertFromInvariantString(jobArguments[parameter.Name]);
-                    }
-                    else
-                    {
-                        if (parameter.IsOptional)
-                        {
-                            value = parameter.DefaultValue;
-                        }
-                        else
-                        {
-                            value = null;
-                            missingArguments.Add(parameter.Name);
-                        }
-                    }
-
-                    if (missingArguments.Count != 0)
-                    {
-                        throw new ArgumentException(
-                            String.Format(
-                                "Values for the following required arguments were not provided: {0}.",
-                                String.Join(", ", missingArguments.Select(x => "'" + x + "'"))));
-                    }
-
-                    // ReSharper disable once PossibleNullReferenceException
-                    arguments[i] = value;
-                }
-
-                Action performAction = () =>
-                {
-                    try
-                    {
-                        methodInfo.Invoke(jobInstance, arguments);
-                    }
-                    catch (TargetInvocationException ex)
-                    {
-                        throw ex.GetBaseException();
-                    }
-                };
-
-                InvokeFilters(jobId, job, jobInstance, performAction);
-            }
-            finally
-            {
-                var disposable = jobInstance as IDisposable;
-                if (disposable != null)
-                {
-                    disposable.Dispose();
+                    // TODO: handle deserialization exception and display it in a friendly way.
+                    var value = converter.ConvertFromInvariantString(arg.Value);
+                    propertyInfo.SetValue(instance, value, null);
                 }
             }
+
+            Action performAction = instance.Perform;
+            InvokeFilters(instance, performAction);
         }
 
         private void InvokeFilters(
-            string jobId,
-            Dictionary<string, string> job,
-            object jobInstance,
+            HangFireJob jobInstance,
             Action performAction)
         {
             var commandAction = performAction;
@@ -137,7 +54,7 @@ namespace HangFire
             {
                 var currentEntry = entry;
 
-                var filterContext = new ServerFilterContext(jobId, job, jobInstance, performAction);
+                var filterContext = new ServerFilterContext(jobInstance, performAction);
                 commandAction = () => currentEntry.ServerFilter(filterContext);
             }
 
