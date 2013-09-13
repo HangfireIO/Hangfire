@@ -1,21 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using ServiceStack.Redis;
 
 namespace HangFire
 {
-    internal class RedisStorage
+    internal class RedisStorage : IDisposable
     {
         private readonly TimeSpan _workerStatusTimeout = TimeSpan.FromDays(1);
-
+        private readonly HangFireConfiguration _config = HangFireConfiguration.Current;
         private readonly IRedisClient _redis;
 
-        public RedisStorage(IRedisClient redis)
+        public RedisStorage()
         {
-            _redis = redis;
+            _redis = new RedisClient(_config.RedisHost, _config.RedisPort, _config.RedisPassword, _config.RedisDb); 
+        }
+
+        public void Dispose()
+        {
+            _redis.Dispose();
+        }
+
+        public void RetryOnRedisException(Action<RedisStorage> action)
+        {
+            while (true)
+            {
+                try
+                {
+                    action(this);
+                    return;
+                }
+                catch (IOException)
+                {
+                    // TODO: log
+                }
+                catch (RedisException)
+                {
+                    // TODO: log
+                }
+            }
         }
 
         public void ScheduleJob(string jobId, Dictionary<string, string> job, double at)

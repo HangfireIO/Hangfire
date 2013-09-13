@@ -32,7 +32,7 @@ namespace HangFire
                 _dispatchers.Add(dispatcher);
             }
 
-            _logger.Info("Dispatchers were started.");
+            _logger.Info("Workers were started.");
         }
 
         public event EventHandler<JobCompletedEventArgs> JobCompleted;
@@ -77,7 +77,7 @@ namespace HangFire
             {
                 dispatcher.Dispose();
             }
-            _logger.Info("Dispatchers were stopped.");
+            _logger.Info("Workers were stopped.");
 
             _freeDispatchers.Dispose();
         }

@@ -51,7 +51,7 @@ namespace HangFire
             return Instance.In(interval, jobType, args);
         }
 
-        private readonly RedisClient _client = new RedisClient();
+        private readonly RedisStorage _redis = new RedisStorage();
         private readonly IEnumerable<IClientFilter> _filters;
 
         internal HangFireClient(IEnumerable<IClientFilter> filters)
@@ -79,9 +79,9 @@ namespace HangFire
             {
                 var queueName = JobHelper.GetQueueName(jobType);
 
-                lock (_client)
+                lock (_redis)
                 {
-                    _client.TryToDo(storage => storage.EnqueueJob(queueName, jobId, job), throwOnError: true);
+                    _redis.EnqueueJob(queueName, jobId, job);
                 }
             };
 
@@ -120,11 +120,9 @@ namespace HangFire
 
             Action enqueueAction = () =>
             {
-                lock (_client)
+                lock (_redis)
                 {
-                    _client.TryToDo(
-                        storage => storage.ScheduleJob(jobId, job, at),
-                        throwOnError: true);
+                    _redis.ScheduleJob(jobId, job, at);
                 }
             };
 
@@ -135,7 +133,7 @@ namespace HangFire
 
         public void Dispose()
         {
-            _client.Dispose();
+            _redis.Dispose();
         }
 
         private Dictionary<string, string> InitializeJob(Type jobType, object args)

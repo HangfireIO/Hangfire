@@ -8,7 +8,7 @@ namespace HangFire
         private readonly Thread _pollerThread;
 
         private readonly TimeSpan _pollInterval;
-        private readonly RedisClient _client = new RedisClient();
+        private readonly RedisStorage _redis = new RedisStorage();
 
         private bool _stopped;
         private readonly object _locker = new object();
@@ -28,47 +28,50 @@ namespace HangFire
             }
             _pollerThread.Interrupt();
             _pollerThread.Join();
-            _client.Dispose();
+            _redis.Dispose();
         }
 
         private void Work()
         {
             try
             {
-                while (true)
-                {
-                    _client.TryToDo(storage =>
+                _redis.RetryOnRedisException(x =>
                     {
                         while (true)
                         {
                             lock (_locker)
                             {
-                                if (_stopped) { return; }
+                                if (_stopped)
+                                {
+                                    return;
+                                }
                             }
 
                             var now = DateTime.UtcNow.ToTimestamp();
 
-                            var jobId = storage.GetScheduledJobId(now);
+                            var jobId = x.GetScheduledJobId(now);
                             if (jobId != null)
                             {
-                                var jobType = storage.GetJobType(jobId);
+                                var jobType = x.GetJobType(jobId);
 
                                 // TODO: move the job to the failed queue when type resolving failed.
                                 var queue = JobHelper.GetQueueName(jobType);
 
-                                storage.EnqueueJob(queue, jobId, null);
+                                x.EnqueueJob(queue, jobId, null);
                             }
                             else
                             {
-                                break;
+                                Thread.Sleep(_pollInterval);
                             }
                         }
                     });
-                    Thread.Sleep(_pollInterval);
-                }
             }
             catch (ThreadInterruptedException)
             {
+            }
+            catch (Exception)
+            {
+                // TODO: log the exception.
             }
         }
     }

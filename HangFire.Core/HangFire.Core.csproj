@@ -87,7 +87,6 @@
     <Compile Include="HangFireClient.cs" />
     <Compile Include="ThreadedWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RedisClient.cs" />
     <Compile Include="JobHelper.cs" />
   </ItemGroup>
   <ItemGroup>

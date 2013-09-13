@@ -5,7 +5,7 @@
     Layout = new LayoutPage()
         {
             Context = Context,
-            Title = "Dispatchers"
+            Title = "Workers"
         };
 }
 
@@ -19,7 +19,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var dispatcher in HangFireApi.Dispatchers())
+        @foreach (var dispatcher in HangFireApi.Workers())
         {
             <tr>
                 <td>@dispatcher.Name</td>

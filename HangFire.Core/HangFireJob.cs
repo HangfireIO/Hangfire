@@ -2,7 +2,7 @@
 {
     public abstract class HangFireJob
     {
-        internal RedisClient Client { get; set; }
+        internal RedisStorage Redis { get; set; }
 
         public string JobId { get; internal set; }
 
@@ -10,26 +10,18 @@
 
         public void Set(string propertyName, object value)
         {
-            lock (Client)
+            lock (Redis)
             {
-                Client.TryToDo(
-                    x => x.SetJobProperty(JobId, propertyName, value),
-                    throwOnError: true);
+                Redis.SetJobProperty(JobId, propertyName, value);
             }
         }
 
         public T Get<T>(string propertyName)
         {
-            var value = default(T);
-
-            lock (Client)
+            lock (Redis)
             {
-                Client.TryToDo(
-                    x => x.GetJobProperty<T>(JobId, propertyName),
-                    throwOnError: true);
+                return Redis.GetJobProperty<T>(JobId, propertyName);
             }
-
-            return value;
         }
     }
 }

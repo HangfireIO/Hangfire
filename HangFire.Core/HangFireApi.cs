@@ -6,155 +6,125 @@ namespace HangFire
 {
     public static class HangFireApi
     {
-        private static readonly RedisClient _client = new RedisClient();
+        private static readonly RedisStorage Redis = new RedisStorage();
 
         public static long ScheduledCount()
         {
-            lock (_client)
+            lock (Redis)
             {
-                long scheduled = 0;
-                _client.TryToDo(x => scheduled = x.GetScheduledCount());
-                return scheduled;
+                return Redis.GetScheduledCount();
             }
         }
 
         public static long EnqueuedCount()
         {
-            lock (_client)
+            lock (Redis)
             {
-                long count = 0;
-                _client.TryToDo(x => count = x.GetEnqueuedCount());
-                return count;
+                return Redis.GetEnqueuedCount();
             }
         }
 
         public static long SucceededCount()
         {
-            lock (_client)
+            lock (Redis)
             {
-                long count = 0;
-                _client.TryToDo(x => count = x.GetSucceededCount());
-                return count;
+                return Redis.GetSucceededCount();
             }
         }
 
         public static long FailedCount()
         {
-            lock (_client)
+            lock (Redis)
             {
-                long count = 0;
-                _client.TryToDo(x => count = x.GetFailedCount());
-                return count;
+                return Redis.GetFailedCount();
             }
         }
 
         public static long ProcessingCount()
         {
-            lock (_client)
+            lock (Redis)
             {
-                long count = 0;
-                _client.TryToDo(x => count = x.GetProcessingCount());
-                return count;
+                return Redis.GetProcessingCount();
             }
         }
 
         public static IEnumerable<QueueDto> Queues()
         {
-            lock (_client)
+            lock (Redis)
             {
-                IEnumerable<QueueDto> queues = Enumerable.Empty<QueueDto>();
-                _client.TryToDo(x => queues = x.GetQueues());
-                return queues;
+                return Redis.GetQueues();
             }
         }
 
-        public static IEnumerable<DispatcherDto> Dispatchers()
+        public static IEnumerable<DispatcherDto> Workers()
         {
-            lock (_client)
+            lock (Redis)
             {
-                var dispatchers = Enumerable.Empty<DispatcherDto>();
-                _client.TryToDo(x => dispatchers = x.GetWorkers());
-                return dispatchers;
+                return Redis.GetWorkers();
             }
         }
 
         public static IList<ScheduleDto> Schedule()
         {
-            lock (_client)
+            lock (Redis)
             {
-                IList<ScheduleDto> schedule = new List<ScheduleDto>();
-                _client.TryToDo(x => schedule = x.GetSchedule());
-                return schedule;
+                return Redis.GetSchedule();
             }
         }
 
         public static Dictionary<string, long> SucceededByDatesCount()
         {
-            lock (_client)
+            lock (Redis)
             {
-                var count = new Dictionary<string, long>();
-                _client.TryToDo(x => count = x.GetSucceededByDatesCount());
-                return count;
+                return Redis.GetSucceededByDatesCount();
             }
         }
 
         public static Dictionary<string, long> FailedByDatesCount()
         {
-            lock (_client)
+            lock (Redis)
             {
-                var count = new Dictionary<string, long>();
-                _client.TryToDo(x => count = x.GetFailedByDatesCount());
-                return count;
+                return Redis.GetFailedByDatesCount();
             }
         }
 
         public static IList<ServerDto> Servers()
         {
-            lock (_client)
+            lock (Redis)
             {
-                IList<ServerDto> servers = new List<ServerDto>();
-                _client.TryToDo(x => servers = x.GetServers());
-                return servers;
+                return Redis.GetServers();
             }
         }
 
         public static IList<FailedJobDto> FailedJobs()
         {
-            lock (_client)
+            lock (Redis)
             {
-                IList<FailedJobDto> failed = new List<FailedJobDto>();
-                _client.TryToDo(x => failed = x.GetFailedJobs());
-                return failed;
+                return Redis.GetFailedJobs();
             }
         }
 
         public static IList<SucceededJobDto> SucceededJobs()
         {
-            lock (_client)
+            lock (Redis)
             {
-                IList<SucceededJobDto> succeeded = new List<SucceededJobDto>();
-                _client.TryToDo(x => succeeded = x.GetSucceededJobs());
-                return succeeded;
+                return Redis.GetSucceededJobs();
             }
         }
 
         public static Dictionary<DateTime, long> HourlySucceededJobs()
         {
-            lock (_client)
+            lock (Redis)
             {
-                var result = new Dictionary<DateTime, long>();
-                _client.TryToDo(x => result = x.GetHourlySucceededCount());
-                return result;
+                return Redis.GetHourlySucceededCount();
             }
         }
 
         public static Dictionary<DateTime, long> HourlyFailedJobs()
         {
-            lock (_client)
+            lock (Redis)
             {
-                var result = new Dictionary<DateTime, long>();
-                _client.TryToDo(x => result = x.GetHourlyFailedCount());
-                return result;
+                return Redis.GetHourlyFailedCount();
             }
         }
     }

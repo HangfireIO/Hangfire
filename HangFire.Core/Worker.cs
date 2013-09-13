@@ -6,7 +6,7 @@ namespace HangFire
 {
     internal class Worker
     {
-        private static readonly RedisClient Client = new RedisClient();
+        private static readonly RedisStorage Redis = new RedisStorage();
 
         protected readonly ILog Logger;
 
@@ -30,19 +30,14 @@ namespace HangFire
             string jobType = null; 
             Dictionary<string, string> jobArgs = null;
 
-            lock (Client)
+            lock (Redis)
             {
-                // Пока нет связи с Redis, бессмысленно что-то начинать делать,
-                // поэтому будем повторять действие до тех пор, пока не 
-                // восстановится связь.
-                while (!Client.TryToDo(x =>
+                Redis.RetryOnRedisException(x =>
                     {
                         x.GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
                         // TODO: what if the job doesn't exists?
                         x.AddProcessingWorker(_workerName, jobId);
-                    }))
-                {
-                }
+                    });
             }
 
             Exception exception = null;
@@ -64,7 +59,7 @@ namespace HangFire
                 }
 
                 jobInstance.JobId = jobId;
-                jobInstance.Client = Client;
+                jobInstance.Redis = Redis;
 
                 _invoker.InvokeJob(jobInstance, jobArgs);
             }
@@ -85,13 +80,10 @@ namespace HangFire
                 }
             }
 
-            // TODO: Handle Redis exceptions.
-            lock (Client)
+            lock (Redis)
             {
-                // См. комментарий к подобному блоку выше.
-                while (!Client.TryToDo(x => x.RemoveProcessingDispatcher(_workerName, jobId, exception)))
-                {
-                }
+                Redis.RetryOnRedisException(x => 
+                    x.RemoveProcessingDispatcher(_workerName, jobId, exception));
             }
         }
     }

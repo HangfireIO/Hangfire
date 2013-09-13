@@ -297,7 +297,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-dispatchers\" clas
 
             
             #line 80 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.Dispatchers().Count()));
+                       Write(String.Format("{0:n0}", HangFireApi.Workers().Count()));
 
             
             #line default

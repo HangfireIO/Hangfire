@@ -36,7 +36,7 @@ WriteLiteral("\n");
     Layout = new LayoutPage()
         {
             Context = Context,
-            Title = "Dispatchers"
+            Title = "Workers"
         };
 
 
@@ -50,7 +50,7 @@ WriteLiteral("\n<table class=\"table\">\n    <thead>\n        <tr>\n            
 
             
             #line 22 "..\..\Pages\DispatchersPage.cshtml"
-         foreach (var dispatcher in HangFireApi.Dispatchers())
+         foreach (var dispatcher in HangFireApi.Workers())
         {
 
             
