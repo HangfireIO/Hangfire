@@ -56,7 +56,7 @@ namespace HangFire
             }
         }
 
-        public static IEnumerable<DispatcherDto> Workers()
+        public static IEnumerable<WorkerDto> Workers()
         {
             lock (Redis)
             {

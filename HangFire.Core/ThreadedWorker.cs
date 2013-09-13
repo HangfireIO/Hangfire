@@ -44,7 +44,7 @@ namespace HangFire
 
             if (_started)
             {
-                throw new InvalidOperationException("Dispatcher has been already started.");
+                throw new InvalidOperationException("Worker has been already started.");
             }
 
             _thread.Start();
@@ -132,7 +132,7 @@ namespace HangFire
             {
                 Crashed = true;
                 Logger.Fatal(
-                    String.Format("Unexpected exception caught in the job dispatcher '{0}'. It will be stopped.", _name),
+                    String.Format("Unexpected exception caught in the worker '{0}'. It will be stopped.", _name),
                     ex);
             }
         }

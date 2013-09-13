@@ -9,27 +9,27 @@ namespace HangFire
 {
     internal class ThreadedWorkerManager : IDisposable
     {
-        private readonly List<ThreadedWorker> _dispatchers;
-        private readonly BlockingCollection<ThreadedWorker> _freeDispatchers;
-        private readonly ILog _logger = LogManager.GetLogger("HangFire.JobDispatcherPool");
+        private readonly List<ThreadedWorker> _workers;
+        private readonly BlockingCollection<ThreadedWorker> _freeWorkers;
+        private readonly ILog _logger = LogManager.GetLogger("HangFire.WorkerPool");
         private bool _disposed;
 
         public ThreadedWorkerManager(int count, string serverName, HangFireJobActivator jobActivator)
         {
-            _dispatchers = new List<ThreadedWorker>(count);
-            _freeDispatchers = new BlockingCollection<ThreadedWorker>();
+            _workers = new List<ThreadedWorker>(count);
+            _freeWorkers = new BlockingCollection<ThreadedWorker>();
 
-            _logger.Info(String.Format("Starting {0} dispatchers...", count));
+            _logger.Info(String.Format("Starting {0} workers...", count));
 
             for (var i = 0; i < count; i++)
             {
-                var dispatcher = new ThreadedWorker(
+                var worker = new ThreadedWorker(
                     this, 
-                    String.Format("HangFire.Dispatcher.{0}", i),
+                    String.Format("HangFire.Worker.{0}", i),
                     String.Format("{0}.{1}", serverName, i),
                     jobActivator);
-                dispatcher.Start();
-                _dispatchers.Add(dispatcher);
+                worker.Start();
+                _workers.Add(worker);
             }
 
             _logger.Info("Workers were started.");
@@ -41,14 +41,14 @@ namespace HangFire
         {
             Debug.Assert(!_disposed, "!_disposed");
 
-            ThreadedWorker dispatcher;
+            ThreadedWorker worker;
             do
             {
-                dispatcher = _freeDispatchers.Take(cancellationToken);
+                worker = _freeWorkers.Take(cancellationToken);
             }
-            while (dispatcher.Crashed);
+            while (worker.Crashed);
 
-            return dispatcher;
+            return worker;
         }
 
         internal void NotifyCompleted(string jobId)
@@ -67,24 +67,24 @@ namespace HangFire
 
             _disposed = true;
 
-            _logger.Info("Stopping dispatchers...");
-            foreach (var dispatcher in _dispatchers)
+            _logger.Info("Stopping workers...");
+            foreach (var worker in _workers)
             {
-                dispatcher.Stop();
+                worker.Stop();
             }
 
-            foreach (var dispatcher in _dispatchers)
+            foreach (var worker in _workers)
             {
-                dispatcher.Dispose();
+                worker.Dispose();
             }
             _logger.Info("Workers were stopped.");
 
-            _freeDispatchers.Dispose();
+            _freeWorkers.Dispose();
         }
 
-        internal void NotifyReady(ThreadedWorker dispatcher)
+        internal void NotifyReady(ThreadedWorker worker)
         {
-            _freeDispatchers.Add(dispatcher);
+            _freeWorkers.Add(worker);
         }
     }
 }

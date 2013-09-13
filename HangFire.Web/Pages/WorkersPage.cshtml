@@ -19,13 +19,13 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var dispatcher in HangFireApi.Workers())
+        @foreach (var worker in HangFireApi.Workers())
         {
             <tr>
-                <td>@dispatcher.Name</td>
-                <td>@dispatcher.Type</td>
-                <td><code>@dispatcher.Args</code></td>
-                <td>@dispatcher.StartedAt</td>
+                <td>@worker.Name</td>
+                <td>@worker.Type</td>
+                <td><code>@worker.Args</code></td>
+                <td>@worker.StartedAt</td>
             </tr>
         }
     </tbody>

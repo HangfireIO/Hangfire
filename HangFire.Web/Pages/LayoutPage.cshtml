@@ -74,9 +74,9 @@
                         </span>
                         Failed
                     </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/dispatchers") ? "active" : null)" 
-                        href="@Request.LinkTo("/dispatchers")">
-                        <span id="stats-dispatchers" class="label label-warning pull-right">
+                    <a class="list-group-item @(Request.PathInfo.Equals("/workers") ? "active" : null)" 
+                        href="@Request.LinkTo("/workers")">
+                        <span id="stats-workers" class="label label-warning pull-right">
                             @String.Format("{0:n0}", HangFireApi.Workers().Count())
                         </span>
                         Processing

@@ -189,7 +189,7 @@ namespace HangFire
             }
         }
 
-        public void RemoveProcessingDispatcher(string workerName, string jobId, Exception exception)
+        public void RemoveProcessingWorker(string workerName, string jobId, Exception exception)
         {
             using (var transaction = _redis.CreateTransaction())
             {
@@ -296,10 +296,10 @@ namespace HangFire
                 }).ToList();
         }
 
-        public IEnumerable<DispatcherDto> GetWorkers()
+        public IEnumerable<WorkerDto> GetWorkers()
         {
             var workers = _redis.GetAllItemsFromSet("hangfire:workers");
-            var result = new List<DispatcherDto>();
+            var result = new List<WorkerDto>();
             foreach (var workerName in workers)
             {
                 var jobId = _redis.GetValue(String.Format("hangfire:worker:{0}", workerName));
@@ -307,7 +307,7 @@ namespace HangFire
                     String.Format("hangfire:job:{0}", jobId),
                     new[] { "Type", "Args", "StartedAt" });
 
-                result.Add(new DispatcherDto
+                result.Add(new WorkerDto
                     {
                         Name = workerName,
                         Args = job[1],
@@ -578,7 +578,7 @@ namespace HangFire
         public HashSet<string> Servers { get; set; }
     }
 
-    public class DispatcherDto
+    public class WorkerDto
     {
         public string Name { get; set; }
         public string Type { get; set; }

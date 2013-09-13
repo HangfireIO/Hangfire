@@ -187,7 +187,7 @@ namespace HangFire
 
                 while (true)
                 {
-                    var dispatcher = _pool.TakeFree(_cts.Token);
+                    var worker = _pool.TakeFree(_cts.Token);
 
                     string jobId = null;
                     _blockingRedis.RetryOnRedisException(
@@ -203,7 +203,7 @@ namespace HangFire
                             } while (jobId == null);
                         });
 
-                    dispatcher.Process(jobId);
+                    worker.Process(jobId);
                 }
             }
             catch (OperationCanceledException)

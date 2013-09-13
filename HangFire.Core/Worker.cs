@@ -83,7 +83,7 @@ namespace HangFire
             lock (Redis)
             {
                 Redis.RetryOnRedisException(x => 
-                    x.RemoveProcessingDispatcher(_workerName, jobId, exception));
+                    x.RemoveProcessingWorker(_workerName, jobId, exception));
             }
         }
     }

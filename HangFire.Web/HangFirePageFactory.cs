@@ -31,8 +31,8 @@ namespace HangFire.Web
             {
                 case "/queues":
                     return new QueuesPage();
-                case "/dispatchers":
-                    return new DispatchersPage();
+                case "/workers":
+                    return new WorkersPage();
                 case "/schedule":
                     return new SchedulePage();
                 case "/servers":
