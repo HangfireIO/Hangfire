@@ -20,7 +20,7 @@ namespace HangFire
         private readonly SchedulePoller _schedule;
         private readonly RedisClient _blockingClient = new RedisClient();
         private readonly RedisClient _client = new RedisClient();
-        private readonly BlockingCollection<string> _completetJobIds 
+        private readonly BlockingCollection<string> _completetJobIds
             = new BlockingCollection<string>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -86,10 +86,10 @@ namespace HangFire
         /// <param name="pollInterval">Polling interval for scheduled jobs.</param>
         /// <param name="jobActivator">Instance of the <see cref="HangFireJobActivator"/> that will be used to activate jobs.</param>
         public HangFireServer(
-            string serverName, 
-            string queueName, 
-            int concurrency, 
-            TimeSpan pollInterval, 
+            string serverName,
+            string queueName,
+            int concurrency,
+            TimeSpan pollInterval,
             HangFireJobActivator jobActivator)
         {
             if (String.IsNullOrEmpty(serverName))
@@ -123,7 +123,7 @@ namespace HangFire
                 };
 
             _completionHandlerThread.Start();
-            
+
             _pool = new ThreadedWorkerManager(concurrency, serverName, jobActivator ?? new HangFireJobActivator());
             _pool.JobCompleted += PoolOnJobCompleted;
 
@@ -156,7 +156,7 @@ namespace HangFire
             _managerThread.Join();
 
             _pool.Dispose();
-            
+
             _completionHandlerThread.Join();
 
             _completetJobIds.Dispose();
@@ -195,23 +195,22 @@ namespace HangFire
                 {
                     var dispatcher = _pool.TakeFree(_cts.Token);
 
-                    _blockingClient.TryToDo(
-                        storage =>
-                        {
-                            string jobId;
-
-                            do
+                    string jobId = null;
+                    do
+                    {
+                        _blockingClient.TryToDo(
+                            storage =>
                             {
                                 jobId = storage.DequeueJobId(_serverName, _queueName, TimeSpan.FromSeconds(5));
+                            });
 
-                                if (jobId == null && _cts.IsCancellationRequested)
-                                {
-                                    throw new OperationCanceledException();
-                                }
-                            } while (jobId == null);
+                        if (jobId == null && _cts.IsCancellationRequested)
+                        {
+                            throw new OperationCanceledException();
+                        }
+                    } while (jobId == null);
 
-                            dispatcher.Process(jobId);
-                        });
+                    dispatcher.Process(jobId);
                 }
             }
             catch (OperationCanceledException)
