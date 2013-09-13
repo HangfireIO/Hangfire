@@ -158,14 +158,14 @@ namespace HangFire
             {
                 foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(args))
                 {
-                    var obj2 = descriptor.GetValue(args);
+                    var propertyValue = descriptor.GetValue(args);
                     string value = null;
 
-                    if (obj2 != null)
+                    if (propertyValue != null)
                     {
                         // TODO: handle conversion exception and display it in a friendly way.
-                        var converter = TypeDescriptor.GetConverter(obj2.GetType());
-                        value = converter.ConvertToInvariantString(obj2);
+                        var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
+                        value = converter.ConvertToInvariantString(propertyValue);
                     }
 
                     dictionary.Add(descriptor.Name, value);

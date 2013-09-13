@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading;
+using ServiceStack.Logging;
 
 namespace HangFire
 {
     internal class SchedulePoller : IDisposable
     {
+        private readonly ILog _logger = LogManager.GetLogger("SchedulePoller");
         private readonly Thread _pollerThread;
 
         private readonly TimeSpan _pollInterval;
@@ -69,9 +71,12 @@ namespace HangFire
             catch (ThreadInterruptedException)
             {
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: log the exception.
+                _logger.Fatal(
+                    "Scheduled jobs will not be added to their queues by this server instance: "
+                    + "unexpected exception caught in the SchedulePoller thread.", 
+                    ex);
             }
         }
     }
