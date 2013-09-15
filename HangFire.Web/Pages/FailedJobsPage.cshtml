@@ -1,21 +1,8 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
-@using System
-@using System.Linq
-@using HangFire.Web.Pages
-@inherits WebTemplateBase
+@using Pages
+@inherits RazorPage
 @{
-    Layout = new LayoutPage()
-        {
-            Context = Context,
-            Title = "Failed Jobs"
-        };
-}
-
-<div class="alert alert-info">
-    HangFire записывает все проваленные задания в очередь <code>hangfire:failed</code>. 
-</div>
-
-@{
+    Layout = new LayoutPage { Title = "Failed Jobs" };
     var failedJobs = HangFireApi.FailedJobs();
 }
 
@@ -30,12 +17,10 @@ else
     <table class="table failed-table">
         <thead>
             <tr>
-                <th>Type</th>
-                <th>Queue</th>
-                <th>Args</th>
-                <th>Exception</th>
                 <th>Failed at</th>
-                <th>Latency</th>
+                <th>Queue</th>
+                <th>Type</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -43,26 +28,49 @@ else
             @foreach (var job in failedJobs)
             {
                 <tr>
-                    <td>@job.Type</td>
-                    <td><span class="label label-primary">@job.Queue</span></td>
-                    <td>
-                        <code>
-                            @String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
-                        </code>
-                    </td>
-                    <td class="expand-exception">
-                        @job.ExceptionMessage <span class="caret"></span>
-                    </td>
                     <td>@job.FailedAt</td>
-                    <td>@job.Latency</td>
+                    <td><span class="label label-primary">@job.Queue</span></td>
+                    <td class="expand-exception">
+                        <div>
+                            @HtmlHelper.JobType(job.Type)
+                        </div>
+                        <div style="color: #888;">
+                            @job.ExceptionMessage <span class="caret"></span>
+                        </div>
+                    </td>
+                    <td>
+                        <!--button class="btn btn-default btn-sm">
+                            <span class="glyphicon glyphicon-search"></span>
+                            Retry
+                        </button>
+                        <button class="btn btn-danger btn-sm">Remove</button-->
+                    </td>
                 </tr>
                 <tr style="@(index++ > 0 ? "display: none;" : null)">
-                    <td colspan="6">
-                        @job.ExceptionType
-                        <br/>
-                        @job.ExceptionMessage
-                        <br />
-                        @job.ExceptionStackTrace
+                    <td colspan="5" class="failed-job-details">
+                        <h4>@job.ExceptionType</h4>
+                        <p>
+                            @job.ExceptionMessage
+                        </p>
+                        <pre class="stack-trace">@MarkupStackTrace(job.ExceptionStackTrace)</pre>
+                        <h4>Job Arguments</h4>
+                        <table class="table table-bordered table-striped table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var arg in job.Args)
+                                {
+                                    <tr>
+                                        <td>@arg.Key</td>
+                                        <td><code>@arg.Value</code></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
                     </td>
                 </tr>
             }

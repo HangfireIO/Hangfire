@@ -236,11 +236,15 @@ namespace HangFire
                                 { "StackTrace", exception.StackTrace }
                             }));
 
+                    transaction.QueueCommand(x => x.AddItemToSortedSet(
+                        "hangfire:failed",
+                        jobId,
+                        DateTime.UtcNow.ToTimestamp()));
+
                     transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-                    transaction.QueueCommand(x => x.PushItemToList("hangfire:failed", jobId));
-
+                    
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm"))));
 
@@ -485,7 +489,7 @@ namespace HangFire
         public IList<FailedJobDto> GetFailedJobs()
         {
             // TODO: use LRANGE and pages.
-            var failedJobIds = _redis.GetAllItemsFromList("hangfire:failed");
+            var failedJobIds = _redis.GetAllItemsFromSortedSetDesc("hangfire:failed");
             var result = new List<FailedJobDto>(failedJobIds.Count);
 
             foreach (var jobId in failedJobIds)
@@ -503,11 +507,10 @@ namespace HangFire
                         ExceptionType = job[3],
                         ExceptionMessage = job[4],
                         ExceptionStackTrace = job[5],
-                        Latency = TimeSpan.FromSeconds(1) // TODO: replace it with the correct value
                     });
             }
 
-            return result;
+            return result.OrderByDescending(x => x.FailedAt).ToList();
         }
 
         public IList<SucceededJobDto> GetSucceededJobs()
@@ -600,7 +603,6 @@ namespace HangFire
         public string Queue { get; set; }
         public Dictionary<String, String> Args { get; set; }
         public DateTime? FailedAt { get; set; }
-        public TimeSpan Latency { get; set; }
         public string ExceptionType { get; set; }
         public string ExceptionMessage { get; set; }
         public string ExceptionStackTrace { get; set; }
