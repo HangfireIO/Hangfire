@@ -1,16 +1,9 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
-@using HangFire.Web.Pages
-@inherits WebTemplateBase
+@using Pages
+@inherits RazorPage
               
 @{
-    Layout = new LayoutPage()
-        {
-            Context = Context,
-            Title = "Schedule"
-        };
-}
-
-@{
+    Layout = new LayoutPage { Title = "Schedule" };
     var scheduledJobs = HangFireApi.Schedule();
 }
 

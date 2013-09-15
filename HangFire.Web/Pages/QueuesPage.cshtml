@@ -1,17 +1,13 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
-@using HangFire.Web.Pages
-@inherits WebTemplateBase
+@using Pages
+@inherits RazorPage
               
 @{
-    Layout = new LayoutPage()
-        {
-            Context = Context,
-            Title = "Queues"
-        };
+    Layout = new LayoutPage { Title = "Queues" };
 }
 
 <table class="table">
-    <thead>
+    <thead> 
         <tr>
             <th>Queue</th>
             <th>Length</th>

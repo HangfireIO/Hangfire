@@ -50,6 +50,11 @@ html, body {
 /* Statistics widget
 -------------------------------------------------- */
 
+#stats {
+    position: fixed;
+    width: 265px;
+}
+
 #stats .list-group-item {
     border-color: #e7e7e7;
     background-color: #f8f8f8;
@@ -70,4 +75,38 @@ html, body {
     color: #555;
     background-color: #e7e7e7;
     border-color: #e7e7e7;
+}
+
+.table td.failed-job-details {
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: none;
+    background-color: #f5f5f5;
+}
+
+.stack-trace {
+    padding: 10px;
+    border: none;
+    color: #999;
+}
+
+.st-type, .st-param-type
+{
+    color: #333;
+}
+
+.st-param-name
+{
+    color: #666;
+}
+
+.st-method
+{
+    color: #00008B;
+    font-weight: bolder;
+}
+
+.st-line
+{
+    color: #8B008B;
 }

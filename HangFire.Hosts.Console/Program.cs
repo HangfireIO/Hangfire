@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -36,7 +37,7 @@ namespace HangFire.Hosts
         public override void Perform()
         {
             Console.WriteLine("Beginning error task...");
-            throw new InvalidOperationException("Error!");
+            throw new InvalidOperationException(null, new FileLoadException());
         }
     }
 
@@ -92,7 +93,7 @@ namespace HangFire.Hosts
                         var workCount = int.Parse(command.Substring(6));
                         for (var i = 0; i < workCount; i++)
                         {
-                            HangFireClient.PerformAsync<ErrorJob>();
+                            HangFireClient.PerformAsync<ErrorJob>(new { ArticleId = 2, Product = "Casio Privia PX-850" });
                         }
                     }
 

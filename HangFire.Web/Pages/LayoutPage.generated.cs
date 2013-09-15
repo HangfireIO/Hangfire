@@ -20,20 +20,20 @@ namespace HangFire.Web.Pages
     using System.Collections.Generic;
     
     #line 3 "..\..\Pages\LayoutPage.cshtml"
-    using System.Linq;
+    using System.Diagnostics;
     
     #line default
     #line hidden
     
     #line 4 "..\..\Pages\LayoutPage.cshtml"
-    using System.Reflection;
+    using System.Linq;
     
     #line default
     #line hidden
     using System.Text;
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class LayoutPage : WebTemplateBase
+    internal partial class LayoutPage : RazorPage
     {
 #line hidden
 
@@ -63,7 +63,7 @@ WriteLiteral(" - HangFire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta
 
             
             #line 13 "..\..\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/styles.css?v1"));
+                            Write(Request.LinkTo("/css/styles.css"));
 
             
             #line default
@@ -207,86 +207,67 @@ WriteLiteral(@"</span>
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                    <a class=\"list-group-item ");
+WriteLiteral("\">\r\n                    <a class=\"list-group-item\" href=\"#\">\r\n                   " +
+"     <span id=\"stats-enqueued\" class=\"label label-default pull-right\">\r\n        " +
+"                    ");
 
 
             
-            #line 63 "..\..\Pages\LayoutPage.cshtml"
-                                          Write(Request.PathInfo.Equals("/succeeded") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                        href=\"");
-
-
-            
-            #line 64 "..\..\Pages\LayoutPage.cshtml"
-                         Write(Request.LinkTo("/succeeded"));
+            #line 65 "..\..\Pages\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", HangFireApi.EnqueuedCount()));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                        <span id=\"stats-succeeded\" class=\"label label-success" +
-" pull-right\">\r\n                            ");
+WriteLiteral("\r\n                        </span>\r\n                        Enqueued\r\n            " +
+"        </a>\r\n                    <a class=\"list-group-item ");
 
 
             
-            #line 66 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.SucceededCount()));
+            #line 69 "..\..\Pages\LayoutPage.cshtml"
+                                          Write(Request.PathInfo.Equals("/schedule") ? "active" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </span>\r\n                        Succeeded\r\n           " +
-"         </a>\r\n                    <a class=\"list-group-item ");
+WriteLiteral("\" \r\n                       href=\"");
 
 
             
             #line 70 "..\..\Pages\LayoutPage.cshtml"
-                                          Write(Request.PathInfo.Equals("/failed") ? "active" : null);
+                        Write(Request.LinkTo("/schedule"));
 
             
             #line default
             #line hidden
-WriteLiteral("\" \r\n                        href=\"");
+WriteLiteral("\">\r\n                        <span id=\"stats-scheduled\" class=\"label label-primary" +
+" pull-right\">\r\n                            ");
 
 
             
-            #line 71 "..\..\Pages\LayoutPage.cshtml"
-                         Write(Request.LinkTo("/failed"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                        <span id=\"stats-failed\" class=\"label label-danger pul" +
-"l-right\">\r\n                            ");
-
-
-            
-            #line 73 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.FailedCount()));
+            #line 72 "..\..\Pages\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", HangFireApi.ScheduledCount()));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </span>\r\n                        Failed\r\n              " +
-"      </a>\r\n                    <a class=\"list-group-item ");
+WriteLiteral("\r\n                        </span>\r\n                        Scheduled\r\n           " +
+"         </a>\r\n                    <a class=\"list-group-item ");
 
 
             
-            #line 77 "..\..\Pages\LayoutPage.cshtml"
+            #line 76 "..\..\Pages\LayoutPage.cshtml"
                                           Write(Request.PathInfo.Equals("/workers") ? "active" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\" \r\n                        href=\"");
+WriteLiteral("\" \r\n                       href=\"");
 
 
             
-            #line 78 "..\..\Pages\LayoutPage.cshtml"
-                         Write(Request.LinkTo("/workers"));
+            #line 77 "..\..\Pages\LayoutPage.cshtml"
+                        Write(Request.LinkTo("/workers"));
 
             
             #line default
@@ -296,7 +277,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-workers\" class=\"
 
 
             
-            #line 80 "..\..\Pages\LayoutPage.cshtml"
+            #line 79 "..\..\Pages\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", HangFireApi.Workers().Count()));
 
             
@@ -307,69 +288,72 @@ WriteLiteral("\r\n                        </span>\r\n                        Pro
 
 
             
+            #line 83 "..\..\Pages\LayoutPage.cshtml"
+                                          Write(Request.PathInfo.Equals("/succeeded") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" \r\n                       href=\"");
+
+
+            
             #line 84 "..\..\Pages\LayoutPage.cshtml"
-                                          Write(Request.PathInfo.Equals("/schedule") ? "active" : null);
+                        Write(Request.LinkTo("/succeeded"));
 
             
             #line default
             #line hidden
-WriteLiteral("\" \r\n                        href=\"");
-
-
-            
-            #line 85 "..\..\Pages\LayoutPage.cshtml"
-                         Write(Request.LinkTo("/schedule"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                        <span id=\"stats-scheduled\" class=\"label label-primary" +
+WriteLiteral("\">\r\n                        <span id=\"stats-succeeded\" class=\"label label-success" +
 " pull-right\">\r\n                            ");
 
 
             
-            #line 87 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.ScheduledCount()));
+            #line 86 "..\..\Pages\LayoutPage.cshtml"
+                       Write(String.Format("{0:n0}", HangFireApi.SucceededCount()));
 
             
             #line default
             #line hidden
-WriteLiteral(@"
-                        </span>
-                        Scheduled
-                    </a>
-                    <a class=""list-group-item"" href=""#"">
-                        <span id=""stats-enqueued"" class=""label label-default pull-right"">
-                            ");
+WriteLiteral("\r\n                        </span>\r\n                        Succeeded\r\n           " +
+"         </a>\r\n                    <a class=\"list-group-item ");
+
+
+            
+            #line 90 "..\..\Pages\LayoutPage.cshtml"
+                                          Write(Request.PathInfo.Equals("/failed") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" \r\n                       href=\"");
+
+
+            
+            #line 91 "..\..\Pages\LayoutPage.cshtml"
+                        Write(Request.LinkTo("/failed"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                        <span id=\"stats-failed\" class=\"label label-danger pul" +
+"l-right\">\r\n                            ");
 
 
             
             #line 93 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.EnqueuedCount()));
+                       Write(String.Format("{0:n0}", HangFireApi.FailedCount()));
 
             
             #line default
             #line hidden
-WriteLiteral(@"
-                        </span>
-                        Enqueued
-                    </a>
-                </div>
-
-                <label>Test jobs</label>
-                <div class=""input-group"">
-                    <input type=""text"" class=""form-control"">
-                    <span class=""input-group-btn"">
-                        <button class=""btn btn-default"" type=""button"">Go</button>
-                    </span>
-                </div>
-            </div>
-            <div class=""col-md-9"">
-                <h1 class=""page-header"">");
+WriteLiteral("\r\n                        </span>\r\n                        Failed\r\n              " +
+"      </a>\r\n                </div>\r\n            </div>\r\n            <div class=\"" +
+"col-md-9\">\r\n                <h1 class=\"page-header\">");
 
 
             
-            #line 108 "..\..\Pages\LayoutPage.cshtml"
+            #line 100 "..\..\Pages\LayoutPage.cshtml"
                                    Write(Title);
 
             
@@ -379,7 +363,7 @@ WriteLiteral("</h1>\r\n                ");
 
 
             
-            #line 109 "..\..\Pages\LayoutPage.cshtml"
+            #line 101 "..\..\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -400,8 +384,8 @@ WriteLiteral(@"
 
 
             
-            #line 120 "..\..\Pages\LayoutPage.cshtml"
-                   Write(AssemblyName.GetAssemblyName(GetType().Assembly.Location).Version);
+            #line 112 "..\..\Pages\LayoutPage.cshtml"
+                   Write(FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion);
 
             
             #line default
@@ -411,7 +395,7 @@ WriteLiteral("\r\n                    </a>\r\n                </li>\r\n         
 
 
             
-            #line 124 "..\..\Pages\LayoutPage.cshtml"
+            #line 116 "..\..\Pages\LayoutPage.cshtml"
                Write(String.Format("{0}:{1}/{2}", HangFireConfiguration.Current.RedisHost, HangFireConfiguration.Current.RedisPort, HangFireConfiguration.Current.RedisDb));
 
             
@@ -421,7 +405,7 @@ WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
 
 
             
-            #line 126 "..\..\Pages\LayoutPage.cshtml"
+            #line 118 "..\..\Pages\LayoutPage.cshtml"
                      Write(DateTime.UtcNow.ToString());
 
             
@@ -432,8 +416,8 @@ WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </di
 
 
             
-            #line 132 "..\..\Pages\LayoutPage.cshtml"
-            Write(Request.LinkTo("/scripts.js"));
+            #line 124 "..\..\Pages\LayoutPage.cshtml"
+            Write(Request.LinkTo("/js/scripts.js"));
 
             
             #line default

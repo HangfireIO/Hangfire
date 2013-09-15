@@ -1,14 +1,55 @@
 ﻿using System;
-using System.Text;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Web;
-
-using HangFire.Web.Content;
 using HangFire.Web.Pages;
 
 namespace HangFire.Web
 {
     public class HangFirePageFactory : IHttpHandlerFactory
     {
+        private static readonly List<Tuple<string, Func<Match, IHttpHandler>>> PathHandlerFactories
+            = new List<Tuple<string, Func<Match, IHttpHandler>>>();
+
+        private static Func<IHttpHandler> _defaultHandlerFactory;
+
+        static HangFirePageFactory()
+        {
+            RegisterDefaultPathHandlerFactory(() => new DashboardPage());
+
+            RegisterPathHandlerFactory("/queues",    x => new QueuesPage());
+            RegisterPathHandlerFactory("/workers",   x => new WorkersPage());
+            RegisterPathHandlerFactory("/schedule",  x => new SchedulePage());
+            RegisterPathHandlerFactory("/servers",   x => new ServersPage());
+            RegisterPathHandlerFactory("/failed",    x => new FailedJobsPage());
+            RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
+
+            RegisterPathHandlerFactory("/js/scripts.js",  x => new JavaScriptHandler());
+            RegisterPathHandlerFactory("/css/styles.css", x => new StyleSheetHandler());
+
+            RegisterPathHandlerFactory(
+                "/fonts/(?<File>.+)",
+                x => new SingleResourceHandler(
+                    typeof(HangFirePageFactory).Assembly,
+                    GetContentResourceName("fonts", x.Groups["File"].Value)));
+
+            RegisterPathHandlerFactory(
+                "/stats",
+                x => new JsonStats());
+        }
+
+        public static void RegisterPathHandlerFactory(
+            string pathPattern, Func<Match, IHttpHandler> handlerFactory)
+        {
+            PathHandlerFactories.Add(new Tuple<string, Func<Match, IHttpHandler>>(
+                pathPattern, handlerFactory));
+        }
+
+        public static void RegisterDefaultPathHandlerFactory(Func<IHttpHandler> handlerFactory)
+        {
+            _defaultHandlerFactory = () => new DashboardPage();
+        }
+
         public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
         {
             var request = context.Request;
@@ -25,36 +66,40 @@ namespace HangFire.Web
             return handler;
         }
 
-        public IHttpHandler FindHandler(string resource)
+        private IHttpHandler FindHandler(string resource)
         {
-            switch (resource)
+            if (resource.Length == 0 || resource.Equals("/", StringComparison.OrdinalIgnoreCase))
             {
-                case "/queues":
-                    return new QueuesPage();
-                case "/workers":
-                    return new WorkersPage();
-                case "/schedule":
-                    return new SchedulePage();
-                case "/servers":
-                    return new ServersPage();
-                case "/failed":
-                    return new FailedJobsPage();
-                case "/succeeded":
-                    return new SucceededJobs();
-                case "/scripts.js":
-                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(JavaScriptHelper.JavaScriptResourceNames, "application/javascript", Encoding.UTF8, false));
-                case "/styles.css":
-                    return new DelegatingHttpHandler(ManifestResourceHandler.Create(StyleSheetHelper.StyleSheetResourceNames, "text/css", Encoding.UTF8, false));
-                case "/stats":
-                    return new DelegatingHttpHandler(JsonStats.StatsResponse);
-                case "/":
-                    return new DashboardPage();
-                default:
-                    return resource.Length == 0 ? new DashboardPage() : null;
+                return _defaultHandlerFactory();
             }
+
+            foreach (var pathHandlerFactory in PathHandlerFactories)
+            {
+                var match = Regex.Match(
+                    resource, 
+                    pathHandlerFactory.Item1, 
+                    RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+                if (match.Success)
+                {
+                    return pathHandlerFactory.Item2(match);
+                }
+            }
+
+            return null;
         }
 
-        public void ReleaseHandler(IHttpHandler handler)
+        internal static string GetContentFolderNamespace(string contentFolder)
+        {
+            return String.Format("{0}.Content.{1}", typeof (HangFirePageFactory).Namespace, contentFolder);
+        }
+
+        internal static string GetContentResourceName(string contentFolder, string resourceName)
+        {
+            return String.Format("{0}.{1}", GetContentFolderNamespace(contentFolder), resourceName);
+        }
+
+        void IHttpHandlerFactory.ReleaseHandler(IHttpHandler handler)
         {
         }
     }

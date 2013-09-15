@@ -1,15 +1,11 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
 @using System.Linq
-@using HangFire.Web.Pages
-@inherits WebTemplateBase
+@using Pages
+@inherits RazorPage
               
 @{
-    Layout = new LayoutPage()
-        {
-            Context = Context,
-            Title = "Succeeded Jobs"
-        };
+    Layout = new LayoutPage { Title = "Succeeded Jobs" };
 }
 
 <div class="alert alert-info">

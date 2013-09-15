@@ -17,13 +17,13 @@ namespace HangFire.Web.Pages
     using System.Text;
     
     #line 2 "..\..\Pages\WorkersPage.cshtml"
-    using HangFire.Web.Pages;
+    using Pages;
     
     #line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class WorkersPage : WebTemplateBase
+    internal partial class WorkersPage : RazorPage
     {
 #line hidden
 
@@ -39,11 +39,7 @@ WriteLiteral("\r\n");
             
             #line 4 "..\..\Pages\WorkersPage.cshtml"
   
-    Layout = new LayoutPage()
-        {
-            Context = Context,
-            Title = "Workers"
-        };
+    Layout = new LayoutPage { Title = "Workers" };
 
 
             
@@ -55,7 +51,7 @@ WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n    
 
 
             
-            #line 22 "..\..\Pages\WorkersPage.cshtml"
+            #line 18 "..\..\Pages\WorkersPage.cshtml"
          foreach (var worker in HangFireApi.Workers())
         {
 
@@ -66,7 +62,7 @@ WriteLiteral("            <tr>\r\n                <td>");
 
 
             
-            #line 25 "..\..\Pages\WorkersPage.cshtml"
+            #line 21 "..\..\Pages\WorkersPage.cshtml"
                Write(worker.Name);
 
             
@@ -76,7 +72,7 @@ WriteLiteral("</td>\r\n                <td>");
 
 
             
-            #line 26 "..\..\Pages\WorkersPage.cshtml"
+            #line 22 "..\..\Pages\WorkersPage.cshtml"
                Write(worker.Type);
 
             
@@ -86,7 +82,7 @@ WriteLiteral("</td>\r\n                <td><code>");
 
 
             
-            #line 27 "..\..\Pages\WorkersPage.cshtml"
+            #line 23 "..\..\Pages\WorkersPage.cshtml"
                      Write(worker.Args);
 
             
@@ -96,7 +92,7 @@ WriteLiteral("</code></td>\r\n                <td>");
 
 
             
-            #line 28 "..\..\Pages\WorkersPage.cshtml"
+            #line 24 "..\..\Pages\WorkersPage.cshtml"
                Write(worker.StartedAt);
 
             
@@ -106,7 +102,7 @@ WriteLiteral("</td>\r\n            </tr>\r\n");
 
 
             
-            #line 30 "..\..\Pages\WorkersPage.cshtml"
+            #line 26 "..\..\Pages\WorkersPage.cshtml"
         }
 
             

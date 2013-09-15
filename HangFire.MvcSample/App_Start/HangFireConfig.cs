@@ -26,7 +26,7 @@ namespace HangFire.MvcSample
                 Concurrency = Environment.ProcessorCount * 2
             };
 
-            _server.Start();
+            //_server.Start();
         }
 
         public static void Stop()

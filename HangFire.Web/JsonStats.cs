@@ -5,23 +5,23 @@ using ServiceStack.Text;
 
 namespace HangFire.Web
 {
-    class JsonStats
+    internal class JsonStats : GenericHandler
     {
-        public static void StatsResponse(HttpContextBase context)
+        public override void ProcessRequest()
         {
             var response = new
-                {
-                    succeeded = HangFireApi.SucceededCount(),
-                    failed = HangFireApi.FailedCount(),
-                    workers = HangFireApi.Workers().Count(),
-                    scheduled = HangFireApi.ScheduledCount(),
-                    enqueued = HangFireApi.EnqueuedCount()
-                };
+            {
+                succeeded = HangFireApi.SucceededCount(),
+                failed = HangFireApi.FailedCount(),
+                workers = HangFireApi.Workers().Count(),
+                scheduled = HangFireApi.ScheduledCount(),
+                enqueued = HangFireApi.EnqueuedCount()
+            };
 
             var serialized = JsonSerializer.SerializeToString(response);
-            context.Response.ContentType = "application/json";
-            context.Response.ContentEncoding = Encoding.UTF8;
-            context.Response.Write(serialized);
+            Response.ContentType = "application/json";
+            Response.ContentEncoding = Encoding.UTF8;
+            Response.Write(serialized);
         }
     }
 }

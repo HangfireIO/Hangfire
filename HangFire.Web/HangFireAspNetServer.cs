@@ -65,8 +65,12 @@ namespace HangFire.Web
         /// </summary>
         public void Dispose()
         {
-            _manager.Dispose();
-            HostingEnvironment.UnregisterObject(this);
+            if (_manager != null)
+            {
+                _manager.Dispose();
+                _manager = null;
+                HostingEnvironment.UnregisterObject(this);
+            }
         }
 
         void IRegisteredObject.Stop(bool immediate)

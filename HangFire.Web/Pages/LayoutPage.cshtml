@@ -1,8 +1,8 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
+@using System.Diagnostics
 @using System.Linq
-@using System.Reflection
-@inherits WebTemplateBase
+@inherits RazorPage
 <!DOCTYPE html>
 
 <html lang="ru">
@@ -10,7 +10,7 @@
     <title>@Title - HangFire</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="@Request.LinkTo("/styles.css?v1")" />
+    <link rel="stylesheet" href="@Request.LinkTo("/css/styles.css")" />
 </head>
 <body>
     <!-- Wrap all page content here -->
@@ -60,48 +60,40 @@
         <div class="container">
             <div class="col-md-3">
                 <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
-                    <a class="list-group-item @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
-                        href="@Request.LinkTo("/succeeded")">
-                        <span id="stats-succeeded" class="label label-success pull-right">
-                            @String.Format("{0:n0}", HangFireApi.SucceededCount())
-                        </span>
-                        Succeeded
-                    </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
-                        href="@Request.LinkTo("/failed")">
-                        <span id="stats-failed" class="label label-danger pull-right">
-                            @String.Format("{0:n0}", HangFireApi.FailedCount())
-                        </span>
-                        Failed
-                    </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/workers") ? "active" : null)" 
-                        href="@Request.LinkTo("/workers")">
-                        <span id="stats-workers" class="label label-warning pull-right">
-                            @String.Format("{0:n0}", HangFireApi.Workers().Count())
-                        </span>
-                        Processing
-                    </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
-                        href="@Request.LinkTo("/schedule")">
-                        <span id="stats-scheduled" class="label label-primary pull-right">
-                            @String.Format("{0:n0}", HangFireApi.ScheduledCount())
-                        </span>
-                        Scheduled
-                    </a>
                     <a class="list-group-item" href="#">
                         <span id="stats-enqueued" class="label label-default pull-right">
                             @String.Format("{0:n0}", HangFireApi.EnqueuedCount())
                         </span>
                         Enqueued
                     </a>
-                </div>
-
-                <label>Test jobs</label>
-                <div class="input-group">
-                    <input type="text" class="form-control">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="button">Go</button>
-                    </span>
+                    <a class="list-group-item @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
+                       href="@Request.LinkTo("/schedule")">
+                        <span id="stats-scheduled" class="label label-primary pull-right">
+                            @String.Format("{0:n0}", HangFireApi.ScheduledCount())
+                        </span>
+                        Scheduled
+                    </a>
+                    <a class="list-group-item @(Request.PathInfo.Equals("/workers") ? "active" : null)" 
+                       href="@Request.LinkTo("/workers")">
+                        <span id="stats-workers" class="label label-warning pull-right">
+                            @String.Format("{0:n0}", HangFireApi.Workers().Count())
+                        </span>
+                        Processing
+                    </a>
+                    <a class="list-group-item @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
+                       href="@Request.LinkTo("/succeeded")">
+                        <span id="stats-succeeded" class="label label-success pull-right">
+                            @String.Format("{0:n0}", HangFireApi.SucceededCount())
+                        </span>
+                        Succeeded
+                    </a>
+                    <a class="list-group-item @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
+                       href="@Request.LinkTo("/failed")">
+                        <span id="stats-failed" class="label label-danger pull-right">
+                            @String.Format("{0:n0}", HangFireApi.FailedCount())
+                        </span>
+                        Failed
+                    </a>
                 </div>
             </div>
             <div class="col-md-9">
@@ -117,7 +109,7 @@
                 <li>
                     <a href="http://github.io/odinserj/hangfire" target="_blank">
                         HangFire 
-                        @AssemblyName.GetAssemblyName(GetType().Assembly.Location).Version
+                        @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
                     </a>
                 </li>
                 <li>Redis: 
@@ -129,6 +121,6 @@
         </div>
     </div>
     
-    <script src="@Request.LinkTo("/scripts.js")"></script>
+    <script src="@Request.LinkTo("/js/scripts.js")"></script>
 </body>
 </html>

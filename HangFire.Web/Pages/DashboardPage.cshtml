@@ -1,14 +1,10 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
-@using HangFire.Web.Pages
+@using Pages
 @using ServiceStack.Text
-@inherits WebTemplateBase
+@inherits RazorPage
               
 @{
-    Layout = new LayoutPage
-        {
-            Context = Context,
-            Title = "Dashboard"
-        };
+    Layout = new LayoutPage { Title = "Dashboard" };
 }
 
 <h3>Realtime graph</h3>
