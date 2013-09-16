@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 
 using ServiceStack.Logging;
@@ -124,7 +125,13 @@ namespace HangFire
 
             _completionHandlerThread.Start();
 
-            _pool = new ThreadedWorkerManager(concurrency, serverName, jobActivator ?? new HangFireJobActivator());
+            var jobInvoker = new JobInvoker(
+                jobActivator ?? new HangFireJobActivator(),
+                HangFireConfiguration.Current.ServerFilters,
+                Enumerable.Empty<IJobExceptionFilter>()); // TODO: replace with a real collection.
+
+            _pool = new ThreadedWorkerManager(
+                concurrency, serverName, jobInvoker);
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)

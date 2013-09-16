@@ -14,7 +14,10 @@ namespace HangFire
         private readonly ILog _logger = LogManager.GetLogger("HangFire.WorkerPool");
         private bool _disposed;
 
-        public ThreadedWorkerManager(int count, string serverName, HangFireJobActivator jobActivator)
+        public ThreadedWorkerManager(
+            int count, 
+            string serverName, 
+            JobInvoker jobInvoker)
         {
             _workers = new List<ThreadedWorker>(count);
             _freeWorkers = new BlockingCollection<ThreadedWorker>();
@@ -27,7 +30,7 @@ namespace HangFire
                     this, 
                     String.Format("HangFire.Worker.{0}", i),
                     String.Format("{0}.{1}", serverName, i),
-                    jobActivator);
+                    jobInvoker);
                 worker.Start();
                 _workers.Add(worker);
             }

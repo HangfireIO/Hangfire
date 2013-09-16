@@ -3,34 +3,33 @@ using System.Threading;
 
 namespace HangFire
 {
-    public class CurrentCultureFilter : IClientFilter, IServerFilter
+    public class CurrentCultureFilter : JobFilter
     {
-        public void ClientFilter(ClientFilterContext filterContext)
+        public override void OnJobEnqueueing(JobEnqueueingContext filterContext)
         {
-            filterContext.Job["CurrentCulture"] = Thread.CurrentThread.CurrentCulture.Name;
-
-            filterContext.EnqueueAction();
+            filterContext.Job["CurrentCulture"] = 
+                Thread.CurrentThread.CurrentCulture.Name;
         }
 
-        public void ServerFilter(ServerFilterContext filterContext)
+        private CultureInfo _previousCulture;
+
+        public override void OnJobPerforming(JobPerformingContext filterContext)
         {
+            var cultureName = filterContext.JobInstance.GetParameter<string>("CurrentCulture");
             var currentThread = Thread.CurrentThread;
-            var prevCulture = currentThread.CurrentCulture;
 
-            var cultureName = filterContext.JobInstance.Get<string>("CurrentCulture");
-
-            try
+            if (cultureName != null)
             {
-                if (cultureName != null)
-                {
-                    currentThread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
-                }
-
-                filterContext.PerformAction();
+                _previousCulture = currentThread.CurrentCulture;
+                currentThread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
             }
-            finally
+        }
+
+        public override void OnJobPerformed(JobPerformedContext filterContext)
+        {
+            if (_previousCulture != null)
             {
-                currentThread.CurrentCulture = prevCulture;
+                Thread.CurrentThread.CurrentCulture = _previousCulture;
             }
         }
     }

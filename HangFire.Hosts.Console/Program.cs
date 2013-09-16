@@ -53,7 +53,6 @@ namespace HangFire.Hosts
                 {
                     x.RedisPort = 6379;
                     x.RedisDb = 3;
-                    x.AddFilter(new BasicRetryFilter());
                 });
 
             using (var server = new HangFireServer("hijack!", "qqq", concurrency, TimeSpan.FromSeconds(15)))

@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Web.Mvc;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(
@@ -18,7 +18,7 @@ namespace HangFire.MvcSample
             // If you have custom Redis installation, use the
             // following method to configure HangFire:
             HangFireConfiguration.Configure(x => { x.RedisDb = 3; });
-
+            
             _server = new HangFireAspNetServer
             {
                 ServerName = Environment.MachineName,

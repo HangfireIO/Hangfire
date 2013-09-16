@@ -52,9 +52,9 @@ namespace HangFire
         }
 
         private readonly RedisStorage _redis = new RedisStorage();
-        private readonly IEnumerable<IClientFilter> _filters;
+        private readonly IEnumerable<IClientJobFilter> _filters;
 
-        internal HangFireClient(IEnumerable<IClientFilter> filters)
+        internal HangFireClient(IEnumerable<IClientJobFilter> filters)
         {
             _filters = filters;
         }
@@ -180,20 +180,33 @@ namespace HangFire
             Dictionary<string, string> job,
             Action enqueueAction)
         {
-            var commandAction = enqueueAction;
+            var enqueueingContext = new JobEnqueueingContext(jobId, job);
 
-            var entries = _filters.ToList();
-            entries.Reverse();
-
-            foreach (var entry in entries)
+            foreach (var filter in _filters)
             {
-                var currentEntry = entry;
-
-                var filterContext = new ClientFilterContext(jobId, job, commandAction);
-                commandAction = () => currentEntry.ClientFilter(filterContext);
+                filter.OnJobEnqueueing(enqueueingContext);
+                if (enqueueingContext.Canceled)
+                {
+                    return;
+                }
             }
 
-            commandAction();
+            Exception exception = null;
+            try
+            {
+                enqueueAction();
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+            
+            var enqueuedContext = new JobEnqueuedContext(jobId, job, exception);
+
+            foreach (var filter in _filters)
+            {
+                filter.OnJobEnqueued(enqueuedContext);
+            }
         }
     }
 }

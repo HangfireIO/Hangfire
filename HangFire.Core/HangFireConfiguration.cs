@@ -39,8 +39,8 @@ namespace HangFire
             RedisPassword = null;
             RedisDb = 0;
 
-            ServerFilters = new List<IServerFilter>();
-            ClientFilters = new List<IClientFilter>();
+            ServerFilters = new List<IServerJobFilter>();
+            ClientFilters = new List<IClientJobFilter>();
 
             AddFilter(new CurrentCultureFilter());
         }
@@ -65,23 +65,23 @@ namespace HangFire
         /// </summary>
         public long RedisDb { get; set; }
 
-        internal IList<IServerFilter> ServerFilters { get; private set; }
-        internal IList<IClientFilter> ClientFilters { get; private set; }
+        internal IList<IServerJobFilter> ServerFilters { get; private set; }
+        internal IList<IClientJobFilter> ClientFilters { get; private set; }
 
-        public void AddFilter(IFilter filter)
+        public void AddFilter(IJobFilter jobFilter)
         {
-            if (filter == null)
+            if (jobFilter == null)
             {
-                throw new ArgumentNullException("filter");
+                throw new ArgumentNullException("jobFilter");
             }
 
-            var serverFilter = filter as IServerFilter;
+            var serverFilter = jobFilter as IServerJobFilter;
             if (serverFilter != null)
             {
                 ServerFilters.Add(serverFilter);
             }
 
-            var clientFilter = filter as IClientFilter;
+            var clientFilter = jobFilter as IClientJobFilter;
             if (clientFilter != null)
             {
                 ClientFilters.Add(clientFilter);

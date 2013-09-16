@@ -1,6 +1,6 @@
 ﻿namespace HangFire
 {
-    public interface IFilter
+    public interface IJobFilter
     {
     }
 }
