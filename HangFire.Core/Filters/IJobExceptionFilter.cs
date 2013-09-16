@@ -2,6 +2,7 @@
 {
     interface IJobExceptionFilter : IJobFilter
     {
-        void OnException(JobExceptionContext filterContext);
+        void OnServerException(ServerJobExceptionContext filterContext);
+        void OnClientException(ClientJobExceptionContext filterContext);
     }
 }

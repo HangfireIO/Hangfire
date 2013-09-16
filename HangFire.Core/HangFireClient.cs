@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 
 namespace HangFire
 {
@@ -10,8 +8,10 @@ namespace HangFire
     /// </summary>
     public class HangFireClient : IDisposable
     {
+        private readonly JobInvoker _jobInvoker;
+
         private static readonly HangFireClient Instance = new HangFireClient(
-            HangFireConfiguration.Current.ClientFilters);
+            JobInvoker.Current);
 
         static HangFireClient()
         {
@@ -52,11 +52,10 @@ namespace HangFire
         }
 
         private readonly RedisStorage _redis = new RedisStorage();
-        private readonly IEnumerable<IClientJobFilter> _filters;
 
-        internal HangFireClient(IEnumerable<IClientJobFilter> filters)
+        internal HangFireClient(JobInvoker jobInvoker)
         {
-            _filters = filters;
+            _jobInvoker = jobInvoker;
         }
 
         public string Async(Type jobType, object args = null)
@@ -72,22 +71,22 @@ namespace HangFire
                     "jobType");
             }
 
-            var jobId = GenerateId();
-            var job = InitializeJob(jobType, args);
+            var queueName = JobHelper.GetQueueName(jobType);
 
-            Action enqueueAction = () =>
-            {
-                var queueName = JobHelper.GetQueueName(jobType);
+            var clientContext = new ClientContext();
+            var descriptor = CreateDescriptor(jobType, args);
 
-                lock (_redis)
+            descriptor.EnqueueAction = () =>
                 {
-                    _redis.EnqueueJob(queueName, jobId, job);
-                }
-            };
+                    lock (_redis)
+                    {
+                        _redis.EnqueueJob(queueName, descriptor.JobId, descriptor.Job);
+                    }
+                };
 
-            InvokeFilters(jobId, job, enqueueAction);
+            _jobInvoker.EnqueueJob(clientContext, descriptor);
 
-            return jobId;
+            return descriptor.JobId;
         }
 
         public string In(TimeSpan interval, Type jobType, object args = null)
@@ -113,22 +112,22 @@ namespace HangFire
                 return Async(jobType, args);
             }
 
+            var clientContext = new ClientContext();
+            var descriptor = CreateDescriptor(jobType, args);
+
             var at = DateTime.UtcNow.Add(interval).ToTimestamp();
 
-            var jobId = GenerateId();
-            var job = InitializeJob(jobType, args);
-
-            Action enqueueAction = () =>
+            descriptor.EnqueueAction = () =>
             {
                 lock (_redis)
                 {
-                    _redis.ScheduleJob(jobId, job, at);
+                    _redis.ScheduleJob(descriptor.JobId, descriptor.Job, at);
                 }
             };
 
-            InvokeFilters(jobId, job, enqueueAction);
+            _jobInvoker.EnqueueJob(clientContext, descriptor);
 
-            return jobId;
+            return descriptor.JobId;
         }
 
         public void Dispose()
@@ -136,77 +135,20 @@ namespace HangFire
             _redis.Dispose();
         }
 
-        private Dictionary<string, string> InitializeJob(Type jobType, object args)
+        private ClientJobDescriptor CreateDescriptor(Type jobType, object jobArgs)
         {
             var job = new Dictionary<string, string>();
-            job["Type"] = jobType.AssemblyQualifiedName;
-            job["Args"] = SerializeArgs(args);
+            var descriptor = new ClientJobDescriptor(GenerateId(), job);
 
-            return job;
+            job["Type"] = jobType.AssemblyQualifiedName;
+            job["Args"] = JsonHelper.Serialize(descriptor.SerializeProperties(jobArgs));
+
+            return descriptor;
         }
 
         private string GenerateId()
         {
             return Guid.NewGuid().ToString();
-        }
-
-        private string SerializeArgs(object args)
-        {
-            var dictionary = new Dictionary<string, string>();
-
-            if (args != null)
-            {
-                foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(args))
-                {
-                    var propertyValue = descriptor.GetValue(args);
-                    string value = null;
-
-                    if (propertyValue != null)
-                    {
-                        // TODO: handle conversion exception and display it in a friendly way.
-                        var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
-                        value = converter.ConvertToInvariantString(propertyValue);
-                    }
-
-                    dictionary.Add(descriptor.Name, value);
-                }
-            }
-
-            return JsonHelper.Serialize(dictionary);
-        }
-
-        private void InvokeFilters(
-            string jobId,
-            Dictionary<string, string> job,
-            Action enqueueAction)
-        {
-            var enqueueingContext = new JobEnqueueingContext(jobId, job);
-
-            foreach (var filter in _filters)
-            {
-                filter.OnJobEnqueueing(enqueueingContext);
-                if (enqueueingContext.Canceled)
-                {
-                    return;
-                }
-            }
-
-            Exception exception = null;
-            try
-            {
-                enqueueAction();
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-            }
-            
-            var enqueuedContext = new JobEnqueuedContext(jobId, job, exception);
-
-            foreach (var filter in _filters)
-            {
-                filter.OnJobEnqueued(enqueuedContext);
-            }
         }
     }
 }

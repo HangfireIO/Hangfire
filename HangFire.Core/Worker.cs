@@ -12,12 +12,14 @@ namespace HangFire
 
         private readonly string _workerName;
         private readonly JobInvoker _jobInvoker;
+        private readonly HangFireJobActivator _jobActivator;
 
-        public Worker(string name, string workerName, JobInvoker jobInvoker)
+        public Worker(string name, string workerName, JobInvoker jobInvoker, HangFireJobActivator jobActivator)
         {
             Logger = LogManager.GetLogger(name);
             _workerName = workerName;
             _jobInvoker = jobInvoker;
+            _jobActivator = jobActivator;
         }
 
         public virtual void Process(string jobId)
@@ -36,13 +38,15 @@ namespace HangFire
             }
 
             Exception exception = null;
-            
+
+            ServerJobDescriptor jobDescriptor = null;
             try
             {
                 var workerContext = new WorkerContext(
-                    "lalala", _workerName, jobId, jobType, jobArgs);
+                    "lalala", _workerName, "hahaha"); // TODO: use real values.
 
-                _jobInvoker.PerformJob(workerContext);
+                jobDescriptor = new ServerJobDescriptor(_jobActivator, jobId, jobType, jobArgs);
+                _jobInvoker.PerformJob(workerContext, jobDescriptor);
             }
             catch (Exception ex)
             {
@@ -51,6 +55,13 @@ namespace HangFire
                 Logger.Error(String.Format(
                     "Failed to process the job '{0}': unexpected exception caught.",
                     jobId));
+            }
+            finally
+            {
+                if (jobDescriptor != null)
+                {
+                    jobDescriptor.Dispose();
+                }
             }
 
             lock (Redis)

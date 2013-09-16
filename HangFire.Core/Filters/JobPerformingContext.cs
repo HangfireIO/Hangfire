@@ -4,14 +4,14 @@
     {
         public JobPerformingContext(
             WorkerContext workerContext, 
-            HangFireJob jobInstance)
+            ServerJobDescriptor jobDescriptor)
         {
             WorkerContext = workerContext;
-            JobInstance = jobInstance;
+            JobDescriptor = jobDescriptor;
         }
 
         public WorkerContext WorkerContext { get; private set; }
-        public HangFireJob JobInstance { get; private set; }
+        public ServerJobDescriptor JobDescriptor { get; private set; }
 
         public bool Canceled { get; set; }
     }

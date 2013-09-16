@@ -7,22 +7,15 @@ namespace HangFire
         public WorkerContext(
             string serverName, 
             string workerName,
-            string jobId,
-            string jobType,
-            IDictionary<string, string> jobProperties)
+            string queueName)
         {
             ServerName = serverName;
             WorkerName = workerName;
-            JobId = jobId;
-            JobType = jobType;
-            JobProperties = jobProperties;
+            QueueName = queueName;
         }
 
         public string ServerName { get; private set; }
         public string WorkerName { get; private set; }
-
-        public string JobId { get; private set; }
-        public string JobType { get; private set; }
-        public IDictionary<string, string> JobProperties { get; private set; }
+        public string QueueName { get; private set; }
     }
 }

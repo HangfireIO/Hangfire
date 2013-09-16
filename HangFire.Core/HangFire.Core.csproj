@@ -63,11 +63,14 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ClientContext.cs" />
+    <Compile Include="ClientJobDescriptor.cs" />
     <Compile Include="DateTimeExtensions.cs" />
+    <Compile Include="Filters\ClientJobExceptionContext.cs" />
     <Compile Include="Filters\IJobExceptionFilter.cs" />
     <Compile Include="Filters\JobEnqueuedContext.cs" />
     <Compile Include="Filters\JobEnqueueingContext.cs" />
-    <Compile Include="Filters\JobExceptionContext.cs" />
+    <Compile Include="Filters\ServerJobExceptionContext.cs" />
     <Compile Include="Filters\JobFilter.cs" />
     <Compile Include="Filters\JobPerformedContext.cs" />
     <Compile Include="Filters\JobPerformingContext.cs" />
@@ -84,6 +87,7 @@
     <Compile Include="RedisStorage.cs" />
     <Compile Include="HangFireJobActivator.cs" />
     <Compile Include="HangFireServer.cs" />
+    <Compile Include="ServerJobDescriptor.cs" />
     <Compile Include="Worker.cs" />
     <Compile Include="ThreadedWorkerManager.cs" />
     <Compile Include="JobInvoker.cs" />

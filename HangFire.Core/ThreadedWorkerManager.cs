@@ -17,7 +17,8 @@ namespace HangFire
         public ThreadedWorkerManager(
             int count, 
             string serverName, 
-            JobInvoker jobInvoker)
+            JobInvoker jobInvoker,
+            HangFireJobActivator jobActivator)
         {
             _workers = new List<ThreadedWorker>(count);
             _freeWorkers = new BlockingCollection<ThreadedWorker>();
@@ -30,7 +31,8 @@ namespace HangFire
                     this, 
                     String.Format("HangFire.Worker.{0}", i),
                     String.Format("{0}.{1}", serverName, i),
-                    jobInvoker);
+                    jobInvoker,
+                    jobActivator);
                 worker.Start();
                 _workers.Add(worker);
             }

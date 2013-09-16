@@ -1,19 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace HangFire
 {
     public class JobEnqueuedContext
     {
-        public JobEnqueuedContext(string jobId, Dictionary<string, string> job, Exception exception)
+        public JobEnqueuedContext(
+            ClientContext clientContext, 
+            ClientJobDescriptor jobDescriptor,
+            bool canceled, 
+            Exception exception)
         {
-            JobId = jobId;
-            Job = job;
+            ClientContext = clientContext;
+            JobDescriptor = jobDescriptor;
+            Canceled = canceled;
             Exception = exception;
         }
 
-        public string JobId { get; private set; }
-        public Dictionary<string, string> Job { get; set; }
+        public ClientContext ClientContext { get; private set; }
+        public ClientJobDescriptor JobDescriptor { get; private set; }
         public Exception Exception { get; private set; }
+        public bool Canceled { get; private set; }
+
+        public bool ExceptionHandled { get; set; }
     }
 }

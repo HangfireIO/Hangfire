@@ -125,13 +125,10 @@ namespace HangFire
 
             _completionHandlerThread.Start();
 
-            var jobInvoker = new JobInvoker(
-                jobActivator ?? new HangFireJobActivator(),
-                HangFireConfiguration.Current.ServerFilters,
-                Enumerable.Empty<IJobExceptionFilter>()); // TODO: replace with a real collection.
+            var jobInvoker = JobInvoker.Current; // TODO: replace with a real collection.
 
             _pool = new ThreadedWorkerManager(
-                concurrency, serverName, jobInvoker);
+                concurrency, serverName, jobInvoker, jobActivator ?? new HangFireJobActivator());
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)

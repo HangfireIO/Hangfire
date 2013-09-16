@@ -7,15 +7,17 @@ namespace HangFire
     {
         public override void OnJobEnqueueing(JobEnqueueingContext filterContext)
         {
-            filterContext.Job["CurrentCulture"] = 
-                Thread.CurrentThread.CurrentCulture.Name;
+            filterContext.JobDescriptor.SetParameter(
+                "CurrentCulture", Thread.CurrentThread.CurrentCulture.Name);
         }
 
-        private CultureInfo _previousCulture;
+        private CultureInfo _previousCulture; // TODO: make it thread-static!
 
         public override void OnJobPerforming(JobPerformingContext filterContext)
         {
-            var cultureName = filterContext.JobInstance.GetParameter<string>("CurrentCulture");
+            var cultureName = filterContext.JobDescriptor
+                .GetParameter<string>("CurrentCulture");
+
             var currentThread = Thread.CurrentThread;
 
             if (cultureName != null)

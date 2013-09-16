@@ -27,8 +27,8 @@ namespace HangFire
 
         public ThreadedWorker(
             ThreadedWorkerManager pool, string name, string workerName, 
-            JobInvoker jobInvoker)
-            : base(name, workerName, jobInvoker)
+            JobInvoker jobInvoker, HangFireJobActivator jobActivator)
+            : base(name, workerName, jobInvoker, jobActivator)
         {
             _pool = pool;
             _name = name;

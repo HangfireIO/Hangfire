@@ -2,9 +2,9 @@
 
 namespace HangFire
 {
-    public class JobExceptionContext
+    public class ServerJobExceptionContext
     {
-        public JobExceptionContext(WorkerContext workerContext, Exception exception)
+        public ServerJobExceptionContext(WorkerContext workerContext, Exception exception)
         {
             WorkerContext = workerContext;
             Exception = exception;
