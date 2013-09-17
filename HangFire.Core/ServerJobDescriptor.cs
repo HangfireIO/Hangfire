@@ -9,7 +9,7 @@ namespace HangFire
         private readonly BackgroundJob _jobInstance;
 
         public ServerJobDescriptor(
-            HangFireJobActivator activator,
+            JobActivator activator,
             string jobId,
             string jobType, 
             IEnumerable<KeyValuePair<string, string>> jobProperties)

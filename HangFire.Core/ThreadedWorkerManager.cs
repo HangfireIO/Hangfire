@@ -17,7 +17,7 @@ namespace HangFire
         public ThreadedWorkerManager(
             ServerContext serverContext,
             JobInvoker jobInvoker,
-            HangFireJobActivator jobActivator)
+            JobActivator jobActivator)
         {
             _workers = new List<ThreadedWorker>(serverContext.WorkersCount);
             _freeWorkers = new BlockingCollection<ThreadedWorker>();

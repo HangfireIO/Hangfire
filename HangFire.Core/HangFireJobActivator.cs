@@ -2,7 +2,7 @@
 
 namespace HangFire
 {
-    public class HangFireJobActivator
+    public class JobActivator
     {
         public virtual BackgroundJob ActivateJob(Type jobType)
         {

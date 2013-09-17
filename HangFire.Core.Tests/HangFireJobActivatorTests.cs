@@ -10,7 +10,7 @@ namespace HangFire.Tests
         [TestMethod]
         public void Activate_ReturnsTheJobInstance_WhenTheJobHasDefaultConstructor()
         {
-            var activator = new HangFireJobActivator();
+            var activator = new JobActivator();
             var job = activator.ActivateJob(typeof(DefaultConstructorJob));
             Assert.IsNotNull(job);
         }
@@ -19,7 +19,7 @@ namespace HangFire.Tests
         [ExpectedException(typeof(MissingMethodException))]
         public void Activate_ThrowsActivationException_WhenTheJobHasNoDefaultConstructor()
         {
-            var activator = new HangFireJobActivator();
+            var activator = new JobActivator();
             activator.ActivateJob(typeof(CustomConstructorJob));
         }
 

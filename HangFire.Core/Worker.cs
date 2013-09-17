@@ -11,11 +11,11 @@ namespace HangFire
         protected readonly ILog Logger;
         private readonly WorkerContext _workerContext;
         private readonly JobInvoker _jobInvoker;
-        private readonly HangFireJobActivator _jobActivator;
+        private readonly JobActivator _jobActivator;
 
         public Worker(
             WorkerContext workerContext, 
-            JobInvoker jobInvoker, HangFireJobActivator jobActivator)
+            JobInvoker jobInvoker, JobActivator jobActivator)
         {
             Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", workerContext.WorkerNumber));
             _workerContext = workerContext;

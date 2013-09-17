@@ -79,19 +79,19 @@ namespace HangFire
         /// <summary>
         /// Initializes and starts a new instance of the <see cref="JobServer"/> class
         /// with a specified server name, queue name, amount of workers, polling interval
-        /// and an instance of the <see cref="HangFireJobActivator"/> class.
+        /// and an instance of the <see cref="JobActivator"/> class.
         /// </summary>
         /// <param name="serverName">Server name.</param>
         /// <param name="queueName">Processing queue name.</param>
         /// <param name="concurrency">Amount of workers that will work in parallel.</param>
         /// <param name="pollInterval">Polling interval for scheduled jobs.</param>
-        /// <param name="jobActivator">Instance of the <see cref="HangFireJobActivator"/> that will be used to activate jobs.</param>
+        /// <param name="jobActivator">Instance of the <see cref="JobActivator"/> that will be used to activate jobs.</param>
         public JobServer(
             string serverName,
             string queueName,
             int concurrency,
             TimeSpan pollInterval,
-            HangFireJobActivator jobActivator)
+            JobActivator jobActivator)
         {
             if (String.IsNullOrEmpty(serverName))
             {
@@ -129,7 +129,7 @@ namespace HangFire
 
             _pool = new ThreadedWorkerManager(
                 new ServerContext(_serverName, _queueName, concurrency), 
-                jobInvoker, jobActivator ?? new HangFireJobActivator());
+                jobInvoker, jobActivator ?? new JobActivator());
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)
