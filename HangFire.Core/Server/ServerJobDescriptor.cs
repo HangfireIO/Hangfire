@@ -19,7 +19,13 @@ namespace HangFire.Server
             var type = Type.GetType(jobType, true, true);
             _jobInstance = activator.ActivateJob(type);
 
-            // TODO: handle the null result
+            if (_jobInstance == null)
+            {
+                throw new InvalidOperationException(String.Format(
+                    "{0} returned NULL instance of the '{1}' type.",
+                    activator.GetType().FullName,
+                    type.FullName));
+            }
 
             foreach (var arg in jobProperties)
             {
