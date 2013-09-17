@@ -19,6 +19,8 @@ namespace HangFire.Server
             var type = Type.GetType(jobType, true, true);
             _jobInstance = activator.ActivateJob(type);
 
+            // TODO: handle the null result
+
             foreach (var arg in jobProperties)
             {
                 var propertyInfo = _jobInstance.GetType().GetProperty(arg.Key);
@@ -26,9 +28,19 @@ namespace HangFire.Server
                 {
                     var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
 
-                    // TODO: handle deserialization exception and display it in a friendly way.
-                    var value = converter.ConvertFromInvariantString(arg.Value);
-                    propertyInfo.SetValue(_jobInstance, value, null);
+                    try
+                    {
+                        var value = converter.ConvertFromInvariantString(arg.Value);
+                        propertyInfo.SetValue(_jobInstance, value, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            String.Format(
+                                "Could not set the property '{0}' of the instance of class '{1}'. See the inner exception for details.",
+                                propertyInfo.Name, _jobInstance.GetType().Name),
+                            ex);
+                    }
                 }
             }
         }
