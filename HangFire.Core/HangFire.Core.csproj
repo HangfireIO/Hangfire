@@ -67,6 +67,7 @@
     <Compile Include="ClientJobDescriptor.cs" />
     <Compile Include="DateTimeExtensions.cs" />
     <Compile Include="Filters\ClientJobExceptionContext.cs" />
+    <Compile Include="Filters\GlobalJobFilterCollection.cs" />
     <Compile Include="Filters\IJobExceptionFilter.cs" />
     <Compile Include="Filters\JobEnqueuedContext.cs" />
     <Compile Include="Filters\JobEnqueueingContext.cs" />
@@ -74,6 +75,7 @@
     <Compile Include="Filters\JobFilter.cs" />
     <Compile Include="Filters\JobPerformedContext.cs" />
     <Compile Include="Filters\JobPerformingContext.cs" />
+    <Compile Include="Filters\GlobalJobFilters.cs" />
     <Compile Include="HangFireConfiguration.cs" />
     <Compile Include="Filters\IClientJobFilter.cs" />
     <Compile Include="Filters\IJobFilter.cs" />

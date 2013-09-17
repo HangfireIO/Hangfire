@@ -6,15 +6,15 @@ namespace HangFire
 {
     internal class JobInvoker
     {
-        public static readonly JobInvoker Current
-            = new JobInvoker(
-                HangFireConfiguration.Current.ServerFilters,
-                HangFireConfiguration.Current.ClientFilters,
-                Enumerable.Empty<IJobExceptionFilter>()); // TODO: replace with real value.
-
         static JobInvoker()
         {
+            Current = new JobInvoker(
+                GlobalJobFilters.Filters.OfType<IServerJobFilter>(),
+                GlobalJobFilters.Filters.OfType<IClientJobFilter>(),
+                GlobalJobFilters.Filters.OfType<IJobExceptionFilter>());
         }
+
+        public static JobInvoker Current { get; private set; }
 
         private readonly IEnumerable<IServerJobFilter> _serverFilters;
         private readonly IEnumerable<IClientJobFilter> _clientFilters;
