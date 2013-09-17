@@ -533,7 +533,6 @@ namespace HangFire.Storage
                         Queue = JobHelper.GetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         SucceededAt = JobHelper.FromJson<DateTime>(job[2]),
-                        Latency = TimeSpan.FromSeconds(2) // TODO: replace with the correct value.
                     });
             }
 

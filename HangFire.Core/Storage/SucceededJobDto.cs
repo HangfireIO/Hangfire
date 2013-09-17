@@ -9,6 +9,5 @@ namespace HangFire.Storage
         public string Queue { get; set; }
         public Dictionary<string, string> Args { get; set; }
         public DateTime? SucceededAt { get; set; }
-        public TimeSpan Latency { get; set; }
     }
 }

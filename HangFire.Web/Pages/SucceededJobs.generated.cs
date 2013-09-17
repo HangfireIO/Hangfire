@@ -97,22 +97,14 @@ else
             
             #line default
             #line hidden
-WriteLiteral(@"    <table class=""table"">
-        <thead>
-            <tr>
-                <th>Type</th>
-                <th>Queue</th>
-                <th>Args</th>
-                <th>Succeeded at</th>
-                <th>Latency</th>
-            </tr>
-        </thead>
-        <tbody>
-");
+WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
+">Type</th>\r\n                <th>Queue</th>\r\n                <th>Args</th>\r\n     " +
+"           <th>Succeeded at</th>\r\n            </tr>\r\n        </thead>\r\n        <" +
+"tbody>\r\n");
 
 
             
-            #line 40 "..\..\Pages\SucceededJobs.cshtml"
+            #line 39 "..\..\Pages\SucceededJobs.cshtml"
              foreach (var job in succeededJobs)
             {
 
@@ -123,7 +115,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 43 "..\..\Pages\SucceededJobs.cshtml"
+            #line 42 "..\..\Pages\SucceededJobs.cshtml"
                    Write(job.Type);
 
             
@@ -133,7 +125,7 @@ WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary
 
 
             
-            #line 44 "..\..\Pages\SucceededJobs.cshtml"
+            #line 43 "..\..\Pages\SucceededJobs.cshtml"
                                                      Write(job.Queue);
 
             
@@ -144,7 +136,7 @@ WriteLiteral("</span></td>\r\n                    <td>\r\n                      
 
 
             
-            #line 47 "..\..\Pages\SucceededJobs.cshtml"
+            #line 46 "..\..\Pages\SucceededJobs.cshtml"
                        Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
 
             
@@ -155,18 +147,8 @@ WriteLiteral("\r\n                        </code>\r\n                    </td>\r
 
 
             
-            #line 50 "..\..\Pages\SucceededJobs.cshtml"
+            #line 49 "..\..\Pages\SucceededJobs.cshtml"
                    Write(job.SucceededAt);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                    <td>");
-
-
-            
-            #line 51 "..\..\Pages\SucceededJobs.cshtml"
-                   Write(job.Latency);
 
             
             #line default
@@ -175,7 +157,7 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 53 "..\..\Pages\SucceededJobs.cshtml"
+            #line 51 "..\..\Pages\SucceededJobs.cshtml"
             }
 
             
@@ -185,7 +167,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 56 "..\..\Pages\SucceededJobs.cshtml"
+            #line 54 "..\..\Pages\SucceededJobs.cshtml"
 }
             
             #line default
