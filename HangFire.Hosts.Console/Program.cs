@@ -55,7 +55,7 @@ namespace HangFire.Hosts
                     x.RedisDb = 3;
                 });
 
-            using (var server = new HangFireServer("hijack!", "qqq", concurrency, TimeSpan.FromSeconds(15)))
+            using (var server = new JobServer("hijack!", "qqq", concurrency, TimeSpan.FromSeconds(15)))
             {
                 Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 
@@ -77,7 +77,7 @@ namespace HangFire.Hosts
                             var workCount = int.Parse(command.Substring(4));
                             for (var i = 0; i < workCount; i++)
                             {
-                                HangFireClient.PerformAsync<ConsoleJob>(new { Number = count++ });
+                                JobClient.PerformAsync<ConsoleJob>(new { Number = count++ });
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
@@ -92,14 +92,14 @@ namespace HangFire.Hosts
                         var workCount = int.Parse(command.Substring(6));
                         for (var i = 0; i < workCount; i++)
                         {
-                            HangFireClient.PerformAsync<ErrorJob>(new { ArticleId = 2, Product = "Casio Privia PX-850" });
+                            JobClient.PerformAsync<ErrorJob>(new { ArticleId = 2, Product = "Casio Privia PX-850" });
                         }
                     }
 
                     if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var seconds = int.Parse(command.Substring(2));
-                        HangFireClient.PerformIn<ConsoleJob>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
+                        JobClient.PerformIn<ConsoleJob>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
                     }
                 }
             }

@@ -11,7 +11,7 @@ namespace HangFire.MvcSample
 {
     public class HangFireConfig
     {
-        private static HangFireAspNetServer _server;
+        private static AspNetJobServer _server;
 
         public static void Start()
         {
@@ -19,7 +19,7 @@ namespace HangFire.MvcSample
             // following method to configure HangFire:
             JobStorage.Configure(x => { x.RedisDb = 3; });
             
-            _server = new HangFireAspNetServer
+            _server = new AspNetJobServer
             {
                 ServerName = Environment.MachineName,
                 QueueName = "default",

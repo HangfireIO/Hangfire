@@ -8,12 +8,12 @@ namespace HangFire.Tests
     [TestClass]
     public class IntegrationTests : RedisPoweredTest
     {
-        private HangFireServer _server;
+        private JobServer _server;
         private static bool _performed;
 
         protected override void Initialize()
         {
-            _server = new HangFireServer("TestServer", "default", 1, TimeSpan.FromMilliseconds(500));
+            _server = new JobServer("TestServer", "default", 1, TimeSpan.FromMilliseconds(500));
             _performed = false;
         }
 
@@ -25,7 +25,7 @@ namespace HangFire.Tests
         [TestMethod]
         public void TheJobIsProcessedWithin50ms()
         {
-            HangFireClient.PerformAsync<TestJob>();
+            JobClient.PerformAsync<TestJob>();
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
 
             Assert.IsTrue(_performed);
@@ -36,7 +36,7 @@ namespace HangFire.Tests
         [TestMethod]
         public void TheJobIsFailedWithin50ms()
         {
-            HangFireClient.PerformAsync<FailJob>();
+            JobClient.PerformAsync<FailJob>();
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
             
             Assert.AreEqual(0, JobStorage.SucceededCount());
@@ -46,7 +46,7 @@ namespace HangFire.Tests
         [TestMethod]
         public void ScheduledJobIsProcessed()
         {
-            HangFireClient.PerformIn<TestJob>(TimeSpan.FromSeconds(1));
+            JobClient.PerformIn<TestJob>(TimeSpan.FromSeconds(1));
 
             Assert.AreEqual(0, JobStorage.SucceededCount());
 

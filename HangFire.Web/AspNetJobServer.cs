@@ -7,14 +7,14 @@ namespace HangFire.Web
     /// Represents the HangFire server that designed specifically to
     /// work within the ASP.NET application.
     /// </summary>
-    public class HangFireAspNetServer : IRegisteredObject, IDisposable
+    public class AspNetJobServer : IRegisteredObject, IDisposable
     {
-        private HangFireServer _manager;
+        private JobServer _manager;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HangFireAspNetServer"/>.
+        /// Initializes a new instance of the <see cref="AspNetJobServer"/>.
         /// </summary>
-        public HangFireAspNetServer()
+        public AspNetJobServer()
         {
             ServerName = Environment.MachineName;
             Concurrency = Environment.ProcessorCount * 2;
@@ -56,7 +56,7 @@ namespace HangFire.Web
         public void Start()
         {
             HostingEnvironment.RegisterObject(this);
-            _manager = new HangFireServer(ServerName, QueueName, Concurrency, PollInterval, JobActivator);
+            _manager = new JobServer(ServerName, QueueName, Concurrency, PollInterval, JobActivator);
         }
 
         /// <summary>

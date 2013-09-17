@@ -6,14 +6,14 @@ namespace HangFire
     /// <summary>
     /// Represents a top-level class for enqueuing jobs.
     /// </summary>
-    public class HangFireClient : IDisposable
+    public class JobClient : IDisposable
     {
         private readonly JobInvoker _jobInvoker;
 
-        private static readonly HangFireClient Instance = new HangFireClient(
+        private static readonly JobClient Instance = new JobClient(
             JobInvoker.Current);
 
-        static HangFireClient()
+        static JobClient()
         {
         }
 
@@ -53,7 +53,7 @@ namespace HangFire
 
         private readonly RedisStorage _redis = new RedisStorage();
 
-        internal HangFireClient(JobInvoker jobInvoker)
+        internal JobClient(JobInvoker jobInvoker)
         {
             _jobInvoker = jobInvoker;
         }
