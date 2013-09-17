@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Web.Mvc;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(
@@ -11,7 +10,7 @@ namespace HangFire.MvcSample
 {
     public class HangFireConfig
     {
-        private static AspNetJobServer _server;
+        private static AspNetBackgroundJobServer _server;
 
         public static void Start()
         {
@@ -19,14 +18,16 @@ namespace HangFire.MvcSample
             // following method to configure HangFire:
             // JobStorage.Configure(x => { x.RedisDb = 3; });
             
-            _server = new AspNetJobServer
+            _server = new AspNetBackgroundJobServer
             {
                 ServerName = Environment.MachineName,
                 QueueName = "default",
-                Concurrency = Environment.ProcessorCount * 2
+                WorkersCount = Environment.ProcessorCount * 2
             };
 
-            _server.Start();
+            GlobalJobFilters.Filters.Add(new PreserveCultureFilter());
+
+            //_server.Start();
         }
 
         public static void Stop()

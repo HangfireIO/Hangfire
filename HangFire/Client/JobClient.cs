@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using HangFire.Client;
 using HangFire.Storage;
 
-namespace HangFire
+namespace HangFire.Client
 {
-    public class JobClient : IDisposable
+    internal class JobClient : IDisposable
     {
         private readonly ClientJobInvoker _jobInvoker = ClientJobInvoker.Current;
         private readonly RedisStorage _redis = new RedisStorage();

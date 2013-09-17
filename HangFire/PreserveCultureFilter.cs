@@ -5,7 +5,7 @@ using HangFire.Filters;
 
 namespace HangFire
 {
-    public class CurrentCultureFilter : JobFilter
+    public class PreserveCultureFilter : JobFilter
     {
         public override void OnJobEnqueueing(JobEnqueueingContext filterContext)
         {

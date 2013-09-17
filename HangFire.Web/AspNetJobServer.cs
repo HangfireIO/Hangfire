@@ -1,5 +1,4 @@
-﻿using System;
-using System.Web.Hosting;
+﻿using System.Web.Hosting;
 
 namespace HangFire.Web
 {
@@ -7,78 +6,34 @@ namespace HangFire.Web
     /// Represents the HangFire server that designed specifically to
     /// work within the ASP.NET application.
     /// </summary>
-    public class AspNetJobServer : IRegisteredObject, IDisposable
+    public class AspNetBackgroundJobServer : BackgroundJobServer, IRegisteredObject
     {
-        private JobServer _manager;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AspNetJobServer"/>.
-        /// </summary>
-        public AspNetJobServer()
-        {
-            ServerName = Environment.MachineName;
-            Concurrency = Environment.ProcessorCount * 2;
-            QueueName = "default";
-            PollInterval = TimeSpan.FromSeconds(15);
-        }
-
-        /// <summary>
-        /// Gets or sets the server name. It should be unique across
-        /// all server instances.
-        /// </summary>
-        public string ServerName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the queue to listen.
-        /// </summary>
-        public string QueueName { get; set; }
-
-        /// <summary>
-        /// Gets or sets maximum amount of jobs that being processed in parallel.
-        /// </summary>
-        public int Concurrency { get; set; }
-
-        /// <summary>
-        /// Gets or sets the poll interval for scheduled jobs.
-        /// </summary>
-        public TimeSpan PollInterval { get; set; }
-
-        /// <summary>
-        /// Get or sets an instance of the <see cref="HangFire.JobActivator"/> class
-        /// that will be used to instantinate jobs.
-        /// </summary>
-        public JobActivator JobActivator { get; set; }
-
         /// <summary>
         /// Starts the server and places it in the list of registered
         /// objects in the application. 
         /// </summary>
-        public void Start()
+        public override void Start()
         {
+            base.Start();
             HostingEnvironment.RegisterObject(this);
-            _manager = new JobServer(ServerName, QueueName, Concurrency, PollInterval, JobActivator);
         }
 
         /// <summary>
         /// Disposes the server and removes it from the list of registered
         /// objects in the application.
         /// </summary>
-        public void Stop()
+        public override bool Stop()
         {
-            if (_manager != null)
+            var wasStopped = base.Stop();
+            if (wasStopped)
             {
-                _manager.Dispose();
-                _manager = null;
                 HostingEnvironment.UnregisterObject(this);
             }
+
+            return wasStopped;
         }
 
         void IRegisteredObject.Stop(bool immediate)
-        {
-            Stop();
-        }
-
-        void IDisposable.Dispose()
         {
             Stop();
         }

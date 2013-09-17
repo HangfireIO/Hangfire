@@ -4,7 +4,7 @@ using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
-namespace HangFire.Hosts
+namespace HangFire.ConsoleSample
 {
     [QueueName("qqq")]
     public class ConsoleJob : BackgroundJob
@@ -55,8 +55,10 @@ namespace HangFire.Hosts
                     x.RedisDb = 3;
                 });
 
-            using (var server = new JobServer("hijack!", "qqq", concurrency, TimeSpan.FromSeconds(15)))
+            using (var server = new BackgroundJobServer { ServerName = "hijack!", QueueName = "qqq", WorkersCount = concurrency})
             {
+                server.Start();
+
                 Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
 
                 var count = 1;

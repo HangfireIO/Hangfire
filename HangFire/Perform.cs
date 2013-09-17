@@ -1,4 +1,5 @@
 ﻿using System;
+using HangFire.Client;
 
 namespace HangFire
 {

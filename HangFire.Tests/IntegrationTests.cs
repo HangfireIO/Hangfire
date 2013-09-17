@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HangFire.Tests
@@ -8,18 +7,25 @@ namespace HangFire.Tests
     [TestClass]
     public class IntegrationTests : RedisPoweredTest
     {
-        private JobServer _server;
+        private BackgroundJobServer _server;
         private static bool _performed;
 
         protected override void Initialize()
         {
-            _server = new JobServer("TestServer", "default", 1, TimeSpan.FromMilliseconds(500));
+            _server = new BackgroundJobServer
+                {
+                    ServerName = "TestServer",
+                    QueueName = "default",
+                    WorkersCount = 1,
+                    PollInterval = TimeSpan.FromMilliseconds(500)
+                };
+            _server.Start();
             _performed = false;
         }
 
         protected override void CleanUp()
         {
-            _server.Dispose();
+            _server.Stop();
         }
 
         [TestMethod]
