@@ -46,7 +46,6 @@ namespace HangFire.Client
 
                     if (propertyValue != null)
                     {
-                        // TODO: handle conversion exception and display it in a friendly way.
                         try
                         {
                             var converter = TypeDescriptor.GetConverter(propertyValue.GetType());

@@ -52,6 +52,9 @@ namespace HangFire.Server
                                 }
                             }
 
+                            // TODO: we'll loose the job when:
+                            //    1. one of the following instructions will fail.
+                            //    2. unexpected server fail will occur after the following line.
                             var jobId = x.GetScheduledJobId(DateTime.UtcNow);
                             if (jobId != null)
                             {
@@ -60,6 +63,7 @@ namespace HangFire.Server
                                 // TODO: move the job to the failed queue when type resolving failed.
                                 var queue = JobHelper.GetQueueName(jobType);
 
+                                // TODO: we'll loose the job when the following instruction will fail.
                                 x.EnqueueJob(queue, jobId, null);
                             }
                             else
