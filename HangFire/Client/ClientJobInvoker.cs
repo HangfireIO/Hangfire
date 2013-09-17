@@ -74,7 +74,7 @@ namespace HangFire.Client
             if (preContext.Canceled)
             {
                 return new JobEnqueuedContext(
-                    preContext.ClientContext, preContext.JobDescriptor, true, null);
+                    preContext, preContext.JobDescriptor, true, null);
             }
 
             var wasError = false;
@@ -87,7 +87,7 @@ namespace HangFire.Client
             {
                 wasError = true;
                 postContext = new JobEnqueuedContext(
-                    preContext.ClientContext, preContext.JobDescriptor, false, ex);
+                    preContext, preContext.JobDescriptor, false, ex);
 
                 filter.OnJobEnqueued(postContext);
 

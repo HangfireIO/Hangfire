@@ -74,7 +74,7 @@ namespace HangFire.Server
             if (preContext.Canceled)
             {
                 return new JobPerformedContext(
-                    preContext.WorkerContext, preContext.JobDescriptor, true, null);
+                    preContext, preContext.JobDescriptor, true, null);
             }
 
             var wasError = false;
@@ -87,7 +87,7 @@ namespace HangFire.Server
             {
                 wasError = true;
                 postContext = new JobPerformedContext(
-                    preContext.WorkerContext, preContext.JobDescriptor, false, ex);
+                    preContext, preContext.JobDescriptor, false, ex);
                 filter.OnJobPerformed(postContext);
 
                 if (!postContext.ExceptionHandled)
