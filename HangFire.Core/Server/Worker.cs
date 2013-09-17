@@ -33,12 +33,23 @@ namespace HangFire.Server
 
             lock (Redis)
             {
-                Redis.RetryOnRedisException(x =>
-                    {
-                        x.GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
-                        // TODO: what if the job doesn't exists?
-                        x.AddProcessingWorker(_workerContext.ServerContext.ServerName, jobId);
-                    });
+                Redis.RetryOnRedisException(x => 
+                    x.GetJobTypeAndArgs(jobId, out jobType, out jobArgs));
+            }
+
+            if (String.IsNullOrEmpty(jobType))
+            {
+                Logger.Warn(String.Format(
+                    "Could not process the job '{0}': it does not exist in the storage.",
+                    jobId));
+
+                return;
+            }
+
+            lock (Redis)
+            {
+                Redis.RetryOnRedisException(x => 
+                    x.AddProcessingWorker(_workerContext.ServerContext.ServerName, jobId));
             }
 
             Exception exception = null;
