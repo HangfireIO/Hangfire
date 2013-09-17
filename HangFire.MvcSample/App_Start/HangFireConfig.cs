@@ -17,7 +17,7 @@ namespace HangFire.MvcSample
         {
             // If you have custom Redis installation, use the
             // following method to configure HangFire:
-            JobStorage.Configure(x => { x.RedisDb = 3; });
+            // JobStorage.Configure(x => { x.RedisDb = 3; });
             
             _server = new AspNetJobServer
             {
@@ -26,12 +26,12 @@ namespace HangFire.MvcSample
                 Concurrency = Environment.ProcessorCount * 2
             };
 
-            //_server.Start();
+            _server.Start();
         }
 
         public static void Stop()
         {
-            _server.Dispose();
+            _server.Stop();
         }
     }
 }

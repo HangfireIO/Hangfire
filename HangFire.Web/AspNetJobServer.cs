@@ -63,7 +63,7 @@ namespace HangFire.Web
         /// Disposes the server and removes it from the list of registered
         /// objects in the application.
         /// </summary>
-        public void Dispose()
+        public void Stop()
         {
             if (_manager != null)
             {
@@ -75,7 +75,12 @@ namespace HangFire.Web
 
         void IRegisteredObject.Stop(bool immediate)
         {
-            Dispose();
+            Stop();
+        }
+
+        void IDisposable.Dispose()
+        {
+            Stop();
         }
     }
 }

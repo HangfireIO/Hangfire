@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>HangFire.Core</id>
+    <id>HangFire</id>
     <version>$version$</version>
     <title>$title$</title>
     <authors>odinserj</authors>

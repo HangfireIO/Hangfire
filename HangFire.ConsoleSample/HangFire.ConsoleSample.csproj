@@ -7,8 +7,8 @@
     <ProjectGuid>{C02BB718-2AE4-434C-8668-C894FF663FCE}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.Hosts</RootNamespace>
-    <AssemblyName>HangFire.Hosts.Console</AssemblyName>
+    <RootNamespace>HangFire.ConsoleSample</RootNamespace>
+    <AssemblyName>HangFire.ConsoleSample</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -61,9 +61,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">
+    <ProjectReference Include="..\HangFire\HangFire.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
-      <Name>HangFire.Core</Name>
+      <Name>HangFire</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
