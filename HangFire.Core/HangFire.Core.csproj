@@ -76,7 +76,7 @@
     <Compile Include="Filters\JobPerformedContext.cs" />
     <Compile Include="Filters\JobPerformingContext.cs" />
     <Compile Include="Filters\GlobalJobFilters.cs" />
-    <Compile Include="HangFireConfiguration.cs" />
+    <Compile Include="JobStorageConfiguration.cs" />
     <Compile Include="Filters\IClientJobFilter.cs" />
     <Compile Include="Filters\IJobFilter.cs" />
     <Compile Include="Filters\IServerJobFilter.cs" />
