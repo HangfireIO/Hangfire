@@ -84,6 +84,7 @@
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="JobCompletedEventArgs.cs" />
     <Compile Include="JobStorage.cs" />
+    <Compile Include="Perform.cs" />
     <Compile Include="SchedulePoller.cs" />
     <Compile Include="QueueNameAttribute.cs" />
     <Compile Include="RedisStorage.cs" />

@@ -77,7 +77,7 @@ namespace HangFire.Hosts
                             var workCount = int.Parse(command.Substring(4));
                             for (var i = 0; i < workCount; i++)
                             {
-                                JobClient.PerformAsync<ConsoleJob>(new { Number = count++ });
+                                Perform.Async<ConsoleJob>(new { Number = count++ });
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
@@ -92,14 +92,14 @@ namespace HangFire.Hosts
                         var workCount = int.Parse(command.Substring(6));
                         for (var i = 0; i < workCount; i++)
                         {
-                            JobClient.PerformAsync<ErrorJob>(new { ArticleId = 2, Product = "Casio Privia PX-850" });
+                            Perform.Async<ErrorJob>(new { ArticleId = 2, Product = "Casio Privia PX-850" });
                         }
                     }
 
                     if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var seconds = int.Parse(command.Substring(2));
-                        JobClient.PerformIn<ConsoleJob>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
+                        Perform.In<ConsoleJob>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
                     }
                 }
             }

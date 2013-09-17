@@ -3,57 +3,12 @@ using System.Collections.Generic;
 
 namespace HangFire
 {
-    /// <summary>
-    /// Represents a top-level class for enqueuing jobs.
-    /// </summary>
-    public class JobClient : IDisposable
+    internal class JobClient : IDisposable
     {
         private readonly JobInvoker _jobInvoker;
-
-        private static readonly JobClient Instance = new JobClient(
-            JobInvoker.Current);
-
-        static JobClient()
-        {
-        }
-
-        public static string PerformAsync<TJob>()
-            where TJob : BackgroundJob
-        {
-            return PerformAsync<TJob>(null);
-        }
-
-        public static string PerformAsync<TJob>(object args)
-            where TJob : BackgroundJob
-        {
-            return PerformAsync(typeof(TJob), args);
-        }
-
-        public static string PerformAsync(Type jobType, object args = null)
-        {
-            return Instance.Async(jobType, args);
-        }
-
-        public static string PerformIn<TJob>(TimeSpan interval)
-            where TJob : BackgroundJob
-        {
-            return PerformIn<TJob>(interval, null);
-        }
-
-        public static string PerformIn<TJob>(TimeSpan interval, object args)
-            where TJob : BackgroundJob
-        {
-            return PerformIn(interval, typeof(TJob), args);
-        }
-
-        public static string PerformIn(TimeSpan interval, Type jobType, object args = null)
-        {
-            return Instance.In(interval, jobType, args);
-        }
-
         private readonly RedisStorage _redis = new RedisStorage();
 
-        internal JobClient(JobInvoker jobInvoker)
+        public JobClient(JobInvoker jobInvoker)
         {
             _jobInvoker = jobInvoker;
         }

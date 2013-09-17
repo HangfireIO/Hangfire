@@ -25,7 +25,7 @@ namespace HangFire.Tests
         [TestMethod]
         public void TheJobIsProcessedWithin50ms()
         {
-            JobClient.PerformAsync<TestJob>();
+            Perform.Async<TestJob>();
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
 
             Assert.IsTrue(_performed);
@@ -36,7 +36,7 @@ namespace HangFire.Tests
         [TestMethod]
         public void TheJobIsFailedWithin50ms()
         {
-            JobClient.PerformAsync<FailJob>();
+            Perform.Async<FailJob>();
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
             
             Assert.AreEqual(0, JobStorage.SucceededCount());
@@ -46,7 +46,7 @@ namespace HangFire.Tests
         [TestMethod]
         public void ScheduledJobIsProcessed()
         {
-            JobClient.PerformIn<TestJob>(TimeSpan.FromSeconds(1));
+            Perform.In<TestJob>(TimeSpan.FromSeconds(1));
 
             Assert.AreEqual(0, JobStorage.SucceededCount());
 
