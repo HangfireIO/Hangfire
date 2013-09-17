@@ -1,21 +1,14 @@
-﻿using System.Collections.Generic;
-
-namespace HangFire
+﻿namespace HangFire
 {
     public class WorkerContext
     {
-        public WorkerContext(
-            string serverName, 
-            string workerName,
-            string queueName)
+        public WorkerContext(ServerContext serverContext, int workerNumber)
         {
-            ServerName = serverName;
-            WorkerName = workerName;
-            QueueName = queueName;
+            ServerContext = serverContext;
+            WorkerNumber = workerNumber;
         }
 
-        public string ServerName { get; private set; }
-        public string WorkerName { get; private set; }
-        public string QueueName { get; private set; }
+        public ServerContext ServerContext { get; private set; }
+        public int WorkerNumber { get; private set; }
     }
 }

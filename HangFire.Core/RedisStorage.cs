@@ -166,41 +166,34 @@ namespace HangFire
                 -1);
         }
 
-        public void AddProcessingWorker(string workerName, string jobId)
+        public void AddProcessingWorker(string serverName, string jobId)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:processing"));
-                transaction.QueueCommand(x =>
-                    x.AddItemToSet("hangfire:workers", workerName));
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    "hangfire:processing", jobId));
 
-                transaction.QueueCommand(x => x.SetEntry(
-                    String.Format("hangfire:worker:{0}", workerName),
-                    jobId));
-
-                transaction.QueueCommand(x => x.SetEntryInHash(
+                transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format("hangfire:job:{0}", jobId),
-                    "StartedAt",
-                    JsonHelper.Serialize(DateTime.UtcNow)));
-
-                transaction.QueueCommand(x => x.ExpireEntryIn(
-                    String.Format("hangfire:worker:{0}", workerName), 
-                    _workerStatusTimeout));
+                    new Dictionary<string, string>
+                        {
+                            { "StartedAt", JsonHelper.Serialize(DateTime.UtcNow) },
+                            { "Server", serverName }
+                        }));
 
                 transaction.Commit();
             }
         }
 
-        public void RemoveProcessingWorker(string workerName, string jobId, Exception exception)
+        public void RemoveProcessingWorker(string jobId, Exception exception)
         {
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:processing"));
 
-                transaction.QueueCommand(x =>
-                    x.RemoveItemFromSet("hangfire:workers", workerName));
-                transaction.QueueCommand(x =>
-                    x.RemoveEntry(String.Format("hangfire:workers:{0}", workerName)));
+                transaction.QueueCommand(x => x.RemoveItemFromSet(
+                    "hangfire:processing", jobId));
 
                 if (exception == null)
                 {
@@ -306,20 +299,19 @@ namespace HangFire
                 }).ToList();
         }
 
-        public IEnumerable<WorkerDto> GetWorkers()
+        public IEnumerable<ProcessingJobDto> GetProcessingJobs()
         {
-            var workers = _redis.GetAllItemsFromSet("hangfire:workers");
-            var result = new List<WorkerDto>();
-            foreach (var workerName in workers)
+            var jobIds = _redis.GetAllItemsFromSet("hangfire:processing");
+            var result = new List<ProcessingJobDto>();
+            foreach (var jobId in jobIds)
             {
-                var jobId = _redis.GetValue(String.Format("hangfire:worker:{0}", workerName));
                 var job = _redis.GetValuesFromHash(
                     String.Format("hangfire:job:{0}", jobId),
-                    new[] { "Type", "Args", "StartedAt" });
+                    new[] { "Type", "Args", "StartedAt", "ServerName" });
 
-                result.Add(new WorkerDto
+                result.Add(new ProcessingJobDto
                     {
-                        Name = workerName,
+                        ServerName = job[3],
                         Args = job[1],
                         Type = job[0],
                         StartedAt = job[2]
@@ -587,9 +579,9 @@ namespace HangFire
         public HashSet<string> Servers { get; set; }
     }
 
-    public class WorkerDto
+    public class ProcessingJobDto
     {
-        public string Name { get; set; }
+        public string ServerName { get; set; }
         public string Type { get; set; }
         public string Args { get; set; }
         public string StartedAt { get; set; }

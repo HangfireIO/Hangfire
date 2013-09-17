@@ -87,6 +87,7 @@
     <Compile Include="RedisStorage.cs" />
     <Compile Include="HangFireJobActivator.cs" />
     <Compile Include="HangFireServer.cs" />
+    <Compile Include="ServerContext.cs" />
     <Compile Include="ServerJobDescriptor.cs" />
     <Compile Include="Worker.cs" />
     <Compile Include="ThreadedWorkerManager.cs" />

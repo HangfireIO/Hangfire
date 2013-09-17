@@ -16,14 +16,14 @@ namespace HangFire.Web.Pages
     using System.Linq;
     using System.Text;
     
-    #line 2 "..\..\Pages\WorkersPage.cshtml"
+    #line 2 "..\..\Pages\ProcessingJobsPage.cshtml"
     using Pages;
     
     #line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class WorkersPage : RazorPage
+    internal partial class ProcessingJobsPage : RazorPage
     {
 #line hidden
 
@@ -37,9 +37,9 @@ WriteLiteral("\r\n");
 
 
             
-            #line 4 "..\..\Pages\WorkersPage.cshtml"
+            #line 4 "..\..\Pages\ProcessingJobsPage.cshtml"
   
-    Layout = new LayoutPage { Title = "Workers" };
+    Layout = new LayoutPage { Title = "Processing Jobs" };
 
 
             
@@ -51,8 +51,8 @@ WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n    
 
 
             
-            #line 18 "..\..\Pages\WorkersPage.cshtml"
-         foreach (var worker in HangFireApi.Workers())
+            #line 18 "..\..\Pages\ProcessingJobsPage.cshtml"
+         foreach (var job in HangFireApi.ProcessingJobs())
         {
 
             
@@ -62,8 +62,8 @@ WriteLiteral("            <tr>\r\n                <td>");
 
 
             
-            #line 21 "..\..\Pages\WorkersPage.cshtml"
-               Write(worker.Name);
+            #line 21 "..\..\Pages\ProcessingJobsPage.cshtml"
+               Write(job.ServerName);
 
             
             #line default
@@ -72,8 +72,8 @@ WriteLiteral("</td>\r\n                <td>");
 
 
             
-            #line 22 "..\..\Pages\WorkersPage.cshtml"
-               Write(worker.Type);
+            #line 22 "..\..\Pages\ProcessingJobsPage.cshtml"
+               Write(job.Type);
 
             
             #line default
@@ -82,8 +82,8 @@ WriteLiteral("</td>\r\n                <td><code>");
 
 
             
-            #line 23 "..\..\Pages\WorkersPage.cshtml"
-                     Write(worker.Args);
+            #line 23 "..\..\Pages\ProcessingJobsPage.cshtml"
+                     Write(job.Args);
 
             
             #line default
@@ -92,8 +92,8 @@ WriteLiteral("</code></td>\r\n                <td>");
 
 
             
-            #line 24 "..\..\Pages\WorkersPage.cshtml"
-               Write(worker.StartedAt);
+            #line 24 "..\..\Pages\ProcessingJobsPage.cshtml"
+               Write(job.StartedAt);
 
             
             #line default
@@ -102,7 +102,7 @@ WriteLiteral("</td>\r\n            </tr>\r\n");
 
 
             
-            #line 26 "..\..\Pages\WorkersPage.cshtml"
+            #line 26 "..\..\Pages\ProcessingJobsPage.cshtml"
         }
 
             

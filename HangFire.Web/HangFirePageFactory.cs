@@ -18,7 +18,7 @@ namespace HangFire.Web
             RegisterDefaultPathHandlerFactory(() => new DashboardPage());
 
             RegisterPathHandlerFactory("/queues",    x => new QueuesPage());
-            RegisterPathHandlerFactory("/workers",   x => new WorkersPage());
+            RegisterPathHandlerFactory("/processing",   x => new ProcessingJobsPage());
             RegisterPathHandlerFactory("/schedule",  x => new SchedulePage());
             RegisterPathHandlerFactory("/servers",   x => new ServersPage());
             RegisterPathHandlerFactory("/failed",    x => new FailedJobsPage());

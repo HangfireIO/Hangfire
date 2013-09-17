@@ -8,8 +8,6 @@ namespace HangFire
     internal class ThreadedWorker : Worker, IDisposable
     {
         private readonly ThreadedWorkerManager _pool;
-        private readonly string _name;
-
         private readonly Thread _thread;
 
         private readonly ManualResetEventSlim _jobIsReady
@@ -26,16 +24,16 @@ namespace HangFire
         private string _jobId;
 
         public ThreadedWorker(
-            ThreadedWorkerManager pool, string name, string workerName, 
+            ThreadedWorkerManager pool,
+            WorkerContext workerContext,
             JobInvoker jobInvoker, HangFireJobActivator jobActivator)
-            : base(name, workerName, jobInvoker, jobActivator)
+            : base(workerContext, jobInvoker, jobActivator)
         {
             _pool = pool;
-            _name = name;
 
             _thread = new Thread(DoWork)
                 {
-                    Name = name,
+                    Name = String.Format("HangFire.Worker.{0}", workerContext.WorkerNumber),
                     IsBackground = true
                 };
         }
@@ -134,7 +132,8 @@ namespace HangFire
             {
                 Crashed = true;
                 Logger.Fatal(
-                    String.Format("Unexpected exception caught in the worker '{0}'. It will be stopped.", _name),
+                    String.Format(
+                        "Unexpected exception caught. The worker will be stopped."),
                     ex);
             }
         }

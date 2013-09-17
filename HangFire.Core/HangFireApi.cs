@@ -56,11 +56,11 @@ namespace HangFire
             }
         }
 
-        public static IEnumerable<WorkerDto> Workers()
+        public static IEnumerable<ProcessingJobDto> ProcessingJobs()
         {
             lock (Redis)
             {
-                return Redis.GetWorkers();
+                return Redis.GetProcessingJobs();
             }
         }
 

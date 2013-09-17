@@ -257,7 +257,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Sch
 
             
             #line 76 "..\..\Pages\LayoutPage.cshtml"
-                                          Write(Request.PathInfo.Equals("/workers") ? "active" : null);
+                                          Write(Request.PathInfo.Equals("/processing") ? "active" : null);
 
             
             #line default
@@ -267,7 +267,7 @@ WriteLiteral("\" \r\n                       href=\"");
 
             
             #line 77 "..\..\Pages\LayoutPage.cshtml"
-                        Write(Request.LinkTo("/workers"));
+                        Write(Request.LinkTo("/processing"));
 
             
             #line default
@@ -278,7 +278,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-workers\" class=\"
 
             
             #line 79 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.Workers().Count()));
+                       Write(String.Format("{0:n0}", HangFireApi.ProcessingJobs().Count()));
 
             
             #line default

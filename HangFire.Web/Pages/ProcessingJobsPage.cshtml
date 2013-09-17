@@ -2,7 +2,7 @@
 @using Pages
 @inherits RazorPage
 @{
-    Layout = new LayoutPage { Title = "Workers" };
+    Layout = new LayoutPage { Title = "Processing Jobs" };
 }
 
 <table class="table">
@@ -15,13 +15,13 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var worker in HangFireApi.Workers())
+        @foreach (var job in HangFireApi.ProcessingJobs())
         {
             <tr>
-                <td>@worker.Name</td>
-                <td>@worker.Type</td>
-                <td><code>@worker.Args</code></td>
-                <td>@worker.StartedAt</td>
+                <td>@job.ServerName</td>
+                <td>@job.Type</td>
+                <td><code>@job.Args</code></td>
+                <td>@job.StartedAt</td>
             </tr>
         }
     </tbody>

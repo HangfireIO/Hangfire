@@ -128,7 +128,8 @@ namespace HangFire
             var jobInvoker = JobInvoker.Current; // TODO: replace with a real collection.
 
             _pool = new ThreadedWorkerManager(
-                concurrency, serverName, jobInvoker, jobActivator ?? new HangFireJobActivator());
+                new ServerContext(_serverName, _queueName, concurrency), 
+                jobInvoker, jobActivator ?? new HangFireJobActivator());
             _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)

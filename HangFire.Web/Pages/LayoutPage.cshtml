@@ -73,10 +73,10 @@
                         </span>
                         Scheduled
                     </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/workers") ? "active" : null)" 
-                       href="@Request.LinkTo("/workers")">
+                    <a class="list-group-item @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
+                       href="@Request.LinkTo("/processing")">
                         <span id="stats-workers" class="label label-warning pull-right">
-                            @String.Format("{0:n0}", HangFireApi.Workers().Count())
+                            @String.Format("{0:n0}", HangFireApi.ProcessingJobs().Count())
                         </span>
                         Processing
                     </a>

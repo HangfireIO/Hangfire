@@ -9,15 +9,16 @@ namespace HangFire
         public static readonly RedisStorage Redis = new RedisStorage();
 
         protected readonly ILog Logger;
-
-        private readonly string _workerName;
+        private readonly WorkerContext _workerContext;
         private readonly JobInvoker _jobInvoker;
         private readonly HangFireJobActivator _jobActivator;
 
-        public Worker(string name, string workerName, JobInvoker jobInvoker, HangFireJobActivator jobActivator)
+        public Worker(
+            WorkerContext workerContext, 
+            JobInvoker jobInvoker, HangFireJobActivator jobActivator)
         {
-            Logger = LogManager.GetLogger(name);
-            _workerName = workerName;
+            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", workerContext.WorkerNumber));
+            _workerContext = workerContext;
             _jobInvoker = jobInvoker;
             _jobActivator = jobActivator;
         }
@@ -33,7 +34,7 @@ namespace HangFire
                     {
                         x.GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
                         // TODO: what if the job doesn't exists?
-                        x.AddProcessingWorker(_workerName, jobId);
+                        x.AddProcessingWorker(_workerContext.ServerContext.ServerName, jobId);
                     });
             }
 
@@ -42,11 +43,8 @@ namespace HangFire
             ServerJobDescriptor jobDescriptor = null;
             try
             {
-                var workerContext = new WorkerContext(
-                    "lalala", _workerName, "hahaha"); // TODO: use real values.
-
                 jobDescriptor = new ServerJobDescriptor(_jobActivator, jobId, jobType, jobArgs);
-                _jobInvoker.PerformJob(workerContext, jobDescriptor);
+                _jobInvoker.PerformJob(_workerContext, jobDescriptor);
             }
             catch (Exception ex)
             {
@@ -67,7 +65,7 @@ namespace HangFire
             lock (Redis)
             {
                 Redis.RetryOnRedisException(x => 
-                    x.RemoveProcessingWorker(_workerName, jobId, exception));
+                    x.RemoveProcessingWorker(jobId, exception));
             }
         }
     }

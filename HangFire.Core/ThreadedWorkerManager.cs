@@ -15,22 +15,20 @@ namespace HangFire
         private bool _disposed;
 
         public ThreadedWorkerManager(
-            int count, 
-            string serverName, 
+            ServerContext serverContext,
             JobInvoker jobInvoker,
             HangFireJobActivator jobActivator)
         {
-            _workers = new List<ThreadedWorker>(count);
+            _workers = new List<ThreadedWorker>(serverContext.WorkersCount);
             _freeWorkers = new BlockingCollection<ThreadedWorker>();
 
-            _logger.Info(String.Format("Starting {0} workers...", count));
+            _logger.Info(String.Format("Starting {0} workers...", serverContext.WorkersCount));
 
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < serverContext.WorkersCount; i++)
             {
                 var worker = new ThreadedWorker(
-                    this, 
-                    String.Format("HangFire.Worker.{0}", i),
-                    String.Format("{0}.{1}", serverName, i),
+                    this,
+                    new WorkerContext(serverContext, i), 
                     jobInvoker,
                     jobActivator);
                 worker.Start();

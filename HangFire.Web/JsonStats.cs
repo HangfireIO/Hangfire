@@ -13,7 +13,7 @@ namespace HangFire.Web
             {
                 succeeded = HangFireApi.SucceededCount(),
                 failed = HangFireApi.FailedCount(),
-                workers = HangFireApi.Workers().Count(),
+                workers = HangFireApi.ProcessingJobs().Count(),
                 scheduled = HangFireApi.ScheduledCount(),
                 enqueued = HangFireApi.EnqueuedCount()
             };

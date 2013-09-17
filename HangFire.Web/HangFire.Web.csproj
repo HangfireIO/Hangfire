@@ -79,10 +79,10 @@
     </Compile>
     <Compile Include="LinkHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Pages\WorkersPage.generated.cs">
+    <Compile Include="Pages\ProcessingJobsPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>WorkersPage.cshtml</DependentUpon>
+      <DependentUpon>ProcessingJobsPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="StyleSheetHandler.cs" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.eot" />
@@ -133,9 +133,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SchedulePage.cshtml</DependentUpon>
     </Compile>
-    <None Include="Pages\WorkersPage.cshtml">
+    <None Include="Pages\ProcessingJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>WorkersPage.generated.cs</LastGenOutput>
+      <LastGenOutput>ProcessingJobsPage.generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
