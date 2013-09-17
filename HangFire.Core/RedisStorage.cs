@@ -12,7 +12,7 @@ namespace HangFire
     {
         private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
-        private readonly JobStorageConfiguration _config = HangFireApi.Configuration;
+        private readonly JobStorageConfiguration _config = JobStorage.Configuration;
         private readonly IRedisClient _redis;
 
         public RedisStorage()

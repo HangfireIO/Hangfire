@@ -11,11 +11,11 @@ namespace HangFire.Web
         {
             var response = new
             {
-                succeeded = HangFireApi.SucceededCount(),
-                failed = HangFireApi.FailedCount(),
-                workers = HangFireApi.ProcessingJobs().Count(),
-                scheduled = HangFireApi.ScheduledCount(),
-                enqueued = HangFireApi.EnqueuedCount()
+                succeeded = JobStorage.SucceededCount(),
+                failed = JobStorage.FailedCount(),
+                workers = JobStorage.ProcessingJobs().Count(),
+                scheduled = JobStorage.ScheduledCount(),
+                enqueued = JobStorage.EnqueuedCount()
             };
 
             var serialized = JsonSerializer.SerializeToString(response);

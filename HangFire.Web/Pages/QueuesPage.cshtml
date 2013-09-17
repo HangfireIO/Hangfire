@@ -15,7 +15,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var queue in HangFireApi.Queues())
+        @foreach (var queue in JobStorage.Queues())
         {
             <tr>
                 <td>@queue.Name</td>

@@ -35,13 +35,13 @@
                         <li class="@(Request.PathInfo.Equals("/servers") ? "active" : null)">
                             <a href="@(Request.LinkTo("/servers"))">
                                 Servers
-                                <span class="badge">@HangFireApi.Servers().Count()</span>
+                                <span class="badge">@JobStorage.Servers().Count()</span>
                             </a>                            
                         </li>
                         <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">
                             <a href="@Request.LinkTo("/queues")">
                                 Queues
-                                <span class="badge">@HangFireApi.Queues().Count()</span>
+                                <span class="badge">@JobStorage.Queues().Count()</span>
                             </a>
                         </li>
                     </ul>
@@ -62,35 +62,35 @@
                 <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
                     <a class="list-group-item" href="#">
                         <span id="stats-enqueued" class="label label-default pull-right">
-                            @String.Format("{0:n0}", HangFireApi.EnqueuedCount())
+                            @String.Format("{0:n0}", JobStorage.EnqueuedCount())
                         </span>
                         Enqueued
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
                        href="@Request.LinkTo("/schedule")">
                         <span id="stats-scheduled" class="label label-primary pull-right">
-                            @String.Format("{0:n0}", HangFireApi.ScheduledCount())
+                            @String.Format("{0:n0}", JobStorage.ScheduledCount())
                         </span>
                         Scheduled
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
                        href="@Request.LinkTo("/processing")">
                         <span id="stats-workers" class="label label-warning pull-right">
-                            @String.Format("{0:n0}", HangFireApi.ProcessingJobs().Count())
+                            @String.Format("{0:n0}", JobStorage.ProcessingJobs().Count())
                         </span>
                         Processing
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
                        href="@Request.LinkTo("/succeeded")">
                         <span id="stats-succeeded" class="label label-success pull-right">
-                            @String.Format("{0:n0}", HangFireApi.SucceededCount())
+                            @String.Format("{0:n0}", JobStorage.SucceededCount())
                         </span>
                         Succeeded
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
                        href="@Request.LinkTo("/failed")">
                         <span id="stats-failed" class="label label-danger pull-right">
-                            @String.Format("{0:n0}", HangFireApi.FailedCount())
+                            @String.Format("{0:n0}", JobStorage.FailedCount())
                         </span>
                         Failed
                     </a>
@@ -113,7 +113,7 @@
                     </a>
                 </li>
                 <li>Redis: 
-                    @String.Format("{0}:{1}/{2}", HangFireApi.Configuration.RedisHost, HangFireApi.Configuration.RedisPort, HangFireApi.Configuration.RedisDb)
+                    @String.Format("{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb)
                 </li>
                 <li>Time: @DateTime.UtcNow.ToString() UTC
                 </li>

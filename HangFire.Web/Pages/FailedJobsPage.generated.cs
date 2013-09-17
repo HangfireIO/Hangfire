@@ -40,7 +40,7 @@ WriteLiteral("\r\n");
             #line 4 "..\..\Pages\FailedJobsPage.cshtml"
   
     Layout = new LayoutPage { Title = "Failed Jobs" };
-    var failedJobs = HangFireApi.FailedJobs();
+    var failedJobs = JobStorage.FailedJobs();
 
 
             

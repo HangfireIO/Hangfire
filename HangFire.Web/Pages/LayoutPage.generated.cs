@@ -142,7 +142,7 @@ WriteLiteral("\">\r\n                                Servers\r\n                
 
             
             #line 38 "..\..\Pages\LayoutPage.cshtml"
-                                               Write(HangFireApi.Servers().Count());
+                                               Write(JobStorage.Servers().Count());
 
             
             #line default
@@ -174,7 +174,7 @@ WriteLiteral("\">\r\n                                Queues\r\n                 
 
             
             #line 44 "..\..\Pages\LayoutPage.cshtml"
-                                               Write(HangFireApi.Queues().Count());
+                                               Write(JobStorage.Queues().Count());
 
             
             #line default
@@ -214,7 +214,7 @@ WriteLiteral("\">\r\n                    <a class=\"list-group-item\" href=\"#\"
 
             
             #line 65 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.EnqueuedCount()));
+                       Write(String.Format("{0:n0}", JobStorage.EnqueuedCount()));
 
             
             #line default
@@ -246,7 +246,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-scheduled\" class=
 
             
             #line 72 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.ScheduledCount()));
+                       Write(String.Format("{0:n0}", JobStorage.ScheduledCount()));
 
             
             #line default
@@ -278,7 +278,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-workers\" class=\"
 
             
             #line 79 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.ProcessingJobs().Count()));
+                       Write(String.Format("{0:n0}", JobStorage.ProcessingJobs().Count()));
 
             
             #line default
@@ -310,7 +310,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-succeeded\" class=
 
             
             #line 86 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.SucceededCount()));
+                       Write(String.Format("{0:n0}", JobStorage.SucceededCount()));
 
             
             #line default
@@ -342,7 +342,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-failed\" class=\"l
 
             
             #line 93 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", HangFireApi.FailedCount()));
+                       Write(String.Format("{0:n0}", JobStorage.FailedCount()));
 
             
             #line default
@@ -396,7 +396,7 @@ WriteLiteral("\r\n                    </a>\r\n                </li>\r\n         
 
             
             #line 116 "..\..\Pages\LayoutPage.cshtml"
-               Write(String.Format("{0}:{1}/{2}", HangFireApi.Configuration.RedisHost, HangFireApi.Configuration.RedisPort, HangFireApi.Configuration.RedisDb));
+               Write(String.Format("{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb));
 
             
             #line default

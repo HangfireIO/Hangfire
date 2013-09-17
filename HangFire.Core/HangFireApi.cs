@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HangFire
 {
-    public static class HangFireApi
+    public static class JobStorage
     {
         private static readonly RedisStorage Redis = new RedisStorage();
 
@@ -12,7 +12,7 @@ namespace HangFire
         /// </summary>
         public static JobStorageConfiguration Configuration { get; private set; }
 
-        static HangFireApi()
+        static JobStorage()
         {
             Configuration = new JobStorageConfiguration();
         }

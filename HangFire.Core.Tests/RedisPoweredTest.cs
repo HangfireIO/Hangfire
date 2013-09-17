@@ -28,7 +28,7 @@ namespace HangFire.Tests
             Redis = new ServiceStack.Redis.RedisClient(RedisHost, RedisPort, null, RedisDb);
             Redis.FlushDb();
 
-            HangFireApi.Configure(
+            JobStorage.Configure(
                 x =>
                 {
                     x.RedisDb = RedisDb;

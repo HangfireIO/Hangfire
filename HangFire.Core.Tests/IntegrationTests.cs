@@ -29,8 +29,8 @@ namespace HangFire.Tests
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
 
             Assert.IsTrue(_performed);
-            Assert.AreEqual(0, HangFireApi.FailedCount());
-            Assert.AreEqual(1, HangFireApi.SucceededCount());
+            Assert.AreEqual(0, JobStorage.FailedCount());
+            Assert.AreEqual(1, JobStorage.SucceededCount());
         }
 
         [TestMethod]
@@ -39,8 +39,8 @@ namespace HangFire.Tests
             HangFireClient.PerformAsync<FailJob>();
             Thread.Sleep(TimeSpan.FromMilliseconds(50));
             
-            Assert.AreEqual(0, HangFireApi.SucceededCount());
-            Assert.AreEqual(1, HangFireApi.FailedCount());
+            Assert.AreEqual(0, JobStorage.SucceededCount());
+            Assert.AreEqual(1, JobStorage.FailedCount());
         }
 
         [TestMethod]
@@ -48,12 +48,12 @@ namespace HangFire.Tests
         {
             HangFireClient.PerformIn<TestJob>(TimeSpan.FromSeconds(1));
 
-            Assert.AreEqual(0, HangFireApi.SucceededCount());
+            Assert.AreEqual(0, JobStorage.SucceededCount());
 
             Thread.Sleep(TimeSpan.FromSeconds(2));
 
-            Assert.AreEqual(0, HangFireApi.FailedCount());
-            Assert.AreEqual(1, HangFireApi.SucceededCount());
+            Assert.AreEqual(0, JobStorage.FailedCount());
+            Assert.AreEqual(1, JobStorage.SucceededCount());
         }
 
         public class TestJob : HangFireJob

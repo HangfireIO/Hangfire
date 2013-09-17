@@ -52,7 +52,7 @@ WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n    
 
             
             #line 18 "..\..\Pages\ProcessingJobsPage.cshtml"
-         foreach (var job in HangFireApi.ProcessingJobs())
+         foreach (var job in JobStorage.ProcessingJobs())
         {
 
             

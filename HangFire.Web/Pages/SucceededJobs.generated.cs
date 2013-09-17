@@ -67,7 +67,7 @@ WriteLiteral("\r\n<div class=\"alert alert-info\">\r\n    HangFire хранит 
             
             #line 16 "..\..\Pages\SucceededJobs.cshtml"
   
-    var succeededJobs = HangFireApi.SucceededJobs();
+    var succeededJobs = JobStorage.SucceededJobs();
 
 
             

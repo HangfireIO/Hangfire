@@ -15,7 +15,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var job in HangFireApi.ProcessingJobs())
+        @foreach (var job in JobStorage.ProcessingJobs())
         {
             <tr>
                 <td>@job.ServerName</td>

@@ -42,7 +42,7 @@ WriteLiteral("              \r\n");
             #line 5 "..\..\Pages\SchedulePage.cshtml"
   
     Layout = new LayoutPage { Title = "Schedule" };
-    var scheduledJobs = HangFireApi.Schedule();
+    var scheduledJobs = JobStorage.Schedule();
 
 
             

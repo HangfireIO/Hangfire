@@ -3,7 +3,7 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Failed Jobs" };
-    var failedJobs = HangFireApi.FailedJobs();
+    var failedJobs = JobStorage.FailedJobs();
 }
 
 @if (failedJobs.Count == 0)

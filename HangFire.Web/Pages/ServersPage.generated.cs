@@ -67,7 +67,7 @@ WriteLiteral(@"
             
             #line 22 "..\..\Pages\ServersPage.cshtml"
   
-    var servers = HangFireApi.Servers();
+    var servers = JobStorage.Servers();
 
 
             
