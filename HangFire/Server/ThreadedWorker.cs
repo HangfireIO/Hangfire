@@ -24,15 +24,16 @@ namespace HangFire.Server
 
         public ThreadedWorker(
             ThreadedWorkerManager pool,
-            WorkerContext workerContext,
+            ServerContext serverContext,
+            int workerNumber,
             ServerJobInvoker jobInvoker, JobActivator jobActivator)
-            : base(workerContext, jobInvoker, jobActivator)
+            : base(serverContext, workerNumber, jobInvoker, jobActivator)
         {
             _pool = pool;
 
             _thread = new Thread(DoWork)
                 {
-                    Name = String.Format("HangFire.Worker.{0}", workerContext.WorkerNumber),
+                    Name = String.Format("HangFire.Worker.{0}", workerNumber),
                     IsBackground = true
                 };
         }

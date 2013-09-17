@@ -29,7 +29,8 @@ namespace HangFire.Server
             {
                 var worker = new ThreadedWorker(
                     this,
-                    new WorkerContext(serverContext, i), 
+                    serverContext,
+                    i,
                     jobInvoker,
                     jobActivator);
                 worker.Start();

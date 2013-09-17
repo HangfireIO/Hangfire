@@ -16,9 +16,6 @@ namespace HangFire
                 "CurrentUICulture", Thread.CurrentThread.CurrentUICulture.Name);
         }
 
-        private CultureInfo _previousCulture; // TODO: make it thread-static!
-        private CultureInfo _previousUICulture;
-
         public override void OnJobPerforming(JobPerformingContext filterContext)
         {
             var cultureName = filterContext.JobDescriptor
@@ -30,27 +27,23 @@ namespace HangFire
 
             if (!String.IsNullOrEmpty(cultureName))
             {
-                _previousCulture = currentThread.CurrentCulture;
+                filterContext.WorkerContext.Items["PreviousCulture"] =
+                    currentThread.CurrentCulture;
                 currentThread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
             }
 
             if (!String.IsNullOrEmpty(uiCultureName))
             {
-                _previousUICulture = currentThread.CurrentUICulture;
+                filterContext.WorkerContext.Items["PreviousUICulture"] =
+                    currentThread.CurrentUICulture;
                 currentThread.CurrentUICulture = CultureInfo.GetCultureInfo(uiCultureName);
             }
         }
 
         public override void OnJobPerformed(JobPerformedContext filterContext)
         {
-            if (_previousCulture != null)
-            {
-                Thread.CurrentThread.CurrentCulture = _previousCulture;
-            }
-            if (_previousUICulture != null)
-            {
-                Thread.CurrentThread.CurrentUICulture = _previousUICulture;
-            }
+            Thread.CurrentThread.CurrentCulture = (CultureInfo)filterContext.WorkerContext.Items["PreviousCulture"];
+            Thread.CurrentThread.CurrentUICulture = (CultureInfo)filterContext.WorkerContext.Items["PreviousUICulture"];
         }
     }
 }

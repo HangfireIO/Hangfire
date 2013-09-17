@@ -12,16 +12,19 @@ namespace HangFire.Server
         public static readonly RedisStorage Redis = new RedisStorage();
 
         protected readonly ILog Logger;
-        private readonly WorkerContext _workerContext;
+        private readonly ServerContext _serverContext;
+        private readonly int _workerNumber;
         private readonly ServerJobInvoker _jobInvoker;
         private readonly JobActivator _jobActivator;
 
         public Worker(
-            WorkerContext workerContext,
+            ServerContext serverContext,
+            int workerNumber,
             ServerJobInvoker jobInvoker, JobActivator jobActivator)
         {
-            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", workerContext.WorkerNumber));
-            _workerContext = workerContext;
+            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", workerNumber));
+            _serverContext = serverContext;
+            _workerNumber = workerNumber;
             _jobInvoker = jobInvoker;
             _jobActivator = jobActivator;
         }
@@ -46,10 +49,12 @@ namespace HangFire.Server
                 return;
             }
 
+            var workerContext = new WorkerContext(_serverContext, _workerNumber);
+
             lock (Redis)
             {
                 Redis.RetryOnRedisException(x => 
-                    x.AddProcessingWorker(_workerContext.ServerContext.ServerName, jobId));
+                    x.AddProcessingWorker(workerContext.ServerContext.ServerName, jobId));
             }
 
             Exception exception = null;
@@ -58,7 +63,7 @@ namespace HangFire.Server
             try
             {
                 jobDescriptor = new ServerJobDescriptor(_jobActivator, jobId, jobType, jobArgs);
-                _jobInvoker.PerformJob(_workerContext, jobDescriptor);
+                _jobInvoker.PerformJob(workerContext, jobDescriptor);
             }
             catch (Exception ex)
             {
