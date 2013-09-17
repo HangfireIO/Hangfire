@@ -10,10 +10,9 @@ namespace HangFire
 {
     internal class RedisStorage : IDisposable
     {
-        private readonly TimeSpan _workerStatusTimeout = TimeSpan.FromDays(1);
         private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
-        private readonly HangFireConfiguration _config = HangFireConfiguration.Current;
+        private readonly JobStorageConfiguration _config = HangFireApi.Configuration;
         private readonly IRedisClient _redis;
 
         public RedisStorage()

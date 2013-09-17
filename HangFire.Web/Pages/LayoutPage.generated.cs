@@ -396,7 +396,7 @@ WriteLiteral("\r\n                    </a>\r\n                </li>\r\n         
 
             
             #line 116 "..\..\Pages\LayoutPage.cshtml"
-               Write(String.Format("{0}:{1}/{2}", HangFireConfiguration.Current.RedisHost, HangFireConfiguration.Current.RedisPort, HangFireConfiguration.Current.RedisDb));
+               Write(String.Format("{0}:{1}/{2}", HangFireApi.Configuration.RedisHost, HangFireApi.Configuration.RedisPort, HangFireApi.Configuration.RedisDb));
 
             
             #line default

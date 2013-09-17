@@ -7,6 +7,30 @@ namespace HangFire
     {
         private static readonly RedisStorage Redis = new RedisStorage();
 
+        /// <summary>
+        /// Gets the current HangFire configuration.
+        /// </summary>
+        public static JobStorageConfiguration Configuration { get; private set; }
+
+        static HangFireApi()
+        {
+            Configuration = new JobStorageConfiguration();
+        }
+
+        /// <summary>
+        /// Runs specified configuration action to configure HangFire.
+        /// </summary>
+        /// <param name="action">Configuration action.</param>
+        public static void Configure(Action<JobStorageConfiguration> action)
+        {
+            if (action == null)
+            {
+                throw new ArgumentNullException("action");
+            }
+
+            action(Configuration);
+        }
+
         public static long ScheduledCount()
         {
             lock (Redis)

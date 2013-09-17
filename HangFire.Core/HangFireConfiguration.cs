@@ -1,38 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace HangFire
+﻿namespace HangFire
 {
     /// <summary>
     /// Represents the common configuration for HangFire clients and servers.
     /// </summary>
-    public class HangFireConfiguration
+    public class JobStorageConfiguration
     {
-        /// <summary>
-        /// Gets the current HangFire configuration.
-        /// </summary>
-        public static HangFireConfiguration Current { get; private set; }
-
-        static HangFireConfiguration()
-        {
-            Current = new HangFireConfiguration();
-        }
-
-        /// <summary>
-        /// Runs specified configuration action to configure HangFire.
-        /// </summary>
-        /// <param name="action">Configuration action.</param>
-        public static void Configure(Action<HangFireConfiguration> action)
-        {
-            if (action == null)
-            {
-                throw new ArgumentNullException("action");
-            }
-
-            action(Current);
-        }
-
-        internal HangFireConfiguration()
+        internal JobStorageConfiguration()
         {
             RedisHost = "localhost";
             RedisPort = 6379;

@@ -113,7 +113,7 @@
                     </a>
                 </li>
                 <li>Redis: 
-                    @String.Format("{0}:{1}/{2}", HangFireConfiguration.Current.RedisHost, HangFireConfiguration.Current.RedisPort, HangFireConfiguration.Current.RedisDb)
+                    @String.Format("{0}:{1}/{2}", HangFireApi.Configuration.RedisHost, HangFireApi.Configuration.RedisPort, HangFireApi.Configuration.RedisDb)
                 </li>
                 <li>Time: @DateTime.UtcNow.ToString() UTC
                 </li>

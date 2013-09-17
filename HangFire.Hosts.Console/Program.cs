@@ -48,7 +48,7 @@ namespace HangFire.Hosts
             int concurrency = Environment.ProcessorCount * 20;
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            HangFireConfiguration.Configure(
+            HangFireApi.Configure(
                 x =>
                 {
                     x.RedisPort = 6379;
