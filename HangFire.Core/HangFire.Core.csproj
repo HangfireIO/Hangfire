@@ -87,7 +87,7 @@
     <Compile Include="SchedulePoller.cs" />
     <Compile Include="QueueNameAttribute.cs" />
     <Compile Include="RedisStorage.cs" />
-    <Compile Include="HangFireJobActivator.cs" />
+    <Compile Include="JobActivator.cs" />
     <Compile Include="JobServer.cs" />
     <Compile Include="ServerContext.cs" />
     <Compile Include="ServerJobDescriptor.cs" />
