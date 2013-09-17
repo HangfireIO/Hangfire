@@ -7,16 +7,21 @@ namespace HangFire
 {
     public static class JobStorage
     {
-        private static readonly RedisStorage Redis = new RedisStorage();
+        private static readonly Lazy<RedisStorage> _lazyRedis
+            = new Lazy<RedisStorage>(() => new RedisStorage());
+
+        static JobStorage()
+        {
+            Configuration = new JobStorageConfiguration();
+        }
 
         /// <summary>
         /// Gets the current HangFire configuration.
         /// </summary>
         public static JobStorageConfiguration Configuration { get; private set; }
-
-        static JobStorage()
+        private static RedisStorage Redis
         {
-            Configuration = new JobStorageConfiguration();
+            get { return _lazyRedis.Value; }
         }
 
         /// <summary>
