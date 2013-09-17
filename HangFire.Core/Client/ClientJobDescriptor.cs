@@ -47,8 +47,20 @@ namespace HangFire.Client
                     if (propertyValue != null)
                     {
                         // TODO: handle conversion exception and display it in a friendly way.
-                        var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
-                        value = converter.ConvertToInvariantString(propertyValue);
+                        try
+                        {
+                            var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
+                            value = converter.ConvertToInvariantString(propertyValue);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new InvalidOperationException(
+                                String.Format(
+                                    "Could not convert property '{0}' of type '{1}' to a string. See the inner exception for details.",
+                                    descriptor.Name,
+                                    descriptor.PropertyType),
+                                ex);
+                        }
                     }
 
                     result.Add(descriptor.Name, value);
