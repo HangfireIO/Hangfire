@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Threading;
 
+using HangFire.Filters;
+
 namespace HangFire
 {
     public class CurrentCultureFilter : JobFilter

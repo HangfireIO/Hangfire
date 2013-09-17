@@ -1,4 +1,6 @@
-﻿namespace HangFire
+﻿using HangFire.Server;
+
+namespace HangFire
 {
     public abstract class BackgroundJob
     {

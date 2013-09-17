@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace HangFire
+namespace HangFire.Filters
 {
     public class GlobalJobFilterCollection : IEnumerable<IJobFilter>
     {

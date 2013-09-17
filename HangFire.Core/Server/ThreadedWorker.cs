@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
-namespace HangFire
+namespace HangFire.Server
 {
     internal class ThreadedWorker : Worker, IDisposable
     {
@@ -26,7 +25,7 @@ namespace HangFire
         public ThreadedWorker(
             ThreadedWorkerManager pool,
             WorkerContext workerContext,
-            JobInvoker jobInvoker, JobActivator jobActivator)
+            ServerJobInvoker jobInvoker, JobActivator jobActivator)
             : base(workerContext, jobInvoker, jobActivator)
         {
             _pool = pool;

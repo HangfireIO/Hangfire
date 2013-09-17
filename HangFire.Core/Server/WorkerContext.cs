@@ -1,4 +1,4 @@
-﻿namespace HangFire
+﻿namespace HangFire.Server
 {
     public class WorkerContext
     {

@@ -1,4 +1,6 @@
-﻿namespace HangFire
+﻿using HangFire.Filters;
+
+namespace HangFire
 {
     public static class GlobalJobFilters
     {

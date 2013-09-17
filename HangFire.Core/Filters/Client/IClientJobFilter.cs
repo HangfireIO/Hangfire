@@ -1,4 +1,4 @@
-﻿namespace HangFire
+﻿namespace HangFire.Filters
 {
     public interface IClientJobFilter : IJobFilter
     {

@@ -1,4 +1,4 @@
-﻿namespace HangFire
+﻿namespace HangFire.Client
 {
     public class ClientContext
     {

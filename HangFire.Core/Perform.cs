@@ -4,8 +4,7 @@ namespace HangFire
 {
     public class Perform
     {
-        private static readonly JobClient Instance = new JobClient(
-            JobInvoker.Current);
+        private static readonly JobClient Instance = new JobClient();
 
         static Perform()
         {

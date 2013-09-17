@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using HangFire.Client;
+using HangFire.Storage;
+
 namespace HangFire
 {
-    internal class JobClient : IDisposable
+    public class JobClient : IDisposable
     {
-        private readonly JobInvoker _jobInvoker;
+        private readonly ClientJobInvoker _jobInvoker = ClientJobInvoker.Current;
         private readonly RedisStorage _redis = new RedisStorage();
-
-        public JobClient(JobInvoker jobInvoker)
-        {
-            _jobInvoker = jobInvoker;
-        }
 
         public string Async(Type jobType, object args = null)
         {
@@ -70,7 +68,7 @@ namespace HangFire
             var clientContext = new ClientContext();
             var descriptor = CreateDescriptor(jobType, args);
 
-            var at = DateTime.UtcNow.Add(interval).ToTimestamp();
+            var at = DateTime.UtcNow.Add(interval);
 
             descriptor.EnqueueAction = () =>
             {
@@ -96,7 +94,7 @@ namespace HangFire
             var descriptor = new ClientJobDescriptor(GenerateId(), job);
 
             job["Type"] = jobType.AssemblyQualifiedName;
-            job["Args"] = JsonHelper.Serialize(descriptor.SerializeProperties(jobArgs));
+            job["Args"] = JobHelper.ToJson(descriptor.SerializeProperties(jobArgs));
 
             return descriptor;
         }

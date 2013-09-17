@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace HangFire
+namespace HangFire.Server
 {
     public class ServerJobDescriptor : IDisposable
     {

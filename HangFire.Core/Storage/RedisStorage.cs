@@ -4,9 +4,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+
 using ServiceStack.Redis;
 
-namespace HangFire
+namespace HangFire.Storage
 {
     internal class RedisStorage : IDisposable
     {
@@ -45,8 +46,10 @@ namespace HangFire
             }
         }
 
-        public void ScheduleJob(string jobId, Dictionary<string, string> job, double at)
+        public void ScheduleJob(string jobId, Dictionary<string, string> job, DateTime at)
         {
+            var timestamp = DateTimeToTimestamp(at);
+
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
@@ -56,19 +59,21 @@ namespace HangFire
                 transaction.QueueCommand(x => x.SetEntryInHash(
                     String.Format("hangfire:job:{0}", jobId),
                     "ScheduledAt",
-                    JsonHelper.Serialize(DateTime.UtcNow)));
+                    JobHelper.ToJson(DateTime.UtcNow)));
 
                 transaction.QueueCommand(x => x.AddItemToSortedSet(
-                    "hangfire:schedule", jobId, at));
+                    "hangfire:schedule", jobId, timestamp));
 
                 transaction.Commit();
             }
         }
 
-        public string GetScheduledJobId(double now)
+        public string GetScheduledJobId(DateTime now)
         {
+            var timestamp = DateTimeToTimestamp(now);
+
             var jobId = _redis
-                .GetRangeFromSortedSetByLowestScore("hangfire:schedule", Double.NegativeInfinity, now, 0, 1)
+                .GetRangeFromSortedSetByLowestScore("hangfire:schedule", Double.NegativeInfinity, timestamp, 0, 1)
                 .FirstOrDefault();
 
             if (jobId != null)
@@ -96,7 +101,7 @@ namespace HangFire
                 transaction.QueueCommand(x => x.SetEntryInHashIfNotExists(
                     String.Format("hangfire:job:{0}", jobId),
                     "EnqueuedAt",
-                    JsonHelper.Serialize(DateTime.UtcNow)));
+                    JobHelper.ToJson(DateTime.UtcNow)));
 
                 transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
                 transaction.QueueCommand(x => x.EnqueueItemOnList(
@@ -177,7 +182,7 @@ namespace HangFire
                     String.Format("hangfire:job:{0}", jobId),
                     new Dictionary<string, string>
                         {
-                            { "StartedAt", JsonHelper.Serialize(DateTime.UtcNow) },
+                            { "StartedAt", JobHelper.ToJson(DateTime.UtcNow) },
                             { "Server", serverName }
                         }));
 
@@ -199,7 +204,7 @@ namespace HangFire
                     transaction.QueueCommand(x => x.SetEntryInHash(
                         String.Format("hangfire:job:{0}", jobId),
                         "SucceededAt",
-                        JsonHelper.Serialize(DateTime.UtcNow)));
+                        JobHelper.ToJson(DateTime.UtcNow)));
 
                     transaction.QueueCommand(x => x.ExpireEntryIn(
                         String.Format("hangfire:job:{0}", jobId),
@@ -223,7 +228,7 @@ namespace HangFire
                     transaction.QueueCommand(x => x.SetEntryInHash(
                         String.Format("hangfire:job:{0}", jobId),
                         "FailedAt",
-                        JsonHelper.Serialize(DateTime.UtcNow)));
+                        JobHelper.ToJson(DateTime.UtcNow)));
 
                     transaction.QueueCommand(x => x.SetRangeInHash(
                         String.Format("hangfire:job:{0}", jobId),
@@ -237,7 +242,7 @@ namespace HangFire
                     transaction.QueueCommand(x => x.AddItemToSortedSet(
                         "hangfire:failed",
                         jobId,
-                        DateTime.UtcNow.ToTimestamp()));
+                        DateTimeToTimestamp(DateTime.UtcNow)));
 
                     transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
                     transaction.QueueCommand(x => x.IncrementValue(
@@ -499,8 +504,8 @@ namespace HangFire
                     {
                         Type = job[0],
                         Queue = JobHelper.GetQueueName(job[0]),
-                        Args = JsonHelper.Deserialize<Dictionary<string, string>>(job[1]),
-                        FailedAt = JsonHelper.Deserialize<DateTime>(job[2]),
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                        FailedAt = JobHelper.FromJson<DateTime>(job[2]),
                         ExceptionType = job[3],
                         ExceptionMessage = job[4],
                         ExceptionStackTrace = job[5],
@@ -526,8 +531,8 @@ namespace HangFire
                     {
                         Type = job[0],
                         Queue = JobHelper.GetQueueName(job[0]),
-                        Args = JsonHelper.Deserialize<Dictionary<string, string>>(job[1]),
-                        SucceededAt = JsonHelper.Deserialize<DateTime>(job[2]),
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                        SucceededAt = JobHelper.FromJson<DateTime>(job[2]),
                         Latency = TimeSpan.FromSeconds(2) // TODO: replace with the correct value.
                     });
             }
@@ -542,7 +547,7 @@ namespace HangFire
                 new[] { "Type", "Args" });
 
             jobType = result[0];
-            jobArgs = JsonHelper.Deserialize<Dictionary<string, string>>(result[1]);
+            jobArgs = JobHelper.FromJson<Dictionary<string, string>>(result[1]);
         }
 
         public void SetJobProperty(string jobId, string propertyName, object value)
@@ -550,7 +555,7 @@ namespace HangFire
             _redis.SetEntryInHash(
                 String.Format("hangfire:job:{0}", jobId),
                 propertyName,
-                JsonHelper.Serialize(value));
+                JobHelper.ToJson(value));
         }
 
         public T GetJobProperty<T>(string jobId, string propertyName)
@@ -559,58 +564,15 @@ namespace HangFire
                 String.Format("hangfire:job:{0}", jobId),
                 propertyName);
 
-            return JsonHelper.Deserialize<T>(value);
+            return JobHelper.FromJson<T>(value);
         }
-    }
 
-    public class ServerDto
-    {
-        public string Name { get; set; }
-        public int Concurrency { get; set; }
-        public string Queue { get; set; }
-        public string StartedAt { get; set; }
-    }
+        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    public class QueueDto
-    {
-        public string Name { get; set; }
-        public long Length { get; set; }
-        public HashSet<string> Servers { get; set; }
-    }
-
-    public class ProcessingJobDto
-    {
-        public string ServerName { get; set; }
-        public string Type { get; set; }
-        public string Args { get; set; }
-        public string StartedAt { get; set; }
-    }
-
-    public class ScheduleDto
-    {
-        public string TimeStamp { get; set; }
-        public string Type { get; set; }
-        public string Queue { get; set; }
-        public string Args { get; set; }
-    }
-
-    public class FailedJobDto
-    {
-        public string Type { get; set; }
-        public string Queue { get; set; }
-        public Dictionary<String, String> Args { get; set; }
-        public DateTime? FailedAt { get; set; }
-        public string ExceptionType { get; set; }
-        public string ExceptionMessage { get; set; }
-        public string ExceptionStackTrace { get; set; }
-    }
-
-    public class SucceededJobDto
-    {
-        public string Type { get; set; }
-        public string Queue { get; set; }
-        public Dictionary<String, String> Args { get; set; }
-        public DateTime? SucceededAt { get; set; }
-        public TimeSpan Latency { get; set; }
+        private static long DateTimeToTimestamp(DateTime value)
+        {
+            TimeSpan elapsedTime = value - Epoch;
+            return (long)elapsedTime.TotalSeconds;
+        }
     }
 }

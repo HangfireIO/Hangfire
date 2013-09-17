@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HangFire
+namespace HangFire.Server
 {
     internal class JobCompletedEventArgs : EventArgs
     {

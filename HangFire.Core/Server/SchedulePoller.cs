@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Threading;
+
+using HangFire.Storage;
+
 using ServiceStack.Logging;
 
-namespace HangFire
+namespace HangFire.Server
 {
     internal class SchedulePoller : IDisposable
     {
@@ -49,9 +52,7 @@ namespace HangFire
                                 }
                             }
 
-                            var now = DateTime.UtcNow.ToTimestamp();
-
-                            var jobId = x.GetScheduledJobId(now);
+                            var jobId = x.GetScheduledJobId(DateTime.UtcNow);
                             if (jobId != null)
                             {
                                 var jobType = x.GetJobType(jobId);

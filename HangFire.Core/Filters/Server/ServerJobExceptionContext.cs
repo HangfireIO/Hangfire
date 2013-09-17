@@ -1,6 +1,8 @@
 ﻿using System;
 
-namespace HangFire
+using HangFire.Server;
+
+namespace HangFire.Filters
 {
     public class ServerJobExceptionContext
     {

@@ -1,6 +1,8 @@
 ﻿using System;
 
-namespace HangFire
+using HangFire.Client;
+
+namespace HangFire.Filters
 {
     public class JobEnqueuedContext
     {

@@ -13,10 +13,10 @@ namespace HangFire.Tests
     [TestClass]
     public class JobInvokerTests
     {
-        private JobInvoker _jobInvoker;
+        /*private ServerJobInvoker _jobInvoker;
         private Mock<IEnumerable<IServerJobFilter>> _filtersMock;
 
-        /*[TestInitialize]
+        [TestInitialize]
         public void SetUp()
         {
             _filtersMock = new Mock<IEnumerable<IServerJobFilter>>();

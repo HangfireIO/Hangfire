@@ -1,4 +1,4 @@
-﻿namespace HangFire
+﻿namespace HangFire.Storage
 {
     /// <summary>
     /// Represents the common configuration for HangFire clients and servers.

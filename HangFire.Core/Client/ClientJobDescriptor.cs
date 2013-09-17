@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace HangFire
+namespace HangFire.Client
 {
     public class ClientJobDescriptor
     {
@@ -24,13 +24,13 @@ namespace HangFire
 
         public void SetParameter(string name, object value)
         {
-            Job.Add(name, JsonHelper.Serialize(value));
+            Job.Add(name, JobHelper.ToJson(value));
         }
 
         public T GetParameter<T>(string name)
         {
             return Job.ContainsKey(name)
-                ? JsonHelper.Deserialize<T>(Job[name])
+                ? JobHelper.FromJson<T>(Job[name])
                 : default(T);
         }
 

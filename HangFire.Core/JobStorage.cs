@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using HangFire.Storage;
+
 namespace HangFire
 {
     public static class JobStorage

@@ -3,9 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+
 using ServiceStack.Logging;
 
-namespace HangFire
+namespace HangFire.Server
 {
     internal class ThreadedWorkerManager : IDisposable
     {
@@ -16,7 +17,7 @@ namespace HangFire
 
         public ThreadedWorkerManager(
             ServerContext serverContext,
-            JobInvoker jobInvoker,
+            ServerJobInvoker jobInvoker,
             JobActivator jobActivator)
         {
             _workers = new List<ThreadedWorker>(serverContext.WorkersCount);
