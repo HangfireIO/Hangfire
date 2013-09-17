@@ -2,17 +2,16 @@
 
 namespace HangFire.Filters
 {
-    public class JobPerformingContext
+    public class JobPerformingContext : WorkerContext
     {
         public JobPerformingContext(
-            WorkerContext workerContext, 
+            WorkerContext workerContext,
             ServerJobDescriptor jobDescriptor)
+            : base(workerContext)
         {
-            WorkerContext = workerContext;
             JobDescriptor = jobDescriptor;
         }
 
-        public WorkerContext WorkerContext { get; private set; }
         public ServerJobDescriptor JobDescriptor { get; private set; }
 
         public bool Canceled { get; set; }

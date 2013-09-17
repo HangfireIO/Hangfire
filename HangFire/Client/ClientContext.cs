@@ -9,6 +9,11 @@ namespace HangFire.Client
             Items = new Dictionary<string, object>();
         }
 
+        public ClientContext(ClientContext clientContext)
+            : this()
+        {
+        }
+
         public IDictionary<string, object> Items { get; private set; }
     }
 }

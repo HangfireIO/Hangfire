@@ -4,6 +4,11 @@ namespace HangFire.Server
 {
     public class WorkerContext
     {
+        public WorkerContext(WorkerContext workerContext)
+            : this (workerContext.ServerContext, workerContext.WorkerNumber)
+        {
+        }
+
         public WorkerContext(ServerContext serverContext, int workerNumber)
         {
             ServerContext = serverContext;

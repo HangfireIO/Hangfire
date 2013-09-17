@@ -23,27 +23,32 @@ namespace HangFire
             var uiCultureName = filterContext.JobDescriptor
                 .GetParameter<string>("CurrentUICulture");
 
-            var currentThread = Thread.CurrentThread;
+            var thread = Thread.CurrentThread;
 
             if (!String.IsNullOrEmpty(cultureName))
             {
-                filterContext.WorkerContext.Items["PreviousCulture"] =
-                    currentThread.CurrentCulture;
-                currentThread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+                filterContext.Items["PreviousCulture"] = thread.CurrentCulture;
+                thread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
             }
 
             if (!String.IsNullOrEmpty(uiCultureName))
             {
-                filterContext.WorkerContext.Items["PreviousUICulture"] =
-                    currentThread.CurrentUICulture;
-                currentThread.CurrentUICulture = CultureInfo.GetCultureInfo(uiCultureName);
+                filterContext.Items["PreviousUICulture"] = thread.CurrentUICulture;
+                thread.CurrentUICulture = CultureInfo.GetCultureInfo(uiCultureName);
             }
         }
 
         public override void OnJobPerformed(JobPerformedContext filterContext)
         {
-            Thread.CurrentThread.CurrentCulture = (CultureInfo)filterContext.WorkerContext.Items["PreviousCulture"];
-            Thread.CurrentThread.CurrentUICulture = (CultureInfo)filterContext.WorkerContext.Items["PreviousUICulture"];
+            var thread = Thread.CurrentThread;
+            if (filterContext.Items.ContainsKey("PreviousCulture"))
+            {
+                thread.CurrentCulture = (CultureInfo) filterContext.Items["PreviousCulture"];
+            }
+            if (filterContext.Items.ContainsKey("PreviousUICulture"))
+            {
+                thread.CurrentUICulture = (CultureInfo) filterContext.Items["PreviousUICulture"];
+            }
         }
     }
 }

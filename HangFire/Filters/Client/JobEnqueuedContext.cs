@@ -4,21 +4,20 @@ using HangFire.Client;
 
 namespace HangFire.Filters
 {
-    public class JobEnqueuedContext
+    public class JobEnqueuedContext : ClientContext
     {
         public JobEnqueuedContext(
             ClientContext clientContext, 
             ClientJobDescriptor jobDescriptor,
             bool canceled, 
             Exception exception)
+            : base(clientContext)
         {
-            ClientContext = clientContext;
             JobDescriptor = jobDescriptor;
             Canceled = canceled;
             Exception = exception;
         }
 
-        public ClientContext ClientContext { get; private set; }
         public ClientJobDescriptor JobDescriptor { get; private set; }
         public Exception Exception { get; private set; }
         public bool Canceled { get; private set; }
