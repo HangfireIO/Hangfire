@@ -11,6 +11,8 @@ namespace HangFire
     internal class RedisStorage : IDisposable
     {
         private readonly TimeSpan _workerStatusTimeout = TimeSpan.FromDays(1);
+        private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
+
         private readonly HangFireConfiguration _config = HangFireConfiguration.Current;
         private readonly IRedisClient _redis;
 
@@ -206,6 +208,10 @@ namespace HangFire
                         String.Format("hangfire:job:{0}", jobId),
                         "SucceededAt",
                         JsonHelper.Serialize(DateTime.UtcNow)));
+
+                    transaction.QueueCommand(x => x.ExpireEntryIn(
+                        String.Format("hangfire:job:{0}", jobId),
+                        _jobExpirationTimeout));
 
                     transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
                     transaction.QueueCommand(x => x.IncrementValue(
