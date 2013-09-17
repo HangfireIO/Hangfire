@@ -18,13 +18,13 @@ namespace HangFire
         }
 
         public static string PerformAsync<TJob>()
-            where TJob : HangFireJob
+            where TJob : BackgroundJob
         {
             return PerformAsync<TJob>(null);
         }
 
         public static string PerformAsync<TJob>(object args)
-            where TJob : HangFireJob
+            where TJob : BackgroundJob
         {
             return PerformAsync(typeof(TJob), args);
         }
@@ -35,13 +35,13 @@ namespace HangFire
         }
 
         public static string PerformIn<TJob>(TimeSpan interval)
-            where TJob : HangFireJob
+            where TJob : BackgroundJob
         {
             return PerformIn<TJob>(interval, null);
         }
 
         public static string PerformIn<TJob>(TimeSpan interval, object args)
-            where TJob : HangFireJob
+            where TJob : BackgroundJob
         {
             return PerformIn(interval, typeof(TJob), args);
         }
@@ -64,10 +64,10 @@ namespace HangFire
             {
                 throw new ArgumentNullException("jobType");
             }
-            if (!typeof (HangFireJob).IsAssignableFrom(jobType))
+            if (!typeof (BackgroundJob).IsAssignableFrom(jobType))
             {
                 throw new ArgumentException(
-                    String.Format("The type '{0}' must inherit '{1}'.", jobType, typeof(HangFireJob)), 
+                    String.Format("The type '{0}' must inherit '{1}'.", jobType, typeof(BackgroundJob)), 
                     "jobType");
             }
 
@@ -95,10 +95,10 @@ namespace HangFire
             {
                 throw new ArgumentNullException("jobType");
             }
-            if (!typeof(HangFireJob).IsAssignableFrom(jobType))
+            if (!typeof(BackgroundJob).IsAssignableFrom(jobType))
             {
                 throw new ArgumentException(
-                    String.Format("The type '{0}' must inherit '{1}'.", jobType, typeof(HangFireJob)),
+                    String.Format("The type '{0}' must inherit '{1}'.", jobType, typeof(BackgroundJob)),
                     "jobType");
             }
 

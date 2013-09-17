@@ -177,7 +177,7 @@ namespace HangFire.Tests
         }
          * */
 
-        public class CorrectJob : HangFireJob
+        public class CorrectJob : BackgroundJob
         {
             public bool Performed { get; set; }
 

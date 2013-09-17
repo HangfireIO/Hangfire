@@ -6,7 +6,7 @@ namespace HangFire
 {
     public class ServerJobDescriptor : IDisposable
     {
-        private readonly HangFireJob _jobInstance;
+        private readonly BackgroundJob _jobInstance;
 
         public ServerJobDescriptor(
             HangFireJobActivator activator,

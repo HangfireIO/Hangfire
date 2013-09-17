@@ -23,14 +23,14 @@ namespace HangFire.Tests
             activator.ActivateJob(typeof(CustomConstructorJob));
         }
 
-        public class DefaultConstructorJob : HangFireJob
+        public class DefaultConstructorJob : BackgroundJob
         {
             public override void Perform()
             {
             }
         }
 
-        public class CustomConstructorJob : HangFireJob
+        public class CustomConstructorJob : BackgroundJob
         {
             public CustomConstructorJob(string dependency)
             {

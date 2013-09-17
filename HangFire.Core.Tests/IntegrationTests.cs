@@ -56,7 +56,7 @@ namespace HangFire.Tests
             Assert.AreEqual(1, JobStorage.SucceededCount());
         }
 
-        public class TestJob : HangFireJob
+        public class TestJob : BackgroundJob
         {
             public override void Perform()
             {
@@ -64,7 +64,7 @@ namespace HangFire.Tests
             }
         }
 
-        public class FailJob : HangFireJob
+        public class FailJob : BackgroundJob
         {
             public override void Perform()
             {

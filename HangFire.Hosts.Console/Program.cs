@@ -7,7 +7,7 @@ using ServiceStack.Logging.Support.Logging;
 namespace HangFire.Hosts
 {
     [QueueName("qqq")]
-    public class ConsoleJob : HangFireJob
+    public class ConsoleJob : BackgroundJob
     {
         private static readonly Random _random = new Random();
 
@@ -32,7 +32,7 @@ namespace HangFire.Hosts
     }
 
     [QueueName("qqq")]
-    public class ErrorJob : HangFireJob
+    public class ErrorJob : BackgroundJob
     {
         public override void Perform()
         {

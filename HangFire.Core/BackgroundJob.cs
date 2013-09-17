@@ -1,6 +1,6 @@
 ﻿namespace HangFire
 {
-    public abstract class HangFireJob
+    public abstract class BackgroundJob
     {
         public string JobId { get; internal set; }
 

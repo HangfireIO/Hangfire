@@ -81,9 +81,9 @@
     <Compile Include="Filters\IJobFilter.cs" />
     <Compile Include="Filters\IServerJobFilter.cs" />
     <Compile Include="Filters\CurrentCultureFilter.cs" />
-    <Compile Include="HangFireJob.cs" />
+    <Compile Include="BackgroundJob.cs" />
     <Compile Include="JobCompletedEventArgs.cs" />
-    <Compile Include="HangFireApi.cs" />
+    <Compile Include="JobStorage.cs" />
     <Compile Include="SchedulePoller.cs" />
     <Compile Include="QueueNameAttribute.cs" />
     <Compile Include="RedisStorage.cs" />
