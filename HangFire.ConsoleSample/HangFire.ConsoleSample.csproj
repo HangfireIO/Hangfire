@@ -66,24 +66,7 @@
       <Name>HangFire</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="bin\Debug\HangFire.dll" />
-    <Content Include="bin\Debug\HangFire.Hosts.Console.exe" />
-    <Content Include="bin\Debug\HangFire.Hosts.Console.pdb" />
-    <Content Include="bin\Debug\HangFire.Hosts.Console.vshost.exe" />
-    <Content Include="bin\Debug\HangFire.pdb" />
-    <Content Include="bin\Debug\ServiceStack.Common.dll" />
-    <Content Include="bin\Debug\ServiceStack.Common.xml" />
-    <Content Include="bin\Debug\ServiceStack.Interfaces.dll" />
-    <Content Include="bin\Debug\ServiceStack.Interfaces.xml" />
-    <Content Include="bin\Debug\ServiceStack.Redis.dll" />
-    <Content Include="bin\Debug\ServiceStack.Redis.xml" />
-    <Content Include="bin\Debug\ServiceStack.Text.dll" />
-    <Content Include="bin\Debug\ServiceStack.Text.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="bin\Release\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
