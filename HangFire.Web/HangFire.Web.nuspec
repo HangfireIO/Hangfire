@@ -11,7 +11,7 @@
     <description>$description$</description>
     <copyright>Copyright (c) 2013 Sergey Odinokov.</copyright>
 	<dependencies>
-		<dependency id="HangFire.Core" version="$version$" />
+		<dependency id="HangFire" version="$version$" />
 		<dependency id="ServiceStack.Text" version="3.9.59" />
     <dependency id="WebActivatorEx" version="2.0.1.0" />
 	</dependencies>
