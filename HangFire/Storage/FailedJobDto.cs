@@ -11,6 +11,6 @@ namespace HangFire.Storage
         public DateTime? FailedAt { get; set; }
         public string ExceptionType { get; set; }
         public string ExceptionMessage { get; set; }
-        public string ExceptionStackTrace { get; set; }
+        public string ExceptionDetails { get; set; }
     }
 }

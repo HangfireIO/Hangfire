@@ -1,4 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
 @using Pages
 @inherits RazorPage
 @{
@@ -52,7 +53,12 @@ else
                         <p>
                             @job.ExceptionMessage
                         </p>
-                        <pre class="stack-trace">@MarkupStackTrace(job.ExceptionStackTrace)</pre>
+                        
+                        @if (!String.IsNullOrEmpty(job.ExceptionDetails))
+                        {
+                            <pre class="stack-trace">@MarkupStackTrace(job.ExceptionDetails)</pre>
+                        }
+
                         <h4>Job Arguments</h4>
                         <table class="table table-bordered table-striped table-condensed">
                             <thead>

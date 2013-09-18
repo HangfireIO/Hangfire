@@ -237,7 +237,7 @@ namespace HangFire.Storage
                             {
                                 { "ExceptionType", exception.GetType().FullName },
                                 { "ExceptionMessage", exception.Message },
-                                { "StackTrace", exception.StackTrace }
+                                { "ExceptionDetails", exception.ToString() }
                             }));
 
                     transaction.QueueCommand(x => x.AddItemToSortedSet(
@@ -499,7 +499,7 @@ namespace HangFire.Storage
             {
                 var job = _redis.GetValuesFromHash(
                     String.Format("hangfire:job:{0}", jobId),
-                    new[] { "Type", "Args", "FailedAt", "ExceptionType", "ExceptionMessage", "StackTrace" });
+                    new[] { "Type", "Args", "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails" });
 
                 result.Add(new FailedJobDto
                     {
@@ -509,7 +509,7 @@ namespace HangFire.Storage
                         FailedAt = JobHelper.FromJson<DateTime>(job[2]),
                         ExceptionType = job[3],
                         ExceptionMessage = job[4],
-                        ExceptionStackTrace = job[5],
+                        ExceptionDetails = job[5],
                     });
             }
 

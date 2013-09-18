@@ -26,7 +26,7 @@ namespace ConsoleSample
 
             if (time < 5)
             {
-                throw new Exception("Unknown error");
+                throw new Exception();
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(5 + time));
