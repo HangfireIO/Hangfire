@@ -5,7 +5,7 @@ namespace HangFire
 {
     public class BackgroundJobServer : IDisposable
     {
-        private JobServer _manager;
+        private JobServer _server;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/>.
@@ -50,12 +50,12 @@ namespace HangFire
         /// </summary>
         public virtual void Start()
         {
-            if (_manager != null)
+            if (_server != null)
             {
                 throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
             }
 
-            _manager = new JobServer(ServerName, QueueName, WorkersCount, PollInterval, JobActivator);
+            _server = new JobServer(ServerName, QueueName, WorkersCount, PollInterval, JobActivator);
         }
 
         /// <summary>
@@ -63,10 +63,10 @@ namespace HangFire
         /// </summary>
         public virtual bool Stop()
         {
-            if (_manager != null)
+            if (_server != null)
             {
-                _manager.Dispose();
-                _manager = null;
+                _server.Dispose();
+                _server = null;
 
                 return true;
             }
