@@ -1,6 +1,6 @@
 ﻿using System.Web.Optimization;
 
-namespace HangFire.MvcSample
+namespace MvcSample
 {
     public class BundleConfig
     {

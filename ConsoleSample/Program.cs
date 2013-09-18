@@ -1,10 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+
+using HangFire;
+
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
-namespace HangFire.ConsoleSample
+namespace ConsoleSample
 {
     [QueueName("qqq")]
     public class ConsoleJob : BackgroundJob

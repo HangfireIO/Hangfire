@@ -1,12 +1,14 @@
 ﻿using System;
+
+using HangFire;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(
-    typeof(HangFire.MvcSample.HangFireConfig), "Start")]
+    typeof(MvcSample.HangFireConfig), "Start")]
 [assembly: WebActivatorEx.ApplicationShutdownMethod(
-    typeof(HangFire.MvcSample.HangFireConfig), "Stop")]
+    typeof(MvcSample.HangFireConfig), "Stop")]
 
-namespace HangFire.MvcSample
+namespace MvcSample
 {
     public class HangFireConfig
     {

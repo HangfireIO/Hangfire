@@ -1,4 +1,6 @@
 ﻿using System;
+
+using HangFire;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(

@@ -11,8 +11,8 @@
     <ProjectTypeGuids>{E3E379DF-F4C6-4180-9B81-6769533ABE47};{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.MvcSample</RootNamespace>
-    <AssemblyName>HangFire.MvcSample</AssemblyName>
+    <RootNamespace>MvcSample</RootNamespace>
+    <AssemblyName>MvcSample</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
@@ -173,9 +173,9 @@
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
       <Name>HangFire</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HangFire.ConsoleSample\HangFire.ConsoleSample.csproj">
+    <ProjectReference Include="..\ConsoleSample\ConsoleSample.csproj">
       <Project>{c02bb718-2ae4-434c-8668-c894ff663fce}</Project>
-      <Name>HangFire.ConsoleSample</Name>
+      <Name>ConsoleSample</Name>
     </ProjectReference>
     <ProjectReference Include="..\HangFire.Web\HangFire.Web.csproj">
       <Project>{bc4ab33f-67c8-41b1-bb1a-cd62f44587aa}</Project>

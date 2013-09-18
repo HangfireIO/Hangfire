@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 
-namespace HangFire.MvcSample
+namespace MvcSample
 {
     public class FilterConfig
     {

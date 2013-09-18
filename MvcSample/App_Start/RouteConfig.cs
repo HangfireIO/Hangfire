@@ -1,7 +1,7 @@
 ﻿using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace HangFire.MvcSample
+namespace MvcSample
 {
     public class RouteConfig
     {
