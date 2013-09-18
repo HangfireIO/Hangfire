@@ -61,7 +61,8 @@ namespace HangFire.Server
                                 var jobType = x.GetJobType(jobId);
 
                                 // TODO: move the job to the failed queue when type resolving failed.
-                                var queue = JobHelper.GetQueueName(jobType);
+                                // TODO: queue name can be null here.
+                                var queue = JobHelper.TryToGetQueueName(jobType);
 
                                 // TODO: we'll loose the job when the following instruction will fail.
                                 x.EnqueueJob(queue, jobId, null);

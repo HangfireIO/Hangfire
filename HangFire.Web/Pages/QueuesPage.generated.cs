@@ -65,7 +65,7 @@ WriteLiteral("            <tr>\r\n                <td>");
 
             
             #line 21 "..\..\Pages\QueuesPage.cshtml"
-               Write(queue.Name);
+               Write(HtmlHelper.QueueLabel(queue.Name));
 
             
             #line default

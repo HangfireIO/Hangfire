@@ -29,7 +29,7 @@ else
             {
                 <tr>
                     <td>@job.FailedAt</td>
-                    <td><span class="label label-primary">@job.Queue</span></td>
+                    <td>@HtmlHelper.QueueLabel(job.Queue)</td>
                     <td class="expand-exception">
                         <div>
                             @HtmlHelper.JobType(job.Type)

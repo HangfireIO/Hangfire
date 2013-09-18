@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web;
 
 namespace HangFire.Web
 {
@@ -14,6 +15,21 @@ namespace HangFire.Web
             }
 
             return type.FullName;
+        }
+
+        public static IHtmlString QueueLabel(string queueName)
+        {
+            string label;
+            if (queueName != null)
+            {
+                label = "<span class=\"label label-primary\">" + queueName + "</span>";
+            }
+            else
+            {
+                label = "<span class=\"label label-danger\"><i>Unknown</i></span>";
+            }
+
+            return new HtmlString(label);
         }
     }
 }

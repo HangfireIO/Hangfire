@@ -341,7 +341,7 @@ namespace HangFire.Storage
                     {
                         TimeStamp = scheduledJob.Value.ToString(),
                         Args = job[1],
-                        Queue = JobHelper.GetQueueName(job[0]),
+                        Queue = JobHelper.TryToGetQueueName(job[0]),
                         Type = job[0]
                     });
             }
@@ -503,7 +503,7 @@ namespace HangFire.Storage
                 result.Add(new FailedJobDto
                     {
                         Type = job[0],
-                        Queue = JobHelper.GetQueueName(job[0]),
+                        Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         FailedAt = JobHelper.FromJson<DateTime>(job[2]),
                         ExceptionType = job[3],
@@ -530,7 +530,7 @@ namespace HangFire.Storage
                 result.Add(new SucceededJobDto
                     {
                         Type = job[0],
-                        Queue = JobHelper.GetQueueName(job[0]),
+                        Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         SucceededAt = JobHelper.FromJson<DateTime>(job[2]),
                     });

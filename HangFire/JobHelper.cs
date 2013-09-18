@@ -7,10 +7,13 @@ namespace HangFire
 {
     internal static class JobHelper
     {
-        public static string GetQueueName(string jobType)
+        public static string TryToGetQueueName(string jobType)
         {
-            // TODO: what to do with type resolving exceptions?
             var type = Type.GetType(jobType);
+            if (type == null)
+            {
+                return null;
+            }
 
             return GetQueueName(type);
         }

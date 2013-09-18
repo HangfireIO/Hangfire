@@ -102,18 +102,18 @@ WriteLiteral("                <tr>\r\n                    <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary\">");
+WriteLiteral("</td>\r\n                    <td>");
 
 
             
             #line 32 "..\..\Pages\FailedJobsPage.cshtml"
-                                                     Write(job.Queue);
+                   Write(HtmlHelper.QueueLabel(job.Queue));
 
             
             #line default
             #line hidden
-WriteLiteral("</span></td>\r\n                    <td class=\"expand-exception\">\r\n                " +
-"        <div>\r\n                            ");
+WriteLiteral("</td>\r\n                    <td class=\"expand-exception\">\r\n                       " +
+" <div>\r\n                            ");
 
 
             
