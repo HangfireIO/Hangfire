@@ -6,7 +6,7 @@ namespace HangFire.Filters
 {
     public class JobPerformedContext : WorkerContext
     {
-        public JobPerformedContext(
+        internal JobPerformedContext(
             WorkerContext workerContext, 
             ServerJobDescriptor jobDescriptor, 
             bool canceled, Exception exception)

@@ -4,7 +4,7 @@ namespace HangFire.Filters
 {
     public class JobEnqueueingContext : ClientContext
     {
-        public JobEnqueueingContext(
+        internal JobEnqueueingContext(
             ClientContext clientContext,
             ClientJobDescriptor jobDescriptor)
             : base(clientContext)

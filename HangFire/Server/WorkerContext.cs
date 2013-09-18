@@ -4,12 +4,13 @@ namespace HangFire.Server
 {
     public class WorkerContext
     {
-        public WorkerContext(WorkerContext workerContext)
+        internal WorkerContext(WorkerContext workerContext)
             : this (workerContext.ServerContext, workerContext.WorkerNumber)
         {
+            Items = workerContext.Items;
         }
 
-        public WorkerContext(ServerContext serverContext, int workerNumber)
+        internal WorkerContext(ServerContext serverContext, int workerNumber)
         {
             ServerContext = serverContext;
             WorkerNumber = workerNumber;

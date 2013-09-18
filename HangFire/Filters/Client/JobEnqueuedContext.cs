@@ -6,7 +6,7 @@ namespace HangFire.Filters
 {
     public class JobEnqueuedContext : ClientContext
     {
-        public JobEnqueuedContext(
+        internal JobEnqueuedContext(
             ClientContext clientContext, 
             ClientJobDescriptor jobDescriptor,
             bool canceled, 

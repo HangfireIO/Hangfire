@@ -4,7 +4,7 @@ namespace HangFire.Filters
 {
     public class JobPerformingContext : WorkerContext
     {
-        public JobPerformingContext(
+        internal JobPerformingContext(
             WorkerContext workerContext,
             ServerJobDescriptor jobDescriptor)
             : base(workerContext)

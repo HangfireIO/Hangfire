@@ -16,7 +16,7 @@ namespace HangFire.MvcSample
         {
             // If you have custom Redis installation, use the
             // following method to configure HangFire:
-            // JobStorage.Configure(x => { x.RedisDb = 3; });
+            JobStorage.Configure(x => { x.RedisDb = 3; });
             
             _server = new AspNetBackgroundJobServer
             {

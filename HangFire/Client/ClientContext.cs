@@ -4,14 +4,14 @@ namespace HangFire.Client
 {
     public class ClientContext
     {
-        public ClientContext()
+        internal ClientContext()
         {
             Items = new Dictionary<string, object>();
         }
 
-        public ClientContext(ClientContext clientContext)
-            : this()
+        internal ClientContext(ClientContext clientContext)
         {
+            Items = clientContext.Items;
         }
 
         public IDictionary<string, object> Items { get; private set; }
