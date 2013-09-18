@@ -11,9 +11,9 @@
     <description>$description$</description>
     <copyright>Copyright (c) 2013 Sergey Odinokov.</copyright>
 	<dependencies>
-		<dependency id="ServiceStack.Common" version="3.9.59" />
-		<dependency id="ServiceStack.Text" version="3.9.59" />
-		<dependency id="ServiceStack.Redis" version="3.9.59" />
+		<dependency id="ServiceStack.Common" version="[3.9.47,4.0)" />
+		<dependency id="ServiceStack.Text" version="[3.9.47,4.0)" />
+		<dependency id="ServiceStack.Redis" version="[3.9.47,4.0)" />
 	</dependencies>
   </metadata>
 </package>
