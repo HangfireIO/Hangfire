@@ -68,7 +68,7 @@
                     </a>
                     <a class="list-group-item @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
                        href="@Request.LinkTo("/schedule")">
-                        <span id="stats-scheduled" class="label label-primary pull-right">
+                        <span id="stats-scheduled" class="label label-info pull-right">
                             @String.Format("{0:n0}", JobStorage.ScheduledCount())
                         </span>
                         Scheduled
