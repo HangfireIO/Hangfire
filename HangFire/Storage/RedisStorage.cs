@@ -149,6 +149,7 @@ namespace HangFire.Storage
 
             if (!cancellationToken.IsCancellationRequested)
             {
+                // TODO: one server - one queue. What is this?
                 using (var transaction = _redis.CreateTransaction())
                 {
                     transaction.QueueCommand(x => x.RemoveEntry(
