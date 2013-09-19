@@ -86,27 +86,26 @@ html, body {
 
 .stack-trace {
     padding: 10px;
-    border: none;
-    color: #999;
+    border: none;   
 }
 
-.st-type, .st-param-type
-{
-    color: #333;
+.st-type {
+    font-weight: bold;
 }
 
-.st-param-name
-{
+.st-param-name {
     color: #666;
 }
 
-.st-method
-{
-    color: #00008B;
-    font-weight: bolder;
+.st-file {
+    color: #999;
 }
 
-.st-line
-{
+.st-method {
+    color: #00008B;
+    font-weight: bold;
+}
+
+.st-line {
     color: #8B008B;
 }
