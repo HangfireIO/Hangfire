@@ -175,6 +175,11 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
+                // Some completed jobs could not be deleted from the processing 
+                // queue. And after server restart they will be requeued.
+
+                // However, HangFire guaranties that jobs will be performed 
+                // AT LEAST ONCE, so this is not a problem.
             }
             catch (Exception ex)
             {
