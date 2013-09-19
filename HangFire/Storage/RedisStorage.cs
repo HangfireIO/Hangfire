@@ -30,18 +30,34 @@ namespace HangFire.Storage
         {
             while (true)
             {
+                // TODO: provide CancellationToken to stop this operation.
+
                 try
                 {
                     action(this);
                     return;
                 }
+                catch (RedisResponseException)
+                {
+                    // When Redis instance issues incorrect answer, then it's data
+                    // is in the incorrect state. So, we can not recover after this
+                    // exception.
+                    throw;
+                }
                 catch (IOException)
                 {
-                    // TODO: log
+                    // This exception usually issued when awaiting blocking operation
+                    // was interrupted by one of the sides. We can retry the operation.
+
+                    // TODO: log the exception.
                 }
                 catch (RedisException)
                 {
-                    // TODO: log
+                    // This exception is raised when there is Redis connection error. 
+                    // We can retry the operation.
+
+                    // Logging is performed by ServiceStack.Redis library, using the same
+                    // classes that are used within HangFire. So, we can no log this exception.
                 }
             }
         }
