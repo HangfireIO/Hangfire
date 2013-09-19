@@ -7,9 +7,9 @@ using ServiceStack.Logging;
 
 namespace HangFire.Server
 {
-    internal class ThreadedWorker : IDisposable
+    internal class Worker : IDisposable
     {
-        private readonly ThreadedWorkerManager _pool;
+        private readonly WorkerPool _pool;
         private readonly ServerContext _serverContext;
         private readonly int _workerNumber;
         private readonly ServerJobInvoker _jobInvoker;
@@ -32,8 +32,8 @@ namespace HangFire.Server
 
         private string _jobId;
 
-        public ThreadedWorker(
-            ThreadedWorkerManager pool,
+        public Worker(
+            WorkerPool pool,
             ServerContext serverContext,
             int workerNumber,
             ServerJobInvoker jobInvoker, JobActivator jobActivator)

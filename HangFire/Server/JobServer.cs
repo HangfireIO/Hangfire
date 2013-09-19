@@ -13,7 +13,7 @@ namespace HangFire.Server
         private readonly string _queueName;
         private readonly Thread _managerThread;
         private readonly Thread _completionHandlerThread;
-        private readonly ThreadedWorkerManager _pool;
+        private readonly WorkerPool _pool;
         private readonly SchedulePoller _schedule;
         private readonly RedisStorage _blockingRedis = new RedisStorage();
         private readonly RedisStorage _redis = new RedisStorage();
@@ -66,7 +66,7 @@ namespace HangFire.Server
 
             var jobInvoker = ServerJobInvoker.Current;
 
-            _pool = new ThreadedWorkerManager(
+            _pool = new WorkerPool(
                 new ServerContext(_serverName, _queueName, concurrency), 
                 jobInvoker, jobActivator ?? new JobActivator());
             _pool.JobCompleted += PoolOnJobCompleted;

@@ -8,26 +8,26 @@ using ServiceStack.Logging;
 
 namespace HangFire.Server
 {
-    internal class ThreadedWorkerManager : IDisposable
+    internal class WorkerPool : IDisposable
     {
-        private readonly List<ThreadedWorker> _workers;
-        private readonly BlockingCollection<ThreadedWorker> _freeWorkers;
+        private readonly List<Worker> _workers;
+        private readonly BlockingCollection<Worker> _freeWorkers;
         private readonly ILog _logger = LogManager.GetLogger("HangFire.WorkerPool");
         private bool _disposed;
 
-        public ThreadedWorkerManager(
+        public WorkerPool(
             ServerContext serverContext,
             ServerJobInvoker jobInvoker,
             JobActivator jobActivator)
         {
-            _workers = new List<ThreadedWorker>(serverContext.WorkersCount);
-            _freeWorkers = new BlockingCollection<ThreadedWorker>();
+            _workers = new List<Worker>(serverContext.WorkersCount);
+            _freeWorkers = new BlockingCollection<Worker>();
 
             _logger.Info(String.Format("Starting {0} workers...", serverContext.WorkersCount));
 
             for (var i = 0; i < serverContext.WorkersCount; i++)
             {
-                var worker = new ThreadedWorker(
+                var worker = new Worker(
                     this,
                     serverContext,
                     i,
@@ -42,11 +42,11 @@ namespace HangFire.Server
 
         public event EventHandler<JobCompletedEventArgs> JobCompleted;
 
-        public ThreadedWorker TakeFree(CancellationToken cancellationToken)
+        public Worker TakeFree(CancellationToken cancellationToken)
         {
             Debug.Assert(!_disposed, "!_disposed");
 
-            ThreadedWorker worker;
+            Worker worker;
             do
             {
                 worker = _freeWorkers.Take(cancellationToken);
@@ -87,7 +87,7 @@ namespace HangFire.Server
             _freeWorkers.Dispose();
         }
 
-        internal void NotifyReady(ThreadedWorker worker)
+        internal void NotifyReady(Worker worker)
         {
             _freeWorkers.Add(worker);
         }

@@ -99,10 +99,10 @@
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerJobDescriptor.cs" />
-    <Compile Include="Server\ThreadedWorkerManager.cs" />
+    <Compile Include="Server\WorkerPool.cs" />
     <Compile Include="Server\ServerJobInvoker.cs" />
     <Compile Include="Client\JobClient.cs" />
-    <Compile Include="Server\ThreadedWorker.cs" />
+    <Compile Include="Server\Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JobHelper.cs" />
     <Compile Include="Server\WorkerContext.cs" />
