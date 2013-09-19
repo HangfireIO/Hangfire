@@ -10,17 +10,17 @@ namespace HangFire
 
         public void SetParameter(string propertyName, object value)
         {
-            lock (Worker.Redis)
+            lock (ThreadedWorker.Redis)
             {
-                Worker.Redis.SetJobProperty(JobId, propertyName, value);
+                ThreadedWorker.Redis.SetJobProperty(JobId, propertyName, value);
             }
         }
 
         public T GetParameter<T>(string propertyName)
         {
-            lock (Worker.Redis)
+            lock (ThreadedWorker.Redis)
             {
-                return Worker.Redis.GetJobProperty<T>(JobId, propertyName);
+                return ThreadedWorker.Redis.GetJobProperty<T>(JobId, propertyName);
             }
         }
     }

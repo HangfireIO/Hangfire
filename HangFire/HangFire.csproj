@@ -99,7 +99,6 @@
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerJobDescriptor.cs" />
-    <Compile Include="Server\Worker.cs" />
     <Compile Include="Server\ThreadedWorkerManager.cs" />
     <Compile Include="Server\ServerJobInvoker.cs" />
     <Compile Include="Client\JobClient.cs" />

@@ -26,11 +26,14 @@ namespace HangFire.Storage
             _redis.Dispose();
         }
 
-        public void RetryOnRedisException(Action<RedisStorage> action)
+        public void RetryOnRedisException(Action<RedisStorage> action, CancellationToken token)
         {
             while (true)
             {
-                // TODO: provide CancellationToken to stop this operation.
+                if (token.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException();
+                }
 
                 try
                 {

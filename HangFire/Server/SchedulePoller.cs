@@ -15,8 +15,7 @@ namespace HangFire.Server
         private readonly TimeSpan _pollInterval;
         private readonly RedisStorage _redis = new RedisStorage();
 
-        private bool _stopped;
-        private readonly object _locker = new object();
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         public SchedulePoller(TimeSpan pollInterval)
         {
@@ -27,13 +26,13 @@ namespace HangFire.Server
 
         public void Dispose()
         {
-            lock (_locker)
-            {
-                _stopped = true;
-            }
+            _cts.Cancel();
+
             _pollerThread.Interrupt();
             _pollerThread.Join();
             _redis.Dispose();
+
+            _cts.Dispose();
         }
 
         private void Work()
@@ -42,19 +41,19 @@ namespace HangFire.Server
             {
                 while (true)
                 {
-                    lock (_locker)
+                    bool wasScheduled = false;
+                    _redis.RetryOnRedisException(
+                        x => wasScheduled = x.EnqueueScheduledJob(DateTime.UtcNow),
+                        _cts.Token);
+
+                    if (!wasScheduled)
                     {
-                        if (_stopped) { return; }
-
-                        bool wasScheduled = false;
-                        _redis.RetryOnRedisException(x => wasScheduled = x.EnqueueScheduledJob(DateTime.UtcNow));
-
-                        if (!wasScheduled)
-                        {
-                            Thread.Sleep(_pollInterval);
-                        }
+                        Thread.Sleep(_pollInterval);
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
             }
             catch (ThreadInterruptedException)
             {
