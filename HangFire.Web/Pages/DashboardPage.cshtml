@@ -10,13 +10,12 @@
 <h3>Realtime graph</h3>
 <div id="realtime"></div>
 
-@{
-    // TODO: get rid of this. We have no right to change the library globals.
-    JsConfig.DateHandler = JsonDateHandler.ISO8601;
-}
-
 <h3>History graph</h3>
-<div id="history" 
-     data-succeeded="@JsonSerializer.SerializeToString(JobStorage.HourlySucceededJobs())" 
-     data-failed="@JsonSerializer.SerializeToString(JobStorage.HourlyFailedJobs())">
-</div>
+
+@using (JsConfig.With(dateHandler: JsonDateHandler.ISO8601))
+{
+    <div id="history" 
+         data-succeeded="@JsonSerializer.SerializeToString(JobStorage.HourlySucceededJobs())" 
+         data-failed="@JsonSerializer.SerializeToString(JobStorage.HourlyFailedJobs())">
+    </div>
+}
