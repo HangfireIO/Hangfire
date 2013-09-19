@@ -67,12 +67,13 @@ namespace HangFire.Client
             var descriptor = CreateDescriptor(jobType, args);
 
             var at = DateTime.UtcNow.Add(interval);
+            var queueName = JobHelper.GetQueueName(jobType);
 
             descriptor.EnqueueAction = () =>
             {
                 lock (_redis)
                 {
-                    _redis.ScheduleJob(descriptor.JobId, descriptor.Job, at);
+                    _redis.ScheduleJob(descriptor.JobId, descriptor.Job, queueName, at);
                 }
             };
 

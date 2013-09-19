@@ -62,7 +62,7 @@ namespace HangFire.Storage
             }
         }
 
-        public void ScheduleJob(string jobId, Dictionary<string, string> job, DateTime at)
+        public void ScheduleJob(string jobId, Dictionary<string, string> job, string queueName, DateTime at)
         {
             var timestamp = DateTimeToTimestamp(at);
 
@@ -72,10 +72,13 @@ namespace HangFire.Storage
                     String.Format("hangfire:job:{0}", jobId),
                     job));
 
-                transaction.QueueCommand(x => x.SetEntryInHash(
+                transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format("hangfire:job:{0}", jobId),
-                    "ScheduledAt",
-                    JobHelper.ToJson(DateTime.UtcNow)));
+                    new Dictionary<string, string>
+                    {
+                        { "ScheduledAt", JobHelper.ToJson(DateTime.UtcNow) },
+                        { "ScheduledQueue", queueName }
+                    }));
 
                 transaction.QueueCommand(x => x.AddItemToSortedSet(
                     "hangfire:schedule", jobId, timestamp));
@@ -84,23 +87,58 @@ namespace HangFire.Storage
             }
         }
 
-        public string GetScheduledJobId(DateTime now)
+        public bool EnqueueScheduledJob(DateTime now)
         {
             var timestamp = DateTimeToTimestamp(now);
 
-            var jobId = _redis
-                .GetRangeFromSortedSetByLowestScore("hangfire:schedule", Double.NegativeInfinity, timestamp, 0, 1)
-                .FirstOrDefault();
-
-            if (jobId != null)
+            string jobId = null;
+            
+            using (var pipeline = _redis.CreatePipeline())
             {
-                if (_redis.RemoveItemFromSortedSet("hangfire:schedule", jobId))
+                // By watching the scheduled tasks key we ensure that only one HangFire server
+                // will enqueue the first scheduled job at a time. Otherwise we could we can
+                // get the situation, when two or more servers will enqueue the same job multiple
+                // times.
+                pipeline.QueueCommand(x => x.Watch("hangfire:schedule"));
+                pipeline.QueueCommand(
+                    x => x.GetRangeFromSortedSetByLowestScore(
+                        "hangfire:schedule", Double.NegativeInfinity, timestamp, 0, 1),
+                    x => jobId = x.FirstOrDefault());
+
+                pipeline.Flush();
+            }
+
+            if (!String.IsNullOrEmpty(jobId))
+            {
+                // To make atomic remove-enqueue call, we should know the target queue name first.
+                var queueName = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "ScheduledQueue");
+
+                if (!String.IsNullOrEmpty(queueName))
                 {
-                    return jobId;
+                    // This transaction removes the job from the schedule and enqueues it to it's queue.
+                    // When another server has already performed such an action with the same job id, this
+                    // transaction will fail. In this case we should re-run this method again.
+                    using (var transaction = _redis.CreateTransaction())
+                    {
+                        transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
+
+                        transaction.QueueCommand(x => x.SetEntryInHashIfNotExists(
+                            String.Format("hangfire:job:{0}", jobId),
+                            "EnqueuedAt",
+                            JobHelper.ToJson(DateTime.UtcNow)));
+
+                        transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
+                        transaction.QueueCommand(x => x.EnqueueItemOnList(
+                            String.Format("hangfire:queue:{0}", queueName), jobId));
+
+                        return transaction.Commit();
+                    }
                 }
             }
 
-            return null;
+            // When schedule contains no entries, we should unwatch it's key.
+            _redis.UnWatch();
+            return false;
         }
 
         public void EnqueueJob(string queueName, string jobId, Dictionary<string, string> job)

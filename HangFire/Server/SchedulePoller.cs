@@ -40,39 +40,21 @@ namespace HangFire.Server
         {
             try
             {
-                _redis.RetryOnRedisException(x =>
+                while (true)
+                {
+                    lock (_locker)
                     {
-                        while (true)
+                        if (_stopped) { return; }
+
+                        bool wasScheduled = false;
+                        _redis.RetryOnRedisException(x => wasScheduled = x.EnqueueScheduledJob(DateTime.UtcNow));
+
+                        if (!wasScheduled)
                         {
-                            lock (_locker)
-                            {
-                                if (_stopped)
-                                {
-                                    return;
-                                }
-                            }
-
-                            // TODO: we'll loose the job when:
-                            //    1. one of the following instructions will fail.
-                            //    2. unexpected server fail will occur after the following line.
-                            var jobId = x.GetScheduledJobId(DateTime.UtcNow);
-                            if (jobId != null)
-                            {
-                                var jobType = x.GetJobType(jobId);
-
-                                // TODO: move the job to the failed queue when type resolving failed.
-                                // TODO: queue name can be null here.
-                                var queue = JobHelper.TryToGetQueueName(jobType);
-
-                                // TODO: we'll loose the job when the following instruction will fail.
-                                x.EnqueueJob(queue, jobId, null);
-                            }
-                            else
-                            {
-                                Thread.Sleep(_pollInterval);
-                            }
+                            Thread.Sleep(_pollInterval);
                         }
-                    });
+                    }
+                }
             }
             catch (ThreadInterruptedException)
             {
@@ -81,7 +63,7 @@ namespace HangFire.Server
             {
                 _logger.Fatal(
                     "Scheduled jobs will not be added to their queues by this server instance: "
-                    + "unexpected exception caught in the SchedulePoller thread.", 
+                    + "unexpected exception caught in the SchedulePoller thread.",
                     ex);
             }
         }
