@@ -2,8 +2,12 @@
     $(document).on('click', '*[data-ajax]', function(e) {
         var $this = $(this);
 
-        $this.button('loading');
-        $.post($this.data('ajax'), function() {
+        var loadingDelay = setTimeout(function() {
+            $this.button('loading');
+        }, 100);
+        
+        $.post($this.data('ajax'), function () {
+            clearTimeout(loadingDelay);
             $this.button('reset');
             window.location.reload();
         });
