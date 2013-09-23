@@ -1,4 +1,18 @@
-﻿$(function () {
+﻿$(function() {
+    $(document).on('click', '*[data-ajax]', function(e) {
+        var $this = $(this);
+
+        $this.button('loading');
+        $.post($this.data('ajax'), function() {
+            $this.button('reset');
+            window.location.reload();
+        });
+
+        e.preventDefault();
+    });
+});
+
+$(function () {
     (function () {
         var element = document.getElementById('realtime');
         if (!element) return;

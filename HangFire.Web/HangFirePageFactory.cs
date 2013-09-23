@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web;
+
+using HangFire.Web.Commands;
 using HangFire.Web.Pages;
 
 namespace HangFire.Web
@@ -21,8 +23,9 @@ namespace HangFire.Web
             RegisterPathHandlerFactory("/processing",   x => new ProcessingJobsPage());
             RegisterPathHandlerFactory("/schedule",  x => new SchedulePage());
             RegisterPathHandlerFactory("/servers",   x => new ServersPage());
-            RegisterPathHandlerFactory("/failed",    x => new FailedJobsPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
+            RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
+            RegisterPathHandlerFactory("/failed/retry/(?<JobId>.+)", x => new RetryCommand(x.Groups["JobId"].Value));
 
             RegisterPathHandlerFactory("/js/scripts.js",  x => new JavaScriptHandler());
             RegisterPathHandlerFactory("/css/styles.css", x => new StyleSheetHandler());
@@ -75,9 +78,13 @@ namespace HangFire.Web
 
             foreach (var pathHandlerFactory in PathHandlerFactories)
             {
+                var pattern = pathHandlerFactory.Item1;
+                if (!pattern.StartsWith("^")) pattern = "^" + pattern;
+                if (!pattern.EndsWith("$")) pattern += "$";
+
                 var match = Regex.Match(
-                    resource, 
-                    pathHandlerFactory.Item1, 
+                    resource,
+                    pattern, 
                     RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
                 if (match.Success)

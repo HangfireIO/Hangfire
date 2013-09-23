@@ -5,6 +5,7 @@ namespace HangFire.Storage
 {
     public class FailedJobDto
     {
+        public string Id { get; set; }
         public string Type { get; set; }
         public string Queue { get; set; }
         public Dictionary<string, string> Args { get; set; }

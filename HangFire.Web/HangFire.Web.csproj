@@ -52,6 +52,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Commands\RetryCommand.cs" />
     <Compile Include="FontsHandler.cs" />
     <Compile Include="Handlers\CombinedResourceHandler.cs" />
     <Compile Include="Handlers\EmbeddedResourceHandler.cs" />
@@ -176,7 +177,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Content\js\jquery-1.10.2.min.js" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Content\js\bootstrap.min.js" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.svg" />
   </ItemGroup>

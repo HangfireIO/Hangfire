@@ -157,5 +157,13 @@ namespace HangFire
                 return Redis.GetHourlyFailedCount();
             }
         }
+
+        public static bool RetryJob(string jobId)
+        {
+            lock (Redis)
+            {
+                return Redis.RetryJob(jobId);
+            }
+        }
     }
 }

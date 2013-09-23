@@ -560,6 +560,7 @@ namespace HangFire.Storage
 
                 result.Add(new FailedJobDto
                     {
+                        Id = jobId,
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
@@ -622,6 +623,30 @@ namespace HangFire.Storage
                 propertyName);
 
             return JobHelper.FromJson<T>(value);
+        }
+
+        public bool RetryJob(string jobId)
+        {
+            var jobType = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
+            if (String.IsNullOrEmpty(jobType))
+            {
+                return false;
+            }
+
+            var queueName = JobHelper.TryToGetQueueName(jobType);
+            if (String.IsNullOrEmpty(queueName))
+            {
+                return false;
+            }
+
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:failed"));
+                transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
+                transaction.QueueCommand(x => x.EnqueueItemOnList(String.Format("hangfire:queue:{0}", queueName), jobId));
+
+                return transaction.Commit();
+            }
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
