@@ -1,15 +1,16 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Web;
 
-namespace HangFire.Web.Commands
+namespace HangFire.Web
 {
-    internal class RetryCommand : GenericHandler
+    internal class CommandHandler : GenericHandler
     {
-        private readonly string _jobId;
+        private readonly Func<bool> _command;
 
-        public RetryCommand(string jobId)
+        public CommandHandler(Func<bool> command)
         {
-            _jobId = jobId;
+            _command = command;
         }
 
         public override void ProcessRequest()
@@ -19,7 +20,7 @@ namespace HangFire.Web.Commands
                 throw new HttpException((int)HttpStatusCode.MethodNotAllowed, "Wrong HTTP method.");
             }
 
-            if (JobStorage.RetryJob(_jobId))
+            if (_command())
             {
                 Response.StatusCode = (int)HttpStatusCode.NoContent;
             }

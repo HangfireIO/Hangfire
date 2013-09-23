@@ -165,5 +165,13 @@ namespace HangFire
                 return Redis.RetryJob(jobId);
             }
         }
+
+        public static bool RemoveJob(string jobId)
+        {
+            lock (Redis)
+            {
+                return Redis.RemoveFailedJob(jobId);
+            }
+        }
     }
 }

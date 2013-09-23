@@ -27,7 +27,7 @@ namespace HangFire.Web.Pages
     #line default
     #line hidden
     
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "1.5.3.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     internal partial class FailedJobsPage : RazorPage
     {
 #line hidden
@@ -141,20 +141,36 @@ WriteLiteral("\r\n                        </div>\r\n                        <div
             #line default
             #line hidden
 WriteLiteral(" <span class=\"caret\"></span>\r\n                        </div>\r\n                   " +
-" </td>\r\n                    <td>\r\n                        <button class=\"btn btn" +
-"-primary btn-sm\" data-ajax=\"");
+" </td>\r\n                    <td>\r\n                        <div class=\"pull-right" +
+"\">\r\n                            <button class=\"btn btn-primary btn-sm\" data-ajax" +
+"=\"");
 
 
             
-            #line 43 "..\..\Pages\FailedJobsPage.cshtml"
-                                                                     Write(Request.LinkTo("/failed/retry/" + job.Id));
+            #line 44 "..\..\Pages\FailedJobsPage.cshtml"
+                                                                         Write(Request.LinkTo("/failed/retry/" + job.Id));
 
             
             #line default
             #line hidden
-WriteLiteral("\" data-loading-text=\"Retrying...\">\r\n                            <span class=\"glyp" +
-"hicon glyphicon-refresh\"></span>\r\n                            Retry\r\n           " +
-"             </button>\r\n                    </td>\r\n                </tr>\r\n");
+WriteLiteral(@""" data-loading-text=""Retrying..."">
+                                <span class=""glyphicon glyphicon-refresh""></span>
+                                Retry
+                            </button>
+
+                            <button class=""btn btn-danger btn-sm"" data-ajax=""");
+
+
+            
+            #line 49 "..\..\Pages\FailedJobsPage.cshtml"
+                                                                        Write(Request.LinkTo("/failed/remove/" + job.Id));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" data-loading-text=\"Deleting...\">\r\n                                <span class=\"" +
+"glyphicon glyphicon-remove\"></span>\r\n                            </button>\r\n    " +
+"                    </div>\r\n                    </td>\r\n                </tr>\r\n");
 
 
 
@@ -162,18 +178,18 @@ WriteLiteral("                <tr style=\"");
 
 
             
-            #line 49 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 55 "..\..\Pages\FailedJobsPage.cshtml"
                        Write(index++ > 0 ? "display: none;" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                    <td colspan=\"5\" class=\"failed-job-details\">\r\n            " +
+WriteLiteral("\">\r\n                    <td colspan=\"4\" class=\"failed-job-details\">\r\n            " +
 "            <h4>");
 
 
             
-            #line 51 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 57 "..\..\Pages\FailedJobsPage.cshtml"
                        Write(job.ExceptionType);
 
             
@@ -183,7 +199,7 @@ WriteLiteral("</h4>\r\n                        <p>\r\n                          
 
 
             
-            #line 53 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 59 "..\..\Pages\FailedJobsPage.cshtml"
                        Write(job.ExceptionMessage);
 
             
@@ -193,7 +209,7 @@ WriteLiteral("\r\n                        </p>\r\n                        \r\n")
 
 
             
-            #line 56 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 62 "..\..\Pages\FailedJobsPage.cshtml"
                          if (!String.IsNullOrEmpty(job.ExceptionDetails))
                         {
 
@@ -204,7 +220,7 @@ WriteLiteral("                            <pre class=\"stack-trace\">");
 
 
             
-            #line 58 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 64 "..\..\Pages\FailedJobsPage.cshtml"
                                                 Write(MarkupStackTrace(job.ExceptionDetails));
 
             
@@ -214,7 +230,7 @@ WriteLiteral("</pre>\r\n");
 
 
             
-            #line 59 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 65 "..\..\Pages\FailedJobsPage.cshtml"
                         }
 
             
@@ -234,7 +250,7 @@ WriteLiteral(@"
 
 
             
-            #line 70 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 76 "..\..\Pages\FailedJobsPage.cshtml"
                                  foreach (var arg in job.Args)
                                 {
 
@@ -246,7 +262,7 @@ WriteLiteral("                                    <tr>\r\n                      
 
 
             
-            #line 73 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 79 "..\..\Pages\FailedJobsPage.cshtml"
                                        Write(arg.Key);
 
             
@@ -256,7 +272,7 @@ WriteLiteral("</td>\r\n                                        <td><code>");
 
 
             
-            #line 74 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 80 "..\..\Pages\FailedJobsPage.cshtml"
                                              Write(arg.Value);
 
             
@@ -266,7 +282,7 @@ WriteLiteral("</code></td>\r\n                                    </tr>\r\n");
 
 
             
-            #line 76 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 82 "..\..\Pages\FailedJobsPage.cshtml"
                                 }
 
             
@@ -277,7 +293,7 @@ WriteLiteral("                            </tbody>\r\n                        </
 
 
             
-            #line 81 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 87 "..\..\Pages\FailedJobsPage.cshtml"
             }
 
             
@@ -287,7 +303,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 84 "..\..\Pages\FailedJobsPage.cshtml"
+            #line 90 "..\..\Pages\FailedJobsPage.cshtml"
 }
             
             #line default

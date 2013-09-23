@@ -40,14 +40,20 @@ else
                         </div>
                     </td>
                     <td>
-                        <button class="btn btn-primary btn-sm" data-ajax="@Request.LinkTo("/failed/retry/" + job.Id)" data-loading-text="Retrying...">
-                            <span class="glyphicon glyphicon-refresh"></span>
-                            Retry
-                        </button>
+                        <div class="pull-right">
+                            <button class="btn btn-primary btn-sm" data-ajax="@Request.LinkTo("/failed/retry/" + job.Id)" data-loading-text="Retrying...">
+                                <span class="glyphicon glyphicon-refresh"></span>
+                                Retry
+                            </button>
+
+                            <button class="btn btn-danger btn-sm" data-ajax="@Request.LinkTo("/failed/remove/" + job.Id)" data-loading-text="Deleting...">
+                                <span class="glyphicon glyphicon-remove"></span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 <tr style="@(index++ > 0 ? "display: none;" : null)">
-                    <td colspan="5" class="failed-job-details">
+                    <td colspan="4" class="failed-job-details">
                         <h4>@job.ExceptionType</h4>
                         <p>
                             @job.ExceptionMessage

@@ -649,6 +649,20 @@ namespace HangFire.Storage
             }
         }
 
+        public bool RemoveFailedJob(string jobId)
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:failed"));
+                transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
+                transaction.QueueCommand(x => x.ExpireEntryIn(String.Format("hangfire:job:{0}", jobId), _jobExpirationTimeout));
+
+                // TODO: set job status to deleted.
+
+                return transaction.Commit();
+            }
+        }
+
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private static long DateTimeToTimestamp(DateTime value)

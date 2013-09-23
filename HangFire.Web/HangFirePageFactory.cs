@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web;
 
-using HangFire.Web.Commands;
 using HangFire.Web.Pages;
 
 namespace HangFire.Web
@@ -25,7 +24,14 @@ namespace HangFire.Web
             RegisterPathHandlerFactory("/servers",   x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
-            RegisterPathHandlerFactory("/failed/retry/(?<JobId>.+)", x => new RetryCommand(x.Groups["JobId"].Value));
+
+            RegisterPathHandlerFactory(
+                "/failed/retry/(?<JobId>.+)", 
+                x => new CommandHandler(() => Command.Retry(x.Groups["JobId"].Value)));
+
+            RegisterPathHandlerFactory(
+                "/failed/remove/(?<JobId>.+)", 
+                x => new CommandHandler(() => Command.Remove(x.Groups["JobId"].Value)));
 
             RegisterPathHandlerFactory("/js/scripts.js",  x => new JavaScriptHandler());
             RegisterPathHandlerFactory("/css/styles.css", x => new StyleSheetHandler());

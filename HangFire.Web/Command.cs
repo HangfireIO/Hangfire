@@ -1,0 +1,10 @@
+﻿using System;
+
+namespace HangFire.Web
+{
+    internal class Command
+    {
+        public static readonly Func<string, bool> Retry = x => JobStorage.RetryJob(x);
+        public static readonly Func<string, bool> Remove = x => JobStorage.RemoveJob(x);
+    }
+}
