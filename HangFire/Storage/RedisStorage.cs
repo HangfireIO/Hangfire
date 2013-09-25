@@ -155,7 +155,7 @@ namespace HangFire.Storage
                         job));
                 }
 
-                transaction.QueueCommand(x => x.SetEntryInHashIfNotExists(
+                transaction.QueueCommand(x => x.SetEntryInHash(
                     String.Format("hangfire:job:{0}", jobId),
                     "EnqueuedAt",
                     JobHelper.ToJson(DateTime.UtcNow)));
@@ -592,6 +592,41 @@ namespace HangFire.Storage
                         Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         SucceededAt = JobHelper.FromJson<DateTime>(job[2]),
+                    });
+            }
+
+            return result;
+        }
+
+        public IList<QueueWithTopEnqueuedJobsDto> GetEnqueuedJobs()
+        {
+            var queues = _redis.GetAllItemsFromSet("hangfire:queues");
+            var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
+
+            foreach (var queue in queues)
+            {
+                var firstJobIds = _redis.GetRangeFromList(
+                    String.Format("hangfire:queue:{0}", queue), 0, 10);
+                var jobs = new List<EnqueuedJobDto>(firstJobIds.Count);
+
+                foreach (var jobId in firstJobIds)
+                {
+                    var job = _redis.GetValuesFromHash(
+                        String.Format("hangfire:job:{0}", jobId),
+                        new[] { "Type", "Args", "EnqueuedAt" });
+
+                    jobs.Add(new EnqueuedJobDto
+                    {
+                        Type = job[0],
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                        EnqueuedAt = JobHelper.FromJson<DateTime>(job[2]),
+                    }); 
+                }
+
+                result.Add(new QueueWithTopEnqueuedJobsDto
+                    {
+                        QueueName = queue,
+                        FirstJobs = jobs.ToArray()
                     });
             }
 

@@ -80,6 +80,7 @@
     <Compile Include="Filters\Server\JobPerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
+    <Compile Include="Storage\EnqueuedJobDto.cs" />
     <Compile Include="Storage\FailedJobDto.cs" />
     <Compile Include="Storage\JobStorageConfiguration.cs" />
     <Compile Include="Filters\Client\IClientJobFilter.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="QueueNameAttribute.cs" />
     <Compile Include="Storage\ProcessingJobDto.cs" />
     <Compile Include="Storage\QueueDto.cs" />
+    <Compile Include="Storage\QueueWithTopEnqueuedJobsDto.cs" />
     <Compile Include="Storage\RedisStorage.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />

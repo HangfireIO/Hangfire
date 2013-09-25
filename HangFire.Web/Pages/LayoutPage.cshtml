@@ -60,7 +60,8 @@
         <div class="container">
             <div class="col-md-3">
                 <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
-                    <a class="list-group-item" href="#">
+                    <a class="list-group-item @(Request.PathInfo.Equals("/enqueued") ? "active" : null)" 
+                       href="@Request.LinkTo("/enqueued")">
                         <span id="stats-enqueued" class="label label-default pull-right">
                             @String.Format("{0:n0}", JobStorage.EnqueuedCount())
                         </span>

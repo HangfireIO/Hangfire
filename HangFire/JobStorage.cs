@@ -142,6 +142,14 @@ namespace HangFire
             }
         }
 
+        public static IList<QueueWithTopEnqueuedJobsDto> EnqueuedJobs()
+        {
+            lock (Redis)
+            {
+                return Redis.GetEnqueuedJobs();
+            }
+        }
+
         public static Dictionary<DateTime, long> HourlySucceededJobs()
         {
             lock (Redis)

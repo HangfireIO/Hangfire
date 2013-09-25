@@ -61,6 +61,11 @@
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
     <Compile Include="JavaScriptHandler.cs" />
+    <Compile Include="Pages\EnqueuedJobsPage.generated.cs">
+      <DependentUpon>EnqueuedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Pages\DashboardPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -96,6 +101,10 @@
     <None Include="packages.config" />
     <None Include="package\content\HangFireConfig.cs.pp" />
     <None Include="package\content\web.config.transform" />
+    <None Include="Pages\EnqueuedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>EnqueuedJobsPage.generated.cs</LastGenOutput>
+    </None>
     <None Include="Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>SucceededJobs.generated.cs</LastGenOutput>

@@ -207,13 +207,32 @@ WriteLiteral(@"</span>
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                    <a class=\"list-group-item\" href=\"#\">\r\n                   " +
-"     <span id=\"stats-enqueued\" class=\"label label-default pull-right\">\r\n        " +
-"                    ");
+WriteLiteral("\">\r\n                    <a class=\"list-group-item ");
 
 
             
-            #line 65 "..\..\Pages\LayoutPage.cshtml"
+            #line 63 "..\..\Pages\LayoutPage.cshtml"
+                                          Write(Request.PathInfo.Equals("/enqueued") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" \r\n                       href=\"");
+
+
+            
+            #line 64 "..\..\Pages\LayoutPage.cshtml"
+                        Write(Request.LinkTo("/enqueued"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                        <span id=\"stats-enqueued\" class=\"label label-default " +
+"pull-right\">\r\n                            ");
+
+
+            
+            #line 66 "..\..\Pages\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", JobStorage.EnqueuedCount()));
 
             
@@ -224,7 +243,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Enq
 
 
             
-            #line 69 "..\..\Pages\LayoutPage.cshtml"
+            #line 70 "..\..\Pages\LayoutPage.cshtml"
                                           Write(Request.PathInfo.Equals("/schedule") ? "active" : null);
 
             
@@ -234,7 +253,7 @@ WriteLiteral("\" \r\n                       href=\"");
 
 
             
-            #line 70 "..\..\Pages\LayoutPage.cshtml"
+            #line 71 "..\..\Pages\LayoutPage.cshtml"
                         Write(Request.LinkTo("/schedule"));
 
             
@@ -245,7 +264,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-scheduled\" class=
 
 
             
-            #line 72 "..\..\Pages\LayoutPage.cshtml"
+            #line 73 "..\..\Pages\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", JobStorage.ScheduledCount()));
 
             
@@ -256,7 +275,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Sch
 
 
             
-            #line 76 "..\..\Pages\LayoutPage.cshtml"
+            #line 77 "..\..\Pages\LayoutPage.cshtml"
                                           Write(Request.PathInfo.Equals("/processing") ? "active" : null);
 
             
@@ -266,7 +285,7 @@ WriteLiteral("\" \r\n                       href=\"");
 
 
             
-            #line 77 "..\..\Pages\LayoutPage.cshtml"
+            #line 78 "..\..\Pages\LayoutPage.cshtml"
                         Write(Request.LinkTo("/processing"));
 
             
@@ -277,7 +296,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-workers\" class=\"
 
 
             
-            #line 79 "..\..\Pages\LayoutPage.cshtml"
+            #line 80 "..\..\Pages\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", JobStorage.ProcessingJobs().Count()));
 
             
@@ -288,7 +307,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Pro
 
 
             
-            #line 83 "..\..\Pages\LayoutPage.cshtml"
+            #line 84 "..\..\Pages\LayoutPage.cshtml"
                                           Write(Request.PathInfo.Equals("/succeeded") ? "active" : null);
 
             
@@ -298,7 +317,7 @@ WriteLiteral("\" \r\n                       href=\"");
 
 
             
-            #line 84 "..\..\Pages\LayoutPage.cshtml"
+            #line 85 "..\..\Pages\LayoutPage.cshtml"
                         Write(Request.LinkTo("/succeeded"));
 
             
@@ -309,7 +328,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-succeeded\" class=
 
 
             
-            #line 86 "..\..\Pages\LayoutPage.cshtml"
+            #line 87 "..\..\Pages\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", JobStorage.SucceededCount()));
 
             
@@ -320,7 +339,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Suc
 
 
             
-            #line 90 "..\..\Pages\LayoutPage.cshtml"
+            #line 91 "..\..\Pages\LayoutPage.cshtml"
                                           Write(Request.PathInfo.Equals("/failed") ? "active" : null);
 
             
@@ -330,7 +349,7 @@ WriteLiteral("\" \r\n                       href=\"");
 
 
             
-            #line 91 "..\..\Pages\LayoutPage.cshtml"
+            #line 92 "..\..\Pages\LayoutPage.cshtml"
                         Write(Request.LinkTo("/failed"));
 
             
@@ -341,7 +360,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-failed\" class=\"l
 
 
             
-            #line 93 "..\..\Pages\LayoutPage.cshtml"
+            #line 94 "..\..\Pages\LayoutPage.cshtml"
                        Write(String.Format("{0:n0}", JobStorage.FailedCount()));
 
             
@@ -353,7 +372,7 @@ WriteLiteral("\r\n                        </span>\r\n                        Fai
 
 
             
-            #line 100 "..\..\Pages\LayoutPage.cshtml"
+            #line 101 "..\..\Pages\LayoutPage.cshtml"
                                    Write(Title);
 
             
@@ -363,7 +382,7 @@ WriteLiteral("</h1>\r\n                ");
 
 
             
-            #line 101 "..\..\Pages\LayoutPage.cshtml"
+            #line 102 "..\..\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -384,7 +403,7 @@ WriteLiteral(@"
 
 
             
-            #line 112 "..\..\Pages\LayoutPage.cshtml"
+            #line 113 "..\..\Pages\LayoutPage.cshtml"
                    Write(FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion);
 
             
@@ -395,7 +414,7 @@ WriteLiteral("\r\n                    </a>\r\n                </li>\r\n         
 
 
             
-            #line 116 "..\..\Pages\LayoutPage.cshtml"
+            #line 117 "..\..\Pages\LayoutPage.cshtml"
                Write(String.Format("{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb));
 
             
@@ -405,7 +424,7 @@ WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
 
 
             
-            #line 118 "..\..\Pages\LayoutPage.cshtml"
+            #line 119 "..\..\Pages\LayoutPage.cshtml"
                      Write(DateTime.UtcNow.ToString());
 
             
@@ -416,7 +435,7 @@ WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </di
 
 
             
-            #line 124 "..\..\Pages\LayoutPage.cshtml"
+            #line 125 "..\..\Pages\LayoutPage.cshtml"
             Write(Request.LinkTo("/js/scripts.js"));
 
             
