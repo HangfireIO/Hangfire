@@ -84,13 +84,21 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Scheduled At</th>\r\n                <th>Queue</th>\r\n                <th>Type</th" +
-">\r\n                <th>Args</th>\r\n            </tr>\r\n        </thead>\r\n");
+WriteLiteral(@"    <table class=""table"">
+        <thead>
+            <tr>
+                <th>Scheduled At</th>
+                <th>Queue</th>
+                <th>Type</th>
+                <th>Args</th>
+                <th></th>
+            </tr>
+        </thead>
+");
 
 
             
-            #line 29 "..\..\Pages\SchedulePage.cshtml"
+            #line 30 "..\..\Pages\SchedulePage.cshtml"
          foreach (var job in scheduledJobs)
         {
 
@@ -101,7 +109,7 @@ WriteLiteral("            <tr>\r\n                <td>");
 
 
             
-            #line 32 "..\..\Pages\SchedulePage.cshtml"
+            #line 33 "..\..\Pages\SchedulePage.cshtml"
                Write(job.ScheduledAt);
 
             
@@ -111,7 +119,7 @@ WriteLiteral("</td>\r\n                <td>");
 
 
             
-            #line 33 "..\..\Pages\SchedulePage.cshtml"
+            #line 34 "..\..\Pages\SchedulePage.cshtml"
                Write(HtmlHelper.QueueLabel(job.Queue));
 
             
@@ -121,7 +129,7 @@ WriteLiteral("</td>\r\n                <td>");
 
 
             
-            #line 34 "..\..\Pages\SchedulePage.cshtml"
+            #line 35 "..\..\Pages\SchedulePage.cshtml"
                Write(HtmlHelper.JobType(job.Type));
 
             
@@ -132,17 +140,30 @@ WriteLiteral("</td>\r\n                <td>\r\n                    <code>\r\n   
 
 
             
-            #line 37 "..\..\Pages\SchedulePage.cshtml"
+            #line 38 "..\..\Pages\SchedulePage.cshtml"
                    Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </code>\r\n                </td>\r\n            </tr>\r\n");
+WriteLiteral("\r\n                    </code>\r\n                </td>\r\n                <td>\r\n     " +
+"               <button class=\"btn btn-default btn-sm\" data-ajax=\"");
 
 
             
-            #line 41 "..\..\Pages\SchedulePage.cshtml"
+            #line 42 "..\..\Pages\SchedulePage.cshtml"
+                                                                 Write(Request.LinkTo("/schedule/enqueue/" + job.Id));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" data-loading-text=\"Enqueueing...\">\r\n                        <span class=\"glyphi" +
+"con glyphicon-play\"></span>\r\n                        Enqueue now\r\n              " +
+"      </button>\r\n                </td>\r\n            </tr>\r\n");
+
+
+            
+            #line 48 "..\..\Pages\SchedulePage.cshtml"
         }
 
             
@@ -152,7 +173,7 @@ WriteLiteral("    </table>\r\n");
 
 
             
-            #line 43 "..\..\Pages\SchedulePage.cshtml"
+            #line 50 "..\..\Pages\SchedulePage.cshtml"
 }
             
             #line default

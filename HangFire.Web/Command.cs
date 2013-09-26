@@ -6,5 +6,6 @@ namespace HangFire.Web
     {
         public static readonly Func<string, bool> Retry = x => JobStorage.RetryJob(x);
         public static readonly Func<string, bool> Remove = x => JobStorage.RemoveJob(x);
+        public static readonly Func<string, bool> EnqueueScheduled = x => JobStorage.EnqueueScheduled(x);
     }
 }

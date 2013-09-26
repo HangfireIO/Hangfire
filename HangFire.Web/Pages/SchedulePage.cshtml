@@ -24,6 +24,7 @@ else
                 <th>Queue</th>
                 <th>Type</th>
                 <th>Args</th>
+                <th></th>
             </tr>
         </thead>
         @foreach (var job in scheduledJobs)
@@ -36,6 +37,12 @@ else
                     <code>
                         @String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
                     </code>
+                </td>
+                <td>
+                    <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Id)" data-loading-text="Enqueueing...">
+                        <span class="glyphicon glyphicon-play"></span>
+                        Enqueue now
+                    </button>
                 </td>
             </tr>
         }

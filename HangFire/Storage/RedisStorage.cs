@@ -122,34 +122,41 @@ namespace HangFire.Storage
 
             if (!String.IsNullOrEmpty(jobId))
             {
-                // To make atomic remove-enqueue call, we should know the target queue name first.
-                var queueName = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "ScheduledQueue");
-
-                if (!String.IsNullOrEmpty(queueName))
-                {
-                    // This transaction removes the job from the schedule and enqueues it to it's queue.
-                    // When another server has already performed such an action with the same job id, this
-                    // transaction will fail. In this case we should re-run this method again.
-                    using (var transaction = _redis.CreateTransaction())
-                    {
-                        transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
-
-                        transaction.QueueCommand(x => x.SetEntryInHashIfNotExists(
-                            String.Format("hangfire:job:{0}", jobId),
-                            "EnqueuedAt",
-                            JobHelper.ToJson(DateTime.UtcNow)));
-
-                        transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
-                        transaction.QueueCommand(x => x.EnqueueItemOnList(
-                            String.Format("hangfire:queue:{0}", queueName), jobId));
-
-                        return transaction.Commit();
-                    }
-                }
+                return EnqueueScheduledJob(jobId);
             }
 
             // When schedule contains no entries, we should unwatch it's key.
             _redis.UnWatch();
+            return false;
+        }
+
+        public bool EnqueueScheduledJob(string jobId)
+        {
+            // To make atomic remove-enqueue call, we should know the target queue name first.
+            var queueName = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "ScheduledQueue");
+            
+            if (!String.IsNullOrEmpty(queueName))
+            {    
+                // This transaction removes the job from the schedule and enqueues it to it's queue.
+                // When another server has already performed such an action with the same job id, this
+                // transaction will fail. In this case we should re-run this method again.
+                using (var transaction = _redis.CreateTransaction())
+                {
+                    transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
+
+                    transaction.QueueCommand(x => x.SetEntryInHashIfNotExists(
+                        String.Format("hangfire:job:{0}", jobId),
+                        "EnqueuedAt",
+                        JobHelper.ToJson(DateTime.UtcNow)));
+
+                    transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
+                    transaction.QueueCommand(x => x.EnqueueItemOnList(
+                        String.Format("hangfire:queue:{0}", queueName), jobId));
+
+                    return transaction.Commit();
+                }
+            }
+
             return false;
         }
 
@@ -406,6 +413,7 @@ namespace HangFire.Storage
 
                 result.Add(new ScheduleDto
                     {
+                        Id = scheduledJob.Key,
                         ScheduledAt = TimeStampToDateTime((long)scheduledJob.Value),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Queue = JobHelper.TryToGetQueueName(job[0]),

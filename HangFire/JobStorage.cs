@@ -181,5 +181,13 @@ namespace HangFire
                 return Redis.RemoveFailedJob(jobId);
             }
         }
+
+        public static bool EnqueueScheduled(string jobId)
+        {
+            lock (Redis)
+            {
+                return Redis.EnqueueScheduledJob(jobId);
+            }
+        }
     }
 }

@@ -22,6 +22,11 @@ namespace HangFire.Web
             RegisterPathHandlerFactory("/queues", x => new QueuesPage());
             RegisterPathHandlerFactory("/processing", x => new ProcessingJobsPage());
             RegisterPathHandlerFactory("/schedule", x => new SchedulePage());
+
+            RegisterPathHandlerFactory(
+                "/schedule/enqueue/(?<JobId>.+)",
+                x => new CommandHandler(() => Command.EnqueueScheduled(x.Groups["JobId"].Value)));
+
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
