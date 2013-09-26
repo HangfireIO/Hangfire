@@ -409,13 +409,13 @@ WriteLiteral(@"
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </a>\r\n                </li>\r\n                <li>Redis: \r\n " +
-"                   ");
+WriteLiteral("\r\n                    </a>\r\n                </li>\r\n                <li>\r\n        " +
+"            ");
 
 
             
             #line 117 "..\..\Pages\LayoutPage.cshtml"
-               Write(String.Format("{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb));
+               Write(String.Format("redis://{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb));
 
             
             #line default
@@ -425,17 +425,28 @@ WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
 
             
             #line 119 "..\..\Pages\LayoutPage.cshtml"
-                     Write(DateTime.UtcNow.ToString());
+                     Write(DateTime.UtcNow);
 
             
             #line default
             #line hidden
-WriteLiteral(" UTC\r\n                </li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n    \r" +
+WriteLiteral(" UTC\r\n                </li>\r\n                <li>\r\n                    Generated " +
+"in [");
+
+
+            
+            #line 122 "..\..\Pages\LayoutPage.cshtml"
+                              Write((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ms]\r\n                </li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n    \r" +
 "\n    <script src=\"");
 
 
             
-            #line 125 "..\..\Pages\LayoutPage.cshtml"
+            #line 128 "..\..\Pages\LayoutPage.cshtml"
             Write(Request.LinkTo("/js/scripts.js"));
 
             

@@ -4,15 +4,19 @@ using HangFire.Server;
 
 namespace HangFire.Filters
 {
-    public class ServerJobExceptionContext
+    public class ServerJobExceptionContext : WorkerContext
     {
-        public ServerJobExceptionContext(WorkerContext workerContext, Exception exception)
+        public ServerJobExceptionContext(
+            WorkerContext workerContext, 
+            ServerJobDescriptor jobDescriptor,
+            Exception exception)
+            : base(workerContext)
         {
-            WorkerContext = workerContext;
+            JobDescriptor = jobDescriptor;
             Exception = exception;
         }
 
-        public WorkerContext WorkerContext { get; private set; }
+        public ServerJobDescriptor JobDescriptor { get; set; }
 
         public Exception Exception { get; private set; }
         public bool ExceptionHandled { get; set; }

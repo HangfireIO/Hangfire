@@ -11,12 +11,22 @@
 
 namespace HangFire.Web.Pages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     
     #line 2 "..\..\Pages\SchedulePage.cshtml"
+    using System;
+    
+    #line default
+    #line hidden
+    using System.Collections.Generic;
+    
+    #line 3 "..\..\Pages\SchedulePage.cshtml"
+    using System.Linq;
+    
+    #line default
+    #line hidden
+    using System.Text;
+    
+    #line 4 "..\..\Pages\SchedulePage.cshtml"
     using Pages;
     
     #line default
@@ -35,11 +45,13 @@ WriteLiteral("\r\n");
 
 
 
+
+
 WriteLiteral("              \r\n");
 
 
             
-            #line 5 "..\..\Pages\SchedulePage.cshtml"
+            #line 7 "..\..\Pages\SchedulePage.cshtml"
   
     Layout = new LayoutPage { Title = "Schedule" };
     var scheduledJobs = JobStorage.Schedule();
@@ -52,7 +64,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 10 "..\..\Pages\SchedulePage.cshtml"
+            #line 12 "..\..\Pages\SchedulePage.cshtml"
  if (scheduledJobs.Count == 0)
 {
 
@@ -64,7 +76,7 @@ WriteLiteral("    <div class=\"alert alert-success\">\r\n        Нет ни о�
 
 
             
-            #line 15 "..\..\Pages\SchedulePage.cshtml"
+            #line 17 "..\..\Pages\SchedulePage.cshtml"
 }
 else
 {
@@ -73,12 +85,12 @@ else
             #line default
             #line hidden
 WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Timestamp</th>\r\n                <th>Type</th>\r\n                <th>Queue</th>\r\n" +
-"                <th>Args</th>\r\n            </tr>\r\n        </thead>\r\n");
+">Scheduled At</th>\r\n                <th>Queue</th>\r\n                <th>Type</th" +
+">\r\n                <th>Args</th>\r\n            </tr>\r\n        </thead>\r\n");
 
 
             
-            #line 27 "..\..\Pages\SchedulePage.cshtml"
+            #line 29 "..\..\Pages\SchedulePage.cshtml"
          foreach (var job in scheduledJobs)
         {
 
@@ -89,8 +101,8 @@ WriteLiteral("            <tr>\r\n                <td>");
 
 
             
-            #line 30 "..\..\Pages\SchedulePage.cshtml"
-               Write(job.TimeStamp);
+            #line 32 "..\..\Pages\SchedulePage.cshtml"
+               Write(job.ScheduledAt);
 
             
             #line default
@@ -99,37 +111,38 @@ WriteLiteral("</td>\r\n                <td>");
 
 
             
-            #line 31 "..\..\Pages\SchedulePage.cshtml"
-               Write(job.Type);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td><span class=\"label label-primary\">");
-
-
-            
-            #line 32 "..\..\Pages\SchedulePage.cshtml"
-                                                 Write(job.Queue);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</span></td>\r\n                <td><code>");
-
-
-            
             #line 33 "..\..\Pages\SchedulePage.cshtml"
-                     Write(job.Args);
+               Write(HtmlHelper.QueueLabel(job.Queue));
 
             
             #line default
             #line hidden
-WriteLiteral("</code></td>\r\n            </tr>\r\n");
+WriteLiteral("</td>\r\n                <td>");
 
 
             
-            #line 35 "..\..\Pages\SchedulePage.cshtml"
+            #line 34 "..\..\Pages\SchedulePage.cshtml"
+               Write(HtmlHelper.JobType(job.Type));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                <td>\r\n                    <code>\r\n                        " +
+"");
+
+
+            
+            #line 37 "..\..\Pages\SchedulePage.cshtml"
+                   Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                    </code>\r\n                </td>\r\n            </tr>\r\n");
+
+
+            
+            #line 41 "..\..\Pages\SchedulePage.cshtml"
         }
 
             
@@ -139,7 +152,7 @@ WriteLiteral("    </table>\r\n");
 
 
             
-            #line 37 "..\..\Pages\SchedulePage.cshtml"
+            #line 43 "..\..\Pages\SchedulePage.cshtml"
 }
             
             #line default

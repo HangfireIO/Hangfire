@@ -5,7 +5,7 @@ namespace HangFire
 {
     public class Perform
     {
-        private static readonly JobClient Instance = new JobClient();
+        private static readonly JobClient Client = new JobClient();
 
         static Perform()
         {
@@ -25,7 +25,7 @@ namespace HangFire
 
         public static string Async(Type jobType, object args = null)
         {
-            return Instance.Async(jobType, args);
+            return Client.Async(jobType, args);
         }
 
         public static string In<TJob>(TimeSpan interval)
@@ -42,7 +42,7 @@ namespace HangFire
 
         public static string In(TimeSpan interval, Type jobType, object args = null)
         {
-            return Instance.In(interval, jobType, args);
+            return Client.In(interval, jobType, args);
         }
     }
 }

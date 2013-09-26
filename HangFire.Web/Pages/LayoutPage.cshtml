@@ -113,10 +113,13 @@
                         @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
                     </a>
                 </li>
-                <li>Redis: 
-                    @String.Format("{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb)
+                <li>
+                    @String.Format("redis://{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb)
                 </li>
-                <li>Time: @DateTime.UtcNow.ToString() UTC
+                <li>Time: @DateTime.UtcNow UTC
+                </li>
+                <li>
+                    Generated in [@((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds) ms]
                 </li>
             </ul>
         </div>

@@ -62,6 +62,8 @@ namespace HangFire.Web
 
         public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
         {
+            context.Items.Add("GenerationStartedAt", DateTime.UtcNow);
+
             var request = context.Request;
             var resource = request.PathInfo.Length == 0
                 ? String.Empty

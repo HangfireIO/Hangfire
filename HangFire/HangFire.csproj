@@ -80,6 +80,7 @@
     <Compile Include="Filters\Server\JobPerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
+    <Compile Include="RetryJobsFilter.cs" />
     <Compile Include="Storage\EnqueuedJobDto.cs" />
     <Compile Include="Storage\FailedJobDto.cs" />
     <Compile Include="Storage\JobStorageConfiguration.cs" />

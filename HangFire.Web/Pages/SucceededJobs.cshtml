@@ -39,7 +39,7 @@ else
             @foreach (var job in succeededJobs)
             {
                 <tr>
-                    <td>@job.Type</td>
+                    <td>@HtmlHelper.JobType(job.Type)</td>
                     <td>@HtmlHelper.QueueLabel(job.Queue)</td>
                     <td>
                         <code>

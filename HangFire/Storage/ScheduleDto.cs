@@ -1,10 +1,13 @@
-﻿namespace HangFire.Storage
+﻿using System;
+using System.Collections.Generic;
+
+namespace HangFire.Storage
 {
     public class ScheduleDto
     {
-        public string TimeStamp { get; set; }
+        public DateTime ScheduledAt { get; set; }
         public string Type { get; set; }
         public string Queue { get; set; }
-        public string Args { get; set; }
+        public Dictionary<string, string> Args { get; set; }
     }
 }

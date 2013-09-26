@@ -39,7 +39,9 @@ namespace HangFire.Server
             }
             catch (Exception ex)
             {
-                var exceptionContext = InvokeServerExceptionFilters(workerContext, _serverExceptionFilters, ex);
+                var exceptionContext = InvokeServerExceptionFilters(
+                    workerContext, jobDescriptor, _serverExceptionFilters, ex);
+
                 if (!exceptionContext.ExceptionHandled)
                 {
                     throw;
@@ -105,9 +107,11 @@ namespace HangFire.Server
         }
 
         private static ServerJobExceptionContext InvokeServerExceptionFilters(
-            WorkerContext workerContext, IEnumerable<IServerJobExceptionFilter> filters, Exception exception)
+            WorkerContext workerContext, 
+            ServerJobDescriptor jobDescriptor,
+            IEnumerable<IServerJobExceptionFilter> filters, Exception exception)
         {
-            var context = new ServerJobExceptionContext(workerContext, exception);
+            var context = new ServerJobExceptionContext(workerContext, jobDescriptor, exception);
             foreach (var filter in filters.Reverse())
             {
                 filter.OnServerException(context);

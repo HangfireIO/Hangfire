@@ -116,7 +116,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
             
             #line 42 "..\..\Pages\SucceededJobs.cshtml"
-                   Write(job.Type);
+                   Write(HtmlHelper.JobType(job.Type));
 
             
             #line default

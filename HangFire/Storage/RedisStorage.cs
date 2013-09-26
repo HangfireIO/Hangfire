@@ -21,6 +21,11 @@ namespace HangFire.Storage
             _redis = new RedisClient(_config.RedisHost, _config.RedisPort, _config.RedisPassword, _config.RedisDb); 
         }
 
+        public IRedisClient Redis
+        {
+            get { return _redis; }
+        }
+
         public void Dispose()
         {
             _redis.Dispose();
@@ -65,15 +70,19 @@ namespace HangFire.Storage
             }
         }
 
-        public void ScheduleJob(string jobId, Dictionary<string, string> job, string queueName, DateTime at)
+        public void ScheduleJob(
+            string jobId, Dictionary<string, string> job, string queueName, DateTime at)
         {
             var timestamp = DateTimeToTimestamp(at);
 
             using (var transaction = _redis.CreateTransaction())
             {
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    job));
+                if (job != null)
+                {
+                    transaction.QueueCommand(x => x.SetRangeInHash(
+                        String.Format("hangfire:job:{0}", jobId),
+                        job));
+                }
 
                 transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format("hangfire:job:{0}", jobId),
@@ -397,8 +406,8 @@ namespace HangFire.Storage
 
                 result.Add(new ScheduleDto
                     {
-                        TimeStamp = scheduledJob.Value.ToString(),
-                        Args = job[1],
+                        ScheduledAt = TimeStampToDateTime((long)scheduledJob.Value),
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Queue = JobHelper.TryToGetQueueName(job[0]),
                         Type = job[0]
                     });
@@ -704,6 +713,11 @@ namespace HangFire.Storage
         {
             TimeSpan elapsedTime = value - Epoch;
             return (long)elapsedTime.TotalSeconds;
+        }
+
+        private static DateTime TimeStampToDateTime(long timeStamp)
+        {
+            return Epoch.AddSeconds(timeStamp);
         }
     }
 }

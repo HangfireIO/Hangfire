@@ -176,7 +176,7 @@ namespace HangFire.Server
                     return;
                 }
 
-                var workerContext = new WorkerContext(_serverContext, _workerNumber);
+                var workerContext = new WorkerContext(_serverContext, _workerNumber, Redis);
 
                 lock (Redis)
                 {
