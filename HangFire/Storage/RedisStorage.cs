@@ -288,7 +288,7 @@ namespace HangFire.Storage
                     transaction.QueueCommand(x => x.IncrementValue(
                         String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
 
-                    transaction.QueueCommand(x => x.PushItemToList("hangfire:succeeded", jobId));
+                    transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", jobId));
                     transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
 
                     var hourlySucceededKey = String.Format(
