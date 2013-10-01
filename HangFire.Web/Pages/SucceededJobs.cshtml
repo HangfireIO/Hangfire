@@ -3,13 +3,12 @@
 @using System.Linq
 @using Pages
 @inherits RazorPage
-              
 @{
     Layout = new LayoutPage { Title = "Succeeded Jobs" };
 }
 
 <div class="alert alert-info">
-    HangFire хранит последние 100 успешно выполненных  заданий в очереди <code>hangfire:succeeded</code> 
+    HangFire хранит последние 100 успешно выполненных  заданий в очереди <code>hangfire:succeeded</code>
     для более простой отладки работы фоновых задач.
 </div>
 
@@ -21,7 +20,7 @@
 {
     <div class="alert alert-warning">
         <p>
-        Список завершенных заданий пуст.
+            Список завершенных заданий пуст.
     </div>
 }
 else
@@ -29,6 +28,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Id</th>
                 <th>Type</th>
                 <th>Queue</th>
                 <th>Args</th>
@@ -39,14 +39,24 @@ else
             @foreach (var job in succeededJobs)
             {
                 <tr>
-                    <td>@HtmlHelper.JobType(job.Type)</td>
-                    <td>@HtmlHelper.QueueLabel(job.Queue)</td>
-                    <td>
-                        <code>
-                            @String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
-                        </code>
-                    </td>
-                    <td>@job.SucceededAt</td>
+                    <td>@HtmlHelper.JobId(job.Key)</td>
+
+                    @if (job.Value == null)
+                    {
+                        <td colspan="4">The job was expired. 
+                        </td>
+                    }
+                    else
+                    {    
+                        <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                        <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
+                        <td>
+                            <code>
+                                @String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
+                            </code>
+                        </td>
+                        <td>@job.Value.SucceededAt</td>
+                    }
                 </tr>
             }
         </tbody>

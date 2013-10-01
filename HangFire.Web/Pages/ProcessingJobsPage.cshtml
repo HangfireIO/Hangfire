@@ -18,10 +18,10 @@
         @foreach (var job in JobStorage.ProcessingJobs())
         {
             <tr>
-                <td>@job.ServerName</td>
-                <td>@job.Type</td>
-                <td><code>@job.Args</code></td>
-                <td>@job.StartedAt</td>
+                <td>@job.Value.ServerName</td>
+                <td>@job.Value.Type</td>
+                <td><code>@job.Value.Args</code></td>
+                <td>@job.Value.StartedAt</td>
             </tr>
         }
     </tbody>

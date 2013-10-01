@@ -30,16 +30,16 @@ else
         @foreach (var job in scheduledJobs)
         {
             <tr>
-                <td>@job.ScheduledAt</td>
-                <td>@HtmlHelper.QueueLabel(job.Queue)</td>
-                <td>@HtmlHelper.JobType(job.Type)</td>
+                <td>@job.Value.ScheduledAt</td>
+                <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
+                <td>@HtmlHelper.JobType(job.Value.Type)</td>
                 <td>
                     <code>
-                        @String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
+                        @String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
                     </code>
                 </td>
                 <td>
-                    <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Id)" data-loading-text="Enqueueing...">
+                    <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Key)" data-loading-text="Enqueueing...">
                         <span class="glyphicon glyphicon-play"></span>
                         Enqueue now
                     </button>

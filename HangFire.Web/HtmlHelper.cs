@@ -5,6 +5,11 @@ namespace HangFire.Web
 {
     internal static class HtmlHelper
     {
+        public static IHtmlString JobId(string jobId)
+        {
+            return new HtmlString(jobId.Substring(0, 8));
+        }
+
         public static string JobType(string typeName)
         {
             var type = Type.GetType(typeName, throwOnError: false);

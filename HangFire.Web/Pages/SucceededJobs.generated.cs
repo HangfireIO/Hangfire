@@ -47,11 +47,9 @@ WriteLiteral("\r\n");
 
 
 
-WriteLiteral("              \r\n");
-
 
             
-            #line 7 "..\..\Pages\SucceededJobs.cshtml"
+            #line 6 "..\..\Pages\SucceededJobs.cshtml"
   
     Layout = new LayoutPage { Title = "Succeeded Jobs" };
 
@@ -60,12 +58,12 @@ WriteLiteral("              \r\n");
             #line default
             #line hidden
 WriteLiteral("\r\n<div class=\"alert alert-info\">\r\n    HangFire хранит последние 100 успешно выпол" +
-"ненных  заданий в очереди <code>hangfire:succeeded</code> \r\n    для более просто" +
-"й отладки работы фоновых задач.\r\n</div>\r\n\r\n");
+"ненных  заданий в очереди <code>hangfire:succeeded</code>\r\n    для более простой" +
+" отладки работы фоновых задач.\r\n</div>\r\n\r\n");
 
 
             
-            #line 16 "..\..\Pages\SucceededJobs.cshtml"
+            #line 15 "..\..\Pages\SucceededJobs.cshtml"
   
     var succeededJobs = JobStorage.SucceededJobs();
 
@@ -77,19 +75,19 @@ WriteLiteral("\r\n");
 
 
             
-            #line 20 "..\..\Pages\SucceededJobs.cshtml"
+            #line 19 "..\..\Pages\SucceededJobs.cshtml"
  if (succeededJobs.Count == 0)
 {
 
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-warning\">\r\n        <p>\r\n        Список завершенных за" +
-"даний пуст.\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-warning\">\r\n        <p>\r\n            Список завершенны" +
+"х заданий пуст.\r\n    </div>\r\n");
 
 
             
-            #line 26 "..\..\Pages\SucceededJobs.cshtml"
+            #line 25 "..\..\Pages\SucceededJobs.cshtml"
 }
 else
 {
@@ -97,10 +95,18 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Type</th>\r\n                <th>Queue</th>\r\n                <th>Args</th>\r\n     " +
-"           <th>Succeeded at</th>\r\n            </tr>\r\n        </thead>\r\n        <" +
-"tbody>\r\n");
+WriteLiteral(@"    <table class=""table"">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Type</th>
+                <th>Queue</th>
+                <th>Args</th>
+                <th>Succeeded at</th>
+            </tr>
+        </thead>
+        <tbody>
+");
 
 
             
@@ -116,48 +122,103 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
             
             #line 42 "..\..\Pages\SucceededJobs.cshtml"
-                   Write(HtmlHelper.JobType(job.Type));
+                   Write(HtmlHelper.JobId(job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td>");
+WriteLiteral("</td>\r\n\r\n");
 
 
             
-            #line 43 "..\..\Pages\SucceededJobs.cshtml"
-                   Write(HtmlHelper.QueueLabel(job.Queue));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                    <td>\r\n                        <code>\r\n                " +
-"            ");
-
-
-            
-            #line 46 "..\..\Pages\SucceededJobs.cshtml"
-                       Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+            #line 44 "..\..\Pages\SucceededJobs.cshtml"
+                     if (job.Value == null)
+                    {
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </code>\r\n                    </td>\r\n                   " +
-" <td>");
+WriteLiteral("                        <td colspan=\"4\">The job was expired. \r\n                  " +
+"      </td>\r\n");
 
 
             
-            #line 49 "..\..\Pages\SucceededJobs.cshtml"
-                   Write(job.SucceededAt);
+            #line 48 "..\..\Pages\SucceededJobs.cshtml"
+                    }
+                    else
+                    {    
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                </tr>\r\n");
+WriteLiteral("                        <td>");
 
 
             
             #line 51 "..\..\Pages\SucceededJobs.cshtml"
+                       Write(HtmlHelper.JobType(job.Value.Type));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+
+
+WriteLiteral("                        <td>");
+
+
+            
+            #line 52 "..\..\Pages\SucceededJobs.cshtml"
+                       Write(HtmlHelper.QueueLabel(job.Value.Queue));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+
+
+WriteLiteral("                        <td>\r\n                            <code>\r\n               " +
+"                 ");
+
+
+            
+            #line 55 "..\..\Pages\SucceededJobs.cshtml"
+                           Write(String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                            </code>\r\n                        </td>\r\n");
+
+
+
+WriteLiteral("                        <td>");
+
+
+            
+            #line 58 "..\..\Pages\SucceededJobs.cshtml"
+                       Write(job.Value.SucceededAt);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n");
+
+
+            
+            #line 59 "..\..\Pages\SucceededJobs.cshtml"
+                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                </tr>\r\n");
+
+
+            
+            #line 61 "..\..\Pages\SucceededJobs.cshtml"
             }
 
             
@@ -167,7 +228,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 54 "..\..\Pages\SucceededJobs.cshtml"
+            #line 64 "..\..\Pages\SucceededJobs.cshtml"
 }
             
             #line default

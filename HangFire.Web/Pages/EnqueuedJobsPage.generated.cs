@@ -100,7 +100,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
             
             #line 25 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                   Write(HtmlHelper.JobType(job.Type));
+                   Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default
@@ -110,7 +110,7 @@ WriteLiteral("</td>\r\n                    <td><code>\r\n                       
 
             
             #line 27 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                       Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+                       Write(String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
 
             
             #line default
@@ -120,7 +120,7 @@ WriteLiteral("\r\n                        </code></td>\r\n                    <t
 
             
             #line 29 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                   Write(job.EnqueuedAt);
+                   Write(job.Value.EnqueuedAt);
 
             
             #line default

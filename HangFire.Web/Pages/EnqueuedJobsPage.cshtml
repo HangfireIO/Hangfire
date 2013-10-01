@@ -22,11 +22,11 @@
             @foreach (var job in queue.FirstJobs)
             {
                 <tr>
-                    <td>@HtmlHelper.JobType(job.Type)</td>
+                    <td>@HtmlHelper.JobType(job.Value.Type)</td>
                     <td><code>
-                            @String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
+                            @String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
                         </code></td>
-                    <td>@job.EnqueuedAt</td>
+                    <td>@job.Value.EnqueuedAt</td>
                 </tr>
             }
         </tbody>

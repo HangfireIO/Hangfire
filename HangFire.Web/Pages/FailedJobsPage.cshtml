@@ -29,24 +29,24 @@ else
             @foreach (var job in failedJobs)
             {
                 <tr>
-                    <td>@job.FailedAt</td>
-                    <td>@HtmlHelper.QueueLabel(job.Queue)</td>
+                    <td>@job.Value.FailedAt</td>
+                    <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
                     <td class="expand-exception">
                         <div>
-                            @HtmlHelper.JobType(job.Type)
+                            @HtmlHelper.JobType(job.Value.Type)
                         </div>
                         <div style="color: #888;">
-                            @job.ExceptionMessage <span class="caret"></span>
+                            @job.Value.ExceptionMessage <span class="caret"></span>
                         </div>
                     </td>
                     <td>
                         <div class="pull-right">
-                            <button class="btn btn-primary btn-sm" data-ajax="@Request.LinkTo("/failed/retry/" + job.Id)" data-loading-text="Retrying...">
+                            <button class="btn btn-primary btn-sm" data-ajax="@Request.LinkTo("/failed/retry/" + job.Key)" data-loading-text="Retrying...">
                                 <span class="glyphicon glyphicon-repeat"></span>
                                 Retry
                             </button>
 
-                            <button class="btn btn-danger btn-sm" data-ajax="@Request.LinkTo("/failed/remove/" + job.Id)" data-loading-text="Deleting...">
+                            <button class="btn btn-danger btn-sm" data-ajax="@Request.LinkTo("/failed/remove/" + job.Key)" data-loading-text="Deleting...">
                                 <span class="glyphicon glyphicon-remove"></span>
                             </button>
                         </div>
@@ -54,14 +54,14 @@ else
                 </tr>
                 <tr style="@(index++ > 0 ? "display: none;" : null)">
                     <td colspan="4" class="failed-job-details">
-                        <h4>@job.ExceptionType</h4>
+                        <h4>@job.Value.ExceptionType</h4>
                         <p>
-                            @job.ExceptionMessage
+                            @job.Value.ExceptionMessage
                         </p>
                         
-                        @if (!String.IsNullOrEmpty(job.ExceptionDetails))
+                        @if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
                         {
-                            <pre class="stack-trace">@MarkupStackTrace(job.ExceptionDetails)</pre>
+                            <pre class="stack-trace">@MarkupStackTrace(job.Value.ExceptionDetails)</pre>
                         }
 
                         <h4>Job Arguments</h4>
@@ -73,7 +73,7 @@ else
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var arg in job.Args)
+                                @foreach (var arg in job.Value.Args)
                                 {
                                     <tr>
                                         <td>@arg.Key</td>

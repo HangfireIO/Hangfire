@@ -103,7 +103,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
             
             #line 32 "..\..\Pages\FailedJobsPage.cshtml"
-                   Write(job.FailedAt);
+                   Write(job.Value.FailedAt);
 
             
             #line default
@@ -113,7 +113,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
             
             #line 33 "..\..\Pages\FailedJobsPage.cshtml"
-                   Write(HtmlHelper.QueueLabel(job.Queue));
+                   Write(HtmlHelper.QueueLabel(job.Value.Queue));
 
             
             #line default
@@ -124,7 +124,7 @@ WriteLiteral("</td>\r\n                    <td class=\"expand-exception\">\r\n  
 
             
             #line 36 "..\..\Pages\FailedJobsPage.cshtml"
-                       Write(HtmlHelper.JobType(job.Type));
+                       Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default
@@ -135,7 +135,7 @@ WriteLiteral("\r\n                        </div>\r\n                        <div
 
             
             #line 39 "..\..\Pages\FailedJobsPage.cshtml"
-                       Write(job.ExceptionMessage);
+                       Write(job.Value.ExceptionMessage);
 
             
             #line default
@@ -148,7 +148,7 @@ WriteLiteral(" <span class=\"caret\"></span>\r\n                        </div>\r
 
             
             #line 44 "..\..\Pages\FailedJobsPage.cshtml"
-                                                                         Write(Request.LinkTo("/failed/retry/" + job.Id));
+                                                                         Write(Request.LinkTo("/failed/retry/" + job.Key));
 
             
             #line default
@@ -163,7 +163,7 @@ WriteLiteral(@""" data-loading-text=""Retrying..."">
 
             
             #line 49 "..\..\Pages\FailedJobsPage.cshtml"
-                                                                        Write(Request.LinkTo("/failed/remove/" + job.Id));
+                                                                        Write(Request.LinkTo("/failed/remove/" + job.Key));
 
             
             #line default
@@ -190,7 +190,7 @@ WriteLiteral("\">\r\n                    <td colspan=\"4\" class=\"failed-job-de
 
             
             #line 57 "..\..\Pages\FailedJobsPage.cshtml"
-                       Write(job.ExceptionType);
+                       Write(job.Value.ExceptionType);
 
             
             #line default
@@ -200,7 +200,7 @@ WriteLiteral("</h4>\r\n                        <p>\r\n                          
 
             
             #line 59 "..\..\Pages\FailedJobsPage.cshtml"
-                       Write(job.ExceptionMessage);
+                       Write(job.Value.ExceptionMessage);
 
             
             #line default
@@ -210,7 +210,7 @@ WriteLiteral("\r\n                        </p>\r\n                        \r\n")
 
             
             #line 62 "..\..\Pages\FailedJobsPage.cshtml"
-                         if (!String.IsNullOrEmpty(job.ExceptionDetails))
+                         if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
                         {
 
             
@@ -221,7 +221,7 @@ WriteLiteral("                            <pre class=\"stack-trace\">");
 
             
             #line 64 "..\..\Pages\FailedJobsPage.cshtml"
-                                                Write(MarkupStackTrace(job.ExceptionDetails));
+                                                Write(MarkupStackTrace(job.Value.ExceptionDetails));
 
             
             #line default
@@ -251,7 +251,7 @@ WriteLiteral(@"
 
             
             #line 76 "..\..\Pages\FailedJobsPage.cshtml"
-                                 foreach (var arg in job.Args)
+                                 foreach (var arg in job.Value.Args)
                                 {
 
             

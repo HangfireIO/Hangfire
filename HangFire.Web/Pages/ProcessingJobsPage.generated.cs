@@ -63,7 +63,7 @@ WriteLiteral("            <tr>\r\n                <td>");
 
             
             #line 21 "..\..\Pages\ProcessingJobsPage.cshtml"
-               Write(job.ServerName);
+               Write(job.Value.ServerName);
 
             
             #line default
@@ -73,7 +73,7 @@ WriteLiteral("</td>\r\n                <td>");
 
             
             #line 22 "..\..\Pages\ProcessingJobsPage.cshtml"
-               Write(job.Type);
+               Write(job.Value.Type);
 
             
             #line default
@@ -83,7 +83,7 @@ WriteLiteral("</td>\r\n                <td><code>");
 
             
             #line 23 "..\..\Pages\ProcessingJobsPage.cshtml"
-                     Write(job.Args);
+                     Write(job.Value.Args);
 
             
             #line default
@@ -93,7 +93,7 @@ WriteLiteral("</code></td>\r\n                <td>");
 
             
             #line 24 "..\..\Pages\ProcessingJobsPage.cshtml"
-               Write(job.StartedAt);
+               Write(job.Value.StartedAt);
 
             
             #line default

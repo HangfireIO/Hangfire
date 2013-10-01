@@ -377,33 +377,28 @@ namespace HangFire.Storage
                 }).ToList();
         }
 
-        public IEnumerable<ProcessingJobDto> GetProcessingJobs()
+        public IList<KeyValuePair<string, ProcessingJobDto>> GetProcessingJobs()
         {
             var jobIds = _redis.GetAllItemsFromSet("hangfire:processing");
-            var result = new List<ProcessingJobDto>();
-            foreach (var jobId in jobIds)
-            {
-                var job = _redis.GetValuesFromHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    new[] { "Type", "Args", "StartedAt", "ServerName" });
 
-                result.Add(new ProcessingJobDto
+            return GetJobsWithProperties(
+                jobIds,
+                new[] { "Type", "Args", "StartedAt", "ServerName" },
+                job => new ProcessingJobDto
                     {
                         ServerName = job[3],
                         Args = job[1],
                         Type = job[0],
                         StartedAt = job[2]
                     });
-            }
-
-            return result;
         }
 
-        public IList<ScheduleDto> GetSchedule()
+        public IDictionary<string, ScheduleDto> GetSchedule()
         {
             // TODO: use ZRANGEBYSCORE and split results into pages.
             var scheduledJobs = _redis.GetAllWithScoresFromSortedSet("hangfire:schedule");
-            var result = new List<ScheduleDto>();
+
+            var result = new Dictionary<string, ScheduleDto>();
 
             foreach (var scheduledJob in scheduledJobs)
             {
@@ -411,14 +406,17 @@ namespace HangFire.Storage
                     String.Format("hangfire:job:{0}", scheduledJob.Key),
                     new[] { "Type", "Args" });
 
-                result.Add(new ScheduleDto
-                    {
-                        Id = scheduledJob.Key,
-                        ScheduledAt = TimeStampToDateTime((long)scheduledJob.Value),
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                        Queue = JobHelper.TryToGetQueueName(job[0]),
-                        Type = job[0]
-                    });
+                var dto = job.TrueForAll(x => x == null)
+                    ? null
+                    : new ScheduleDto
+                      {
+                          ScheduledAt = TimeStampToDateTime((long)scheduledJob.Value),
+                          Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                          Queue = JobHelper.TryToGetQueueName(job[0]),
+                          Type = job[0]
+                      };
+
+                result.Add(scheduledJob.Key, dto);
             }
 
             return result;
@@ -563,21 +561,16 @@ namespace HangFire.Storage
             return result;
         }
 
-        public IList<FailedJobDto> GetFailedJobs()
+        public IList<KeyValuePair<string, FailedJobDto>> GetFailedJobs()
         {
             // TODO: use LRANGE and pages.
             var failedJobIds = _redis.GetAllItemsFromSortedSetDesc("hangfire:failed");
-            var result = new List<FailedJobDto>(failedJobIds.Count);
 
-            foreach (var jobId in failedJobIds)
-            {
-                var job = _redis.GetValuesFromHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    new[] { "Type", "Args", "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails" });
-
-                result.Add(new FailedJobDto
+            return GetJobsWithProperties(
+                failedJobIds,
+                new[] { "Type", "Args", "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails" },
+                job => new FailedJobDto
                     {
-                        Id = jobId,
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
@@ -586,33 +579,23 @@ namespace HangFire.Storage
                         ExceptionMessage = job[4],
                         ExceptionDetails = job[5],
                     });
-            }
-
-            return result.OrderByDescending(x => x.FailedAt).ToList();
         }
 
-        public IList<SucceededJobDto> GetSucceededJobs()
+        public IList<KeyValuePair<string, SucceededJobDto>> GetSucceededJobs()
         {
             // TODO: use LRANGE with paging.
             var succeededJobIds = _redis.GetAllItemsFromList("hangfire:succeeded");
-            var result = new List<SucceededJobDto>(succeededJobIds.Count);
 
-            foreach (var jobId in succeededJobIds)
-            {
-                var job = _redis.GetValuesFromHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    new[] { "Type", "Args", "SucceededAt" });
-
-                result.Add(new SucceededJobDto
+            return GetJobsWithProperties(
+                succeededJobIds,
+                new[] { "Type", "Args", "SucceededAt" },
+                job => new SucceededJobDto
                     {
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         SucceededAt = JobHelper.FromJson<DateTime>(job[2]),
                     });
-            }
-
-            return result;
         }
 
         public IList<QueueWithTopEnqueuedJobsDto> GetEnqueuedJobs()
@@ -624,26 +607,21 @@ namespace HangFire.Storage
             {
                 var firstJobIds = _redis.GetRangeFromList(
                     String.Format("hangfire:queue:{0}", queue), 0, 10);
-                var jobs = new List<EnqueuedJobDto>(firstJobIds.Count);
 
-                foreach (var jobId in firstJobIds)
-                {
-                    var job = _redis.GetValuesFromHash(
-                        String.Format("hangfire:job:{0}", jobId),
-                        new[] { "Type", "Args", "EnqueuedAt" });
-
-                    jobs.Add(new EnqueuedJobDto
-                    {
-                        Type = job[0],
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                        EnqueuedAt = JobHelper.FromJson<DateTime>(job[2]),
-                    }); 
-                }
+                var jobs = GetJobsWithProperties(
+                    firstJobIds, 
+                    new [] { "Type", "Args", "EnqueuedAt" },
+                    job => new EnqueuedJobDto
+                        {
+                            Type = job[0],
+                            Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                            EnqueuedAt = JobHelper.FromJson<DateTime>(job[2]),
+                        });
 
                 result.Add(new QueueWithTopEnqueuedJobsDto
                     {
                         QueueName = queue,
-                        FirstJobs = jobs.ToArray()
+                        FirstJobs = jobs
                     });
             }
 
@@ -713,6 +691,23 @@ namespace HangFire.Storage
 
                 return transaction.Commit();
             }
+        }
+
+        private IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(
+            IEnumerable<string> jobIds,
+            string[] properties,
+            Func<List<string>, T> selector)
+        {
+            return jobIds
+                .Select(x => new 
+                    { 
+                        JobId = x, 
+                        Job = _redis.GetValuesFromHash(String.Format("hangfire:job:{0}", x), properties)
+                    })
+                .Select(x => new KeyValuePair<string, T>(
+                    x.JobId, 
+                    x.Job.TrueForAll(y => y == null) ? default (T) : selector(x.Job)))
+                .ToList();
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

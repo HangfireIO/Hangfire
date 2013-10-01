@@ -110,7 +110,7 @@ WriteLiteral("            <tr>\r\n                <td>");
 
             
             #line 33 "..\..\Pages\SchedulePage.cshtml"
-               Write(job.ScheduledAt);
+               Write(job.Value.ScheduledAt);
 
             
             #line default
@@ -120,7 +120,7 @@ WriteLiteral("</td>\r\n                <td>");
 
             
             #line 34 "..\..\Pages\SchedulePage.cshtml"
-               Write(HtmlHelper.QueueLabel(job.Queue));
+               Write(HtmlHelper.QueueLabel(job.Value.Queue));
 
             
             #line default
@@ -130,7 +130,7 @@ WriteLiteral("</td>\r\n                <td>");
 
             
             #line 35 "..\..\Pages\SchedulePage.cshtml"
-               Write(HtmlHelper.JobType(job.Type));
+               Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default
@@ -141,7 +141,7 @@ WriteLiteral("</td>\r\n                <td>\r\n                    <code>\r\n   
 
             
             #line 38 "..\..\Pages\SchedulePage.cshtml"
-                   Write(String.Join(", ", job.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+                   Write(String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
 
             
             #line default
@@ -152,7 +152,7 @@ WriteLiteral("\r\n                    </code>\r\n                </td>\r\n      
 
             
             #line 42 "..\..\Pages\SchedulePage.cshtml"
-                                                                 Write(Request.LinkTo("/schedule/enqueue/" + job.Id));
+                                                                 Write(Request.LinkTo("/schedule/enqueue/" + job.Key));
 
             
             #line default

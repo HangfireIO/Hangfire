@@ -86,7 +86,7 @@ namespace HangFire
             }
         }
 
-        public static IEnumerable<ProcessingJobDto> ProcessingJobs()
+        public static IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs()
         {
             lock (Redis)
             {
@@ -94,7 +94,7 @@ namespace HangFire
             }
         }
 
-        public static IList<ScheduleDto> Schedule()
+        public static IDictionary<string, ScheduleDto> Schedule()
         {
             lock (Redis)
             {
@@ -102,7 +102,7 @@ namespace HangFire
             }
         }
 
-        public static Dictionary<string, long> SucceededByDatesCount()
+        public static IDictionary<string, long> SucceededByDatesCount()
         {
             lock (Redis)
             {
@@ -110,7 +110,7 @@ namespace HangFire
             }
         }
 
-        public static Dictionary<string, long> FailedByDatesCount()
+        public static IDictionary<string, long> FailedByDatesCount()
         {
             lock (Redis)
             {
@@ -126,7 +126,7 @@ namespace HangFire
             }
         }
 
-        public static IList<FailedJobDto> FailedJobs()
+        public static IList<KeyValuePair<string, FailedJobDto>> FailedJobs()
         {
             lock (Redis)
             {
@@ -134,7 +134,7 @@ namespace HangFire
             }
         }
 
-        public static IList<SucceededJobDto> SucceededJobs()
+        public static IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs()
         {
             lock (Redis)
             {
@@ -150,7 +150,7 @@ namespace HangFire
             }
         }
 
-        public static Dictionary<DateTime, long> HourlySucceededJobs()
+        public static IDictionary<DateTime, long> HourlySucceededJobs()
         {
             lock (Redis)
             {
@@ -158,7 +158,7 @@ namespace HangFire
             }
         }
 
-        public static Dictionary<DateTime, long> HourlyFailedJobs()
+        public static IDictionary<DateTime, long> HourlyFailedJobs()
         {
             lock (Redis)
             {
