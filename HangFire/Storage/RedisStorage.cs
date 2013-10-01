@@ -366,15 +366,9 @@ namespace HangFire.Storage
                 _redis.GetValue("hangfire:stats:processing") ?? "0");
         }
 
-        public IEnumerable<QueueDto> GetQueues()
+        public long GetQueuesCount()
         {
-            var queueNames = _redis.GetAllItemsFromSet("hangfire:queues");
-            return queueNames.Select(queueName => new QueueDto
-                {
-                    Name = queueName, 
-                    Length = _redis.GetListCount(String.Format("hangfire:queue:{0}", queueName)),
-                    Servers = _redis.GetAllItemsFromSet(String.Format("hangfire:queue:{0}:servers", queueName))
-                }).ToList();
+            return _redis.GetSetCount("hangfire:queues");
         }
 
         public IList<KeyValuePair<string, ProcessingJobDto>> GetProcessingJobs()
@@ -598,7 +592,7 @@ namespace HangFire.Storage
                     });
         }
 
-        public IList<QueueWithTopEnqueuedJobsDto> GetEnqueuedJobs()
+        public IList<QueueWithTopEnqueuedJobsDto> GetQueues()
         {
             var queues = _redis.GetAllItemsFromSet("hangfire:queues");
             var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
@@ -606,7 +600,7 @@ namespace HangFire.Storage
             foreach (var queue in queues)
             {
                 var firstJobIds = _redis.GetRangeFromList(
-                    String.Format("hangfire:queue:{0}", queue), 0, 10);
+                    String.Format("hangfire:queue:{0}", queue), 0, 4);
 
                 var jobs = GetJobsWithProperties(
                     firstJobIds, 
@@ -618,10 +612,15 @@ namespace HangFire.Storage
                             EnqueuedAt = JobHelper.FromJson<DateTime>(job[2]),
                         });
 
+                var length = _redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
+                var servers = _redis.GetAllItemsFromSet(String.Format("hangfire:queue:{0}:servers", queue));
+
                 result.Add(new QueueWithTopEnqueuedJobsDto
                     {
                         QueueName = queue,
-                        FirstJobs = jobs
+                        FirstJobs = jobs,
+                        Servers = servers,
+                        Length = length,
                     });
             }
 

@@ -1,4 +1,6 @@
-﻿$(function() {
+﻿$(function () {
+    $('*[title]').tooltip();
+
     $(document).on('click', '*[data-ajax]', function(e) {
         var $this = $(this);
 

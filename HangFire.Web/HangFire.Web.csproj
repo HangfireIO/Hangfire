@@ -61,8 +61,8 @@
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
     <Compile Include="JavaScriptHandler.cs" />
-    <Compile Include="Pages\EnqueuedJobsPage.generated.cs">
-      <DependentUpon>EnqueuedJobsPage.cshtml</DependentUpon>
+    <Compile Include="Pages\QueuesPage.generated.cs">
+      <DependentUpon>QueuesPage.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -101,9 +101,9 @@
     <None Include="packages.config" />
     <None Include="package\content\HangFireConfig.cs.pp" />
     <None Include="package\content\web.config.transform" />
-    <None Include="Pages\EnqueuedJobsPage.cshtml">
+    <None Include="Pages\QueuesPage.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>EnqueuedJobsPage.generated.cs</LastGenOutput>
+      <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
     </None>
     <None Include="Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -117,10 +117,6 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>ServersPage.generated.cs</LastGenOutput>
     </None>
-    <None Include="Pages\QueuesPage.cshtml">
-      <Generator>RazorGenerator</Generator>
-      <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
-    </None>
     <Compile Include="Pages\FailedJobsPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -130,11 +126,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ServersPage.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\QueuesPage.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>QueuesPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Handlers\RazorPage.cs" />
     <None Include="Pages\SchedulePage.cshtml">

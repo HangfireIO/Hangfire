@@ -1,27 +1,66 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Linq
 @using Pages
 @inherits RazorPage
-              
 @{
     Layout = new LayoutPage { Title = "Queues" };
 }
 
-<table class="table">
-    <thead> 
-        <tr>
-            <th>Queue</th>
-            <th>Length</th>
-            <th>Servers</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var queue in JobStorage.Queues())
-        {
-            <tr>
-                <td>@HtmlHelper.QueueLabel(queue.Name)</td>
-                <td>@queue.Length</td>
-                <td>@string.Join(", ", queue.Servers)</td>
-            </tr>
-        }
-    </tbody>
-</table>
+@foreach (var queue in JobStorage.Queues())
+{
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">
+                @queue.QueueName    </h3>
+        </div>
+        <div class="panel-body">
+            
+
+            <dl class="dl-horizontal">
+                <dt>Queue length:</dt>
+                <dd>@queue.Length</dd>
+                <dt>Servers:</dt>
+                <dd>@String.Join(", ", queue.Servers)</dd>
+            </dl>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Args</th>
+                        <th>Enqueued At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var job in queue.FirstJobs)
+                    {
+                        <tr>
+                            <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                            <td><code>
+                                    @String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
+                                </code></td>
+                            <td>@job.Value.EnqueuedAt</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            <a href="#">Enqueued jobs</a>
+            
+        </div>
+        <div class="panel-footer">
+            <div class="btn-toolbar pull-right">
+                <button class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-trash"></span>
+                    Clear
+                </button>
+                <button class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+            </div>
+
+            <div class="clearfix"></div>
+        </div>
+    </div>
+}

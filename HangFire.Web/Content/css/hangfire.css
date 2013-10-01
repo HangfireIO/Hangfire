@@ -28,7 +28,7 @@ html, body {
 -------------------------------------------------- */
 
 #wrap > .container {
-  padding: 70px 15px 20px;
+  padding: 0 0px 20px;
 }
 .container .credit {
   margin: 20px 0;
@@ -50,11 +50,6 @@ html, body {
 /* Statistics widget
 -------------------------------------------------- */
 
-#stats {
-    position: fixed;
-    width: 265px;
-}
-
 #stats .list-group-item {
     border-color: #e7e7e7;
     background-color: #f8f8f8;
@@ -75,6 +70,10 @@ html, body {
     color: #555;
     background-color: #e7e7e7;
     border-color: #e7e7e7;
+}
+
+#stats .stats-indent {
+    padding-left: 30px;
 }
 
 .table td.failed-job-details {

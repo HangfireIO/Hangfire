@@ -17,7 +17,7 @@
     <div id="wrap">
 
         <!-- Fixed navbar -->
-        <div class="navbar navbar-default navbar-fixed-top">
+        <div class="navbar navbar-default navbar-static-top">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -28,23 +28,6 @@
                     <a class="navbar-brand" href="@Request.LinkTo("/")">HangFire Monitor</a>
                 </div>
                 <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav">
-                        <li class="@(Request.PathInfo.Equals("/") || Request.PathInfo.Equals("") ? "active" : null)">
-                            <a href="@Request.LinkTo("/")">Dashboard</a>
-                        </li>
-                        <li class="@(Request.PathInfo.Equals("/servers") ? "active" : null)">
-                            <a href="@(Request.LinkTo("/servers"))">
-                                Servers
-                                <span class="badge">@JobStorage.Servers().Count()</span>
-                            </a>                            
-                        </li>
-                        <li class="@(Request.PathInfo.Equals("/queues") ? "active" : null)">
-                            <a href="@Request.LinkTo("/queues")">
-                                Queues
-                                <span class="badge">@JobStorage.Queues().Count()</span>
-                            </a>
-                        </li>
-                    </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
                             <a href="/">Back to site</a>
@@ -60,41 +43,55 @@
         <div class="container">
             <div class="col-md-3">
                 <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
-                    <a class="list-group-item @(Request.PathInfo.Equals("/enqueued") ? "active" : null)" 
-                       href="@Request.LinkTo("/enqueued")">
-                        <span id="stats-enqueued" class="label label-default pull-right">
-                            @String.Format("{0:n0}", JobStorage.EnqueuedCount())
-                        </span>
-                        Enqueued
+                    <a class="list-group-item @(Request.PathInfo.Equals("/servers") ? "active" : null)"
+                       href="@Request.LinkTo("/servers")">
+                        <span class="label label-default pull-right">@JobStorage.Servers().Count()</span>
+                        Active Servers
                     </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
+
+                    <a class="list-group-item @(Request.PathInfo.Equals("/queues") ? "active" : null)" 
+                       href="@Request.LinkTo("/queues")">
+                        <span id="stats-enqueued" class="label label-default pull-right">
+                            <span title="Enqueued jobs count">
+                                @String.Format("{0:n0}", JobStorage.EnqueuedCount())
+                            </span>
+                            / 
+                            <span title="Queues count">
+                                @JobStorage.QueuesCount()
+                            </span>
+                        </span>
+                        Jobs & Queues
+                    </a>
+                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
                        href="@Request.LinkTo("/schedule")">
                         <span id="stats-scheduled" class="label label-info pull-right">
                             @String.Format("{0:n0}", JobStorage.ScheduledCount())
                         </span>
                         Scheduled
                     </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
+                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
                        href="@Request.LinkTo("/processing")">
                         <span id="stats-workers" class="label label-warning pull-right">
                             @String.Format("{0:n0}", JobStorage.ProcessingJobs().Count())
                         </span>
                         Processing
                     </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
+                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
                        href="@Request.LinkTo("/succeeded")">
                         <span id="stats-succeeded" class="label label-success pull-right">
                             @String.Format("{0:n0}", JobStorage.SucceededCount())
                         </span>
                         Succeeded
                     </a>
-                    <a class="list-group-item @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
+                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
                        href="@Request.LinkTo("/failed")">
                         <span id="stats-failed" class="label label-danger pull-right">
                             @String.Format("{0:n0}", JobStorage.FailedCount())
                         </span>
                         Failed
                     </a>
+
+
                 </div>
             </div>
             <div class="col-md-9">
@@ -108,8 +105,7 @@
         <div class="container">
             <ul class="list-inline credit">
                 <li>
-                    <a href="http://github.io/odinserj/hangfire" target="_blank">
-                        HangFire 
+                    <a href="http://github.io/odinserj/hangfire" target="_blank">HangFire 
                         @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
                     </a>
                 </li>
@@ -118,13 +114,12 @@
                 </li>
                 <li>Time: @DateTime.UtcNow UTC
                 </li>
-                <li>
-                    Generated in [@((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds) ms]
+                <li>Generated in [@((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds) ms]
                 </li>
             </ul>
         </div>
     </div>
-    
+
     <script src="@Request.LinkTo("/js/scripts.js")"></script>
 </body>
 </html>

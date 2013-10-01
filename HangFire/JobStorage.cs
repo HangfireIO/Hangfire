@@ -78,14 +78,6 @@ namespace HangFire
             }
         }
 
-        public static IEnumerable<QueueDto> Queues()
-        {
-            lock (Redis)
-            {
-                return Redis.GetQueues();
-            }
-        }
-
         public static IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs()
         {
             lock (Redis)
@@ -142,11 +134,11 @@ namespace HangFire
             }
         }
 
-        public static IList<QueueWithTopEnqueuedJobsDto> EnqueuedJobs()
+        public static IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
             lock (Redis)
             {
-                return Redis.GetEnqueuedJobs();
+                return Redis.GetQueues();
             }
         }
 
@@ -187,6 +179,14 @@ namespace HangFire
             lock (Redis)
             {
                 return Redis.EnqueueScheduledJob(jobId);
+            }
+        }
+
+        public static long QueuesCount()
+        {
+            lock (Redis)
+            {
+                return Redis.GetQueuesCount();
             }
         }
     }
