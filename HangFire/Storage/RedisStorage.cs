@@ -257,7 +257,7 @@ namespace HangFire.Storage
                     new Dictionary<string, string>
                         {
                             { "StartedAt", JobHelper.ToJson(DateTime.UtcNow) },
-                            { "Server", serverName }
+                            { "ServerName", serverName }
                         }));
 
                 transaction.Commit();
@@ -381,10 +381,10 @@ namespace HangFire.Storage
                 job => new ProcessingJobDto
                     {
                         ServerName = job[3],
-                        Args = job[1],
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Type = job[0],
-                        StartedAt = job[2]
-                    });
+                        StartedAt = JobHelper.FromJson<DateTime>(job[2])
+                    }).OrderBy(x => x.Value.StartedAt).ToList();
         }
 
         public IDictionary<string, ScheduleDto> GetSchedule()

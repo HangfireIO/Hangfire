@@ -140,7 +140,7 @@ WriteLiteral("</td>\r\n                            <td><code>\r\n               
 
             
             #line 41 "..\..\Pages\QueuesPage.cshtml"
-                               Write(String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+                               Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default

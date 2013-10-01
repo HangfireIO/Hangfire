@@ -141,7 +141,7 @@ WriteLiteral("</td>\r\n                <td>\r\n                    <code>\r\n   
 
             
             #line 38 "..\..\Pages\SchedulePage.cshtml"
-                   Write(String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+                   Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default

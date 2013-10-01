@@ -73,7 +73,7 @@ WriteLiteral("</td>\r\n                <td>");
 
             
             #line 22 "..\..\Pages\ProcessingJobsPage.cshtml"
-               Write(job.Value.Type);
+               Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default
@@ -83,7 +83,7 @@ WriteLiteral("</td>\r\n                <td><code>");
 
             
             #line 23 "..\..\Pages\ProcessingJobsPage.cshtml"
-                     Write(job.Value.Args);
+                     Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 
 namespace HangFire.Web
@@ -20,6 +22,11 @@ namespace HangFire.Web
             }
 
             return type.FullName;
+        }
+
+        public static string FormatProperties(IDictionary<string, string> properties)
+        {
+            return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
         }
 
         public static IHtmlString QueueLabel(string queueName)

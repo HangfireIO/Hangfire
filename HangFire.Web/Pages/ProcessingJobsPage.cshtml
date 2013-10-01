@@ -19,8 +19,8 @@
         {
             <tr>
                 <td>@job.Value.ServerName</td>
-                <td>@job.Value.Type</td>
-                <td><code>@job.Value.Args</code></td>
+                <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                <td><code>@HtmlHelper.FormatProperties(job.Value.Args)</code></td>
                 <td>@job.Value.StartedAt</td>
             </tr>
         }

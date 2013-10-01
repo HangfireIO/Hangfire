@@ -38,7 +38,7 @@
                         <tr>
                             <td>@HtmlHelper.JobType(job.Value.Type)</td>
                             <td><code>
-                                    @String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)))
+                                    @HtmlHelper.FormatProperties(job.Value.Args)
                                 </code></td>
                             <td>@job.Value.EnqueuedAt</td>
                         </tr>

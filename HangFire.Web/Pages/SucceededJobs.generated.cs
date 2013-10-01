@@ -185,7 +185,7 @@ WriteLiteral("                        <td>\r\n                            <code>
 
             
             #line 55 "..\..\Pages\SucceededJobs.cshtml"
-                           Write(String.Join(", ", job.Value.Args.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value))));
+                           Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default
