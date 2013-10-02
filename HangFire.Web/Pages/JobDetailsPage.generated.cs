@@ -52,32 +52,67 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n<dl class=\"dl-horizontal\">\r\n    <dt>Id</dt>\r\n    <dd>");
+WriteLiteral("\r\n");
+
+
+            
+            #line 10 "..\..\Pages\JobDetailsPage.cshtml"
+ if (job == null)
+{
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    ");
+
+WriteLiteral(" The job with id \'");
 
 
             
             #line 12 "..\..\Pages\JobDetailsPage.cshtml"
-   Write(JobId);
+                   Write(JobId);
 
             
             #line default
             #line hidden
-WriteLiteral("</dd>\r\n    \r\n    <dt>Type</dt>\r\n    <dd>");
+WriteLiteral("\' was expired or was not existed on the server.\r\n");
 
 
             
-            #line 15 "..\..\Pages\JobDetailsPage.cshtml"
-   Write(HtmlHelper.JobType(job.Type));
+            #line 13 "..\..\Pages\JobDetailsPage.cshtml"
+}
+else
+{
 
             
             #line default
             #line hidden
-WriteLiteral("</dd>\r\n    \r\n    <dt>Arguments</dt>\r\n    <dd><code>");
+WriteLiteral("    <dl class=\"dl-horizontal\">\r\n        <dt>Id</dt>\r\n        <dd>");
 
 
             
             #line 18 "..\..\Pages\JobDetailsPage.cshtml"
-         Write(HtmlHelper.FormatProperties(job.Arguments));
+       Write(JobId);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</dd>\r\n    \r\n        <dt>Type</dt>\r\n        <dd>");
+
+
+            
+            #line 21 "..\..\Pages\JobDetailsPage.cshtml"
+       Write(HtmlHelper.JobType(job.Type));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</dd>\r\n    \r\n        <dt>Arguments</dt>\r\n        <dd><code>");
+
+
+            
+            #line 24 "..\..\Pages\JobDetailsPage.cshtml"
+             Write(HtmlHelper.FormatProperties(job.Arguments));
 
             
             #line default
@@ -86,19 +121,19 @@ WriteLiteral("</code></dd>\r\n    \r\n");
 
 
             
-            #line 20 "..\..\Pages\JobDetailsPage.cshtml"
-     foreach (var property in job.Properties)
-    {
+            #line 26 "..\..\Pages\JobDetailsPage.cshtml"
+         foreach (var property in job.Properties)
+        {
 
             
             #line default
             #line hidden
-WriteLiteral("        <dt>");
+WriteLiteral("            <dt>");
 
 
             
-            #line 22 "..\..\Pages\JobDetailsPage.cshtml"
-       Write(property.Key);
+            #line 28 "..\..\Pages\JobDetailsPage.cshtml"
+           Write(property.Key);
 
             
             #line default
@@ -107,12 +142,12 @@ WriteLiteral("</dt>\r\n");
 
 
 
-WriteLiteral("        <dd>");
+WriteLiteral("            <dd>");
 
 
             
-            #line 23 "..\..\Pages\JobDetailsPage.cshtml"
-       Write(property.Value);
+            #line 29 "..\..\Pages\JobDetailsPage.cshtml"
+           Write(property.Value);
 
             
             #line default
@@ -121,14 +156,21 @@ WriteLiteral("</dd>\r\n");
 
 
             
-            #line 24 "..\..\Pages\JobDetailsPage.cshtml"
-    }
+            #line 30 "..\..\Pages\JobDetailsPage.cshtml"
+        }
 
             
             #line default
             #line hidden
-WriteLiteral("</dl>");
+WriteLiteral("    </dl>\r\n");
 
+
+            
+            #line 32 "..\..\Pages\JobDetailsPage.cshtml"
+}
+            
+            #line default
+            #line hidden
 
         }
     }

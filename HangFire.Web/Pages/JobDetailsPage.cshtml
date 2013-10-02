@@ -7,19 +7,26 @@
     var job = JobStorage.JobDetails(JobId.ToString());
 }
 
-<dl class="dl-horizontal">
-    <dt>Id</dt>
-    <dd>@JobId</dd>
+@if (job == null)
+{
+    @: The job with id '@JobId' was expired or was not existed on the server.
+}
+else
+{
+    <dl class="dl-horizontal">
+        <dt>Id</dt>
+        <dd>@JobId</dd>
     
-    <dt>Type</dt>
-    <dd>@HtmlHelper.JobType(job.Type)</dd>
+        <dt>Type</dt>
+        <dd>@HtmlHelper.JobType(job.Type)</dd>
     
-    <dt>Arguments</dt>
-    <dd><code>@HtmlHelper.FormatProperties(job.Arguments)</code></dd>
+        <dt>Arguments</dt>
+        <dd><code>@HtmlHelper.FormatProperties(job.Arguments)</code></dd>
     
-    @foreach (var property in job.Properties)
-    {
-        <dt>@property.Key</dt>
-        <dd>@property.Value</dd>
-    }
-</dl>
+        @foreach (var property in job.Properties)
+        {
+            <dt>@property.Key</dt>
+            <dd>@property.Value</dd>
+        }
+    </dl>
+}
