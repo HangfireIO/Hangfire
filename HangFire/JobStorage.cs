@@ -189,5 +189,13 @@ namespace HangFire
                 return Redis.GetQueuesCount();
             }
         }
+
+        public static JobDetailsDto JobDetails(string jobId)
+        {
+            lock (Redis)
+            {
+                return Redis.GetJobDetails(jobId);
+            }
+        }
     }
 }

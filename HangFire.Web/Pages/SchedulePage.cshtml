@@ -20,6 +20,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Id</th>
                 <th>Scheduled At</th>
                 <th>Queue</th>
                 <th>Type</th>
@@ -30,6 +31,11 @@ else
         @foreach (var job in scheduledJobs)
         {
             <tr>
+                <td>
+                    <a href="@Request.LinkTo("/job/" + job.Key)">
+                        @HtmlHelper.JobId(job.Key)
+                    </a>
+                </td>
                 <td>@job.Value.ScheduledAt</td>
                 <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
                 <td>@HtmlHelper.JobType(job.Value.Type)</td>

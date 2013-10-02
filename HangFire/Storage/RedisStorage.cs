@@ -709,6 +709,21 @@ namespace HangFire.Storage
                 .ToList();
         }
 
+        public JobDetailsDto GetJobDetails(string jobId)
+        {
+            var job = _redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
+            if (job.Count == 0) return null;
+
+            var hiddenProperties = new[] { "Type", "Args" };
+
+            return new JobDetailsDto
+                {
+                    Type = job["Type"],
+                    Arguments = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]),
+                    Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value)
+                };
+        }
+
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private static long DateTimeToTimestamp(DateTime value)

@@ -8,6 +8,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>Id</th>
             <th>Name</th>
             <th>Type</th>
             <th>Args</th>
@@ -18,6 +19,11 @@
         @foreach (var job in JobStorage.ProcessingJobs())
         {
             <tr>
+                <td>
+                    <a href="@Request.LinkTo("/job/" + job.Key)">
+                        @HtmlHelper.JobId(job.Key)
+                    </a>
+                </td>
                 <td>@job.Value.ServerName</td>
                 <td>@HtmlHelper.JobType(job.Value.Type)</td>
                 <td><code>@HtmlHelper.FormatProperties(job.Value.Args)</code></td>

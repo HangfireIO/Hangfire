@@ -83,6 +83,7 @@
     <Compile Include="RetryJobsFilter.cs" />
     <Compile Include="Storage\EnqueuedJobDto.cs" />
     <Compile Include="Storage\FailedJobDto.cs" />
+    <Compile Include="Storage\JobDetailsDto.cs" />
     <Compile Include="Storage\JobStorageConfiguration.cs" />
     <Compile Include="Filters\Client\IClientJobFilter.cs" />
     <Compile Include="Filters\IJobFilter.cs" />

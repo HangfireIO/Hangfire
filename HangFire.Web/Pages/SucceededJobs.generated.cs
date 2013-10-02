@@ -117,21 +117,32 @@ WriteLiteral(@"    <table class=""table"">
             
             #line default
             #line hidden
-WriteLiteral("                <tr>\r\n                    <td>");
+WriteLiteral("                <tr>\r\n                    <td>\r\n                        <a href=\"" +
+"");
 
 
             
-            #line 42 "..\..\Pages\SucceededJobs.cshtml"
-                   Write(HtmlHelper.JobId(job.Key));
+            #line 43 "..\..\Pages\SucceededJobs.cshtml"
+                            Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n\r\n");
+WriteLiteral("\">\r\n                            ");
 
 
             
             #line 44 "..\..\Pages\SucceededJobs.cshtml"
+                       Write(HtmlHelper.JobId(job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </a>\r\n                    </td>\r\n\r\n");
+
+
+            
+            #line 48 "..\..\Pages\SucceededJobs.cshtml"
                      if (job.Value == null)
                     {
 
@@ -143,7 +154,7 @@ WriteLiteral("                        <td colspan=\"4\">The job was expired. \r\
 
 
             
-            #line 48 "..\..\Pages\SucceededJobs.cshtml"
+            #line 52 "..\..\Pages\SucceededJobs.cshtml"
                     }
                     else
                     {    
@@ -155,7 +166,7 @@ WriteLiteral("                        <td>");
 
 
             
-            #line 51 "..\..\Pages\SucceededJobs.cshtml"
+            #line 55 "..\..\Pages\SucceededJobs.cshtml"
                        Write(HtmlHelper.JobType(job.Value.Type));
 
             
@@ -169,7 +180,7 @@ WriteLiteral("                        <td>");
 
 
             
-            #line 52 "..\..\Pages\SucceededJobs.cshtml"
+            #line 56 "..\..\Pages\SucceededJobs.cshtml"
                        Write(HtmlHelper.QueueLabel(job.Value.Queue));
 
             
@@ -184,7 +195,7 @@ WriteLiteral("                        <td>\r\n                            <code>
 
 
             
-            #line 55 "..\..\Pages\SucceededJobs.cshtml"
+            #line 59 "..\..\Pages\SucceededJobs.cshtml"
                            Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
@@ -198,7 +209,7 @@ WriteLiteral("                        <td>");
 
 
             
-            #line 58 "..\..\Pages\SucceededJobs.cshtml"
+            #line 62 "..\..\Pages\SucceededJobs.cshtml"
                        Write(job.Value.SucceededAt);
 
             
@@ -208,7 +219,7 @@ WriteLiteral("</td>\r\n");
 
 
             
-            #line 59 "..\..\Pages\SucceededJobs.cshtml"
+            #line 63 "..\..\Pages\SucceededJobs.cshtml"
                     }
 
             
@@ -218,7 +229,7 @@ WriteLiteral("                </tr>\r\n");
 
 
             
-            #line 61 "..\..\Pages\SucceededJobs.cshtml"
+            #line 65 "..\..\Pages\SucceededJobs.cshtml"
             }
 
             
@@ -228,7 +239,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 64 "..\..\Pages\SucceededJobs.cshtml"
+            #line 68 "..\..\Pages\SucceededJobs.cshtml"
 }
             
             #line default

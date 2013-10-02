@@ -18,6 +18,10 @@ namespace HangFire.Web
         {
             RegisterDefaultPathHandlerFactory(() => new DashboardPage());
 
+            RegisterPathHandlerFactory(
+                "/job/(?<JobId>.+)",
+                x => new JobDetailsPage(x.Groups["JobId"].Value));
+
             RegisterPathHandlerFactory("/queues", x => new QueuesPage());
             RegisterPathHandlerFactory("/processing", x => new ProcessingJobsPage());
             RegisterPathHandlerFactory("/schedule", x => new SchedulePage());

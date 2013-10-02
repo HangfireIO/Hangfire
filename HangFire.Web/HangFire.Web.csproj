@@ -61,6 +61,18 @@
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
     <Compile Include="JavaScriptHandler.cs" />
+    <None Include="Pages\JobDetailsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>JobDetailsPage.generated.cs</LastGenOutput>
+    </None>
+    <Compile Include="Pages\JobDetailsPage.cs">
+      <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\JobDetailsPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\QueuesPage.generated.cs">
       <DependentUpon>QueuesPage.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -71,7 +83,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DashboardPage.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\FailedJobsPage.cs" />
+    <Compile Include="Pages\FailedJobsPage.cs">
+      <DependentUpon>FailedJobsPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\SucceededJobs.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -80,7 +94,9 @@
     <Compile Include="AspNetJobServer.cs" />
     <Compile Include="HangFirePageFactory.cs" />
     <Compile Include="JsonStats.cs" />
-    <Compile Include="Pages\LayoutPage.cs" />
+    <Compile Include="Pages\LayoutPage.cs">
+      <DependentUpon>LayoutPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\LayoutPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
