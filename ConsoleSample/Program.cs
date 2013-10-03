@@ -44,6 +44,15 @@ namespace ConsoleSample
         }
     }
 
+    [QueueName("qqq"), Recurring(30)]
+    public class RecurringJob : BackgroundJob
+    {
+        public override void Perform()
+        {
+            Console.WriteLine("Performing recurring task...");
+        }
+    }
+
     public static class Program
     {
         public static void Main()
@@ -59,6 +68,7 @@ namespace ConsoleSample
                 });
 
             GlobalJobFilters.Filters.Add(new RetryJobsFilter());
+            GlobalJobFilters.Filters.Add(new RecurringJobsFilter());
 
             using (var server = new BackgroundJobServer { ServerName = "hijack!", QueueName = "qqq", WorkersCount = concurrency})
             {
@@ -107,6 +117,12 @@ namespace ConsoleSample
                     {
                         var seconds = int.Parse(command.Substring(2));
                         Perform.In<ConsoleJob>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
+                    }
+
+                    if (command.StartsWith("recurring", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Perform.Async<RecurringJob>();
+                        Console.WriteLine("Recurring job added");
                     }
                 }
             }
