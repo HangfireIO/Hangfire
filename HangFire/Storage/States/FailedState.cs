@@ -8,8 +8,8 @@ namespace HangFire.Storage.States
     {
         public static readonly string Name = "Failed";
 
-        public FailedState(string jobId, Exception exception) 
-            : base(jobId)
+        public FailedState(string jobId, string reason, Exception exception) 
+            : base(jobId, reason)
         {
             Exception = exception;
         }
@@ -36,7 +36,6 @@ namespace HangFire.Storage.States
                         JobId,
                         JobHelper.ToTimestamp(DateTime.UtcNow)));
 
-            transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
             transaction.QueueCommand(x => x.IncrementValue(
                 String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
 
@@ -52,7 +51,6 @@ namespace HangFire.Storage.States
 
         public static void Unapply(IRedisTransaction transaction, string jobId)
         {
-            transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:failed"));
             transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
         }
     }

@@ -7,12 +7,14 @@ namespace HangFire.Storage.States
 {
     internal abstract class JobState
     {
-        protected JobState(string jobId)
+        protected JobState(string jobId, string reason)
         {
             JobId = jobId;
+            Reason = reason;
         }
 
         public string JobId { get; private set; }
+        public string Reason { get; private set; }
 
         public abstract string StateName { get; }
 
@@ -102,10 +104,10 @@ namespace HangFire.Storage.States
         private static void AppendHistory(
             IRedisTransaction transaction, JobState state, bool appendToJob)
         {
-            // TODO: expire history entry
-            var historyId = Guid.NewGuid();
             var properties = state.GetProperties();
             properties.Add("State", state.StateName);
+            properties.Add("Reason", state.Reason);
+            properties.Add("Date", JobHelper.ToStringTimestamp(DateTime.UtcNow));
 
             if (appendToJob)
             {

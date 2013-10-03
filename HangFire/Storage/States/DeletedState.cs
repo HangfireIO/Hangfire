@@ -8,7 +8,8 @@ namespace HangFire.Storage.States
     {
         public static readonly string Name = "Deleted";
 
-        public DeletedState(string jobId) : base(jobId)
+        public DeletedState(string jobId, string reason) 
+            : base(jobId, reason)
         {
         }
 

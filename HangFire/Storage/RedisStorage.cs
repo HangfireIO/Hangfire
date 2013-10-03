@@ -101,8 +101,7 @@ namespace HangFire.Storage
 
         public long GetFailedCount()
         {
-            return long.Parse(
-                _redis.GetValue("hangfire:stats:failed") ?? "0");
+            return _redis.GetSortedSetCount("hangfire:failed");
         }
 
         public long GetProcessingCount()
@@ -415,7 +414,6 @@ namespace HangFire.Storage
 
             using (var transaction = _redis.CreateTransaction())
             {
-                transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:failed"));
                 transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
                 transaction.QueueCommand(x => x.EnqueueItemOnList(String.Format("hangfire:queue:{0}", queueName), jobId));
 
@@ -425,7 +423,7 @@ namespace HangFire.Storage
 
         public bool RemoveFailedJob(string jobId)
         {
-            return JobState.Apply(_redis, new DeletedState(jobId));
+            return JobState.Apply(_redis, new DeletedState(jobId, "The job has been deleted by a user."));
         }
 
         private IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(

@@ -182,7 +182,7 @@ namespace HangFire.Server
                     // TODO: check that the job was enqueued.
                     if (!JobState.Apply(
                         Redis.Redis, 
-                        new ProcessingState(jobId, workerContext.ServerContext.ServerName),
+                        new ProcessingState(jobId, "Worker has started processing.", workerContext.ServerContext.ServerName),
                         EnqueuedState.Name,
                         ProcessingState.Name))
                     {
@@ -220,14 +220,14 @@ namespace HangFire.Server
                     {
                         JobState.Apply(
                             Redis.Redis, 
-                            new SucceededState(jobId),
+                            new SucceededState(jobId, "The job has been completed successfully."),
                             ProcessingState.Name);
                     }
                     else
                     {
                         JobState.Apply(
                             Redis.Redis, 
-                            new FailedState(jobId, exception),
+                            new FailedState(jobId, "The job has been failed.", exception),
                             ProcessingState.Name);
                     }
                 }

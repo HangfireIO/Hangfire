@@ -8,8 +8,8 @@ namespace HangFire.Storage.States
     {
         public static readonly string Name = "Enqueued";
 
-        public EnqueuedState(string jobId, string queueName) 
-            : base(jobId)
+        public EnqueuedState(string jobId, string reason, string queueName) 
+            : base(jobId, reason)
         {
             QueueName = queueName;
         }

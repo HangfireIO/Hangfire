@@ -10,8 +10,8 @@ namespace HangFire.Storage.States
 
         public static readonly string Name = "Succeeded";
 
-        public SucceededState(string jobId) 
-            : base(jobId)
+        public SucceededState(string jobId, string reason) 
+            : base(jobId, reason)
         {
         }
 

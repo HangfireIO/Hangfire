@@ -8,8 +8,8 @@ namespace HangFire.Storage.States
     {
         public static readonly string Name = "Processing";
 
-        public ProcessingState(string jobId, string serverName) 
-            : base(jobId)
+        public ProcessingState(string jobId, string reason, string serverName) 
+            : base(jobId, reason)
         {
             ServerName = serverName;
         }

@@ -8,8 +8,8 @@ namespace HangFire.Storage.States
     {
         public static readonly string Name = "Scheduled";
 
-        public ScheduledState(string jobId, string queueName, DateTime fireAt)
-            : base(jobId)
+        public ScheduledState(string jobId, string reason, string queueName, DateTime fireAt)
+            : base(jobId, reason)
         {
             QueueName = queueName;
             FireAt = fireAt;

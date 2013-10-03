@@ -38,7 +38,11 @@ namespace HangFire
 
                 // If attempt number is less than max attempts, we should
                 // schedule the job to run again later.
-                return new ScheduledState(state.JobId, queueName, delay);
+                return new ScheduledState(
+                    state.JobId, 
+                    String.Format("Retry attempt {0} of {1}.", retryCount, MaxRetryAttempts), 
+                    queueName, 
+                    delay);
             }
 
             // When we exceeded the number of attempts, we should leave
