@@ -156,16 +156,14 @@ namespace HangFire.Server
 
         private void PerformJob(string jobId)
         {
-            string jobType = null;
-            Dictionary<string, string> jobArgs = null;
-
             try
             {
+                Dictionary<string, string> jobArgs;
+                string jobType;
+
                 lock (Redis)
                 {
-                    Redis.RetryOnRedisException(
-                        x => x.GetJobTypeAndArgs(jobId, out jobType, out jobArgs),
-                        _cts.Token);
+                    Redis.GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
                 }
 
                 if (String.IsNullOrEmpty(jobType))
@@ -182,9 +180,14 @@ namespace HangFire.Server
                 lock (Redis)
                 {
                     // TODO: check that the job was enqueued.
-                    JobState.Apply(
+                    if (!JobState.Apply(
                         Redis.Redis, 
-                        new ProcessingState(jobId, workerContext.ServerContext.ServerName));
+                        new ProcessingState(jobId, workerContext.ServerContext.ServerName),
+                        EnqueuedState.Name,
+                        ProcessingState.Name))
+                    {
+                        return;
+                    }
                 }
 
                 Exception exception = null;

@@ -114,16 +114,12 @@ namespace HangFire.Server
         {
             try
             {
-                _blockingRedis.RetryOnRedisException(x => 
-                    x.AnnounceServer(_serverName, _concurrency, _queueName),
-                    _cts.Token);
+                _blockingRedis.AnnounceServer(_serverName, _concurrency, _queueName);
 
                 _logger.Info("Starting to requeue processing jobs...");
-                int requeued = 0;
 
-                _blockingRedis.RetryOnRedisException(x =>
-                    requeued += x.RequeueProcessingJobs(_serverName, _queueName, _cts.Token),
-                    _cts.Token);
+                var requeued = _blockingRedis.RequeueProcessingJobs(
+                    _serverName, _queueName, _cts.Token);
 
                 _logger.Info(String.Format("Requeued {0} jobs.", requeued));
 
@@ -136,20 +132,16 @@ namespace HangFire.Server
                 {
                     var worker = _pool.TakeFree(_cts.Token);
 
-                    string jobId = null;
-                    _blockingRedis.RetryOnRedisException(
-                        x =>
+                    string jobId;
+
+                    do
+                    {
+                        jobId = _blockingRedis.DequeueJobId(_serverName, _queueName, TimeSpan.FromSeconds(5));
+                        if (jobId == null && _cts.IsCancellationRequested)
                         {
-                            do
-                            {
-                                jobId = x.DequeueJobId(_serverName, _queueName, TimeSpan.FromSeconds(5));
-                                if (jobId == null && _cts.IsCancellationRequested)
-                                {
-                                    throw new OperationCanceledException();
-                                }
-                            } while (jobId == null);
-                        },
-                        _cts.Token);
+                            throw new OperationCanceledException();
+                        }
+                    } while (jobId == null);
 
                     worker.Process(jobId);
                 }
@@ -172,10 +164,7 @@ namespace HangFire.Server
                 while (true)
                 {
                     var jobId = _completedJobIds.Take(_cts.Token);
-
-                    _redis.RetryOnRedisException(x =>
-                        x.RemoveProcessingJob(_serverName, _queueName, jobId),
-                        _cts.Token);
+                    _redis.RemoveProcessingJob(_serverName, _queueName, jobId);
                 }
             }
             catch (OperationCanceledException)

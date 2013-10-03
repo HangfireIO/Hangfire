@@ -29,45 +29,6 @@ namespace HangFire.Storage
             _redis.Dispose();
         }
 
-        public void RetryOnRedisException(Action<RedisStorage> action, CancellationToken token)
-        {
-            while (true)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException();
-                }
-
-                try
-                {
-                    action(this);
-                    return;
-                }
-                catch (RedisResponseException)
-                {
-                    // When Redis instance issues incorrect answer, then it's data
-                    // is in the incorrect state. So, we can not recover after this
-                    // exception.
-                    throw;
-                }
-                catch (IOException)
-                {
-                    // This exception usually issued when awaiting blocking operation
-                    // was interrupted by one of the sides. We can retry the operation.
-
-                    // TODO: log the exception.
-                }
-                catch (RedisException)
-                {
-                    // This exception is raised when there is Redis connection error. 
-                    // We can retry the operation.
-
-                    // Logging is performed by ServiceStack.Redis library, using the same
-                    // classes that are used within HangFire. So, we can no log this exception.
-                }
-            }
-        }
-
         public string DequeueJobId(string serverName, string queue, TimeSpan? timeOut)
         {
             return _redis.BlockingPopAndPushItemBetweenLists(

@@ -107,7 +107,8 @@ namespace HangFire.Server
 
                 // TODO: check that the job is scheduled
                 return JobState.Apply(
-                    _redis.Redis, new EnqueuedState(jobId, queueName));
+                    _redis.Redis, new EnqueuedState(jobId, queueName),
+                    ScheduledState.Name);
             }
 
             return false;
