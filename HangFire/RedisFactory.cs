@@ -4,10 +4,9 @@ namespace HangFire
 {
     public class RedisFactory
     {
-        private static long _db = 0;
-        private static string _password = null;
-        private static int _port = 6379;
-        private static string _host = "localhost";
+        private static string _host = RedisNativeClient.DefaultHost;
+        private static int _port = RedisNativeClient.DefaultPort;
+        private static long _db = RedisNativeClient.DefaultDb;
 
         /// <summary>
         /// Gets or sets Redis hostname. Default: "localhost"
@@ -30,11 +29,7 @@ namespace HangFire
         /// <summary>
         /// Gets or sets Redis password. Default: null
         /// </summary>
-        public static string Password
-        {
-            get { return _password; }
-            set { _password = value; }
-        }
+        public static string Password { get; set; }
 
         /// <summary>
         /// Gets or sets Redis database number. Default: 0
