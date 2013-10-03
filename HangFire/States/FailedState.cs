@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.States
+namespace HangFire.States
 {
-    internal class FailedState : JobState
+    public class FailedState : JobState
     {
         public static readonly string Name = "Failed";
 

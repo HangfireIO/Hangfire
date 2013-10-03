@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using HangFire.Storage.States;
+using HangFire.States;
 using ServiceStack.Redis;
 
 namespace HangFire
@@ -17,7 +17,7 @@ namespace HangFire
 
     public class RecurringJobsFilter : IJobStateFilter
     {
-        JobState IJobStateFilter.OnJobState(IRedisClient redis, JobState state)
+        public JobState OnJobState(IRedisClient redis, JobState state)
         {
             if (state.StateName != SucceededState.Name)
             {

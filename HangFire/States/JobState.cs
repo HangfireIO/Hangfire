@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.States
+namespace HangFire.States
 {
-    internal abstract class JobState
+    public abstract class JobState
     {
         protected JobState(string jobId, string reason)
         {

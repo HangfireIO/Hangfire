@@ -371,7 +371,7 @@ WriteLiteral("\r\n                    </a>\r\n                </li>\r\n         
 
             
             #line 113 "..\..\Pages\LayoutPage.cshtml"
-               Write(String.Format("redis://{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb));
+               Write(String.Format("redis://{0}:{1}/{2}", RedisFactory.Host, RedisFactory.Port, RedisFactory.Db));
 
             
             #line default

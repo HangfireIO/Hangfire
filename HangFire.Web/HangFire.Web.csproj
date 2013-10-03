@@ -35,6 +35,18 @@
     <DocumentationFile>bin\Release\HangFire.Web.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ServiceStack.Common, Version=3.9.47.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Common.3.9.47\lib\net35\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces, Version=3.9.47.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Common.3.9.47\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Redis, Version=3.9.47.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\ServiceStack.Redis.3.9.47\lib\net35\ServiceStack.Redis.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=3.9.45.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Text.3.9.47\lib\net35\ServiceStack.Text.dll</HintPath>
@@ -109,6 +121,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ProcessingJobsPage.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Storage\EnqueuedJobDto.cs" />
+    <Compile Include="Storage\FailedJobDto.cs" />
+    <Compile Include="Storage\JobDetailsDto.cs" />
+    <Compile Include="Storage\JobStorage.cs" />
+    <Compile Include="Storage\ProcessingJobDto.cs" />
+    <Compile Include="Storage\QueueDto.cs" />
+    <Compile Include="Storage\QueueWithTopEnqueuedJobsDto.cs" />
+    <Compile Include="Storage\ScheduleDto.cs" />
+    <Compile Include="Storage\ServerDto.cs" />
+    <Compile Include="Storage\SucceededJobDto.cs" />
     <Compile Include="StyleSheetHandler.cs" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.ttf" />

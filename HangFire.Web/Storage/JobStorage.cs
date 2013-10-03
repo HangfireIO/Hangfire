@@ -1,44 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HangFire.Storage;
-using HangFire.Storage.States;
+using HangFire.States;
 using ServiceStack.Redis;
 
-namespace HangFire
+namespace HangFire.Web
 {
-    public static class JobStorage
+    internal static class JobStorage
     {
-        private static readonly Lazy<IRedisClient> _lazyRedis
-            = new Lazy<IRedisClient>(RedisFactory.Create);
-
-        static JobStorage()
-        {
-            Configuration = new JobStorageConfiguration();
-        }
-
-        /// <summary>
-        /// Gets the current HangFire configuration.
-        /// </summary>
-        public static JobStorageConfiguration Configuration { get; private set; }
-        private static IRedisClient Redis
-        {
-            get { return _lazyRedis.Value; }
-        }
-
-        /// <summary>
-        /// Runs specified configuration action to configure HangFire.
-        /// </summary>
-        /// <param name="action">Configuration action.</param>
-        public static void Configure(Action<JobStorageConfiguration> action)
-        {
-            if (action == null)
-            {
-                throw new ArgumentNullException("action");
-            }
-
-            action(Configuration);
-        }
+        private static readonly IRedisClient Redis = RedisFactory.Create();
 
         public static long ScheduledCount()
         {

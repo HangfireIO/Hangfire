@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.States
+namespace HangFire.States
 {
-    internal class SucceededState : JobState
+    public class SucceededState : JobState
     {
         private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 

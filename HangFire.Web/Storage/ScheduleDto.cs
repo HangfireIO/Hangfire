@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HangFire.Storage
+namespace HangFire.Web
 {
-    public class EnqueuedJobDto
+    internal class ScheduleDto
     {
+        public DateTime ScheduledAt { get; set; }
         public string Type { get; set; }
+        public string Queue { get; set; }
         public Dictionary<string, string> Args { get; set; }
-        public DateTime EnqueuedAt { get; set; }
     }
 }

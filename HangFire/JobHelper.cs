@@ -5,7 +5,7 @@ using ServiceStack.Text;
 
 namespace HangFire
 {
-    internal static class JobHelper
+    public static class JobHelper
     {
         public static string TryToGetQueueName(string jobType)
         {

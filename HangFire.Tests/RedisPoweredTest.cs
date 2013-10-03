@@ -1,5 +1,4 @@
 ﻿using System.Threading;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using ServiceStack.Logging;
@@ -28,13 +27,9 @@ namespace HangFire.Tests
             Redis = new ServiceStack.Redis.RedisClient(RedisHost, RedisPort, null, RedisDb);
             Redis.FlushDb();
 
-            JobStorage.Configure(
-                x =>
-                {
-                    x.RedisDb = RedisDb;
-                    x.RedisHost = RedisHost;
-                    x.RedisPort = RedisPort;
-                });
+            RedisFactory.Db = RedisDb;
+            RedisFactory.Host = RedisHost;
+            RedisFactory.Port = RedisPort;
 
             Initialize();
         }

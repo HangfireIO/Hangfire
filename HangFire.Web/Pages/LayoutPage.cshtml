@@ -110,7 +110,7 @@
                     </a>
                 </li>
                 <li>
-                    @String.Format("redis://{0}:{1}/{2}", JobStorage.Configuration.RedisHost, JobStorage.Configuration.RedisPort, JobStorage.Configuration.RedisDb)
+                    @String.Format("redis://{0}:{1}/{2}", RedisFactory.Host, RedisFactory.Port, RedisFactory.Db)
                 </li>
                 <li>Time: @DateTime.UtcNow UTC
                 </li>

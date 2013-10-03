@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Storage;
-using HangFire.Storage.States;
+using HangFire.States;
 using ServiceStack.Redis;
 
 namespace HangFire.Client

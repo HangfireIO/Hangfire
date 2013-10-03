@@ -1,20 +1,14 @@
 ﻿using System;
-using HangFire.Filters;
-using HangFire.Storage.States;
+using HangFire.States;
 using ServiceStack.Redis;
 
 namespace HangFire
 {
-    internal interface IJobStateFilter : IJobFilter
-    {
-        JobState OnJobState(IRedisClient redis, JobState state);
-    }
-
     public class RetryJobsFilter : IJobStateFilter
     {
         private const int MaxRetryAttempts = 3;
 
-        JobState IJobStateFilter.OnJobState(IRedisClient redis, JobState state)
+        public JobState OnJobState(IRedisClient redis, JobState state)
         {
             if (state.StateName != FailedState.Name)
             {

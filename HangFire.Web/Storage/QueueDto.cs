@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace HangFire.Storage
+namespace HangFire.Web
 {
-    public class QueueDto
+    internal class QueueDto
     {
         public string Name { get; set; }
         public long Length { get; set; }

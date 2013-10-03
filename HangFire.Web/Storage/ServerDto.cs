@@ -1,6 +1,6 @@
-﻿namespace HangFire.Storage
+﻿namespace HangFire.Web
 {
-    public class ServerDto
+    internal class ServerDto
     {
         public string Name { get; set; }
         public int Concurrency { get; set; }

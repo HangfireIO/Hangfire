@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using HangFire.Storage;
-using HangFire.Storage.States;
+using HangFire.States;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 

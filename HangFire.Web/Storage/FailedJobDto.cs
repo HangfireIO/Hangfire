@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HangFire.Storage
+namespace HangFire.Web
 {
-    public class FailedJobDto
+    internal class FailedJobDto
     {
         public string Type { get; set; }
         public string Queue { get; set; }

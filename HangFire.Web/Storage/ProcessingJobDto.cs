@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HangFire.Storage
+namespace HangFire.Web
 {
-    public class ProcessingJobDto
+    internal class ProcessingJobDto
     {
         public string ServerName { get; set; }
         public string Type { get; set; }

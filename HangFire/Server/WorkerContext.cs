@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Storage;
 using ServiceStack.Redis;
 
 namespace HangFire.Server

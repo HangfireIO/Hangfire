@@ -3,7 +3,6 @@ using System.IO;
 using System.Threading;
 
 using HangFire;
-
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
@@ -59,13 +58,9 @@ namespace ConsoleSample
         {
             int concurrency = Environment.ProcessorCount * 20;
             LogManager.LogFactory = new ConsoleLogFactory();
-            
-            JobStorage.Configure(
-                x =>
-                {
-                    x.RedisPort = 6379;
-                    x.RedisDb = 3;
-                });
+
+            RedisFactory.Port = 6379;
+            RedisFactory.Db = 3;
 
             GlobalJobFilters.Filters.Add(new RetryJobsFilter());
             GlobalJobFilters.Filters.Add(new RecurringJobsFilter());

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.States
+namespace HangFire.States
 {
-    internal class DeletedState : JobState
+    public class DeletedState : JobState
     {
         public static readonly string Name = "Deleted";
 

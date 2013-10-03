@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace HangFire.Storage
+namespace HangFire.Web
 {
-    public class JobDetailsDto
+    internal class JobDetailsDto
     {
         public string Type { get; set; }
         public IDictionary<string, string> Arguments { get; set; }

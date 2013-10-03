@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.States
+namespace HangFire.States
 {
-    internal class EnqueuedState : JobState
+    public class EnqueuedState : JobState
     {
         public static readonly string Name = "Enqueued";
 
