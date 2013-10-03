@@ -491,10 +491,11 @@ namespace HangFire.Storage
 
             var hiddenProperties = new[] { "Type", "Args" };
 
-            var historyList = _redis.GetAllItemsFromList(String.Format("hangfire:job:{0}:history", jobId));
+            var historyList = _redis.GetAllItemsFromList(
+                String.Format("hangfire:job:{0}:history", jobId));
+
             var history = historyList
-                .Select(x => _redis.GetAllEntriesFromHash(
-                    String.Format("hangfire:job:{0}:history:{1}", jobId, x)))
+                .Select(JobHelper.FromJson<Dictionary<string, string>>)
                 .ToList();
 
             return new JobDetailsDto

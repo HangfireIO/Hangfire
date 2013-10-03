@@ -28,8 +28,12 @@ namespace HangFire.Storage.States
         public override void Apply(IRedisTransaction transaction)
         {
             transaction.QueueCommand(x => x.ExpireEntryIn(
-                        String.Format("hangfire:job:{0}", JobId),
-                        _jobExpirationTimeout));
+                String.Format("hangfire:job:{0}", JobId),
+                _jobExpirationTimeout));
+
+            transaction.QueueCommand(x => x.ExpireEntryIn(
+                String.Format("hangfire:job:{0}:history", JobId),
+                _jobExpirationTimeout));
 
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
             transaction.QueueCommand(x => x.IncrementValue(

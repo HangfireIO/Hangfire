@@ -116,11 +116,7 @@ namespace HangFire.Storage.States
 
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:job:{0}:history", state.JobId),
-                historyId.ToString()));
-
-            transaction.QueueCommand(x => x.SetRangeInHash(
-                String.Format("hangfire:job:{0}:history:{1}", state.JobId, historyId.ToString()),
-                properties));
+                JobHelper.ToJson(properties)));
         }
     }
 }
