@@ -1,4 +1,5 @@
-﻿using HangFire.Server;
+﻿using System;
+using HangFire.Server;
 
 namespace HangFire
 {
@@ -12,7 +13,10 @@ namespace HangFire
         {
             lock (Worker.Redis)
             {
-                Worker.Redis.SetJobProperty(JobId, propertyName, value);
+                Worker.Redis.SetEntryInHash(
+                    String.Format("hangfire:job:{0}", JobId),
+                    propertyName,
+                    JobHelper.ToJson(value));
             }
         }
 
@@ -20,7 +24,11 @@ namespace HangFire
         {
             lock (Worker.Redis)
             {
-                return Worker.Redis.GetJobProperty<T>(JobId, propertyName);
+                var value = Worker.Redis.GetValueFromHash(
+                    String.Format("hangfire:job:{0}", JobId),
+                    propertyName);
+
+                return JobHelper.FromJson<T>(value);
             }
         }
     }

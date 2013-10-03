@@ -5,6 +5,7 @@ using System.Threading;
 using HangFire.Storage;
 using HangFire.Storage.States;
 using ServiceStack.Logging;
+using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -14,7 +15,7 @@ namespace HangFire.Server
         private readonly Thread _pollerThread;
 
         private readonly TimeSpan _pollInterval;
-        private readonly RedisStorage _redis = new RedisStorage();
+        private readonly IRedisClient _redis = RedisFactory.Create();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
@@ -69,7 +70,7 @@ namespace HangFire.Server
 
             string jobId = null;
 
-            using (var pipeline = _redis.Redis.CreatePipeline())
+            using (var pipeline = _redis.CreatePipeline())
             {
                 // By watching the scheduled tasks key we ensure that only one HangFire server
                 // will enqueue the first scheduled job at a time. Otherwise we could we can
@@ -90,14 +91,14 @@ namespace HangFire.Server
             }
 
             // When schedule contains no entries, we should unwatch it's key.
-            _redis.Redis.UnWatch();
+            _redis.UnWatch();
             return false;
         }
 
         public bool EnqueueScheduledJob(string jobId)
         {
             // To make atomic remove-enqueue call, we should know the target queue name first.
-            var queueName = _redis.Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "ScheduledQueue");
+            var queueName = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "ScheduledQueue");
 
             if (!String.IsNullOrEmpty(queueName))
             {
@@ -107,7 +108,7 @@ namespace HangFire.Server
 
                 // TODO: check that the job is scheduled
                 return JobState.Apply(
-                    _redis.Redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queueName),
+                    _redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queueName),
                     ScheduledState.Name);
             }
 

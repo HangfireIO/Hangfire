@@ -7,17 +7,17 @@ namespace HangFire.Server
 {
     public class WorkerContext
     {
-        private readonly RedisStorage _storage;
+        private readonly IRedisClient _redis;
 
         internal WorkerContext(WorkerContext workerContext)
-            : this (workerContext.ServerContext, workerContext.WorkerNumber, workerContext._storage)
+            : this (workerContext.ServerContext, workerContext.WorkerNumber, workerContext._redis)
         {
             Items = workerContext.Items;
         }
 
-        internal WorkerContext(ServerContext serverContext, int workerNumber, RedisStorage storage)
+        internal WorkerContext(ServerContext serverContext, int workerNumber, IRedisClient redis)
         {
-            _storage = storage;
+            _redis = redis;
             ServerContext = serverContext;
             WorkerNumber = workerNumber;
 
@@ -30,9 +30,9 @@ namespace HangFire.Server
 
         public void Redis(Action<IRedisClient> action)
         {
-            lock (_storage)
+            lock (_redis)
             {
-                action(_storage.Redis);
+                action(_redis);
             }
         }
     }

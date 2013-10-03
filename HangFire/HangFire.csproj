@@ -103,7 +103,7 @@
     <Compile Include="Storage\ProcessingJobDto.cs" />
     <Compile Include="Storage\QueueDto.cs" />
     <Compile Include="Storage\QueueWithTopEnqueuedJobsDto.cs" />
-    <Compile Include="Storage\RedisStorage.cs" />
+    <Compile Include="Storage\RedisFactory.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />

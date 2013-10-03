@@ -5,6 +5,7 @@ using System.Threading;
 using HangFire.Storage;
 using HangFire.Storage.States;
 using ServiceStack.Logging;
+using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -17,7 +18,7 @@ namespace HangFire.Server
         private readonly JobActivator _jobActivator;
         private readonly Thread _thread;
 
-        public static readonly RedisStorage Redis = new RedisStorage();
+        public static readonly IRedisClient Redis = RedisFactory.Create();
         protected readonly ILog Logger;
 
         private readonly ManualResetEventSlim _jobIsReady
@@ -161,10 +162,7 @@ namespace HangFire.Server
                 Dictionary<string, string> jobArgs;
                 string jobType;
 
-                lock (Redis)
-                {
-                    Redis.GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
-                }
+                GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
 
                 if (String.IsNullOrEmpty(jobType))
                 {
@@ -181,7 +179,7 @@ namespace HangFire.Server
                 {
                     // TODO: check that the job was enqueued.
                     if (!JobState.Apply(
-                        Redis.Redis, 
+                        Redis, 
                         new ProcessingState(jobId, "Worker has started processing.", workerContext.ServerContext.ServerName),
                         EnqueuedState.Name,
                         ProcessingState.Name))
@@ -219,14 +217,14 @@ namespace HangFire.Server
                     if (exception == null)
                     {
                         JobState.Apply(
-                            Redis.Redis, 
+                            Redis, 
                             new SucceededState(jobId, "The job has been completed successfully."),
                             ProcessingState.Name);
                     }
                     else
                     {
                         JobState.Apply(
-                            Redis.Redis, 
+                            Redis, 
                             new FailedState(jobId, "The job has been failed.", exception),
                             ProcessingState.Name);
                     }
@@ -234,6 +232,19 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
+            }
+        }
+
+        private void GetJobTypeAndArgs(string jobId, out string jobType, out Dictionary<string, string> jobArgs)
+        {
+            lock (Redis)
+            {
+                var result = Redis.GetValuesFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    new[] { "Type", "Args" });
+
+                jobType = result[0];
+                jobArgs = JobHelper.FromJson<Dictionary<string, string>>(result[1]);
             }
         }
     }

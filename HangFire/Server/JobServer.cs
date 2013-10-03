@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using HangFire.Storage;
 using ServiceStack.Logging;
+using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -15,8 +18,8 @@ namespace HangFire.Server
         private readonly Thread _completionHandlerThread;
         private readonly WorkerPool _pool;
         private readonly SchedulePoller _schedule;
-        private readonly RedisStorage _blockingRedis = new RedisStorage();
-        private readonly RedisStorage _redis = new RedisStorage();
+        private readonly IRedisClient _blockingRedis = RedisFactory.Create();
+        private readonly IRedisClient _redis = RedisFactory.Create();
         private readonly BlockingCollection<string> _completedJobIds
             = new BlockingCollection<string>();
 
@@ -114,12 +117,11 @@ namespace HangFire.Server
         {
             try
             {
-                _blockingRedis.AnnounceServer(_serverName, _concurrency, _queueName);
+                AnnounceServer();
 
                 _logger.Info("Starting to requeue processing jobs...");
 
-                var requeued = _blockingRedis.RequeueProcessingJobs(
-                    _serverName, _queueName, _cts.Token);
+                var requeued = RequeueProcessingJobs();
 
                 _logger.Info(String.Format("Requeued {0} jobs.", requeued));
 
@@ -136,7 +138,7 @@ namespace HangFire.Server
 
                     do
                     {
-                        jobId = _blockingRedis.DequeueJobId(_serverName, _queueName, TimeSpan.FromSeconds(5));
+                        jobId = DequeueJobId(TimeSpan.FromSeconds(5));
                         if (jobId == null && _cts.IsCancellationRequested)
                         {
                             throw new OperationCanceledException();
@@ -149,7 +151,7 @@ namespace HangFire.Server
             catch (OperationCanceledException)
             {
                 _logger.Info("Shutdown has been requested. Exiting...");
-                _blockingRedis.HideServer(_serverName, _queueName);
+                HideServer();
             }
             catch (Exception ex)
             {
@@ -164,7 +166,11 @@ namespace HangFire.Server
                 while (true)
                 {
                     var jobId = _completedJobIds.Take(_cts.Token);
-                    _redis.RemoveProcessingJob(_serverName, _queueName, jobId);
+
+                    _redis.RemoveItemFromList(
+                        String.Format("hangfire:processing:{0}:{1}", _serverName, _queueName),
+                        jobId,
+                        -1);
                 }
             }
             catch (OperationCanceledException)
@@ -184,6 +190,88 @@ namespace HangFire.Server
         private void PoolOnJobCompleted(object sender, JobCompletedEventArgs args)
         {
             _completedJobIds.Add(args.JobId);
+        }
+
+        private string DequeueJobId(TimeSpan? timeOut)
+        {
+            return _blockingRedis.BlockingPopAndPushItemBetweenLists(
+                    String.Format("hangfire:queue:{0}", _queueName),
+                    String.Format("hangfire:processing:{0}:{1}", _serverName, _queueName),
+                    timeOut);
+        }
+
+        private int RequeueProcessingJobs()
+        {
+            var queues = _blockingRedis.GetAllItemsFromSet(
+                String.Format("hangfire:server:{0}:queues", _serverName));
+
+            int requeued = 0;
+
+            foreach (var queue in queues)
+            {
+                while (_blockingRedis.PopAndPushItemBetweenLists(
+                    String.Format("hangfire:processing:{0}:{1}", _serverName, queue),
+                    String.Format("hangfire:queue:{0}", queue)) != null)
+                {
+                    requeued++;
+                    if (_cts.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (!_cts.IsCancellationRequested)
+            {
+                // TODO: one server - one queue. What is this?
+                using (var transaction = _blockingRedis.CreateTransaction())
+                {
+                    transaction.QueueCommand(x => x.RemoveEntry(
+                        String.Format("hangfire:server:{0}:queues", _serverName)));
+                    transaction.QueueCommand(x => x.AddItemToSet(
+                        String.Format("hangfire:server:{0}:queues", _serverName), _queueName));
+                    transaction.Commit();
+                }
+            }
+
+            return requeued;
+        }
+
+        private void AnnounceServer()
+        {
+            using (var transaction = _blockingRedis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    "hangfire:servers", _serverName));
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:server:{0}", _serverName),
+                    new Dictionary<string, string>
+                        {
+                            { "server-name", _serverName },
+                            { "concurrency", _concurrency.ToString() },
+                            { "queue", _queueName },
+                            { "started-at", DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) }
+                        }));
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    String.Format("hangfire:queue:{0}:servers", _queueName), _serverName));
+
+                transaction.Commit();
+            }
+        }
+
+        private void HideServer()
+        {
+            using (var transaction = _blockingRedis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromSet(
+                    "hangfire:servers", _serverName));
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:server:{0}", _serverName)));
+                transaction.QueueCommand(x => x.RemoveItemFromSet(
+                    String.Format("hangfire:queue:{0}:servers", _queueName), _serverName));
+
+                transaction.Commit();
+            }
         }
     }
 }

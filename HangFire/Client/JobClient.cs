@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using HangFire.Storage;
 using HangFire.Storage.States;
+using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
     internal class JobClient : IDisposable
     {
         private readonly ClientJobInvoker _jobInvoker = ClientJobInvoker.Current;
-        private readonly RedisStorage _redis = new RedisStorage();
+        private readonly IRedisClient _redis = RedisFactory.Create();
 
         public string Async(Type jobType, object args = null)
         {
@@ -34,7 +35,7 @@ namespace HangFire.Client
                     {
                         CreateJob(descriptor.JobId, descriptor.Job);
                         JobState.Apply(
-                            _redis.Redis, 
+                            _redis, 
                             new EnqueuedState(descriptor.JobId, "Enqueued by the Сlient", queueName));
                     }
                 };
@@ -79,7 +80,7 @@ namespace HangFire.Client
                 {
                     CreateJob(descriptor.JobId, descriptor.Job);
 
-                    JobState.Apply(_redis.Redis, new ScheduledState(
+                    JobState.Apply(_redis, new ScheduledState(
                         descriptor.JobId, 
                         "Scheduled by the Client",
                         queueName, 
@@ -110,7 +111,7 @@ namespace HangFire.Client
 
         private void CreateJob(string id, Dictionary<string, string> properties)
         {
-            _redis.Redis.SetRangeInHash(
+            _redis.SetRangeInHash(
                 String.Format("hangfire:job:{0}", id),
                 properties);
         }
