@@ -17,6 +17,11 @@ namespace HangFire.Storage.States
 
     internal class ProcessingState : JobState<ProcessingStateArgs>
     {
+        public override string StateName
+        {
+            get { return "Processing"; }
+        }
+
         protected override void ApplyCore(IRedisTransaction transaction, ProcessingStateArgs args)
         {
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:processing"));
@@ -38,11 +43,6 @@ namespace HangFire.Storage.States
                     { "StartedAt", JobHelper.ToJson(DateTime.UtcNow) },
                     { "ServerName", args.ServerName }
                 };
-        }
-
-        public override string StateName
-        {
-            get { return "Processing"; }
         }
     }
 }

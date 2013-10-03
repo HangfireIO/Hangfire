@@ -8,6 +8,11 @@ namespace HangFire.Storage.States
     {
         private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
+        public override string StateName
+        {
+            get { return "Succeeded"; }
+        }
+
         protected override void ApplyCore(IRedisTransaction transaction, JobStateArgs args)
         {
             transaction.QueueCommand(x => x.ExpireEntryIn(
@@ -28,21 +33,16 @@ namespace HangFire.Storage.States
             transaction.QueueCommand(x => x.ExpireEntryIn(hourlySucceededKey, TimeSpan.FromDays(1)));
         }
 
+        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
+        {
+        }
+
         protected override IDictionary<string, string> GetProperties(JobStateArgs args)
         {
             return new Dictionary<string, string>
                 {
                     { "SucceededAt", JobHelper.ToJson(DateTime.UtcNow) }
                 };
-        }
-
-        public override string StateName
-        {
-            get { return "Succeeded"; }
-        }
-
-        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
-        {
         }
     }
 }

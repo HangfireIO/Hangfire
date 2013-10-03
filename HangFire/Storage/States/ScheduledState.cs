@@ -19,6 +19,11 @@ namespace HangFire.Storage.States
 
     internal class ScheduledState : JobState<ScheduledStateArgs>
     {
+        public override string StateName
+        {
+            get { return "Scheduled"; }
+        }
+
         protected override void ApplyCore(IRedisTransaction transaction, ScheduledStateArgs args)
         {
             var timestamp = DateTimeToTimestamp(args.FireAt);
@@ -39,11 +44,6 @@ namespace HangFire.Storage.States
                     { "ScheduledAt", JobHelper.ToJson(DateTime.UtcNow) },
                     { "ScheduledQueue", args.QueueName }
                 };
-        }
-
-        public override string StateName
-        {
-            get { return "Scheduled"; }
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

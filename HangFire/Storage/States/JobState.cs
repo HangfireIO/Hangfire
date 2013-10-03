@@ -90,17 +90,23 @@ namespace HangFire.Storage.States
                 }
 
                 var properties = GetProperties(args);
+                properties.Add("State", StateName);
 
-                if (properties.Count > 0)
-                {
-                    transaction.QueueCommand(x => x.SetRangeInHash(
-                        String.Format("hangfire:job:{0}", args.JobId),
-                        properties));
-                }
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:job:{0}", args.JobId),
+                    properties));
 
                 ApplyCore(transaction, args);
 
-                transaction.QueueCommand(x => x.SetEntryInHash(String.Format("hangfire:job:{0}", args.JobId), "State", StateName));
+                // TODO: expire history entry
+                var historyId = Guid.NewGuid();
+                transaction.QueueCommand(x => x.EnqueueItemOnList(
+                    String.Format("hangfire:job:{0}:history", args.JobId),
+                    historyId.ToString()));
+
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:job:{0}:history:{1}", args.JobId, historyId.ToString()),
+                    properties));
 
                 return transaction.Commit();
             }

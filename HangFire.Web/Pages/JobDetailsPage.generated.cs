@@ -167,6 +167,69 @@ WriteLiteral("    </dl>\r\n");
 
             
             #line 32 "..\..\Pages\JobDetailsPage.cshtml"
+    
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <h3>History</h3>\r\n");
+
+
+            
+            #line 34 "..\..\Pages\JobDetailsPage.cshtml"
+    foreach (var entry in job.History)
+    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        <table class=\"table table-bordered table-condensed\">\r\n");
+
+
+            
+            #line 37 "..\..\Pages\JobDetailsPage.cshtml"
+             foreach (var item in entry)
+            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                <tr>\r\n                    <td>");
+
+
+            
+            #line 40 "..\..\Pages\JobDetailsPage.cshtml"
+                   Write(item.Key);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td>");
+
+
+            
+            #line 41 "..\..\Pages\JobDetailsPage.cshtml"
+                   Write(item.Value);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                </tr>\r\n");
+
+
+            
+            #line 43 "..\..\Pages\JobDetailsPage.cshtml"
+            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("        </table>\r\n");
+
+
+            
+            #line 45 "..\..\Pages\JobDetailsPage.cshtml"
+    }
 }
             
             #line default

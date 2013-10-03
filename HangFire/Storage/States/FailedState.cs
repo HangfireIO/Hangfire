@@ -17,6 +17,11 @@ namespace HangFire.Storage.States
 
     internal class FailedState : JobState<FailedStateArgs>
     {
+        public override string StateName
+        {
+            get { return "Failed"; }
+        }
+
         protected override void ApplyCore(IRedisTransaction transaction, FailedStateArgs args)
         {
             transaction.QueueCommand(x => x.AddItemToSortedSet(
@@ -53,11 +58,6 @@ namespace HangFire.Storage.States
                     { "ExceptionMessage", args.Exception.Message },
                     { "ExceptionDetails", args.Exception.ToString() }
                 };
-        }
-
-        public override string StateName
-        {
-            get { return "Failed"; }
         }
     }
 }

@@ -492,11 +492,18 @@ namespace HangFire.Storage
 
             var hiddenProperties = new[] { "Type", "Args" };
 
+            var historyList = _redis.GetAllItemsFromList(String.Format("hangfire:job:{0}:history", jobId));
+            var history = historyList
+                .Select(x => _redis.GetAllEntriesFromHash(
+                    String.Format("hangfire:job:{0}:history:{1}", jobId, x)))
+                .ToList();
+
             return new JobDetailsDto
                 {
                     Type = job["Type"],
                     Arguments = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]),
-                    Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value)
+                    Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
+                    History = history
                 };
         }
     }

@@ -17,11 +17,20 @@ namespace HangFire.Storage.States
 
     internal class EnqueuedState : JobState<EnqueuedStateArgs>
     {
+        public override string StateName
+        {
+            get { return "Enqueued"; }
+        }
+
         protected override void ApplyCore(IRedisTransaction transaction, EnqueuedStateArgs args)
         {
             transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", args.QueueName));
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:queue:{0}", args.QueueName), args.JobId));
+        }
+
+        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
+        {
         }
 
         protected override IDictionary<string, string> GetProperties(EnqueuedStateArgs args)
@@ -30,15 +39,6 @@ namespace HangFire.Storage.States
                 {
                     { "EnqueuedAt", JobHelper.ToJson(DateTime.UtcNow) }
                 };
-        }
-
-        public override string StateName
-        {
-            get { return "Enqueued"; }
-        }
-
-        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
-        {
         }
     }
 }

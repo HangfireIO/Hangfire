@@ -29,4 +29,18 @@ else
             <dd>@property.Value</dd>
         }
     </dl>
+    
+    <h3>History</h3>
+    foreach (var entry in job.History)
+    {
+        <table class="table table-bordered table-condensed">
+            @foreach (var item in entry)
+            {
+                <tr>
+                    <td>@item.Key</td>
+                    <td>@item.Value</td>
+                </tr>
+            }
+        </table>
+    }
 }
