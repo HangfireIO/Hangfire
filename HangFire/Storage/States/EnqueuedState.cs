@@ -22,7 +22,7 @@ namespace HangFire.Storage.States
         {
             return new Dictionary<string, string>
                 {
-                    { "EnqueuedAt", JobHelper.ToJson(DateTime.UtcNow) }
+                    { "EnqueuedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
                 };
         }
 

@@ -50,5 +50,15 @@ namespace HangFire
         {
             return Epoch.AddSeconds(value);
         }
+
+        public static string ToStringTimestamp(DateTime value)
+        {
+            return ToTimestamp(value).ToString();
+        }
+
+        public static DateTime FromStringTimestamp(string value)
+        {
+            return FromTimestamp(long.Parse(value));
+        }
     }
 }

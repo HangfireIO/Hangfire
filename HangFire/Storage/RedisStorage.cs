@@ -167,7 +167,7 @@ namespace HangFire.Storage
                         ServerName = job[3],
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Type = job[0],
-                        StartedAt = JobHelper.FromJson<DateTime>(job[2])
+                        StartedAt = JobHelper.FromStringTimestamp(job[2])
                     }).OrderBy(x => x.Value.StartedAt).ToList();
         }
 
@@ -352,7 +352,7 @@ namespace HangFire.Storage
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                        FailedAt = JobHelper.FromJson<DateTime>(job[2]),
+                        FailedAt = JobHelper.FromStringTimestamp(job[2]),
                         ExceptionType = job[3],
                         ExceptionMessage = job[4],
                         ExceptionDetails = job[5],
@@ -372,7 +372,7 @@ namespace HangFire.Storage
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueueName(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                        SucceededAt = JobHelper.FromJson<DateTime>(job[2]),
+                        SucceededAt = JobHelper.FromStringTimestamp(job[2]),
                     });
         }
 
@@ -393,7 +393,7 @@ namespace HangFire.Storage
                         {
                             Type = job[0],
                             Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                            EnqueuedAt = JobHelper.FromJson<DateTime>(job[2]),
+                            EnqueuedAt = JobHelper.FromStringTimestamp(job[2]),
                         });
 
                 var length = _redis.GetListCount(String.Format("hangfire:queue:{0}", queue));

@@ -22,7 +22,7 @@ namespace HangFire.Storage.States
         {
             return new Dictionary<string, string>
                 {
-                    { "FailedAt", JobHelper.ToJson(DateTime.UtcNow) },
+                    { "FailedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
                     { "ExceptionType", Exception.GetType().FullName },
                     { "ExceptionMessage", Exception.Message },
                     { "ExceptionDetails", Exception.ToString() }
