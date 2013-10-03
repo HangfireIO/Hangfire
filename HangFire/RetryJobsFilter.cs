@@ -1,52 +1,49 @@
 ﻿using System;
-using System.Collections.Generic;
 using HangFire.Filters;
+using HangFire.Storage.States;
+using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class RetryJobsFilter : IServerJobExceptionFilter
+    internal interface IJobStateFilter : IJobFilter
     {
-        private const int MaxRetryAttempts = 10;
+        JobState OnJobState(IRedisClient redis, JobState state);
+    }
 
-        public void OnServerException(ServerJobExceptionContext filterContext)
+    public class RetryJobsFilter : IJobStateFilter
+    {
+        private const int MaxRetryAttempts = 3;
+
+        JobState IJobStateFilter.OnJobState(IRedisClient redis, JobState state)
         {
-            var descriptor = filterContext.JobDescriptor;
-            long retryCount = 0;
+            if (state.StateName != FailedState.Name)
+            {
+                // This filter accepts only failed job state.
+                return state;
+            }
 
-            filterContext.Redis(x => retryCount = x.IncrementValueInHash(
-                String.Format("hangfire:job:{0}", descriptor.JobId), 
+            var retryCount = redis.IncrementValueInHash(
+                String.Format("hangfire:job:{0}", state.JobId),
                 "RetryCount",
-                1));
-            
+                1);
+
             if (retryCount < MaxRetryAttempts)
             {
+                var jobType = redis.GetValueFromHash(
+                    String.Format("hangfire:job:{0}", state.JobId),
+                    "Type");
+
+                var queueName = JobHelper.TryToGetQueueName(jobType);
                 var delay = DateTime.UtcNow.AddSeconds(SecondsToDelay(retryCount));
-                var timestamp = DateTimeToTimestamp(delay);
 
-                var jobId = descriptor.JobId;
-                var queueName = filterContext.ServerContext.QueueName;
-
-                filterContext.Redis(redis =>
-                    {
-                        using (var transaction = redis.CreateTransaction())
-                        {
-                            transaction.QueueCommand(x => x.SetRangeInHash(
-                                String.Format("hangfire:job:{0}", jobId),
-                                new Dictionary<string, string>
-                                    {
-                                        { "ScheduledAt", JobHelper.ToJson(DateTime.UtcNow) },
-                                        { "ScheduledQueue", queueName }
-                                    }));
-
-                            transaction.QueueCommand(x => x.AddItemToSortedSet(
-                                "hangfire:schedule", jobId, timestamp));
-
-                            transaction.Commit();
-                        }
-                    });
-
-                filterContext.ExceptionHandled = true;    
+                // If attempt number is less than max attempts, we should
+                // schedule the job to run again later.
+                return new ScheduledState(state.JobId, queueName, delay);
             }
+
+            // When we exceeded the number of attempts, we should leave
+            // the job in a failed state.
+            return state;
         }
 
         // delayed_job uses the same basic formula
@@ -55,14 +52,6 @@ namespace HangFire
             var random = new Random();
             return (int)Math.Round(
                 Math.Pow(retryCount, 4) + 15 + (random.Next(30) * (retryCount + 1)));
-        }
-
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        private static long DateTimeToTimestamp(DateTime value)
-        {
-            TimeSpan elapsedTime = value - Epoch;
-            return (long)elapsedTime.TotalSeconds;
         }
     }
 }

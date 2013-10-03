@@ -464,8 +464,7 @@ namespace HangFire.Storage
 
         public bool RemoveFailedJob(string jobId)
         {
-            return JobState.Find<DeletedState>()
-                .Apply(_redis, new JobStateArgs(jobId));
+            return JobState.Apply(_redis, new DeletedState(jobId));
         }
 
         private IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(

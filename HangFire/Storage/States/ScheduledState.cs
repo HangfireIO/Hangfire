@@ -4,9 +4,11 @@ using ServiceStack.Redis;
 
 namespace HangFire.Storage.States
 {
-    internal class ScheduledStateArgs : JobStateArgs
+    internal class ScheduledState : JobState
     {
-        public ScheduledStateArgs(string jobId, string queueName, DateTime fireAt)
+        public static readonly string Name = "Scheduled";
+
+        public ScheduledState(string jobId, string queueName, DateTime fireAt)
             : base(jobId)
         {
             QueueName = queueName;
@@ -15,43 +17,29 @@ namespace HangFire.Storage.States
 
         public string QueueName { get; private set; }
         public DateTime FireAt { get; private set; }
-    }
 
-    internal class ScheduledState : JobState<ScheduledStateArgs>
-    {
-        public override string StateName
-        {
-            get { return "Scheduled"; }
-        }
+        public override string StateName { get { return Name; } }
 
-        protected override void ApplyCore(IRedisTransaction transaction, ScheduledStateArgs args)
-        {
-            var timestamp = DateTimeToTimestamp(args.FireAt);
-
-            transaction.QueueCommand(x => x.AddItemToSortedSet(
-                "hangfire:schedule", args.JobId, timestamp));
-        }
-
-        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
-        {
-            transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
-        }
-
-        protected override IDictionary<string, string> GetProperties(ScheduledStateArgs args)
+        public override IDictionary<string, string> GetProperties()
         {
             return new Dictionary<string, string>
                 {
                     { "ScheduledAt", JobHelper.ToJson(DateTime.UtcNow) },
-                    { "ScheduledQueue", args.QueueName }
+                    { "ScheduledQueue", QueueName }
                 };
         }
 
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        private static long DateTimeToTimestamp(DateTime value)
+        public override void Apply(IRedisTransaction transaction)
         {
-            TimeSpan elapsedTime = value - Epoch;
-            return (long)elapsedTime.TotalSeconds;
+            var timestamp = JobHelper.ToTimestamp(FireAt);
+
+            transaction.QueueCommand(x => x.AddItemToSortedSet(
+                "hangfire:schedule", JobId, timestamp));
+        }
+
+        public static void Unapply(IRedisTransaction transaction, string jobId)
+        {
+            transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
         }
     }
 }

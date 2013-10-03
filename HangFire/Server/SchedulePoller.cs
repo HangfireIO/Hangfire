@@ -104,8 +104,10 @@ namespace HangFire.Server
                 // This transaction removes the job from the schedule and enqueues it to it's queue.
                 // When another server has already performed such an action with the same job id, this
                 // transaction will fail. In this case we should re-run this method again.
-                return JobState.Find<EnqueuedState>()
-                    .Apply(_redis.Redis, new EnqueuedStateArgs(jobId, queueName));
+
+                // TODO: check that the job is scheduled
+                return JobState.Apply(
+                    _redis.Redis, new EnqueuedState(jobId, queueName));
             }
 
             return false;

@@ -58,7 +58,7 @@ namespace ConsoleSample
                     x.RedisDb = 3;
                 });
 
-            //GlobalJobFilters.Filters.Add(new RetryJobsFilter());
+            GlobalJobFilters.Filters.Add(new RetryJobsFilter());
 
             using (var server = new BackgroundJobServer { ServerName = "hijack!", QueueName = "qqq", WorkersCount = concurrency})
             {

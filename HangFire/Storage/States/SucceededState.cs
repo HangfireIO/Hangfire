@@ -4,26 +4,38 @@ using ServiceStack.Redis;
 
 namespace HangFire.Storage.States
 {
-    internal class SucceededState : JobState<JobStateArgs>
+    internal class SucceededState : JobState
     {
         private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
 
-        public override string StateName
+        public static readonly string Name = "Succeeded";
+
+        public SucceededState(string jobId) 
+            : base(jobId)
         {
-            get { return "Succeeded"; }
         }
 
-        protected override void ApplyCore(IRedisTransaction transaction, JobStateArgs args)
+        public override string StateName { get { return Name; } }
+
+        public override IDictionary<string, string> GetProperties()
+        {
+            return new Dictionary<string, string>
+                {
+                    { "SucceededAt", JobHelper.ToJson(DateTime.UtcNow) }
+                };
+        }
+
+        public override void Apply(IRedisTransaction transaction)
         {
             transaction.QueueCommand(x => x.ExpireEntryIn(
-                        String.Format("hangfire:job:{0}", args.JobId),
+                        String.Format("hangfire:job:{0}", JobId),
                         _jobExpirationTimeout));
 
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
             transaction.QueueCommand(x => x.IncrementValue(
                 String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
 
-            transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", args.JobId));
+            transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", JobId));
             transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
 
             var hourlySucceededKey = String.Format(
@@ -33,16 +45,9 @@ namespace HangFire.Storage.States
             transaction.QueueCommand(x => x.ExpireEntryIn(hourlySucceededKey, TimeSpan.FromDays(1)));
         }
 
-        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
+        public static void Unapply(IRedisTransaction transaction, string jobId)
         {
-        }
-
-        protected override IDictionary<string, string> GetProperties(JobStateArgs args)
-        {
-            return new Dictionary<string, string>
-                {
-                    { "SucceededAt", JobHelper.ToJson(DateTime.UtcNow) }
-                };
+            // TODO: persist the job
         }
     }
 }

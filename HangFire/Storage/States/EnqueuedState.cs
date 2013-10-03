@@ -4,41 +4,33 @@ using ServiceStack.Redis;
 
 namespace HangFire.Storage.States
 {
-    internal class EnqueuedStateArgs : JobStateArgs
+    internal class EnqueuedState : JobState
     {
-        public EnqueuedStateArgs(string jobId, string queueName) 
+        public static readonly string Name = "Enqueued";
+
+        public EnqueuedState(string jobId, string queueName) 
             : base(jobId)
         {
             QueueName = queueName;
         }
 
         public string QueueName { get; private set; }
-    }
 
-    internal class EnqueuedState : JobState<EnqueuedStateArgs>
-    {
-        public override string StateName
-        {
-            get { return "Enqueued"; }
-        }
+        public override string StateName { get { return Name; } }
 
-        protected override void ApplyCore(IRedisTransaction transaction, EnqueuedStateArgs args)
-        {
-            transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", args.QueueName));
-            transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:queue:{0}", args.QueueName), args.JobId));
-        }
-
-        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
-        {
-        }
-
-        protected override IDictionary<string, string> GetProperties(EnqueuedStateArgs args)
+        public override IDictionary<string, string> GetProperties()
         {
             return new Dictionary<string, string>
                 {
                     { "EnqueuedAt", JobHelper.ToJson(DateTime.UtcNow) }
                 };
+        }
+
+        public override void Apply(IRedisTransaction transaction)
+        {
+            transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", QueueName));
+            transaction.QueueCommand(x => x.EnqueueItemOnList(
+                String.Format("hangfire:queue:{0}", QueueName), JobId));
         }
     }
 }

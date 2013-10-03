@@ -33,10 +33,7 @@ namespace HangFire.Client
                     lock (_redis)
                     {
                         CreateJob(descriptor.JobId, descriptor.Job);
-
-                        JobState.Find<EnqueuedState>().Apply(
-                            _redis.Redis, 
-                            new EnqueuedStateArgs(descriptor.JobId, queueName));
+                        JobState.Apply(_redis.Redis, new EnqueuedState(descriptor.JobId, queueName));
                     }
                 };
 
@@ -79,9 +76,9 @@ namespace HangFire.Client
                 lock (_redis)
                 {
                     CreateJob(descriptor.JobId, descriptor.Job);
-                    JobState.Find<ScheduledState>().Apply(
-                        _redis.Redis, 
-                        new ScheduledStateArgs(descriptor.JobId, queueName, at));
+
+                    JobState.Apply(_redis.Redis, new ScheduledState(
+                        descriptor.JobId, queueName, at));
                 }
             };
 

@@ -181,9 +181,10 @@ namespace HangFire.Server
 
                 lock (Redis)
                 {
-                    JobState.Find<ProcessingState>().Apply(
+                    // TODO: check that the job was enqueued.
+                    JobState.Apply(
                         Redis.Redis, 
-                        new ProcessingStateArgs(jobId, workerContext.ServerContext.ServerName));
+                        new ProcessingState(jobId, workerContext.ServerContext.ServerName));
                 }
 
                 Exception exception = null;
@@ -214,17 +215,17 @@ namespace HangFire.Server
                 {
                     if (exception == null)
                     {
-                        JobState.Find<SucceededState>().Apply(
+                        JobState.Apply(
                             Redis.Redis, 
-                            new JobStateArgs(jobId),
-                            JobState.Find<ProcessingState>());
+                            new SucceededState(jobId),
+                            ProcessingState.Name);
                     }
                     else
                     {
-                        JobState.Find<FailedState>().Apply(
+                        JobState.Apply(
                             Redis.Redis, 
-                            new FailedStateArgs(jobId, exception),
-                            JobState.Find<ProcessingState>());
+                            new FailedState(jobId, exception),
+                            ProcessingState.Name);
                     }
                 }
             }

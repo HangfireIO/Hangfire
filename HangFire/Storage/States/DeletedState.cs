@@ -1,21 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using ServiceStack.Redis;
 
 namespace HangFire.Storage.States
 {
-    internal class DeletedState : JobState<JobStateArgs>
+    internal class DeletedState : JobState
     {
-        public override string StateName
+        public static readonly string Name = "Deleted";
+
+        public DeletedState(string jobId) : base(jobId)
         {
-            get { throw new NotImplementedException(); }
         }
 
-        protected override void ApplyCore(IRedisTransaction transaction, JobStateArgs args)
+        public override string StateName { get { return Name; } }
+
+        public override IDictionary<string, string> GetProperties()
         {
             throw new NotImplementedException();
         }
 
-        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
+        public override void Apply(IRedisTransaction transaction)
         {
             throw new NotImplementedException();
         }

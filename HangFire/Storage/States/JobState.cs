@@ -5,111 +5,122 @@ using ServiceStack.Redis;
 
 namespace HangFire.Storage.States
 {
-    internal class JobStateArgs
+    internal abstract class JobState
     {
-        public JobStateArgs(string jobId)
+        protected JobState(string jobId)
         {
             JobId = jobId;
         }
 
         public string JobId { get; private set; }
-    }
-
-    internal abstract class JobState
-    {
-        private static readonly IDictionary<string, JobState> RegisteredStates =
-            new Dictionary<string, JobState>();
-        private static readonly IDictionary<Type, JobState> StatesByTypes =
-            new Dictionary<Type, JobState>();
-
-        static JobState()
-        {
-            RegisterState(new EnqueuedState());
-            RegisterState(new ScheduledState());
-            RegisterState(new ProcessingState());
-            RegisterState(new SucceededState());
-            RegisterState(new FailedState());
-        }
-
-        public static void RegisterState(JobState state)
-        {
-            RegisteredStates.Add(state.StateName, state);
-            StatesByTypes.Add(state.GetType(), state);
-        }
-
-        public static JobState Find(string state)
-        {
-            return RegisteredStates[state];
-        }
-
-        public static T Find<T>()
-            where T : JobState
-        {
-            return (T)StatesByTypes[typeof (T)];
-        }
 
         public abstract string StateName { get; }
 
-        public void Unapply(IRedisTransaction transaction, string jobId)
-        {
-            UnapplyCore(transaction, jobId);
-        }
+        public abstract void Apply(IRedisTransaction transaction);
 
-        protected abstract void UnapplyCore(IRedisTransaction transaction, string jobId);
-    }
-
-    internal abstract class JobState<T> : JobState
-        where T : JobStateArgs
-    {
-        protected abstract void ApplyCore(IRedisTransaction transaction, T args);
-
-        protected virtual IDictionary<string, string> GetProperties(T args)
+        public virtual IDictionary<string, string> GetProperties()
         {
             return new Dictionary<string, string>();
         }
 
-        public bool Apply(IRedisClient redis, T args, params JobState[] allowedStates)
+        private static readonly IDictionary<string, Action<IRedisTransaction, string>> UnapplyActions
+            = new Dictionary<string, Action<IRedisTransaction, string>>();
+
+        static JobState()
+        {
+            RegisterUnapplyAction(FailedState.Name, FailedState.Unapply);
+            RegisterUnapplyAction(ProcessingState.Name, ProcessingState.Unapply);
+            RegisterUnapplyAction(ScheduledState.Name, ScheduledState.Unapply);
+            RegisterUnapplyAction(SucceededState.Name, SucceededState.Unapply);
+        }
+
+        public static void RegisterUnapplyAction(
+            string stateName, Action<IRedisTransaction, string> unapplyAction)
+        {
+            UnapplyActions.Add(stateName, unapplyAction);
+        }
+
+        public static bool Apply(IRedisClient redis, JobState state, params string[] allowedStates)
+        {
+            var filters = GlobalJobFilters.Filters.OfType<IJobStateFilter>();
+
+            // TODO: check lock boundaries
+            using (redis.AcquireLock(
+                String.Format("hangfire:job:{0}:state-lock", state.JobId), TimeSpan.FromMinutes(1)))
+            {
+                foreach (var filter in filters)
+                {
+                    var oldState = state;
+                    state = filter.OnJobState(redis, oldState);
+
+                    if (oldState != state)
+                    {
+                        AppendHistory(redis, oldState, false);
+                    }
+                }
+
+                // TODO: add to history and apply the changes.
+                return ApplyState(redis, state, allowedStates);
+            }
+        }
+
+        private static bool ApplyState(IRedisClient redis, JobState state, params string[] allowedStates)
         {
             // TODO: what to do when transaction fails?
             // TODO: what to do when job does not exists?
-            redis.Watch(String.Format("hangfire:job:{0}", args.JobId));
-            var oldState = redis.GetValueFromHash(String.Format("hangfire:job:{0}", args.JobId), "State");
-
-            var allowed = allowedStates.Select(x => x.StateName).ToArray();
-            if (allowed.Length > 0 && !allowed.Contains(oldState))
+            var oldState = redis.GetValueFromHash(String.Format("hangfire:job:{0}", state.JobId), "State");
+            
+            if (allowedStates.Length > 0 && !allowedStates.Contains(oldState))
             {
-                redis.UnWatch();
                 return false;
             }
-            
+
             using (var transaction = redis.CreateTransaction())
             {
-                if (!String.IsNullOrEmpty(oldState))
+                if (!String.IsNullOrEmpty(oldState) && UnapplyActions.ContainsKey(oldState))
                 {
-                    Find(oldState).Unapply(transaction, args.JobId);
+                    UnapplyActions[oldState](transaction, state.JobId);
                 }
 
-                var properties = GetProperties(args);
-                properties.Add("State", StateName);
-
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}", args.JobId),
-                    properties));
-
-                ApplyCore(transaction, args);
-
-                // TODO: expire history entry
-                var historyId = Guid.NewGuid();
-                transaction.QueueCommand(x => x.EnqueueItemOnList(
-                    String.Format("hangfire:job:{0}:history", args.JobId),
-                    historyId.ToString()));
-
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}:history:{1}", args.JobId, historyId.ToString()),
-                    properties));
+                AppendHistory(transaction, state, true);
+                state.Apply(transaction);
 
                 return transaction.Commit();
             }
+        }
+
+        private static void AppendHistory(
+            IRedisClient redis, JobState state, bool appendToJob)
+        {
+            using (var transaction = redis.CreateTransaction())
+            {
+                AppendHistory(transaction, state, appendToJob);
+                transaction.Commit();
+            }
+        }
+
+        private static void AppendHistory(
+            IRedisTransaction transaction, JobState state, bool appendToJob)
+        {
+            // TODO: expire history entry
+            var historyId = Guid.NewGuid();
+            var properties = state.GetProperties();
+            properties.Add("State", state.StateName);
+
+            if (appendToJob)
+            {
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:job:{0}", state.JobId),
+                    properties));
+            }
+
+            transaction.QueueCommand(x => x.EnqueueItemOnList(
+                String.Format("hangfire:job:{0}:history", state.JobId),
+                historyId.ToString()));
+
+            transaction.QueueCommand(x => x.SetRangeInHash(
+                String.Format("hangfire:job:{0}:history:{1}", state.JobId, historyId.ToString()),
+                properties));
         }
     }
 }

@@ -4,29 +4,36 @@ using ServiceStack.Redis;
 
 namespace HangFire.Storage.States
 {
-    internal class FailedStateArgs : JobStateArgs
+    internal class FailedState : JobState
     {
-        public FailedStateArgs(string jobId, Exception exception) 
+        public static readonly string Name = "Failed";
+
+        public FailedState(string jobId, Exception exception) 
             : base(jobId)
         {
             Exception = exception;
         }
 
         public Exception Exception { get; private set; }
-    }
 
-    internal class FailedState : JobState<FailedStateArgs>
-    {
-        public override string StateName
+        public override string StateName { get { return Name; } }
+
+        public override IDictionary<string, string> GetProperties()
         {
-            get { return "Failed"; }
+            return new Dictionary<string, string>
+                {
+                    { "FailedAt", JobHelper.ToJson(DateTime.UtcNow) },
+                    { "ExceptionType", Exception.GetType().FullName },
+                    { "ExceptionMessage", Exception.Message },
+                    { "ExceptionDetails", Exception.ToString() }
+                };
         }
 
-        protected override void ApplyCore(IRedisTransaction transaction, FailedStateArgs args)
+        public override void Apply(IRedisTransaction transaction)
         {
             transaction.QueueCommand(x => x.AddItemToSortedSet(
                         "hangfire:failed",
-                        args.JobId,
+                        JobId,
                         JobHelper.ToTimestamp(DateTime.UtcNow)));
 
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
@@ -43,21 +50,10 @@ namespace HangFire.Storage.States
             transaction.QueueCommand(x => x.ExpireEntryIn(hourlyFailedKey, TimeSpan.FromDays(1)));
         }
 
-        protected override void UnapplyCore(IRedisTransaction transaction, string jobId)
+        public static void Unapply(IRedisTransaction transaction, string jobId)
         {
             transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:failed"));
             transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
-        }
-
-        protected override IDictionary<string, string> GetProperties(FailedStateArgs args)
-        {
-            return new Dictionary<string, string>
-                {
-                    { "FailedAt", JobHelper.ToJson(DateTime.UtcNow) },
-                    { "ExceptionType", args.Exception.GetType().FullName },
-                    { "ExceptionMessage", args.Exception.Message },
-                    { "ExceptionDetails", args.Exception.ToString() }
-                };
         }
     }
 }
