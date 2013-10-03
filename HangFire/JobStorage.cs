@@ -178,7 +178,7 @@ namespace HangFire
         {
             lock (Redis)
             {
-                return Redis.EnqueueScheduledJob(jobId);
+                return false; //TODO:Redis.EnqueueScheduledJob(jobId);
             }
         }
 

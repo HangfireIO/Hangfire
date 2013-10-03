@@ -28,19 +28,21 @@ namespace HangFire
 
                 filterContext.Redis(redis =>
                     {
-                        var transaction = redis.CreateTransaction();
-                        transaction.QueueCommand(x => x.SetRangeInHash(
-                            String.Format("hangfire:job:{0}", jobId),
-                            new Dictionary<string, string>
-                            {
-                                { "ScheduledAt", JobHelper.ToJson(DateTime.UtcNow) },
-                                { "ScheduledQueue", queueName }
-                            }));
+                        using (var transaction = redis.CreateTransaction())
+                        {
+                            transaction.QueueCommand(x => x.SetRangeInHash(
+                                String.Format("hangfire:job:{0}", jobId),
+                                new Dictionary<string, string>
+                                    {
+                                        { "ScheduledAt", JobHelper.ToJson(DateTime.UtcNow) },
+                                        { "ScheduledQueue", queueName }
+                                    }));
 
-                        transaction.QueueCommand(x => x.AddItemToSortedSet(
-                            "hangfire:schedule", jobId, timestamp));
+                            transaction.QueueCommand(x => x.AddItemToSortedSet(
+                                "hangfire:schedule", jobId, timestamp));
 
-                        transaction.Commit();
+                            transaction.Commit();
+                        }
                     });
 
                 filterContext.ExceptionHandled = true;    

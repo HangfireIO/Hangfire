@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using HangFire.Storage;
+using HangFire.Storage.States;
 
 namespace HangFire.Client
 {
@@ -31,7 +32,11 @@ namespace HangFire.Client
                 {
                     lock (_redis)
                     {
-                        _redis.EnqueueJob(queueName, descriptor.JobId, descriptor.Job);
+                        CreateJob(descriptor.JobId, descriptor.Job);
+
+                        JobState.Find<EnqueuedState>().Apply(
+                            _redis.Redis, 
+                            new EnqueuedStateArgs(descriptor.JobId, queueName));
                     }
                 };
 
@@ -73,7 +78,10 @@ namespace HangFire.Client
             {
                 lock (_redis)
                 {
-                    _redis.ScheduleJob(descriptor.JobId, descriptor.Job, queueName, at);
+                    CreateJob(descriptor.JobId, descriptor.Job);
+                    JobState.Find<ScheduledState>().Apply(
+                        _redis.Redis, 
+                        new ScheduledStateArgs(descriptor.JobId, queueName, at));
                 }
             };
 
@@ -96,6 +104,13 @@ namespace HangFire.Client
             job["Args"] = JobHelper.ToJson(descriptor.SerializeProperties(jobArgs));
 
             return descriptor;
+        }
+
+        private void CreateJob(string id, Dictionary<string, string> properties)
+        {
+            _redis.Redis.SetRangeInHash(
+                String.Format("hangfire:job:{0}", id),
+                properties);
         }
 
         private string GenerateId()

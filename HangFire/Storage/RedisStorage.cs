@@ -4,15 +4,13 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
+using HangFire.Storage.States;
 using ServiceStack.Redis;
 
 namespace HangFire.Storage
 {
     internal class RedisStorage : IDisposable
     {
-        private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
-
         private readonly JobStorageConfiguration _config = JobStorage.Configuration;
         private readonly IRedisClient _redis;
 
@@ -70,134 +68,12 @@ namespace HangFire.Storage
             }
         }
 
-        public void ScheduleJob(
-            string jobId, Dictionary<string, string> job, string queueName, DateTime at)
-        {
-            var timestamp = DateTimeToTimestamp(at);
-
-            using (var transaction = _redis.CreateTransaction())
-            {
-                if (job != null)
-                {
-                    transaction.QueueCommand(x => x.SetRangeInHash(
-                        String.Format("hangfire:job:{0}", jobId),
-                        job));
-                }
-
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    new Dictionary<string, string>
-                    {
-                        { "ScheduledAt", JobHelper.ToJson(DateTime.UtcNow) },
-                        { "ScheduledQueue", queueName }
-                    }));
-
-                transaction.QueueCommand(x => x.AddItemToSortedSet(
-                    "hangfire:schedule", jobId, timestamp));
-
-                transaction.Commit();
-            }
-        }
-
-        public bool EnqueueScheduledJob(DateTime now)
-        {
-            var timestamp = DateTimeToTimestamp(now);
-
-            string jobId = null;
-            
-            using (var pipeline = _redis.CreatePipeline())
-            {
-                // By watching the scheduled tasks key we ensure that only one HangFire server
-                // will enqueue the first scheduled job at a time. Otherwise we could we can
-                // get the situation, when two or more servers will enqueue the same job multiple
-                // times.
-                pipeline.QueueCommand(x => x.Watch("hangfire:schedule"));
-                pipeline.QueueCommand(
-                    x => x.GetRangeFromSortedSetByLowestScore(
-                        "hangfire:schedule", Double.NegativeInfinity, timestamp, 0, 1),
-                    x => jobId = x.FirstOrDefault());
-
-                pipeline.Flush();
-            }
-
-            if (!String.IsNullOrEmpty(jobId))
-            {
-                return EnqueueScheduledJob(jobId);
-            }
-
-            // When schedule contains no entries, we should unwatch it's key.
-            _redis.UnWatch();
-            return false;
-        }
-
-        public bool EnqueueScheduledJob(string jobId)
-        {
-            // To make atomic remove-enqueue call, we should know the target queue name first.
-            var queueName = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "ScheduledQueue");
-            
-            if (!String.IsNullOrEmpty(queueName))
-            {    
-                // This transaction removes the job from the schedule and enqueues it to it's queue.
-                // When another server has already performed such an action with the same job id, this
-                // transaction will fail. In this case we should re-run this method again.
-                using (var transaction = _redis.CreateTransaction())
-                {
-                    transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
-
-                    transaction.QueueCommand(x => x.SetEntryInHashIfNotExists(
-                        String.Format("hangfire:job:{0}", jobId),
-                        "EnqueuedAt",
-                        JobHelper.ToJson(DateTime.UtcNow)));
-
-                    transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
-                    transaction.QueueCommand(x => x.EnqueueItemOnList(
-                        String.Format("hangfire:queue:{0}", queueName), jobId));
-
-                    return transaction.Commit();
-                }
-            }
-
-            return false;
-        }
-
-        public void EnqueueJob(string queueName, string jobId, Dictionary<string, string> job)
-        {
-            using (var transaction = _redis.CreateTransaction())
-            {
-                if (job != null)
-                {
-                    transaction.QueueCommand(x => x.SetRangeInHash(
-                        String.Format("hangfire:job:{0}", jobId),
-                        job));
-                }
-
-                transaction.QueueCommand(x => x.SetEntryInHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    "EnqueuedAt",
-                    JobHelper.ToJson(DateTime.UtcNow)));
-
-                transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queueName));
-                transaction.QueueCommand(x => x.EnqueueItemOnList(
-                    String.Format("hangfire:queue:{0}", queueName),
-                    jobId));
-
-                transaction.Commit();
-            }
-        }
-
         public string DequeueJobId(string serverName, string queue, TimeSpan? timeOut)
         {
             return _redis.BlockingPopAndPushItemBetweenLists(
                     String.Format("hangfire:queue:{0}", queue),
                     String.Format("hangfire:processing:{0}:{1}", serverName, queue),
                     timeOut);
-        }
-
-        public string GetJobType(string jobId)
-        {
-            return _redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", jobId),
-                "Type");
         }
 
         public int RequeueProcessingJobs(string serverName, string currentQueue, CancellationToken cancellationToken)
@@ -242,98 +118,6 @@ namespace HangFire.Storage
                 String.Format("hangfire:processing:{0}:{1}", serverName, queue),
                 jobId,
                 -1);
-        }
-
-        public void AddProcessingWorker(string serverName, string jobId)
-        {
-            using (var transaction = _redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:processing"));
-                transaction.QueueCommand(x => x.AddItemToSet(
-                    "hangfire:processing", jobId));
-
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    new Dictionary<string, string>
-                        {
-                            { "StartedAt", JobHelper.ToJson(DateTime.UtcNow) },
-                            { "ServerName", serverName }
-                        }));
-
-                transaction.Commit();
-            }
-        }
-
-        public void RemoveProcessingWorker(string jobId, Exception exception)
-        {
-            using (var transaction = _redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:processing"));
-
-                transaction.QueueCommand(x => x.RemoveItemFromSet(
-                    "hangfire:processing", jobId));
-
-                if (exception == null)
-                {
-                    transaction.QueueCommand(x => x.SetEntryInHash(
-                        String.Format("hangfire:job:{0}", jobId),
-                        "SucceededAt",
-                        JobHelper.ToJson(DateTime.UtcNow)));
-
-                    transaction.QueueCommand(x => x.ExpireEntryIn(
-                        String.Format("hangfire:job:{0}", jobId),
-                        _jobExpirationTimeout));
-
-                    transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
-                    transaction.QueueCommand(x => x.IncrementValue(
-                        String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-
-                    transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", jobId));
-                    transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
-
-                    var hourlySucceededKey = String.Format(
-                        "hangfire:stats:succeeded:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-                    transaction.QueueCommand(x => x.IncrementValue(hourlySucceededKey));
-                    transaction.QueueCommand(x => x.ExpireEntryIn(hourlySucceededKey, TimeSpan.FromDays(1)));
-                }
-                else
-                {
-                    transaction.QueueCommand(x => x.SetEntryInHash(
-                        String.Format("hangfire:job:{0}", jobId),
-                        "FailedAt",
-                        JobHelper.ToJson(DateTime.UtcNow)));
-
-                    transaction.QueueCommand(x => x.SetRangeInHash(
-                        String.Format("hangfire:job:{0}", jobId),
-                        new Dictionary<string, string>
-                            {
-                                { "ExceptionType", exception.GetType().FullName },
-                                { "ExceptionMessage", exception.Message },
-                                { "ExceptionDetails", exception.ToString() }
-                            }));
-
-                    transaction.QueueCommand(x => x.AddItemToSortedSet(
-                        "hangfire:failed",
-                        jobId,
-                        DateTimeToTimestamp(DateTime.UtcNow)));
-
-                    transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:failed"));
-                    transaction.QueueCommand(x => x.IncrementValue(
-                        String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-                    
-                    transaction.QueueCommand(x => x.IncrementValue(
-                        String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm"))));
-
-                    var hourlyFailedKey = String.Format(
-                        "hangfire:stats:failed:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-                    transaction.QueueCommand(x => x.IncrementValue(hourlyFailedKey));
-                    transaction.QueueCommand(x => x.ExpireEntryIn(hourlyFailedKey, TimeSpan.FromDays(1)));
-                }
-
-                transaction.Commit();
-            }
         }
 
         public long GetScheduledCount()
@@ -404,7 +188,7 @@ namespace HangFire.Storage
                     ? null
                     : new ScheduleDto
                       {
-                          ScheduledAt = TimeStampToDateTime((long)scheduledJob.Value),
+                          ScheduledAt = JobHelper.FromTimestamp((long)scheduledJob.Value),
                           Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                           Queue = JobHelper.TryToGetQueueName(job[0]),
                           Type = job[0]
@@ -680,16 +464,8 @@ namespace HangFire.Storage
 
         public bool RemoveFailedJob(string jobId)
         {
-            using (var transaction = _redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:failed"));
-                transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
-                transaction.QueueCommand(x => x.ExpireEntryIn(String.Format("hangfire:job:{0}", jobId), _jobExpirationTimeout));
-
-                // TODO: set job status to deleted.
-
-                return transaction.Commit();
-            }
+            return JobState.Find<DeletedState>()
+                .Apply(_redis, new JobStateArgs(jobId));
         }
 
         private IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(
@@ -722,19 +498,6 @@ namespace HangFire.Storage
                     Arguments = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]),
                     Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value)
                 };
-        }
-
-        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        private static long DateTimeToTimestamp(DateTime value)
-        {
-            TimeSpan elapsedTime = value - Epoch;
-            return (long)elapsedTime.TotalSeconds;
-        }
-
-        private static DateTime TimeStampToDateTime(long timeStamp)
-        {
-            return Epoch.AddSeconds(timeStamp);
         }
     }
 }

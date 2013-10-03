@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using HangFire.Storage;
+using HangFire.Storage.States;
 using ServiceStack.Logging;
 
 namespace HangFire.Server
@@ -180,9 +181,9 @@ namespace HangFire.Server
 
                 lock (Redis)
                 {
-                    Redis.RetryOnRedisException(
-                        x => x.AddProcessingWorker(workerContext.ServerContext.ServerName, jobId),
-                        _cts.Token);
+                    JobState.Find<ProcessingState>().Apply(
+                        Redis.Redis, 
+                        new ProcessingStateArgs(jobId, workerContext.ServerContext.ServerName));
                 }
 
                 Exception exception = null;
@@ -211,9 +212,20 @@ namespace HangFire.Server
 
                 lock (Redis)
                 {
-                    Redis.RetryOnRedisException(
-                        x => x.RemoveProcessingWorker(jobId, exception),
-                        _cts.Token);
+                    if (exception == null)
+                    {
+                        JobState.Find<SucceededState>().Apply(
+                            Redis.Redis, 
+                            new JobStateArgs(jobId),
+                            JobState.Find<ProcessingState>());
+                    }
+                    else
+                    {
+                        JobState.Find<FailedState>().Apply(
+                            Redis.Redis, 
+                            new FailedStateArgs(jobId, exception),
+                            JobState.Find<ProcessingState>());
+                    }
                 }
             }
             catch (OperationCanceledException)

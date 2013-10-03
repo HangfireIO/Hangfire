@@ -84,6 +84,10 @@
     <Compile Include="Storage\EnqueuedJobDto.cs" />
     <Compile Include="Storage\FailedJobDto.cs" />
     <Compile Include="Storage\JobDetailsDto.cs" />
+    <Compile Include="Storage\States\DeletedState.cs" />
+    <Compile Include="Storage\States\EnqueuedState.cs" />
+    <Compile Include="Storage\States\FailedState.cs" />
+    <Compile Include="Storage\States\JobState.cs" />
     <Compile Include="Storage\JobStorageConfiguration.cs" />
     <Compile Include="Filters\Client\IClientJobFilter.cs" />
     <Compile Include="Filters\IJobFilter.cs" />
@@ -112,6 +116,9 @@
     <Compile Include="Server\WorkerContext.cs" />
     <Compile Include="Storage\ScheduleDto.cs" />
     <Compile Include="Storage\ServerDto.cs" />
+    <Compile Include="Storage\States\ProcessingState.cs" />
+    <Compile Include="Storage\States\ScheduledState.cs" />
+    <Compile Include="Storage\States\SucceededState.cs" />
     <Compile Include="Storage\SucceededJobDto.cs" />
   </ItemGroup>
   <ItemGroup>

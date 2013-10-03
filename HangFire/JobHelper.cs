@@ -37,5 +37,18 @@ namespace HangFire
         {
             return JsonSerializer.DeserializeFromString<T>(value);
         }
+
+        private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        public static long ToTimestamp(DateTime value)
+        {
+            TimeSpan elapsedTime = value - Epoch;
+            return (long)elapsedTime.TotalSeconds;
+        }
+
+        public static DateTime FromTimestamp(long value)
+        {
+            return Epoch.AddSeconds(value);
+        }
     }
 }
