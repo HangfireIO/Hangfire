@@ -17,7 +17,7 @@ namespace HangFire
 
     public class RecurringJobsFilter : IJobStateFilter
     {
-        public JobState OnJobState(IRedisClient redis, JobState state)
+        public JobState OnStateChanged(IRedisClient redis, JobState state)
         {
             if (state.StateName != SucceededState.Name)
             {
@@ -44,6 +44,14 @@ namespace HangFire
             }
 
             return state;
+        }
+
+        public void OnStateApplied(IRedisTransaction transaction, JobState state)
+        {
+        }
+
+        public void OnStateUnapplied(IRedisTransaction transaction, string state)
+        {
         }
     }
 }

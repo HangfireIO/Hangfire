@@ -44,16 +44,15 @@ namespace HangFire.States
 
         public static bool Apply(IRedisClient redis, JobState state, params string[] allowedStates)
         {
-            var filters = GlobalJobFilters.Filters.OfType<IJobStateFilter>();
+            var filters = GlobalJobFilters.Filters.OfType<IJobStateFilter>().ToList();
 
-            // TODO: check lock boundaries
             using (redis.AcquireLock(
                 String.Format("hangfire:job:{0}:state-lock", state.JobId), TimeSpan.FromMinutes(1)))
             {
                 foreach (var filter in filters)
                 {
                     var oldState = state;
-                    state = filter.OnJobState(redis, oldState);
+                    state = filter.OnStateChanged(redis, oldState);
 
                     if (oldState != state)
                     {
@@ -61,16 +60,17 @@ namespace HangFire.States
                     }
                 }
 
-                // TODO: add to history and apply the changes.
-                return ApplyState(redis, state, allowedStates);
+                return ApplyState(redis, state, filters, allowedStates);
             }
         }
 
-        private static bool ApplyState(IRedisClient redis, JobState state, params string[] allowedStates)
+        private static bool ApplyState(
+            IRedisClient redis, JobState state, 
+            IList<IJobStateFilter> filters, params string[] allowedStates)
         {
-            // TODO: what to do when transaction fails?
             // TODO: what to do when job does not exists?
-            var oldState = redis.GetValueFromHash(String.Format("hangfire:job:{0}", state.JobId), "State");
+            var oldState = redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", state.JobId), "State");
             
             if (allowedStates.Length > 0 && !allowedStates.Contains(oldState))
             {
@@ -79,13 +79,26 @@ namespace HangFire.States
 
             using (var transaction = redis.CreateTransaction())
             {
-                if (!String.IsNullOrEmpty(oldState) && UnapplyActions.ContainsKey(oldState))
+                if (!String.IsNullOrEmpty(oldState))
                 {
-                    UnapplyActions[oldState](transaction, state.JobId);
+                    if (UnapplyActions.ContainsKey(oldState))
+                    {
+                        UnapplyActions[oldState](transaction, state.JobId);
+                    }
+
+                    foreach (var filter in filters)
+                    {
+                        filter.OnStateUnapplied(transaction, oldState);
+                    }
                 }
 
                 AppendHistory(transaction, state, true);
                 state.Apply(transaction);
+
+                foreach (var filter in filters)
+                {
+                    filter.OnStateApplied(transaction, state);
+                }
 
                 return transaction.Commit();
             }

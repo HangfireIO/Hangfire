@@ -8,7 +8,7 @@ namespace HangFire
     {
         private const int MaxRetryAttempts = 3;
 
-        public JobState OnJobState(IRedisClient redis, JobState state)
+        public JobState OnStateChanged(IRedisClient redis, JobState state)
         {
             if (state.StateName != FailedState.Name)
             {
@@ -42,6 +42,14 @@ namespace HangFire
             // When we exceeded the number of attempts, we should leave
             // the job in a failed state.
             return state;
+        }
+
+        public void OnStateApplied(IRedisTransaction transaction, JobState state)
+        {
+        }
+
+        public void OnStateUnapplied(IRedisTransaction transaction, string state)
+        {
         }
 
         // delayed_job uses the same basic formula

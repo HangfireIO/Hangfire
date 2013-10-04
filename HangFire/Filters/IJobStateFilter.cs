@@ -6,6 +6,8 @@ namespace HangFire
 {
     public interface IJobStateFilter : IJobFilter
     {
-        JobState OnJobState(IRedisClient redis, JobState state);
+        JobState OnStateChanged(IRedisClient redis, JobState state);
+        void OnStateApplied(IRedisTransaction transaction, JobState state);
+        void OnStateUnapplied(IRedisTransaction transaction, string state);
     }
 }
