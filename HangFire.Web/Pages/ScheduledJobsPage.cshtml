@@ -3,7 +3,7 @@
 @inherits RazorPage
               
 @{
-    Layout = new LayoutPage { Title = "Schedule" };
+    Layout = new LayoutPage { Title = "Scheduled Jobs" };
     
     int from, perPage;
 
@@ -12,7 +12,7 @@
 
     var pager = new Pager(from, perPage, JobStorage.ScheduledCount())
     {
-        BaseLink = Request.LinkTo("/schedule")
+        BaseLink = Request.LinkTo("/scheduled")
     };
 
     var scheduledJobs = JobStorage.ScheduledJobs(pager.From, pager.PerPage);

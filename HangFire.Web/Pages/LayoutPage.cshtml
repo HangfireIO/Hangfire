@@ -73,8 +73,8 @@
                         <span class="glyphicon glyphicon-inbox"></span>
                         Jobs & Queues
                     </a>
-                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 
-                       href="@Request.LinkTo("/schedule")">
+                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/scheduled") ? "active" : null)" 
+                       href="@Request.LinkTo("/scheduled")">
                         <span id="stats-scheduled" class="label label-info pull-right">
                             @String.Format("{0:n0}", JobStorage.ScheduledCount())
                         </span>

@@ -177,14 +177,14 @@
       <DependentUpon>ServersPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Handlers\RazorPage.cs" />
-    <None Include="Pages\SchedulePage.cshtml">
+    <None Include="Pages\ScheduledJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>SchedulePage.generated.cs</LastGenOutput>
+      <LastGenOutput>ScheduledJobsPage.generated.cs</LastGenOutput>
     </None>
-    <Compile Include="Pages\SchedulePage.generated.cs">
+    <Compile Include="Pages\ScheduledJobsPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>SchedulePage.cshtml</DependentUpon>
+      <DependentUpon>ScheduledJobsPage.cshtml</DependentUpon>
     </Compile>
     <None Include="Pages\ProcessingJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>

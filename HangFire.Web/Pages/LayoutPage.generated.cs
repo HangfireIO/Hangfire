@@ -231,7 +231,7 @@ WriteLiteral(@"
 
             
             #line 76 "..\..\Pages\LayoutPage.cshtml"
-                                                       Write(Request.PathInfo.Equals("/schedule") ? "active" : null);
+                                                       Write(Request.PathInfo.Equals("/scheduled") ? "active" : null);
 
             
             #line default
@@ -241,7 +241,7 @@ WriteLiteral("\" \r\n                       href=\"");
 
             
             #line 77 "..\..\Pages\LayoutPage.cshtml"
-                        Write(Request.LinkTo("/schedule"));
+                        Write(Request.LinkTo("/scheduled"));
 
             
             #line default
