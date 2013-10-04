@@ -47,8 +47,11 @@ html, body {
     cursor: pointer;
 }
 
-.list-group .list-group-item .glyphicon {
+.glyphicon {
     top: 0px;
+}
+
+.list-group .list-group-item .glyphicon {
     margin-right: 3px;
 }
 
