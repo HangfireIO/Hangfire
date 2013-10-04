@@ -9,7 +9,9 @@ namespace HangFire.Web
     {
         private static readonly IDictionary<string, Func<IDictionary<string, string>, IHtmlString>> 
             Renderers = new Dictionary<string, Func<IDictionary<string, string>, IHtmlString>>();
-        public static readonly IDictionary<string, string> StateColors
+        public static readonly IDictionary<string, string> BackgroundStateColors
+            = new Dictionary<string, string>();
+        public static readonly IDictionary<string, string> ForegroundStateColors
             = new Dictionary<string, string>();
 
         static JobHistoryRenderer()
@@ -20,11 +22,17 @@ namespace HangFire.Web
             Register(ProcessingState.Name, ProcessingRenderer);
             Register(ScheduledState.Name, ScheduledRenderer);
 
-            StateColors.Add(EnqueuedState.Name, "#F5F5F5");
-            StateColors.Add(SucceededState.Name, "#EDF7ED");
-            StateColors.Add(FailedState.Name, "#FAEBEA");
-            StateColors.Add(ProcessingState.Name, "#FCEFDC");
-            StateColors.Add(ScheduledState.Name, "#E0F3F8");
+            BackgroundStateColors.Add(EnqueuedState.Name, "#F5F5F5");
+            BackgroundStateColors.Add(SucceededState.Name, "#EDF7ED");
+            BackgroundStateColors.Add(FailedState.Name, "#FAEBEA");
+            BackgroundStateColors.Add(ProcessingState.Name, "#FCEFDC");
+            BackgroundStateColors.Add(ScheduledState.Name, "#E0F3F8");
+
+            ForegroundStateColors.Add(EnqueuedState.Name, "#999");
+            ForegroundStateColors.Add(SucceededState.Name, "#5cb85c");
+            ForegroundStateColors.Add(FailedState.Name, "#d9534f");
+            ForegroundStateColors.Add(ProcessingState.Name, "#f0ad4e");
+            ForegroundStateColors.Add(ScheduledState.Name, "#5bc0de");
         }
 
         public static void Register(string state, Func<IDictionary<string, string>, IHtmlString> renderer)

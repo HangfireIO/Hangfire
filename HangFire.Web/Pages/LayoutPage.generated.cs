@@ -325,21 +325,52 @@ WriteLiteral("\">\r\n                        <span id=\"stats-failed\" class=\"l
             #line hidden
 WriteLiteral("\r\n                        </span>\r\n                        Failed\r\n              " +
 "      </a>\r\n\r\n\r\n                </div>\r\n            </div>\r\n            <div cla" +
-"ss=\"col-md-9\">\r\n                <h1 class=\"page-header\">");
-
-
-            
-            #line 98 "..\..\Pages\LayoutPage.cshtml"
-                                   Write(Title);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</h1>\r\n                ");
+"ss=\"col-md-9\">\r\n                <h1 class=\"page-header\">\r\n                    ");
 
 
             
             #line 99 "..\..\Pages\LayoutPage.cshtml"
+               Write(Title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
+
+
+            
+            #line 100 "..\..\Pages\LayoutPage.cshtml"
+                     if (!String.IsNullOrEmpty(Subtitle))
+                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <small>");
+
+
+            
+            #line 102 "..\..\Pages\LayoutPage.cshtml"
+                          Write(Subtitle);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</small>\r\n");
+
+
+            
+            #line 103 "..\..\Pages\LayoutPage.cshtml"
+                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                </h1>\r\n                ");
+
+
+            
+            #line 105 "..\..\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -359,7 +390,7 @@ WriteLiteral(@"
 
 
             
-            #line 109 "..\..\Pages\LayoutPage.cshtml"
+            #line 115 "..\..\Pages\LayoutPage.cshtml"
                    Write(FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion);
 
             
@@ -370,7 +401,7 @@ WriteLiteral("\r\n                    </a>\r\n                </li>\r\n         
 
 
             
-            #line 113 "..\..\Pages\LayoutPage.cshtml"
+            #line 119 "..\..\Pages\LayoutPage.cshtml"
                Write(String.Format("redis://{0}:{1}/{2}", RedisFactory.Host, RedisFactory.Port, RedisFactory.Db));
 
             
@@ -380,7 +411,7 @@ WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
 
 
             
-            #line 115 "..\..\Pages\LayoutPage.cshtml"
+            #line 121 "..\..\Pages\LayoutPage.cshtml"
                      Write(DateTime.UtcNow);
 
             
@@ -390,7 +421,7 @@ WriteLiteral(" UTC\r\n                </li>\r\n                <li>Generated in 
 
 
             
-            #line 117 "..\..\Pages\LayoutPage.cshtml"
+            #line 123 "..\..\Pages\LayoutPage.cshtml"
                               Write((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds);
 
             
@@ -401,7 +432,7 @@ WriteLiteral(" ms]\r\n                </li>\r\n            </ul>\r\n        </di
 
 
             
-            #line 123 "..\..\Pages\LayoutPage.cshtml"
+            #line 129 "..\..\Pages\LayoutPage.cshtml"
             Write(Request.LinkTo("/js/scripts.js"));
 
             

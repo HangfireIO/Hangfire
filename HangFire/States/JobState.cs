@@ -131,7 +131,6 @@ namespace HangFire.States
                     new Dictionary<string, string>
                         {
                             { "State", state.StateName },
-                            { "UpdatedAt", JobHelper.ToStringTimestamp(now) }
                         }));
 
                 transaction.QueueCommand(x => x.SetRangeInHash(
