@@ -35,6 +35,9 @@ namespace HangFire.States
                 String.Format("hangfire:job:{0}:history", JobId),
                 _jobExpirationTimeout));
 
+            transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", JobId));
+            transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
+
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
         }
 
