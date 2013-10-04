@@ -176,7 +176,6 @@ namespace HangFire.Server
 
                 lock (Redis)
                 {
-                    // TODO: check that the job was enqueued.
                     if (!JobState.Apply(
                         Redis, 
                         new ProcessingState(jobId, "Worker has started processing.", workerContext.ServerContext.ServerName),

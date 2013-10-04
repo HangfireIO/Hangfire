@@ -251,10 +251,6 @@ namespace HangFire.Web
             lock (Redis)
             {
                 var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-                if (String.IsNullOrEmpty(jobType))
-                {
-                    return false;
-                }
 
                 var queueName = JobHelper.TryToGetQueueName(jobType);
                 if (String.IsNullOrEmpty(queueName))
@@ -262,14 +258,12 @@ namespace HangFire.Web
                     return false;
                 }
 
-                // TODO: rewrite this with states.
-                using (var transaction = Redis.CreateTransaction())
-                {
-                    transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
-                    transaction.QueueCommand(x => x.EnqueueItemOnList(String.Format("hangfire:queue:{0}", queueName), jobId));
+                // TODO: clear retry attempts counter.
 
-                    return transaction.Commit();
-                }
+                return JobState.Apply(
+                    Redis,
+                    new EnqueuedState(jobId, "The job has been retried by a user.", queueName),
+                    FailedState.Name);
             }
         }
 
@@ -277,7 +271,9 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                return JobState.Apply(Redis, new DeletedState(jobId, "The job has been deleted by a user."));
+                return JobState.Apply(
+                    Redis, 
+                    new DeletedState(jobId, "The job has been deleted by a user."));
             }
         }
 
@@ -285,7 +281,18 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                return false; //TODO:Redis.EnqueueScheduledJob(jobId);
+                var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
+                var queueName = JobHelper.TryToGetQueueName(jobType);
+
+                if (String.IsNullOrEmpty(queueName))
+                {
+                    return false;
+                }
+
+                return JobState.Apply(
+                    Redis, 
+                    new EnqueuedState(jobId, "The job has been enqueued by a user.", queueName),
+                    ScheduledState.Name);
             }
         }
 

@@ -104,7 +104,6 @@ namespace HangFire.Server
                 // When another server has already performed such an action with the same job id, this
                 // transaction will fail. In this case we should re-run this method again.
 
-                // TODO: check that the job is scheduled
                 return JobState.Apply(
                     _redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queueName),
                     ScheduledState.Name);
