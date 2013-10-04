@@ -67,7 +67,7 @@ else
                         
                         @if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
                         {
-                            <pre class="stack-trace">@MarkupStackTrace(job.Value.ExceptionDetails)</pre>
+                            <pre class="stack-trace">@HtmlHelper.MarkupStackTrace(job.Value.ExceptionDetails)</pre>
                         }
 
                         <h4>Job Arguments</h4>

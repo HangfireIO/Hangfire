@@ -1,5 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
+@using System.Linq
 @using Pages
 @inherits RazorPage
 @{
@@ -16,13 +17,13 @@ else
     <dl class="dl-horizontal">
         <dt>Id</dt>
         <dd>@JobId</dd>
-    
+
         <dt>Type</dt>
         <dd>@HtmlHelper.JobType(job.Type)</dd>
-    
+
         <dt>Arguments</dt>
         <dd><code>@HtmlHelper.FormatProperties(job.Arguments)</code></dd>
-    
+
         @foreach (var property in job.Properties)
         {
             <dt>@property.Key</dt>
@@ -31,16 +32,39 @@ else
     </dl>
     
     <h3>History</h3>
-    foreach (var entry in job.History)
-    {
-        <table class="table table-bordered table-condensed">
-            @foreach (var item in entry)
+        foreach (var entry in job.History)
+        {
+    <div class="job-history" 
+         style="@(JobHistoryRenderer.StateColors.ContainsKey(entry["State"]) ? String.Format("background-color: {0};", JobHistoryRenderer.StateColors[entry["State"]]) : null)">
+        <span class="pull-right">@JobHelper.FromStringTimestamp(entry["Date"])</span>
+        <h4 class="job-history-title">
+            @entry["State"]
+
+            @if (!String.IsNullOrEmpty(entry["Reason"]))
             {
-                <tr>
-                    <td>@item.Key</td>
-                    <td>@item.Value</td>
-                </tr>
+                <small>@entry["Reason"]</small>
             }
-        </table>
-    }
+        </h4>
+
+        @if (JobHistoryRenderer.Exists(entry["State"]))
+        {
+            var rendered = JobHistoryRenderer.Render(entry["State"], entry);
+            if (rendered != null)
+            {
+            <hr />
+            @rendered
+            }
+        }
+        else
+        {
+            <dl class="dl-horizontal">
+                @foreach (var item in entry.Where(x => x.Key != "State" && x.Key != "Date" && x.Key != "Reason"))
+                {
+                    <dt>@item.Key:</dt>
+                    <dd>@item.Value</dd>
+                }
+            </dl>
+        }
+    </div>
+        }
 }

@@ -108,3 +108,29 @@ html, body {
 .st-line {
     color: #8B008B;
 }
+
+.job-history {
+    background-color: #f7f7f7;
+    padding: 10px;
+    margin-bottom: 5px;
+}
+
+.job-history-title {
+    margin-top: 0;
+    margin-bottom: 2px;
+    color: #666;
+}
+
+.job-history dl {
+    margin-bottom: 5px;
+}
+
+.job-history hr {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.job-history .stack-trace {
+    background-color: transparent;
+    padding: 0 20px;
+}

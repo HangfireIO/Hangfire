@@ -18,10 +18,15 @@ namespace HangFire.Web.Pages
     #line default
     #line hidden
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     
     #line 3 "..\..\Pages\JobDetailsPage.cshtml"
+    using System.Linq;
+    
+    #line default
+    #line hidden
+    using System.Text;
+    
+    #line 4 "..\..\Pages\JobDetailsPage.cshtml"
     using Pages;
     
     #line default
@@ -42,8 +47,9 @@ WriteLiteral("\r\n");
 
 
 
+
             
-            #line 5 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 6 "..\..\Pages\JobDetailsPage.cshtml"
   
     Layout = new LayoutPage { Title = "Job Details" };
     var job = JobStorage.JobDetails(JobId.ToString());
@@ -56,7 +62,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 10 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 11 "..\..\Pages\JobDetailsPage.cshtml"
  if (job == null)
 {
 
@@ -69,7 +75,7 @@ WriteLiteral(" The job with id \'");
 
 
             
-            #line 12 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 13 "..\..\Pages\JobDetailsPage.cshtml"
                    Write(JobId);
 
             
@@ -79,7 +85,7 @@ WriteLiteral("\' was expired or was not existed on the server.\r\n");
 
 
             
-            #line 13 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 14 "..\..\Pages\JobDetailsPage.cshtml"
 }
 else
 {
@@ -91,37 +97,37 @@ WriteLiteral("    <dl class=\"dl-horizontal\">\r\n        <dt>Id</dt>\r\n       
 
 
             
-            #line 18 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 19 "..\..\Pages\JobDetailsPage.cshtml"
        Write(JobId);
 
             
             #line default
             #line hidden
-WriteLiteral("</dd>\r\n    \r\n        <dt>Type</dt>\r\n        <dd>");
+WriteLiteral("</dd>\r\n\r\n        <dt>Type</dt>\r\n        <dd>");
 
 
             
-            #line 21 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 22 "..\..\Pages\JobDetailsPage.cshtml"
        Write(HtmlHelper.JobType(job.Type));
 
             
             #line default
             #line hidden
-WriteLiteral("</dd>\r\n    \r\n        <dt>Arguments</dt>\r\n        <dd><code>");
+WriteLiteral("</dd>\r\n\r\n        <dt>Arguments</dt>\r\n        <dd><code>");
 
 
             
-            #line 24 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 25 "..\..\Pages\JobDetailsPage.cshtml"
              Write(HtmlHelper.FormatProperties(job.Arguments));
 
             
             #line default
             #line hidden
-WriteLiteral("</code></dd>\r\n    \r\n");
+WriteLiteral("</code></dd>\r\n\r\n");
 
 
             
-            #line 26 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 27 "..\..\Pages\JobDetailsPage.cshtml"
          foreach (var property in job.Properties)
         {
 
@@ -132,7 +138,7 @@ WriteLiteral("            <dt>");
 
 
             
-            #line 28 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 29 "..\..\Pages\JobDetailsPage.cshtml"
            Write(property.Key);
 
             
@@ -146,7 +152,7 @@ WriteLiteral("            <dd>");
 
 
             
-            #line 29 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 30 "..\..\Pages\JobDetailsPage.cshtml"
            Write(property.Value);
 
             
@@ -156,7 +162,7 @@ WriteLiteral("</dd>\r\n");
 
 
             
-            #line 30 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 31 "..\..\Pages\JobDetailsPage.cshtml"
         }
 
             
@@ -166,7 +172,7 @@ WriteLiteral("    </dl>\r\n");
 
 
             
-            #line 32 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 33 "..\..\Pages\JobDetailsPage.cshtml"
     
 
             
@@ -176,60 +182,176 @@ WriteLiteral("    <h3>History</h3>\r\n");
 
 
             
-            #line 34 "..\..\Pages\JobDetailsPage.cshtml"
-    foreach (var entry in job.History)
-    {
+            #line 35 "..\..\Pages\JobDetailsPage.cshtml"
+        foreach (var entry in job.History)
+        {
 
             
             #line default
             #line hidden
-WriteLiteral("        <table class=\"table table-bordered table-condensed\">\r\n");
+WriteLiteral("    <div class=\"job-history\" \r\n         style=\"");
 
 
             
-            #line 37 "..\..\Pages\JobDetailsPage.cshtml"
-             foreach (var item in entry)
+            #line 38 "..\..\Pages\JobDetailsPage.cshtml"
+            Write(JobHistoryRenderer.StateColors.ContainsKey(entry["State"]) ? String.Format("background-color: {0};", JobHistoryRenderer.StateColors[entry["State"]]) : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n        <span class=\"pull-right\">");
+
+
+            
+            #line 39 "..\..\Pages\JobDetailsPage.cshtml"
+                            Write(JobHelper.FromStringTimestamp(entry["Date"]));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</span>\r\n        <h4 class=\"job-history-title\">\r\n            ");
+
+
+            
+            #line 41 "..\..\Pages\JobDetailsPage.cshtml"
+       Write(entry["State"]);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n\r\n");
+
+
+            
+            #line 43 "..\..\Pages\JobDetailsPage.cshtml"
+             if (!String.IsNullOrEmpty(entry["Reason"]))
             {
 
             
             #line default
             #line hidden
-WriteLiteral("                <tr>\r\n                    <td>");
+WriteLiteral("                <small>");
 
 
             
-            #line 40 "..\..\Pages\JobDetailsPage.cshtml"
-                   Write(item.Key);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                    <td>");
-
-
-            
-            #line 41 "..\..\Pages\JobDetailsPage.cshtml"
-                   Write(item.Value);
+            #line 45 "..\..\Pages\JobDetailsPage.cshtml"
+                  Write(entry["Reason"]);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                </tr>\r\n");
+WriteLiteral("</small>\r\n");
 
 
             
-            #line 43 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 46 "..\..\Pages\JobDetailsPage.cshtml"
             }
 
             
             #line default
             #line hidden
-WriteLiteral("        </table>\r\n");
+WriteLiteral("        </h4>\r\n\r\n");
 
 
             
-            #line 45 "..\..\Pages\JobDetailsPage.cshtml"
-    }
+            #line 49 "..\..\Pages\JobDetailsPage.cshtml"
+         if (JobHistoryRenderer.Exists(entry["State"]))
+        {
+            var rendered = JobHistoryRenderer.Render(entry["State"], entry);
+            if (rendered != null)
+            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            <hr />\r\n");
+
+
+            
+            #line 55 "..\..\Pages\JobDetailsPage.cshtml"
+            
+            
+            #line default
+            #line hidden
+            
+            #line 55 "..\..\Pages\JobDetailsPage.cshtml"
+       Write(rendered);
+
+            
+            #line default
+            #line hidden
+            
+            #line 55 "..\..\Pages\JobDetailsPage.cshtml"
+                     
+            }
+        }
+        else
+        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            <dl class=\"dl-horizontal\">\r\n");
+
+
+            
+            #line 61 "..\..\Pages\JobDetailsPage.cshtml"
+                 foreach (var item in entry.Where(x => x.Key != "State" && x.Key != "Date" && x.Key != "Reason"))
+                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <dt>");
+
+
+            
+            #line 63 "..\..\Pages\JobDetailsPage.cshtml"
+                   Write(item.Key);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(":</dt>\r\n");
+
+
+
+WriteLiteral("                    <dd>");
+
+
+            
+            #line 64 "..\..\Pages\JobDetailsPage.cshtml"
+                   Write(item.Value);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</dd>\r\n");
+
+
+            
+            #line 65 "..\..\Pages\JobDetailsPage.cshtml"
+                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            </dl>\r\n");
+
+
+            
+            #line 67 "..\..\Pages\JobDetailsPage.cshtml"
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    </div>\r\n");
+
+
+            
+            #line 69 "..\..\Pages\JobDetailsPage.cshtml"
+        }
 }
             
             #line default
