@@ -78,6 +78,7 @@
       <LastGenOutput>JobDetailsPage.generated.cs</LastGenOutput>
     </None>
     <Compile Include="JobHistoryRenderer.cs" />
+    <Compile Include="Pager.cs" />
     <Compile Include="Pages\JobDetailsPage.cs">
       <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
     </Compile>
@@ -95,6 +96,9 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DashboardPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\SucceededJobs.cs">
+      <DependentUpon>SucceededJobs.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Pages\SucceededJobs.generated.cs">
       <AutoGen>True</AutoGen>

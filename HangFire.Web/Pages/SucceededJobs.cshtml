@@ -1,22 +1,17 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
-@using System
-@using System.Linq
+
 @using Pages
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Succeeded Jobs" };
 }
 
-<div class="alert alert-info">
-    HangFire хранит последние 100 успешно выполненных  заданий в очереди <code>hangfire:succeeded</code>
-    для более простой отладки работы фоновых задач.
-</div>
-
 @{
-    var succeededJobs = JobStorage.SucceededJobs();
+    var succeededJobs = JobStorage.SucceededJobs(From, Count);
+    var pager = new Pager(From, Count, JobStorage.SucceededListCount());
 }
 
-@if (succeededJobs.Count == 0)
+@if (pager.TotalPages == 0)
 {
     <div class="alert alert-warning">
         <p>
@@ -25,6 +20,19 @@
 }
 else
 {
+    <div class="btn-toolbar btn-toolbar-top">
+        <div class="btn-group pull-right paginator">
+            @foreach (var count in new[] { 10, 20, 50, 100 })
+            {
+                <a class="btn btn-default @(count == Count ? "active" : null)" 
+                    href="@pager.PerPageLink(count)">@count</a>    
+            }
+        </div>
+        <div class="btn-group pull-right">
+            <span class="btn">Jobs per page:</span>
+        </div>
+    </div>
+    
     <table class="table">
         <thead>
             <tr>
@@ -65,4 +73,27 @@ else
             }
         </tbody>
     </table>
+    
+    <div class="btn-toolbar">
+        @if (pager.TotalPages > 1)
+        {
+            <div class="btn-group paginator">
+                <a href="@pager.PreviousPageLink" 
+                   class="btn btn-default @(!pager.HasPreviousPage ? "disabled" : null)">&laquo;</a>
+
+                @for (var i = 1; i <= pager.TotalPages; i++)
+                {
+                    <a class="btn btn-default @(pager.CurrentPage == i ? "active" : null)" 
+                       href="@pager.PageLink(i)">@i</a>
+                }
+
+                <a href="@pager.NextPageLink" 
+                   class="btn btn-default @(!pager.HasNextPage ? "disabled" : null)">&raquo;</a>
+            </div>
+        }
+
+        <div class="btn-group">
+            <span class="btn">Total jobs: @pager.Total</span>
+        </div>
+    </div>
 }

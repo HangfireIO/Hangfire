@@ -146,3 +146,15 @@ html, body {
 .width-200 {
     width: 200px;
 }
+
+.btn-toolbar-top {
+    margin-bottom: 10px;
+}
+
+.paginator .btn {
+    color: #428bca;
+}
+
+.paginator .btn.active {
+    color: #333;
+}

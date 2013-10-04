@@ -172,12 +172,15 @@ namespace HangFire.Web
             }
         }
 
-        public static IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs()
+        public static IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs(int from, int count)
         {
             lock (Redis)
             {
                 // TODO: use LRANGE with paging.
-                var succeededJobIds = Redis.GetAllItemsFromList("hangfire:succeeded");
+                var succeededJobIds = Redis.GetRangeFromList(
+                    "hangfire:succeeded",
+                    from, 
+                    from + count - 1);
 
                 return GetJobsWithProperties(
                     Redis,
@@ -414,6 +417,14 @@ namespace HangFire.Web
                     x.JobId,
                     x.Job.TrueForAll(y => y == null) ? default(T) : selector(x.Job, x.State)))
                 .ToList();
+        }
+
+        public static long SucceededListCount()
+        {
+            lock (Redis)
+            {
+                return Redis.GetListCount("hangfire:succeeded");
+            }
         }
     }
 }
