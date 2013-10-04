@@ -21,6 +21,7 @@ namespace HangFire.Web
             Register(FailedState.Name, FailedRenderer);
             Register(ProcessingState.Name, ProcessingRenderer);
             Register(EnqueuedState.Name, EnqueuedRenderer);
+            Register(ScheduledState.Name, ScheduledRenderer);
 
             BackgroundStateColors.Add(EnqueuedState.Name, "#F5F5F5");
             BackgroundStateColors.Add(SucceededState.Name, "#EDF7ED");
@@ -83,6 +84,13 @@ namespace HangFire.Web
             return new HtmlString(String.Format(
                 "<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-primary\">{0}</span></dd></dl>",
                 properties["Queue"]));
+        }
+
+        private static IHtmlString ScheduledRenderer(IDictionary<string, string> properties)
+        {
+            return new HtmlString(String.Format(
+                "<dl class=\"dl-horizontal\"><dt>Will be enqueued at:</dt><dd>{0}</dd></dl>",
+                JobHelper.FromStringTimestamp(properties["EnqueueAt"])));
         }
     }
 }

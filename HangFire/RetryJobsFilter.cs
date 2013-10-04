@@ -23,11 +23,6 @@ namespace HangFire
 
             if (retryCount <= MaxRetryAttempts)
             {
-                var jobType = redis.GetValueFromHash(
-                    String.Format("hangfire:job:{0}", state.JobId),
-                    "Type");
-
-                var queueName = JobHelper.TryToGetQueueName(jobType);
                 var delay = DateTime.UtcNow.AddSeconds(SecondsToDelay(retryCount));
 
                 // If attempt number is less than max attempts, we should
@@ -35,7 +30,6 @@ namespace HangFire
                 return new ScheduledState(
                     state.JobId, 
                     String.Format("Retry attempt {0} of {1}.", retryCount, MaxRetryAttempts), 
-                    queueName, 
                     delay);
             }
 

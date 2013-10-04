@@ -8,15 +8,13 @@ namespace HangFire.States
     {
         public static readonly string Name = "Scheduled";
 
-        public ScheduledState(string jobId, string reason, string queueName, DateTime fireAt)
+        public ScheduledState(string jobId, string reason, DateTime enqueueAt)
             : base(jobId, reason)
         {
-            QueueName = queueName;
-            FireAt = fireAt;
+            EnqueueAt = enqueueAt;
         }
 
-        public string QueueName { get; private set; }
-        public DateTime FireAt { get; private set; }
+        public DateTime EnqueueAt { get; private set; }
 
         public override string StateName { get { return Name; } }
 
@@ -25,12 +23,13 @@ namespace HangFire.States
             return new Dictionary<string, string>
                 {
                     { "ScheduledAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
+                    { "EnqueueAt", JobHelper.ToStringTimestamp(EnqueueAt) }
                 };
         }
 
         public override void Apply(IRedisTransaction transaction)
         {
-            var timestamp = JobHelper.ToTimestamp(FireAt);
+            var timestamp = JobHelper.ToTimestamp(EnqueueAt);
 
             transaction.QueueCommand(x => x.AddItemToSortedSet(
                 "hangfire:schedule", JobId, timestamp));

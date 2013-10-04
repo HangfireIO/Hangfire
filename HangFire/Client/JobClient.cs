@@ -71,7 +71,6 @@ namespace HangFire.Client
             var descriptor = CreateDescriptor(jobType, args);
 
             var at = DateTime.UtcNow.Add(interval);
-            var queueName = JobHelper.GetQueueName(jobType);
 
             descriptor.EnqueueAction = () =>
             {
@@ -82,7 +81,6 @@ namespace HangFire.Client
                     JobState.Apply(_redis, new ScheduledState(
                         descriptor.JobId, 
                         "Scheduled by the Client",
-                        queueName, 
                         at));
                 }
             };

@@ -34,12 +34,9 @@ namespace HangFire
 
             if (recurringAttribute != null)
             {
-                var queueName = JobHelper.GetQueueName(type);
-
                 return new ScheduledState(
                     state.JobId, 
                     "Scheduled as a recurring job.",
-                    queueName, 
                     DateTime.UtcNow.AddSeconds(recurringAttribute.Seconds));
             }
 
