@@ -61,7 +61,7 @@ else
         {
             <div class="job-history">
                 <div class="job-history-heading" style="@(JobHistoryRenderer.StateColors.ContainsKey(entry["State"]) ? String.Format("background-color: {0};", JobHistoryRenderer.StateColors[entry["State"]]) : null)">
-                    <span class="pull-right">@JobHelper.FromStringTimestamp(entry["Date"])</span>
+                    <span class="pull-right">@JobHelper.FromStringTimestamp(entry["CreatedAt"])</span>
                     <h4 class="job-history-title">
                         @entry["State"]
 
