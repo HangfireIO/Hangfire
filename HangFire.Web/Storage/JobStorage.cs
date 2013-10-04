@@ -77,7 +77,6 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                // TODO: use ZRANGEBYSCORE and split results into pages.
                 var scheduledJobs = Redis.GetRangeWithScoresFromSortedSet(
                     "hangfire:schedule",
                     0,
@@ -150,12 +149,14 @@ namespace HangFire.Web
             }
         }
 
-        public static IList<KeyValuePair<string, FailedJobDto>> FailedJobs()
+        public static IList<KeyValuePair<string, FailedJobDto>> FailedJobs(int from, int count)
         {
             lock (Redis)
             {
-                // TODO: use LRANGE and pages.
-                var failedJobIds = Redis.GetAllItemsFromSortedSetDesc("hangfire:failed");
+                var failedJobIds = Redis.GetRangeFromSortedSetDesc(
+                    "hangfire:failed",
+                    from,
+                    from + count - 1);
 
                 return GetJobsWithProperties(
                     Redis,
@@ -179,7 +180,6 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                // TODO: use LRANGE with paging.
                 var succeededJobIds = Redis.GetRangeFromList(
                     "hangfire:succeeded",
                     from, 
