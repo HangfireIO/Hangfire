@@ -21,7 +21,7 @@ namespace HangFire
                 "RetryCount",
                 1);
 
-            if (retryCount < MaxRetryAttempts)
+            if (retryCount <= MaxRetryAttempts)
             {
                 var jobType = redis.GetValueFromHash(
                     String.Format("hangfire:job:{0}", state.JobId),
