@@ -58,7 +58,7 @@ else
                         @HtmlHelper.JobId(job.Key)
                     </a>
                 </td>
-                <td>@job.Value.ScheduledAt</td>
+                <td data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt)">@job.Value.ScheduledAt</td>
                 <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
                 <td>@HtmlHelper.JobType(job.Value.Type)</td>
                 <td>

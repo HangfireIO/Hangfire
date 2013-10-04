@@ -274,12 +274,22 @@ WriteLiteral("    <div class=\"job-history\">\r\n        <div class=\"job-histor
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n            <span class=\"pull-right\">");
+WriteLiteral("\">\r\n            <span class=\"pull-right\" data-moment=\"");
 
 
             
             #line 75 "..\..\Pages\JobDetailsPage.cshtml"
-                                Write(JobHelper.FromStringTimestamp(entry["CreatedAt"]));
+                                             Write(entry["CreatedAt"]);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">");
+
+
+            
+            #line 75 "..\..\Pages\JobDetailsPage.cshtml"
+                                                                  Write(JobHelper.FromStringTimestamp(entry["CreatedAt"]));
 
             
             #line default

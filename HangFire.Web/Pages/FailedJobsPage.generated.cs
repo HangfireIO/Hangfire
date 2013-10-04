@@ -202,12 +202,22 @@ WriteLiteral("\">\r\n                            ");
             #line default
             #line hidden
 WriteLiteral("\r\n                        </a>\r\n                    </td>\r\n                    <t" +
-"d>");
+"d data-moment=\"");
 
 
             
             #line 62 "..\..\Pages\FailedJobsPage.cshtml"
-                   Write(job.Value.FailedAt);
+                                Write(JobHelper.ToStringTimestamp(job.Value.FailedAt.Value));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">");
+
+
+            
+            #line 62 "..\..\Pages\FailedJobsPage.cshtml"
+                                                                                        Write(job.Value.FailedAt);
 
             
             #line default

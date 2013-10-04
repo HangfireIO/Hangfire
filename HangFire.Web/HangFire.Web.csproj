@@ -233,6 +233,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.svg" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Content\js\moment.min.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

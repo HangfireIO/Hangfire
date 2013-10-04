@@ -74,7 +74,7 @@ else
                                 @HtmlHelper.FormatProperties(job.Value.Args)
                             </code>
                         </td>
-                        <td>@job.Value.SucceededAt</td>
+                        <td data-moment="@JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value)">@job.Value.SucceededAt</td>
                     }
                 </tr>
             }

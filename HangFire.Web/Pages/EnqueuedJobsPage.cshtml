@@ -67,7 +67,7 @@ else
                     <td><code>
                             @HtmlHelper.FormatProperties(job.Value.Args)
                         </code></td>
-                    <td>@job.Value.EnqueuedAt</td>
+                    <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt)">@job.Value.EnqueuedAt</td>
                 </tr>
             }
         </tbody>

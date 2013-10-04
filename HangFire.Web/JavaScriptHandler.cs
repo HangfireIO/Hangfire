@@ -9,6 +9,7 @@ namespace HangFire.Web
             {
                 "jquery-1.10.2.min.js", 
                 "bootstrap.min.js",
+                "moment.min.js",
                 "d3.min.js", 
                 "d3.layout.min.js", 
                 "rickshaw.min.js", 

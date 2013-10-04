@@ -89,7 +89,8 @@ namespace HangFire.Web
         private static IHtmlString ScheduledRenderer(IDictionary<string, string> properties)
         {
             return new HtmlString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Will be enqueued at:</dt><dd>{0}</dd></dl>",
+                "<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{0}\">{1}</dd></dl>",
+                properties["EnqueueAt"],
                 JobHelper.FromStringTimestamp(properties["EnqueueAt"])));
         }
     }

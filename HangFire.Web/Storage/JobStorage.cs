@@ -148,7 +148,7 @@ namespace HangFire.Web
                             Name = serverName,
                             Queue = server["queue"],
                             Concurrency = int.Parse(server["concurrency"]),
-                            StartedAt = server["started-at"]
+                            StartedAt = JobHelper.FromStringTimestamp(server["started-at"])
                         });
                     }
                 }

@@ -188,12 +188,23 @@ WriteLiteral("\">\r\n                        ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </a>\r\n                </td>\r\n                <td>");
+WriteLiteral("\r\n                    </a>\r\n                </td>\r\n                <td data-momen" +
+"t=\"");
 
 
             
             #line 61 "..\..\Pages\SchedulePage.cshtml"
-               Write(job.Value.ScheduledAt);
+                            Write(JobHelper.ToStringTimestamp(job.Value.ScheduledAt));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">");
+
+
+            
+            #line 61 "..\..\Pages\SchedulePage.cshtml"
+                                                                                 Write(job.Value.ScheduledAt);
 
             
             #line default

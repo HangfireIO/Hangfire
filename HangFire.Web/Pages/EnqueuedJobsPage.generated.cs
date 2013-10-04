@@ -223,12 +223,22 @@ WriteLiteral("</td>\r\n                    <td><code>\r\n                       
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </code></td>\r\n                    <td>");
+WriteLiteral("\r\n                        </code></td>\r\n                    <td data-moment=\"");
 
 
             
             #line 70 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                   Write(job.Value.EnqueuedAt);
+                                Write(JobHelper.ToStringTimestamp(job.Value.EnqueuedAt));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">");
+
+
+            
+            #line 70 "..\..\Pages\EnqueuedJobsPage.cshtml"
+                                                                                    Write(job.Value.EnqueuedAt);
 
             
             #line default

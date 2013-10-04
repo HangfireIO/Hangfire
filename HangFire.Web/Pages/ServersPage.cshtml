@@ -47,7 +47,7 @@ else
                     <td>@server.Name</td>
                     <td><span class="label label-primary">@server.Queue</span></td>
                     <td>@server.Concurrency</td>
-                    <td>@server.StartedAt</td>
+                    <td data-moment="@JobHelper.ToStringTimestamp(server.StartedAt)">@server.StartedAt</td>
                 </tr>
             }
         </tbody>

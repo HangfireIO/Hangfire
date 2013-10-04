@@ -59,7 +59,7 @@ else
                             @HtmlHelper.JobId(job.Key)
                         </a>
                     </td>
-                    <td>@job.Value.FailedAt</td>
+                    <td data-moment="@JobHelper.ToStringTimestamp(job.Value.FailedAt.Value)">@job.Value.FailedAt</td>
                     <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
                     <td class="expand-exception">
                         <div>

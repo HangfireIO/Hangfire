@@ -249,7 +249,7 @@ namespace HangFire.Server
                             { "server-name", _serverName },
                             { "concurrency", _concurrency.ToString() },
                             { "queue", _queueName },
-                            { "started-at", DateTime.UtcNow.ToString(CultureInfo.InvariantCulture) }
+                            { "started-at", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
                         }));
                 transaction.QueueCommand(x => x.AddItemToSet(
                     String.Format("hangfire:queue:{0}:servers", _queueName), _serverName));

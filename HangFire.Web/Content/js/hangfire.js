@@ -1,4 +1,17 @@
 ﻿$(function () {
+    var updateRelativeDates = function() {
+        $('*[data-moment]').each(function() {
+            var $this = $(this);
+            var time = moment($this.data('moment'), 'X');
+            $this.html(time.fromNow())
+                .attr('title', time.format('llll'))
+                .attr('data-container', 'body');
+        });
+    };
+
+    updateRelativeDates();
+    setInterval(updateRelativeDates, 30 * 1000);
+
     $('*[title]').tooltip();
 
     $(document).on('click', '*[data-ajax]', function(e) {

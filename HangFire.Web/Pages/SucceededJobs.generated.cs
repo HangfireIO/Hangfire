@@ -254,12 +254,22 @@ WriteLiteral("\r\n                            </code>\r\n                       
 
 
 
-WriteLiteral("                        <td>");
+WriteLiteral("                        <td data-moment=\"");
 
 
             
             #line 77 "..\..\Pages\SucceededJobs.cshtml"
-                       Write(job.Value.SucceededAt);
+                                    Write(JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">");
+
+
+            
+            #line 77 "..\..\Pages\SucceededJobs.cshtml"
+                                                                                               Write(job.Value.SucceededAt);
 
             
             #line default
