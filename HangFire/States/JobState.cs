@@ -25,21 +25,22 @@ namespace HangFire.States
             return new Dictionary<string, string>();
         }
 
-        private static readonly IDictionary<string, Action<IRedisTransaction, string>> UnapplyActions
-            = new Dictionary<string, Action<IRedisTransaction, string>>();
+        private static readonly IDictionary<string, Descriptor> Descriptors
+            = new Dictionary<string, Descriptor>();
 
         static JobState()
         {
-            RegisterUnapplyAction(FailedState.Name, FailedState.Unapply);
-            RegisterUnapplyAction(ProcessingState.Name, ProcessingState.Unapply);
-            RegisterUnapplyAction(ScheduledState.Name, ScheduledState.Unapply);
-            RegisterUnapplyAction(SucceededState.Name, SucceededState.Unapply);
+            RegisterDescriptor(FailedState.Name, new FailedState.Descriptor());
+            RegisterDescriptor(ProcessingState.Name, new ProcessingState.Descriptor());
+            RegisterDescriptor(ScheduledState.Name, new ScheduledState.Descriptor());
+            RegisterDescriptor(SucceededState.Name, new SucceededState.Descriptor());
+            RegisterDescriptor(EnqueuedState.Name, new EnqueuedState.Descriptor());
         }
 
-        public static void RegisterUnapplyAction(
-            string stateName, Action<IRedisTransaction, string> unapplyAction)
+        public static void RegisterDescriptor(
+            string stateName, Descriptor descriptor)
         {
-            UnapplyActions.Add(stateName, unapplyAction);
+            Descriptors.Add(stateName, descriptor);
         }
 
         public static bool Apply(IRedisClient redis, JobState state, params string[] allowedStates)
@@ -81,9 +82,22 @@ namespace HangFire.States
             {
                 if (!String.IsNullOrEmpty(oldState))
                 {
-                    if (UnapplyActions.ContainsKey(oldState))
+                    if (Descriptors.ContainsKey(oldState))
                     {
-                        UnapplyActions[oldState](transaction, state.JobId);
+                        var descriptor = Descriptors[oldState];
+                        var properties = descriptor.GetPropertyKeys();
+
+                        descriptor.Unapply(transaction, state.JobId);
+
+                        // TODO: Use "HDEL key field1 field2 ..." command
+                        foreach (var property in properties)
+                        {
+                            var name = property;
+
+                            transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                                String.Format("hangfire:job:{0}", state.JobId),
+                                name));
+                        }
                     }
 
                     foreach (var filter in filters)
@@ -132,6 +146,18 @@ namespace HangFire.States
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:job:{0}:history", state.JobId),
                 JobHelper.ToJson(properties)));
+        }
+
+        public abstract class Descriptor
+        {
+            public virtual void Unapply(IRedisTransaction transaction, string jobId)
+            {
+            }
+
+            public virtual IList<string> GetPropertyKeys()
+            {
+                return new List<string>();
+            }
         }
     }
 }

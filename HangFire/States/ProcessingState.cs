@@ -33,10 +33,18 @@ namespace HangFire.States
                 "hangfire:processing", JobId));
         }
 
-        public static void Unapply(IRedisTransaction transaction, string jobId)
+        public class Descriptor : JobState.Descriptor
         {
-            transaction.QueueCommand(x => x.RemoveItemFromSet(
-                "hangfire:processing", jobId));
+            public override void Unapply(IRedisTransaction transaction, string jobId)
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromSet(
+                    "hangfire:processing", jobId));
+            }
+
+            public override IList<string> GetPropertyKeys()
+            {
+                return new List<string> { "StartedAt", "ServerName" };
+            }
         }
     }
 }

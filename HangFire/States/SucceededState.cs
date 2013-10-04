@@ -38,10 +38,18 @@ namespace HangFire.States
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
         }
 
-        public static void Unapply(IRedisTransaction transaction, string jobId)
+        public class Descriptor : JobState.Descriptor
         {
-            // TODO: persist the job
-            transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:succeeded"));
+            public override void Unapply(IRedisTransaction transaction, string jobId)
+            {
+                // TODO: persist the job
+                transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:succeeded"));
+            }
+
+            public override IList<string> GetPropertyKeys()
+            {
+                return new List<string> { "SucceededAt" };
+            }
         }
     }
 }

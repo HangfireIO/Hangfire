@@ -311,7 +311,7 @@ namespace HangFire.Web
                 var job = Redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
                 if (job.Count == 0) return null;
 
-                var hiddenProperties = new[] { "Type", "Args" };
+                var hiddenProperties = new[] { "Type", "Args", "State" };
 
                 var historyList = Redis.GetAllItemsFromList(
                     String.Format("hangfire:job:{0}:history", jobId));
@@ -324,6 +324,7 @@ namespace HangFire.Web
                 {
                     Type = job["Type"],
                     Arguments = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]),
+                    State = job.ContainsKey("State") ? job["State"] : null,
                     Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
                     History = history
                 };

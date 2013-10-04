@@ -37,9 +37,17 @@ namespace HangFire.States
                 "hangfire:schedule", JobId, timestamp));
         }
 
-        public static void Unapply(IRedisTransaction transaction, string jobId)
+        public class Descriptor : JobState.Descriptor
         {
-            transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
+            public override void Unapply(IRedisTransaction transaction, string jobId)
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
+            }
+
+            public override IList<string> GetPropertyKeys()
+            {
+                return new List<string> { "ScheduledAt", "ScheduledQueue" };
+            }
         }
     }
 }

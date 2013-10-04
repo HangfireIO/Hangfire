@@ -18,11 +18,11 @@ else
         <dt>Id</dt>
         <dd>@JobId</dd>
 
+        <dt>State</dt>
+        <dd><span class="label label-default">@job.State</span></dd>
+
         <dt>Type</dt>
         <dd>@HtmlHelper.JobType(job.Type)</dd>
-
-        <dt>Arguments</dt>
-        <dd><code>@HtmlHelper.FormatProperties(job.Arguments)</code></dd>
 
         @foreach (var property in job.Properties)
         {
@@ -31,44 +31,70 @@ else
         }
     </dl>
     
-    <h3>History</h3>
+    
+        if (job.Arguments.Count > 0)
+        {
+    <h3>Arguments</h3>
+    <table class="table table-condensed table-bordered table-striped">
+        <thead>
+            <tr>
+                <th class="width-200">Name</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var arg in job.Arguments)
+            {
+                <tr>
+                    <td>@arg.Key</td>
+                    <td><code>@arg.Value</code></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+        }
+
+    if (job.History.Count > 0)
+    {
+        <h3>History</h3>
         foreach (var entry in job.History)
         {
-    <div class="job-history">
-        <div class="job-history-heading" style="@(JobHistoryRenderer.StateColors.ContainsKey(entry["State"]) ? String.Format("background-color: {0};", JobHistoryRenderer.StateColors[entry["State"]]) : null)">
-            <span class="pull-right">@JobHelper.FromStringTimestamp(entry["Date"])</span>
-            <h4 class="job-history-title">
-                @entry["State"]
+            <div class="job-history">
+                <div class="job-history-heading" style="@(JobHistoryRenderer.StateColors.ContainsKey(entry["State"]) ? String.Format("background-color: {0};", JobHistoryRenderer.StateColors[entry["State"]]) : null)">
+                    <span class="pull-right">@JobHelper.FromStringTimestamp(entry["Date"])</span>
+                    <h4 class="job-history-title">
+                        @entry["State"]
 
-                @if (!String.IsNullOrEmpty(entry["Reason"]))
+                        @if (!String.IsNullOrEmpty(entry["Reason"]))
+                        {
+                            <small>@entry["Reason"]</small>
+                        }
+                    </h4>
+                </div>
+
+                @if (JobHistoryRenderer.Exists(entry["State"]))
                 {
-                    <small>@entry["Reason"]</small>
-                }
-            </h4>
-        </div>
-
-        @if (JobHistoryRenderer.Exists(entry["State"]))
-        {
-            var rendered = JobHistoryRenderer.Render(entry["State"], entry);
-            if (rendered != null)
-            {
-            <div class="job-history-body">
-                @rendered
-            </div>
-            }
-        }
-        else
-        {
-            <div class="job-history-body">
-                <dl class="dl-horizontal">
-                    @foreach (var item in entry.Where(x => x.Key != "State" && x.Key != "Date" && x.Key != "Reason"))
+                    var rendered = JobHistoryRenderer.Render(entry["State"], entry);
+                    if (rendered != null)
                     {
-                        <dt>@item.Key:</dt>
-                        <dd>@item.Value</dd>
+                        <div class="job-history-body">
+                            @rendered
+                        </div>
                     }
-                </dl>
+                }
+                else
+                {
+                    <div class="job-history-body">
+                        <dl class="dl-horizontal">
+                            @foreach (var item in entry.Where(x => x.Key != "State" && x.Key != "Date" && x.Key != "Reason"))
+                            {
+                                <dt>@item.Key:</dt>
+                                <dd>@item.Value</dd>
+                            }
+                        </dl>
+                    </div>
+                }
             </div>
         }
-    </div>
-        }
+    }
 }
