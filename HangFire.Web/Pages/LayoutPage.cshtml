@@ -43,9 +43,16 @@
         <div class="container">
             <div class="col-md-3">
                 <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
+                    <a class="list-group-item @(Request.PathInfo.Equals("/") ? "active" : null)"
+                       href="@Request.LinkTo("/")">
+                        <span class="glyphicon glyphicon-dashboard"></span>
+                        Dashboard
+                    </a>
+
                     <a class="list-group-item @(Request.PathInfo.Equals("/servers") ? "active" : null)"
                        href="@Request.LinkTo("/servers")">
                         <span class="label label-default pull-right">@JobStorage.Servers().Count()</span>
+                        <span class="glyphicon glyphicon-hdd"></span>
                         Active Servers
                     </a>
 
@@ -60,6 +67,7 @@
                                 @JobStorage.QueuesCount()
                             </span>
                         </span>
+                        <span class="glyphicon glyphicon-inbox"></span>
                         Jobs & Queues
                     </a>
                     <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/schedule") ? "active" : null)" 

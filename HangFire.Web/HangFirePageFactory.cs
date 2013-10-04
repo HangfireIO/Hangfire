@@ -49,7 +49,10 @@ namespace HangFire.Web
                 "/fonts/(?<File>.+)",
                 x => new SingleResourceHandler(
                     typeof(HangFirePageFactory).Assembly,
-                    GetContentResourceName("fonts", x.Groups["File"].Value)));
+                    GetContentResourceName("fonts", x.Groups["File"].Value))
+                    {
+                        CacheResponse = true
+                    });
 
             RegisterPathHandlerFactory(
                 "/stats",

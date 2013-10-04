@@ -47,6 +47,11 @@ html, body {
     cursor: pointer;
 }
 
+.list-group .list-group-item .glyphicon {
+    top: 0px;
+    margin-right: 3px;
+}
+
 /* Statistics widget
 -------------------------------------------------- */
 
@@ -73,7 +78,7 @@ html, body {
 }
 
 #stats .stats-indent {
-    padding-left: 30px;
+    padding-left: 36px;
 }
 
 .table td.failed-job-details {
