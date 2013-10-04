@@ -48,11 +48,6 @@ namespace HangFire.States
                 transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
                     String.Format("hangfire:job:{0}:history", jobId)));
             }
-
-            public override IList<string> GetPropertyKeys()
-            {
-                return new List<string> { "SucceededAt" };
-            }
         }
     }
 }

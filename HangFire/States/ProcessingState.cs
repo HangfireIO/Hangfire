@@ -40,11 +40,6 @@ namespace HangFire.States
                 transaction.QueueCommand(x => x.RemoveItemFromSet(
                     "hangfire:processing", jobId));
             }
-
-            public override IList<string> GetPropertyKeys()
-            {
-                return new List<string> { "StartedAt", "ServerName" };
-            }
         }
     }
 }

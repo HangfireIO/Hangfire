@@ -269,7 +269,7 @@ WriteLiteral("\">\r\n                    <span class=\"pull-right\">");
 
             
             #line 64 "..\..\Pages\JobDetailsPage.cshtml"
-                                        Write(JobHelper.FromStringTimestamp(entry["Date"]));
+                                        Write(JobHelper.FromStringTimestamp(entry["CreatedAt"]));
 
             
             #line default

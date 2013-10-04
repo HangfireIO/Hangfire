@@ -96,7 +96,8 @@ namespace HangFire.Server
         public bool EnqueueScheduledJob(string jobId)
         {
             // To make atomic remove-enqueue call, we should know the target queue name first.
-            var queueName = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "ScheduledQueue");
+            var jobType = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
+            var queueName = JobHelper.TryToGetQueueName(jobType);
 
             if (!String.IsNullOrEmpty(queueName))
             {

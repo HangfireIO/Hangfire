@@ -32,13 +32,5 @@ namespace HangFire.States
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:queue:{0}", QueueName), JobId));
         }
-
-        public class Descriptor : JobState.Descriptor
-        {
-            public override IList<string> GetPropertyKeys()
-            {
-                return new List<string> { "EnqueuedAt" };
-            }
-        }
     }
 }

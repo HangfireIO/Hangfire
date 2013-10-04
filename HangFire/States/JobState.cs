@@ -34,7 +34,6 @@ namespace HangFire.States
             RegisterDescriptor(ProcessingState.Name, new ProcessingState.Descriptor());
             RegisterDescriptor(ScheduledState.Name, new ScheduledState.Descriptor());
             RegisterDescriptor(SucceededState.Name, new SucceededState.Descriptor());
-            RegisterDescriptor(EnqueuedState.Name, new EnqueuedState.Descriptor());
         }
 
         public static void RegisterDescriptor(
@@ -84,21 +83,11 @@ namespace HangFire.States
                 {
                     if (Descriptors.ContainsKey(oldState))
                     {
-                        var descriptor = Descriptors[oldState];
-                        var properties = descriptor.GetPropertyKeys();
-
-                        descriptor.Unapply(transaction, state.JobId);
-
-                        // TODO: Use "HDEL key field1 field2 ..." command
-                        foreach (var property in properties)
-                        {
-                            var name = property;
-
-                            transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                                String.Format("hangfire:job:{0}", state.JobId),
-                                name));
-                        }
+                        Descriptors[oldState].Unapply(transaction, state.JobId);
                     }
+
+                    transaction.QueueCommand(x => x.RemoveEntry(
+                        String.Format("hangfire:job:{0}:state", state.JobId)));
 
                     foreach (var filter in filters)
                     {
@@ -107,6 +96,7 @@ namespace HangFire.States
                 }
 
                 AppendHistory(transaction, state, true);
+
                 state.Apply(transaction);
 
                 foreach (var filter in filters)
@@ -132,16 +122,26 @@ namespace HangFire.States
             IRedisTransaction transaction, JobState state, bool appendToJob)
         {
             var properties = state.GetProperties();
-            properties.Add("State", state.StateName);
-            properties.Add("Reason", state.Reason);
-            properties.Add("Date", JobHelper.ToStringTimestamp(DateTime.UtcNow));
-
+            var now = DateTime.UtcNow;
+            
             if (appendToJob)
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format("hangfire:job:{0}", state.JobId),
+                    new Dictionary<string, string>
+                        {
+                            { "State", state.StateName },
+                            { "UpdatedAt", JobHelper.ToStringTimestamp(now) }
+                        }));
+
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:job:{0}:state", state.JobId),
                     properties));
             }
+
+            properties.Add("State", state.StateName);
+            properties.Add("Reason", state.Reason);
+            properties.Add("CreatedAt", JobHelper.ToStringTimestamp(now));
 
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:job:{0}:history", state.JobId),
@@ -152,11 +152,6 @@ namespace HangFire.States
         {
             public virtual void Unapply(IRedisTransaction transaction, string jobId)
             {
-            }
-
-            public virtual IList<string> GetPropertyKeys()
-            {
-                return new List<string>();
             }
         }
     }

@@ -43,11 +43,6 @@ namespace HangFire.States
             {
                 transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
             }
-
-            public override IList<string> GetPropertyKeys()
-            {
-                return new List<string> { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails" };
-            }
         }
     }
 }
