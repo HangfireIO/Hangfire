@@ -72,7 +72,7 @@
                     <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
                        href="@Request.LinkTo("/processing")">
                         <span id="stats-workers" class="label label-warning pull-right">
-                            @String.Format("{0:n0}", JobStorage.ProcessingJobs().Count())
+                            @String.Format("{0:n0}", JobStorage.ProcessingCount())
                         </span>
                         Processing
                     </a>

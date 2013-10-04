@@ -254,7 +254,7 @@ WriteLiteral("\">\r\n                        <span id=\"stats-workers\" class=\"
 
             
             #line 75 "..\..\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0:n0}", JobStorage.ProcessingJobs().Count()));
+                       Write(String.Format("{0:n0}", JobStorage.ProcessingCount()));
 
             
             #line default
