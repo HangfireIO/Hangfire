@@ -20,7 +20,7 @@ namespace HangFire.Web
             Register(SucceededState.Name, NullRenderer);
             Register(FailedState.Name, FailedRenderer);
             Register(ProcessingState.Name, ProcessingRenderer);
-            Register(ScheduledState.Name, ScheduledRenderer);
+            Register(EnqueuedState.Name, EnqueuedRenderer);
 
             BackgroundStateColors.Add(EnqueuedState.Name, "#F5F5F5");
             BackgroundStateColors.Add(SucceededState.Name, "#EDF7ED");
@@ -78,11 +78,11 @@ namespace HangFire.Web
                 "<dl class=\"dl-horizontal\"><dt>Server:</dt><dd><span class=\"label label-default\">{0}</span></dd></dl>", properties["ServerName"]));
         }
 
-        private static IHtmlString ScheduledRenderer(IDictionary<string, string> properties)
+        private static IHtmlString EnqueuedRenderer(IDictionary<string, string> properties)
         {
             return new HtmlString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Scheduled queue:</dt><dd><span class=\"label label-primary\">{0}</span></dd></dl>",
-                properties["ScheduledQueue"]));
+                "<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-primary\">{0}</span></dd></dl>",
+                properties["Queue"]));
         }
     }
 }

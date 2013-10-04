@@ -210,7 +210,7 @@ namespace HangFire.Web
                         Redis,
                         firstJobIds,
                         new[] { "Type", "Args" },
-                        new[] { "EnqueuedAt" },
+                        new[] { "CreatedAt" },
                         (job, state) => new EnqueuedJobDto
                         {
                             Type = job[0],

@@ -22,7 +22,8 @@ namespace HangFire.States
         {
             return new Dictionary<string, string>
                 {
-                    { "EnqueuedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
+                    { "EnqueuedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
+                    { "Queue", QueueName }
                 };
         }
 
