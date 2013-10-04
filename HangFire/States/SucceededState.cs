@@ -42,8 +42,11 @@ namespace HangFire.States
         {
             public override void Unapply(IRedisTransaction transaction, string jobId)
             {
-                // TODO: persist the job
                 transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:succeeded"));
+                transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
+                    String.Format("hangfire:job:{0}", jobId)));
+                transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
+                    String.Format("hangfire:job:{0}:history", jobId)));
             }
 
             public override IList<string> GetPropertyKeys()
