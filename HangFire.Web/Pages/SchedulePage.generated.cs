@@ -70,8 +70,8 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-success\">\r\n        Нет ни одного запланированного зад" +
-"ания.\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-info\">\r\n        There are no scheduled jobs.\r\n    </d" +
+"iv>\r\n");
 
 
             

@@ -94,7 +94,7 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-info\">\r\n        Queue is empty\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-info\">\r\n        The queue is empty.\r\n    </div>\r\n");
 
 
             

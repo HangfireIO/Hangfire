@@ -47,25 +47,11 @@ WriteLiteral("              \r\n");
             
             #line default
             #line hidden
-WriteLiteral(@"
-<div class=""alert alert-info"">
-    <p>
-        Этот список показывает запущенные сервера: обрабатывающие задания. При запуске
-        каждый сервер самостоятельно регистрирует себя: и начинает отображаться в этом
-        списке. При корректной остановке он так же убирает себя из этого списка.
-    </p>
-    <p>
-        Если остановка сервера не была произведена корректно, например, если процесс
-        сервера был убит, либо на момент отключения отсутствовала связь с Redis,
-        то он останется в этом списке до его следующего корректного отключения.
-    </p>
-</div>
-
-");
+WriteLiteral("\r\n");
 
 
             
-            #line 22 "..\..\Pages\ServersPage.cshtml"
+            #line 9 "..\..\Pages\ServersPage.cshtml"
   
     var servers = JobStorage.Servers();
 
@@ -77,19 +63,19 @@ WriteLiteral("\r\n");
 
 
             
-            #line 26 "..\..\Pages\ServersPage.cshtml"
+            #line 13 "..\..\Pages\ServersPage.cshtml"
  if (servers.Count == 0)
 {
 
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-warning\">\r\n        Список серверов пуст. Фоновые зада" +
-"ния не будут обрабатываться.\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-warning\">\r\n        There are no active servers. Backg" +
+"round tasks will not be processed.\r\n    </div>\r\n");
 
 
             
-            #line 31 "..\..\Pages\ServersPage.cshtml"
+            #line 18 "..\..\Pages\ServersPage.cshtml"
 }
 else
 {
@@ -104,7 +90,7 @@ WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>
 
 
             
-            #line 44 "..\..\Pages\ServersPage.cshtml"
+            #line 31 "..\..\Pages\ServersPage.cshtml"
              foreach (var server in servers)
             {
 
@@ -115,7 +101,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 47 "..\..\Pages\ServersPage.cshtml"
+            #line 34 "..\..\Pages\ServersPage.cshtml"
                    Write(server.Name);
 
             
@@ -125,7 +111,7 @@ WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary
 
 
             
-            #line 48 "..\..\Pages\ServersPage.cshtml"
+            #line 35 "..\..\Pages\ServersPage.cshtml"
                                                      Write(server.Queue);
 
             
@@ -135,7 +121,7 @@ WriteLiteral("</span></td>\r\n                    <td>");
 
 
             
-            #line 49 "..\..\Pages\ServersPage.cshtml"
+            #line 36 "..\..\Pages\ServersPage.cshtml"
                    Write(server.Concurrency);
 
             
@@ -145,7 +131,7 @@ WriteLiteral("</td>\r\n                    <td data-moment=\"");
 
 
             
-            #line 50 "..\..\Pages\ServersPage.cshtml"
+            #line 37 "..\..\Pages\ServersPage.cshtml"
                                 Write(JobHelper.ToStringTimestamp(server.StartedAt));
 
             
@@ -155,7 +141,7 @@ WriteLiteral("\">");
 
 
             
-            #line 50 "..\..\Pages\ServersPage.cshtml"
+            #line 37 "..\..\Pages\ServersPage.cshtml"
                                                                                 Write(server.StartedAt);
 
             
@@ -165,7 +151,7 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 52 "..\..\Pages\ServersPage.cshtml"
+            #line 39 "..\..\Pages\ServersPage.cshtml"
             }
 
             
@@ -175,7 +161,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 55 "..\..\Pages\ServersPage.cshtml"
+            #line 42 "..\..\Pages\ServersPage.cshtml"
 }
             
             #line default

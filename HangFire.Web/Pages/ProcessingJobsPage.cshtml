@@ -3,32 +3,42 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Processing Jobs" };
+    var processingJobs = JobStorage.ProcessingJobs();
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Args</th>
-            <th>Started</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var job in JobStorage.ProcessingJobs())
-        {
+@if (processingJobs.Count == 0)
+{
+    <div class="alert alert-info">
+        No jobs are being processed right now.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
             <tr>
-                <td>
-                    <a href="@Request.LinkTo("/job/" + job.Key)">
-                        @HtmlHelper.JobId(job.Key)
-                    </a>
-                </td>
-                <td>@job.Value.ServerName</td>
-                <td>@HtmlHelper.JobType(job.Value.Type)</td>
-                <td><code>@HtmlHelper.FormatProperties(job.Value.Args)</code></td>
-                <td data-moment="@JobHelper.ToStringTimestamp(job.Value.StartedAt)">@job.Value.StartedAt</td>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Args</th>
+                <th>Started</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var job in processingJobs)
+            {
+                <tr>
+                    <td>
+                        <a href="@Request.LinkTo("/job/" + job.Key)">
+                            @HtmlHelper.JobId(job.Key)
+                        </a>
+                    </td>
+                    <td>@job.Value.ServerName</td>
+                    <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                    <td><code>@HtmlHelper.FormatProperties(job.Value.Args)</code></td>
+                    <td data-moment="@JobHelper.ToStringTimestamp(job.Value.StartedAt)">@job.Value.StartedAt</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

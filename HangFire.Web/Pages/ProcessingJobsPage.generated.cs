@@ -40,80 +40,116 @@ WriteLiteral("\r\n");
             #line 4 "..\..\Pages\ProcessingJobsPage.cshtml"
   
     Layout = new LayoutPage { Title = "Processing Jobs" };
+    var processingJobs = JobStorage.ProcessingJobs();
 
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n<table class=\"table\">\r\n    <thead>\r\n        <tr>\r\n            <th>Id</th>\r\n    " +
-"        <th>Name</th>\r\n            <th>Type</th>\r\n            <th>Args</th>\r\n   " +
-"         <th>Started</th>\r\n        </tr>\r\n    </thead>\r\n    <tbody>\r\n");
+WriteLiteral("\r\n");
 
 
             
-            #line 19 "..\..\Pages\ProcessingJobsPage.cshtml"
-         foreach (var job in JobStorage.ProcessingJobs())
-        {
+            #line 9 "..\..\Pages\ProcessingJobsPage.cshtml"
+ if (processingJobs.Count == 0)
+{
 
             
             #line default
             #line hidden
-WriteLiteral("            <tr>\r\n                <td>\r\n                    <a href=\"");
+WriteLiteral("    <div class=\"alert alert-info\">\r\n        No jobs are being processed right now" +
+".\r\n    </div>\r\n");
 
 
             
-            #line 23 "..\..\Pages\ProcessingJobsPage.cshtml"
-                        Write(Request.LinkTo("/job/" + job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                        ");
-
-
-            
-            #line 24 "..\..\Pages\ProcessingJobsPage.cshtml"
-                   Write(HtmlHelper.JobId(job.Key));
+            #line 14 "..\..\Pages\ProcessingJobsPage.cshtml"
+}
+else
+{
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </a>\r\n                </td>\r\n                <td>");
-
-
-            
-            #line 27 "..\..\Pages\ProcessingJobsPage.cshtml"
-               Write(job.Value.ServerName);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral(@"    <table class=""table"">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Args</th>
+                <th>Started</th>
+            </tr>
+        </thead>
+        <tbody>
+");
 
 
             
             #line 28 "..\..\Pages\ProcessingJobsPage.cshtml"
-               Write(HtmlHelper.JobType(job.Value.Type));
+             foreach (var job in processingJobs)
+            {
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td><code>");
+WriteLiteral("                <tr>\r\n                    <td>\r\n                        <a href=\"" +
+"");
 
 
             
-            #line 29 "..\..\Pages\ProcessingJobsPage.cshtml"
-                     Write(HtmlHelper.FormatProperties(job.Value.Args));
+            #line 32 "..\..\Pages\ProcessingJobsPage.cshtml"
+                            Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("</code></td>\r\n                <td data-moment=\"");
+WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 30 "..\..\Pages\ProcessingJobsPage.cshtml"
-                            Write(JobHelper.ToStringTimestamp(job.Value.StartedAt));
+            #line 33 "..\..\Pages\ProcessingJobsPage.cshtml"
+                       Write(HtmlHelper.JobId(job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </a>\r\n                    </td>\r\n                    <t" +
+"d>");
+
+
+            
+            #line 36 "..\..\Pages\ProcessingJobsPage.cshtml"
+                   Write(job.Value.ServerName);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td>");
+
+
+            
+            #line 37 "..\..\Pages\ProcessingJobsPage.cshtml"
+                   Write(HtmlHelper.JobType(job.Value.Type));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                    <td><code>");
+
+
+            
+            #line 38 "..\..\Pages\ProcessingJobsPage.cshtml"
+                         Write(HtmlHelper.FormatProperties(job.Value.Args));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</code></td>\r\n                    <td data-moment=\"");
+
+
+            
+            #line 39 "..\..\Pages\ProcessingJobsPage.cshtml"
+                                Write(JobHelper.ToStringTimestamp(job.Value.StartedAt));
 
             
             #line default
@@ -122,24 +158,32 @@ WriteLiteral("\">");
 
 
             
-            #line 30 "..\..\Pages\ProcessingJobsPage.cshtml"
-                                                                               Write(job.Value.StartedAt);
+            #line 39 "..\..\Pages\ProcessingJobsPage.cshtml"
+                                                                                   Write(job.Value.StartedAt);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n            </tr>\r\n");
+WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 32 "..\..\Pages\ProcessingJobsPage.cshtml"
-        }
+            #line 41 "..\..\Pages\ProcessingJobsPage.cshtml"
+            }
 
             
             #line default
             #line hidden
-WriteLiteral("    </tbody>\r\n</table>\r\n");
+WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
+
+            
+            #line 44 "..\..\Pages\ProcessingJobsPage.cshtml"
+}
+
+            
+            #line default
+            #line hidden
 
         }
     }

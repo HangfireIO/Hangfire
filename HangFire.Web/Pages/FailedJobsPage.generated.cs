@@ -74,8 +74,8 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-success\">\r\n        Yay! You have no failed jobs.\r\n   " +
-" </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-success\">\r\n        You have no failed jobs at the mom" +
+"ent.\r\n    </div>\r\n");
 
 
             

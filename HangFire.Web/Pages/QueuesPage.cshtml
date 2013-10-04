@@ -5,9 +5,16 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Queues" };
+    var queues = JobStorage.Queues();
 }
 
-@foreach (var queue in JobStorage.Queues())
+@if (queues.Count == 0)
+{
+    <div class="alert alert-warning">
+        You have no queues yet. Try to enqueue your first job.
+    </div>
+}
+@foreach (var queue in queues)
 {
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -23,30 +30,33 @@
                 <dt>Servers:</dt>
                 <dd>@String.Join(", ", queue.Servers)</dd>
             </dl>
-
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Id</th>
-                        <th>Type</th>
-                        <th>Args</th>
-                        <th>Enqueued At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var job in queue.FirstJobs)
-                    {
+            
+            @if (queue.FirstJobs.Count != 0)
+            {
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td><a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a></td>
-                            <td>@HtmlHelper.JobType(job.Value.Type)</td>
-                            <td><code>
-                                    @HtmlHelper.FormatProperties(job.Value.Args)
-                                </code></td>
-                            <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt)">@job.Value.EnqueuedAt</td>
+                            <th>Id</th>
+                            <th>Type</th>
+                            <th>Args</th>
+                            <th>Enqueued At</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var job in queue.FirstJobs)
+                        {
+                            <tr>
+                                <td><a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a></td>
+                                <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                                <td><code>
+                                        @HtmlHelper.FormatProperties(job.Value.Args)
+                                    </code></td>
+                                <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt)">@job.Value.EnqueuedAt</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
             
             <a href="@Request.LinkTo("/queues/" + queue.QueueName)">Enqueued jobs</a>
             
