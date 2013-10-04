@@ -1,10 +1,19 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
+@using System.Collections.Generic
 @using System.Linq
 @using Pages
 @inherits RazorPage
 @{
-    Layout = new LayoutPage { Title = QueueName, Subtitle = "Enqueued jobs" };
+    Layout = new LayoutPage
+        {
+            Title = QueueName, 
+            Subtitle = "Enqueued jobs",
+            Breadcrumbs = new Dictionary<string, string>
+                {
+                    { "Queues", Request.LinkTo("/queues") }
+                }
+        };
 
     int from, perPage;
 
@@ -43,6 +52,7 @@ else
     <table class="table">
         <thead>
             <tr>
+                <th>Id</th>
                 <th>Type</th>
                 <th>Args</th>
                 <th>Enqueued At</th>
@@ -52,6 +62,7 @@ else
             @foreach (var job in enqueuedJobs)
             {
                 <tr>
+                    <td><a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a></td>
                     <td>@HtmlHelper.JobType(job.Value.Type)</td>
                     <td><code>
                             @HtmlHelper.FormatProperties(job.Value.Args)

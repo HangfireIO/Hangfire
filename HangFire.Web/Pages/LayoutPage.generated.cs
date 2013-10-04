@@ -355,11 +355,94 @@ WriteLiteral("\">\r\n                        <span id=\"stats-failed\" class=\"l
             #line hidden
 WriteLiteral("\r\n                        </span>\r\n                        Failed\r\n              " +
 "      </a>\r\n\r\n\r\n                </div>\r\n            </div>\r\n            <div cla" +
-"ss=\"col-md-9\">\r\n                <h1 class=\"page-header\">\r\n                    ");
+"ss=\"col-md-9\">\r\n");
 
 
             
-            #line 110 "..\..\Pages\LayoutPage.cshtml"
+            #line 109 "..\..\Pages\LayoutPage.cshtml"
+                 if (Breadcrumbs != null)
+                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    <ol class=\"breadcrumb\">\r\n                        <li><a href=" +
+"\"");
+
+
+            
+            #line 112 "..\..\Pages\LayoutPage.cshtml"
+                                Write(Request.LinkTo("/"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"><span class=\"glyphicon glyphicon-home\"></span></a></li>\r\n");
+
+
+            
+            #line 113 "..\..\Pages\LayoutPage.cshtml"
+                         foreach (var breadcrumb in Breadcrumbs)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <li><a href=\"");
+
+
+            
+            #line 115 "..\..\Pages\LayoutPage.cshtml"
+                                    Write(breadcrumb.Value);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">");
+
+
+            
+            #line 115 "..\..\Pages\LayoutPage.cshtml"
+                                                       Write(breadcrumb.Key);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</a></li>\r\n");
+
+
+            
+            #line 116 "..\..\Pages\LayoutPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <li class=\"active\">");
+
+
+            
+            #line 117 "..\..\Pages\LayoutPage.cshtml"
+                                      Write(Title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</li>\r\n                    </ol>\r\n");
+
+
+            
+            #line 119 "..\..\Pages\LayoutPage.cshtml"
+                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                <h1 class=\"page-header\">\r\n                    ");
+
+
+            
+            #line 122 "..\..\Pages\LayoutPage.cshtml"
                Write(Title);
 
             
@@ -369,7 +452,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 111 "..\..\Pages\LayoutPage.cshtml"
+            #line 123 "..\..\Pages\LayoutPage.cshtml"
                      if (!String.IsNullOrEmpty(Subtitle))
                     {
 
@@ -380,7 +463,7 @@ WriteLiteral("                        <small>");
 
 
             
-            #line 113 "..\..\Pages\LayoutPage.cshtml"
+            #line 125 "..\..\Pages\LayoutPage.cshtml"
                           Write(Subtitle);
 
             
@@ -390,7 +473,7 @@ WriteLiteral("</small>\r\n");
 
 
             
-            #line 114 "..\..\Pages\LayoutPage.cshtml"
+            #line 126 "..\..\Pages\LayoutPage.cshtml"
                     }
 
             
@@ -400,7 +483,7 @@ WriteLiteral("                </h1>\r\n                ");
 
 
             
-            #line 116 "..\..\Pages\LayoutPage.cshtml"
+            #line 128 "..\..\Pages\LayoutPage.cshtml"
            Write(RenderBody());
 
             
@@ -420,7 +503,7 @@ WriteLiteral(@"
 
 
             
-            #line 126 "..\..\Pages\LayoutPage.cshtml"
+            #line 138 "..\..\Pages\LayoutPage.cshtml"
                    Write(FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion);
 
             
@@ -431,7 +514,7 @@ WriteLiteral("\r\n                    </a>\r\n                </li>\r\n         
 
 
             
-            #line 130 "..\..\Pages\LayoutPage.cshtml"
+            #line 142 "..\..\Pages\LayoutPage.cshtml"
                Write(String.Format("redis://{0}:{1}/{2}", RedisFactory.Host, RedisFactory.Port, RedisFactory.Db));
 
             
@@ -441,7 +524,7 @@ WriteLiteral("\r\n                </li>\r\n                <li>Time: ");
 
 
             
-            #line 132 "..\..\Pages\LayoutPage.cshtml"
+            #line 144 "..\..\Pages\LayoutPage.cshtml"
                      Write(DateTime.UtcNow);
 
             
@@ -451,7 +534,7 @@ WriteLiteral(" UTC\r\n                </li>\r\n                <li>Generated in 
 
 
             
-            #line 134 "..\..\Pages\LayoutPage.cshtml"
+            #line 146 "..\..\Pages\LayoutPage.cshtml"
                               Write((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds);
 
             
@@ -462,7 +545,7 @@ WriteLiteral(" ms]\r\n                </li>\r\n            </ul>\r\n        </di
 
 
             
-            #line 140 "..\..\Pages\LayoutPage.cshtml"
+            #line 152 "..\..\Pages\LayoutPage.cshtml"
             Write(Request.LinkTo("/js/scripts.js"));
 
             

@@ -55,6 +55,12 @@ html, body {
     margin-right: 3px;
 }
 
+.breadcrumb {
+    margin-bottom: 10px;
+    background-color: inherit;
+    padding: 0;
+}
+
 /* Statistics widget
 -------------------------------------------------- */
 

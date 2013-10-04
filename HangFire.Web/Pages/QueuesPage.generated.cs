@@ -107,6 +107,7 @@ WriteLiteral(@"</dd>
             <table class=""table"">
                 <thead>
                     <tr>
+                        <th>Id</th>
                         <th>Type</th>
                         <th>Args</th>
                         <th>Enqueued At</th>
@@ -117,18 +118,38 @@ WriteLiteral(@"</dd>
 
 
             
-            #line 36 "..\..\Pages\QueuesPage.cshtml"
+            #line 37 "..\..\Pages\QueuesPage.cshtml"
                      foreach (var job in queue.FirstJobs)
                     {
 
             
             #line default
             #line hidden
-WriteLiteral("                        <tr>\r\n                            <td>");
+WriteLiteral("                        <tr>\r\n                            <td><a href=\"");
 
 
             
-            #line 39 "..\..\Pages\QueuesPage.cshtml"
+            #line 40 "..\..\Pages\QueuesPage.cshtml"
+                                    Write(Request.LinkTo("/job/" + job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">");
+
+
+            
+            #line 40 "..\..\Pages\QueuesPage.cshtml"
+                                                                        Write(HtmlHelper.JobId(job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</a></td>\r\n                            <td>");
+
+
+            
+            #line 41 "..\..\Pages\QueuesPage.cshtml"
                            Write(HtmlHelper.JobType(job.Value.Type));
 
             
@@ -139,7 +160,7 @@ WriteLiteral("</td>\r\n                            <td><code>\r\n               
 
 
             
-            #line 41 "..\..\Pages\QueuesPage.cshtml"
+            #line 43 "..\..\Pages\QueuesPage.cshtml"
                                Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
@@ -149,7 +170,7 @@ WriteLiteral("\r\n                                </code></td>\r\n              
 
 
             
-            #line 43 "..\..\Pages\QueuesPage.cshtml"
+            #line 45 "..\..\Pages\QueuesPage.cshtml"
                            Write(job.Value.EnqueuedAt);
 
             
@@ -159,7 +180,7 @@ WriteLiteral("</td>\r\n                        </tr>\r\n");
 
 
             
-            #line 45 "..\..\Pages\QueuesPage.cshtml"
+            #line 47 "..\..\Pages\QueuesPage.cshtml"
                     }
 
             
@@ -170,7 +191,7 @@ WriteLiteral("                </tbody>\r\n            </table>\r\n            \r
 
 
             
-            #line 49 "..\..\Pages\QueuesPage.cshtml"
+            #line 51 "..\..\Pages\QueuesPage.cshtml"
                 Write(Request.LinkTo("/queues/" + queue.QueueName));
 
             
@@ -197,7 +218,7 @@ WriteLiteral(@""">Enqueued jobs</a>
 
 
             
-            #line 66 "..\..\Pages\QueuesPage.cshtml"
+            #line 68 "..\..\Pages\QueuesPage.cshtml"
 }
 
             

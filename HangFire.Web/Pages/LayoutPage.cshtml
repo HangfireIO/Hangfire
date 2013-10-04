@@ -106,6 +106,18 @@
                 </div>
             </div>
             <div class="col-md-9">
+                @if (Breadcrumbs != null)
+                {
+                    <ol class="breadcrumb">
+                        <li><a href="@Request.LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
+                        @foreach (var breadcrumb in Breadcrumbs)
+                        {
+                            <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
+                        }
+                        <li class="active">@Title</li>
+                    </ol>
+                }
+
                 <h1 class="page-header">
                     @Title
                     @if (!String.IsNullOrEmpty(Subtitle))
