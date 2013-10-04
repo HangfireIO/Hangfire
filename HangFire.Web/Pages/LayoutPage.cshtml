@@ -59,7 +59,7 @@
                         Active Servers
                     </a>
 
-                    <a class="list-group-item @(Request.PathInfo.Equals("/queues") ? "active" : null)" 
+                    <a class="list-group-item @(Request.PathInfo.StartsWith("/queues") ? "active" : null)" 
                        href="@Request.LinkTo("/queues")">
                         <span id="stats-enqueued" class="label label-default pull-right">
                             <span title="Enqueued jobs count">

@@ -28,6 +28,14 @@ namespace HangFire.Web
             }
         }
 
+        public static long EnqueuedCount(string queueName)
+        {
+            lock (Redis)
+            {
+                return Redis.GetListCount(String.Format("hangfire:queue:{0}", queueName));
+            }
+        }
+
         public static long SucceededCount()
         {
             lock (Redis)
@@ -238,6 +246,27 @@ namespace HangFire.Web
 
                 return result;
             }
+        }
+
+        public static IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(
+            string queueName, int from, int perPage)
+        {
+            var firstJobIds = Redis.GetRangeFromList(
+                String.Format("hangfire:queue:{0}", queueName), 
+                from, 
+                from + perPage - 1);
+
+            return GetJobsWithProperties(
+                Redis,
+                firstJobIds,
+                new[] { "Type", "Args" },
+                new[] { "EnqueuedAt" },
+                (job, state) => new EnqueuedJobDto
+                {
+                    Type = job[0],
+                    Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                    EnqueuedAt = JobHelper.FromStringTimestamp(state[0]),
+                });
         }
 
         public static IDictionary<DateTime, long> HourlySucceededJobs()

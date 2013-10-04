@@ -182,7 +182,7 @@ WriteLiteral("</span>\r\n                        <span class=\"glyphicon glyphic
 
             
             #line 62 "..\..\Pages\LayoutPage.cshtml"
-                                          Write(Request.PathInfo.Equals("/queues") ? "active" : null);
+                                          Write(Request.PathInfo.StartsWith("/queues") ? "active" : null);
 
             
             #line default

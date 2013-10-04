@@ -1,0 +1,87 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Linq
+@using Pages
+@inherits RazorPage
+@{
+    Layout = new LayoutPage { Title = QueueName, Subtitle = "Enqueued jobs" };
+
+    int from, perPage;
+
+    int.TryParse(Request.QueryString["from"], out from);
+    int.TryParse(Request.QueryString["count"], out perPage);
+
+    var pager = new Pager(from, perPage, JobStorage.EnqueuedCount(QueueName))
+    {
+        BaseLink = Request.LinkTo("/queues/" + QueueName)
+    };
+
+    var enqueuedJobs = JobStorage.EnqueuedJobs(QueueName, pager.From, pager.PerPage);
+}
+
+@if (pager.TotalPages == 0)
+{
+    <div class="alert alert-info">
+        Queue is empty
+    </div>
+}
+else
+{
+    <div class="btn-toolbar btn-toolbar-top">
+        <div class="btn-group pull-right paginator">
+            @foreach (var count in new[] { 10, 20, 50, 100 })
+            {
+                <a class="btn btn-default @(count == pager.PerPage ? "active" : null)" 
+                    href="@pager.PerPageLink(count)">@count</a>    
+            }
+        </div>
+        <div class="btn-group pull-right">
+            <span class="btn">Jobs per page:</span>
+        </div>
+    </div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Args</th>
+                <th>Enqueued At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var job in enqueuedJobs)
+            {
+                <tr>
+                    <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                    <td><code>
+                            @HtmlHelper.FormatProperties(job.Value.Args)
+                        </code></td>
+                    <td>@job.Value.EnqueuedAt</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    <div class="btn-toolbar">
+        @if (pager.TotalPages > 1)
+        {
+            <div class="btn-group paginator">
+                <a href="@pager.PreviousPageLink" 
+                   class="btn btn-default @(!pager.HasPreviousPage ? "disabled" : null)">&laquo;</a>
+
+                @for (var i = 1; i <= pager.TotalPages; i++)
+                {
+                    <a class="btn btn-default @(pager.CurrentPage == i ? "active" : null)" 
+                       href="@pager.PageLink(i)">@i</a>
+                }
+
+                <a href="@pager.NextPageLink" 
+                   class="btn btn-default @(!pager.HasNextPage ? "disabled" : null)">&raquo;</a>
+            </div>
+        }
+
+        <div class="btn-group">
+            <span class="btn">Total jobs: @pager.Total</span>
+        </div>
+    </div>
+}

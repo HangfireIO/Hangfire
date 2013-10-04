@@ -165,10 +165,18 @@ WriteLiteral("</td>\r\n                        </tr>\r\n");
             
             #line default
             #line hidden
-WriteLiteral(@"                </tbody>
-            </table>
+WriteLiteral("                </tbody>\r\n            </table>\r\n            \r\n            <a href" +
+"=\"");
+
+
             
-            <a href=""#"">Enqueued jobs</a>
+            #line 49 "..\..\Pages\QueuesPage.cshtml"
+                Write(Request.LinkTo("/queues/" + queue.QueueName));
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@""">Enqueued jobs</a>
             
         </div>
         <div class=""panel-footer"">

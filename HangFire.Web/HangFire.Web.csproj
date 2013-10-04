@@ -73,12 +73,24 @@
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
     <Compile Include="JavaScriptHandler.cs" />
+    <None Include="Pages\EnqueuedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>EnqueuedJobsPage.generated.cs</LastGenOutput>
+    </None>
     <None Include="Pages\JobDetailsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>JobDetailsPage.generated.cs</LastGenOutput>
     </None>
     <Compile Include="JobHistoryRenderer.cs" />
     <Compile Include="Pager.cs" />
+    <Compile Include="Pages\EnqueuedJobsPage.cs">
+      <DependentUpon>EnqueuedJobsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\EnqueuedJobsPage.generated.cs">
+      <DependentUpon>EnqueuedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Pages\JobDetailsPage.cs">
       <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
     </Compile>
