@@ -111,6 +111,7 @@
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
     <Compile Include="States\SucceededState.cs" />
+    <Compile Include="HistoryStatisticsFilter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec" />

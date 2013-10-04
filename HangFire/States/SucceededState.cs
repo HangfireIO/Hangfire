@@ -36,22 +36,12 @@ namespace HangFire.States
                 _jobExpirationTimeout));
 
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
-            transaction.QueueCommand(x => x.IncrementValue(
-                String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-
-            transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", JobId));
-            transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
-
-            var hourlySucceededKey = String.Format(
-                "hangfire:stats:succeeded:{0}",
-                DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-            transaction.QueueCommand(x => x.IncrementValue(hourlySucceededKey));
-            transaction.QueueCommand(x => x.ExpireEntryIn(hourlySucceededKey, TimeSpan.FromDays(1)));
         }
 
         public static void Unapply(IRedisTransaction transaction, string jobId)
         {
             // TODO: persist the job
+            transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:succeeded"));
         }
     }
 }

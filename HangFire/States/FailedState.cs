@@ -35,18 +35,6 @@ namespace HangFire.States
                         "hangfire:failed",
                         JobId,
                         JobHelper.ToTimestamp(DateTime.UtcNow)));
-
-            transaction.QueueCommand(x => x.IncrementValue(
-                String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
-
-            transaction.QueueCommand(x => x.IncrementValue(
-                String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm"))));
-
-            var hourlyFailedKey = String.Format(
-                "hangfire:stats:failed:{0}",
-                DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-            transaction.QueueCommand(x => x.IncrementValue(hourlyFailedKey));
-            transaction.QueueCommand(x => x.ExpireEntryIn(hourlyFailedKey, TimeSpan.FromDays(1)));
         }
 
         public static void Unapply(IRedisTransaction transaction, string jobId)
