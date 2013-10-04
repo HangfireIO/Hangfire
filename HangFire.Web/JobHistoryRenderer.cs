@@ -20,8 +20,11 @@ namespace HangFire.Web
             Register(ProcessingState.Name, ProcessingRenderer);
             Register(ScheduledState.Name, ScheduledRenderer);
 
+            StateColors.Add(EnqueuedState.Name, "#F5F5F5");
             StateColors.Add(SucceededState.Name, "#EDF7ED");
-            StateColors.Add(FailedState.Name, "#FCF4F3");
+            StateColors.Add(FailedState.Name, "#FAEBEA");
+            StateColors.Add(ProcessingState.Name, "#FCEFDC");
+            StateColors.Add(ScheduledState.Name, "#E0F3F8");
         }
 
         public static void Register(string state, Func<IDictionary<string, string>, IHtmlString> renderer)
@@ -55,7 +58,7 @@ namespace HangFire.Web
         {
             var stackTrace = HtmlHelper.MarkupStackTrace(properties["ExceptionDetails"]).ToHtmlString();
             return new HtmlString(String.Format(
-                "<h4>{0}</h4><p>{1}</p>{2}",
+                "<h4 class=\"exception-type\">{0}</h4><p>{1}</p>{2}",
                 properties["ExceptionType"],
                 properties["ExceptionMessage"],
                 stackTrace != null ? "<pre class=\"stack-trace\">" + stackTrace + "</pre>" : null));

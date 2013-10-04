@@ -110,27 +110,35 @@ html, body {
 }
 
 .job-history {
-    background-color: #f7f7f7;
+    margin-bottom: 10px;
+}
+
+.job-history-heading {
+    padding: 5px 10px;
+    color: #666;
+}
+
+.job-history-body {
+    background-color: #f5f5f5;
     padding: 10px;
-    margin-bottom: 5px;
 }
 
 .job-history-title {
     margin-top: 0;
     margin-bottom: 2px;
-    color: #666;
 }
 
 .job-history dl {
-    margin-bottom: 5px;
-}
-
-.job-history hr {
-    margin-top: 10px;
+    margin-top: 5px;
     margin-bottom: 5px;
 }
 
 .job-history .stack-trace {
     background-color: transparent;
     padding: 0 20px;
+    margin-bottom: 5px;
+}
+
+.job-history .exception-type {
+    margin-top: 0;
 }
