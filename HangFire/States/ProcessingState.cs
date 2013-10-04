@@ -29,14 +29,12 @@ namespace HangFire.States
 
         public override void Apply(IRedisTransaction transaction)
         {
-            transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:processing"));
             transaction.QueueCommand(x => x.AddItemToSet(
                 "hangfire:processing", JobId));
         }
 
         public static void Unapply(IRedisTransaction transaction, string jobId)
         {
-            transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:processing"));
             transaction.QueueCommand(x => x.RemoveItemFromSet(
                 "hangfire:processing", jobId));
         }

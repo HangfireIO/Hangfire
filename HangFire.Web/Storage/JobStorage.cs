@@ -49,9 +49,7 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                // TODO: check this counter
-                return long.Parse(
-                    Redis.GetValue("hangfire:stats:processing") ?? "0");
+                return Redis.GetSetCount("hangfire:processing");
             }
         }
 
