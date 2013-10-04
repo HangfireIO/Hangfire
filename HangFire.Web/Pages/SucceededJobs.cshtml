@@ -4,11 +4,18 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Succeeded Jobs" };
-}
 
-@{
-    var succeededJobs = JobStorage.SucceededJobs(From, Count);
-    var pager = new Pager(From, Count, JobStorage.SucceededListCount());
+    int from, perPage;
+
+    int.TryParse(Request.QueryString["from"], out from);
+    int.TryParse(Request.QueryString["count"], out perPage);
+
+    var pager = new Pager(from, perPage, JobStorage.SucceededListCount())
+    {
+        BaseLink = Request.LinkTo("/succeeded")
+    };
+
+    var succeededJobs = JobStorage.SucceededJobs(pager.From, pager.PerPage);
 }
 
 @if (pager.TotalPages == 0)
@@ -24,7 +31,7 @@ else
         <div class="btn-group pull-right paginator">
             @foreach (var count in new[] { 10, 20, 50, 100 })
             {
-                <a class="btn btn-default @(count == Count ? "active" : null)" 
+                <a class="btn btn-default @(count == pager.PerPage ? "active" : null)" 
                     href="@pager.PerPageLink(count)">@count</a>    
             }
         </div>

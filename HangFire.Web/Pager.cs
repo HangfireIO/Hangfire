@@ -20,6 +20,9 @@ namespace HangFire.Web
 
         public string BaseLink { get; set; }
 
+        public int From { get { return _from; } }
+        public int PerPage { get { return _perPage; } }
+
         public int CurrentPage
         {
             get { return _from / _perPage + 1; }

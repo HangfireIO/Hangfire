@@ -41,6 +41,18 @@ WriteLiteral("\r\n\r\n");
   
     Layout = new LayoutPage { Title = "Succeeded Jobs" };
 
+    int from, perPage;
+
+    int.TryParse(Request.QueryString["from"], out from);
+    int.TryParse(Request.QueryString["count"], out perPage);
+
+    var pager = new Pager(from, perPage, JobStorage.SucceededListCount())
+    {
+        BaseLink = Request.LinkTo("/succeeded")
+    };
+
+    var succeededJobs = JobStorage.SucceededJobs(pager.From, pager.PerPage);
+
 
             
             #line default
@@ -49,20 +61,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 9 "..\..\Pages\SucceededJobs.cshtml"
-  
-    var succeededJobs = JobStorage.SucceededJobs(From, Count);
-    var pager = new Pager(From, Count, JobStorage.SucceededListCount());
-
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n");
-
-
-            
-            #line 14 "..\..\Pages\SucceededJobs.cshtml"
+            #line 21 "..\..\Pages\SucceededJobs.cshtml"
  if (pager.TotalPages == 0)
 {
 
@@ -74,7 +73,7 @@ WriteLiteral("    <div class=\"alert alert-warning\">\r\n        <p>\r\n        
 
 
             
-            #line 20 "..\..\Pages\SucceededJobs.cshtml"
+            #line 27 "..\..\Pages\SucceededJobs.cshtml"
 }
 else
 {
@@ -87,7 +86,7 @@ WriteLiteral("    <div class=\"btn-toolbar btn-toolbar-top\">\r\n        <div cl
 
 
             
-            #line 25 "..\..\Pages\SucceededJobs.cshtml"
+            #line 32 "..\..\Pages\SucceededJobs.cshtml"
              foreach (var count in new[] { 10, 20, 50, 100 })
             {
 
@@ -98,8 +97,8 @@ WriteLiteral("                <a class=\"btn btn-default ");
 
 
             
-            #line 27 "..\..\Pages\SucceededJobs.cshtml"
-                                      Write(count == Count ? "active" : null);
+            #line 34 "..\..\Pages\SucceededJobs.cshtml"
+                                      Write(count == pager.PerPage ? "active" : null);
 
             
             #line default
@@ -108,7 +107,7 @@ WriteLiteral("\" \r\n                    href=\"");
 
 
             
-            #line 28 "..\..\Pages\SucceededJobs.cshtml"
+            #line 35 "..\..\Pages\SucceededJobs.cshtml"
                      Write(pager.PerPageLink(count));
 
             
@@ -118,7 +117,7 @@ WriteLiteral("\">");
 
 
             
-            #line 28 "..\..\Pages\SucceededJobs.cshtml"
+            #line 35 "..\..\Pages\SucceededJobs.cshtml"
                                                 Write(count);
 
             
@@ -128,7 +127,7 @@ WriteLiteral("</a>    \r\n");
 
 
             
-            #line 29 "..\..\Pages\SucceededJobs.cshtml"
+            #line 36 "..\..\Pages\SucceededJobs.cshtml"
             }
 
             
@@ -139,7 +138,7 @@ WriteLiteral("        </div>\r\n        <div class=\"btn-group pull-right\">\r\n
 
 
             
-            #line 35 "..\..\Pages\SucceededJobs.cshtml"
+            #line 42 "..\..\Pages\SucceededJobs.cshtml"
     
 
             
@@ -160,7 +159,7 @@ WriteLiteral(@"    <table class=""table"">
 
 
             
-            #line 47 "..\..\Pages\SucceededJobs.cshtml"
+            #line 54 "..\..\Pages\SucceededJobs.cshtml"
              foreach (var job in succeededJobs)
             {
 
@@ -172,7 +171,7 @@ WriteLiteral("                <tr>\r\n                    <td>\r\n              
 
 
             
-            #line 51 "..\..\Pages\SucceededJobs.cshtml"
+            #line 58 "..\..\Pages\SucceededJobs.cshtml"
                             Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -182,7 +181,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 52 "..\..\Pages\SucceededJobs.cshtml"
+            #line 59 "..\..\Pages\SucceededJobs.cshtml"
                        Write(HtmlHelper.JobId(job.Key));
 
             
@@ -192,7 +191,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </td>\r\n\
 
 
             
-            #line 56 "..\..\Pages\SucceededJobs.cshtml"
+            #line 63 "..\..\Pages\SucceededJobs.cshtml"
                      if (job.Value == null)
                     {
 
@@ -204,7 +203,7 @@ WriteLiteral("                        <td colspan=\"4\">The job was expired. \r\
 
 
             
-            #line 60 "..\..\Pages\SucceededJobs.cshtml"
+            #line 67 "..\..\Pages\SucceededJobs.cshtml"
                     }
                     else
                     {    
@@ -216,7 +215,7 @@ WriteLiteral("                        <td>");
 
 
             
-            #line 63 "..\..\Pages\SucceededJobs.cshtml"
+            #line 70 "..\..\Pages\SucceededJobs.cshtml"
                        Write(HtmlHelper.JobType(job.Value.Type));
 
             
@@ -230,7 +229,7 @@ WriteLiteral("                        <td>");
 
 
             
-            #line 64 "..\..\Pages\SucceededJobs.cshtml"
+            #line 71 "..\..\Pages\SucceededJobs.cshtml"
                        Write(HtmlHelper.QueueLabel(job.Value.Queue));
 
             
@@ -245,7 +244,7 @@ WriteLiteral("                        <td>\r\n                            <code>
 
 
             
-            #line 67 "..\..\Pages\SucceededJobs.cshtml"
+            #line 74 "..\..\Pages\SucceededJobs.cshtml"
                            Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
@@ -259,7 +258,7 @@ WriteLiteral("                        <td>");
 
 
             
-            #line 70 "..\..\Pages\SucceededJobs.cshtml"
+            #line 77 "..\..\Pages\SucceededJobs.cshtml"
                        Write(job.Value.SucceededAt);
 
             
@@ -269,7 +268,7 @@ WriteLiteral("</td>\r\n");
 
 
             
-            #line 71 "..\..\Pages\SucceededJobs.cshtml"
+            #line 78 "..\..\Pages\SucceededJobs.cshtml"
                     }
 
             
@@ -279,7 +278,7 @@ WriteLiteral("                </tr>\r\n");
 
 
             
-            #line 73 "..\..\Pages\SucceededJobs.cshtml"
+            #line 80 "..\..\Pages\SucceededJobs.cshtml"
             }
 
             
@@ -289,7 +288,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 76 "..\..\Pages\SucceededJobs.cshtml"
+            #line 83 "..\..\Pages\SucceededJobs.cshtml"
     
 
             
@@ -299,7 +298,7 @@ WriteLiteral("    <div class=\"btn-toolbar\">\r\n");
 
 
             
-            #line 78 "..\..\Pages\SucceededJobs.cshtml"
+            #line 85 "..\..\Pages\SucceededJobs.cshtml"
          if (pager.TotalPages > 1)
         {
 
@@ -310,7 +309,7 @@ WriteLiteral("            <div class=\"btn-group paginator\">\r\n               
 
 
             
-            #line 81 "..\..\Pages\SucceededJobs.cshtml"
+            #line 88 "..\..\Pages\SucceededJobs.cshtml"
                     Write(pager.PreviousPageLink);
 
             
@@ -320,7 +319,7 @@ WriteLiteral("\" \r\n                   class=\"btn btn-default ");
 
 
             
-            #line 82 "..\..\Pages\SucceededJobs.cshtml"
+            #line 89 "..\..\Pages\SucceededJobs.cshtml"
                                       Write(!pager.HasPreviousPage ? "disabled" : null);
 
             
@@ -330,7 +329,7 @@ WriteLiteral("\">&laquo;</a>\r\n\r\n");
 
 
             
-            #line 84 "..\..\Pages\SucceededJobs.cshtml"
+            #line 91 "..\..\Pages\SucceededJobs.cshtml"
                  for (var i = 1; i <= pager.TotalPages; i++)
                 {
 
@@ -341,7 +340,7 @@ WriteLiteral("                    <a class=\"btn btn-default ");
 
 
             
-            #line 86 "..\..\Pages\SucceededJobs.cshtml"
+            #line 93 "..\..\Pages\SucceededJobs.cshtml"
                                           Write(pager.CurrentPage == i ? "active" : null);
 
             
@@ -351,7 +350,7 @@ WriteLiteral("\" \r\n                       href=\"");
 
 
             
-            #line 87 "..\..\Pages\SucceededJobs.cshtml"
+            #line 94 "..\..\Pages\SucceededJobs.cshtml"
                         Write(pager.PageLink(i));
 
             
@@ -361,7 +360,7 @@ WriteLiteral("\">");
 
 
             
-            #line 87 "..\..\Pages\SucceededJobs.cshtml"
+            #line 94 "..\..\Pages\SucceededJobs.cshtml"
                                             Write(i);
 
             
@@ -371,7 +370,7 @@ WriteLiteral("</a>\r\n");
 
 
             
-            #line 88 "..\..\Pages\SucceededJobs.cshtml"
+            #line 95 "..\..\Pages\SucceededJobs.cshtml"
                 }
 
             
@@ -381,7 +380,7 @@ WriteLiteral("\r\n                <a href=\"");
 
 
             
-            #line 90 "..\..\Pages\SucceededJobs.cshtml"
+            #line 97 "..\..\Pages\SucceededJobs.cshtml"
                     Write(pager.NextPageLink);
 
             
@@ -391,7 +390,7 @@ WriteLiteral("\" \r\n                   class=\"btn btn-default ");
 
 
             
-            #line 91 "..\..\Pages\SucceededJobs.cshtml"
+            #line 98 "..\..\Pages\SucceededJobs.cshtml"
                                       Write(!pager.HasNextPage ? "disabled" : null);
 
             
@@ -401,7 +400,7 @@ WriteLiteral("\">&raquo;</a>\r\n            </div>\r\n");
 
 
             
-            #line 93 "..\..\Pages\SucceededJobs.cshtml"
+            #line 100 "..\..\Pages\SucceededJobs.cshtml"
         }
 
             
@@ -411,7 +410,7 @@ WriteLiteral("\r\n        <div class=\"btn-group\">\r\n            <span class=\
 
 
             
-            #line 96 "..\..\Pages\SucceededJobs.cshtml"
+            #line 103 "..\..\Pages\SucceededJobs.cshtml"
                                      Write(pager.Total);
 
             
@@ -421,7 +420,7 @@ WriteLiteral("</span>\r\n        </div>\r\n    </div>\r\n");
 
 
             
-            #line 99 "..\..\Pages\SucceededJobs.cshtml"
+            #line 106 "..\..\Pages\SucceededJobs.cshtml"
 }
             
             #line default

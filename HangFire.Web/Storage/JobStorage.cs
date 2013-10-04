@@ -73,12 +73,15 @@ namespace HangFire.Web
             }
         }
 
-        public static IDictionary<string, ScheduleDto> Schedule()
+        public static IDictionary<string, ScheduleDto> ScheduledJobs(int from, int count)
         {
             lock (Redis)
             {
                 // TODO: use ZRANGEBYSCORE and split results into pages.
-                var scheduledJobs = Redis.GetAllWithScoresFromSortedSet("hangfire:schedule");
+                var scheduledJobs = Redis.GetRangeWithScoresFromSortedSet(
+                    "hangfire:schedule",
+                    0,
+                    from + count - 1);
 
                 var result = new Dictionary<string, ScheduleDto>();
 

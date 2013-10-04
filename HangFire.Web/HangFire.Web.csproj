@@ -97,9 +97,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DashboardPage.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\SucceededJobs.cs">
-      <DependentUpon>SucceededJobs.cshtml</DependentUpon>
-    </Compile>
     <Compile Include="Pages\SucceededJobs.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
