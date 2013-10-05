@@ -80,7 +80,7 @@ namespace HangFire.Web
             var request = context.Request;
             var resource = request.PathInfo.Length == 0
                 ? String.Empty
-                : request.PathInfo.ToUpperInvariant();
+                : request.PathInfo.ToLowerInvariant();
             
             var handler = FindHandler(resource);
             if (handler == null)
