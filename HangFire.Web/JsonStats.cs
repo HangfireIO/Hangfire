@@ -9,19 +9,16 @@ namespace HangFire.Web
     {
         public override void ProcessRequest()
         {
-            var response = new
-            {
-                succeeded = JobStorage.SucceededCount(),
-                failed = JobStorage.FailedCount(),
-                workers = JobStorage.ProcessingJobs().Count(),
-                scheduled = JobStorage.ScheduledCount(),
-                enqueued = JobStorage.EnqueuedCount()
-            };
+            var response = JobStorage.GetStatistics();
 
-            var serialized = JsonSerializer.SerializeToString(response);
-            Response.ContentType = "application/json";
-            Response.ContentEncoding = Encoding.UTF8;
-            Response.Write(serialized);
+            using (JsConfig.With(emitCamelCaseNames: true))
+            {
+                var serialized = JsonSerializer.SerializeToString(response);
+                Response.ContentType = "application/json";
+                Response.ContentEncoding = Encoding.UTF8;
+                Response.Write(serialized);
+                // TODO: use Response.End();
+            }
         }
     }
 }

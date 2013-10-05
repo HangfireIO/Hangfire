@@ -8,13 +8,13 @@
 }
 
 <h3>Realtime graph</h3>
-<div id="realtime"></div>
+<div id="realtimeGraph"></div>
 
 <h3>History graph</h3>
 
 @using (JsConfig.With(dateHandler: JsonDateHandler.ISO8601))
 {
-    <div id="history" 
+    <div id="historyGraph" 
          data-succeeded="@JsonSerializer.SerializeToString(JobStorage.HourlySucceededJobs())" 
          data-failed="@JsonSerializer.SerializeToString(JobStorage.HourlyFailedJobs())">
     </div>

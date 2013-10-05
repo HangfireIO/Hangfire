@@ -12,143 +12,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="@Request.LinkTo("/css/styles.css")" />
 </head>
-<body>
-    <!-- Wrap all page content here -->
-    <div id="wrap">
+    <body>
+        <!-- Wrap all page content here -->
+        <div id="wrap">
 
-        <!-- Fixed navbar -->
-        <div class="navbar navbar-default navbar-static-top">
+            <!-- Fixed navbar -->
+            <div class="navbar navbar-default navbar-static-top">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="@Request.LinkTo("/")">HangFire Monitor</a>
+                    </div>
+                    <div class="collapse navbar-collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li>
+                                <a href="/">
+                                    <span class="glyphicon glyphicon-log-out"></span>
+                                    Back to site
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!--/.nav-collapse -->
+                </div>
+            </div>
+
+            <!-- Begin page content -->
+
             <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="@Request.LinkTo("/")">HangFire Monitor</a>
-                </div>
-                <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="/">
-                                <span class="glyphicon glyphicon-log-out"></span>
-                                Back to site
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <!--/.nav-collapse -->
-            </div>
-        </div>
+                <div class="col-md-3">
+                    @{ var statistics = JobStorage.GetStatistics(); }
 
-        <!-- Begin page content -->
+                    <div id="stats" class="list-group">
+                        <a class="list-group-item @(Request.PathInfo.Equals("/") ? "active" : null)"
+                           href="@Request.LinkTo("/")">
+                            <span class="glyphicon glyphicon-dashboard"></span>
+                            Dashboard
+                        </a>
 
-        <div class="container">
-            <div class="col-md-3">
-                <div id="stats" class="list-group" data-refresh-url="@Request.LinkTo("/stats")">
-                    <a class="list-group-item @(Request.PathInfo.Equals("/") ? "active" : null)"
-                       href="@Request.LinkTo("/")">
-                        <span class="glyphicon glyphicon-dashboard"></span>
-                        Dashboard
-                    </a>
+                        <a class="list-group-item @(Request.PathInfo.Equals("/servers") ? "active" : null)"
+                           href="@Request.LinkTo("/servers")">
+                            <span class="label label-default pull-right">@statistics.Servers</span>
+                            <span class="glyphicon glyphicon-hdd"></span>
+                            Active Servers
+                        </a>
 
-                    <a class="list-group-item @(Request.PathInfo.Equals("/servers") ? "active" : null)"
-                       href="@Request.LinkTo("/servers")">
-                        <span class="label label-default pull-right">@JobStorage.Servers().Count()</span>
-                        <span class="glyphicon glyphicon-hdd"></span>
-                        Active Servers
-                    </a>
-
-                    <a class="list-group-item @(Request.PathInfo.StartsWith("/queues") ? "active" : null)" 
-                       href="@Request.LinkTo("/queues")">
-                        <span id="stats-enqueued" class="label label-default pull-right">
-                            <span title="Enqueued jobs count">
-                                @String.Format("{0:n0}", JobStorage.EnqueuedCount())
+                        <a class="list-group-item @(Request.PathInfo.StartsWith("/queues") ? "active" : null)" 
+                           href="@Request.LinkTo("/queues")">
+                            <span class="label label-default pull-right">
+                                <span id="stats-enqueued" title="Enqueued jobs count">
+                                    @statistics.Enqueued
+                                </span>
+                                / 
+                                <span id="stats-queues" title="Queues count">
+                                    @statistics.Queues
+                                </span>
                             </span>
-                            / 
-                            <span title="Queues count">
-                                @JobStorage.QueuesCount()
+                            <span class="glyphicon glyphicon-inbox"></span>
+                            Jobs & Queues
+                        </a>
+                        <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/scheduled") ? "active" : null)" 
+                           href="@Request.LinkTo("/scheduled")">
+                            <span id="stats-scheduled" class="label label-info pull-right">
+                                @statistics.Scheduled
                             </span>
-                        </span>
-                        <span class="glyphicon glyphicon-inbox"></span>
-                        Jobs & Queues
-                    </a>
-                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/scheduled") ? "active" : null)" 
-                       href="@Request.LinkTo("/scheduled")">
-                        <span id="stats-scheduled" class="label label-info pull-right">
-                            @String.Format("{0:n0}", JobStorage.ScheduledCount())
-                        </span>
-                        Scheduled
-                    </a>
-                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
-                       href="@Request.LinkTo("/processing")">
-                        <span id="stats-workers" class="label label-warning pull-right">
-                            @String.Format("{0:n0}", JobStorage.ProcessingCount())
-                        </span>
-                        Processing
-                    </a>
-                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
-                       href="@Request.LinkTo("/succeeded")">
-                        <span id="stats-succeeded" class="label label-success pull-right">
-                            @String.Format("{0:n0}", JobStorage.SucceededCount())
-                        </span>
-                        Succeeded
-                    </a>
-                    <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
-                       href="@Request.LinkTo("/failed")">
-                        <span id="stats-failed" class="label label-danger pull-right">
-                            @String.Format("{0:n0}", JobStorage.FailedCount())
-                        </span>
-                        Failed
-                    </a>
+                            Scheduled
+                        </a>
+                        <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
+                           href="@Request.LinkTo("/processing")">
+                            <span id="stats-workers" class="label label-warning pull-right">
+                                @statistics.Processing
+                            </span>
+                            Processing
+                        </a>
+                        <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/succeeded") ? "active" : null)" 
+                           href="@Request.LinkTo("/succeeded")">
+                            <span id="stats-succeeded" class="label label-success pull-right">
+                                @statistics.Succeeded
+                            </span>
+                            Succeeded
+                        </a>
+                        <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/failed") ? "active" : null)" 
+                           href="@Request.LinkTo("/failed")">
+                            <span id="stats-failed" class="label label-danger pull-right">
+                                @statistics.Failed
+                            </span>
+                            Failed
+                        </a>
 
 
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-9">
-                @if (Breadcrumbs != null)
-                {
-                    <ol class="breadcrumb">
-                        <li><a href="@Request.LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
-                        @foreach (var breadcrumb in Breadcrumbs)
-                        {
-                            <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
-                        }
-                        <li class="active">@Title</li>
-                    </ol>
-                }
-
-                <h1 class="page-header">
-                    @Title
-                    @if (!String.IsNullOrEmpty(Subtitle))
+                <div class="col-md-9">
+                    @if (Breadcrumbs != null)
                     {
-                        <small>@Subtitle</small>
+                        <ol class="breadcrumb">
+                            <li><a href="@Request.LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
+                            @foreach (var breadcrumb in Breadcrumbs)
+                            {
+                                <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
+                            }
+                            <li class="active">@Title</li>
+                        </ol>
                     }
-                </h1>
-                @RenderBody()
+
+                    <h1 class="page-header">
+                        @Title
+                        @if (!String.IsNullOrEmpty(Subtitle))
+                        {
+                            <small>@Subtitle</small>
+                        }
+                    </h1>
+                    @RenderBody()
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="footer">
-        <div class="container">
-            <ul class="list-inline credit">
-                <li>
-                    <a href="http://github.io/odinserj/hangfire" target="_blank">HangFire 
-                        @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
-                    </a>
-                </li>
-                <li>
-                    @String.Format("redis://{0}:{1}/{2}", RedisFactory.Host, RedisFactory.Port, RedisFactory.Db)
-                </li>
-                <li>Time: @DateTime.UtcNow UTC
-                </li>
-                <li>Generated in [@((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds) ms]
-                </li>
-            </ul>
+        <div id="footer">
+            <div class="container">
+                <ul class="list-inline credit">
+                    <li>
+                        <a href="http://github.io/odinserj/hangfire" target="_blank">HangFire 
+                            @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
+                        </a>
+                    </li>
+                    <li>
+                        @String.Format("redis://{0}:{1}/{2}", RedisFactory.Host, RedisFactory.Port, RedisFactory.Db)
+                    </li>
+                    <li>Time: @DateTime.UtcNow UTC
+                    </li>
+                    <li>Generated in [@((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds) ms]
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-
-    <script src="@Request.LinkTo("/js/scripts.js")"></script>
-</body>
+        
+        <script>
+            (function (hangFire) {
+                hangFire.config = {
+                    pollInterval: 2000,
+                    pollUrl: '@(Request.LinkTo("/stats"))'
+                };
+            })(window.HangFire = window.HangFire || {});
+        </script>
+        <script src="@Request.LinkTo("/js/scripts.js")"></script>
+    </body>
 </html>

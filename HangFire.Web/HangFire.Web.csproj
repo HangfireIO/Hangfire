@@ -141,6 +141,7 @@
     <Compile Include="Storage\QueueWithTopEnqueuedJobsDto.cs" />
     <Compile Include="Storage\ScheduleDto.cs" />
     <Compile Include="Storage\ServerDto.cs" />
+    <Compile Include="Storage\StatisticsDto.cs" />
     <Compile Include="Storage\SucceededJobDto.cs" />
     <Compile Include="StyleSheetHandler.cs" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.eot" />

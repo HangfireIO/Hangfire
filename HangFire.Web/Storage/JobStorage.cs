@@ -18,30 +18,11 @@ namespace HangFire.Web
             }
         }
 
-        public static long EnqueuedCount()
-        {
-            lock (Redis)
-            {
-                var queues = Redis.GetAllItemsFromSet("hangfire:queues");
-                return queues.Sum(queue => Redis.GetListCount(
-                    String.Format("hangfire:queue:{0}", queue)));
-            }
-        }
-
         public static long EnqueuedCount(string queueName)
         {
             lock (Redis)
             {
                 return Redis.GetListCount(String.Format("hangfire:queue:{0}", queueName));
-            }
-        }
-
-        public static long SucceededCount()
-        {
-            lock (Redis)
-            {
-                return long.Parse(
-                    Redis.GetValue("hangfire:stats:succeeded") ?? "0");
             }
         }
 
@@ -335,14 +316,6 @@ namespace HangFire.Web
             }
         }
 
-        public static long QueuesCount()
-        {
-            lock (Redis)
-            {
-                return Redis.GetSetCount("hangfire:queues");
-            }
-        }
-
         public static JobDetailsDto JobDetails(string jobId)
         {
             lock (Redis)
@@ -456,6 +429,55 @@ namespace HangFire.Web
             lock (Redis)
             {
                 return Redis.GetListCount("hangfire:succeeded");
+            }
+        }
+
+        public static StatisticsDto GetStatistics()
+        {
+            lock (Redis)
+            {
+                var stats = new StatisticsDto();
+
+                var queues = Redis.GetAllItemsFromSet("hangfire:queues");
+
+                using (var pipeline = Redis.CreatePipeline())
+                {
+                    pipeline.QueueCommand(
+                        x => x.GetSetCount("hangfire:servers"), 
+                        x => stats.Servers = x);
+
+                    pipeline.QueueCommand(
+                        x => x.GetSetCount("hangfire:queues"), 
+                        x => stats.Queues = x);
+
+                    pipeline.QueueCommand(
+                        x => x.GetSortedSetCount("hangfire:schedule"), 
+                        x => stats.Scheduled = x);
+
+                    pipeline.QueueCommand(
+                        x => x.GetSetCount("hangfire:processing"), 
+                        x => stats.Processing = x);
+
+                    pipeline.QueueCommand(
+                        x => x.GetValue("hangfire:stats:succeeded"), 
+                        x => stats.Succeeded = long.Parse(x ?? "0"));
+
+                    pipeline.QueueCommand(
+                        x => x.GetSortedSetCount("hangfire:failed"),
+                        x => stats.Failed = x);
+
+                    foreach (var queue in queues)
+                    {
+                        var queueName = queue;
+                        pipeline.QueueCommand(
+                            x => x.GetListCount(String.Format("hangfire:queue:{0}", queueName)),
+                            x => stats.Enqueued += x);
+                    }
+
+                    pipeline.Flush();
+                }
+
+                return stats;
             }
         }
     }

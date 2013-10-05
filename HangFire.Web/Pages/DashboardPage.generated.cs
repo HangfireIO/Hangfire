@@ -54,8 +54,8 @@ WriteLiteral("              \r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n<h3>Realtime graph</h3>\r\n<div id=\"realtime\"></div>\r\n\r\n<h3>History graph</h3>\r\n\r" +
-"\n");
+WriteLiteral("\r\n<h3>Realtime graph</h3>\r\n<div id=\"realtimeGraph\"></div>\r\n\r\n<h3>History graph</h" +
+"3>\r\n\r\n");
 
 
             
@@ -66,7 +66,7 @@ WriteLiteral("\r\n<h3>Realtime graph</h3>\r\n<div id=\"realtime\"></div>\r\n\r\n
             
             #line default
             #line hidden
-WriteLiteral("    <div id=\"history\" \r\n         data-succeeded=\"");
+WriteLiteral("    <div id=\"historyGraph\" \r\n         data-succeeded=\"");
 
 
             
