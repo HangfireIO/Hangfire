@@ -15,6 +15,7 @@ namespace HangFire.Server
         private readonly ILog _logger = LogManager.GetLogger("HangFire.WorkerPool");
         private bool _disposed;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public WorkerPool(
             ServerContext serverContext,
             ServerJobInvoker jobInvoker,
@@ -33,6 +34,7 @@ namespace HangFire.Server
                     i,
                     jobInvoker,
                     jobActivator);
+
                 worker.Start();
                 _workers.Add(worker);
             }

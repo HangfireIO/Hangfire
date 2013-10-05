@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using HangFire.States;
 using ServiceStack.Logging;
@@ -123,6 +124,7 @@ namespace HangFire.Server
             _jobIsReady.Dispose();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
         private void DoWork()
         {
             try
@@ -154,6 +156,7 @@ namespace HangFire.Server
             }
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We need to catch all user-code exceptions.")]
         private void PerformJob(string jobId)
         {
             try

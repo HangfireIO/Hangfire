@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ServiceStack.Redis;
 
@@ -20,6 +21,7 @@ namespace HangFire.States
 
         public abstract void Apply(IRedisTransaction transaction);
 
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Method can return volatile data.")]
         public virtual IDictionary<string, string> GetProperties()
         {
             return new Dictionary<string, string>();
@@ -28,6 +30,7 @@ namespace HangFire.States
         private static readonly IDictionary<string, JobStateDescriptor> Descriptors
             = new Dictionary<string, JobStateDescriptor>();
 
+        [SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static JobState()
         {
             RegisterDescriptor(FailedState.Name, new FailedStateDescriptor());
@@ -44,6 +47,9 @@ namespace HangFire.States
 
         public static bool Apply(IRedisClient redis, JobState state, params string[] allowedStates)
         {
+            if (redis == null) throw new ArgumentNullException("redis");
+            if (state == null) throw new ArgumentNullException("state");
+
             var filters = GlobalJobFilters.Filters.OfType<IJobStateFilter>().ToList();
 
             using (redis.AcquireLock(

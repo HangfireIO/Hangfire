@@ -95,13 +95,13 @@ namespace HangFire.Client
             _redis.Dispose();
         }
 
-        private ClientJobDescriptor CreateDescriptor(Type jobType, object jobArgs)
+        private static ClientJobDescriptor CreateDescriptor(Type jobType, object jobArgs)
         {
             var job = new Dictionary<string, string>();
             var descriptor = new ClientJobDescriptor(GenerateId(), job);
 
             job["Type"] = jobType.AssemblyQualifiedName;
-            job["Args"] = JobHelper.ToJson(descriptor.SerializeProperties(jobArgs));
+            job["Args"] = JobHelper.ToJson(ClientJobDescriptor.SerializeProperties(jobArgs));
 
             return descriptor;
         }
@@ -113,7 +113,7 @@ namespace HangFire.Client
                 properties);
         }
 
-        private string GenerateId()
+        private static string GenerateId()
         {
             return Guid.NewGuid().ToString();
         }

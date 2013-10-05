@@ -81,6 +81,7 @@
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="Filters\IJobStateFilter.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />
     <Compile Include="States\DeletedState.cs" />

@@ -8,6 +8,9 @@ namespace HangFire
     {
         public JobState OnStateChanged(IRedisClient redis, JobState state)
         {
+            if (redis == null) throw new ArgumentNullException("redis");
+            if (state == null) throw new ArgumentNullException("state");
+
             using (var transaction = redis.CreateTransaction())
             {
                 if (state.StateName == SucceededState.Name)

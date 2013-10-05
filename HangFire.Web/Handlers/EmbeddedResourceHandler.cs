@@ -34,6 +34,7 @@ namespace HangFire.Web
 
         protected void WriteResource(Assembly assembly, string resourceName)
         {
+            if (assembly == null) throw new ArgumentNullException("assembly");
             if (resourceName == null) throw new ArgumentNullException("resourceName");
 
             using (var inputStream = assembly.GetManifestResourceStream(resourceName))

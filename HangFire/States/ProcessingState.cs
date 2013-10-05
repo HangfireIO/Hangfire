@@ -29,6 +29,8 @@ namespace HangFire.States
 
         public override void Apply(IRedisTransaction transaction)
         {
+            if (transaction == null) throw new ArgumentNullException("transaction");
+
             transaction.QueueCommand(x => x.AddItemToSet(
                 "hangfire:processing", JobId));
         }

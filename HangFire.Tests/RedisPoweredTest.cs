@@ -7,7 +7,7 @@ using ServiceStack.Redis;
 
 namespace HangFire.Tests
 {
-    [TestClass]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable"), TestClass]
     public abstract class RedisPoweredTest
     {
         protected const int RedisDb = 5;
@@ -24,7 +24,7 @@ namespace HangFire.Tests
             Monitor.Enter(_lock);
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            Redis = new ServiceStack.Redis.RedisClient(RedisHost, RedisPort, null, RedisDb);
+            Redis = new RedisClient(RedisHost, RedisPort, null, RedisDb);
             Redis.FlushDb();
 
             RedisFactory.Db = RedisDb;

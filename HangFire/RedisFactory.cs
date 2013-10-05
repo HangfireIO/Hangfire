@@ -2,7 +2,7 @@
 
 namespace HangFire
 {
-    public class RedisFactory
+    public static class RedisFactory
     {
         private static string _host = RedisNativeClient.DefaultHost;
         private static int _port = RedisNativeClient.DefaultPort;

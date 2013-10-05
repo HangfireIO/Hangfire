@@ -14,6 +14,7 @@ namespace HangFire.Web
 
         private static Func<IHttpHandler> _defaultHandlerFactory;
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static HangFirePageFactory()
         {
             RegisterDefaultPathHandlerFactory(() => new DashboardPage());
@@ -51,12 +52,7 @@ namespace HangFire.Web
 
             RegisterPathHandlerFactory(
                 "/fonts/(?<File>.+)",
-                x => new SingleResourceHandler(
-                    typeof(HangFirePageFactory).Assembly,
-                    GetContentResourceName("fonts", x.Groups["File"].Value))
-                    {
-                        CacheResponse = true
-                    });
+                x => new FontsHandler(x.Groups["File"].Value));
 
             RegisterPathHandlerFactory(
                 "/stats",
@@ -72,17 +68,19 @@ namespace HangFire.Web
 
         public static void RegisterDefaultPathHandlerFactory(Func<IHttpHandler> handlerFactory)
         {
-            _defaultHandlerFactory = () => new DashboardPage();
+            _defaultHandlerFactory = handlerFactory;
         }
 
         public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
         {
+            if (context == null) throw new ArgumentNullException("context");
+
             context.Items.Add("GenerationStartedAt", DateTime.UtcNow);
 
             var request = context.Request;
             var resource = request.PathInfo.Length == 0
                 ? String.Empty
-                : request.PathInfo.ToLowerInvariant();
+                : request.PathInfo.ToUpperInvariant();
             
             var handler = FindHandler(resource);
             if (handler == null)
@@ -93,7 +91,7 @@ namespace HangFire.Web
             return handler;
         }
 
-        private IHttpHandler FindHandler(string resource)
+        private static IHttpHandler FindHandler(string resource)
         {
             if (resource.Length == 0 || resource.Equals("/", StringComparison.OrdinalIgnoreCase))
             {
@@ -103,8 +101,11 @@ namespace HangFire.Web
             foreach (var pathHandlerFactory in PathHandlerFactories)
             {
                 var pattern = pathHandlerFactory.Item1;
-                if (!pattern.StartsWith("^")) pattern = "^" + pattern;
-                if (!pattern.EndsWith("$")) pattern += "$";
+
+                if (!pattern.StartsWith("^", StringComparison.OrdinalIgnoreCase)) 
+                    pattern = "^" + pattern;
+                if (!pattern.EndsWith("$", StringComparison.OrdinalIgnoreCase)) 
+                    pattern += "$";
 
                 var match = Regex.Match(
                     resource,
@@ -130,7 +131,7 @@ namespace HangFire.Web
             return String.Format("{0}.{1}", GetContentFolderNamespace(contentFolder), resourceName);
         }
 
-        void IHttpHandlerFactory.ReleaseHandler(IHttpHandler handler)
+        public void ReleaseHandler(IHttpHandler handler)
         {
         }
     }

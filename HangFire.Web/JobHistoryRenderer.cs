@@ -14,6 +14,7 @@ namespace HangFire.Web
         public static readonly IDictionary<string, string> ForegroundStateColors
             = new Dictionary<string, string>();
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static JobHistoryRenderer()
         {
             Register(EnqueuedState.Name, NullRenderer);

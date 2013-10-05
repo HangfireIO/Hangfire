@@ -5,7 +5,8 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class RecurringAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public sealed class RecurringAttribute : Attribute
     {
         public RecurringAttribute(int seconds)
         {
@@ -19,6 +20,9 @@ namespace HangFire
     {
         public JobState OnStateChanged(IRedisClient redis, JobState state)
         {
+            if (redis == null) throw new ArgumentNullException("redis");
+            if (state == null) throw new ArgumentNullException("state");
+
             if (state.StateName != SucceededState.Name)
             {
                 return state;

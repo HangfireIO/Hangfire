@@ -24,7 +24,7 @@ namespace HangFire.Web
             ProcessRequest();
         }
 
-        bool IHttpHandler.IsReusable
+        public bool IsReusable
         {
             get { return false; }
         }

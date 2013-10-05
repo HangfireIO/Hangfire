@@ -29,6 +29,8 @@ namespace HangFire.Server
 
         public void Redis(Action<IRedisClient> action)
         {
+            if (action == null) throw new ArgumentNullException("action");
+
             lock (_redis)
             {
                 action(_redis);

@@ -10,6 +10,9 @@ namespace HangFire
 
         public JobState OnStateChanged(IRedisClient redis, JobState state)
         {
+            if (redis == null) throw new ArgumentNullException("redis");
+            if (state == null) throw new ArgumentNullException("state");
+
             if (state.StateName != FailedState.Name)
             {
                 // This filter accepts only failed job state.

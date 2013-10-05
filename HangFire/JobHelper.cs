@@ -20,6 +20,8 @@ namespace HangFire
 
         public static string GetQueueName(Type jobType)
         {
+            if (jobType == null) throw new ArgumentNullException("jobType");
+
             var attribute = jobType
                 .GetCustomAttributes(true)
                 .Cast<QueueNameAttribute>()

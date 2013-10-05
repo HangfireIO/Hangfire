@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using HangFire.Server;
 
 namespace HangFire
@@ -61,6 +62,7 @@ namespace HangFire
         /// <summary>
         /// Stops the server and it's workers.
         /// </summary>
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", Justification = "Pair for the `Start` method",MessageId = "Stop")]
         public virtual bool Stop()
         {
             if (_server != null)

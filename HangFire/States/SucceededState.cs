@@ -27,6 +27,8 @@ namespace HangFire.States
 
         public override void Apply(IRedisTransaction transaction)
         {
+            if (transaction == null) throw new ArgumentNullException("transaction");
+
             transaction.QueueCommand(x => x.ExpireEntryIn(
                 String.Format("hangfire:job:{0}", JobId),
                 _jobExpirationTimeout));

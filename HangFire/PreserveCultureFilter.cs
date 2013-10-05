@@ -10,6 +10,8 @@ namespace HangFire
     {
         public override void OnJobEnqueueing(JobEnqueueingContext filterContext)
         {
+            if (filterContext == null) throw new ArgumentNullException("filterContext");
+
             filterContext.JobDescriptor.SetParameter(
                 "CurrentCulture", Thread.CurrentThread.CurrentCulture.Name);
             filterContext.JobDescriptor.SetParameter(
@@ -18,6 +20,8 @@ namespace HangFire
 
         public override void OnJobPerforming(JobPerformingContext filterContext)
         {
+            if (filterContext == null) throw new ArgumentNullException("filterContext");
+
             var cultureName = filterContext.JobDescriptor
                 .GetParameter<string>("CurrentCulture");
             var uiCultureName = filterContext.JobDescriptor
@@ -40,6 +44,8 @@ namespace HangFire
 
         public override void OnJobPerformed(JobPerformedContext filterContext)
         {
+            if (filterContext == null) throw new ArgumentNullException("filterContext");
+
             var thread = Thread.CurrentThread;
             if (filterContext.Items.ContainsKey("PreviousCulture"))
             {

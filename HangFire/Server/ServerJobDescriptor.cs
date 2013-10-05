@@ -12,8 +12,11 @@ namespace HangFire.Server
             JobActivator activator,
             string jobId,
             string jobType, 
-            IEnumerable<KeyValuePair<string, string>> jobProperties)
+            IDictionary<string, string> jobProperties)
         {
+            if (activator == null) throw new ArgumentNullException("activator");
+            if (jobProperties == null) throw new ArgumentNullException("jobProperties");
+
             JobId = jobId;
 
             var type = Type.GetType(jobType, true, true);

@@ -34,7 +34,7 @@ namespace HangFire.Client
                 : default(T);
         }
 
-        internal IDictionary<string, string> SerializeProperties(object jobProperties)
+        internal static IDictionary<string, string> SerializeProperties(object jobProperties)
         {
             var result = new Dictionary<string, string>();
             if (jobProperties != null)

@@ -49,9 +49,11 @@ namespace HangFire.Web
 
         public static IHtmlString MarkupStackTrace(string stackTrace)
         {
-            var writer = new StringWriter();
-            MarkupStackTrace(stackTrace, writer);
-            return new HtmlString(writer.ToString());
+            using (var writer = new StringWriter())
+            {
+                MarkupStackTrace(stackTrace, writer);
+                return new HtmlString(writer.ToString());
+            }
         }
 
         private static readonly Regex _reStackTrace = new Regex(@"
