@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Web;
 
 namespace HangFire.Web
@@ -18,7 +19,7 @@ namespace HangFire.Web
                 pathInfoIndex--;
             }
             var basePath = sb.ToString();
-            if (!basePath.EndsWith("/")) basePath += "/";
+            if (!basePath.EndsWith("/", StringComparison.OrdinalIgnoreCase)) basePath += "/";
 
             return basePath + link.TrimStart('/');
         }

@@ -233,7 +233,7 @@ namespace HangFire.Server
             }
         }
 
-        private void GetJobTypeAndArgs(string jobId, out string jobType, out Dictionary<string, string> jobArgs)
+        private static void GetJobTypeAndArgs(string jobId, out string jobType, out Dictionary<string, string> jobArgs)
         {
             lock (Redis)
             {

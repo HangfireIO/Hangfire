@@ -32,14 +32,5 @@ namespace HangFire.States
             transaction.QueueCommand(x => x.AddItemToSet(
                 "hangfire:processing", JobId));
         }
-
-        public class Descriptor : JobState.Descriptor
-        {
-            public override void Unapply(IRedisTransaction transaction, string jobId)
-            {
-                transaction.QueueCommand(x => x.RemoveItemFromSet(
-                    "hangfire:processing", jobId));
-            }
-        }
     }
 }

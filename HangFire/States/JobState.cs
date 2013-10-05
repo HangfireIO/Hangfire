@@ -25,19 +25,19 @@ namespace HangFire.States
             return new Dictionary<string, string>();
         }
 
-        private static readonly IDictionary<string, Descriptor> Descriptors
-            = new Dictionary<string, Descriptor>();
+        private static readonly IDictionary<string, JobStateDescriptor> Descriptors
+            = new Dictionary<string, JobStateDescriptor>();
 
         static JobState()
         {
-            RegisterDescriptor(FailedState.Name, new FailedState.Descriptor());
-            RegisterDescriptor(ProcessingState.Name, new ProcessingState.Descriptor());
-            RegisterDescriptor(ScheduledState.Name, new ScheduledState.Descriptor());
-            RegisterDescriptor(SucceededState.Name, new SucceededState.Descriptor());
+            RegisterDescriptor(FailedState.Name, new FailedStateDescriptor());
+            RegisterDescriptor(ProcessingState.Name, new ProcessingStateDescriptor());
+            RegisterDescriptor(ScheduledState.Name, new ScheduledStateDescriptor());
+            RegisterDescriptor(SucceededState.Name, new SucceededStateDescriptor());
         }
 
         public static void RegisterDescriptor(
-            string stateName, Descriptor descriptor)
+            string stateName, JobStateDescriptor descriptor)
         {
             Descriptors.Add(stateName, descriptor);
         }
@@ -145,13 +145,6 @@ namespace HangFire.States
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:job:{0}:history", state.JobId),
                 JobHelper.ToJson(properties)));
-        }
-
-        public abstract class Descriptor
-        {
-            public virtual void Unapply(IRedisTransaction transaction, string jobId)
-            {
-            }
         }
     }
 }

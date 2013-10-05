@@ -36,13 +36,5 @@ namespace HangFire.States
                         JobId,
                         JobHelper.ToTimestamp(DateTime.UtcNow)));
         }
-
-        public class Descriptor : JobState.Descriptor
-        {
-            public override void Unapply(IRedisTransaction transaction, string jobId)
-            {
-                transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
-            }
-        }
     }
 }

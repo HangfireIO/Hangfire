@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\HangFire.Web.xml</DocumentationFile>
+    <CodeAnalysisRuleSet>..\HangFire.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -137,7 +138,6 @@
     <Compile Include="Storage\JobDetailsDto.cs" />
     <Compile Include="Storage\JobStorage.cs" />
     <Compile Include="Storage\ProcessingJobDto.cs" />
-    <Compile Include="Storage\QueueDto.cs" />
     <Compile Include="Storage\QueueWithTopEnqueuedJobsDto.cs" />
     <Compile Include="Storage\ScheduleDto.cs" />
     <Compile Include="Storage\ServerDto.cs" />
