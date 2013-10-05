@@ -102,68 +102,20 @@ WriteLiteral("    <div class=\"alert alert-info\">\r\n        The queue is empty
 }
 else
 {
+    
+            
+            #line default
+            #line hidden
+            
+            #line 39 "..\..\Pages\EnqueuedJobsPage.cshtml"
+Write(RenderPartial(new PerPageSelector(pager)));
 
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"btn-toolbar btn-toolbar-top\">\r\n        <div class=\"btn-group pull" +
-"-right paginator\">\r\n");
-
-
             
-            #line 41 "..\..\Pages\EnqueuedJobsPage.cshtml"
-             foreach (var count in new[] { 10, 20, 50, 100 })
-            {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                <a class=\"btn btn-default ");
-
-
-            
-            #line 43 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                      Write(count == pager.PerPage ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                    href=\"");
-
-
-            
-            #line 44 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                     Write(pager.PerPageLink(count));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">");
-
-
-            
-            #line 44 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                                Write(count);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</a>    \r\n");
-
-
-            
-            #line 45 "..\..\Pages\EnqueuedJobsPage.cshtml"
-            }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("        </div>\r\n        <div class=\"btn-group pull-right\">\r\n            <span cla" +
-"ss=\"btn\">Jobs per page:</span>\r\n        </div>\r\n    </div>\r\n");
-
-
-            
-            #line 51 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 39 "..\..\Pages\EnqueuedJobsPage.cshtml"
+                                              
     
 
             
@@ -176,7 +128,7 @@ WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>
 
 
             
-            #line 62 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 51 "..\..\Pages\EnqueuedJobsPage.cshtml"
              foreach (var job in enqueuedJobs)
             {
 
@@ -187,7 +139,7 @@ WriteLiteral("                <tr>\r\n                    <td><a href=\"");
 
 
             
-            #line 65 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 54 "..\..\Pages\EnqueuedJobsPage.cshtml"
                             Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -197,7 +149,7 @@ WriteLiteral("\">");
 
 
             
-            #line 65 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 54 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                                                 Write(HtmlHelper.JobId(job.Key));
 
             
@@ -207,7 +159,7 @@ WriteLiteral("</a></td>\r\n                    <td>");
 
 
             
-            #line 66 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 55 "..\..\Pages\EnqueuedJobsPage.cshtml"
                    Write(HtmlHelper.JobType(job.Value.Type));
 
             
@@ -217,7 +169,7 @@ WriteLiteral("</td>\r\n                    <td><code>\r\n                       
 
 
             
-            #line 68 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 57 "..\..\Pages\EnqueuedJobsPage.cshtml"
                        Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
@@ -227,7 +179,7 @@ WriteLiteral("\r\n                        </code></td>\r\n                    <t
 
 
             
-            #line 70 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 59 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                 Write(JobHelper.ToStringTimestamp(job.Value.EnqueuedAt));
 
             
@@ -237,7 +189,7 @@ WriteLiteral("\">");
 
 
             
-            #line 70 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 59 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                                                                     Write(job.Value.EnqueuedAt);
 
             
@@ -247,7 +199,7 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 72 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 61 "..\..\Pages\EnqueuedJobsPage.cshtml"
             }
 
             
@@ -257,139 +209,22 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 75 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 64 "..\..\Pages\EnqueuedJobsPage.cshtml"
     
+    
+            
+            #line default
+            #line hidden
+            
+            #line 65 "..\..\Pages\EnqueuedJobsPage.cshtml"
+Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"btn-toolbar\">\r\n");
-
-
             
-            #line 77 "..\..\Pages\EnqueuedJobsPage.cshtml"
-         if (pager.TotalPages > 1)
-        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("            <div class=\"btn-group paginator\">\r\n                <a href=\"");
-
-
-            
-            #line 80 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                    Write(pager.PreviousPageLink);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                   class=\"btn btn-default ");
-
-
-            
-            #line 81 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                      Write(!pager.HasPreviousPage ? "disabled" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">&laquo;</a>\r\n\r\n");
-
-
-            
-            #line 83 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                 for (var i = 1; i <= pager.TotalPages; i++)
-                {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                    <a class=\"btn btn-default ");
-
-
-            
-            #line 85 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                          Write(pager.CurrentPage == i ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                       href=\"");
-
-
-            
-            #line 86 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                        Write(pager.PageLink(i));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">");
-
-
-            
-            #line 86 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                            Write(i);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</a>\r\n");
-
-
-            
-            #line 87 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                <a href=\"");
-
-
-            
-            #line 89 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                    Write(pager.NextPageLink);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                   class=\"btn btn-default ");
-
-
-            
-            #line 90 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                      Write(!pager.HasNextPage ? "disabled" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">&raquo;</a>\r\n            </div>\r\n");
-
-
-            
-            #line 92 "..\..\Pages\EnqueuedJobsPage.cshtml"
-        }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n        <div class=\"btn-group\">\r\n            <span class=\"btn\">Total jobs: ");
-
-
-            
-            #line 95 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                     Write(pager.Total);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</span>\r\n        </div>\r\n    </div>\r\n");
-
-
-            
-            #line 98 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 65 "..\..\Pages\EnqueuedJobsPage.cshtml"
+                                        
 }
             
             #line default

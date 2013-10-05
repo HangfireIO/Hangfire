@@ -96,7 +96,7 @@ namespace HangFire.Web
             }
         }
 
-        public static IDictionary<string, long> SucceededByDatesCount()
+        public static IDictionary<DateTime, long> SucceededByDatesCount()
         {
             lock (Redis)
             {
@@ -104,7 +104,7 @@ namespace HangFire.Web
             }
         }
 
-        public static IDictionary<string, long> FailedByDatesCount()
+        public static IDictionary<DateTime, long> FailedByDatesCount()
         {
             lock (Redis)
             {
@@ -372,7 +372,7 @@ namespace HangFire.Web
             return result;
         }
 
-        private static Dictionary<string, long> GetTimelineStats(
+        private static Dictionary<DateTime, long> GetTimelineStats(
             IRedisClient redis, string type)
         {
             var endDate = DateTime.UtcNow.Date;
@@ -390,7 +390,7 @@ namespace HangFire.Web
 
             var valuesMap = redis.GetValuesMap(keys);
 
-            var result = new Dictionary<string, long>();
+            var result = new Dictionary<DateTime, long>();
             for (var i = 0; i < stringDates.Count; i++)
             {
                 long value;
@@ -398,7 +398,7 @@ namespace HangFire.Web
                 {
                     value = 0;
                 }
-                result.Add(stringDates[i], value);
+                result.Add(dates[i], value);
             }
 
             return result;

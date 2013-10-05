@@ -1,21 +1,47 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Collections.Generic
 @using Pages
 @using ServiceStack.Text
 @inherits RazorPage
-              
 @{
     Layout = new LayoutPage { Title = "Dashboard" };
+    IDictionary<DateTime, long> succeeded = null;
+    IDictionary<DateTime, long> failed = null;
+
+    var period = Request.QueryString["period"]?? "day";
+    if ("week".Equals(period, StringComparison.OrdinalIgnoreCase))
+    {
+        succeeded = JobStorage.SucceededByDatesCount();
+        failed = JobStorage.FailedByDatesCount();
+    } 
+    else if ("day".Equals(period, StringComparison.OrdinalIgnoreCase))
+    {
+        succeeded = JobStorage.HourlySucceededJobs();
+        failed = JobStorage.HourlyFailedJobs();
+    }
 }
 
 <h3>Realtime graph</h3>
 <div id="realtimeGraph"></div>
 
-<h3>History graph</h3>
-
-@using (JsConfig.With(dateHandler: JsonDateHandler.ISO8601))
-{
-    <div id="historyGraph" 
-         data-succeeded="@JsonSerializer.SerializeToString(JobStorage.HourlySucceededJobs())" 
-         data-failed="@JsonSerializer.SerializeToString(JobStorage.HourlyFailedJobs())">
+<h3>
+    <div class="btn-group pull-right">
+        <a href="?period=day" class="btn btn-default @("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">
+            Day
+        </a>
+        <a href="?period=week" class="btn btn-default @("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">Week</a>
     </div>
+    History graph
+</h3>
+
+@if (succeeded != null && failed != null)
+{
+    using (JsConfig.With(dateHandler: JsonDateHandler.ISO8601))
+    {
+    <div id="historyGraph" 
+          data-succeeded="@JsonSerializer.SerializeToString(succeeded)" 
+          data-failed="@JsonSerializer.SerializeToString(failed)">
+    </div>
+    }
 }

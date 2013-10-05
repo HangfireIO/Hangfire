@@ -61,6 +61,22 @@ html, body {
     padding: 0;
 }
 
+.btn-toolbar-label {
+    padding: 7px 0;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.btn-toolbar-label-sm {
+    padding: 5px 0;
+}
+
+.btn-toolbar-spacer {
+    width: 10px;
+    display: inline-block;
+    height: 1px;
+}
+
 /* Statistics widget
 -------------------------------------------------- */
 

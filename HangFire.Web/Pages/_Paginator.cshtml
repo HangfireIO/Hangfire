@@ -1,0 +1,23 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@inherits RazorPage
+<div class="btn-toolbar">
+    @if (_pager.TotalPages > 1)
+    {
+        <div class="btn-group paginator">
+            <a href="@_pager.PreviousPageLink" 
+                   class="btn btn-default @(!_pager.HasPreviousPage ? "disabled" : null)">&laquo;</a>
+
+            @for (var i = 1; i <= _pager.TotalPages; i++)
+            {
+                <a class="btn btn-default @(_pager.CurrentPage == i ? "active" : null)" 
+                       href="@_pager.PageLink(i)">@i</a>
+            }
+
+            <a href="@_pager.NextPageLink" 
+                   class="btn btn-default @(!_pager.HasNextPage ? "disabled" : null)">&raquo;</a>
+        </div>
+        <div class="btn-toolbar-spacer"></div>
+    }
+
+    <div class="btn-toolbar-label">Total jobs: @_pager.Total</div>
+</div>

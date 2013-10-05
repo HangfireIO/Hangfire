@@ -51,6 +51,12 @@ namespace HangFire.Web
             return new HtmlString(_innerContent);
         }
 
+        protected IHtmlString RenderPartial(RazorPage page)
+        {
+            page.Execute();
+            return new HtmlString(page._content.ToString());
+        }
+
         private string Encode(string text)
         {
             return string.IsNullOrEmpty(text)

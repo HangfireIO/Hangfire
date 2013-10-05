@@ -1,0 +1,15 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@inherits RazorPage
+<div class="btn-toolbar btn-toolbar-top">
+    <div class="btn-group pull-right paginator">
+        @foreach (var count in new[] { 10, 20, 50, 100 })
+        {
+            <a class="btn btn-sm btn-default @(count == _pager.PerPage ? "active" : null)" 
+                   href="@_pager.PerPageLink(count)">@count</a>    
+        }
+    </div>
+    <div class="btn-toolbar-spacer pull-right"></div>
+    <div class="btn-toolbar-label btn-toolbar-label-sm pull-right">
+        Jobs per page:
+    </div>
+</div>

@@ -74,6 +74,14 @@
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
     <Compile Include="JavaScriptHandler.cs" />
+    <None Include="Pages\_PerPageSelector.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_PerPageSelector.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Pages\_Paginator.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Paginator.generated.cs</LastGenOutput>
+    </None>
     <None Include="Pages\EnqueuedJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>EnqueuedJobsPage.generated.cs</LastGenOutput>
@@ -84,6 +92,22 @@
     </None>
     <Compile Include="JobHistoryRenderer.cs" />
     <Compile Include="Pager.cs" />
+    <Compile Include="Pages\_Paginator.cs">
+      <DependentUpon>_Paginator.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\_PerPageSelector.cs">
+      <DependentUpon>_PerPageSelector.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\_PerPageSelector.generated.cs">
+      <DependentUpon>_PerPageSelector.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Pages\_Paginator.generated.cs">
+      <DependentUpon>_Paginator.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Pages\EnqueuedJobsPage.cs">
       <DependentUpon>EnqueuedJobsPage.cshtml</DependentUpon>
     </Compile>

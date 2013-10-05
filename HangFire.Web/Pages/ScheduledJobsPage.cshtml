@@ -26,18 +26,7 @@
 }
 else
 {
-    <div class="btn-toolbar btn-toolbar-top">
-        <div class="btn-group pull-right paginator">
-            @foreach (var count in new[] { 10, 20, 50, 100 })
-            {
-                <a class="btn btn-default @(count == pager.PerPage ? "active" : null)" 
-                    href="@pager.PerPageLink(count)">@count</a>    
-            }
-        </div>
-        <div class="btn-group pull-right">
-            <span class="btn">Jobs per page:</span>
-        </div>
-    </div>
+    @RenderPartial(new PerPageSelector(pager))
     
     <table class="table">
         <thead>
@@ -76,26 +65,5 @@ else
         }
     </table>
     
-    <div class="btn-toolbar">
-        @if (pager.TotalPages > 1)
-        {
-            <div class="btn-group paginator">
-                <a href="@pager.PreviousPageLink" 
-                   class="btn btn-default @(!pager.HasPreviousPage ? "disabled" : null)">&laquo;</a>
-
-                @for (var i = 1; i <= pager.TotalPages; i++)
-                {
-                    <a class="btn btn-default @(pager.CurrentPage == i ? "active" : null)" 
-                       href="@pager.PageLink(i)">@i</a>
-                }
-
-                <a href="@pager.NextPageLink" 
-                   class="btn btn-default @(!pager.HasNextPage ? "disabled" : null)">&raquo;</a>
-            </div>
-        }
-
-        <div class="btn-group">
-            <span class="btn">Total jobs: @pager.Total</span>
-        </div>
-    </div>
+    @RenderPartial(new Paginator(pager))
 }
