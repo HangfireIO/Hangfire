@@ -51,6 +51,10 @@ html, body {
     top: 0px;
 }
 
+.btn .glyphicon {
+    top: 1px;
+}
+
 .list-group .list-group-item .glyphicon {
     margin-right: 3px;
 }
