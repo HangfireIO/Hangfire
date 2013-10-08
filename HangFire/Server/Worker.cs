@@ -137,8 +137,6 @@ namespace HangFire.Server
                     lock (_jobLock)
                     {
                         PerformJob(_jobId);
-
-                        _pool.NotifyCompleted(_jobId);
                         _jobIsReady.Reset();
                     }
                 }
@@ -159,80 +157,77 @@ namespace HangFire.Server
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We need to catch all user-code exceptions.")]
         private void PerformJob(string jobId)
         {
-            try
+            Dictionary<string, string> jobArgs;
+            string jobType;
+
+            GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
+
+            if (String.IsNullOrEmpty(jobType))
             {
-                Dictionary<string, string> jobArgs;
-                string jobType;
+                Logger.Warn(String.Format(
+                    "Could not process the job '{0}': it does not exist in the storage.",
+                    jobId));
 
-                GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
+                return;
+            }
 
-                if (String.IsNullOrEmpty(jobType))
+            var workerContext = new WorkerContext(_serverContext, _workerNumber, Redis);
+
+            lock (Redis)
+            {
+                if (!JobState.Apply(
+                    Redis,
+                    new ProcessingState(jobId, "Worker has started processing.", workerContext.ServerContext.ServerName),
+                    EnqueuedState.Name,
+                    ProcessingState.Name))
                 {
-                    Logger.Warn(String.Format(
-                        "Could not process the job '{0}': it does not exist in the storage.",
-                        jobId));
-
                     return;
                 }
+            }
 
-                var workerContext = new WorkerContext(_serverContext, _workerNumber, Redis);
+            Exception exception = null;
 
-                lock (Redis)
+            ServerJobDescriptor jobDescriptor = null;
+            try
+            {
+                jobDescriptor = new ServerJobDescriptor(_jobActivator, jobId, jobType, jobArgs);
+                _jobInvoker.PerformJob(workerContext, jobDescriptor);
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+
+                Logger.Error(String.Format(
+                    "Failed to process the job '{0}': unexpected exception caught.",
+                    jobId));
+            }
+            finally
+            {
+                if (jobDescriptor != null)
                 {
-                    if (!JobState.Apply(
-                        Redis, 
-                        new ProcessingState(jobId, "Worker has started processing.", workerContext.ServerContext.ServerName),
-                        EnqueuedState.Name,
-                        ProcessingState.Name))
-                    {
-                        return;
-                    }
-                }
-
-                Exception exception = null;
-
-                ServerJobDescriptor jobDescriptor = null;
-                try
-                {
-                    jobDescriptor = new ServerJobDescriptor(_jobActivator, jobId, jobType, jobArgs);
-                    _jobInvoker.PerformJob(workerContext, jobDescriptor);
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-
-                    Logger.Error(String.Format(
-                        "Failed to process the job '{0}': unexpected exception caught.",
-                        jobId));
-                }
-                finally
-                {
-                    if (jobDescriptor != null)
-                    {
-                        jobDescriptor.Dispose();
-                    }
-                }
-
-                lock (Redis)
-                {
-                    if (exception == null)
-                    {
-                        JobState.Apply(
-                            Redis, 
-                            new SucceededState(jobId, "The job has been completed successfully."),
-                            ProcessingState.Name);
-                    }
-                    else
-                    {
-                        JobState.Apply(
-                            Redis, 
-                            new FailedState(jobId, "The job has been failed.", exception),
-                            ProcessingState.Name);
-                    }
+                    jobDescriptor.Dispose();
                 }
             }
-            catch (OperationCanceledException)
+
+            lock (Redis)
             {
+                if (exception == null)
+                {
+                    JobState.Apply(
+                        Redis,
+                        new SucceededState(jobId, "The job has been completed successfully."),
+                        ProcessingState.Name);
+                }
+                else
+                {
+                    JobState.Apply(
+                        Redis,
+                        new FailedState(jobId, "The job has been failed.", exception),
+                        ProcessingState.Name);
+                }
+
+                JobServer.RemoveFromProcessingQueue(
+                    Redis, jobId, _serverContext.ServerName, _serverContext.QueueName);
             }
         }
 

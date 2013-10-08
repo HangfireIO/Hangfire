@@ -42,8 +42,6 @@ namespace HangFire.Server
             _logger.Info("Workers were started.");
         }
 
-        public event EventHandler<JobCompletedEventArgs> JobCompleted;
-
         public Worker TakeFree(CancellationToken cancellationToken)
         {
             Debug.Assert(!_disposed, "!_disposed");
@@ -56,15 +54,6 @@ namespace HangFire.Server
             while (worker.Crashed);
 
             return worker;
-        }
-
-        internal void NotifyCompleted(string jobId)
-        {
-            var onCompleted = JobCompleted;
-            if (onCompleted != null)
-            {
-                onCompleted(this, new JobCompletedEventArgs(jobId));
-            }
         }
 
         public void Dispose()

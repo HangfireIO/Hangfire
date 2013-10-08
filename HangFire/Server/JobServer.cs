@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -15,13 +13,9 @@ namespace HangFire.Server
         private readonly int _concurrency;
         private readonly string _queueName;
         private readonly Thread _managerThread;
-        private readonly Thread _completionHandlerThread;
         private readonly WorkerPool _pool;
         private readonly SchedulePoller _schedule;
-        private readonly IRedisClient _blockingRedis = RedisFactory.Create();
         private readonly IRedisClient _redis = RedisFactory.Create();
-        private readonly BlockingCollection<string> _completedJobIds
-            = new BlockingCollection<string>();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private bool _disposed;
@@ -59,20 +53,11 @@ namespace HangFire.Server
             _concurrency = concurrency;
             _queueName = queueName;
 
-            _completionHandlerThread = new Thread(HandleCompletedJobs)
-                {
-                    Name = "HangFire.CompletionHandler",
-                    IsBackground = true
-                };
-
-            _completionHandlerThread.Start();
-
             var jobInvoker = ServerJobInvoker.Current;
 
             _pool = new WorkerPool(
                 new ServerContext(_serverName, _queueName, concurrency), 
                 jobInvoker, jobActivator ?? new JobActivator());
-            _pool.JobCompleted += PoolOnJobCompleted;
 
             _managerThread = new Thread(Work)
                 {
@@ -103,14 +88,18 @@ namespace HangFire.Server
             _managerThread.Join();
 
             _pool.Dispose();
-
-            _completionHandlerThread.Join();
-
-            _completedJobIds.Dispose();
             _cts.Dispose();
 
-            _blockingRedis.Dispose();
             _redis.Dispose();
+        }
+
+        public static void RemoveFromProcessingQueue(
+            IRedisClient redis, string jobId, string serverName, string queueName)
+        {
+            redis.RemoveItemFromList(
+                String.Format("hangfire:processing:{0}:{1}", serverName, queueName),
+                jobId,
+                -1);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
@@ -160,43 +149,9 @@ namespace HangFire.Server
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
-        private void HandleCompletedJobs()
-        {
-            try
-            {
-                while (true)
-                {
-                    var jobId = _completedJobIds.Take(_cts.Token);
-
-                    _redis.RemoveItemFromList(
-                        String.Format("hangfire:processing:{0}:{1}", _serverName, _queueName),
-                        jobId,
-                        -1);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // Some completed jobs could not be deleted from the processing 
-                // queue. And after server restart they will be requeued.
-
-                // However, HangFire guaranties that jobs will be performed 
-                // AT LEAST ONCE, so this is not a problem.
-            }
-            catch (Exception ex)
-            {
-                _logger.Fatal("Unexpected exception.", ex);
-            }
-        }
-
-        private void PoolOnJobCompleted(object sender, JobCompletedEventArgs args)
-        {
-            _completedJobIds.Add(args.JobId);
-        }
-
         private string DequeueJobId(TimeSpan? timeOut)
         {
-            return _blockingRedis.BlockingPopAndPushItemBetweenLists(
+            return _redis.BlockingPopAndPushItemBetweenLists(
                     String.Format("hangfire:queue:{0}", _queueName),
                     String.Format("hangfire:processing:{0}:{1}", _serverName, _queueName),
                     timeOut);
@@ -204,14 +159,14 @@ namespace HangFire.Server
 
         private int RequeueProcessingJobs()
         {
-            var queues = _blockingRedis.GetAllItemsFromSet(
+            var queues = _redis.GetAllItemsFromSet(
                 String.Format("hangfire:server:{0}:queues", _serverName));
 
             int requeued = 0;
 
             foreach (var queue in queues)
             {
-                while (_blockingRedis.PopAndPushItemBetweenLists(
+                while (_redis.PopAndPushItemBetweenLists(
                     String.Format("hangfire:processing:{0}:{1}", _serverName, queue),
                     String.Format("hangfire:queue:{0}", queue)) != null)
                 {
@@ -226,7 +181,7 @@ namespace HangFire.Server
             if (!_cts.IsCancellationRequested)
             {
                 // TODO: one server - one queue. What is this?
-                using (var transaction = _blockingRedis.CreateTransaction())
+                using (var transaction = _redis.CreateTransaction())
                 {
                     transaction.QueueCommand(x => x.RemoveEntry(
                         String.Format("hangfire:server:{0}:queues", _serverName)));
@@ -241,7 +196,7 @@ namespace HangFire.Server
 
         private void AnnounceServer()
         {
-            using (var transaction = _blockingRedis.CreateTransaction())
+            using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.AddItemToSet(
                     "hangfire:servers", _serverName));
@@ -263,7 +218,7 @@ namespace HangFire.Server
 
         private void HideServer()
         {
-            using (var transaction = _blockingRedis.CreateTransaction())
+            using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromSet(
                     "hangfire:servers", _serverName));
