@@ -108,12 +108,7 @@ namespace HangFire.Server
             try
             {
                 AnnounceServer();
-
-                _logger.Info("Starting to requeue processing jobs...");
-
-                var requeued = RequeueProcessingJobs();
-
-                _logger.Info(String.Format("Requeued {0} jobs.", requeued));
+                RequeueProcessingJobs();
 
                 if (_cts.IsCancellationRequested)
                 {
@@ -157,8 +152,10 @@ namespace HangFire.Server
                     timeOut);
         }
 
-        private int RequeueProcessingJobs()
+        private void RequeueProcessingJobs()
         {
+            _logger.Info("Starting to requeue processing jobs...");
+
             var queues = _redis.GetAllItemsFromSet(
                 String.Format("hangfire:server:{0}:queues", _serverName));
 
@@ -171,27 +168,20 @@ namespace HangFire.Server
                     String.Format("hangfire:queue:{0}", queue)) != null)
                 {
                     requeued++;
-                    if (_cts.IsCancellationRequested)
-                    {
-                        break;
-                    }
                 }
             }
 
-            if (!_cts.IsCancellationRequested)
+            // TODO: one server - one queue. What is this?
+            using (var transaction = _redis.CreateTransaction())
             {
-                // TODO: one server - one queue. What is this?
-                using (var transaction = _redis.CreateTransaction())
-                {
-                    transaction.QueueCommand(x => x.RemoveEntry(
-                        String.Format("hangfire:server:{0}:queues", _serverName)));
-                    transaction.QueueCommand(x => x.AddItemToSet(
-                        String.Format("hangfire:server:{0}:queues", _serverName), _queueName));
-                    transaction.Commit();
-                }
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:server:{0}:queues", _serverName)));
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    String.Format("hangfire:server:{0}:queues", _serverName), _queueName));
+                transaction.Commit();
             }
 
-            return requeued;
+            _logger.Info(String.Format("Requeued {0} jobs.", requeued));
         }
 
         private void AnnounceServer()
