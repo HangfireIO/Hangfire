@@ -45,17 +45,19 @@ namespace HangFire.States
             Descriptors.Add(stateName, descriptor);
         }
 
-        public static bool Apply(IRedisClient redis, JobState state, params string[] allowedStates)
+        public static bool Apply(
+            IRedisClient redis, JobState state, params string[] allowedStates)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");
 
-            var filters = GlobalJobFilters.Filters.OfType<IJobStateFilter>().ToList();
+            var changingFilters = GlobalJobFilters.Filters
+                .OfType<IJobStateChangingFilter>().ToList();
 
             using (redis.AcquireLock(
                 String.Format("hangfire:job:{0}:state-lock", state.JobId), TimeSpan.FromMinutes(1)))
             {
-                foreach (var filter in filters)
+                foreach (var filter in changingFilters)
                 {
                     var oldState = state;
                     state = filter.OnStateChanged(redis, oldState);
@@ -66,13 +68,16 @@ namespace HangFire.States
                     }
                 }
 
-                return ApplyState(redis, state, filters, allowedStates);
+                var appliedFilters = GlobalJobFilters.Filters
+                    .OfType<IJobStateAppliedFilter>().ToList();
+
+                return ApplyState(redis, state, appliedFilters, allowedStates);
             }
         }
 
         private static bool ApplyState(
             IRedisClient redis, JobState state, 
-            IList<IJobStateFilter> filters, params string[] allowedStates)
+            IList<IJobStateAppliedFilter> filters, params string[] allowedStates)
         {
             // TODO: what to do when job does not exists?
             var oldState = redis.GetValueFromHash(

@@ -4,7 +4,7 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class RetryJobsFilter : IJobStateFilter
+    public class RetryJobsFilter : IJobStateChangingFilter
     {
         private const int MaxRetryAttempts = 3;
 
@@ -39,14 +39,6 @@ namespace HangFire
             // When we exceeded the number of attempts, we should leave
             // the job in a failed state.
             return state;
-        }
-
-        public void OnStateApplied(IRedisTransaction transaction, JobState state)
-        {
-        }
-
-        public void OnStateUnapplied(IRedisTransaction transaction, string state)
-        {
         }
 
         // delayed_job uses the same basic formula

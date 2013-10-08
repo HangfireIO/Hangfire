@@ -71,6 +71,7 @@
     <Compile Include="Filters\Client\ClientJobExceptionContext.cs" />
     <Compile Include="Filters\GlobalJobFilterCollection.cs" />
     <Compile Include="Filters\Client\IClientJobExceptionFilter.cs" />
+    <Compile Include="Filters\IJobStateChangingFilter.cs" />
     <Compile Include="Filters\Server\IServerJobExceptionFilter.cs" />
     <Compile Include="Filters\Client\JobEnqueuedContext.cs" />
     <Compile Include="Filters\Client\JobEnqueueingContext.cs" />
@@ -80,7 +81,7 @@
     <Compile Include="Filters\Server\JobPerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
-    <Compile Include="Filters\IJobStateFilter.cs" />
+    <Compile Include="Filters\IJobStateAppliedFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />

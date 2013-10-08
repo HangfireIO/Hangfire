@@ -16,7 +16,7 @@ namespace HangFire
         public int Seconds { get; private set; }
     }
 
-    public class RecurringJobsFilter : IJobStateFilter
+    public class RecurringJobsFilter : IJobStateChangingFilter
     {
         public JobState OnStateChanged(IRedisClient redis, JobState state)
         {
@@ -45,14 +45,6 @@ namespace HangFire
             }
 
             return state;
-        }
-
-        public void OnStateApplied(IRedisTransaction transaction, JobState state)
-        {
-        }
-
-        public void OnStateUnapplied(IRedisTransaction transaction, string state)
-        {
         }
     }
 }
