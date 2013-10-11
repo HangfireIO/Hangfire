@@ -51,9 +51,7 @@ else
                 <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
                 <td>@HtmlHelper.JobType(job.Value.Type)</td>
                 <td>
-                    <code>
-                        @HtmlHelper.FormatProperties(job.Value.Args)
-                    </code>
+                    <pre>@HtmlHelper.FormatProperties(job.Value.Args)</pre>
                 </td>
                 <td>
                     <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Key)" data-loading-text="Enqueueing...">

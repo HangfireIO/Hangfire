@@ -53,9 +53,7 @@ else
                 <tr>
                     <td><a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a></td>
                     <td>@HtmlHelper.JobType(job.Value.Type)</td>
-                    <td><code>
-                            @HtmlHelper.FormatProperties(job.Value.Args)
-                        </code></td>
+                    <td><pre>@HtmlHelper.FormatProperties(job.Value.Args)</pre></td>
                     <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt)">@job.Value.EnqueuedAt</td>
                 </tr>
             }

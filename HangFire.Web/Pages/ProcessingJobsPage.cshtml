@@ -35,7 +35,7 @@ else
                     </td>
                     <td>@job.Value.ServerName</td>
                     <td>@HtmlHelper.JobType(job.Value.Type)</td>
-                    <td><code>@HtmlHelper.FormatProperties(job.Value.Args)</code></td>
+                    <td><pre>@HtmlHelper.FormatProperties(job.Value.Args)</pre></td>
                     <td data-moment="@JobHelper.ToStringTimestamp(job.Value.StartedAt)">@job.Value.StartedAt</td>
                 </tr>
             }

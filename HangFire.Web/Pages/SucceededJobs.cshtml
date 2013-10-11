@@ -58,9 +58,7 @@ else
                         <td>@HtmlHelper.JobType(job.Value.Type)</td>
                         <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
                         <td>
-                            <code>
-                                @HtmlHelper.FormatProperties(job.Value.Args)
-                            </code>
+                            <pre>@HtmlHelper.FormatProperties(job.Value.Args)</pre>
                         </td>
                         <td data-moment="@JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value)">@job.Value.SucceededAt</td>
                     }

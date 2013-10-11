@@ -184,23 +184,21 @@ WriteLiteral("</a></td>\r\n                                <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                <td><code>\r\n                              " +
-"          ");
+WriteLiteral("</td>\r\n                                <td><pre>");
 
 
             
-            #line 52 "..\..\Pages\QueuesPage.cshtml"
-                                   Write(HtmlHelper.FormatProperties(job.Value.Args));
+            #line 51 "..\..\Pages\QueuesPage.cshtml"
+                                    Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                    </code></td>\r\n                             " +
-"   <td data-moment=\"");
+WriteLiteral("</pre></td>\r\n                                <td data-moment=\"");
 
 
             
-            #line 54 "..\..\Pages\QueuesPage.cshtml"
+            #line 52 "..\..\Pages\QueuesPage.cshtml"
                                             Write(JobHelper.ToStringTimestamp(job.Value.EnqueuedAt));
 
             
@@ -210,7 +208,7 @@ WriteLiteral("\">");
 
 
             
-            #line 54 "..\..\Pages\QueuesPage.cshtml"
+            #line 52 "..\..\Pages\QueuesPage.cshtml"
                                                                                                 Write(job.Value.EnqueuedAt);
 
             
@@ -220,7 +218,7 @@ WriteLiteral("</td>\r\n                            </tr>\r\n");
 
 
             
-            #line 56 "..\..\Pages\QueuesPage.cshtml"
+            #line 54 "..\..\Pages\QueuesPage.cshtml"
                         }
 
             
@@ -230,7 +228,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n");
 
 
             
-            #line 59 "..\..\Pages\QueuesPage.cshtml"
+            #line 57 "..\..\Pages\QueuesPage.cshtml"
             }
 
             
@@ -240,7 +238,7 @@ WriteLiteral("            \r\n            <a href=\"");
 
 
             
-            #line 61 "..\..\Pages\QueuesPage.cshtml"
+            #line 59 "..\..\Pages\QueuesPage.cshtml"
                 Write(Request.LinkTo("/queues/" + queue.QueueName));
 
             
@@ -267,7 +265,7 @@ WriteLiteral(@""">Enqueued jobs</a>
 
 
             
-            #line 78 "..\..\Pages\QueuesPage.cshtml"
+            #line 76 "..\..\Pages\QueuesPage.cshtml"
 }
 
             

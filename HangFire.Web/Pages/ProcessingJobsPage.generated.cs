@@ -134,17 +134,17 @@ WriteLiteral("</td>\r\n                    <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td><code>");
+WriteLiteral("</td>\r\n                    <td><pre>");
 
 
             
             #line 38 "..\..\Pages\ProcessingJobsPage.cshtml"
-                         Write(HtmlHelper.FormatProperties(job.Value.Args));
+                        Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default
             #line hidden
-WriteLiteral("</code></td>\r\n                    <td data-moment=\"");
+WriteLiteral("</pre></td>\r\n                    <td data-moment=\"");
 
 
             

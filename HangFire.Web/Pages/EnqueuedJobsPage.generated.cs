@@ -165,21 +165,21 @@ WriteLiteral("</a></td>\r\n                    <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td><code>\r\n                            ");
+WriteLiteral("</td>\r\n                    <td><pre>");
 
 
             
-            #line 57 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                       Write(HtmlHelper.FormatProperties(job.Value.Args));
+            #line 56 "..\..\Pages\EnqueuedJobsPage.cshtml"
+                        Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </code></td>\r\n                    <td data-moment=\"");
+WriteLiteral("</pre></td>\r\n                    <td data-moment=\"");
 
 
             
-            #line 59 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 57 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                 Write(JobHelper.ToStringTimestamp(job.Value.EnqueuedAt));
 
             
@@ -189,7 +189,7 @@ WriteLiteral("\">");
 
 
             
-            #line 59 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 57 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                                                                     Write(job.Value.EnqueuedAt);
 
             
@@ -199,7 +199,7 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 61 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 59 "..\..\Pages\EnqueuedJobsPage.cshtml"
             }
 
             
@@ -209,21 +209,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 64 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 62 "..\..\Pages\EnqueuedJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 65 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 63 "..\..\Pages\EnqueuedJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 65 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 63 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                         
 }
             

@@ -191,18 +191,17 @@ WriteLiteral("</td>\r\n");
 
 
 
-WriteLiteral("                        <td>\r\n                            <code>\r\n               " +
-"                 ");
+WriteLiteral("                        <td>\r\n                            <pre>");
 
 
             
-            #line 62 "..\..\Pages\SucceededJobs.cshtml"
-                           Write(HtmlHelper.FormatProperties(job.Value.Args));
+            #line 61 "..\..\Pages\SucceededJobs.cshtml"
+                            Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                            </code>\r\n                        </td>\r\n");
+WriteLiteral("</pre>\r\n                        </td>\r\n");
 
 
 
@@ -210,7 +209,7 @@ WriteLiteral("                        <td data-moment=\"");
 
 
             
-            #line 65 "..\..\Pages\SucceededJobs.cshtml"
+            #line 63 "..\..\Pages\SucceededJobs.cshtml"
                                     Write(JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value));
 
             
@@ -220,7 +219,7 @@ WriteLiteral("\">");
 
 
             
-            #line 65 "..\..\Pages\SucceededJobs.cshtml"
+            #line 63 "..\..\Pages\SucceededJobs.cshtml"
                                                                                                Write(job.Value.SucceededAt);
 
             
@@ -230,7 +229,7 @@ WriteLiteral("</td>\r\n");
 
 
             
-            #line 66 "..\..\Pages\SucceededJobs.cshtml"
+            #line 64 "..\..\Pages\SucceededJobs.cshtml"
                     }
 
             
@@ -240,7 +239,7 @@ WriteLiteral("                </tr>\r\n");
 
 
             
-            #line 68 "..\..\Pages\SucceededJobs.cshtml"
+            #line 66 "..\..\Pages\SucceededJobs.cshtml"
             }
 
             
@@ -250,21 +249,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 71 "..\..\Pages\SucceededJobs.cshtml"
+            #line 69 "..\..\Pages\SucceededJobs.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 72 "..\..\Pages\SucceededJobs.cshtml"
+            #line 70 "..\..\Pages\SucceededJobs.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 72 "..\..\Pages\SucceededJobs.cshtml"
+            #line 70 "..\..\Pages\SucceededJobs.cshtml"
                                         
 }
             

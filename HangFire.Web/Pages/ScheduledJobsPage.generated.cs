@@ -181,23 +181,22 @@ WriteLiteral("</td>\r\n                <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>\r\n                    <code>\r\n                        " +
-"");
+WriteLiteral("</td>\r\n                <td>\r\n                    <pre>");
 
 
             
-            #line 55 "..\..\Pages\ScheduledJobsPage.cshtml"
-                   Write(HtmlHelper.FormatProperties(job.Value.Args));
+            #line 54 "..\..\Pages\ScheduledJobsPage.cshtml"
+                    Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </code>\r\n                </td>\r\n                <td>\r\n     " +
-"               <button class=\"btn btn-default btn-sm\" data-ajax=\"");
+WriteLiteral("</pre>\r\n                </td>\r\n                <td>\r\n                    <button " +
+"class=\"btn btn-default btn-sm\" data-ajax=\"");
 
 
             
-            #line 59 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 57 "..\..\Pages\ScheduledJobsPage.cshtml"
                                                                  Write(Request.LinkTo("/schedule/enqueue/" + job.Key));
 
             
@@ -209,7 +208,7 @@ WriteLiteral("\" data-loading-text=\"Enqueueing...\">\r\n                       
 
 
             
-            #line 65 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 63 "..\..\Pages\ScheduledJobsPage.cshtml"
         }
 
             
@@ -219,21 +218,21 @@ WriteLiteral("    </table>\r\n");
 
 
             
-            #line 67 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 65 "..\..\Pages\ScheduledJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 68 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 66 "..\..\Pages\ScheduledJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 68 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 66 "..\..\Pages\ScheduledJobsPage.cshtml"
                                         
 }
             
