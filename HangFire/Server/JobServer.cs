@@ -99,7 +99,7 @@ namespace HangFire.Server
             redis.RemoveItemFromList(
                 String.Format("hangfire:processing:{0}:{1}", serverName, queueName),
                 jobId,
-                -1);
+                1);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
