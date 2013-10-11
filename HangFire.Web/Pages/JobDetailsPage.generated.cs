@@ -159,17 +159,17 @@ WriteLiteral("                <tr>\r\n                    <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td><code>");
+WriteLiteral("</td>\r\n                    <td><pre>");
 
 
             
             #line 39 "..\..\Pages\JobDetailsPage.cshtml"
-                         Write(arg.Value);
+                        Write(arg.Value);
 
             
             #line default
             #line hidden
-WriteLiteral("</code></td>\r\n                </tr>\r\n");
+WriteLiteral("</pre></td>\r\n                </tr>\r\n");
 
 
             
