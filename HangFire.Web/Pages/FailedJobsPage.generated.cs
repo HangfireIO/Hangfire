@@ -106,9 +106,9 @@ WriteLiteral(@"    <table class=""table failed-table"">
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Failed at</th>
+                <th>Failed</th>
                 <th>Queue</th>
-                <th>Type</th>
+                <th>Job type</th>
                 <th></th>
             </tr>
         </thead>
@@ -334,17 +334,17 @@ WriteLiteral("                                    <tr>\r\n                      
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                        <td><code>");
+WriteLiteral("</td>\r\n                                        <td><pre class=\"pre-args\">\"");
 
 
             
             #line 99 "..\..\Pages\FailedJobsPage.cshtml"
-                                             Write(arg.Value);
+                                                              Write(arg.Value);
 
             
             #line default
             #line hidden
-WriteLiteral("</code></td>\r\n                                    </tr>\r\n");
+WriteLiteral("\"</pre></td>\r\n                                    </tr>\r\n");
 
 
             

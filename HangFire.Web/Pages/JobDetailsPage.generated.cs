@@ -159,12 +159,12 @@ WriteLiteral("                <tr>\r\n                    <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td><pre>");
+WriteLiteral("</td>\r\n                    <td><pre class=\"pre-args\">");
 
 
             
             #line 39 "..\..\Pages\JobDetailsPage.cshtml"
-                        Write(arg.Value);
+                                         Write(arg.Value);
 
             
             #line default

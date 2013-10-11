@@ -32,10 +32,9 @@ else
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Type</th>
-                <th>Queue</th>
+                <th>Job type</th>
                 <th>Args</th>
-                <th>Succeeded at</th>
+                <th>Succeeded</th>
             </tr>
         </thead>
         <tbody>
@@ -50,15 +49,16 @@ else
 
                     @if (job.Value == null)
                     {
-                        <td colspan="4">The job was expired. 
+                        <td colspan="3"><em>Job was expired.</em>
                         </td>
                     }
                     else
                     {    
-                        <td>@HtmlHelper.JobType(job.Value.Type)</td>
-                        <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
                         <td>
-                            <pre>@HtmlHelper.FormatProperties(job.Value.Args)</pre>
+                            @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
+                        </td>
+                        <td>
+                            <pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre>
                         </td>
                         <td data-moment="@JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value)">@job.Value.SucceededAt</td>
                     }

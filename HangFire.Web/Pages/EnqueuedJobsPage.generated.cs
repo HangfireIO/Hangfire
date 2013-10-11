@@ -122,9 +122,9 @@ Write(RenderPartial(new PerPageSelector(pager)));
             #line default
             #line hidden
 WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Id</th>\r\n                <th>Type</th>\r\n                <th>Args</th>\r\n        " +
-"        <th>Enqueued At</th>\r\n            </tr>\r\n        </thead>\r\n        <tbod" +
-"y>\r\n");
+">Id</th>\r\n                <th>Job type</th>\r\n                <th>Args</th>\r\n    " +
+"            <th>Enqueued</th>\r\n            </tr>\r\n        </thead>\r\n        <tbo" +
+"dy>\r\n");
 
 
             
@@ -165,12 +165,12 @@ WriteLiteral("</a></td>\r\n                    <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td><pre>");
+WriteLiteral("</td>\r\n                    <td><pre class=\"pre-args\">");
 
 
             
             #line 56 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                        Write(HtmlHelper.FormatProperties(job.Value.Args));
+                                         Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default

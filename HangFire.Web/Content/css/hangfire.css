@@ -81,7 +81,7 @@ html, body {
     height: 1px;
 }
 
-td pre {
+.pre-args {
     padding: 2px 4px;
     font-size: 90%;
     color: #c7254e;

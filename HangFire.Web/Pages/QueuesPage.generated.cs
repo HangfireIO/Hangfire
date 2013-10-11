@@ -137,9 +137,9 @@ WriteLiteral(@"                <table class=""table"">
                     <thead>
                         <tr>
                             <th>Id</th>
-                            <th>Type</th>
+                            <th>Job type</th>
                             <th>Args</th>
-                            <th>Enqueued At</th>
+                            <th>Enqueued</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -184,12 +184,12 @@ WriteLiteral("</a></td>\r\n                                <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                <td><pre>");
+WriteLiteral("</td>\r\n                                <td><pre class=\"pre-args\">");
 
 
             
             #line 51 "..\..\Pages\QueuesPage.cshtml"
-                                    Write(HtmlHelper.FormatProperties(job.Value.Args));
+                                                     Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default

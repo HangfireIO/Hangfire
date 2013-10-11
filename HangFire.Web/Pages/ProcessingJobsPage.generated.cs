@@ -74,8 +74,8 @@ WriteLiteral(@"    <table class=""table"">
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Name</th>
-                <th>Type</th>
+                <th>Server</th>
+                <th>Job type</th>
                 <th>Args</th>
                 <th>Started</th>
             </tr>
@@ -124,22 +124,32 @@ WriteLiteral("\r\n                        </a>\r\n                    </td>\r\n 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td>");
-
-
-            
-            #line 37 "..\..\Pages\ProcessingJobsPage.cshtml"
-                   Write(HtmlHelper.JobType(job.Value.Type));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                    <td><pre>");
+WriteLiteral("</td>\r\n                    <td>\r\n                        ");
 
 
             
             #line 38 "..\..\Pages\ProcessingJobsPage.cshtml"
-                        Write(HtmlHelper.FormatProperties(job.Value.Args));
+                   Write(HtmlHelper.QueueLabel(job.Value.QueueName));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("&nbsp;");
+
+
+            
+            #line 38 "..\..\Pages\ProcessingJobsPage.cshtml"
+                                                                    Write(HtmlHelper.JobType(job.Value.Type));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                    </td>\r\n                    <td><pre class=\"pre-args\">");
+
+
+            
+            #line 40 "..\..\Pages\ProcessingJobsPage.cshtml"
+                                         Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default
@@ -148,7 +158,7 @@ WriteLiteral("</pre></td>\r\n                    <td data-moment=\"");
 
 
             
-            #line 39 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 41 "..\..\Pages\ProcessingJobsPage.cshtml"
                                 Write(JobHelper.ToStringTimestamp(job.Value.StartedAt));
 
             
@@ -158,7 +168,7 @@ WriteLiteral("\">");
 
 
             
-            #line 39 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 41 "..\..\Pages\ProcessingJobsPage.cshtml"
                                                                                    Write(job.Value.StartedAt);
 
             
@@ -168,7 +178,7 @@ WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 41 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 43 "..\..\Pages\ProcessingJobsPage.cshtml"
             }
 
             
@@ -178,7 +188,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 44 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 46 "..\..\Pages\ProcessingJobsPage.cshtml"
 }
 
             

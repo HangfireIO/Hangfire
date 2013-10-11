@@ -57,6 +57,7 @@ namespace HangFire.Web
                         ServerName = state[1],
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Type = job[0],
+                        QueueName = JobHelper.TryToGetQueueName(job[0]),
                         StartedAt = JobHelper.FromStringTimestamp(state[0])
                     }).OrderBy(x => x.Value.StartedAt).ToList();
             }

@@ -98,22 +98,14 @@ Write(RenderPartial(new PerPageSelector(pager)));
             
             #line default
             #line hidden
-WriteLiteral(@"    <table class=""table"">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Scheduled At</th>
-                <th>Queue</th>
-                <th>Type</th>
-                <th>Args</th>
-                <th></th>
-            </tr>
-        </thead>
-");
+WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
+">Id</th>\r\n                <th>Enqueue</th>\r\n                <th>Job type</th>\r\n " +
+"               <th>Args</th>\r\n                <th></th>\r\n            </tr>\r\n    " +
+"    </thead>\r\n");
 
 
             
-            #line 42 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 41 "..\..\Pages\ScheduledJobsPage.cshtml"
          foreach (var job in scheduledJobs)
         {
 
@@ -124,7 +116,7 @@ WriteLiteral("            <tr>\r\n                <td>\r\n                    <a
 
 
             
-            #line 46 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 45 "..\..\Pages\ScheduledJobsPage.cshtml"
                         Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -134,7 +126,7 @@ WriteLiteral("\">\r\n                        ");
 
 
             
-            #line 47 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 46 "..\..\Pages\ScheduledJobsPage.cshtml"
                    Write(HtmlHelper.JobId(job.Key));
 
             
@@ -145,7 +137,7 @@ WriteLiteral("\r\n                    </a>\r\n                </td>\r\n         
 
 
             
-            #line 50 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 49 "..\..\Pages\ScheduledJobsPage.cshtml"
                             Write(JobHelper.ToStringTimestamp(job.Value.ScheduledAt));
 
             
@@ -155,13 +147,13 @@ WriteLiteral("\">");
 
 
             
-            #line 50 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 49 "..\..\Pages\ScheduledJobsPage.cshtml"
                                                                                  Write(job.Value.ScheduledAt);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral("</td>\r\n                <td>\r\n                    ");
 
 
             
@@ -171,22 +163,23 @@ WriteLiteral("</td>\r\n                <td>");
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>");
+WriteLiteral("&nbsp;");
 
 
             
-            #line 52 "..\..\Pages\ScheduledJobsPage.cshtml"
-               Write(HtmlHelper.JobType(job.Value.Type));
+            #line 51 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                                            Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>\r\n                    <pre>");
+WriteLiteral("\r\n                </td>\r\n                <td>\r\n                    <pre class=\"pr" +
+"e-args\">");
 
 
             
             #line 54 "..\..\Pages\ScheduledJobsPage.cshtml"
-                    Write(HtmlHelper.FormatProperties(job.Value.Args));
+                                     Write(HtmlHelper.FormatProperties(job.Value.Args));
 
             
             #line default

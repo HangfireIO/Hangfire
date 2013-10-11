@@ -32,9 +32,8 @@ else
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Scheduled At</th>
-                <th>Queue</th>
-                <th>Type</th>
+                <th>Enqueue</th>
+                <th>Job type</th>
                 <th>Args</th>
                 <th></th>
             </tr>
@@ -48,10 +47,11 @@ else
                     </a>
                 </td>
                 <td data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt)">@job.Value.ScheduledAt</td>
-                <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
-                <td>@HtmlHelper.JobType(job.Value.Type)</td>
                 <td>
-                    <pre>@HtmlHelper.FormatProperties(job.Value.Args)</pre>
+                    @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
+                </td>
+                <td>
+                    <pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre>
                 </td>
                 <td>
                     <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Key)" data-loading-text="Enqueueing...">
