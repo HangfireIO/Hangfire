@@ -68,7 +68,7 @@ namespace HangFire.Web
             {
                 var scheduledJobs = Redis.GetRangeWithScoresFromSortedSet(
                     "hangfire:schedule",
-                    0,
+                    from,
                     from + count - 1);
 
                 var result = new Dictionary<string, ScheduleDto>();
