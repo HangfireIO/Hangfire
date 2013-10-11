@@ -84,9 +84,9 @@ else
             #line default
             #line hidden
 WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Name</th>\r\n                <th>Queue</th>\r\n                <th>WorkersCount</th" +
-">\r\n                <th>Started at</th>\r\n            </tr>\r\n        </thead>\r\n   " +
-"     <tbody>\r\n");
+">Server</th>\r\n                <th>Queue</th>\r\n                <th>Workers</th>\r\n" +
+"                <th>Started</th>\r\n            </tr>\r\n        </thead>\r\n        <" +
+"tbody>\r\n");
 
 
             
