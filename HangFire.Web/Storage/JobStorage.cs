@@ -38,15 +38,19 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                return Redis.GetSetCount("hangfire:processing");
+                return Redis.GetSortedSetCount("hangfire:processing");
             }
         }
 
-        public static IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs()
+        public static IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs(
+            int from, int count)
         {
             lock (Redis)
             {
-                var jobIds = Redis.GetAllItemsFromSet("hangfire:processing");
+                var jobIds = Redis.GetRangeFromSortedSet(
+                    "hangfire:processing",
+                    from,
+                    from + count - 1);
 
                 return GetJobsWithProperties(Redis,
                     jobIds,
@@ -456,7 +460,7 @@ namespace HangFire.Web
                         x => stats.Scheduled = x);
 
                     pipeline.QueueCommand(
-                        x => x.GetSetCount("hangfire:processing"), 
+                        x => x.GetSortedSetCount("hangfire:processing"), 
                         x => stats.Processing = x);
 
                     pipeline.QueueCommand(

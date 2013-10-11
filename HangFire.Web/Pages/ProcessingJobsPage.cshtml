@@ -3,10 +3,21 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Processing Jobs" };
-    var processingJobs = JobStorage.ProcessingJobs();
+    
+    int from, perPage;
+
+    int.TryParse(Request.QueryString["from"], out from);
+    int.TryParse(Request.QueryString["count"], out perPage);
+
+    var pager = new Pager(from, perPage, JobStorage.ProcessingCount())
+    {
+        BasePageUrl = Request.LinkTo("/processing")
+    };
+
+    var processingJobs = JobStorage.ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
-@if (processingJobs.Count == 0)
+@if (pager.TotalPageCount == 0)
 {
     <div class="alert alert-info">
         No jobs are being processed right now.
@@ -14,6 +25,8 @@
 }
 else
 {
+    @RenderPartial(new PerPageSelector(pager))
+    
     <table class="table">
         <thead>
             <tr>
@@ -43,4 +56,6 @@ else
             }
         </tbody>
     </table>
+    
+    @RenderPartial(new Paginator(pager))
 }

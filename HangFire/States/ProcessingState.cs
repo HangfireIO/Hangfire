@@ -31,8 +31,8 @@ namespace HangFire.States
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
-            transaction.QueueCommand(x => x.AddItemToSet(
-                "hangfire:processing", JobId));
+            transaction.QueueCommand(x => x.AddItemToSortedSet(
+                "hangfire:processing", JobId, JobHelper.ToTimestamp(DateTime.UtcNow)));
         }
     }
 }

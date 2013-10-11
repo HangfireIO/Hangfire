@@ -9,7 +9,7 @@ namespace HangFire.States
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
-            transaction.QueueCommand(x => x.RemoveItemFromSet(
+            transaction.QueueCommand(x => x.RemoveItemFromSortedSet(
                 "hangfire:processing", jobId));
         }
     }
