@@ -4,8 +4,8 @@
     <div class="btn-group pull-right paginator">
         @foreach (var count in new[] { 10, 20, 50, 100 })
         {
-            <a class="btn btn-sm btn-default @(count == _pager.PerPage ? "active" : null)" 
-                   href="@_pager.PerPageLink(count)">@count</a>    
+            <a class="btn btn-sm btn-default @(count == _pager.RecordsPerPage ? "active" : null)" 
+                   href="@_pager.RecordsPerPageUrl(count)">@count</a>    
         }
     </div>
     <div class="btn-toolbar-spacer pull-right"></div>

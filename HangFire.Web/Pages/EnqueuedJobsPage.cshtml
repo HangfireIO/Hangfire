@@ -22,13 +22,13 @@
 
     var pager = new Pager(from, perPage, JobStorage.EnqueuedCount(QueueName))
     {
-        BaseLink = Request.LinkTo("/queues/" + QueueName)
+        BasePageUrl = Request.LinkTo("/queues/" + QueueName)
     };
 
-    var enqueuedJobs = JobStorage.EnqueuedJobs(QueueName, pager.From, pager.PerPage);
+    var enqueuedJobs = JobStorage.EnqueuedJobs(QueueName, pager.FromRecord, pager.RecordsPerPage);
 }
 
-@if (pager.TotalPages == 0)
+@if (pager.TotalPageCount == 0)
 {
     <div class="alert alert-info">
         The queue is empty.

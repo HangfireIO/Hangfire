@@ -12,13 +12,13 @@
 
     var pager = new Pager(from, perPage, JobStorage.SucceededListCount())
     {
-        BaseLink = Request.LinkTo("/succeeded")
+        BasePageUrl = Request.LinkTo("/succeeded")
     };
 
-    var succeededJobs = JobStorage.SucceededJobs(pager.From, pager.PerPage);
+    var succeededJobs = JobStorage.SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
-@if (pager.TotalPages == 0)
+@if (pager.TotalPageCount == 0)
 {
     <div class="alert alert-info">
         No succeeded jobs found.

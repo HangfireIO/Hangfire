@@ -74,10 +74,10 @@ WriteLiteral("\r\n");
 
     var pager = new Pager(from, perPage, JobStorage.EnqueuedCount(QueueName))
     {
-        BaseLink = Request.LinkTo("/queues/" + QueueName)
+        BasePageUrl = Request.LinkTo("/queues/" + QueueName)
     };
 
-    var enqueuedJobs = JobStorage.EnqueuedJobs(QueueName, pager.From, pager.PerPage);
+    var enqueuedJobs = JobStorage.EnqueuedJobs(QueueName, pager.FromRecord, pager.RecordsPerPage);
 
 
             
@@ -88,7 +88,7 @@ WriteLiteral("\r\n");
 
             
             #line 31 "..\..\Pages\EnqueuedJobsPage.cshtml"
- if (pager.TotalPages == 0)
+ if (pager.TotalPageCount == 0)
 {
 
             

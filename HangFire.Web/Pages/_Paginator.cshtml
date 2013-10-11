@@ -1,23 +1,38 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @inherits RazorPage
 <div class="btn-toolbar">
-    @if (_pager.TotalPages > 1)
+    @if (_pager.TotalPageCount > 1)
     {
         <div class="btn-group paginator">
-            <a href="@_pager.PreviousPageLink" 
-                   class="btn btn-default @(!_pager.HasPreviousPage ? "disabled" : null)">&laquo;</a>
-
-            @for (var i = 1; i <= _pager.TotalPages; i++)
+            @foreach (var page in _pager.PagerItems)
             {
-                <a class="btn btn-default @(_pager.CurrentPage == i ? "active" : null)" 
-                       href="@_pager.PageLink(i)">@i</a>
+                switch (page.Type)
+                {
+                    case Pager.ItemType.Page:
+                        <a href="@_pager.PageUrl(page.PageIndex)" class="btn btn-default @(_pager.CurrentPage == page.PageIndex ? "active" : null)">
+                            @page.PageIndex  
+                        </a>
+                        break;
+                    case Pager.ItemType.NextPage:
+                        <a href="@_pager.PageUrl(page.PageIndex)" class="btn btn-default @(page.Disabled ? "disabled" : null)">
+                            Next
+                        </a>
+                        break;
+                    case Pager.ItemType.PrevPage:
+                        <a href="@_pager.PageUrl(page.PageIndex)" class="btn btn-default @(page.Disabled ? "disabled" : null)">
+                            Prev
+                        </a>
+                        break;
+                    case Pager.ItemType.MorePage:
+                        <a href="#" class="btn btn-default disabled">
+                            …
+                        </a>
+                        break;
+                }
             }
-
-            <a href="@_pager.NextPageLink" 
-                   class="btn btn-default @(!_pager.HasNextPage ? "disabled" : null)">&raquo;</a>
         </div>
         <div class="btn-toolbar-spacer"></div>
     }
 
-    <div class="btn-toolbar-label">Total jobs: @_pager.Total</div>
+    <div class="btn-toolbar-label">Total jobs: @_pager.TotalRecordCount</div>
 </div>

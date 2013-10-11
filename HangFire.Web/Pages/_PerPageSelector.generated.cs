@@ -45,7 +45,7 @@ WriteLiteral("            <a class=\"btn btn-sm btn-default ");
 
             
             #line 7 "..\..\Pages\_PerPageSelector.cshtml"
-                                         Write(count == _pager.PerPage ? "active" : null);
+                                         Write(count == _pager.RecordsPerPage ? "active" : null);
 
             
             #line default
@@ -55,7 +55,7 @@ WriteLiteral("\" \r\n                   href=\"");
 
             
             #line 8 "..\..\Pages\_PerPageSelector.cshtml"
-                    Write(_pager.PerPageLink(count));
+                    Write(_pager.RecordsPerPageUrl(count));
 
             
             #line default
@@ -65,7 +65,7 @@ WriteLiteral("\">");
 
             
             #line 8 "..\..\Pages\_PerPageSelector.cshtml"
-                                                Write(count);
+                                                      Write(count);
 
             
             #line default

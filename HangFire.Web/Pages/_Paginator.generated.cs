@@ -33,104 +33,143 @@ WriteLiteral("<div class=\"btn-toolbar\">\r\n");
 
             
             #line 4 "..\..\Pages\_Paginator.cshtml"
-     if (_pager.TotalPages > 1)
+     if (_pager.TotalPageCount > 1)
     {
 
             
             #line default
             #line hidden
-WriteLiteral("        <div class=\"btn-group paginator\">\r\n            <a href=\"");
+WriteLiteral("        <div class=\"btn-group paginator\">\r\n");
 
 
             
             #line 7 "..\..\Pages\_Paginator.cshtml"
-                Write(_pager.PreviousPageLink);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                   class=\"btn btn-default ");
-
-
-            
-            #line 8 "..\..\Pages\_Paginator.cshtml"
-                                      Write(!_pager.HasPreviousPage ? "disabled" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">&laquo;</a>\r\n\r\n");
-
-
-            
-            #line 10 "..\..\Pages\_Paginator.cshtml"
-             for (var i = 1; i <= _pager.TotalPages; i++)
+             foreach (var page in _pager.PagerItems)
             {
+                switch (page.Type)
+                {
+                    case Pager.ItemType.Page:
 
             
             #line default
             #line hidden
-WriteLiteral("                <a class=\"btn btn-default ");
+WriteLiteral("                        <a href=\"");
 
 
             
             #line 12 "..\..\Pages\_Paginator.cshtml"
-                                      Write(_pager.CurrentPage == i ? "active" : null);
+                            Write(_pager.PageUrl(page.PageIndex));
 
             
             #line default
             #line hidden
-WriteLiteral("\" \r\n                       href=\"");
+WriteLiteral("\" class=\"btn btn-default ");
+
+
+            
+            #line 12 "..\..\Pages\_Paginator.cshtml"
+                                                                                     Write(_pager.CurrentPage == page.PageIndex ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            ");
 
 
             
             #line 13 "..\..\Pages\_Paginator.cshtml"
-                        Write(_pager.PageLink(i));
+                       Write(page.PageIndex);
 
             
             #line default
             #line hidden
-WriteLiteral("\">");
+WriteLiteral("  \r\n                        </a>\r\n");
 
 
             
-            #line 13 "..\..\Pages\_Paginator.cshtml"
-                                             Write(i);
+            #line 15 "..\..\Pages\_Paginator.cshtml"
+                        break;
+                    case Pager.ItemType.NextPage:
 
             
             #line default
             #line hidden
-WriteLiteral("</a>\r\n");
+WriteLiteral("                        <a href=\"");
 
 
             
-            #line 14 "..\..\Pages\_Paginator.cshtml"
+            #line 17 "..\..\Pages\_Paginator.cshtml"
+                            Write(_pager.PageUrl(page.PageIndex));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" class=\"btn btn-default ");
+
+
+            
+            #line 17 "..\..\Pages\_Paginator.cshtml"
+                                                                                     Write(page.Disabled ? "disabled" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            Next\r\n                        </a>\r\n");
+
+
+            
+            #line 20 "..\..\Pages\_Paginator.cshtml"
+                        break;
+                    case Pager.ItemType.PrevPage:
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <a href=\"");
+
+
+            
+            #line 22 "..\..\Pages\_Paginator.cshtml"
+                            Write(_pager.PageUrl(page.PageIndex));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" class=\"btn btn-default ");
+
+
+            
+            #line 22 "..\..\Pages\_Paginator.cshtml"
+                                                                                     Write(page.Disabled ? "disabled" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            Prev\r\n                        </a>\r\n");
+
+
+            
+            #line 25 "..\..\Pages\_Paginator.cshtml"
+                        break;
+                    case Pager.ItemType.MorePage:
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        <a href=\"#\" class=\"btn btn-default disabled\">\r\n          " +
+"                  …\r\n                        </a>\r\n");
+
+
+            
+            #line 30 "..\..\Pages\_Paginator.cshtml"
+                        break;
+                }
             }
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            <a href=\"");
-
-
-            
-            #line 16 "..\..\Pages\_Paginator.cshtml"
-                Write(_pager.NextPageLink);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                   class=\"btn btn-default ");
-
-
-            
-            #line 17 "..\..\Pages\_Paginator.cshtml"
-                                      Write(!_pager.HasNextPage ? "disabled" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">&raquo;</a>\r\n        </div>\r\n");
+WriteLiteral("        </div>\r\n");
 
 
 
@@ -138,7 +177,7 @@ WriteLiteral("        <div class=\"btn-toolbar-spacer\"></div>\r\n");
 
 
             
-            #line 20 "..\..\Pages\_Paginator.cshtml"
+            #line 35 "..\..\Pages\_Paginator.cshtml"
     }
 
             
@@ -148,8 +187,8 @@ WriteLiteral("\r\n    <div class=\"btn-toolbar-label\">Total jobs: ");
 
 
             
-            #line 22 "..\..\Pages\_Paginator.cshtml"
-                                          Write(_pager.Total);
+            #line 37 "..\..\Pages\_Paginator.cshtml"
+                                          Write(_pager.TotalRecordCount);
 
             
             #line default
