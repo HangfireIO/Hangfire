@@ -58,6 +58,9 @@
       <HintPath>..\packages\ServiceStack.Text.3.9.47\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="TechTalk.SpecFlow">
+      <HintPath>..\packages\SpecFlow.1.9.0\lib\net35\TechTalk.SpecFlow.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -72,11 +75,20 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Bindings\ServerSteps.cs" />
     <Compile Include="HangFireJobActivatorTests.cs" />
-    <Compile Include="IntegrationTests.cs" />
+    <Compile Include="Bindings\JobSteps.cs" />
     <Compile Include="JobInvokerTests.cs" />
+    <Compile Include="Bindings\QueueSteps.cs" />
+    <Compile Include="Bindings\Redis.cs" />
+    <Compile Include="FetchedJobsWatcher.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FetchedJobsWatcher.feature</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RedisPoweredTest.cs" />
+    <Compile Include="Bindings\FetchedJobsWatcher.cs" />
+    <Compile Include="Common\TestJob.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire\HangFire.csproj">
@@ -85,6 +97,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
+    <None Include="FetchedJobsWatcher.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>FetchedJobsWatcher.feature.cs</LastGenOutput>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Choose>

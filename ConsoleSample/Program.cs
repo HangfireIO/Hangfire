@@ -28,7 +28,7 @@ namespace ConsoleSample
                 throw new Exception();
             }
 
-            Thread.Sleep(TimeSpan.FromSeconds(5 + time));
+            //Thread.Sleep(TimeSpan.FromSeconds(5 + time));
             Console.WriteLine("Finished task: " + Number);
         }
     }

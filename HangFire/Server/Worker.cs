@@ -173,6 +173,10 @@ namespace HangFire.Server
 
             var workerContext = new WorkerContext(_serverContext, _workerNumber, Redis);
 
+            // Fail point N3. When the worker fails before successful execution
+            // of the following commands, the server must requeue the job, because
+            // it's execution could be not started at all.
+
             lock (Redis)
             {
                 if (!JobState.Apply(
@@ -209,6 +213,12 @@ namespace HangFire.Server
                 }
             }
 
+            // Fail point N4. When the worker fails before successful execution 
+            // of the following commands, the server should requeue the job,
+            // because there is no information about job's execution at all.
+            // It may be succeeded, or failed, or not executed at all due
+            // to filter exceptions.
+
             lock (Redis)
             {
                 if (exception == null)
@@ -226,8 +236,17 @@ namespace HangFire.Server
                         ProcessingState.Name);
                 }
 
-                JobServer.RemoveFromProcessingQueue(
+                // Fail point N5. When the worker fails before successful
+                // execution of the following command, server should only remove it
+                // from the fetched queue as job's state has been changed from
+                // the Processing state, and job fetched key removed from
+                // the storage. The job must not be requeued from here.
+
+                JobServer.RemoveFromFetchedQueue(
                     Redis, jobId, _serverContext.ServerName, _serverContext.QueueName);
+
+                // Success point. No things must be done after previous command
+                // was succeeded.
             }
         }
 

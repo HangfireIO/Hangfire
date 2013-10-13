@@ -85,6 +85,9 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />
+    <Compile Include="Server\IThreadWrappable.cs" />
+    <Compile Include="Server\ThreadWrapper.cs" />
+    <Compile Include="Server\FetchedJobsWatcher.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />

@@ -13,8 +13,11 @@ namespace HangFire.Server
         private readonly int _concurrency;
         private readonly string _queueName;
         private readonly Thread _managerThread;
+        
         private readonly WorkerPool _pool;
         private readonly SchedulePoller _schedule;
+        private readonly ThreadWrapper _fetchedJobsWatcher;
+
         private readonly IRedisClient _redis = RedisFactory.Create();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -69,6 +72,8 @@ namespace HangFire.Server
             _logger.Info("Manager thread has been started.");
 
             _schedule = new SchedulePoller(pollInterval);
+            _fetchedJobsWatcher = new ThreadWrapper(
+                new FetchedJobsWatcher(_serverName));
         }
 
         /// <summary>
@@ -81,6 +86,7 @@ namespace HangFire.Server
 
             _disposed = true;
 
+            _fetchedJobsWatcher.Dispose();
             _schedule.Dispose();
 
             _logger.Info("Stopping manager thread...");
@@ -89,67 +95,87 @@ namespace HangFire.Server
 
             _pool.Dispose();
             _cts.Dispose();
-
-            _redis.Dispose();
         }
 
-        public static void RemoveFromProcessingQueue(
+        public static void RemoveFromFetchedQueue(
             IRedisClient redis, string jobId, string serverName, string queueName)
         {
-            redis.RemoveItemFromList(
-                String.Format("hangfire:processing:{0}:{1}", serverName, queueName),
-                jobId,
-                -1);
+            using (var transaction = redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromList(
+                    String.Format("hangfire:server:{0}:fetched:{1}", serverName, queueName),
+                    jobId,
+                    -1));
+                
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:job:{0}:fetched", jobId),
+                    String.Format("hangfire:job:{0}:checked", jobId)));
+
+                transaction.Commit();
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
         private void Work()
         {
-            try
-            {
-                AnnounceServer();
-                RequeueProcessingJobs();
-
-                if (_cts.IsCancellationRequested)
+                try
                 {
-                    throw new OperationCanceledException();
-                }
+                    AnnounceServer();
+                    RequeueProcessingJobs();
 
-                while (true)
-                {
-                    var worker = _pool.TakeFree(_cts.Token);
-
-                    string jobId;
-
-                    do
+                    if (_cts.IsCancellationRequested)
                     {
-                        jobId = DequeueJobId(TimeSpan.FromSeconds(5));
-                        if (jobId == null && _cts.IsCancellationRequested)
-                        {
-                            throw new OperationCanceledException();
-                        }
-                    } while (jobId == null);
+                        throw new OperationCanceledException();
+                    }
 
-                    worker.Process(jobId);
+                    while (true)
+                    {
+                        var worker = _pool.TakeFree(_cts.Token);
+
+                        string jobId;
+
+                        do
+                        {
+                            jobId = DequeueJobId(TimeSpan.FromSeconds(5));
+                            if (jobId == null && _cts.IsCancellationRequested)
+                            {
+                                throw new OperationCanceledException();
+                            }
+                        } while (jobId == null);
+
+                        worker.Process(jobId);
+                    }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.Info("Shutdown has been requested. Exiting...");
-                HideServer();
-            }
-            catch (Exception ex)
-            {
-                _logger.Fatal("Unexpected exception caught in the manager thread. Jobs will not be processed.", ex);
-            }
+                catch (OperationCanceledException)
+                {
+                    _logger.Info("Shutdown has been requested. Exiting...");
+                    HideServer();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Fatal("Unexpected exception caught in the manager thread. Jobs will not be processed.", ex);
+                }
         }
 
         private string DequeueJobId(TimeSpan? timeOut)
         {
-            return _redis.BlockingPopAndPushItemBetweenLists(
+            var jobId = _redis.BlockingPopAndPushItemBetweenLists(
                     String.Format("hangfire:queue:{0}", _queueName),
-                    String.Format("hangfire:processing:{0}:{1}", _serverName, _queueName),
+                    String.Format("hangfire:server:{0}:fetched:{1}", _serverName, _queueName),
                     timeOut);
+
+            // Fail point N1. The job has no fetched flag set.
+
+            if (!String.IsNullOrEmpty(jobId))
+            {
+                _redis.SetEntry(
+                    String.Format("hangfire:job:{0}:fetched", jobId),
+                    JobHelper.ToStringTimestamp(DateTime.UtcNow));
+            }
+
+            // Fail point N2. N
+
+            return jobId;
         }
 
         private void RequeueProcessingJobs()
@@ -164,7 +190,7 @@ namespace HangFire.Server
             foreach (var queue in queues)
             {
                 while (_redis.PopAndPushItemBetweenLists(
-                    String.Format("hangfire:processing:{0}:{1}", _serverName, queue),
+                    String.Format("hangfire:server:{0}:fetched:{1}", _serverName, queue),
                     String.Format("hangfire:queue:{0}", queue)) != null)
                 {
                     requeued++;
