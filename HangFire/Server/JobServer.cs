@@ -15,7 +15,7 @@ namespace HangFire.Server
         private readonly Thread _managerThread;
         
         private readonly WorkerPool _pool;
-        private readonly SchedulePoller _schedule;
+        private readonly ThreadWrapper _schedulePoller;
         private readonly ThreadWrapper _fetchedJobsWatcher;
 
         private readonly IRedisClient _redis = RedisFactory.Create();
@@ -71,7 +71,7 @@ namespace HangFire.Server
 
             _logger.Info("Manager thread has been started.");
 
-            _schedule = new SchedulePoller(pollInterval);
+            _schedulePoller = new ThreadWrapper(new SchedulePoller(pollInterval));
             _fetchedJobsWatcher = new ThreadWrapper(
                 new DequeuedJobsWatcher(_serverName));
         }
@@ -87,7 +87,7 @@ namespace HangFire.Server
             _disposed = true;
 
             _fetchedJobsWatcher.Dispose();
-            _schedule.Dispose();
+            _schedulePoller.Dispose();
 
             _logger.Info("Stopping manager thread...");
             _cts.Cancel();

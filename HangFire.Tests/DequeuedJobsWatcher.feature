@@ -68,14 +68,14 @@ Scenario: Job is being enqueued on it's actual queue after timing out
      Then the 'default' queue contains the job
 
 Scenario: When the server could not find the job's type, the job is moved to the Failed state
-    Given a dequeued job of the 'NonExistingType' type
+    Given a dequeued job of the 'NonExisting' type
       And it was fetched a day ago
      When the watcher runs
      Then the job moved to the Failed state
       And the dequeued jobs queue does not contain the job anymore
 
 Scenario: Succeeded job of non-existing type will not be moved to the failed state
-    Given a dequeued job of the 'NonExistingType' type
+    Given a dequeued job of the 'NonExisting' type
       And it's state is Succeeded
       And it was fetched a day ago
      When the watcher runs

@@ -8,42 +8,70 @@ using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    internal class SchedulePoller : IDisposable
+    internal class SchedulePoller : IThreadWrappable, IDisposable
     {
         private readonly ILog _logger = LogManager.GetLogger("SchedulePoller");
-        private readonly Thread _pollerThread;
 
         private readonly TimeSpan _pollInterval;
         private readonly IRedisClient _redis = RedisFactory.Create();
 
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-
         public SchedulePoller(TimeSpan pollInterval)
         {
             _pollInterval = pollInterval;
-            _pollerThread = new Thread(Work) { IsBackground = true, Name = "HangFire.SchedulePoller" };
-            _pollerThread.Start();
+        }
+
+        public bool EnqueueNextScheduledJob()
+        {
+            var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+
+            var jobId = _redis
+                .GetRangeFromSortedSetByLowestScore(
+                    "hangfire:schedule", Double.NegativeInfinity, timestamp, 0, 1)
+                .FirstOrDefault();
+
+            if (String.IsNullOrEmpty(jobId))
+            {
+                return false;
+            }
+
+            EnqueueScheduledJob(jobId);
+            return true;
         }
 
         public void Dispose()
         {
-            _cts.Cancel();
-
-            _pollerThread.Interrupt();
-            _pollerThread.Join();
             _redis.Dispose();
+        }
 
-            _cts.Dispose();
+        private void EnqueueScheduledJob(string jobId)
+        {
+            var jobType = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
+            var queueName = JobHelper.TryToGetQueueName(jobType);
+
+            if (!String.IsNullOrEmpty(queueName))
+            {
+                JobState.Apply(
+                    _redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queueName),
+                    ScheduledState.Name);
+            }
+            else
+            {
+                JobState.Apply(
+                    _redis,
+                    new FailedState(jobId, "Could not enqueue the schedule job.",
+                                    new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType))),
+                    ScheduledState.Name);
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
-        private void Work()
+        void IThreadWrappable.Work()
         {
             try
             {
                 while (true)
                 {
-                    if (!EnqueueScheduledJob(DateTime.UtcNow))
+                    if (!EnqueueNextScheduledJob())
                     {
                         Thread.Sleep(_pollInterval);
                     }
@@ -64,36 +92,10 @@ namespace HangFire.Server
             }
         }
 
-        public bool EnqueueScheduledJob(DateTime now)
+        void IThreadWrappable.Dispose(Thread thread)
         {
-            var timestamp = JobHelper.ToTimestamp(now);
-
-            var jobId = _redis
-                .GetRangeFromSortedSetByLowestScore(
-                    "hangfire:schedule", Double.NegativeInfinity, timestamp, 0, 1)
-                .FirstOrDefault();
-
-            if (String.IsNullOrEmpty(jobId))
-            {
-                return false;
-            }
-
-            EnqueueScheduledJob(jobId);
-            return true;
-        }
-
-        public void EnqueueScheduledJob(string jobId)
-        {
-            var jobType = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-            var queueName = JobHelper.TryToGetQueueName(jobType);
-
-            // TODO: move job to the failed queue when queue name is empty
-            if (!String.IsNullOrEmpty(queueName))
-            {
-                JobState.Apply(
-                    _redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queueName),
-                    ScheduledState.Name);
-            }
+            thread.Interrupt();
+            thread.Join();
         }
     }
 }

@@ -309,7 +309,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 71
-    testRunner.Given("a dequeued job of the \'NonExistingType\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a dequeued job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 72
       testRunner.And("it was fetched a day ago", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 73
@@ -334,7 +334,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 78
-    testRunner.Given("a dequeued job of the \'NonExistingType\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("a dequeued job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 79
       testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 80

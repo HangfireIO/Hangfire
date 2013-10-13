@@ -42,6 +42,7 @@ namespace HangFire.Tests
 
         [Then(@"the job moved to the (.+) state")]
         [Then(@"the job remains to be in the (.+) state")]
+        [Then(@"the job becomes (.+)")]
         public void ThenTheJobMovedToTheState(string state)
         {
             var jobState = Redis.Client.GetValueFromHash(

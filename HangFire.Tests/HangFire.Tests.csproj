@@ -75,6 +75,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Bindings\SchedulePollerSteps.cs" />
     <Compile Include="Bindings\ServerSteps.cs" />
     <Compile Include="HangFireJobActivatorTests.cs" />
     <Compile Include="Bindings\JobSteps.cs" />
@@ -89,6 +90,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bindings\DequeuedJobsWatcherSteps.cs" />
     <Compile Include="Common\TestJob.cs" />
+    <Compile Include="SchedulePoller.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SchedulePoller.feature</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire\HangFire.csproj">
@@ -103,6 +109,10 @@
       <LastGenOutput>DequeuedJobsWatcher.feature.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
+    <None Include="SchedulePoller.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>SchedulePoller.feature.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
