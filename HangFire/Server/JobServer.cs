@@ -73,7 +73,7 @@ namespace HangFire.Server
 
             _schedule = new SchedulePoller(pollInterval);
             _fetchedJobsWatcher = new ThreadWrapper(
-                new FetchedJobsWatcher(_serverName));
+                new DequeuedJobsWatcher(_serverName));
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace HangFire.Server
             using (var transaction = redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format("hangfire:server:{0}:fetched:{1}", serverName, queueName),
+                    String.Format("hangfire:server:{0}:dequeued:{1}", serverName, queueName),
                     jobId,
                     -1));
                 
@@ -121,7 +121,6 @@ namespace HangFire.Server
                 try
                 {
                     AnnounceServer();
-                    RequeueProcessingJobs();
 
                     if (_cts.IsCancellationRequested)
                     {
@@ -161,8 +160,10 @@ namespace HangFire.Server
         {
             var jobId = _redis.BlockingPopAndPushItemBetweenLists(
                     String.Format("hangfire:queue:{0}", _queueName),
-                    String.Format("hangfire:server:{0}:fetched:{1}", _serverName, _queueName),
+                    String.Format("hangfire:server:{0}:dequeued:{1}", _serverName, _queueName),
                     timeOut);
+
+            // Checkpoint #1. 
 
             // Fail point N1. The job has no fetched flag set.
 
@@ -176,38 +177,6 @@ namespace HangFire.Server
             // Fail point N2. N
 
             return jobId;
-        }
-
-        private void RequeueProcessingJobs()
-        {
-            _logger.Info("Starting to requeue processing jobs...");
-
-            var queues = _redis.GetAllItemsFromSet(
-                String.Format("hangfire:server:{0}:queues", _serverName));
-
-            int requeued = 0;
-
-            foreach (var queue in queues)
-            {
-                while (_redis.PopAndPushItemBetweenLists(
-                    String.Format("hangfire:server:{0}:fetched:{1}", _serverName, queue),
-                    String.Format("hangfire:queue:{0}", queue)) != null)
-                {
-                    requeued++;
-                }
-            }
-
-            // TODO: one server - one queue. What is this?
-            using (var transaction = _redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}:queues", _serverName)));
-                transaction.QueueCommand(x => x.AddItemToSet(
-                    String.Format("hangfire:server:{0}:queues", _serverName), _queueName));
-                transaction.Commit();
-            }
-
-            _logger.Info(String.Format("Requeued {0} jobs.", requeued));
         }
 
         private void AnnounceServer()
@@ -227,6 +196,9 @@ namespace HangFire.Server
                         }));
                 transaction.QueueCommand(x => x.AddItemToSet(
                     String.Format("hangfire:queue:{0}:servers", _queueName), _serverName));
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    String.Format("hangfire:server:{0}:queues", _serverName),
+                    _queueName));
 
                 transaction.Commit();
             }

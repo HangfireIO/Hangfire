@@ -9,7 +9,7 @@ namespace HangFire.Tests
     {
         public const string DefaultQueueName = "default";
 
-        [Given(@"a job in the (.+) queue")]
+        [Given(@"a job in the '(.+)' queue")]
         public void GivenAJobInTheQueue(string queueName)
         {
             Given("a job");
@@ -20,7 +20,7 @@ namespace HangFire.Tests
         }
 
         [Then(@"the '(.+)' queue contains the job")]
-        public void TheQueueContainsTheJob(string queueName)
+        public void ThenTheQueueContainsTheJob(string queueName)
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}", queueName));
@@ -29,7 +29,7 @@ namespace HangFire.Tests
         }
 
         [Then(@"the '(.+)' queue does not contain the job")]
-        public void TheQueueDoesNotContainTheJob(string queueName)
+        public void ThenTheQueueDoesNotContainTheJob(string queueName)
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}", queueName));

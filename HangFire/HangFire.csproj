@@ -87,7 +87,7 @@
     <Compile Include="RetryJobsFilter.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
-    <Compile Include="Server\FetchedJobsWatcher.cs" />
+    <Compile Include="Server\DequeuedJobsWatcher.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />

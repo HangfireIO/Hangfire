@@ -6,19 +6,19 @@ using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    internal class FetchedJobsWatcher : IThreadWrappable, IDisposable
+    internal class DequeuedJobsWatcher : IThreadWrappable, IDisposable
     {
         private static readonly TimeSpan CheckedTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan SleepTimeout = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan JobTimeout = TimeSpan.FromHours(1);
+        private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
         private readonly string _serverName;
 
         private readonly IRedisClient _redis = RedisFactory.Create();
 
-        private readonly ILog _logger = LogManager.GetLogger(typeof(FetchedJobsWatcher));
+        private readonly ILog _logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
 
-        public FetchedJobsWatcher(string serverName)
+        public DequeuedJobsWatcher(string serverName)
         {
             _serverName = serverName;
         }
@@ -36,11 +36,11 @@ namespace HangFire.Server
             foreach (var queue in queues)
             {
                 using (_redis.AcquireLock(
-                    String.Format("hangfire:server:{0}:fetched:{1}:lock", _serverName, queue),
+                    String.Format("hangfire:server:{0}:dequeued:{1}:lock", _serverName, queue),
                     TimeSpan.FromMinutes(1)))
                 {
                     var jobIds = _redis.GetAllItemsFromList(
-                        String.Format("hangfire:server:{0}:fetched:{1}", _serverName, queue));
+                        String.Format("hangfire:server:{0}:dequeued:{1}", _serverName, queue));
 
                     foreach (var jobId in jobIds)
                     {
@@ -68,10 +68,6 @@ namespace HangFire.Server
                 pipeline.Flush();
             }
 
-            // fetched != null -> Fail point >= 2. Check timestamp and requeue if timed out, delete from fetched queue
-            // fetched == null, checked == null -> Fail point N1? Fail point == 1. Set checked timestamp and continue.
-            // fetched == null, checked != null -> Fail point N1 if timed out. Requeue, delete from fetched queue.
-
             if (String.IsNullOrEmpty(fetched) && String.IsNullOrEmpty(@checked))
             {
                 _redis.SetEntry(
@@ -80,25 +76,40 @@ namespace HangFire.Server
             }
             else
             {
-                if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(@checked))
+                if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
-                    var jobType = _redis.GetValueFromHash(
-                        String.Format("hangfire:job:{0}", jobId),
-                        "Type");
-                    var queueName = JobHelper.TryToGetQueueName(jobType);
-
-                    // TODO: check the queue name
-
-                    JobState.Apply(
-                        _redis,
-                        new EnqueuedState(jobId, "Requeued due to time out", queueName),
-                        EnqueuedState.Name,
-                        ProcessingState.Name);
-
-                    // Fail point.
-
+                    TryToRequeueTheJob(jobId);
                     JobServer.RemoveFromFetchedQueue(_redis, jobId, _serverName, queue);
                 }
+            }
+        }
+
+        private void TryToRequeueTheJob(string jobId)
+        {
+            var jobType = _redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", jobId),
+                "Type");
+
+            var queueName = JobHelper.TryToGetQueueName(jobType);
+
+            if (!String.IsNullOrEmpty(queueName))
+            {
+                JobState.Apply(
+                    _redis,
+                    new EnqueuedState(jobId, "Requeued due to time out", queueName),
+                    EnqueuedState.Name,
+                    ProcessingState.Name);
+            }
+            else
+            {
+                JobState.Apply(
+                    _redis,
+                    new FailedState(
+                        jobId,
+                        "Failed to re-queue the job.",
+                        new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType))),
+                    EnqueuedState.Name,
+                    ProcessingState.Name);
             }
         }
 
@@ -108,8 +119,13 @@ namespace HangFire.Server
                    (DateTime.UtcNow - JobHelper.FromStringTimestamp(fetchedTimestamp) > JobTimeout);
         }
 
-        private static bool TimedOutByCheckedTime(string checkedTimestamp)
+        private static bool TimedOutByCheckedTime(string fetchedTimestamp, string checkedTimestamp)
         {
+            if (!String.IsNullOrEmpty(fetchedTimestamp))
+            {
+                return false;
+            }
+
             return !String.IsNullOrEmpty(checkedTimestamp) &&
                    (DateTime.UtcNow - JobHelper.FromStringTimestamp(checkedTimestamp) > CheckedTimeout);
         }

@@ -173,10 +173,6 @@ namespace HangFire.Server
 
             var workerContext = new WorkerContext(_serverContext, _workerNumber, Redis);
 
-            // Fail point N3. When the worker fails before successful execution
-            // of the following commands, the server must requeue the job, because
-            // it's execution could be not started at all.
-
             lock (Redis)
             {
                 if (!JobState.Apply(
@@ -188,6 +184,10 @@ namespace HangFire.Server
                     return;
                 }
             }
+
+            // Fail point N3. When the worker fails before successful execution
+            // of the following commands, the server must requeue the job, because
+            // it's execution could be not started at all.
 
             Exception exception = null;
 

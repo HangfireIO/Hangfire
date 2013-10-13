@@ -81,13 +81,13 @@
     <Compile Include="JobInvokerTests.cs" />
     <Compile Include="Bindings\QueueSteps.cs" />
     <Compile Include="Bindings\Redis.cs" />
-    <Compile Include="FetchedJobsWatcher.feature.cs">
+    <Compile Include="DequeuedJobsWatcher.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>FetchedJobsWatcher.feature</DependentUpon>
+      <DependentUpon>DequeuedJobsWatcher.feature</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Bindings\FetchedJobsWatcher.cs" />
+    <Compile Include="Bindings\DequeuedJobsWatcherSteps.cs" />
     <Compile Include="Common\TestJob.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -98,9 +98,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="FetchedJobsWatcher.feature">
+    <None Include="DequeuedJobsWatcher.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>FetchedJobsWatcher.feature.cs</LastGenOutput>
+      <LastGenOutput>DequeuedJobsWatcher.feature.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
