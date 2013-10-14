@@ -6,7 +6,7 @@ Scenario: Scheduled jobs are being enqueued on their actual queues
 	 When the poller runs
 	 Then the job becomes Enqueued
 	  And the schedule does not contain it anymore
-	  But the 'default' queue contains the job
+	  But the queue contains the job
 	  And schedule poller returns 'true'
 
 Scenario: Future jobs are not being enqueued
@@ -14,7 +14,7 @@ Scenario: Future jobs are not being enqueued
 	 When the poller runs
 	 Then the job remains to be in the Scheduled state
 	  And the schedule contains the job
-	  And the 'default' queue does not contain the job
+	  And the queue does not contain the job
 	  And schedule poller returns 'false'
 
 Scenario: Poller will enqueue only jobs in the Scheduled state
@@ -22,7 +22,7 @@ Scenario: Poller will enqueue only jobs in the Scheduled state
 	  And it's state is Succeeded
 	 When the poller runs
 	 Then the job remains to be in the Succeeded state
-	  And the 'default' queue does not contain the job
+	  And the queue does not contain the job
 
 Scenario: Returns false when there are no jobs in the schedule
      When the poller runs

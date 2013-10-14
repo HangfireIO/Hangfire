@@ -87,7 +87,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 8
    testRunner.And("the schedule does not contain it anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-   testRunner.But("the \'default\' queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+   testRunner.But("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line 10
    testRunner.And("schedule poller returns \'true\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
@@ -112,7 +112,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 16
    testRunner.And("the schedule contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 17
-   testRunner.And("the \'default\' queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+   testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 18
    testRunner.And("schedule poller returns \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
@@ -137,7 +137,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 24
   testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 25
-   testRunner.And("the \'default\' queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+   testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
