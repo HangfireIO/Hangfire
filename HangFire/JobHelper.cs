@@ -7,7 +7,7 @@ namespace HangFire
 {
     public static class JobHelper
     {
-        public static string TryToGetQueueName(string jobType)
+        public static string TryToGetQueue(string jobType)
         {
             var type = Type.GetType(jobType);
             if (type == null)
@@ -15,16 +15,16 @@ namespace HangFire
                 return null;
             }
 
-            return GetQueueName(type);
+            return GetQueue(type);
         }
 
-        public static string GetQueueName(Type jobType)
+        public static string GetQueue(Type jobType)
         {
             if (jobType == null) throw new ArgumentNullException("jobType");
 
             var attribute = jobType
                 .GetCustomAttributes(true)
-                .Cast<QueueNameAttribute>()
+                .Cast<QueueAttribute>()
                 .FirstOrDefault();
 
             return attribute != null ? attribute.Name : "default";

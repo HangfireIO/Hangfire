@@ -2,11 +2,11 @@
 {
     partial class EnqueuedJobsPage
     {
-        public EnqueuedJobsPage(string queueName)
+        public EnqueuedJobsPage(string queue)
         {
-            QueueName = queueName;
+            Queue = queue;
         }
 
-        public string QueueName { get; private set; }
+        public string Queue { get; private set; }
     }
 }

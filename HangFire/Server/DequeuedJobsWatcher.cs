@@ -96,13 +96,13 @@ namespace HangFire.Server
                 String.Format("hangfire:job:{0}", jobId),
                 "Type");
 
-            var queueName = JobHelper.TryToGetQueueName(jobType);
+            var queue = JobHelper.TryToGetQueue(jobType);
 
-            if (!String.IsNullOrEmpty(queueName))
+            if (!String.IsNullOrEmpty(queue))
             {
                 JobState.Apply(
                     _redis,
-                    new EnqueuedState(jobId, "Requeued due to time out", queueName),
+                    new EnqueuedState(jobId, "Requeued due to time out", queue),
                     EnqueuedState.Name,
                     ProcessingState.Name);
             }

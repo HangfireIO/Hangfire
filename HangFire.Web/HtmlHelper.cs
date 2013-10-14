@@ -37,12 +37,12 @@ namespace HangFire.Web
             return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
         }
 
-        public static IHtmlString QueueLabel(string queueName)
+        public static IHtmlString QueueLabel(string queue)
         {
             string label;
-            if (queueName != null)
+            if (queue != null)
             {
-                label = "<span class=\"label label-primary\">" + queueName + "</span>";
+                label = "<span class=\"label label-primary\">" + queue + "</span>";
             }
             else
             {

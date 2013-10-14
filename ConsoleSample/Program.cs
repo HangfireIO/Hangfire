@@ -8,7 +8,7 @@ using ServiceStack.Logging.Support.Logging;
 
 namespace ConsoleSample
 {
-    [QueueName("qqq")]
+    [Queue("qqq")]
     public class ConsoleJob : BackgroundJob
     {
         private static readonly Random _random = new Random();
@@ -33,7 +33,7 @@ namespace ConsoleSample
         }
     }
 
-    [QueueName("qqq")]
+    [Queue("qqq")]
     public class ErrorJob : BackgroundJob
     {
         public override void Perform()
@@ -43,7 +43,7 @@ namespace ConsoleSample
         }
     }
 
-    [QueueName("qqq"), Recurring(30)]
+    [Queue("qqq"), Recurring(30)]
     public class RecurringJob : BackgroundJob
     {
         public override void Perform()
@@ -66,7 +66,7 @@ namespace ConsoleSample
             GlobalJobFilters.Filters.Add(new RetryJobsFilter());
             GlobalJobFilters.Filters.Add(new RecurringJobsFilter());
 
-            using (var server = new BackgroundJobServer { QueueName = "qqq", WorkersCount = concurrency})
+            using (var server = new BackgroundJobServer { Queue = "qqq", WorkersCount = concurrency})
             {
                 server.Start();
 

@@ -18,11 +18,11 @@ namespace HangFire.Web
             }
         }
 
-        public static long EnqueuedCount(string queueName)
+        public static long EnqueuedCount(string queue)
         {
             lock (Redis)
             {
-                return Redis.GetListCount(String.Format("hangfire:queue:{0}", queueName));
+                return Redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
             }
         }
 
@@ -61,7 +61,7 @@ namespace HangFire.Web
                         ServerName = state[1],
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Type = job[0],
-                        QueueName = JobHelper.TryToGetQueueName(job[0]),
+                        Queue = JobHelper.TryToGetQueue(job[0]),
                         StartedAt = JobHelper.FromStringTimestamp(state[0])
                     }).OrderBy(x => x.Value.StartedAt).ToList();
             }
@@ -90,7 +90,7 @@ namespace HangFire.Web
                         {
                             ScheduledAt = JobHelper.FromTimestamp((long)scheduledJob.Value),
                             Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                            Queue = JobHelper.TryToGetQueueName(job[0]),
+                            Queue = JobHelper.TryToGetQueue(job[0]),
                             Type = job[0]
                         };
 
@@ -185,7 +185,7 @@ namespace HangFire.Web
                     (job, state) => new FailedJobDto
                     {
                         Type = job[0],
-                        Queue = JobHelper.TryToGetQueueName(job[0]),
+                        Queue = JobHelper.TryToGetQueue(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         FailedAt = JobHelper.FromStringTimestamp(state[0]),
                         ExceptionType = state[1],
@@ -212,7 +212,7 @@ namespace HangFire.Web
                     (job, state) => new SucceededJobDto
                     {
                         Type = job[0],
-                        Queue = JobHelper.TryToGetQueueName(job[0]),
+                        Queue = JobHelper.TryToGetQueue(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         SucceededAt = JobHelper.FromStringTimestamp(state[0]),
                     });
@@ -258,10 +258,10 @@ namespace HangFire.Web
         }
 
         public static IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(
-            string queueName, int from, int perPage)
+            string queue, int from, int perPage)
         {
             var firstJobIds = Redis.GetRangeFromList(
-                String.Format("hangfire:queue:{0}", queueName), 
+                String.Format("hangfire:queue:{0}", queue), 
                 from, 
                 from + perPage - 1);
 
@@ -300,8 +300,8 @@ namespace HangFire.Web
             {
                 var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
 
-                var queueName = JobHelper.TryToGetQueueName(jobType);
-                if (String.IsNullOrEmpty(queueName))
+                var queue = JobHelper.TryToGetQueue(jobType);
+                if (String.IsNullOrEmpty(queue))
                 {
                     return false;
                 }
@@ -310,7 +310,7 @@ namespace HangFire.Web
 
                 return JobState.Apply(
                     Redis,
-                    new EnqueuedState(jobId, "The job has been retried by a user.", queueName),
+                    new EnqueuedState(jobId, "The job has been retried by a user.", queue),
                     FailedState.Name);
             }
         }
@@ -320,16 +320,16 @@ namespace HangFire.Web
             lock (Redis)
             {
                 var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-                var queueName = JobHelper.TryToGetQueueName(jobType);
+                var queue = JobHelper.TryToGetQueue(jobType);
 
-                if (String.IsNullOrEmpty(queueName))
+                if (String.IsNullOrEmpty(queue))
                 {
                     return false;
                 }
 
                 return JobState.Apply(
                     Redis, 
-                    new EnqueuedState(jobId, "The job has been enqueued by a user.", queueName),
+                    new EnqueuedState(jobId, "The job has been enqueued by a user.", queue),
                     ScheduledState.Name);
             }
         }

@@ -13,7 +13,7 @@ namespace HangFire.Server
         private readonly string _instanceId;
 
         private readonly int _concurrency;
-        private readonly string _queueName;
+        private readonly string _queue;
         private readonly Thread _managerThread;
         
         private readonly WorkerPool _pool;
@@ -29,7 +29,7 @@ namespace HangFire.Server
 
         public JobServer(
             string serverName,
-            string queueName,
+            string queue,
             int concurrency,
             TimeSpan pollInterval,
             JobActivator jobActivator)
@@ -39,9 +39,9 @@ namespace HangFire.Server
                 throw new ArgumentNullException("serverName", "You must provide non-null and unique server name.");
             }
 
-            if (String.IsNullOrEmpty(queueName))
+            if (String.IsNullOrEmpty(queue))
             {
-                throw new ArgumentNullException("queueName", "Please specify the queue name you want to listen.");
+                throw new ArgumentNullException("queue", "Please specify the queue name you want to listen.");
             }
 
             if (concurrency <= 0)
@@ -56,14 +56,14 @@ namespace HangFire.Server
 
             _serverName = serverName;
             _concurrency = concurrency;
-            _queueName = queueName;
+            _queue = queue;
 
             _instanceId = Guid.NewGuid().ToString();
 
             var jobInvoker = ServerJobInvoker.Current;
 
             _pool = new WorkerPool(
-                new ServerContext(_serverName, _queueName, concurrency), 
+                new ServerContext(_serverName, _queue, concurrency), 
                 jobInvoker, jobActivator ?? new JobActivator());
 
             _managerThread = new Thread(Work)
@@ -102,12 +102,12 @@ namespace HangFire.Server
         }
 
         public static void RemoveFromFetchedQueue(
-            IRedisClient redis, string jobId, string serverName, string queueName)
+            IRedisClient redis, string jobId, string serverName, string queue)
         {
             using (var transaction = redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format("hangfire:server:{0}:dequeued:{1}", serverName, queueName),
+                    String.Format("hangfire:server:{0}:dequeued:{1}", serverName, queue),
                     jobId,
                     -1));
                 
@@ -163,8 +163,8 @@ namespace HangFire.Server
         private string DequeueJobId(TimeSpan? timeOut)
         {
             var jobId = _redis.BlockingPopAndPushItemBetweenLists(
-                    String.Format("hangfire:queue:{0}", _queueName),
-                    String.Format("hangfire:server:{0}:dequeued:{1}", _serverName, _queueName),
+                    String.Format("hangfire:queue:{0}", _queue),
+                    String.Format("hangfire:server:{0}:dequeued:{1}", _serverName, _queue),
                     timeOut);
 
             // Checkpoint #1. 
@@ -202,7 +202,7 @@ namespace HangFire.Server
                             { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
                         }));
 
-                foreach (var queue in new[] { _queueName })
+                foreach (var queue in new[] { _queue })
                 {
                     var queueName = queue;
                     transaction.QueueCommand(x => x.AddItemToSet(

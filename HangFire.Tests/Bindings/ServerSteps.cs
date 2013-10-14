@@ -11,7 +11,7 @@ namespace HangFire.Tests
         public const string DefaultInstanceId = "some-server-id";
 
         [Given(@"a server processing the '(.+)' queue")]
-        public void GivenServerProcessingTheQueue(string queueName)
+        public void GivenServerProcessingTheQueue(string queue)
         {
             Redis.Client.AddItemToSet("hangfire:servers", DefaultServerName);
             Redis.Client.AddItemToSet(
@@ -19,7 +19,7 @@ namespace HangFire.Tests
                 DefaultInstanceId);
             Redis.Client.AddItemToSet(
                 String.Format("hangfire:server:{0}:instance:{1}:queues", DefaultServerName, DefaultInstanceId),
-                queueName);
+                queue);
         }
 
         [Given(@"a dequeued job")]
@@ -37,23 +37,23 @@ namespace HangFire.Tests
         }
 
         [Given(@"a dequeued job from the '(.+)' queue")]
-        public void GivenADequeuedJobFromTheQueue(string queueName)
+        public void GivenADequeuedJobFromTheQueue(string queue)
         {
             Given("a job");
-            Given(String.Format("the job was dequeued from the '{0}' queue", queueName));
+            Given(String.Format("the job was dequeued from the '{0}' queue", queue));
         }
 
         [Given(@"the job was dequeued")]
         public void GivenTheJobWasDequeued()
         {
-            Given(String.Format("the job was dequeued from the '{0}' queue", QueueSteps.DefaultQueueName));
+            Given(String.Format("the job was dequeued from the '{0}' queue", QueueSteps.DefaultQueue));
         }
 
         [Given(@"the job was dequeued from the '(.+)' queue")]
-        public void GivenTheJobWasDequeuedFromTheQueue(string queueName)
+        public void GivenTheJobWasDequeuedFromTheQueue(string queue)
         {
             Redis.Client.AddItemToList(
-                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, queueName),
+                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, queue),
                 JobSteps.DefaultJobId);
         }
 
@@ -61,7 +61,7 @@ namespace HangFire.Tests
         public void ThenTheDequeuedJobsQueueContainsTheJob()
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
-                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, QueueSteps.DefaultQueueName));
+                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, QueueSteps.DefaultQueue));
 
             CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
         }
@@ -70,7 +70,7 @@ namespace HangFire.Tests
         public void ThenTheDequeuedJobsQueueDoesNotContainTheJob()
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
-                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, QueueSteps.DefaultQueueName));
+                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, QueueSteps.DefaultQueue));
 
             CollectionAssert.DoesNotContain(jobIds, JobSteps.DefaultJobId);
         }

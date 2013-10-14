@@ -23,7 +23,7 @@ namespace HangFire.Client
                     "jobType");
             }
 
-            var queueName = JobHelper.GetQueueName(jobType);
+            var queue = JobHelper.GetQueue(jobType);
 
             var clientContext = new ClientContext();
             var descriptor = CreateDescriptor(jobType, args);
@@ -35,7 +35,7 @@ namespace HangFire.Client
                         CreateJob(descriptor.JobId, descriptor.Job);
                         JobState.Apply(
                             _redis, 
-                            new EnqueuedState(descriptor.JobId, "Enqueued by the Сlient", queueName));
+                            new EnqueuedState(descriptor.JobId, "Enqueued by the Сlient", queue));
                     }
                 };
 

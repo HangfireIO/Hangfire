@@ -48,7 +48,7 @@ else
                     </td>
                     <td>@job.Value.ServerName</td>
                     <td>
-                        @HtmlHelper.QueueLabel(job.Value.QueueName)&nbsp;@HtmlHelper.JobType(job.Value.Type)
+                        @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
                     </td>
                     <td><pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre></td>
                     <td data-moment="@JobHelper.ToStringTimestamp(job.Value.StartedAt)">@job.Value.StartedAt</td>

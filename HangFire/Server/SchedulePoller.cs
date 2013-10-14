@@ -46,12 +46,12 @@ namespace HangFire.Server
         private void EnqueueScheduledJob(string jobId)
         {
             var jobType = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-            var queueName = JobHelper.TryToGetQueueName(jobType);
+            var queue = JobHelper.TryToGetQueue(jobType);
 
-            if (!String.IsNullOrEmpty(queueName))
+            if (!String.IsNullOrEmpty(queue))
             {
                 JobState.Apply(
-                    _redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queueName),
+                    _redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queue),
                     ScheduledState.Name);
             }
             else

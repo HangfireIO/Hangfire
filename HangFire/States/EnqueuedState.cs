@@ -8,13 +8,13 @@ namespace HangFire.States
     {
         public static readonly string Name = "Enqueued";
 
-        public EnqueuedState(string jobId, string reason, string queueName) 
+        public EnqueuedState(string jobId, string reason, string queue) 
             : base(jobId, reason)
         {
-            QueueName = queueName;
+            Queue = queue;
         }
 
-        public string QueueName { get; private set; }
+        public string Queue { get; private set; }
 
         public override string StateName { get { return Name; } }
 
@@ -23,7 +23,7 @@ namespace HangFire.States
             return new Dictionary<string, string>
                 {
                     { "EnqueuedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                    { "Queue", QueueName }
+                    { "Queue", Queue }
                 };
         }
 
@@ -31,9 +31,9 @@ namespace HangFire.States
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
-            transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", QueueName));
+            transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", Queue));
             transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:queue:{0}", QueueName), JobId));
+                String.Format("hangfire:queue:{0}", Queue), JobId));
         }
     }
 }

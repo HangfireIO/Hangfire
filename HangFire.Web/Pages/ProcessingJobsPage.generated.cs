@@ -155,7 +155,7 @@ WriteLiteral("</td>\r\n                    <td>\r\n                        ");
 
             
             #line 51 "..\..\Pages\ProcessingJobsPage.cshtml"
-                   Write(HtmlHelper.QueueLabel(job.Value.QueueName));
+                   Write(HtmlHelper.QueueLabel(job.Value.Queue));
 
             
             #line default
@@ -165,7 +165,7 @@ WriteLiteral("&nbsp;");
 
             
             #line 51 "..\..\Pages\ProcessingJobsPage.cshtml"
-                                                                    Write(HtmlHelper.JobType(job.Value.Type));
+                                                                Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default

@@ -99,7 +99,7 @@
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="Perform.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
-    <Compile Include="QueueNameAttribute.cs" />
+    <Compile Include="QueueAttribute.cs" />
     <Compile Include="RedisFactory.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />

@@ -2,15 +2,15 @@
 {
     public class ServerContext
     {
-        public ServerContext(string serverName, string queueName, int workersCount)
+        public ServerContext(string serverName, string queue, int workersCount)
         {
             ServerName = serverName;
-            QueueName = queueName;
+            Queue = queue;
             WorkersCount = workersCount;
         }
 
         public string ServerName { get; private set; }
-        public string QueueName { get; private set; }
+        public string Queue { get; private set; }
         public int WorkersCount { get; private set; }
     }
 }

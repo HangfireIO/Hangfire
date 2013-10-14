@@ -23,7 +23,7 @@ namespace $rootnamespace$
             _server = new AspNetBackgroundJobServer
             {
                 ServerName = Environment.MachineName,
-                QueueName = "default",
+                Queue = "default",
                 WorkersCount = Environment.ProcessorCount * 2
             };
 

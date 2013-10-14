@@ -59,7 +59,7 @@ WriteLiteral("\r\n");
   
     Layout = new LayoutPage
         {
-            Title = QueueName, 
+            Title = Queue, 
             Subtitle = "Enqueued jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {
@@ -72,12 +72,12 @@ WriteLiteral("\r\n");
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    var pager = new Pager(from, perPage, JobStorage.EnqueuedCount(QueueName))
+    var pager = new Pager(from, perPage, JobStorage.EnqueuedCount(Queue))
     {
-        BasePageUrl = Request.LinkTo("/queues/" + QueueName)
+        BasePageUrl = Request.LinkTo("/queues/" + Queue)
     };
 
-    var enqueuedJobs = JobStorage.EnqueuedJobs(QueueName, pager.FromRecord, pager.RecordsPerPage);
+    var enqueuedJobs = JobStorage.EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 
 
             

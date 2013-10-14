@@ -3,9 +3,9 @@
 namespace HangFire
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public sealed class QueueNameAttribute : Attribute
+    public sealed class QueueAttribute : Attribute
     {
-        public QueueNameAttribute(string name)
+        public QueueAttribute(string name)
         {
             Name = name;
         }
