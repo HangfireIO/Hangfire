@@ -315,16 +315,6 @@ namespace HangFire.Web
             }
         }
 
-        public static bool RemoveJob(string jobId)
-        {
-            lock (Redis)
-            {
-                return JobState.Apply(
-                    Redis, 
-                    new DeletedState(jobId, "The job has been deleted by a user."));
-            }
-        }
-
         public static bool EnqueueScheduled(string jobId)
         {
             lock (Redis)

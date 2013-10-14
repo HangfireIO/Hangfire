@@ -88,7 +88,6 @@
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="Server\DequeuedJobsWatcher.cs" />
-    <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
     <Compile Include="States\FailedStateDescriptor.cs" />

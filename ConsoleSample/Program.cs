@@ -66,7 +66,7 @@ namespace ConsoleSample
             GlobalJobFilters.Filters.Add(new RetryJobsFilter());
             GlobalJobFilters.Filters.Add(new RecurringJobsFilter());
 
-            using (var server = new BackgroundJobServer { ServerName = "hijack!", QueueName = "qqq", WorkersCount = concurrency})
+            using (var server = new BackgroundJobServer { QueueName = "qqq", WorkersCount = concurrency})
             {
                 server.Start();
 

@@ -43,10 +43,6 @@ namespace HangFire.Web
                 "/failed/retry/(?<JobId>.+)", 
                 x => new CommandHandler(() => Command.Retry(x.Groups["JobId"].Value)));
 
-            RegisterPathHandlerFactory(
-                "/failed/remove/(?<JobId>.+)", 
-                x => new CommandHandler(() => Command.Remove(x.Groups["JobId"].Value)));
-
             RegisterPathHandlerFactory("/js/scripts.js",  x => new JavaScriptHandler());
             RegisterPathHandlerFactory("/css/styles.css", x => new StyleSheetHandler());
 

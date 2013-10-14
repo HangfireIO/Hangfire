@@ -22,7 +22,6 @@ else
                 <th>Queue</th>
                 <th>Length</th>
                 <th>Next jobs</th>
-                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -37,7 +36,7 @@ else
                     <td>@queue.Length</td>
                     <td>@if (queue.FirstJobs.Count == 0)
                         {
-                            <em>No jobs queued.</em>
+                        <em>No jobs queued.</em>
                         }
                         else
                         {
@@ -60,17 +59,7 @@ else
                                 }
                             </tbody>
                         </table>
-                        }</td>
-                    <td>
-                        <div class="pull-right">
-                            <button class="btn btn-default btn-sm">
-                                <span class="glyphicon glyphicon-trash"></span>
-                                Clear
-                            </button>
-                            <button class="btn btn-danger btn-sm">
-                                <span class="glyphicon glyphicon-remove"></span>
-                            </button>
-                        </div>
+                        }
                     </td>
                 </tr>
             }
