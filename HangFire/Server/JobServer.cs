@@ -15,10 +15,11 @@ namespace HangFire.Server
         private readonly int _concurrency;
         private readonly string _queue;
         private readonly Thread _managerThread;
-        
+
         private readonly WorkerPool _pool;
         private readonly ThreadWrapper _schedulePoller;
         private readonly ThreadWrapper _fetchedJobsWatcher;
+        private readonly JobFetcher _fetcher;
 
         private readonly IRedisClient _redis = RedisFactory.Create();
 
@@ -57,8 +58,10 @@ namespace HangFire.Server
             var jobInvoker = ServerJobInvoker.Current;
 
             _pool = new WorkerPool(
-                new ServerContext(_serverName, _queue, concurrency), 
+                new ServerContext(_serverName, _queue, concurrency),
                 jobInvoker, jobActivator ?? new JobActivator());
+
+            _fetcher = new JobFetcher(_redis, _queue);
 
             _managerThread = new Thread(Work)
                 {
@@ -103,7 +106,7 @@ namespace HangFire.Server
                     String.Format("hangfire:queue:{0}:dequeued", queue),
                     jobId,
                     -1));
-                
+
                 transaction.QueueCommand(x => x.RemoveEntry(
                     String.Format("hangfire:job:{0}:fetched", jobId),
                     String.Format("hangfire:job:{0}:checked", jobId)));
@@ -115,65 +118,42 @@ namespace HangFire.Server
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
         private void Work()
         {
-                try
-                {
-                    AnnounceServer();
-
-                    if (_cts.IsCancellationRequested)
-                    {
-                        throw new OperationCanceledException();
-                    }
-
-                    while (true)
-                    {
-                        var worker = _pool.TakeFree(_cts.Token);
-
-                        string jobId;
-
-                        do
-                        {
-                            jobId = DequeueJobId(TimeSpan.FromSeconds(5));
-                            if (jobId == null && _cts.IsCancellationRequested)
-                            {
-                                throw new OperationCanceledException();
-                            }
-                        } while (jobId == null);
-
-                        worker.Process(jobId);
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    _logger.Info("Shutdown has been requested. Exiting...");
-                    HideServer();
-                }
-                catch (Exception ex)
-                {
-                    _logger.Fatal("Unexpected exception caught in the manager thread. Jobs will not be processed.", ex);
-                }
-        }
-
-        private string DequeueJobId(TimeSpan? timeOut)
-        {
-            var jobId = _redis.BlockingPopAndPushItemBetweenLists(
-                    String.Format("hangfire:queue:{0}", _queue),
-                    String.Format("hangfire:queue:{0}:dequeued", _queue),
-                    timeOut);
-
-            // Checkpoint #1. 
-
-            // Fail point N1. The job has no fetched flag set.
-
-            if (!String.IsNullOrEmpty(jobId))
+            try
             {
-                _redis.SetEntry(
-                    String.Format("hangfire:job:{0}:fetched", jobId),
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow));
+                AnnounceServer();
+
+                if (_cts.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException();
+                }
+
+                while (true)
+                {
+                    var worker = _pool.TakeFree(_cts.Token);
+
+                    string jobId;
+
+                    do
+                    {
+                        jobId = _fetcher.DequeueJobId();
+                        if (jobId == null && _cts.IsCancellationRequested)
+                        {
+                            throw new OperationCanceledException();
+                        }
+                    } while (jobId == null);
+
+                    worker.Process(jobId);
+                }
             }
-
-            // Fail point N2. N
-
-            return jobId;
+            catch (OperationCanceledException)
+            {
+                _logger.Info("Shutdown has been requested. Exiting...");
+                HideServer();
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal("Unexpected exception caught in the manager thread. Jobs will not be processed.", ex);
+            }
         }
 
         private void AnnounceServer()

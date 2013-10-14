@@ -86,6 +86,7 @@
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
+    <Compile Include="Server\JobFetcher.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="Server\DequeuedJobsWatcher.cs" />
     <Compile Include="States\EnqueuedState.cs" />

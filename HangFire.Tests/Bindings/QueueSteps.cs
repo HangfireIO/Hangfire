@@ -9,13 +9,24 @@ namespace HangFire.Tests
     {
         public const string DefaultQueue = "default";
 
+        [Given(@"an empty queue")]
+        public void GivenAnEmptyQueue()
+        {
+        }
+
+        [Given(@"an enqueued job")]
+        public void GivenAnEnqueuedJob()
+        {
+            Given(String.Format("a job in the '{0}' queue", DefaultQueue));
+        }
+
         [Given(@"a job in the '(.+)' queue")]
         public void GivenAJobInTheQueue(string queue)
         {
             Given("a job");
 
             Redis.Client.EnqueueItemOnList(
-                String.Format("hangfire:queue:{0}", DefaultQueue),
+                String.Format("hangfire:queue:{0}", queue),
                 JobSteps.DefaultJobId);
         }
 
@@ -34,6 +45,7 @@ namespace HangFire.Tests
             CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
         }
 
+        [Then(@"the queue does not contain the job anymore")]
         [Then(@"the queue does not contain the job")]
         public void ThenTheQueueDoesNotContainTheJob()
         {

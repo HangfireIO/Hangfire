@@ -46,6 +46,7 @@ namespace HangFire.Tests
                 JobSteps.DefaultJobId);
         }
 
+        [Then(@"the dequeued jobs list contains it")]
         [Then(@"the dequeued jobs list still contains the job")]
         public void ThenTheDequeuedJobsListContainsTheJob()
         {
