@@ -46,8 +46,8 @@ namespace HangFire.Tests
                 JobSteps.DefaultJobId);
         }
 
-        [Then(@"the dequeued jobs queue still contains the job")]
-        public void ThenTheDequeuedJobsQueueContainsTheJob()
+        [Then(@"the dequeued jobs list still contains the job")]
+        public void ThenTheDequeuedJobsListContainsTheJob()
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));
@@ -55,8 +55,8 @@ namespace HangFire.Tests
             CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
         }
 
-        [Then(@"the dequeued jobs queue does not contain the job anymore")]
-        public void ThenTheDequeuedJobsQueueDoesNotContainTheJob()
+        [Then(@"the dequeued jobs list does not contain the job anymore")]
+        public void ThenTheDequeuedJobsListDoesNotContainTheJob()
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));

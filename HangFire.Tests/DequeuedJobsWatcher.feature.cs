@@ -104,9 +104,9 @@ this.ScenarioSetup(scenarioInfo);
 #line 12
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 13
-     testRunner.Then("the dequeued jobs queue still contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the dequeued jobs list still contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 14
-      testRunner.And("the \'default\' queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 15
       testRunner.And("the job has the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
@@ -129,9 +129,9 @@ this.ScenarioSetup(scenarioInfo);
 #line 20
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 21
-     testRunner.Then("the \'default\' queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 22
-      testRunner.And("the dequeued jobs queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 23
       testRunner.And("the job does not have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
@@ -158,9 +158,9 @@ this.ScenarioSetup(scenarioInfo);
 #line 29
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 30
-     testRunner.Then("the dequeued jobs queue still contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the dequeued jobs list still contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 31
-      testRunner.And("the \'default\' queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 32
       testRunner.And("the job has the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 33
@@ -185,9 +185,9 @@ this.ScenarioSetup(scenarioInfo);
 #line 38
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 39
-     testRunner.Then("the \'default\' queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 40
-      testRunner.And("the dequeued jobs queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 41
       testRunner.And("the job does not have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 42
@@ -218,7 +218,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 49
      testRunner.Then("the job moved to the Enqueued state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 50
-      testRunner.And("the dequeued jobs queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -243,7 +243,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 57
      testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 58
-      testRunner.But("the dequeued jobs queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -264,7 +264,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 63
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 64
-     testRunner.Then("the \'default\' queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -289,7 +289,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 70
      testRunner.Then("the job moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 71
-      testRunner.And("the dequeued jobs queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -314,7 +314,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 78
      testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 79
-      testRunner.But("the dequeued jobs queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line hidden
             this.ScenarioCleanup();
         }

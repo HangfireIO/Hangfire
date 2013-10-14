@@ -19,6 +19,12 @@ namespace HangFire.Tests
                 JobSteps.DefaultJobId);
         }
 
+        [Then(@"the queue contains the job")]
+        public void ThenTheQueueContainsTheJob()
+        {
+            Then(String.Format("the '{0}' queue contains the job", DefaultQueue));
+        }
+
         [Then(@"the '(.+)' queue contains the job")]
         public void ThenTheQueueContainsTheJob(string queue)
         {
@@ -26,6 +32,12 @@ namespace HangFire.Tests
                 String.Format("hangfire:queue:{0}", queue));
 
             CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
+        }
+
+        [Then(@"the queue does not contain the job")]
+        public void ThenTheQueueDoesNotContainTheJob()
+        {
+            Then(String.Format("the '{0}' queue does not contain the job", DefaultQueue));
         }
 
         [Then(@"the '(.+)' queue does not contain the job")]
