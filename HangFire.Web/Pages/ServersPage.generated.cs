@@ -93,17 +93,10 @@ else
             
             #line default
             #line hidden
-WriteLiteral(@"    <table class=""table table-outer"">
-        <thead>
-            <tr>
-                <th>Server</th>
-                <th>Queues</th>
-                <th>Total workers</th>
-                <th>Jobs dequeued</th>
-            </tr>
-        </thead>
-        <tbody>
-");
+WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
+">Name</th>\r\n                <th>Workers</th>\r\n                <th>Queues</th>\r\n " +
+"               <th>Started</th>\r\n            </tr>\r\n        </thead>\r\n        <t" +
+"body>\r\n");
 
 
             
@@ -114,12 +107,12 @@ WriteLiteral(@"    <table class=""table table-outer"">
             
             #line default
             #line hidden
-WriteLiteral("                <tr>\r\n                    <td rowspan=\"2\">");
+WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
             #line 35 "..\..\Pages\ServersPage.cshtml"
-                               Write(server.Name);
+                   Write(server.Name);
 
             
             #line default
@@ -129,7 +122,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
             
             #line 36 "..\..\Pages\ServersPage.cshtml"
-                   Write(HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel))));
+                   Write(server.WorkersCount);
 
             
             #line default
@@ -139,95 +132,17 @@ WriteLiteral("</td>\r\n                    <td>");
 
             
             #line 37 "..\..\Pages\ServersPage.cshtml"
-                   Write(server.TotalWorkers);
+                   Write(HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel))));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td>");
+WriteLiteral("</td>\r\n                    <td data-moment=\"");
 
 
             
             #line 38 "..\..\Pages\ServersPage.cshtml"
-                   Write(server.DequeuedJobs);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                </tr>\r\n");
-
-
-
-WriteLiteral("                <tr>\r\n                    <td colspan=\"3\" class=\"table-inner-wrap" +
-"per\">\r\n");
-
-
-            
-            #line 42 "..\..\Pages\ServersPage.cshtml"
-                         if (server.Instances.Count > 0)
-                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral(@"                            <table class=""table table-condensed table-bordered table-inner"">
-                                <thead>
-                                    <tr>
-                                        <th>Instance Id</th>
-                                        <th>Queues</th>
-                                        <th>Workers</th>
-                                        <th>Started</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-");
-
-
-            
-            #line 54 "..\..\Pages\ServersPage.cshtml"
-                                     foreach (var instance in server.Instances)
-                                    {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                        <tr>\r\n                                   " +
-"         <td>");
-
-
-            
-            #line 57 "..\..\Pages\ServersPage.cshtml"
-                                           Write(instance.Id);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                                            <td>");
-
-
-            
-            #line 58 "..\..\Pages\ServersPage.cshtml"
-                                           Write(HtmlHelper.Raw(String.Join(" ", instance.Queues.Select(HtmlHelper.QueueLabel))));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                                            <td>");
-
-
-            
-            #line 59 "..\..\Pages\ServersPage.cshtml"
-                                           Write(instance.WorkersCount);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                                            <td data-moment=\"");
-
-
-            
-            #line 60 "..\..\Pages\ServersPage.cshtml"
-                                                        Write(JobHelper.ToStringTimestamp(instance.StartedAt));
+                                Write(JobHelper.ToStringTimestamp(server.StartedAt));
 
             
             #line default
@@ -236,37 +151,17 @@ WriteLiteral("\">");
 
 
             
-            #line 60 "..\..\Pages\ServersPage.cshtml"
-                                                                                                          Write(instance.StartedAt);
+            #line 38 "..\..\Pages\ServersPage.cshtml"
+                                                                                Write(server.StartedAt);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                                        </tr>\r\n");
+WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
             
-            #line 62 "..\..\Pages\ServersPage.cshtml"
-                                    }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                </tbody>\r\n                            </table>\r\n");
-
-
-            
-            #line 65 "..\..\Pages\ServersPage.cshtml"
-                        }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                    </td>\r\n                </tr>\r\n");
-
-
-            
-            #line 68 "..\..\Pages\ServersPage.cshtml"
+            #line 40 "..\..\Pages\ServersPage.cshtml"
             }
 
             
@@ -276,7 +171,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 71 "..\..\Pages\ServersPage.cshtml"
+            #line 43 "..\..\Pages\ServersPage.cshtml"
 }
             
             #line default

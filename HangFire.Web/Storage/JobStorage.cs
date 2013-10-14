@@ -125,42 +125,18 @@ namespace HangFire.Web
                 var result = new List<ServerDto>(serverNames.Count);
                 foreach (var serverName in serverNames)
                 {
-                    var instanceIds = Redis.GetAllItemsFromSet(
-                        String.Format("hangfire:server:{0}:instances", serverName));
+                    var server = Redis.GetAllEntriesFromHash(
+                        String.Format("hangfire:server:{0}", serverName));
 
-                    var instances = new List<ServerInstanceDto>();
-
-                    foreach (var instanceId in instanceIds)
-                    {
-                        var instance = Redis.GetAllEntriesFromHash(
-                            String.Format("hangfire:server:{0}:instance:{1}", serverName, instanceId));
-                        var queues = Redis.GetAllItemsFromSet(
-                            String.Format("hangfire:server:{0}:instance:{1}:queues", serverName, instanceId));
-
-                        instances.Add(new ServerInstanceDto
-                            {
-                                Id = instanceId,
-                                Queues = queues,
-                                StartedAt = JobHelper.FromStringTimestamp(instance["StartedAt"]),
-                                WorkersCount = int.Parse(instance["Workers"])
-                            });
-                    }
-
-                    var allQueues = Redis.GetUnionFromSets(
-                        instanceIds
-                        .Select(x => String.Format("hangfire:server:{0}:instance:{1}:queues", serverName, x))
-                        .ToArray());
-
-                    var dequeuedJobs = allQueues.Sum(queue => 
-                        Redis.GetListCount(String.Format("hangfire:server:{0}:dequeued:{1}", serverName, queue)));
+                    var queues = Redis.GetAllItemsFromSet(
+                        String.Format("hangfire:server:{0}:queues", serverName));
 
                     result.Add(new ServerDto
                         {
                             Name = serverName,
-                            TotalWorkers = instances.Sum(x => x.WorkersCount),
-                            Queues = allQueues,
-                            DequeuedJobs = dequeuedJobs,
-                            Instances = instances
+                            WorkersCount = int.Parse(server["Workers"]),
+                            Queues = queues,
+                            StartedAt = JobHelper.FromStringTimestamp(server["StartedAt"])
                         });
                 }
 
@@ -244,12 +220,14 @@ namespace HangFire.Web
                         });
 
                     var length = Redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
+                    var dequeued = Redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
 
                     result.Add(new QueueWithTopEnqueuedJobsDto
                     {
                         Name = queue,
                         FirstJobs = jobs,
                         Length = length,
+                        Dequeued = dequeued
                     });
                 }
 
@@ -457,17 +435,12 @@ namespace HangFire.Web
                 var stats = new StatisticsDto();
 
                 var queues = Redis.GetAllItemsFromSet("hangfire:queues");
-                var servers = Redis.GetAllItemsFromSet("hangfire:servers");
 
                 using (var pipeline = Redis.CreatePipeline())
                 {
-                    foreach (var server in servers)
-                    {
-                        var serverName = server;
-                        pipeline.QueueCommand(
-                            x => x.GetSetCount(String.Format("hangfire:server:{0}:instances", serverName)),
-                            x => stats.Servers += x);
-                    }
+                    pipeline.QueueCommand(
+                        x => x.GetSetCount("hangfire:servers"),
+                        x => stats.Servers = x);
 
                     pipeline.QueueCommand(
                         x => x.GetSetCount("hangfire:queues"), 

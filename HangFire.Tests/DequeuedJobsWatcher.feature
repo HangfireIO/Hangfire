@@ -1,9 +1,6 @@
 ﻿@redis
 Feature: Re-queueing of timed out jobs
 
-Background: 
-    Given a server processing the 'default' queue
-
 Scenario: Not checked jobs at fail point #1 should be marked as checked
     Given a dequeued job
      When the watcher runs
@@ -18,7 +15,7 @@ Scenario: Checked and not timed out jobs at fail point #1 should be leaved as is
       And the job has the 'checked' flag set
 
 Scenario: Checked and timed out jobs at fail point #1 should be re-queued
-    Given a dequeued job
+   Given a dequeued job
       And it was checked a day ago
      When the watcher runs
      Then the 'default' queue contains the job
@@ -61,7 +58,6 @@ Scenario: Timed out job in the Succeeded state does not move to the Enqueued sta
       But the dequeued jobs queue does not contain the job anymore
 
 Scenario: Job is being enqueued on it's actual queue after timing out
-    Given a server processing the 'test' queue
       And a dequeued job from the 'test' queue
       And it was fetched a day ago
      When the watcher runs

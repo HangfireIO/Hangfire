@@ -21,6 +21,7 @@ else
             <tr>
                 <th>Queue</th>
                 <th>Length</th>
+                <th>Dequeued</th>
                 <th>Next jobs</th>
             </tr>
         </thead>
@@ -34,6 +35,7 @@ else
                         </a>
                     </td>
                     <td>@queue.Length</td>
+                    <td>@queue.Dequeued</td>
                     <td>@if (queue.FirstJobs.Count == 0)
                         {
                         <em>No jobs queued.</em>

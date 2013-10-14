@@ -36,7 +36,7 @@ namespace HangFire.Tests
         [When(@"the watcher runs")]
         public void WhenTimedOutJobsHandlerRuns()
         {
-            using (var watcher = new Server.DequeuedJobsWatcher(ServerSteps.DefaultServerName))
+            using (var watcher = new Server.DequeuedJobsWatcher())
             {
                 watcher.FindAndRequeueTimedOutJobs();
             }

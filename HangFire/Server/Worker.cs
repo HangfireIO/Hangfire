@@ -243,7 +243,7 @@ namespace HangFire.Server
                 // the storage. The job must not be requeued from here.
 
                 JobServer.RemoveFromFetchedQueue(
-                    Redis, jobId, _serverContext.ServerName, _serverContext.Queue);
+                    Redis, jobId, _serverContext.Queue);
 
                 // Success point. No things must be done after previous command
                 // was succeeded.

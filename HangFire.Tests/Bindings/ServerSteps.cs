@@ -10,18 +10,6 @@ namespace HangFire.Tests
         public const string DefaultServerName = "TestServer";
         public const string DefaultInstanceId = "some-server-id";
 
-        [Given(@"a server processing the '(.+)' queue")]
-        public void GivenServerProcessingTheQueue(string queue)
-        {
-            Redis.Client.AddItemToSet("hangfire:servers", DefaultServerName);
-            Redis.Client.AddItemToSet(
-                String.Format("hangfire:server:{0}:instances", DefaultServerName),
-                DefaultInstanceId);
-            Redis.Client.AddItemToSet(
-                String.Format("hangfire:server:{0}:instance:{1}:queues", DefaultServerName, DefaultInstanceId),
-                queue);
-        }
-
         [Given(@"a dequeued job")]
         public void GivenADequeuedJob()
         {
@@ -52,8 +40,9 @@ namespace HangFire.Tests
         [Given(@"the job was dequeued from the '(.+)' queue")]
         public void GivenTheJobWasDequeuedFromTheQueue(string queue)
         {
+            Redis.Client.AddItemToSet("hangfire:queues", queue);
             Redis.Client.AddItemToList(
-                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, queue),
+                String.Format("hangfire:queue:{0}:dequeued", queue),
                 JobSteps.DefaultJobId);
         }
 
@@ -61,7 +50,7 @@ namespace HangFire.Tests
         public void ThenTheDequeuedJobsQueueContainsTheJob()
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
-                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, QueueSteps.DefaultQueue));
+                String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));
 
             CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
         }
@@ -70,7 +59,7 @@ namespace HangFire.Tests
         public void ThenTheDequeuedJobsQueueDoesNotContainTheJob()
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
-                String.Format("hangfire:server:{0}:dequeued:{1}", DefaultServerName, QueueSteps.DefaultQueue));
+                String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));
 
             CollectionAssert.DoesNotContain(jobIds, JobSteps.DefaultJobId);
         }

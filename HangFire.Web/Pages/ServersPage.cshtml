@@ -19,51 +19,23 @@
 }
 else
 {
-    <table class="table table-outer">
+    <table class="table">
         <thead>
             <tr>
-                <th>Server</th>
+                <th>Name</th>
+                <th>Workers</th>
                 <th>Queues</th>
-                <th>Total workers</th>
-                <th>Jobs dequeued</th>
+                <th>Started</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var server in servers)
             {
                 <tr>
-                    <td rowspan="2">@server.Name</td>
+                    <td>@server.Name</td>
+                    <td>@server.WorkersCount</td>
                     <td>@HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel)))</td>
-                    <td>@server.TotalWorkers</td>
-                    <td>@server.DequeuedJobs</td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="table-inner-wrapper">
-                        @if (server.Instances.Count > 0)
-                        {
-                            <table class="table table-condensed table-bordered table-inner">
-                                <thead>
-                                    <tr>
-                                        <th>Instance Id</th>
-                                        <th>Queues</th>
-                                        <th>Workers</th>
-                                        <th>Started</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var instance in server.Instances)
-                                    {
-                                        <tr>
-                                            <td>@instance.Id</td>
-                                            <td>@HtmlHelper.Raw(String.Join(" ", instance.Queues.Select(HtmlHelper.QueueLabel)))</td>
-                                            <td>@instance.WorkersCount</td>
-                                            <td data-moment="@JobHelper.ToStringTimestamp(instance.StartedAt)">@instance.StartedAt</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        }
-                    </td>
+                    <td data-moment="@JobHelper.ToStringTimestamp(server.StartedAt)">@server.StartedAt</td>
                 </tr>
             }
         </tbody>

@@ -13,16 +13,9 @@ namespace HangFire.Server
         private static readonly TimeSpan SleepTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
-        private readonly string _serverName;
-
         private readonly IRedisClient _redis = RedisFactory.Create();
 
         private readonly ILog _logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
-
-        public DequeuedJobsWatcher(string serverName)
-        {
-            _serverName = serverName;
-        }
 
         public void Dispose()
         {
@@ -31,22 +24,16 @@ namespace HangFire.Server
 
         public void FindAndRequeueTimedOutJobs()
         {
-            var instanceIds = _redis.GetAllItemsFromSet(
-                String.Format("hangfire:server:{0}:instances", _serverName));
-
-            var queues = _redis.GetUnionFromSets(
-                instanceIds
-                    .Select(x => String.Format("hangfire:server:{0}:instance:{1}:queues", _serverName, x))
-                    .ToArray());
+            var queues = _redis.GetAllItemsFromSet("hangfire:queues");
 
             foreach (var queue in queues)
             {
                 using (_redis.AcquireLock(
-                    String.Format("hangfire:server:{0}:dequeued:{1}:lock", _serverName, queue),
+                    String.Format("hangfire:queue:{0}:dequeued:lock", queue),
                     TimeSpan.FromMinutes(1)))
                 {
                     var jobIds = _redis.GetAllItemsFromList(
-                        String.Format("hangfire:server:{0}:dequeued:{1}", _serverName, queue));
+                        String.Format("hangfire:queue:{0}:dequeued", queue));
 
                     foreach (var jobId in jobIds)
                     {
@@ -85,7 +72,7 @@ namespace HangFire.Server
                 if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
                     TryToRequeueTheJob(jobId);
-                    JobServer.RemoveFromFetchedQueue(_redis, jobId, _serverName, queue);
+                    JobServer.RemoveFromFetchedQueue(_redis, jobId, queue);
                 }
             }
         }

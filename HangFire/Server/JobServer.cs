@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using ServiceStack.Logging;
@@ -10,7 +11,6 @@ namespace HangFire.Server
     internal class JobServer : IDisposable
     {
         private readonly string _serverName;
-        private readonly string _instanceId;
 
         private readonly int _concurrency;
         private readonly string _queue;
@@ -28,17 +28,12 @@ namespace HangFire.Server
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
         public JobServer(
-            string serverName,
+            string machineName,
             string queue,
             int concurrency,
             TimeSpan pollInterval,
             JobActivator jobActivator)
         {
-            if (String.IsNullOrEmpty(serverName))
-            {
-                throw new ArgumentNullException("serverName", "You must provide non-null and unique server name.");
-            }
-
             if (String.IsNullOrEmpty(queue))
             {
                 throw new ArgumentNullException("queue", "Please specify the queue name you want to listen.");
@@ -54,11 +49,10 @@ namespace HangFire.Server
                 throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value must be positive.");
             }
 
-            _serverName = serverName;
             _concurrency = concurrency;
             _queue = queue;
 
-            _instanceId = Guid.NewGuid().ToString();
+            _serverName = String.Format("{0}:{1}", machineName, Process.GetCurrentProcess().Id);
 
             var jobInvoker = ServerJobInvoker.Current;
 
@@ -76,8 +70,7 @@ namespace HangFire.Server
             _logger.Info("Manager thread has been started.");
 
             _schedulePoller = new ThreadWrapper(new SchedulePoller(pollInterval));
-            _fetchedJobsWatcher = new ThreadWrapper(
-                new DequeuedJobsWatcher(_serverName));
+            _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher());
         }
 
         /// <summary>
@@ -102,12 +95,12 @@ namespace HangFire.Server
         }
 
         public static void RemoveFromFetchedQueue(
-            IRedisClient redis, string jobId, string serverName, string queue)
+            IRedisClient redis, string jobId, string queue)
         {
             using (var transaction = redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format("hangfire:server:{0}:dequeued:{1}", serverName, queue),
+                    String.Format("hangfire:queue:{0}:dequeued", queue),
                     jobId,
                     -1));
                 
@@ -164,7 +157,7 @@ namespace HangFire.Server
         {
             var jobId = _redis.BlockingPopAndPushItemBetweenLists(
                     String.Format("hangfire:queue:{0}", _queue),
-                    String.Format("hangfire:server:{0}:dequeued:{1}", _serverName, _queue),
+                    String.Format("hangfire:queue:{0}:dequeued", _queue),
                     timeOut);
 
             // Checkpoint #1. 
@@ -190,12 +183,8 @@ namespace HangFire.Server
                 transaction.QueueCommand(x => x.AddItemToSet(
                     "hangfire:servers", _serverName));
 
-                transaction.QueueCommand(x => x.AddItemToSet(
-                    String.Format("hangfire:server:{0}:instances", _serverName),
-                    _instanceId.ToString()));
-
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:server:{0}:instance:{1}", _serverName, _instanceId),
+                    String.Format("hangfire:server:{0}", _serverName),
                     new Dictionary<string, string>
                         {
                             { "Workers", _concurrency.ToString() },
@@ -206,7 +195,7 @@ namespace HangFire.Server
                 {
                     var queueName = queue;
                     transaction.QueueCommand(x => x.AddItemToSet(
-                        String.Format("hangfire:server:{0}:instance:{1}:queues", _serverName, _instanceId),
+                        String.Format("hangfire:server:{0}:queues", _serverName),
                         queueName));
                 }
 
@@ -219,11 +208,12 @@ namespace HangFire.Server
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromSet(
-                    String.Format("hangfire:server:{0}:instances", _serverName),
-                    _instanceId));
+                    "hangfire:servers",
+                    _serverName));
+
                 transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}:instance:{1}", _serverName, _instanceId),
-                    String.Format("hangfire:server:{0}:instance:{1}:queues", _serverName, _instanceId)));
+                    String.Format("hangfire:server:{0}", _serverName),
+                    String.Format("hangfire:server:{0}:queues", _serverName)));
 
                 transaction.Commit();
             }
