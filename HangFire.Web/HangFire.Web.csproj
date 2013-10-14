@@ -139,7 +139,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SucceededJobs.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="AspNetJobServer.cs" />
+    <Compile Include="AspNetBackgroundJobServer.cs" />
     <Compile Include="HangFirePageFactory.cs" />
     <Compile Include="JsonStats.cs" />
     <Compile Include="Pages\LayoutPage.cs">

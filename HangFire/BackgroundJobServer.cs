@@ -13,17 +13,16 @@ namespace HangFire
         /// </summary>
         public BackgroundJobServer()
         {
-            ServerName = Environment.MachineName;
+            MachineName = Environment.MachineName;
             WorkersCount = Environment.ProcessorCount * 2;
             Queue = "default";
             PollInterval = TimeSpan.FromSeconds(15);
         }
 
         /// <summary>
-        /// Gets or sets the server name. It should be unique across
-        /// all server instances.
+        /// Gets or sets the server name.
         /// </summary>
-        public string ServerName { get; set; }
+        public string MachineName { get; set; }
 
         /// <summary>
         /// Gets or sets the queue to listen.
@@ -56,7 +55,7 @@ namespace HangFire
                 throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
             }
 
-            _server = new JobServer(ServerName, Queue, WorkersCount, PollInterval, JobActivator);
+            _server = new JobServer(MachineName, Queue, WorkersCount, PollInterval, JobActivator);
         }
 
         /// <summary>

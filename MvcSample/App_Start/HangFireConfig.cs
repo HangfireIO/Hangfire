@@ -22,7 +22,7 @@ namespace MvcSample
             
             _server = new AspNetBackgroundJobServer
             {
-                ServerName = Environment.MachineName,
+                MachineName = Environment.MachineName,
                 Queue = "default",
                 WorkersCount = Environment.ProcessorCount * 2
             };
