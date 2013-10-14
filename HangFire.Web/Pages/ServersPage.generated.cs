@@ -11,12 +11,22 @@
 
 namespace HangFire.Web.Pages
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     
     #line 2 "..\..\Pages\ServersPage.cshtml"
+    using System;
+    
+    #line default
+    #line hidden
+    using System.Collections.Generic;
+    
+    #line 3 "..\..\Pages\ServersPage.cshtml"
+    using System.Linq;
+    
+    #line default
+    #line hidden
+    using System.Text;
+    
+    #line 4 "..\..\Pages\ServersPage.cshtml"
     using Pages;
     
     #line default
@@ -35,11 +45,11 @@ WriteLiteral("\r\n");
 
 
 
-WriteLiteral("              \r\n");
+
 
 
             
-            #line 5 "..\..\Pages\ServersPage.cshtml"
+            #line 6 "..\..\Pages\ServersPage.cshtml"
   
     Layout = new LayoutPage { Title = "Servers" };
 
@@ -51,7 +61,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 9 "..\..\Pages\ServersPage.cshtml"
+            #line 10 "..\..\Pages\ServersPage.cshtml"
   
     var servers = JobStorage.Servers();
 
@@ -63,7 +73,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 13 "..\..\Pages\ServersPage.cshtml"
+            #line 14 "..\..\Pages\ServersPage.cshtml"
  if (servers.Count == 0)
 {
 
@@ -75,7 +85,7 @@ WriteLiteral("    <div class=\"alert alert-warning\">\r\n        There are no ac
 
 
             
-            #line 18 "..\..\Pages\ServersPage.cshtml"
+            #line 19 "..\..\Pages\ServersPage.cshtml"
 }
 else
 {
@@ -83,66 +93,63 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Server</th>\r\n                <th>Queue</th>\r\n                <th>Workers</th>\r\n" +
-"                <th>Started</th>\r\n            </tr>\r\n        </thead>\r\n        <" +
-"tbody>\r\n");
+WriteLiteral(@"    <table class=""table table-outer"">
+        <thead>
+            <tr>
+                <th>Server</th>
+                <th>Queues</th>
+                <th>Total workers</th>
+                <th>Jobs dequeued</th>
+            </tr>
+        </thead>
+        <tbody>
+");
 
 
             
-            #line 31 "..\..\Pages\ServersPage.cshtml"
+            #line 32 "..\..\Pages\ServersPage.cshtml"
              foreach (var server in servers)
             {
 
             
             #line default
             #line hidden
-WriteLiteral("                <tr>\r\n                    <td>");
-
-
-            
-            #line 34 "..\..\Pages\ServersPage.cshtml"
-                   Write(server.Name);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</td>\r\n                    <td><span class=\"label label-primary\">");
+WriteLiteral("                <tr>\r\n                    <td rowspan=\"2\">");
 
 
             
             #line 35 "..\..\Pages\ServersPage.cshtml"
-                                                     Write(server.Queue);
+                               Write(server.Name);
 
             
             #line default
             #line hidden
-WriteLiteral("</span></td>\r\n                    <td>");
+WriteLiteral("</td>\r\n                    <td>");
 
 
             
             #line 36 "..\..\Pages\ServersPage.cshtml"
-                   Write(server.Concurrency);
+                   Write(HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel))));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td data-moment=\"");
+WriteLiteral("</td>\r\n                    <td>");
 
 
             
             #line 37 "..\..\Pages\ServersPage.cshtml"
-                                Write(JobHelper.ToStringTimestamp(server.StartedAt));
+                   Write(server.TotalWorkers);
 
             
             #line default
             #line hidden
-WriteLiteral("\">");
+WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 37 "..\..\Pages\ServersPage.cshtml"
-                                                                                Write(server.StartedAt);
+            #line 38 "..\..\Pages\ServersPage.cshtml"
+                   Write(server.DequeuedJobs);
 
             
             #line default
@@ -150,8 +157,106 @@ WriteLiteral("\">");
 WriteLiteral("</td>\r\n                </tr>\r\n");
 
 
+
+WriteLiteral("                <tr>\r\n                    <td colspan=\"3\" class=\"table-inner-wrap" +
+"per\">\r\n");
+
+
             
-            #line 39 "..\..\Pages\ServersPage.cshtml"
+            #line 42 "..\..\Pages\ServersPage.cshtml"
+                         if (server.Instances.Count > 0)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@"                            <table class=""table table-condensed table-bordered table-inner"">
+                                <thead>
+                                    <tr>
+                                        <th>Instance Id</th>
+                                        <th>Queues</th>
+                                        <th>Workers</th>
+                                        <th>Started</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+");
+
+
+            
+            #line 54 "..\..\Pages\ServersPage.cshtml"
+                                     foreach (var instance in server.Instances)
+                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <tr>\r\n                                   " +
+"         <td>");
+
+
+            
+            #line 57 "..\..\Pages\ServersPage.cshtml"
+                                           Write(instance.Id);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                                            <td>");
+
+
+            
+            #line 58 "..\..\Pages\ServersPage.cshtml"
+                                           Write(HtmlHelper.Raw(String.Join(" ", instance.Queues.Select(HtmlHelper.QueueLabel))));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                                            <td>");
+
+
+            
+            #line 59 "..\..\Pages\ServersPage.cshtml"
+                                           Write(instance.WorkersCount);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                                            <td>");
+
+
+            
+            #line 60 "..\..\Pages\ServersPage.cshtml"
+                                           Write(instance.StartedAt);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                                        </tr>\r\n");
+
+
+            
+            #line 62 "..\..\Pages\ServersPage.cshtml"
+                                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                </tbody>\r\n                            </table>\r\n");
+
+
+            
+            #line 65 "..\..\Pages\ServersPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </td>\r\n                </tr>\r\n");
+
+
+            
+            #line 68 "..\..\Pages\ServersPage.cshtml"
             }
 
             
@@ -161,7 +266,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 42 "..\..\Pages\ServersPage.cshtml"
+            #line 71 "..\..\Pages\ServersPage.cshtml"
 }
             
             #line default

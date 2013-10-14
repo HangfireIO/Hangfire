@@ -10,6 +10,11 @@ namespace HangFire.Web
 {
     internal static class HtmlHelper
     {
+        public static IHtmlString Raw(string value)
+        {
+            return new HtmlString(value);
+        }
+
         public static IHtmlString JobId(string jobId)
         {
             return new HtmlString(jobId.Substring(0, 8));

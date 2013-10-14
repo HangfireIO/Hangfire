@@ -43,10 +43,6 @@ html, body {
     margin-top: 0;
 }
 
-.expand-exception {
-    cursor: pointer;
-}
-
 .glyphicon {
     top: 0px;
 }
@@ -89,6 +85,32 @@ html, body {
     border-radius: 4px;
     border: none;
     margin: 0;
+}
+
+.expander {
+    cursor: pointer;
+}
+
+.expandable {
+    display: none;
+}
+
+.table-outer td {
+    background: #f9f9f9;
+}
+
+.table-outer td.table-inner-wrapper {
+    padding: 0;
+    border-top: none;
+}
+
+.table-inner {
+    margin-bottom: 7px;
+    font-size: 90%;
+}
+
+.table-inner td {
+    background-color: white;
 }
 
 /* Statistics widget

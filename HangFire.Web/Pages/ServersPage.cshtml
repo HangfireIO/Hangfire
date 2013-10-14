@@ -1,7 +1,8 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Linq
 @using Pages
 @inherits RazorPage
-              
 @{
     Layout = new LayoutPage { Title = "Servers" };
 }
@@ -18,23 +19,51 @@
 }
 else
 {
-    <table class="table">
+    <table class="table table-outer">
         <thead>
             <tr>
                 <th>Server</th>
-                <th>Queue</th>
-                <th>Workers</th>
-                <th>Started</th>
+                <th>Queues</th>
+                <th>Total workers</th>
+                <th>Jobs dequeued</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var server in servers)
             {
                 <tr>
-                    <td>@server.Name</td>
-                    <td><span class="label label-primary">@server.Queue</span></td>
-                    <td>@server.Concurrency</td>
-                    <td data-moment="@JobHelper.ToStringTimestamp(server.StartedAt)">@server.StartedAt</td>
+                    <td rowspan="2">@server.Name</td>
+                    <td>@HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel)))</td>
+                    <td>@server.TotalWorkers</td>
+                    <td>@server.DequeuedJobs</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="table-inner-wrapper">
+                        @if (server.Instances.Count > 0)
+                        {
+                            <table class="table table-condensed table-bordered table-inner">
+                                <thead>
+                                    <tr>
+                                        <th>Instance Id</th>
+                                        <th>Queues</th>
+                                        <th>Workers</th>
+                                        <th>Started</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var instance in server.Instances)
+                                    {
+                                        <tr>
+                                            <td>@instance.Id</td>
+                                            <td>@HtmlHelper.Raw(String.Join(" ", instance.Queues.Select(HtmlHelper.QueueLabel)))</td>
+                                            <td>@instance.WorkersCount</td>
+                                            <td>@instance.StartedAt</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

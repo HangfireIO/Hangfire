@@ -8,12 +8,17 @@ namespace HangFire.Tests
     public class ServerSteps : Steps
     {
         public const string DefaultServerName = "TestServer";
+        public const string DefaultInstanceId = "some-server-id";
 
         [Given(@"a server processing the '(.+)' queue")]
         public void GivenServerProcessingTheQueue(string queueName)
         {
+            Redis.Client.AddItemToSet("hangfire:servers", DefaultServerName);
             Redis.Client.AddItemToSet(
-                String.Format("hangfire:server:{0}:queues", DefaultServerName),
+                String.Format("hangfire:server:{0}:instances", DefaultServerName),
+                DefaultInstanceId);
+            Redis.Client.AddItemToSet(
+                String.Format("hangfire:server:{0}:instance:{1}:queues", DefaultServerName, DefaultInstanceId),
                 queueName);
         }
 

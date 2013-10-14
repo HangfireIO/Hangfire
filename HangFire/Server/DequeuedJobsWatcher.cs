@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using HangFire.States;
 using ServiceStack.Logging;
@@ -30,8 +31,13 @@ namespace HangFire.Server
 
         public void FindAndRequeueTimedOutJobs()
         {
-            var queues = _redis.GetAllItemsFromSet(
-                String.Format("hangfire:server:{0}:queues", _serverName));
+            var instanceIds = _redis.GetAllItemsFromSet(
+                String.Format("hangfire:server:{0}:instances", _serverName));
+
+            var queues = _redis.GetUnionFromSets(
+                instanceIds
+                    .Select(x => String.Format("hangfire:server:{0}:instance:{1}:queues", _serverName, x))
+                    .ToArray());
 
             foreach (var queue in queues)
             {

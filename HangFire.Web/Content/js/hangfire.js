@@ -229,8 +229,8 @@
                 e.preventDefault();
             });
 
-            $('.failed-table').on('click', '.expand-exception', function () {
-                $(this).closest('tr').next().toggle();
+            $(document).on('click', '.expander', function () {
+                $(this).closest('tr').next().find('.expandable').slideToggle(150);
             });
         };
 

@@ -43,14 +43,14 @@ else
             @foreach (var job in failedJobs)
             {
                 <tr>
-                    <td>
+                    <td rowspan="2">
                         <a href="@Request.LinkTo("/job/" + job.Key)">
                             @HtmlHelper.JobId(job.Key)
                         </a>
                     </td>
                     <td data-moment="@JobHelper.ToStringTimestamp(job.Value.FailedAt.Value)">@job.Value.FailedAt</td>
                     <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
-                    <td class="expand-exception">
+                    <td class="expander">
                         <div>
                             @HtmlHelper.JobType(job.Value.Type)
                         </div>
@@ -71,9 +71,10 @@ else
                         </div>
                     </td>
                 </tr>
-                <tr style="@(index++ > 0 ? "display: none;" : null)">
-                    <td colspan="5" class="failed-job-details">
-                        <h4>@job.Value.ExceptionType</h4>
+                <tr>
+                    <td colspan="4" class="failed-job-details">
+                        <div class="expandable" style="@(index++ == 0 ? "display: block;" : null)">
+                            <h4>@job.Value.ExceptionType</h4>
                         <p>
                             @job.Value.ExceptionMessage
                         </p>
@@ -101,6 +102,7 @@ else
                                 }
                             </tbody>
                         </table>
+                        </div>
                     </td>
                 </tr>
             }
