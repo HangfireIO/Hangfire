@@ -57,7 +57,7 @@ else
                                             <td>@instance.Id</td>
                                             <td>@HtmlHelper.Raw(String.Join(" ", instance.Queues.Select(HtmlHelper.QueueLabel)))</td>
                                             <td>@instance.WorkersCount</td>
-                                            <td>@instance.StartedAt</td>
+                                            <td data-moment="@JobHelper.ToStringTimestamp(instance.StartedAt)">@instance.StartedAt</td>
                                         </tr>
                                     }
                                 </tbody>
