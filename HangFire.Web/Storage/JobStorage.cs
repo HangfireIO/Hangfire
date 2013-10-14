@@ -229,7 +229,7 @@ namespace HangFire.Web
                 foreach (var queue in queues)
                 {
                     var firstJobIds = Redis.GetRangeFromList(
-                        String.Format("hangfire:queue:{0}", queue), 0, 4);
+                        String.Format("hangfire:queue:{0}", queue), -5, -1);
 
                     var jobs = GetJobsWithProperties(
                         Redis,
@@ -244,13 +244,11 @@ namespace HangFire.Web
                         });
 
                     var length = Redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
-                    var servers = Redis.GetAllItemsFromSet(String.Format("hangfire:queue:{0}:servers", queue));
 
                     result.Add(new QueueWithTopEnqueuedJobsDto
                     {
-                        QueueName = queue,
+                        Name = queue,
                         FirstJobs = jobs,
-                        Servers = servers,
                         Length = length,
                     });
                 }

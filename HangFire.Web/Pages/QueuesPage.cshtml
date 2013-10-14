@@ -14,63 +14,66 @@
         You have no queues yet. Try to enqueue your first job.
     </div>
 }
-@foreach (var queue in queues)
+else
 {
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">
-                @queue.QueueName    </h3>
-        </div>
-        <div class="panel-body">
-            
-
-            <dl class="dl-horizontal">
-                <dt>Queue length:</dt>
-                <dd>@queue.Length</dd>
-                <dt>Servers:</dt>
-                <dd>@String.Join(", ", queue.Servers)</dd>
-            </dl>
-            
-            @if (queue.FirstJobs.Count != 0)
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Queue</th>
+                <th>Length</th>
+                <th>Next jobs</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var queue in queues)
             {
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>Job type</th>
-                            <th>Args</th>
-                            <th>Enqueued</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var job in queue.FirstJobs)
+                <tr>
+                    <td>
+                        <a href="@Request.LinkTo("/queues/" + queue.Name)">
+                            @queue.Name
+                        </a>
+                    </td>
+                    <td>@queue.Length</td>
+                    <td>@if (queue.FirstJobs.Count == 0)
                         {
-                            <tr>
-                                <td><a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a></td>
-                                <td>@HtmlHelper.JobType(job.Value.Type)</td>
-                                <td><pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre></td>
-                                <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt)">@job.Value.EnqueuedAt</td>
-                            </tr>
+                            <em>No jobs queued.</em>
                         }
-                    </tbody>
-                </table>
+                        else
+                        {
+                        <table class="table table-condensed table-bordered table-inner">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Job type</th>
+                                    <th>Enqueued</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var job in queue.FirstJobs)
+                                {
+                                    <tr>
+                                        <td><a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a></td>
+                                        <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                                        <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt)">@job.Value.EnqueuedAt</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        }</td>
+                    <td>
+                        <div class="pull-right">
+                            <button class="btn btn-default btn-sm">
+                                <span class="glyphicon glyphicon-trash"></span>
+                                Clear
+                            </button>
+                            <button class="btn btn-danger btn-sm">
+                                <span class="glyphicon glyphicon-remove"></span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
             }
-            
-            <a href="@Request.LinkTo("/queues/" + queue.QueueName)">Enqueued jobs</a>
-            
-        </div>
-        <div class="panel-footer">
-            <div class="btn-toolbar pull-right">
-                <button class="btn btn-default btn-sm">
-                    <span class="glyphicon glyphicon-trash"></span>
-                    Clear
-                </button>
-                <button class="btn btn-danger btn-sm">
-                    <span class="glyphicon glyphicon-remove"></span>
-                </button>
-            </div>
-
-            <div class="clearfix"></div>
-        </div>
-    </div>
+        </tbody>
+    </table>
 }
