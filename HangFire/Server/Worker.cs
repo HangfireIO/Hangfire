@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using HangFire.Filters;
 using HangFire.States;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -12,9 +13,8 @@ namespace HangFire.Server
     internal class Worker : IDisposable
     {
         private readonly WorkerPool _pool;
-        private readonly ServerContext _serverContext;
-        private readonly int _workerNumber;
-        private readonly ServerJobInvoker _jobInvoker;
+        private readonly WorkerContext _context;
+        private readonly JobPerformer _jobPerformer;
         private readonly JobActivator _jobActivator;
         private readonly Thread _thread;
 
@@ -36,21 +36,19 @@ namespace HangFire.Server
 
         public Worker(
             WorkerPool pool,
-            ServerContext serverContext,
-            int workerNumber,
-            ServerJobInvoker jobInvoker, JobActivator jobActivator)
+            WorkerContext context,
+            JobPerformer jobPerformer, JobActivator jobActivator)
         {
             _pool = pool;
-            _serverContext = serverContext;
-            _workerNumber = workerNumber;
-            _jobInvoker = jobInvoker;
+            _context = context;
+            _jobPerformer = jobPerformer;
             _jobActivator = jobActivator;
 
-            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", workerNumber));
+            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", _context.WorkerNumber));
 
             _thread = new Thread(DoWork)
                 {
-                    Name = String.Format("HangFire.Worker.{0}", workerNumber),
+                    Name = String.Format("HangFire.Worker.{0}", _context.WorkerNumber),
                     IsBackground = true
                 };
         }
@@ -157,13 +155,11 @@ namespace HangFire.Server
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We need to catch all user-code exceptions.")]
         private void PerformJob(JobPayload payload)
         {
-            var workerContext = new WorkerContext(_serverContext, _workerNumber, Redis);
-
             lock (Redis)
             {
                 if (!JobState.Apply(
                     Redis,
-                    new ProcessingState(payload.Id, "Worker has started processing.", workerContext.ServerContext.ServerName),
+                    new ProcessingState(payload.Id, "Worker has started processing.", _context.ServerName),
                     EnqueuedState.Name,
                     ProcessingState.Name))
                 {
@@ -183,7 +179,11 @@ namespace HangFire.Server
             {
                 jobDescriptor = new ServerJobDescriptor(
                     _jobActivator, payload);
-                _jobInvoker.PerformJob(workerContext, jobDescriptor);
+
+                var performContext = new PerformContext(
+                    _context, jobDescriptor);
+
+                _jobPerformer.PerformJob(performContext);
             }
             catch (Exception ex)
             {

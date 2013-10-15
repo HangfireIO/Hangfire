@@ -65,23 +65,24 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Client\ClientJobInvoker.cs" />
-    <Compile Include="Client\ClientContext.cs" />
+    <Compile Include="Client\JobCreator.cs" />
+    <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Client\ClientJobDescriptor.cs" />
-    <Compile Include="Filters\Client\ClientJobExceptionContext.cs" />
+    <Compile Include="Filters\Client\ClientExceptionContext.cs" />
     <Compile Include="Filters\GlobalJobFilterCollection.cs" />
-    <Compile Include="Filters\Client\IClientJobExceptionFilter.cs" />
-    <Compile Include="Filters\IJobStateChangingFilter.cs" />
-    <Compile Include="Filters\Server\IServerJobExceptionFilter.cs" />
-    <Compile Include="Filters\Client\JobEnqueuedContext.cs" />
-    <Compile Include="Filters\Client\JobEnqueueingContext.cs" />
-    <Compile Include="Filters\Server\ServerJobExceptionContext.cs" />
+    <Compile Include="Filters\Client\IClientExceptionFilter.cs" />
+    <Compile Include="Filters\IStateChangedFilter.cs" />
+    <Compile Include="Filters\Server\IServerExceptionFilter.cs" />
+    <Compile Include="Filters\Client\CreatedContext.cs" />
+    <Compile Include="Filters\Client\CreatingContext.cs" />
+    <Compile Include="Filters\Server\PerformContext.cs" />
+    <Compile Include="Filters\Server\ServerExceptionContext.cs" />
     <Compile Include="Filters\JobFilter.cs" />
-    <Compile Include="Filters\Server\JobPerformedContext.cs" />
-    <Compile Include="Filters\Server\JobPerformingContext.cs" />
+    <Compile Include="Filters\Server\PerformedContext.cs" />
+    <Compile Include="Filters\Server\PerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
-    <Compile Include="Filters\IJobStateAppliedFilter.cs" />
+    <Compile Include="Filters\IStateAppliedFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />
@@ -94,9 +95,9 @@
     <Compile Include="States\FailedState.cs" />
     <Compile Include="States\FailedStateDescriptor.cs" />
     <Compile Include="States\JobState.cs" />
-    <Compile Include="Filters\Client\IClientJobFilter.cs" />
+    <Compile Include="Filters\Client\IClientFilter.cs" />
     <Compile Include="Filters\IJobFilter.cs" />
-    <Compile Include="Filters\Server\IServerJobFilter.cs" />
+    <Compile Include="Filters\Server\IServerFilter.cs" />
     <Compile Include="PreserveCultureFilter.cs" />
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="Perform.cs" />
@@ -108,7 +109,7 @@
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerJobDescriptor.cs" />
     <Compile Include="Server\WorkerPool.cs" />
-    <Compile Include="Server\ServerJobInvoker.cs" />
+    <Compile Include="Server\JobPerformer.cs" />
     <Compile Include="Client\JobClient.cs" />
     <Compile Include="Server\Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

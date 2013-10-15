@@ -16,7 +16,7 @@ namespace HangFire
         public int Seconds { get; private set; }
     }
 
-    public class RecurringJobsFilter : IJobStateChangingFilter
+    public class RecurringJobsFilter : IStateChangedFilter
     {
         public JobState OnStateChanged(IRedisClient redis, JobState state)
         {

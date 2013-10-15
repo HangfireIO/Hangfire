@@ -4,10 +4,10 @@ using HangFire.Client;
 
 namespace HangFire.Filters
 {
-    public class ClientJobExceptionContext : ClientContext
+    public class ClientExceptionContext : CreateContext
     {
-        public ClientJobExceptionContext(ClientContext clientContext, Exception exception)
-            : base(clientContext)
+        public ClientExceptionContext(CreateContext createContext, Exception exception)
+            : base(createContext)
         {
             Exception = exception;
         }

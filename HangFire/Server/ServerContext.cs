@@ -4,6 +4,11 @@ namespace HangFire.Server
 {
     public class ServerContext
     {
+        public ServerContext(ServerContext context)
+            : this(context.ServerName, context.Queues, context.WorkersCount)
+        {
+        }
+
         public ServerContext(string serverName, IList<string> queues, int workersCount)
         {
             ServerName = serverName;

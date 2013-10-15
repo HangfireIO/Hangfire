@@ -1,20 +1,20 @@
 ﻿namespace HangFire.Filters
 {
-    public abstract class JobFilter : IClientJobFilter, IServerJobFilter
+    public abstract class JobFilter : IClientFilter, IServerFilter
     {
-        public virtual void OnJobEnqueueing(JobEnqueueingContext filterContext)
+        public virtual void OnCreating(CreatingContext filterContext)
         {
         }
 
-        public virtual void OnJobEnqueued(JobEnqueuedContext filterContext)
+        public virtual void OnCreated(CreatedContext filterContext)
         {
         }
 
-        public virtual void OnJobPerforming(JobPerformingContext filterContext)
+        public virtual void OnPerforming(PerformingContext filterContext)
         {
         }
 
-        public virtual void OnJobPerformed(JobPerformedContext filterContext)
+        public virtual void OnPerformed(PerformedContext filterContext)
         {
         }
     }

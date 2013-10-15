@@ -56,7 +56,7 @@ namespace HangFire.Server
 
             _serverName = String.Format("{0}:{1}", machineName, Process.GetCurrentProcess().Id);
 
-            var jobInvoker = ServerJobInvoker.Current;
+            var jobInvoker = JobPerformer.Current;
 
             _pool = new WorkerPool(
                 new ServerContext(_serverName, _queues, concurrency),

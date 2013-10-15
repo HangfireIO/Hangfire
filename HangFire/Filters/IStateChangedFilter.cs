@@ -4,7 +4,7 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public interface IJobStateChangingFilter : IJobFilter
+    public interface IStateChangedFilter : IJobFilter
     {
         JobState OnStateChanged(IRedisClient redis, JobState state);
     }

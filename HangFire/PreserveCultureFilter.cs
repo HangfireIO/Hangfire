@@ -8,7 +8,7 @@ namespace HangFire
 {
     public class PreserveCultureFilter : JobFilter
     {
-        public override void OnJobEnqueueing(JobEnqueueingContext filterContext)
+        public override void OnCreating(CreatingContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
@@ -18,7 +18,7 @@ namespace HangFire
                 "CurrentUICulture", Thread.CurrentThread.CurrentUICulture.Name);
         }
 
-        public override void OnJobPerforming(JobPerformingContext filterContext)
+        public override void OnPerforming(PerformingContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
@@ -42,7 +42,7 @@ namespace HangFire
             }
         }
 
-        public override void OnJobPerformed(JobPerformedContext filterContext)
+        public override void OnPerformed(PerformedContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 

@@ -7,7 +7,7 @@ namespace HangFire.Client
 {
     internal class JobClient : IDisposable
     {
-        private readonly ClientJobInvoker _jobInvoker = ClientJobInvoker.Current;
+        private readonly JobCreator _jobCreator = JobCreator.Current;
         private readonly IRedisClient _redis = RedisFactory.Create();
 
         public string Async(Type jobType, object args = null)
@@ -25,8 +25,8 @@ namespace HangFire.Client
 
             var queue = JobHelper.GetQueue(jobType);
 
-            var clientContext = new ClientContext();
             var descriptor = CreateDescriptor(jobType, args);
+            var context = new CreateContext(descriptor);
 
             descriptor.EnqueueAction = () =>
                 {
@@ -39,7 +39,7 @@ namespace HangFire.Client
                     }
                 };
 
-            _jobInvoker.EnqueueJob(clientContext, descriptor);
+            _jobCreator.CreateJob(context);
 
             return descriptor.JobId;
         }
@@ -67,8 +67,8 @@ namespace HangFire.Client
                 return Async(jobType, args);
             }
 
-            var clientContext = new ClientContext();
             var descriptor = CreateDescriptor(jobType, args);
+            var context = new CreateContext(descriptor);
 
             var at = DateTime.UtcNow.Add(interval);
 
@@ -85,7 +85,7 @@ namespace HangFire.Client
                 }
             };
 
-            _jobInvoker.EnqueueJob(clientContext, descriptor);
+            _jobCreator.CreateJob(context);
 
             return descriptor.JobId;
         }

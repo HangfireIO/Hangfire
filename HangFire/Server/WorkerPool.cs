@@ -18,7 +18,7 @@ namespace HangFire.Server
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public WorkerPool(
             ServerContext serverContext,
-            ServerJobInvoker jobInvoker,
+            JobPerformer jobPerformer,
             JobActivator jobActivator)
         {
             _workers = new List<Worker>(serverContext.WorkersCount);
@@ -30,9 +30,8 @@ namespace HangFire.Server
             {
                 var worker = new Worker(
                     this,
-                    serverContext,
-                    i,
-                    jobInvoker,
+                    new WorkerContext(serverContext, i),
+                    jobPerformer,
                     jobActivator);
 
                 worker.Start();
