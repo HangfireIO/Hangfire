@@ -1,16 +1,18 @@
-﻿namespace HangFire.Server
+﻿using System.Collections.Generic;
+
+namespace HangFire.Server
 {
     public class ServerContext
     {
-        public ServerContext(string serverName, string queue, int workersCount)
+        public ServerContext(string serverName, IList<string> queues, int workersCount)
         {
             ServerName = serverName;
-            Queue = queue;
+            Queues = queues;
             WorkersCount = workersCount;
         }
 
         public string ServerName { get; private set; }
-        public string Queue { get; private set; }
+        public IList<string> Queues { get; private set; }
         public int WorkersCount { get; private set; }
     }
 }

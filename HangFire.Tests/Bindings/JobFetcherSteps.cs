@@ -11,7 +11,7 @@ namespace HangFire.Tests
     public class JobFetcherSteps : Steps
     {
         private JobFetcher _fetcher;
-        private string _jobId;
+        private JobPayload _payload;
         private IList<string> _queues;
 
         [Given(@"the fetcher listening the queue")]
@@ -49,7 +49,7 @@ namespace HangFire.Tests
         [When(@"it dequeues a job.*")]
         public void WhenItDequeuesAJob()
         {
-            _jobId = _fetcher.DequeueJobId();
+            _payload = _fetcher.DequeueJob();
         }
 
         [When(@"it dequeues (\d+) jobs?")]
@@ -64,19 +64,19 @@ namespace HangFire.Tests
         [Then(@"the fetcher returns the job")]
         public void ThenTheFetcherReturnsTheJob()
         {
-            Assert.AreEqual(JobSteps.DefaultJobId, _jobId);
+            Assert.AreEqual(JobSteps.DefaultJobId, _payload.Id);
         }
 
         [Then(@"the fetcher returns the '(.+)' job")]
         public void ThenTheFetcherReturnsTheJob(string jobId)
         {
-            Assert.AreEqual(jobId, _jobId);
+            Assert.AreEqual(jobId, _payload.Id);
         }
 
         [Then(@"the fetcher returns null")]
         public void ThenTheFetcherReturnsNull()
         {
-            Assert.IsNull(_jobId);
+            Assert.IsNull(_payload);
         }
 
         [Then(@"all queues are empty")]

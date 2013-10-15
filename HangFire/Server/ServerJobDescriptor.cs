@@ -8,18 +8,16 @@ namespace HangFire.Server
     {
         private readonly BackgroundJob _jobInstance;
 
-        public ServerJobDescriptor(
+        internal ServerJobDescriptor(
             JobActivator activator,
-            string jobId,
-            string jobType, 
-            IDictionary<string, string> jobProperties)
+            JobPayload payload)
         {
             if (activator == null) throw new ArgumentNullException("activator");
-            if (jobProperties == null) throw new ArgumentNullException("jobProperties");
+            if (payload == null) throw new ArgumentNullException("payload");
 
-            JobId = jobId;
+            JobId = payload.Id;
 
-            var type = Type.GetType(jobType, true, true);
+            var type = Type.GetType(payload.Type, true, true);
             _jobInstance = activator.ActivateJob(type);
 
             if (_jobInstance == null)
@@ -30,7 +28,9 @@ namespace HangFire.Server
                     type.FullName));
             }
 
-            foreach (var arg in jobProperties)
+            var args = JobHelper.FromJson<Dictionary<string, string>>(payload.Args);
+
+            foreach (var arg in args)
             {
                 var propertyInfo = _jobInstance.GetType().GetProperty(arg.Key);
                 if (propertyInfo != null)

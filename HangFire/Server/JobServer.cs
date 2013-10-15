@@ -59,7 +59,7 @@ namespace HangFire.Server
             var jobInvoker = ServerJobInvoker.Current;
 
             _pool = new WorkerPool(
-                new ServerContext(_serverName, _queue, concurrency),
+                new ServerContext(_serverName, _queues, concurrency),
                 jobInvoker, jobActivator ?? new JobActivator());
 
             _fetcher = new JobFetcher(_redis, _queues);
@@ -132,11 +132,11 @@ namespace HangFire.Server
                 {
                     var worker = _pool.TakeFree(_cts.Token);
 
-                    string jobId;
+                    JobPayload jobId;
 
                     do
                     {
-                        jobId = _fetcher.DequeueJobId();
+                        jobId = _fetcher.DequeueJob();
                         if (jobId == null && _cts.IsCancellationRequested)
                         {
                             throw new OperationCanceledException();

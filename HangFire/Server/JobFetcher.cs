@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ServiceStack.Logging;
 using ServiceStack.Redis;
 
 namespace HangFire.Server
@@ -12,6 +13,8 @@ namespace HangFire.Server
         private readonly IList<string> _queues;
         private int _currentQueueIndex = 0;
 
+        private readonly ILog _logger = LogManager.GetLogger(typeof (JobFetcher));
+
         public JobFetcher(
             IRedisClient redis, IList<string> queues, TimeSpan? fetchTimeout = null)
         {
@@ -21,11 +24,12 @@ namespace HangFire.Server
             _fetchTimeout = fetchTimeout ?? TimeSpan.FromSeconds(5);
         }
 
-        public string DequeueJobId()
+        public JobPayload DequeueJob()
         {
+            var queue = _queues[_currentQueueIndex];
             var jobId = _redis.BlockingPopAndPushItemBetweenLists(
-                    String.Format("hangfire:queue:{0}", _queues[_currentQueueIndex]),
-                    String.Format("hangfire:queue:{0}:dequeued", _queues[_currentQueueIndex]),
+                    String.Format("hangfire:queue:{0}", queue),
+                    String.Format("hangfire:queue:{0}:dequeued", queue),
                     _fetchTimeout);
 
             _currentQueueIndex = (_currentQueueIndex + 1) % _queues.Count;
@@ -50,15 +54,38 @@ namespace HangFire.Server
             // that is being inspected by the DequeuedJobsWatcher instance.
             // Job's has the implicit 'Dequeued' state.
 
-            _redis.SetEntry(
-                String.Format("hangfire:job:{0}:fetched", jobId),
-                JobHelper.ToStringTimestamp(DateTime.UtcNow));
+            string jobArgs = null;
+            string jobType = null;
+
+            using (var pipeline = _redis.CreatePipeline())
+            {
+                pipeline.QueueCommand(x => x.SetEntry(
+                    String.Format("hangfire:job:{0}:fetched", jobId),
+                    JobHelper.ToStringTimestamp(DateTime.UtcNow)));
+
+                pipeline.QueueCommand(
+                    x => x.GetValuesFromHash(
+                        String.Format("hangfire:job:{0}", jobId),
+                        new[] { "Type", "Args" }),
+                    x => { jobType = x[0]; jobArgs = x[1]; });
+
+                pipeline.Flush();
+            }
 
             // Checkpoint #2. The job is in the implicit 'Fetched' state now.
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return jobId;
+            if (String.IsNullOrEmpty(jobType))
+            {
+                _logger.Warn(String.Format(
+                    "Could not process the job '{0}': it does not exist in the storage.",
+                    jobId));
+
+                return null;
+            }
+
+            return new JobPayload(jobId, queue, jobType, jobArgs);
         }
     }
 }

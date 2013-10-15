@@ -32,7 +32,7 @@ namespace HangFire.Server
         private bool _started;
         private bool _disposed;
 
-        private string _jobId;
+        private JobPayload _jobPayload;
 
         public Worker(
             WorkerPool pool,
@@ -96,13 +96,13 @@ namespace HangFire.Server
             }
         }
 
-        public void Process(string jobId)
+        public void Process(JobPayload payload)
         {
             Debug.Assert(!_disposed, "!_disposed");
 
             lock (_jobLock)
             {
-                _jobId = jobId;
+                _jobPayload = payload;
             }
 
             _jobIsReady.Set();
@@ -136,7 +136,7 @@ namespace HangFire.Server
 
                     lock (_jobLock)
                     {
-                        PerformJob(_jobId);
+                        PerformJob(_jobPayload);
                         _jobIsReady.Reset();
                     }
                 }
@@ -155,29 +155,15 @@ namespace HangFire.Server
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We need to catch all user-code exceptions.")]
-        private void PerformJob(string jobId)
+        private void PerformJob(JobPayload payload)
         {
-            Dictionary<string, string> jobArgs;
-            string jobType;
-
-            GetJobTypeAndArgs(jobId, out jobType, out jobArgs);
-
-            if (String.IsNullOrEmpty(jobType))
-            {
-                Logger.Warn(String.Format(
-                    "Could not process the job '{0}': it does not exist in the storage.",
-                    jobId));
-
-                return;
-            }
-
             var workerContext = new WorkerContext(_serverContext, _workerNumber, Redis);
 
             lock (Redis)
             {
                 if (!JobState.Apply(
                     Redis,
-                    new ProcessingState(jobId, "Worker has started processing.", workerContext.ServerContext.ServerName),
+                    new ProcessingState(payload.Id, "Worker has started processing.", workerContext.ServerContext.ServerName),
                     EnqueuedState.Name,
                     ProcessingState.Name))
                 {
@@ -195,7 +181,8 @@ namespace HangFire.Server
             ServerJobDescriptor jobDescriptor = null;
             try
             {
-                jobDescriptor = new ServerJobDescriptor(_jobActivator, jobId, jobType, jobArgs);
+                jobDescriptor = new ServerJobDescriptor(
+                    _jobActivator, payload);
                 _jobInvoker.PerformJob(workerContext, jobDescriptor);
             }
             catch (Exception ex)
@@ -204,7 +191,7 @@ namespace HangFire.Server
 
                 Logger.Error(String.Format(
                     "Failed to process the job '{0}': unexpected exception caught.",
-                    jobId));
+                    payload.Id));
             }
             finally
             {
@@ -220,14 +207,14 @@ namespace HangFire.Server
                 {
                     JobState.Apply(
                         Redis,
-                        new SucceededState(jobId, "The job has been completed successfully."),
+                        new SucceededState(payload.Id, "The job has been completed successfully."),
                         ProcessingState.Name);
                 }
                 else
                 {
                     JobState.Apply(
                         Redis,
-                        new FailedState(jobId, "The job has been failed.", exception),
+                        new FailedState(payload.Id, "The job has been failed.", exception),
                         ProcessingState.Name);
                 }
 
@@ -237,23 +224,10 @@ namespace HangFire.Server
                 // processing information.
 
                 JobServer.RemoveFromFetchedQueue(
-                    Redis, jobId, _serverContext.Queue);
+                    Redis, payload.Id, payload.Queue);
 
                 // Success point. No things must be done after previous command
                 // was succeeded.
-            }
-        }
-
-        private static void GetJobTypeAndArgs(string jobId, out string jobType, out Dictionary<string, string> jobArgs)
-        {
-            lock (Redis)
-            {
-                var result = Redis.GetValuesFromHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    new[] { "Type", "Args" });
-
-                jobType = result[0];
-                jobArgs = JobHelper.FromJson<Dictionary<string, string>>(result[1]);
             }
         }
     }

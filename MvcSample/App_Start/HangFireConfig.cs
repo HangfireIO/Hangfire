@@ -20,10 +20,9 @@ namespace MvcSample
             // following method to configure HangFire:
             RedisFactory.Db = 3;
             
-            _server = new AspNetBackgroundJobServer
+            _server = new AspNetBackgroundJobServer("default")
             {
                 MachineName = Environment.MachineName,
-                Queue = "default",
                 WorkersCount = Environment.ProcessorCount * 2
             };
 

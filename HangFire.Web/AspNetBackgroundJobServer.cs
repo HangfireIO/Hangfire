@@ -8,6 +8,11 @@ namespace HangFire.Web
     /// </summary>
     public class AspNetBackgroundJobServer : BackgroundJobServer, IRegisteredObject
     {
+        public AspNetBackgroundJobServer(params string[] queues)
+            : base(queues)
+        {
+        }
+
         /// <summary>
         /// Starts the server and places it in the list of registered
         /// objects in the application. 
