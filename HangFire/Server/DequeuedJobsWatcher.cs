@@ -63,9 +63,30 @@ namespace HangFire.Server
 
             if (String.IsNullOrEmpty(fetched) && String.IsNullOrEmpty(@checked))
             {
+                // If the job does not have these flags set, then it is
+                // in the implicit 'Dequeued' state. This state has no 
+                // information about the time it was dequeued. So we
+                // can not do anything with the job in this state, because
+                // there are two options:
+
+                // 1. It is going to move to the implicit 'Fetched' state
+                //    in a short time.
+                // 2. It will stay in the 'Dequeued' state forever due to
+                //    it's processing server is dead.
+
+                // To ensure it's server is dead, we'll move the job to
+                // the implicit 'Checked' state with the current timestamp
+                // and will not do anything else at this pass of the watcher.
+                // If job's state will still be 'Checked' on the later passes
+                // and after the CheckedTimeout expired, then the server
+                // is dead, and we'll re-queue the job.
+
                 _redis.SetEntry(
                     String.Format("hangfire:job:{0}:checked", jobId),
                     JobHelper.ToStringTimestamp(DateTime.UtcNow));
+
+                // Checkpoint #1-2. The job is in the implicit 'Checked' state.
+                // It will be re-queued after the CheckedTimeout will be expired.
             }
             else
             {
@@ -85,13 +106,14 @@ namespace HangFire.Server
 
             var queue = JobHelper.TryToGetQueue(jobType);
 
+            var recoverFromStates = new[] { EnqueuedState.Name, ProcessingState.Name };
+
             if (!String.IsNullOrEmpty(queue))
             {
                 JobState.Apply(
                     _redis,
                     new EnqueuedState(jobId, "Requeued due to time out", queue),
-                    EnqueuedState.Name,
-                    ProcessingState.Name);
+                    recoverFromStates);
             }
             else
             {
@@ -101,8 +123,7 @@ namespace HangFire.Server
                         jobId,
                         "Failed to re-queue the job.",
                         new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType))),
-                    EnqueuedState.Name,
-                    ProcessingState.Name);
+                    recoverFromStates);
             }
         }
 
@@ -114,6 +135,9 @@ namespace HangFire.Server
 
         private static bool TimedOutByCheckedTime(string fetchedTimestamp, string checkedTimestamp)
         {
+            // If the job has the 'fetched' flag set, then it is
+            // in the implicit 'Fetched' state, and it can not be timed
+            // out by the 'checked' flag.
             if (!String.IsNullOrEmpty(fetchedTimestamp))
             {
                 return false;

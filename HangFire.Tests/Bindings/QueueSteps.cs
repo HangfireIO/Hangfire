@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -8,7 +10,7 @@ namespace HangFire.Tests
     public class QueueSteps : Steps
     {
         public const string DefaultQueue = "default";
-
+        
         [Given(@"an empty queue")]
         public void GivenAnEmptyQueue()
         {
@@ -28,6 +30,22 @@ namespace HangFire.Tests
             Redis.Client.EnqueueItemOnList(
                 String.Format("hangfire:queue:{0}", queue),
                 JobSteps.DefaultJobId);
+        }
+
+        [Given(@"the '(.+)' job in the queue")]
+        public void GivenTheJobInTheQueue(string jobId)
+        {
+            Given(String.Format("the '{0}' job in the '{1}' queue", jobId, DefaultQueue));
+        }
+
+        [Given(@"the '(.+)' job in the '(.+)' queue")]
+        public void GivenTheJobInTheQueue(string jobId, string queue)
+        {
+            Given(String.Format("the '{0}' job", jobId));
+
+            Redis.Client.EnqueueItemOnList(
+                String.Format("hangfire:queue:{0}", queue),
+                jobId);
         }
 
         [Then(@"the queue contains the job")]
@@ -59,6 +77,22 @@ namespace HangFire.Tests
                 String.Format("hangfire:queue:{0}", queue));
 
             CollectionAssert.DoesNotContain(jobIds, JobSteps.DefaultJobId);
+        }
+
+        [Then(@"the '(.+)' queue is empty")]
+        public void ThenTheQueueIsEmpty(string queue)
+        {
+            var length = Redis.Client.GetListCount(
+                String.Format("hangfire:queue:{0}", queue));
+            Assert.AreEqual(0, length);
+        }
+
+        [Then(@"the '(.+)' queue length is (\d+)")]
+        public void ThenTheQueueLengthIs(string queue, int length)
+        {
+            var actualLength = Redis.Client.GetListCount(
+                String.Format("hangfire:queue:{0}", queue));
+            Assert.AreEqual(length, actualLength);
         }
     }
 }

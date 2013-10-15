@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -13,7 +14,7 @@ namespace HangFire.Server
         private readonly string _serverName;
 
         private readonly int _concurrency;
-        private readonly string _queue;
+        private readonly IList<string> _queues;
         private readonly Thread _managerThread;
 
         private readonly WorkerPool _pool;
@@ -30,14 +31,14 @@ namespace HangFire.Server
 
         public JobServer(
             string machineName,
-            string queue,
+            IEnumerable<string> queues,
             int concurrency,
             TimeSpan pollInterval,
             JobActivator jobActivator)
         {
-            if (String.IsNullOrEmpty(queue))
+            if (queues == null)
             {
-                throw new ArgumentNullException("queue", "Please specify the queue name you want to listen.");
+                throw new ArgumentNullException("queues");
             }
 
             if (concurrency <= 0)
@@ -51,7 +52,7 @@ namespace HangFire.Server
             }
 
             _concurrency = concurrency;
-            _queue = queue;
+            _queues = queues.ToList();
 
             _serverName = String.Format("{0}:{1}", machineName, Process.GetCurrentProcess().Id);
 
@@ -61,7 +62,7 @@ namespace HangFire.Server
                 new ServerContext(_serverName, _queue, concurrency),
                 jobInvoker, jobActivator ?? new JobActivator());
 
-            _fetcher = new JobFetcher(_redis, _queue);
+            _fetcher = new JobFetcher(_redis, _queues);
 
             _managerThread = new Thread(Work)
                 {
@@ -171,7 +172,7 @@ namespace HangFire.Server
                             { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
                         }));
 
-                foreach (var queue in new[] { _queue })
+                foreach (var queue in _queues)
                 {
                     var queueName = queue;
                     transaction.QueueCommand(x => x.AddItemToSet(

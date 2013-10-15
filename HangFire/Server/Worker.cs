@@ -184,10 +184,11 @@ namespace HangFire.Server
                     return;
                 }
             }
-
-            // Fail point N3. When the worker fails before successful execution
-            // of the following commands, the server must requeue the job, because
-            // it's execution could be not started at all.
+            
+            // Checkpoint #3. Job is in the Processing state. However, there are
+            // no guarantees that it was performed. We need to re-queue it even
+            // it was performed to guarantee that it was performed AT LEAST once.
+            // It will be re-queued after the JobTimeout was expired.
 
             Exception exception = null;
 
@@ -213,12 +214,6 @@ namespace HangFire.Server
                 }
             }
 
-            // Fail point N4. When the worker fails before successful execution 
-            // of the following commands, the server should requeue the job,
-            // because there is no information about job's execution at all.
-            // It may be succeeded, or failed, or not executed at all due
-            // to filter exceptions.
-
             lock (Redis)
             {
                 if (exception == null)
@@ -236,11 +231,10 @@ namespace HangFire.Server
                         ProcessingState.Name);
                 }
 
-                // Fail point N5. When the worker fails before successful
-                // execution of the following command, server should only remove it
-                // from the fetched queue as job's state has been changed from
-                // the Processing state, and job fetched key removed from
-                // the storage. The job must not be requeued from here.
+                // Checkpoint #4. The job was performed, and it is in the one
+                // of the explicit states (Succeeded, Scheduled and so on).
+                // It should not be re-queued, but we still need to remove it's
+                // processing information.
 
                 JobServer.RemoveFromFetchedQueue(
                     Redis, jobId, _serverContext.Queue);

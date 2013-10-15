@@ -1,12 +1,14 @@
 ﻿@redis
 Feature: Re-queueing of timed out jobs
 
-Scenario: Not checked jobs at fail point #1 should be marked as checked
+@checkpoint-1-1
+Scenario: A job in the implicit 'Dequeued' state moved to the 'Checked' state
     Given a dequeued job
      When the watcher runs
      Then it marks the job as 'checked'
 
-Scenario: Checked and not timed out jobs at fail point #1 should be leaved as is
+@checkpoint-1-2
+Scenario: Non-timed out job in the 'Checked' state should not be requeued
     Given a dequeued job
       And it was checked a millisecond ago
      When the watcher runs
@@ -14,7 +16,8 @@ Scenario: Checked and not timed out jobs at fail point #1 should be leaved as is
       And the queue does not contain the job
       And the job has the 'checked' flag set
 
-Scenario: Checked and timed out jobs at fail point #1 should be re-queued
+@checkpoint-1-2 
+Scenario: Timed job in the 'Checked' state should be requeued
    Given a dequeued job
       And it was checked a day ago
      When the watcher runs
@@ -22,7 +25,8 @@ Scenario: Checked and timed out jobs at fail point #1 should be re-queued
       And the dequeued jobs list does not contain the job anymore
       And the job does not have the 'checked' flag set
 
-Scenario: Only fetched flag value is being considered for the job's timeout after fail point #2
+@checkpoint-2
+Scenario: Timed out job by the 'checked' flag in the 'Fetched' state should not be re-queued
     Given a dequeued job
       And it was checked a day ago
       And it was fetched a millisecond ago
@@ -32,7 +36,8 @@ Scenario: Only fetched flag value is being considered for the job's timeout afte
       And the job has the 'checked' flag set
       And the job has the 'fetched' flag set
 
-Scenario: Timed out jobs at fail point #2 should be re-queued
+@checkpoint-2
+Scenario: Timed out jobs in the 'Fetched' state should be re-queued
     Given a dequeued job
       And it was fetched a day ago
      When the watcher runs
@@ -41,6 +46,7 @@ Scenario: Timed out jobs at fail point #2 should be re-queued
       And the job does not have the 'checked' flag set
       And the job does not have the 'fetched' flag set
 
+@checkpoint-3
 Scenario: Job's state is changed to the Enqueued when the job is being timed out after proceeding to the Processing state
     Given a dequeued job
       And it's state is Processing
@@ -49,6 +55,7 @@ Scenario: Job's state is changed to the Enqueued when the job is being timed out
      Then the job moved to the Enqueued state
       And the dequeued jobs list does not contain the job anymore
 
+@checkpoint-4
 Scenario: Timed out job in the Succeeded state does not move to the Enqueued state
     Given a dequeued job
       And it's state is Succeeded

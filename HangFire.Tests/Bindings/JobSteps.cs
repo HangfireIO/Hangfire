@@ -18,11 +18,23 @@ namespace HangFire.Tests
             Given(String.Format("a job of the '{0}' type", DefaultJobType.AssemblyQualifiedName));
         }
 
+        [Given(@"the '(.+)' job")]
+        public void GivenTheJob(string jobId)
+        {
+            Given(String.Format("the '{0}' job of the '{1}' type", jobId, DefaultJobType));
+        }
+
         [Given(@"a job of the '(.+)' type")]
         public void GivenAJobOfTheType(string type)
         {
+            Given(String.Format("the '{0}' job of the '{1}' type", DefaultJobId, type));
+        }
+
+        [Given(@"the '(.+)' job of the '(.+)' type")]
+        public void GivenTheJobOfTheType(string jobId, string type)
+        {
             Redis.Client.SetRangeInHash(
-                String.Format("hangfire:job:{0}", DefaultJobId),
+                String.Format("hangfire:job:{0}", jobId),
                 new Dictionary<string, string>
                     {
                         { "Type", type },
