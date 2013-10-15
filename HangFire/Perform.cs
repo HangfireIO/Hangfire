@@ -29,7 +29,10 @@ namespace HangFire
 
         public static string Async(Type jobType, object args)
         {
-            return Client.Async(jobType, args);
+            lock (Client)
+            {
+                return Client.Async(jobType, args);
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
@@ -53,7 +56,10 @@ namespace HangFire
 
         public static string In(TimeSpan interval, Type jobType, object args)
         {
-            return Client.In(interval, jobType, args);
+            lock (Client)
+            {
+                return Client.In(interval, jobType, args);
+            }
         }
     }
 }

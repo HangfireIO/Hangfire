@@ -25,23 +25,17 @@ namespace HangFire.Client
 
             var queue = JobHelper.GetQueue(jobType);
 
-            var descriptor = CreateDescriptor(jobType, args);
-            var context = new CreateContext(descriptor);
+            var jobId = GenerateId();
 
-            descriptor.EnqueueAction = () =>
-                {
-                    lock (_redis)
-                    {
-                        CreateJob(descriptor.JobId, descriptor.Job);
-                        JobState.Apply(
-                            _redis, 
-                            new EnqueuedState(descriptor.JobId, "Enqueued by the Сlient", queue));
-                    }
-                };
+            var state = new EnqueuedState(jobId, "Enqueued by the Сlient", queue);
+            var job = CreateJob(jobType, args);
 
+            var context = new CreateContext(
+                new ClientJobDescriptor(_redis, jobId, job, state));
+            
             _jobCreator.CreateJob(context);
 
-            return descriptor.JobId;
+            return jobId;
         }
 
         public string In(TimeSpan interval, Type jobType, object args = null)
@@ -67,27 +61,17 @@ namespace HangFire.Client
                 return Async(jobType, args);
             }
 
-            var descriptor = CreateDescriptor(jobType, args);
-            var context = new CreateContext(descriptor);
+            var jobId = GenerateId();
 
-            var at = DateTime.UtcNow.Add(interval);
+            var state = new ScheduledState(jobId, "Scheduled by the Client", DateTime.UtcNow.Add(interval));
+            var job = CreateJob(jobType, args);
 
-            descriptor.EnqueueAction = () =>
-            {
-                lock (_redis)
-                {
-                    CreateJob(descriptor.JobId, descriptor.Job);
-
-                    JobState.Apply(_redis, new ScheduledState(
-                        descriptor.JobId, 
-                        "Scheduled by the Client",
-                        at));
-                }
-            };
+            var context = new CreateContext(
+                new ClientJobDescriptor(_redis, jobId, job, state));
 
             _jobCreator.CreateJob(context);
 
-            return descriptor.JobId;
+            return jobId;
         }
 
         public void Dispose()
@@ -95,22 +79,14 @@ namespace HangFire.Client
             _redis.Dispose();
         }
 
-        private static ClientJobDescriptor CreateDescriptor(Type jobType, object jobArgs)
+        private static Dictionary<string, string> CreateJob(
+            Type jobType, object jobArgs)
         {
             var job = new Dictionary<string, string>();
-            var descriptor = new ClientJobDescriptor(GenerateId(), job);
-
             job["Type"] = jobType.AssemblyQualifiedName;
             job["Args"] = JobHelper.ToJson(ClientJobDescriptor.SerializeProperties(jobArgs));
 
-            return descriptor;
-        }
-
-        private void CreateJob(string id, Dictionary<string, string> properties)
-        {
-            _redis.SetRangeInHash(
-                String.Format("hangfire:job:{0}", id),
-                properties);
+            return job;
         }
 
         private static string GenerateId()

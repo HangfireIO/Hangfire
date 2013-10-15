@@ -1,25 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using HangFire.States;
+using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
     public class ClientJobDescriptor
     {
-        public ClientJobDescriptor(string jobId, Dictionary<string, string> job)
+        private readonly IRedisClient _redis;
+        private readonly JobState _state;
+
+        internal ClientJobDescriptor(
+            IRedisClient redis,
+            string jobId, Dictionary<string, string> job,
+            JobState state)
         {
+            _redis = redis;
+            _state = state;
             Job = job;
             JobId = jobId;
         }
 
         public string JobId { get; set; }
 
-        internal Action EnqueueAction { get; set; }
         internal Dictionary<string, string> Job { get; private set; }  
 
         public void Enqueue()
         {
-            EnqueueAction();
+            _redis.SetRangeInHash(
+                String.Format("hangfire:job:{0}", JobId),
+                Job);
+
+            JobState.Apply(_redis, _state);
         }
 
         public void SetParameter(string name, object value)
