@@ -26,10 +26,8 @@ namespace HangFire.Server
 
             for (var i = 0; i < serverContext.WorkersCount; i++)
             {
-                var worker = new Worker(this, new WorkerContext(serverContext, i));
-                worker.Start();
-
-                _workers.Add(worker);
+                _workers.Add(
+                    new Worker(this, new WorkerContext(serverContext, i)));
             }
 
             _logger.Info("Workers were started.");
@@ -56,7 +54,7 @@ namespace HangFire.Server
             _logger.Info("Stopping workers...");
             foreach (var worker in _workers)
             {
-                worker.Stop();
+                worker.SendStop();
             }
         }
 

@@ -26,8 +26,6 @@ namespace HangFire.Server
         private readonly object _crashedLock = new object();
         private readonly object _jobLock = new object();
         private bool _crashed;
-        private bool _started;
-        private bool _disposed;
 
         private JobPayload _jobPayload;
 
@@ -43,29 +41,12 @@ namespace HangFire.Server
                     Name = String.Format("HangFire.Worker.{0}", _context.WorkerNumber),
                     IsBackground = true
                 };
-        }
-
-        public void Start()
-        {
-            Debug.Assert(!_disposed, "!_disposed");
-
-            if (_started)
-            {
-                throw new InvalidOperationException("Worker has been already started.");
-            }
-
             _thread.Start();
-            _started = true;
         }
 
-        public void Stop()
+        public void SendStop()
         {
-            Debug.Assert(!_disposed, "!_disposed");
-
-            if (_started)
-            {
-                _cts.Cancel();
-            }
+            _cts.Cancel();
         }
 
         internal bool Crashed
@@ -88,8 +69,6 @@ namespace HangFire.Server
 
         public void Process(JobPayload payload)
         {
-            Debug.Assert(!_disposed, "!_disposed");
-
             lock (_jobLock)
             {
                 _jobPayload = payload;
@@ -100,15 +79,7 @@ namespace HangFire.Server
 
         public void Dispose()
         {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-
-            if (_started)
-            {
-                _thread.Join();
-            }
+            _thread.Join();
 
             _cts.Dispose();
             _jobIsReady.Dispose();
