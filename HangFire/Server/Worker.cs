@@ -14,8 +14,6 @@ namespace HangFire.Server
     {
         private readonly WorkerPool _pool;
         private readonly WorkerContext _context;
-        private readonly JobPerformer _jobPerformer;
-        private readonly JobActivator _jobActivator;
         private readonly Thread _thread;
 
         public static readonly IRedisClient Redis = RedisFactory.Create();
@@ -34,15 +32,10 @@ namespace HangFire.Server
 
         private JobPayload _jobPayload;
 
-        public Worker(
-            WorkerPool pool,
-            WorkerContext context,
-            JobPerformer jobPerformer, JobActivator jobActivator)
+        public Worker(WorkerPool pool, WorkerContext context)
         {
             _pool = pool;
             _context = context;
-            _jobPerformer = jobPerformer;
-            _jobActivator = jobActivator;
 
             Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", _context.WorkerNumber));
 
@@ -178,12 +171,12 @@ namespace HangFire.Server
             try
             {
                 jobDescriptor = new ServerJobDescriptor(
-                    _jobActivator, payload);
+                    _context.Activator, payload);
 
                 var performContext = new PerformContext(
                     _context, jobDescriptor);
 
-                _jobPerformer.PerformJob(performContext);
+                _context.Performer.PerformJob(performContext);
             }
             catch (Exception ex)
             {

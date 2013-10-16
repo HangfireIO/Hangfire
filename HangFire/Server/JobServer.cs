@@ -11,10 +11,8 @@ namespace HangFire.Server
 {
     internal class JobServer : IDisposable
     {
-        private readonly string _serverName;
+        private readonly ServerContext _context;
 
-        private readonly int _concurrency;
-        private readonly IList<string> _queues;
         private readonly Thread _managerThread;
 
         private readonly WorkerPool _pool;
@@ -51,18 +49,17 @@ namespace HangFire.Server
                 throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value must be positive.");
             }
 
-            _concurrency = concurrency;
-            _queues = queues.ToList();
+            var serverName = String.Format("{0}:{1}", machineName, Process.GetCurrentProcess().Id);
 
-            _serverName = String.Format("{0}:{1}", machineName, Process.GetCurrentProcess().Id);
+            _context = new ServerContext(
+                serverName,
+                queues.ToList(),
+                concurrency,
+                jobActivator ?? new JobActivator(),
+                JobPerformer.Current);
 
-            var jobInvoker = JobPerformer.Current;
-
-            _pool = new WorkerPool(
-                new ServerContext(_serverName, _queues, concurrency),
-                jobInvoker, jobActivator ?? new JobActivator());
-
-            _fetcher = new JobFetcher(_redis, _queues);
+            _pool = new WorkerPool(_context);
+            _fetcher = new JobFetcher(_redis, _context.Queues);
 
             _managerThread = new Thread(Work)
                 {
@@ -123,10 +120,7 @@ namespace HangFire.Server
             {
                 AnnounceServer();
 
-                if (_cts.IsCancellationRequested)
-                {
-                    throw new OperationCanceledException();
-                }
+                _cts.Token.ThrowIfCancellationRequested();
 
                 while (true)
                 {
@@ -137,9 +131,9 @@ namespace HangFire.Server
                     do
                     {
                         jobId = _fetcher.DequeueJob();
-                        if (jobId == null && _cts.IsCancellationRequested)
+                        if (jobId == null)
                         {
-                            throw new OperationCanceledException();
+                            _cts.Token.ThrowIfCancellationRequested();
                         }
                     } while (jobId == null);
 
@@ -162,21 +156,21 @@ namespace HangFire.Server
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.AddItemToSet(
-                    "hangfire:servers", _serverName));
+                    "hangfire:servers", _context.ServerName));
 
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:server:{0}", _serverName),
+                    String.Format("hangfire:server:{0}", _context.ServerName),
                     new Dictionary<string, string>
                         {
-                            { "Workers", _concurrency.ToString() },
+                            { "Workers", _context.WorkersCount.ToString() },
                             { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
                         }));
 
-                foreach (var queue in _queues)
+                foreach (var queue in _context.Queues)
                 {
                     var queueName = queue;
                     transaction.QueueCommand(x => x.AddItemToSet(
-                        String.Format("hangfire:server:{0}:queues", _serverName),
+                        String.Format("hangfire:server:{0}:queues", _context.ServerName),
                         queueName));
                 }
 
@@ -190,11 +184,11 @@ namespace HangFire.Server
             {
                 transaction.QueueCommand(x => x.RemoveItemFromSet(
                     "hangfire:servers",
-                    _serverName));
+                    _context.ServerName));
 
                 transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}", _serverName),
-                    String.Format("hangfire:server:{0}:queues", _serverName)));
+                    String.Format("hangfire:server:{0}", _context.ServerName),
+                    String.Format("hangfire:server:{0}:queues", _context.ServerName)));
 
                 transaction.Commit();
             }

@@ -16,10 +16,7 @@ namespace HangFire.Server
         private bool _disposed;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        public WorkerPool(
-            ServerContext serverContext,
-            JobPerformer jobPerformer,
-            JobActivator jobActivator)
+        public WorkerPool(ServerContext serverContext)
         {
             _workers = new List<Worker>(serverContext.WorkersCount);
             _freeWorkers = new BlockingCollection<Worker>();
@@ -28,13 +25,9 @@ namespace HangFire.Server
 
             for (var i = 0; i < serverContext.WorkersCount; i++)
             {
-                var worker = new Worker(
-                    this,
-                    new WorkerContext(serverContext, i),
-                    jobPerformer,
-                    jobActivator);
-
+                var worker = new Worker(this, new WorkerContext(serverContext, i));
                 worker.Start();
+
                 _workers.Add(worker);
             }
 
