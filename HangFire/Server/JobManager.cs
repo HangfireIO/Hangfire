@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,9 @@ namespace HangFire.Server
 {
     internal class JobManager
     {
+        private readonly List<Worker> _workers;
+        private readonly BlockingCollection<Worker> _freeWorkers;
+
         private readonly ServerContext _context;
         private readonly Thread _managerThread;
 
@@ -17,7 +21,6 @@ namespace HangFire.Server
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ILog _logger = LogManager.GetLogger(typeof (JobManager));
 
-        private WorkerPool _pool;
         private JobFetcher _fetcher;
 
         private bool _stopSent;
@@ -25,6 +28,21 @@ namespace HangFire.Server
         public JobManager(ServerContext context)
         {
             _context = context;
+
+            _workers = new List<Worker>(context.WorkersCount);
+            _freeWorkers = new BlockingCollection<Worker>();
+
+            _logger.Info(String.Format("Starting {0} workers...", context.WorkersCount));
+
+            for (var i = 0; i < context.WorkersCount; i++)
+            {
+                _workers.Add(
+                    new Worker(this, new WorkerContext(context, i)));
+            }
+
+            _logger.Info("Workers were started.");
+
+            _fetcher = new JobFetcher(_redis, _context.Queues);
 
             _managerThread = new Thread(Work)
                 {
@@ -39,7 +57,11 @@ namespace HangFire.Server
             _stopSent = true;
 
             _cts.Cancel();
-            _pool.SendStop();
+
+            foreach (var worker in _workers)
+            {
+                worker.SendStop();
+            }
         }
 
         public void Dispose()
@@ -49,31 +71,39 @@ namespace HangFire.Server
                 SendStop();
             }
 
-            if (_pool != null)
-            {
-                _pool.Dispose();
-                _pool = null;
-            }
-
             _managerThread.Join();
+
+            foreach (var worker in _workers)
+            {
+                worker.Dispose();
+            }
+            _logger.Info("Workers were stopped.");
+
+            _freeWorkers.Dispose();
             
             _redis.Dispose();
             _cts.Dispose();
+        }
+
+        internal void NotifyReady(Worker worker)
+        {
+            _freeWorkers.Add(worker);
         }
 
         private void Work()
         {
             try
             {
-                _pool = new WorkerPool(_context);
-                _fetcher = new JobFetcher(_redis, _context.Queues);
-
                 while (true)
                 {
-                    var worker = _pool.TakeFree(_cts.Token);
+                    Worker worker;
+                    do
+                    {
+                        worker = _freeWorkers.Take(_cts.Token);
+                    }
+                    while (worker.Crashed);
 
                     JobPayload jobId;
-
                     do
                     {
                         jobId = _fetcher.DequeueJob();

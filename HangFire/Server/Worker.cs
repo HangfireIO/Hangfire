@@ -11,7 +11,7 @@ namespace HangFire.Server
 {
     internal class Worker : IDisposable
     {
-        private readonly WorkerPool _pool;
+        private readonly JobManager _manager;
         private readonly WorkerContext _context;
         private readonly Thread _thread;
 
@@ -30,9 +30,9 @@ namespace HangFire.Server
 
         private JobPayload _jobPayload;
 
-        public Worker(WorkerPool pool, WorkerContext context)
+        public Worker(JobManager manager, WorkerContext context)
         {
-            _pool = pool;
+            _manager = manager;
             _context = context;
 
             Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", _context.WorkerNumber));
@@ -99,7 +99,7 @@ namespace HangFire.Server
             {
                 while (true)
                 {
-                    _pool.NotifyReady(this);
+                    _manager.NotifyReady(this);
                     _jobIsReady.Wait(_cts.Token);
 
                     lock (_jobLock)

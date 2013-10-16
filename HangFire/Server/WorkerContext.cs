@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ServiceStack.Redis;
-
-namespace HangFire.Server
+﻿namespace HangFire.Server
 {
     public class WorkerContext : ServerContext
     {
