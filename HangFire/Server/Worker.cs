@@ -26,6 +26,7 @@ namespace HangFire.Server
         private readonly object _crashedLock = new object();
         private readonly object _jobLock = new object();
         private bool _crashed;
+        private bool _stopSent;
 
         private JobPayload _jobPayload;
 
@@ -46,6 +47,7 @@ namespace HangFire.Server
 
         public void SendStop()
         {
+            _stopSent = true;
             _cts.Cancel();
         }
 
@@ -79,6 +81,11 @@ namespace HangFire.Server
 
         public void Dispose()
         {
+            if (!_stopSent)
+            {
+                SendStop();
+            }
+
             _thread.Join();
 
             _cts.Dispose();
