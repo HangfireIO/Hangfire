@@ -152,8 +152,7 @@ namespace HangFire.Server
                 if (!JobState.Apply(
                     Redis,
                     new ProcessingState(payload.Id, "Worker has started processing.", _context.ServerName),
-                    EnqueuedState.Name,
-                    ProcessingState.Name))
+                    EnqueuedState.Name))
                 {
                     return;
                 }
