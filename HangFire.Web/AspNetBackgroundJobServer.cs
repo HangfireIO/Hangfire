@@ -1,4 +1,5 @@
 ﻿using System.Web.Hosting;
+using HangFire.Server;
 
 namespace HangFire.Web
 {
@@ -8,8 +9,8 @@ namespace HangFire.Web
     /// </summary>
     public class AspNetBackgroundJobServer : BackgroundJobServer, IRegisteredObject
     {
-        public AspNetBackgroundJobServer(params string[] queues)
-            : base(queues)
+        public AspNetBackgroundJobServer(params WorkerPool[] pools)
+            : base(pools)
         {
         }
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -12,9 +11,12 @@ namespace HangFire.Server
     internal class JobServer : IDisposable
     {
         private readonly ServerContext _context;
+        private readonly IEnumerable<WorkerPool> _workerPools;
+        private readonly TimeSpan _pollInterval;
+
         private readonly Thread _serverThread;
 
-        private JobManager _manager;
+        private readonly ICollection<JobManager> _managers = new List<JobManager>();
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _fetchedJobsWatcher;
 
@@ -25,20 +27,14 @@ namespace HangFire.Server
 
         public JobServer(
             string machineName,
-            IEnumerable<string> queues,
-            int concurrency,
+            IEnumerable<WorkerPool> workerPools, 
             TimeSpan pollInterval,
             JobActivator jobActivator)
         {
-            if (queues == null)
-            {
-                throw new ArgumentNullException("queues");
-            }
+            _workerPools = workerPools;
+            _pollInterval = pollInterval;
 
-            if (concurrency <= 0)
-            {
-                throw new ArgumentOutOfRangeException("concurrency", "Concurrency value can not be negative or zero.");
-            }
+            if (workerPools == null) throw new ArgumentNullException("workerPools");
 
             if (pollInterval != pollInterval.Duration())
             {
@@ -49,9 +45,6 @@ namespace HangFire.Server
 
             _context = new ServerContext(
                 serverName,
-                queues.ToList(),
-                concurrency,
-                pollInterval,
                 jobActivator ?? new JobActivator(),
                 JobPerformer.Current);
 
@@ -71,8 +64,12 @@ namespace HangFire.Server
 
         private void StartServer()
         {
-            _manager = new JobManager(_context);
-            _schedulePoller = new ThreadWrapper(new SchedulePoller(_context.PollInterval));
+            foreach (var pool in _workerPools)
+            {
+                _managers.Add(new JobManager(_context, pool));
+            }
+
+            _schedulePoller = new ThreadWrapper(new SchedulePoller(_pollInterval));
             _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher());
         }
 
@@ -80,7 +77,16 @@ namespace HangFire.Server
         {
             _fetchedJobsWatcher.Dispose();
             _schedulePoller.Dispose();
-            _manager.Dispose();
+
+            foreach (var manager in _managers)
+            {
+                manager.SendStop();
+            }
+
+            foreach (var manager in _managers)
+            {
+                manager.Dispose();
+            }
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
@@ -113,16 +119,15 @@ namespace HangFire.Server
                     String.Format("hangfire:server:{0}", _context.ServerName),
                     new Dictionary<string, string>
                         {
-                            { "Workers", _context.WorkersCount.ToString() },
                             { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
                         }));
 
-                foreach (var queue in _context.Queues)
+                foreach (var workerPool in _workerPools)
                 {
-                    var queueName = queue;
+                    var pool = workerPool;
                     transaction.QueueCommand(x => x.AddItemToSet(
                         String.Format("hangfire:server:{0}:queues", _context.ServerName),
-                        queueName));
+                        pool.Queue));
                 }
 
                 transaction.Commit();

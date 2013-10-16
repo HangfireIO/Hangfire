@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -7,33 +6,28 @@ namespace HangFire.Server
 {
     internal class JobFetcher
     {
-        private readonly TimeSpan _fetchTimeout;
-
         private readonly IRedisClient _redis;
-        private readonly IList<string> _queues;
-        private int _currentQueueIndex = 0;
+        private readonly string _queue;
+        private readonly TimeSpan _fetchTimeout;
 
         private readonly ILog _logger = LogManager.GetLogger(typeof (JobFetcher));
 
         public JobFetcher(
-            IRedisClient redis, IList<string> queues, TimeSpan? fetchTimeout = null)
+            IRedisClient redis, string queue, TimeSpan? fetchTimeout = null)
         {
             _redis = redis;
-            _queues = queues;
+            _queue = queue;
 
             _fetchTimeout = fetchTimeout ?? TimeSpan.FromSeconds(5);
         }
 
         public JobPayload DequeueJob()
         {
-            var queue = _queues[_currentQueueIndex];
             var jobId = _redis.BlockingPopAndPushItemBetweenLists(
-                    String.Format("hangfire:queue:{0}", queue),
-                    String.Format("hangfire:queue:{0}:dequeued", queue),
+                    String.Format("hangfire:queue:{0}", _queue),
+                    String.Format("hangfire:queue:{0}:dequeued", _queue),
                     _fetchTimeout);
-
-            _currentQueueIndex = (_currentQueueIndex + 1) % _queues.Count;
-
+            
             if (String.IsNullOrEmpty(jobId))
             {
                 return null;
@@ -85,7 +79,7 @@ namespace HangFire.Server
                 return null;
             }
 
-            return new JobPayload(jobId, queue, jobType, jobArgs);
+            return new JobPayload(jobId, _queue, jobType, jobArgs);
         }
 
         public static void RemoveFromFetchedQueue(

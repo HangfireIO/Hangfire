@@ -3,12 +3,13 @@ using System.IO;
 using System.Threading;
 
 using HangFire;
+using HangFire.Server;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
 namespace ConsoleSample
 {
-    [Queue("qqq")]
+    [Queue("critical")]
     public class ConsoleJob : BackgroundJob
     {
         private static readonly Random _random = new Random();
@@ -33,7 +34,6 @@ namespace ConsoleSample
         }
     }
 
-    [Queue("qqq")]
     public class ErrorJob : BackgroundJob
     {
         public override void Perform()
@@ -43,7 +43,7 @@ namespace ConsoleSample
         }
     }
 
-    [Queue("qqq"), Recurring(30)]
+    [Queue("critical"), Recurring(30)]
     public class RecurringJob : BackgroundJob
     {
         public override void Perform()
@@ -56,7 +56,6 @@ namespace ConsoleSample
     {
         public static void Main()
         {
-            int concurrency = Environment.ProcessorCount * 20;
             LogManager.LogFactory = new ConsoleLogFactory();
 
             RedisFactory.Port = 6379;
@@ -66,7 +65,9 @@ namespace ConsoleSample
             GlobalJobFilters.Filters.Add(new RetryJobsFilter());
             GlobalJobFilters.Filters.Add(new RecurringJobsFilter());
 
-            using (var server = new BackgroundJobServer("qqq") { WorkersCount = concurrency})
+            using (var server = new BackgroundJobServer(
+                new WorkerPool(40, "critical"),
+                new WorkerPool(20)))
             {
                 server.Start();
 

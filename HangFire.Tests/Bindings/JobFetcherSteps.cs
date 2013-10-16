@@ -23,7 +23,7 @@ namespace HangFire.Tests
         [Given(@"the fetcher listening the '(.+)' queue")]
         public void GivenTheFetcherListeningTheQueue(string queue)
         {
-            _fetcher = new JobFetcher(Redis.Client, new List<string> { queue }, TimeSpan.FromSeconds(1));
+            _fetcher = new JobFetcher(Redis.Client, queue, TimeSpan.FromSeconds(1));
         }
 
         [Given(@"the following queues:")]
@@ -38,12 +38,6 @@ namespace HangFire.Tests
             }
 
             _queues = table.Rows.Select(x => x["Queue"]).ToList();
-        }
-
-        [Given(@"the fetcher listening them")]
-        public void GivenTheFetcherListeningThem()
-        {
-            _fetcher = new JobFetcher(Redis.Client, _queues, TimeSpan.FromSeconds(1));
         }
 
         [When(@"it dequeues a job.*")]

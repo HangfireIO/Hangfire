@@ -1,6 +1,7 @@
 ﻿using System;
 
 using HangFire;
+using HangFire.Server;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(
@@ -20,10 +21,10 @@ namespace MvcSample
             // following method to configure HangFire:
             RedisFactory.Db = 3;
             
-            _server = new AspNetBackgroundJobServer("default")
+            _server = new AspNetBackgroundJobServer(
+                new WorkerPool(Environment.ProcessorCount, "default"))
             {
-                MachineName = Environment.MachineName,
-                WorkersCount = Environment.ProcessorCount * 2
+                MachineName = Environment.MachineName
             };
 
             GlobalJobFilters.Filters.Add(new PreserveCultureFilter());

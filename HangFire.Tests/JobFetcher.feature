@@ -40,25 +40,3 @@ Scenario: Fetcher sets the 'fetched' flag when it dequeues a job
 	  And the fetcher listening the queue
 	 When it dequeues a job
 	 Then the job has the 'fetched' flag set
-
-Scenario: Fetcher listening multiple queues dequeues job from all of them
-    Given the following queues:
-	      | Queue  | Jobs |
-	      | first  | 3    |
-	      | second | 2    |
-	  And the fetcher listening them
-	 When it dequeues 5 jobs
-	 Then all queues are empty
-
-Scenario: Fetcher dequeues jobs from queues in their defined order, from left to right
-    Given the following queues:
-	      | Queue  | Jobs |
-	      | first  | 5    |
-	      | second | 5    |
-	  And the fetcher listening them
-	 When it dequeues 1 job
-	 Then the 'first' queue length is 4
-	 When it dequeues 1 job
-	 Then the 'second' queue length is 4
-	 When it dequeues 1 job
-	 Then the 'first' queue length is 3

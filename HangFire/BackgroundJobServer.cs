@@ -12,28 +12,19 @@ namespace HangFire
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/>.
         /// </summary>
-        public BackgroundJobServer(params string[] queues)
+        public BackgroundJobServer(params WorkerPool[] workerPools)
         {
             MachineName = Environment.MachineName;
-            WorkersCount = Environment.ProcessorCount * 2;
             PollInterval = TimeSpan.FromSeconds(15);
-            Queues = queues ?? new[] { "default" };
+            WorkerPools = workerPools ?? new[] { new WorkerPool() };
         }
-
-        /// <summary>
-        /// Gets or sets the queues to listen.
-        /// </summary>
-        public IEnumerable<string> Queues { get; private set; }
+        
+        public IEnumerable<WorkerPool> WorkerPools { get; private set; } 
 
         /// <summary>
         /// Gets or sets the server name.
         /// </summary>
         public string MachineName { get; set; }
-
-        /// <summary>
-        /// Gets or sets maximum amount of jobs that being processed in parallel.
-        /// </summary>
-        public int WorkersCount { get; set; }
 
         /// <summary>
         /// Gets or sets the poll interval for scheduled jobs.
@@ -56,7 +47,7 @@ namespace HangFire
                 throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
             }
 
-            _server = new JobServer(MachineName, Queues, WorkersCount, PollInterval, JobActivator);
+            _server = new JobServer(MachineName, WorkerPools, PollInterval, JobActivator);
         }
 
         /// <summary>

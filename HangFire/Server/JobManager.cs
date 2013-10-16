@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -15,26 +13,27 @@ namespace HangFire.Server
         private readonly BlockingCollection<Worker> _freeWorkers;
 
         private readonly ServerContext _context;
+        private readonly WorkerPool _pool;
         private readonly Thread _managerThread;
+        private readonly JobFetcher _fetcher;
 
         private readonly IRedisClient _redis = RedisFactory.Create();
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ILog _logger = LogManager.GetLogger(typeof (JobManager));
 
-        private JobFetcher _fetcher;
-
         private bool _stopSent;
         
-        public JobManager(ServerContext context)
+        public JobManager(ServerContext context, WorkerPool pool)
         {
             _context = context;
+            _pool = pool;
 
-            _workers = new List<Worker>(context.WorkersCount);
+            _workers = new List<Worker>(pool.WorkersCount);
             _freeWorkers = new BlockingCollection<Worker>();
 
-            _logger.Info(String.Format("Starting {0} workers...", context.WorkersCount));
+            _logger.Info(String.Format("Starting {0} workers...", pool.WorkersCount));
 
-            for (var i = 0; i < context.WorkersCount; i++)
+            for (var i = 0; i < pool.WorkersCount; i++)
             {
                 _workers.Add(
                     new Worker(this, new WorkerContext(context, i)));
@@ -42,7 +41,7 @@ namespace HangFire.Server
 
             _logger.Info("Workers were started.");
 
-            _fetcher = new JobFetcher(_redis, _context.Queues);
+            _fetcher = new JobFetcher(_redis, pool.Queue);
 
             _managerThread = new Thread(Work)
                 {
@@ -125,7 +124,7 @@ namespace HangFire.Server
                 _logger.Fatal(
                     String.Format(
                         "Unexpected exception caught. Jobs from the queue '{0}' will not be processed by this server.", 
-                        _context.Queues.First()),
+                        _pool.Queue),
                     ex);
             }
         }
