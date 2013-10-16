@@ -87,5 +87,23 @@ namespace HangFire.Server
 
             return new JobPayload(jobId, queue, jobType, jobArgs);
         }
+
+        public static void RemoveFromFetchedQueue(
+            IRedisClient redis, string jobId, string queue)
+        {
+            using (var transaction = redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromList(
+                    String.Format("hangfire:queue:{0}:dequeued", queue),
+                    jobId,
+                    -1));
+
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:job:{0}:fetched", jobId),
+                    String.Format("hangfire:job:{0}:checked", jobId)));
+
+                transaction.Commit();
+            }
+        }
     }
 }

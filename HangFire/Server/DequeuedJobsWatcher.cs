@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using HangFire.States;
 using ServiceStack.Logging;
@@ -93,7 +92,7 @@ namespace HangFire.Server
                 if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
                     TryToRequeueTheJob(jobId);
-                    JobServer.RemoveFromFetchedQueue(_redis, jobId, queue);
+                    JobFetcher.RemoveFromFetchedQueue(_redis, jobId, queue);
                 }
             }
         }

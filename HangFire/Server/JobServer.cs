@@ -95,24 +95,6 @@ namespace HangFire.Server
             _cts.Dispose();
         }
 
-        public static void RemoveFromFetchedQueue(
-            IRedisClient redis, string jobId, string queue)
-        {
-            using (var transaction = redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format("hangfire:queue:{0}:dequeued", queue),
-                    jobId,
-                    -1));
-
-                transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:job:{0}:fetched", jobId),
-                    String.Format("hangfire:job:{0}:checked", jobId)));
-
-                transaction.Commit();
-            }
-        }
-
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
         private void Work()
         {
