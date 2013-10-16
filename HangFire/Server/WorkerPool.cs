@@ -14,6 +14,7 @@ namespace HangFire.Server
         private readonly BlockingCollection<Worker> _freeWorkers;
         private readonly ILog _logger = LogManager.GetLogger("HangFire.WorkerPool");
         private bool _disposed;
+        private bool _stopSent;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public WorkerPool(ServerContext serverContext)
@@ -48,6 +49,17 @@ namespace HangFire.Server
             return worker;
         }
 
+        public void SendStop()
+        {
+            _stopSent = true;
+
+            _logger.Info("Stopping workers...");
+            foreach (var worker in _workers)
+            {
+                worker.Stop();
+            }
+        }
+
         public void Dispose()
         {
             if (_disposed)
@@ -55,10 +67,9 @@ namespace HangFire.Server
 
             _disposed = true;
 
-            _logger.Info("Stopping workers...");
-            foreach (var worker in _workers)
+            if (!_stopSent)
             {
-                worker.Stop();
+                SendStop();
             }
 
             foreach (var worker in _workers)
