@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-
+using System.Threading.Tasks;
 using HangFire;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
@@ -140,11 +140,11 @@ namespace ConsoleSample
                         try
                         {
                             var workCount = int.Parse(command.Substring(5));
-                            for (var i = 0; i < workCount; i++)
-                            {
-                                var type = i % 2 == 0 ? typeof (FastCriticalJob) : typeof (FastDefaultJob);
-                                Perform.Async(type, new { Number = count++ });
-                            }
+                            Parallel.For(0, workCount, i =>
+                                {
+                                    var type = i % 2 == 0 ? typeof (FastCriticalJob) : typeof (FastDefaultJob);
+                                    Perform.Async(type, new { Number = i });
+                                });
                             Console.WriteLine("Jobs enqueued.");
                         }
                         catch (Exception ex)
