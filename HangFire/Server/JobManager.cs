@@ -12,12 +12,10 @@ namespace HangFire.Server
         private readonly List<Worker> _workers;
         private readonly BlockingCollection<Worker> _freeWorkers;
 
-        private readonly ServerContext _context;
         private readonly WorkerPool _pool;
         private readonly Thread _managerThread;
-        private readonly JobFetcher _fetcher;
+        private readonly IJobFetcher _fetcher;
 
-        private readonly IRedisClient _redis = RedisFactory.Create();
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ILog _logger = LogManager.GetLogger(typeof (JobManager));
 
@@ -25,7 +23,6 @@ namespace HangFire.Server
         
         public JobManager(ServerContext context, WorkerPool pool)
         {
-            _context = context;
             _pool = pool;
 
             _workers = new List<Worker>(pool.WorkersCount);
@@ -41,7 +38,8 @@ namespace HangFire.Server
 
             _logger.Info("Workers were started.");
 
-            _fetcher = new JobFetcher(_redis, pool.Queue);
+            _fetcher = new PrefetchJobFetcher(
+                new JobFetcher(pool.Queue), 1);
 
             _managerThread = new Thread(Work)
                 {
@@ -78,9 +76,9 @@ namespace HangFire.Server
             }
             _logger.Info("Workers were stopped.");
 
+            _fetcher.Dispose();
+
             _freeWorkers.Dispose();
-            
-            _redis.Dispose();
             _cts.Dispose();
         }
 
@@ -102,16 +100,7 @@ namespace HangFire.Server
                     }
                     while (worker.Crashed);
 
-                    JobPayload jobId;
-                    do
-                    {
-                        jobId = _fetcher.DequeueJob();
-                        if (jobId == null)
-                        {
-                            _cts.Token.ThrowIfCancellationRequested();
-                        }
-                    } while (jobId == null);
-
+                    var jobId = _fetcher.DequeueJob(_cts.Token);
                     worker.Process(jobId);
                 }
             }

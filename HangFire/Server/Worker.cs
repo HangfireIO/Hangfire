@@ -125,6 +125,15 @@ namespace HangFire.Server
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We need to catch all user-code exceptions.")]
         private void PerformJob(JobPayload payload)
         {
+            if (String.IsNullOrEmpty(payload.Type))
+            {
+                Logger.Warn(String.Format(
+                    "Could not process the job '{0}': it does not exist in the storage.",
+                    payload.Id));
+
+                return;
+            }
+
             lock (Redis)
             {
                 if (!JobState.Apply(

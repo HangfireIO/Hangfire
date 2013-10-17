@@ -1,37 +1,40 @@
 ﻿using System;
-using ServiceStack.Logging;
+using System.Threading;
 using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    internal class JobFetcher
+    internal class JobFetcher : IJobFetcher
     {
-        private readonly IRedisClient _redis;
-        private readonly string _queue;
         private readonly TimeSpan _fetchTimeout;
 
-        private readonly ILog _logger = LogManager.GetLogger(typeof (JobFetcher));
+        private readonly IRedisClient _redis
+            = RedisFactory.Create();
 
         public JobFetcher(
-            IRedisClient redis, string queue, TimeSpan? fetchTimeout = null)
+            string queue, TimeSpan? fetchTimeout = null)
         {
-            _redis = redis;
-            _queue = queue;
+            Queue = queue;
 
             _fetchTimeout = fetchTimeout ?? TimeSpan.FromSeconds(5);
         }
 
-        public JobPayload DequeueJob()
+        public string Queue { get; private set; }
+        public IRedisClient Redis { get { return _redis; } }
+
+        public JobPayload DequeueJob(CancellationToken cancellationToken)
         {
-            var jobId = _redis.BlockingPopAndPushItemBetweenLists(
-                    String.Format("hangfire:queue:{0}", _queue),
-                    String.Format("hangfire:queue:{0}:dequeued", _queue),
-                    _fetchTimeout);
-            
-            if (String.IsNullOrEmpty(jobId))
+            string jobId;
+
+            do
             {
-                return null;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
+
+                jobId = _redis.BlockingPopAndPushItemBetweenLists(
+                    String.Format("hangfire:queue:{0}", Queue),
+                    String.Format("hangfire:queue:{0}:dequeued", Queue),
+                    _fetchTimeout);
+            } while (jobId == null); 
 
             // The job was dequeued by the server. To provide reliability,
             // we should ensure, that the job will be performed and acquired
@@ -70,16 +73,12 @@ namespace HangFire.Server
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            if (String.IsNullOrEmpty(jobType))
-            {
-                _logger.Warn(String.Format(
-                    "Could not process the job '{0}': it does not exist in the storage.",
-                    jobId));
+            return new JobPayload(jobId, Queue, jobType, jobArgs);
+        }
 
-                return null;
-            }
-
-            return new JobPayload(jobId, _queue, jobType, jobArgs);
+        public void Dispose()
+        {
+            _redis.Dispose();
         }
 
         public static void RemoveFromFetchedQueue(

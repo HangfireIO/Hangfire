@@ -86,10 +86,12 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />
+    <Compile Include="Server\IJobFetcher.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\JobFetcher.cs" />
     <Compile Include="Server\JobManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
+    <Compile Include="Server\PrefetchJobFetcher.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="Server\DequeuedJobsWatcher.cs" />
     <Compile Include="Server\WorkerPool.cs" />
