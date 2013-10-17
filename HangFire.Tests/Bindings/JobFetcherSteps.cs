@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using HangFire.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
@@ -23,7 +24,7 @@ namespace HangFire.Tests
         [Given(@"the fetcher listening the '(.+)' queue")]
         public void GivenTheFetcherListeningTheQueue(string queue)
         {
-            _fetcher = new JobFetcher(Redis.Client, queue, TimeSpan.FromSeconds(1));
+            _fetcher = new JobFetcher(queue, TimeSpan.FromSeconds(1));
         }
 
         [Given(@"the following queues:")]
@@ -43,7 +44,7 @@ namespace HangFire.Tests
         [When(@"it dequeues a job.*")]
         public void WhenItDequeuesAJob()
         {
-            _payload = _fetcher.DequeueJob();
+            _payload = _fetcher.DequeueJob(new CancellationTokenSource().Token);
         }
 
         [When(@"it dequeues (\d+) jobs?")]

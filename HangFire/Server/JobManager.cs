@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -12,7 +11,6 @@ namespace HangFire.Server
         private readonly List<Worker> _workers;
         private readonly BlockingCollection<Worker> _freeWorkers;
 
-        private readonly WorkerPool _pool;
         private readonly Thread _managerThread;
         private readonly IJobFetcher _fetcher;
 
@@ -21,16 +19,14 @@ namespace HangFire.Server
 
         private bool _stopSent;
         
-        public JobManager(ServerContext context, WorkerPool pool)
+        public JobManager(ServerContext context, int workerCount, IEnumerable<string> queues)
         {
-            _pool = pool;
-
-            _workers = new List<Worker>(pool.WorkersCount);
+            _workers = new List<Worker>(workerCount);
             _freeWorkers = new BlockingCollection<Worker>();
 
-            _logger.Info(String.Format("Starting {0} workers...", pool.WorkersCount));
+            _logger.Info(String.Format("Starting {0} workers...", workerCount));
 
-            for (var i = 0; i < pool.WorkersCount; i++)
+            for (var i = 0; i < workerCount; i++)
             {
                 _workers.Add(
                     new Worker(this, new WorkerContext(context, i)));
@@ -38,8 +34,8 @@ namespace HangFire.Server
 
             _logger.Info("Workers were started.");
 
-            _fetcher = new PrefetchJobFetcher(
-                new JobFetcher(pool.Queue), 1);
+            _fetcher = new PrioritizedJobFetcher(
+                queues, workerCount);
 
             _managerThread = new Thread(Work)
                 {
@@ -112,8 +108,7 @@ namespace HangFire.Server
             {
                 _logger.Fatal(
                     String.Format(
-                        "Unexpected exception caught. Jobs from the queue '{0}' will not be processed by this server.", 
-                        _pool.Queue),
+                        "Unexpected exception caught. Jobs  will not be processed by this server."),
                     ex);
             }
         }

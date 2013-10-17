@@ -92,9 +92,9 @@
     <Compile Include="Server\JobManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="Server\PrefetchJobFetcher.cs" />
+    <Compile Include="Server\PrioritizedJobFetcher.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="Server\DequeuedJobsWatcher.cs" />
-    <Compile Include="Server\WorkerPool.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
     <Compile Include="States\FailedStateDescriptor.cs" />

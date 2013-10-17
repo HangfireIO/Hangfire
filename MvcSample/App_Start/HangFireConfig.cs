@@ -22,7 +22,7 @@ namespace MvcSample
             RedisFactory.Db = 3;
             
             _server = new AspNetBackgroundJobServer(
-                new WorkerPool(Environment.ProcessorCount, "default"))
+                Environment.ProcessorCount, "default")
             {
                 MachineName = Environment.MachineName
             };

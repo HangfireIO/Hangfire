@@ -1,30 +1,29 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using HangFire.States;
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
     internal class PrefetchJobFetcher : IJobFetcher
     {
-        private readonly IJobFetcher _innerFetcher;
+        private readonly JobFetcher _innerFetcher;
         private readonly int _count;
 
-        private readonly Queue<JobPayload> _prefetchedItems
-            = new Queue<JobPayload>();
+        private readonly BlockingCollection<JobPayload> _items
+            = new BlockingCollection<JobPayload>(new ConcurrentQueue<JobPayload>());
 
         private readonly Thread _prefetchThread;
-        private readonly SemaphoreSlim _jobIsReady
-            = new SemaphoreSlim(0);
+        private readonly ManualResetEventSlim _jobIsReady
+            = new ManualResetEventSlim(false);
         private CancellationTokenSource _cts
             = new CancellationTokenSource();
 
         private readonly ILog _logger = LogManager.GetLogger(typeof (PrefetchJobFetcher));
 
-        public PrefetchJobFetcher(
-            IJobFetcher innerFetcher, int count)
+        public PrefetchJobFetcher(JobFetcher innerFetcher, int count)
         {
             _innerFetcher = innerFetcher;
             _count = count;
@@ -37,27 +36,30 @@ namespace HangFire.Server
             _prefetchThread.Start();
         }
 
-        public string Queue
+        public int PrefetchedCount
         {
-            get { return _innerFetcher.Queue; }
+            get { return _items.Count; }
         }
 
-        public IRedisClient Redis
+        public WaitHandle JobIsReady
         {
-            get { return _innerFetcher.Redis; }
+            get { return _jobIsReady.WaitHandle; }
         }
 
         public JobPayload DequeueJob(CancellationToken cancellationToken)
         {
-            _jobIsReady.Wait(cancellationToken);
-
-            lock (_prefetchedItems)
+            var payload = _items.Take(cancellationToken);
+            if (_items.Count == 0)
             {
-                var payload = _prefetchedItems.Dequeue();
-                Monitor.Pulse(_prefetchedItems);
-
-                return payload;
+                _jobIsReady.Reset();
             }
+
+            lock (_items)
+            {
+                Monitor.Pulse(_items);
+            }
+
+            return payload;
         }
 
         public void Dispose()
@@ -66,9 +68,9 @@ namespace HangFire.Server
             {
                 _cts.Cancel();
 
-                lock (_prefetchedItems)
+                lock (_items)
                 {
-                    Monitor.Pulse(_prefetchedItems);
+                    Monitor.Pulse(_items);
                 }
 
                 _prefetchThread.Join();
@@ -87,16 +89,14 @@ namespace HangFire.Server
         {
             try
             {
-                foreach (var payload in _prefetchedItems)
+                foreach (var payload in _items)
                 {
                     JobState.Apply(
-                        Redis,
-                        new EnqueuedState(payload.Id, "Re-queue prefetched job.", Queue));
+                        _innerFetcher.Redis,
+                        new EnqueuedState(payload.Id, "Re-queue prefetched job.", _innerFetcher.Queue));
 
-                    JobFetcher.RemoveFromFetchedQueue(Redis, payload.Id, Queue);
+                    JobFetcher.RemoveFromFetchedQueue(_innerFetcher.Redis, payload.Id, _innerFetcher.Queue);
                 }
-
-                _prefetchedItems.Clear();
             }
             catch (Exception ex)
             {
@@ -110,18 +110,18 @@ namespace HangFire.Server
             {
                 while (true)
                 {
-                    lock (_prefetchedItems)
+                    lock (_items)
                     {
-                        while (_prefetchedItems.Count >= _count && !_cts.Token.IsCancellationRequested)
+                        while (_items.Count >= _count && !_cts.Token.IsCancellationRequested)
                         {
-                            Monitor.Wait(_prefetchedItems);
+                            Monitor.Wait(_items);
                         }
-
-                        var payload = _innerFetcher.DequeueJob(_cts.Token);
-                        _prefetchedItems.Enqueue(payload);
-
-                        _jobIsReady.Release();
                     }
+
+                    var payload = _innerFetcher.DequeueJob(_cts.Token);
+                    _items.Add(payload);
+
+                    _jobIsReady.Set();
                 }
             }
             catch (OperationCanceledException)
