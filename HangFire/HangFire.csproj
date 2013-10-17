@@ -97,7 +97,6 @@
     <Compile Include="Server\DequeuedJobsWatcher.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
-    <Compile Include="States\FailedStateDescriptor.cs" />
     <Compile Include="States\JobState.cs" />
     <Compile Include="Filters\Client\IClientFilter.cs" />
     <Compile Include="Filters\IJobFilter.cs" />
@@ -120,12 +119,9 @@
     <Compile Include="Server\WorkerContext.cs" />
     <Compile Include="States\JobStateDescriptor.cs" />
     <Compile Include="States\ProcessingState.cs" />
-    <Compile Include="States\ProcessingStateDescriptor.cs" />
     <Compile Include="States\ScheduledState.cs" />
-    <Compile Include="States\ScheduledStateDescriptor.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="HistoryStatisticsFilter.cs" />
-    <Compile Include="States\SucceededStateDescriptor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec" />

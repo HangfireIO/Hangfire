@@ -38,5 +38,15 @@ namespace HangFire.States
                         JobId,
                         JobHelper.ToTimestamp(DateTime.UtcNow)));
         }
+
+        public class Descriptor : JobStateDescriptor
+        {
+            public override void Unapply(IRedisTransaction transaction, string jobId)
+            {
+                if (transaction == null) throw new ArgumentNullException("transaction");
+
+                transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
+            }
+        }
     }
 }

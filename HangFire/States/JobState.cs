@@ -33,10 +33,10 @@ namespace HangFire.States
         [SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static JobState()
         {
-            RegisterDescriptor(FailedState.Name, new FailedStateDescriptor());
-            RegisterDescriptor(ProcessingState.Name, new ProcessingStateDescriptor());
-            RegisterDescriptor(ScheduledState.Name, new ScheduledStateDescriptor());
-            RegisterDescriptor(SucceededState.Name, new SucceededStateDescriptor());
+            RegisterDescriptor(FailedState.Name, new FailedState.Descriptor());
+            RegisterDescriptor(ProcessingState.Name, new ProcessingState.Descriptor());
+            RegisterDescriptor(ScheduledState.Name, new ScheduledState.Descriptor());
+            RegisterDescriptor(SucceededState.Name, new SucceededState.Descriptor());
         }
 
         public static void RegisterDescriptor(
