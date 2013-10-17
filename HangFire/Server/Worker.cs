@@ -15,7 +15,7 @@ namespace HangFire.Server
         private readonly WorkerContext _context;
         private readonly Thread _thread;
 
-        public static readonly IRedisClient Redis = RedisFactory.Create();
+        private readonly IRedisClient _redis = RedisFactory.Create();
         protected readonly ILog Logger;
 
         private readonly ManualResetEventSlim _jobIsReady
@@ -134,17 +134,14 @@ namespace HangFire.Server
                 return;
             }
 
-            lock (Redis)
+            if (!JobState.Apply(
+                _redis,
+                new ProcessingState(payload.Id, "Worker has started processing.", _context.ServerName),
+                EnqueuedState.Name))
             {
-                if (!JobState.Apply(
-                    Redis,
-                    new ProcessingState(payload.Id, "Worker has started processing.", _context.ServerName),
-                    EnqueuedState.Name))
-                {
-                    return;
-                }
+                return;
             }
-            
+
             // Checkpoint #3. Job is in the Processing state. However, there are
             // no guarantees that it was performed. We need to re-queue it even
             // it was performed to guarantee that it was performed AT LEAST once.
@@ -156,7 +153,7 @@ namespace HangFire.Server
             try
             {
                 jobDescriptor = new ServerJobDescriptor(
-                    _context.Activator, payload);
+                    _redis, _context.Activator, payload);
 
                 var performContext = new PerformContext(
                     _context, jobDescriptor);
@@ -179,34 +176,31 @@ namespace HangFire.Server
                 }
             }
 
-            lock (Redis)
+            if (exception == null)
             {
-                if (exception == null)
-                {
-                    JobState.Apply(
-                        Redis,
-                        new SucceededState(payload.Id, "The job has been completed successfully."),
-                        ProcessingState.Name);
-                }
-                else
-                {
-                    JobState.Apply(
-                        Redis,
-                        new FailedState(payload.Id, "The job has been failed.", exception),
-                        ProcessingState.Name);
-                }
-
-                // Checkpoint #4. The job was performed, and it is in the one
-                // of the explicit states (Succeeded, Scheduled and so on).
-                // It should not be re-queued, but we still need to remove it's
-                // processing information.
-
-                JobFetcher.RemoveFromFetchedQueue(
-                    Redis, payload.Id, payload.Queue);
-
-                // Success point. No things must be done after previous command
-                // was succeeded.
+                JobState.Apply(
+                    _redis,
+                    new SucceededState(payload.Id, "The job has been completed successfully."),
+                    ProcessingState.Name);
             }
+            else
+            {
+                JobState.Apply(
+                    _redis,
+                    new FailedState(payload.Id, "The job has been failed.", exception),
+                    ProcessingState.Name);
+            }
+
+            // Checkpoint #4. The job was performed, and it is in the one
+            // of the explicit states (Succeeded, Scheduled and so on).
+            // It should not be re-queued, but we still need to remove it's
+            // processing information.
+
+            JobFetcher.RemoveFromFetchedQueue(
+                _redis, payload.Id, payload.Queue);
+
+            // Success point. No things must be done after previous command
+            // was succeeded.
         }
     }
 }

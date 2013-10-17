@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
     public class ServerJobDescriptor : IDisposable
     {
+        private readonly IRedisClient _redis;
         private readonly BackgroundJob _jobInstance;
 
         internal ServerJobDescriptor(
+            IRedisClient redis,
             JobActivator activator,
             JobPayload payload)
         {
+            _redis = redis;
             if (activator == null) throw new ArgumentNullException("activator");
             if (payload == null) throw new ArgumentNullException("payload");
 
@@ -63,12 +67,19 @@ namespace HangFire.Server
 
         public void SetParameter(string name, object value)
         {
-            _jobInstance.SetParameter(name, value);
+            _redis.SetEntryInHash(
+                String.Format("hangfire:job:{0}", JobId),
+                name,
+                JobHelper.ToJson(value));
         }
 
         public T GetParameter<T>(string name)
         {
-            return _jobInstance.GetParameter<T>(name);
+            var value = _redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobId),
+                name);
+
+            return JobHelper.FromJson<T>(value);
         }
 
         public void Dispose()

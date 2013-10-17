@@ -3,12 +3,27 @@ using System.IO;
 using System.Threading;
 
 using HangFire;
-using HangFire.Server;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
 namespace ConsoleSample
 {
+    [Queue("critical")]
+    public class FastCriticalJob : BackgroundJob
+    {
+        public override void Perform()
+        {
+        }
+    }
+
+    [Queue("default")]
+    public class FastDefaultJob : BackgroundJob
+    {
+        public override void Perform()
+        {
+        }
+    }
+
     [Queue("critical")]
     public class ConsoleJob : BackgroundJob
     {
@@ -65,7 +80,7 @@ namespace ConsoleSample
             GlobalJobFilters.Filters.Add(new RetryJobsFilter());
             GlobalJobFilters.Filters.Add(new RecurringJobsFilter());
 
-            using (var server = new BackgroundJobServer(200, "critical", "default"))
+            using (var server = new BackgroundJobServer(80, "critical", "default"))
             {
                 server.Start();
 
@@ -118,6 +133,24 @@ namespace ConsoleSample
                     {
                         Perform.Async<RecurringJob>();
                         Console.WriteLine("Recurring job added");
+                    }
+
+                    if (command.StartsWith("fast", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var workCount = int.Parse(command.Substring(5));
+                            for (var i = 0; i < workCount; i++)
+                            {
+                                var type = i % 2 == 0 ? typeof (FastCriticalJob) : typeof (FastDefaultJob);
+                                Perform.Async(type, new { Number = count++ });
+                            }
+                            Console.WriteLine("Jobs enqueued.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
                 }
             }
