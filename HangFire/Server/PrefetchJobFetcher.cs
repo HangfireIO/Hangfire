@@ -49,13 +49,14 @@ namespace HangFire.Server
         public JobPayload DequeueJob(CancellationToken cancellationToken)
         {
             var payload = _items.Take(cancellationToken);
-            if (_items.Count == 0)
-            {
-                _jobIsReady.Reset();
-            }
 
             lock (_items)
             {
+                if (_items.Count == 0)
+                {
+                    _jobIsReady.Reset();
+                }
+
                 Monitor.Pulse(_items);
             }
 
@@ -119,9 +120,13 @@ namespace HangFire.Server
                     }
 
                     var payload = _innerFetcher.DequeueJob(_cts.Token);
-                    _items.Add(payload);
 
-                    _jobIsReady.Set();
+                    lock (_items)
+                    {
+                        _items.Add(payload);
+
+                        _jobIsReady.Set();
+                    }
                 }
             }
             catch (OperationCanceledException)
