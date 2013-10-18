@@ -8,6 +8,6 @@ namespace HangFire.Web
         public string Name { get; set; }
         public int WorkersCount { get; set; }
         public DateTime StartedAt { get; set; }
-        public HashSet<string> Queues { get; set; } 
+        public IList<string> Queues { get; set; } 
     }
 }

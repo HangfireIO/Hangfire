@@ -80,7 +80,7 @@ namespace ConsoleSample
             GlobalJobFilters.Filters.Add(new RetryJobsFilter());
             GlobalJobFilters.Filters.Add(new RecurringJobsFilter());
 
-            using (var server = new BackgroundJobServer(80, "critical", "default"))
+            using (var server = new BackgroundJobServer("critical", "default"))
             {
                 server.Start();
 

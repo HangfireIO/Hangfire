@@ -128,13 +128,13 @@ namespace HangFire.Web
                     var server = Redis.GetAllEntriesFromHash(
                         String.Format("hangfire:server:{0}", serverName));
 
-                    var queues = Redis.GetAllItemsFromSet(
+                    var queues = Redis.GetAllItemsFromList(
                         String.Format("hangfire:server:{0}:queues", serverName));
 
                     result.Add(new ServerDto
                         {
                             Name = serverName,
-                            WorkersCount = int.Parse(server["Workers"]),
+                            WorkersCount = int.Parse(server["WorkerCount"]),
                             Queues = queues,
                             StartedAt = JobHelper.FromStringTimestamp(server["StartedAt"])
                         });

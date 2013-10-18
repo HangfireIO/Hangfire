@@ -109,13 +109,14 @@ namespace HangFire.Server
                     String.Format("hangfire:server:{0}", _context.ServerName),
                     new Dictionary<string, string>
                         {
+                            { "WorkerCount", _workerCount.ToString() },
                             { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
                         }));
 
                 foreach (var queue in _queues)
                 {
                     var queue1 = queue;
-                    transaction.QueueCommand(x => x.AddItemToSet(
+                    transaction.QueueCommand(x => x.AddItemToList(
                         String.Format("hangfire:server:{0}:queues", _context.ServerName),
                         queue1));
                 }
