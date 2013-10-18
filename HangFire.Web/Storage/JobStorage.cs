@@ -87,33 +87,47 @@ namespace HangFire.Web
                     from,
                     from + count - 1);
 
-                var result = new Dictionary<string, ScheduleDto>();
-
-                foreach (var scheduledJob in scheduledJobs)
+                if (scheduledJobs.Count == 0)
                 {
-                    var job = Redis.GetValuesFromHash(
-                        String.Format("hangfire:job:{0}", scheduledJob.Key),
-                        new[] { "Type", "Args" });
-
-                    var state = Redis.GetValueFromHash(
-                        String.Format("hangfire:job:{0}:state", scheduledJob.Key),
-                        "State");
-
-                    var dto = job.TrueForAll(x => x == null)
-                        ? null
-                        : new ScheduleDto
-                        {
-                            ScheduledAt = JobHelper.FromTimestamp((long)scheduledJob.Value),
-                            Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                            Queue = JobHelper.TryToGetQueue(job[0]),
-                            Type = job[0],
-                            InScheduledState = ScheduledState.Name.Equals(state, StringComparison.OrdinalIgnoreCase)
-                        };
-
-                    result.Add(scheduledJob.Key, dto);
+                    return new Dictionary<string, ScheduleDto>();
                 }
 
-                return result;
+                var jobs = new Dictionary<string, List<string>>();
+                var states = new Dictionary<string, string>();
+
+                using (var pipeline = Redis.CreatePipeline())
+                {
+                    foreach (var scheduledJob in scheduledJobs)
+                    {
+                        var job = scheduledJob;
+
+                        pipeline.QueueCommand(
+                            x => x.GetValuesFromHash(
+                                String.Format("hangfire:job:{0}", job.Key),
+                                new[] { "Type", "Args" }),
+                            x => jobs.Add(job.Key, x));
+
+                        pipeline.QueueCommand(
+                            x => x.GetValueFromHash(
+                                String.Format("hangfire:job:{0}:state", job.Key),
+                                "State"),
+                            x => states.Add(job.Key, x));
+                    }
+
+                    pipeline.Flush();
+                }
+
+                return scheduledJobs.ToDictionary(
+                    job => job.Key,
+                    job => new ScheduleDto
+                    {
+                        ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(jobs[job.Key][1]),
+                        Queue = JobHelper.TryToGetQueue(jobs[job.Key][0]),
+                        Type = jobs[job.Key][0],
+                        InScheduledState =
+                            ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
+                    });
             }
         }
 
@@ -138,25 +152,43 @@ namespace HangFire.Web
             lock (Redis)
             {
                 var serverNames = Redis.GetAllItemsFromSet("hangfire:servers");
-                var result = new List<ServerDto>(serverNames.Count);
-                foreach (var serverName in serverNames)
+
+                if (serverNames.Count == 0)
                 {
-                    var server = Redis.GetAllEntriesFromHash(
-                        String.Format("hangfire:server:{0}", serverName));
-
-                    var queues = Redis.GetAllItemsFromList(
-                        String.Format("hangfire:server:{0}:queues", serverName));
-
-                    result.Add(new ServerDto
-                        {
-                            Name = serverName,
-                            WorkersCount = int.Parse(server["WorkerCount"]),
-                            Queues = queues,
-                            StartedAt = JobHelper.FromStringTimestamp(server["StartedAt"])
-                        });
+                    return new List<ServerDto>();
                 }
 
-                return result;
+                var servers = new Dictionary<string, List<string>>();
+                var queues = new Dictionary<string, List<string>>();
+
+                using (var pipeline = Redis.CreatePipeline())
+                {
+                    foreach (var serverName in serverNames)
+                    {
+                        var name = serverName;
+
+                        pipeline.QueueCommand(
+                            x => x.GetValuesFromHash(
+                                String.Format("hangfire:server:{0}", name),
+                                "WorkerCount", "StartedAt"),
+                            x => servers.Add(name, x));
+
+                        pipeline.QueueCommand(
+                            x => x.GetAllItemsFromList(
+                                String.Format("hangfire:server:{0}:queues", name)),
+                            x => queues.Add(name, x));
+                    }
+
+                    pipeline.Flush();
+                }
+
+                return serverNames.Select(x => new ServerDto
+                {
+                    Name = x,
+                    WorkersCount = int.Parse(servers[x][0]),
+                    Queues = queues[x],
+                    StartedAt = JobHelper.FromStringTimestamp(servers[x][1])
+                }).ToList();
             }
         }
 
@@ -194,7 +226,7 @@ namespace HangFire.Web
             {
                 var succeededJobIds = Redis.GetRangeFromList(
                     "hangfire:succeeded",
-                    from, 
+                    from,
                     from + count - 1);
 
                 return GetJobsWithProperties(
@@ -222,8 +254,27 @@ namespace HangFire.Web
 
                 foreach (var queue in queues)
                 {
-                    var firstJobIds = Redis.GetRangeFromList(
-                        String.Format("hangfire:queue:{0}", queue), -5, -1);
+                    IList<string> firstJobIds = null;
+                    long length = 0;
+                    long dequeued = 0;
+
+                    using (var pipeline = Redis.CreatePipeline())
+                    {
+                        pipeline.QueueCommand(
+                            x => x.GetRangeFromList(
+                                String.Format("hangfire:queue:{0}", queue), -5, -1),
+                            x => firstJobIds = x);
+
+                        pipeline.QueueCommand(
+                            x => x.GetListCount(String.Format("hangfire:queue:{0}", queue)),
+                            x => length = x);
+
+                        pipeline.QueueCommand(
+                            x => x.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue)),
+                            x => dequeued = x);
+
+                        pipeline.Flush();
+                    }
 
                     var jobs = GetJobsWithProperties(
                         Redis,
@@ -237,9 +288,6 @@ namespace HangFire.Web
                             EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                             InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                         });
-
-                    var length = Redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
-                    var dequeued = Redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
 
                     result.Add(new QueueWithTopEnqueuedJobsDto
                     {
@@ -270,12 +318,12 @@ namespace HangFire.Web
                     new[] { "Type", "Args" },
                     new[] { "EnqueuedAt", "State" },
                     (job, state) => new EnqueuedJobDto
-                        {
-                            Type = job[0],
-                            Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                            EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                            InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
-                        });
+                    {
+                        Type = job[0],
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                        EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                    });
             }
         }
 
@@ -294,14 +342,14 @@ namespace HangFire.Web
                     new[] { "Type", "Args", "State", "CreatedAt", "Fetched", "Checked" },
                     null,
                     (job, state) => new DequeuedJobDto
-                        {
-                            Type = job[0],
-                            Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                            State = job[2],
-                            CreatedAt = JobHelper.FromNullableStringTimestamp(job[3]),
-                            FetchedAt = JobHelper.FromNullableStringTimestamp(job[4]),
-                            CheckedAt = JobHelper.FromNullableStringTimestamp(job[5])
-                        });
+                    {
+                        Type = job[0],
+                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                        State = job[2],
+                        CreatedAt = JobHelper.FromNullableStringTimestamp(job[3]),
+                        FetchedAt = JobHelper.FromNullableStringTimestamp(job[4]),
+                        CheckedAt = JobHelper.FromNullableStringTimestamp(job[5])
+                    });
             }
         }
 
@@ -355,7 +403,7 @@ namespace HangFire.Web
                 }
 
                 return JobState.Apply(
-                    Redis, 
+                    Redis,
                     new EnqueuedState(jobId, "The job has been enqueued by a user.", queue),
                     ScheduledState.Name);
             }
@@ -451,17 +499,43 @@ namespace HangFire.Web
 
         private static IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(
             IRedisClient redis,
-            IEnumerable<string> jobIds,
+            IList<string> jobIds,
             string[] properties,
             string[] stateProperties,
             Func<List<string>, List<string>, T> selector)
         {
+            if (jobIds.Count == 0) return new List<KeyValuePair<string, T>>();
+
+            var jobs = new Dictionary<string, List<string>>(jobIds.Count);
+            var states = new Dictionary<string, List<string>>(jobIds.Count);
+
+            using (var pipeline = redis.CreatePipeline())
+            {
+                foreach (var jobId in jobIds)
+                {
+                    var id = jobId;
+
+                    pipeline.QueueCommand(
+                        x => x.GetValuesFromHash(String.Format("hangfire:job:{0}", id), properties),
+                        x => { if (!jobs.ContainsKey(id)) jobs.Add(id, x); });
+
+                    if (stateProperties != null)
+                    {
+                        pipeline.QueueCommand(
+                            x => x.GetValuesFromHash(String.Format("hangfire:job:{0}:state", id), stateProperties),
+                            x => { if (!states.ContainsKey(id)) states.Add(id, x); });
+                    }
+                }
+
+                pipeline.Flush();
+            }
+
             return jobIds
                 .Select(x => new
                 {
                     JobId = x,
-                    Job = redis.GetValuesFromHash(String.Format("hangfire:job:{0}", x), properties),
-                    State = stateProperties != null ? redis.GetValuesFromHash(String.Format("hangfire:job:{0}:state", x), stateProperties) : null
+                    Job = jobs[x],
+                    State = states.ContainsKey(x) ? states[x] : null
                 })
                 .Select(x => new KeyValuePair<string, T>(
                     x.JobId,
@@ -492,19 +566,19 @@ namespace HangFire.Web
                         x => stats.Servers = x);
 
                     pipeline.QueueCommand(
-                        x => x.GetSetCount("hangfire:queues"), 
+                        x => x.GetSetCount("hangfire:queues"),
                         x => stats.Queues = x);
 
                     pipeline.QueueCommand(
-                        x => x.GetSortedSetCount("hangfire:schedule"), 
+                        x => x.GetSortedSetCount("hangfire:schedule"),
                         x => stats.Scheduled = x);
 
                     pipeline.QueueCommand(
-                        x => x.GetSortedSetCount("hangfire:processing"), 
+                        x => x.GetSortedSetCount("hangfire:processing"),
                         x => stats.Processing = x);
 
                     pipeline.QueueCommand(
-                        x => x.GetValue("hangfire:stats:succeeded"), 
+                        x => x.GetValue("hangfire:stats:succeeded"),
                         x => stats.Succeeded = long.Parse(x ?? "0"));
 
                     pipeline.QueueCommand(
