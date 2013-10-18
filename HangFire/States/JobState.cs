@@ -134,6 +134,8 @@ namespace HangFire.States
         {
             var properties = state.GetProperties();
             var now = DateTime.UtcNow;
+
+            properties.Add("State", state.StateName);
             
             if (appendToJob)
             {
@@ -149,7 +151,6 @@ namespace HangFire.States
                     properties));
             }
 
-            properties.Add("State", state.StateName);
             properties.Add("Reason", state.Reason);
             properties.Add("CreatedAt", JobHelper.ToStringTimestamp(now));
 

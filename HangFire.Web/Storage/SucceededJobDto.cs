@@ -9,5 +9,6 @@ namespace HangFire.Web
         public string Queue { get; set; }
         public Dictionary<string, string> Args { get; set; }
         public DateTime? SucceededAt { get; set; }
+        public bool InSucceededState { get; set; }
     }
 }

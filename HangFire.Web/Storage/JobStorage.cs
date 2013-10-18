@@ -55,14 +55,17 @@ namespace HangFire.Web
                 return GetJobsWithProperties(Redis,
                     jobIds,
                     new[] { "Type", "Args" },
-                    new[] { "StartedAt", "ServerName" },
+                    new[] { "StartedAt", "ServerName", "State" },
                     (job, state) => new ProcessingJobDto
                     {
                         ServerName = state[1],
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueue(job[0]),
-                        StartedAt = JobHelper.FromStringTimestamp(state[0])
+                        StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        InProcessingState = ProcessingState.Name.Equals(
+                            state[2], StringComparison.OrdinalIgnoreCase),
+                        State = state[2]
                     }).OrderBy(x => x.Value.StartedAt).ToList();
             }
         }
@@ -84,6 +87,10 @@ namespace HangFire.Web
                         String.Format("hangfire:job:{0}", scheduledJob.Key),
                         new[] { "Type", "Args" });
 
+                    var state = Redis.GetValueFromHash(
+                        String.Format("hangfire:job:{0}:state", scheduledJob.Key),
+                        "State");
+
                     var dto = job.TrueForAll(x => x == null)
                         ? null
                         : new ScheduleDto
@@ -91,7 +98,8 @@ namespace HangFire.Web
                             ScheduledAt = JobHelper.FromTimestamp((long)scheduledJob.Value),
                             Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                             Queue = JobHelper.TryToGetQueue(job[0]),
-                            Type = job[0]
+                            Type = job[0],
+                            InScheduledState = ScheduledState.Name.Equals(state, StringComparison.OrdinalIgnoreCase)
                         };
 
                     result.Add(scheduledJob.Key, dto);
@@ -157,16 +165,17 @@ namespace HangFire.Web
                     Redis,
                     failedJobIds,
                     new[] { "Type", "Args" },
-                    new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails" },
+                    new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State" },
                     (job, state) => new FailedJobDto
                     {
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueue(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                        FailedAt = JobHelper.FromStringTimestamp(state[0]),
+                        FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         ExceptionType = state[1],
                         ExceptionMessage = state[2],
                         ExceptionDetails = state[3],
+                        InFailedState = FailedState.Name.Equals(state[4], StringComparison.OrdinalIgnoreCase)
                     });
             }
         }
@@ -184,13 +193,14 @@ namespace HangFire.Web
                     Redis,
                     succeededJobIds,
                     new[] { "Type", "Args" },
-                    new[] { "SucceededAt" },
+                    new[] { "SucceededAt", "State" },
                     (job, state) => new SucceededJobDto
                     {
                         Type = job[0],
                         Queue = JobHelper.TryToGetQueue(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                        SucceededAt = JobHelper.FromStringTimestamp(state[0]),
+                        SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
             }
         }
@@ -211,12 +221,13 @@ namespace HangFire.Web
                         Redis,
                         firstJobIds,
                         new[] { "Type", "Args" },
-                        new[] { "EnqueuedAt" },
+                        new[] { "EnqueuedAt", "State" },
                         (job, state) => new EnqueuedJobDto
                         {
                             Type = job[0],
                             Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                            EnqueuedAt = JobHelper.FromStringTimestamp(state[0]),
+                            EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                            InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                         });
 
                     var length = Redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
@@ -247,12 +258,13 @@ namespace HangFire.Web
                 Redis,
                 firstJobIds,
                 new[] { "Type", "Args" },
-                new[] { "EnqueuedAt" },
+                new[] { "EnqueuedAt", "State" },
                 (job, state) => new EnqueuedJobDto
                 {
                     Type = job[0],
                     Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                    EnqueuedAt = JobHelper.FromStringTimestamp(state[0]),
+                    EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                    InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                 });
         }
 

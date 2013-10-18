@@ -62,5 +62,15 @@ namespace HangFire
         {
             return FromTimestamp(long.Parse(value));
         }
+
+        public static DateTime? FromNullableStringTimestamp(string value)
+        {
+            if (String.IsNullOrEmpty(value))
+            {
+                return null;
+            }
+
+            return FromStringTimestamp(value);
+        }
     }
 }

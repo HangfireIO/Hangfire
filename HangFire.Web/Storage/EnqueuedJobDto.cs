@@ -7,6 +7,7 @@ namespace HangFire.Web
     {
         public string Type { get; set; }
         public Dictionary<string, string> Args { get; set; }
-        public DateTime EnqueuedAt { get; set; }
+        public DateTime? EnqueuedAt { get; set; }
+        public bool InEnqueuedState { get; set; }
     }
 }

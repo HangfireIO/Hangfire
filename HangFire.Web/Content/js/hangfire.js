@@ -201,10 +201,14 @@
             var updateRelativeDates = function () {
                 $('*[data-moment]').each(function () {
                     var $this = $(this);
-                    var time = moment($this.data('moment'), 'X');
-                    $this.html(time.fromNow())
-                        .attr('title', time.format('llll'))
-                        .attr('data-container', 'body');
+                    var timestamp = $this.data('moment');
+
+                    if (timestamp) {
+                        var time = moment(timestamp, 'X');
+                        $this.html(time.fromNow())
+                            .attr('title', time.format('llll'))
+                            .attr('data-container', 'body');
+                    }
                 });
             };
 

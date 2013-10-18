@@ -149,6 +149,19 @@ html, body {
     background-color: #f5f5f5;
 }
 
+.obsolete-data, .obsolete-data a, .obsolete-data pre, .obsolete-data .label {
+    color: #999;
+}
+
+.obsolete-data pre, .obsolete-data .label {
+    background-color: #f5f5f5;
+}
+
+.obsolete-data .glyphicon-question-sign {
+    font-size: 80%;
+    color: #999;
+}
+
 .stack-trace {
     padding: 10px;
     border: none;   

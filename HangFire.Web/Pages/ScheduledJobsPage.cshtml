@@ -1,10 +1,9 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using Pages
 @inherits RazorPage
-              
 @{
     Layout = new LayoutPage { Title = "Scheduled Jobs" };
-    
+
     int from, perPage;
 
     int.TryParse(Request.QueryString["from"], out from);
@@ -40,11 +39,15 @@ else
         </thead>
         @foreach (var job in scheduledJobs)
         {
-            <tr>
+            <tr class="@(!job.Value.InScheduledState ? "obsolete-data" : null)">
                 <td>
                     <a href="@Request.LinkTo("/job/" + job.Key)">
                         @HtmlHelper.JobId(job.Key)
                     </a>
+                    @if (!job.Value.InScheduledState)
+                    {
+                        <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                    }
                 </td>
                 <td data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt)">@job.Value.ScheduledAt</td>
                 <td>
@@ -54,10 +57,13 @@ else
                     <pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre>
                 </td>
                 <td>
-                    <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Key)" data-loading-text="Enqueueing...">
-                        <span class="glyphicon glyphicon-play"></span>
-                        Enqueue now
-                    </button>
+                    @if (job.Value.InScheduledState)
+                    {
+                        <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Key)" data-loading-text="Enqueueing...">
+                            <span class="glyphicon glyphicon-play"></span>
+                            Enqueue now
+                        </button>
+                    }
                 </td>
             </tr>
         }

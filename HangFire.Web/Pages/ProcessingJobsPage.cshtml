@@ -3,7 +3,7 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Processing Jobs" };
-    
+
     int from, perPage;
 
     int.TryParse(Request.QueryString["from"], out from);
@@ -31,27 +31,42 @@ else
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Server</th>
                 <th>Job type</th>
                 <th>Args</th>
+                <th>Server</th>
                 <th>Started</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var job in processingJobs)
             {
-                <tr>
+                <tr class="@(!job.Value.InProcessingState ? "obsolete-data" : null)">
                     <td>
                         <a href="@Request.LinkTo("/job/" + job.Key)">
                             @HtmlHelper.JobId(job.Key)
                         </a>
+                        @if (!job.Value.InProcessingState)
+                        {
+                            <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                        }
                     </td>
-                    <td>@job.Value.ServerName</td>
                     <td>
                         @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
                     </td>
-                    <td><pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre></td>
-                    <td data-moment="@JobHelper.ToStringTimestamp(job.Value.StartedAt)">@job.Value.StartedAt</td>
+                    <td>
+                        <pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre>
+                    </td>
+                    <td>
+                        @job.Value.ServerName
+                    </td>
+                    <td>
+                        @if (job.Value.StartedAt.HasValue)
+                        {
+                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.StartedAt.Value)">
+                                @job.Value.StartedAt
+                            </span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

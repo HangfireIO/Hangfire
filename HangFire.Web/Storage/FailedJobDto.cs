@@ -12,5 +12,6 @@ namespace HangFire.Web
         public string ExceptionType { get; set; }
         public string ExceptionMessage { get; set; }
         public string ExceptionDetails { get; set; }
+        public bool InFailedState { get; set; }
     }
 }
