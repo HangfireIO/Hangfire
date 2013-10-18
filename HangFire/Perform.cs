@@ -6,8 +6,6 @@ namespace HangFire
 {
     public static class Perform
     {
-        private static readonly JobClient Client = new JobClient();
-
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
         public static string Async<TJob>()
             where TJob : BackgroundJob
@@ -29,9 +27,9 @@ namespace HangFire
 
         public static string Async(Type jobType, object args)
         {
-            lock (Client)
+            using (var client = new JobClient())
             {
-                return Client.Async(jobType, args);
+                return client.Async(jobType, args);
             }
         }
 
@@ -56,9 +54,9 @@ namespace HangFire
 
         public static string In(TimeSpan interval, Type jobType, object args)
         {
-            lock (Client)
+            using (var client = new JobClient())
             {
-                return Client.In(interval, jobType, args);
+                return client.In(interval, jobType, args);
             }
         }
     }

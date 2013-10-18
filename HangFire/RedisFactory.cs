@@ -1,9 +1,17 @@
-﻿using ServiceStack.Redis;
+﻿using System;
+using ServiceStack.Redis;
 
 namespace HangFire
 {
     public static class RedisFactory
     {
+        private static readonly Lazy<IRedisClientsManager> _manager
+            = new Lazy<IRedisClientsManager>(() => String.IsNullOrEmpty(Password)
+                ? new PooledRedisClientManager(
+                    _db, String.Format("{0}:{1}", _host, _port)) 
+                : new PooledRedisClientManager(
+                    _db, String.Format("{0}:{1}@{2}", _host, _port, Password)));
+
         private static string _host = RedisNativeClient.DefaultHost;
         private static int _port = RedisNativeClient.DefaultPort;
         private static long _db = RedisNativeClient.DefaultDb;
@@ -40,13 +48,18 @@ namespace HangFire
             set { _db = value; }
         }
 
-        public static IRedisClient Create()
+        public static IRedisClient CreateClient()
         {
             return new RedisClient(
                 Host, 
                 Port,
                 Password,
                 Db);
+        }
+
+        public static IRedisClientsManager GetManager()
+        {
+            return _manager.Value;
         }
     }
 }

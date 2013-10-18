@@ -21,7 +21,7 @@ namespace HangFire.Server
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _fetchedJobsWatcher;
 
-        private readonly IRedisClient _redis = RedisFactory.Create();
+        private readonly IRedisClient _redis = RedisFactory.CreateClient();
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");

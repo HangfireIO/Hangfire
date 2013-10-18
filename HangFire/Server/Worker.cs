@@ -15,7 +15,7 @@ namespace HangFire.Server
         private readonly WorkerContext _context;
         private readonly Thread _thread;
 
-        private readonly IRedisClient _redis = RedisFactory.Create();
+        private readonly IRedisClient _redis = RedisFactory.CreateClient();
         protected readonly ILog Logger;
 
         private readonly ManualResetEventSlim _jobIsReady

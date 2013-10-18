@@ -12,7 +12,7 @@ namespace HangFire.Server
         private static readonly TimeSpan SleepTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
-        private readonly IRedisClient _redis = RedisFactory.Create();
+        private readonly IRedisClient _redis = RedisFactory.CreateClient();
 
         private readonly ILog _logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
 
