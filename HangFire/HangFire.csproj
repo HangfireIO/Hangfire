@@ -93,6 +93,7 @@
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="Server\PrefetchJobFetcher.cs" />
     <Compile Include="Server\PrioritizedJobFetcher.cs" />
+    <Compile Include="Server\ServerWatchdog.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="Server\DequeuedJobsWatcher.cs" />
     <Compile Include="States\EnqueuedState.cs" />

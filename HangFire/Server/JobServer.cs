@@ -20,6 +20,9 @@ namespace HangFire.Server
         private JobManager _manager;
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _fetchedJobsWatcher;
+        private ThreadWrapper _serverWatchdog;
+
+        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
 
         private readonly IRedisClient _redis = RedisFactory.CreateClient();
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
@@ -70,10 +73,12 @@ namespace HangFire.Server
             _manager = new JobManager(_context, _workerCount, _queues);
             _schedulePoller = new ThreadWrapper(new SchedulePoller(_pollInterval));
             _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher());
+            _serverWatchdog = new ThreadWrapper(new ServerWatchdog());
         }
 
         private void StopServer()
         {
+            _serverWatchdog.Dispose();
             _fetchedJobsWatcher.Dispose();
             _schedulePoller.Dispose();
             _manager.Dispose();
@@ -87,10 +92,18 @@ namespace HangFire.Server
                 AnnounceServer();
                 StartServer();
 
-                _stopped.WaitOne();
+                while (true)
+                {
+                    Heartbeat();
+
+                    if (_stopped.WaitOne(HeartbeatInterval))
+                    {
+                        break;
+                    }
+                }
 
                 StopServer();
-                RemoveServer();
+                RemoveServer(_redis, _context.ServerName);
             }
             catch (Exception ex)
             {
@@ -110,7 +123,7 @@ namespace HangFire.Server
                     new Dictionary<string, string>
                         {
                             { "WorkerCount", _workerCount.ToString() },
-                            { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
+                            { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
                         }));
 
                 foreach (var queue in _queues)
@@ -125,17 +138,25 @@ namespace HangFire.Server
             }
         }
 
-        private void RemoveServer()
+        private void Heartbeat()
         {
-            using (var transaction = _redis.CreateTransaction())
+            _redis.SetEntryInHash(
+                String.Format("hangfire:server:{0}", _context.ServerName),
+                "Heartbeat",
+                JobHelper.ToStringTimestamp(DateTime.UtcNow));
+        }
+
+        public static void RemoveServer(IRedisClient redis, string serverName)
+        {
+            using (var transaction = redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromSet(
                     "hangfire:servers",
-                    _context.ServerName));
+                    serverName));
 
                 transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}", _context.ServerName),
-                    String.Format("hangfire:server:{0}:queues", _context.ServerName)));
+                    String.Format("hangfire:server:{0}", serverName),
+                    String.Format("hangfire:server:{0}:queues", serverName)));
 
                 transaction.Commit();
             }

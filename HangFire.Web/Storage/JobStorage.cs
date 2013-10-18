@@ -170,7 +170,7 @@ namespace HangFire.Web
                         pipeline.QueueCommand(
                             x => x.GetValuesFromHash(
                                 String.Format("hangfire:server:{0}", name),
-                                "WorkerCount", "StartedAt"),
+                                "WorkerCount", "StartedAt", "Heartbeat"),
                             x => servers.Add(name, x));
 
                         pipeline.QueueCommand(
@@ -187,7 +187,8 @@ namespace HangFire.Web
                     Name = x,
                     WorkersCount = int.Parse(servers[x][0]),
                     Queues = queues[x],
-                    StartedAt = JobHelper.FromStringTimestamp(servers[x][1])
+                    StartedAt = JobHelper.FromStringTimestamp(servers[x][1]),
+                    Heartbeat = JobHelper.FromNullableStringTimestamp(servers[x][2])
                 }).ToList();
             }
         }

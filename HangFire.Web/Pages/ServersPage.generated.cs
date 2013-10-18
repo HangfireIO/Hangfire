@@ -93,14 +93,22 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Name</th>\r\n                <th>Workers</th>\r\n                <th>Queues</th>\r\n " +
-"               <th>Started</th>\r\n            </tr>\r\n        </thead>\r\n        <t" +
-"body>\r\n");
+WriteLiteral(@"    <table class=""table"">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Workers</th>
+                <th>Queues</th>
+                <th>Started</th>
+                <th>Heartbeat</th>
+            </tr>
+        </thead>
+        <tbody>
+");
 
 
             
-            #line 32 "..\..\Pages\ServersPage.cshtml"
+            #line 33 "..\..\Pages\ServersPage.cshtml"
              foreach (var server in servers)
             {
 
@@ -111,7 +119,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 35 "..\..\Pages\ServersPage.cshtml"
+            #line 36 "..\..\Pages\ServersPage.cshtml"
                    Write(server.Name);
 
             
@@ -121,7 +129,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 36 "..\..\Pages\ServersPage.cshtml"
+            #line 37 "..\..\Pages\ServersPage.cshtml"
                    Write(server.WorkersCount);
 
             
@@ -131,7 +139,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 37 "..\..\Pages\ServersPage.cshtml"
+            #line 38 "..\..\Pages\ServersPage.cshtml"
                    Write(HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel))));
 
             
@@ -141,7 +149,7 @@ WriteLiteral("</td>\r\n                    <td data-moment=\"");
 
 
             
-            #line 38 "..\..\Pages\ServersPage.cshtml"
+            #line 39 "..\..\Pages\ServersPage.cshtml"
                                 Write(JobHelper.ToStringTimestamp(server.StartedAt));
 
             
@@ -151,17 +159,58 @@ WriteLiteral("\">");
 
 
             
-            #line 38 "..\..\Pages\ServersPage.cshtml"
+            #line 39 "..\..\Pages\ServersPage.cshtml"
                                                                                 Write(server.StartedAt);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                </tr>\r\n");
+WriteLiteral("</td>\r\n                    <td>\r\n");
 
 
             
-            #line 40 "..\..\Pages\ServersPage.cshtml"
+            #line 41 "..\..\Pages\ServersPage.cshtml"
+                         if (server.Heartbeat.HasValue)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <span data-moment=\"");
+
+
+            
+            #line 43 "..\..\Pages\ServersPage.cshtml"
+                                          Write(JobHelper.ToStringTimestamp(server.Heartbeat.Value));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                                ");
+
+
+            
+            #line 44 "..\..\Pages\ServersPage.cshtml"
+                           Write(server.Heartbeat);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                            </span>\r\n");
+
+
+            
+            #line 46 "..\..\Pages\ServersPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </td>\r\n                </tr>\r\n");
+
+
+            
+            #line 49 "..\..\Pages\ServersPage.cshtml"
             }
 
             
@@ -171,7 +220,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 43 "..\..\Pages\ServersPage.cshtml"
+            #line 52 "..\..\Pages\ServersPage.cshtml"
 }
             
             #line default

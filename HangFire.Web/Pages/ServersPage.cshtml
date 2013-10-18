@@ -26,6 +26,7 @@ else
                 <th>Workers</th>
                 <th>Queues</th>
                 <th>Started</th>
+                <th>Heartbeat</th>
             </tr>
         </thead>
         <tbody>
@@ -36,6 +37,14 @@ else
                     <td>@server.WorkersCount</td>
                     <td>@HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel)))</td>
                     <td data-moment="@JobHelper.ToStringTimestamp(server.StartedAt)">@server.StartedAt</td>
+                    <td>
+                        @if (server.Heartbeat.HasValue)
+                        {
+                            <span data-moment="@JobHelper.ToStringTimestamp(server.Heartbeat.Value)">
+                                @server.Heartbeat
+                            </span>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
