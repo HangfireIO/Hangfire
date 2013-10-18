@@ -35,7 +35,11 @@ else
                         </a>
                     </td>
                     <td>@queue.Length</td>
-                    <td>@queue.Dequeued</td>
+                    <td>
+                        <a href="@Request.LinkTo("/queues/dequeued/" + queue.Name)">
+                            @queue.Dequeued    
+                        </a>
+                    </td>
                     <td>@if (queue.FirstJobs.Count == 0)
                         {
                         <em>No jobs queued.</em>

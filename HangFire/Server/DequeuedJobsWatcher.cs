@@ -44,21 +44,13 @@ namespace HangFire.Server
 
         private void RequeueJobIfTimedOut(string jobId, string queue)
         {
-            string fetched = null;
-            string @checked = null;
+            var flags = _redis.GetValuesFromHash(
+                String.Format("hangfire:job:{0}", jobId),
+                "Fetched",
+                "Checked");
 
-            using (var pipeline = _redis.CreatePipeline())
-            {
-                pipeline.QueueCommand(
-                    x => x.GetValue(String.Format("hangfire:job:{0}:fetched", jobId)),
-                    x => fetched = x);
-
-                pipeline.QueueCommand(
-                    x => x.GetValue(String.Format("hangfire:job:{0}:checked", jobId)),
-                    x => @checked = x);
-
-                pipeline.Flush();
-            }
+            var fetched = flags[0];
+            var @checked = flags[1];
 
             if (String.IsNullOrEmpty(fetched) && String.IsNullOrEmpty(@checked))
             {
@@ -80,8 +72,9 @@ namespace HangFire.Server
                 // and after the CheckedTimeout expired, then the server
                 // is dead, and we'll re-queue the job.
 
-                _redis.SetEntry(
-                    String.Format("hangfire:job:{0}:checked", jobId),
+                _redis.SetEntryInHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "Checked",
                     JobHelper.ToStringTimestamp(DateTime.UtcNow));
 
                 // Checkpoint #1-2. The job is in the implicit 'Checked' state.

@@ -15,8 +15,9 @@ namespace HangFire.Tests
             else if (timeAgo.Equals("day")) time = DateTime.UtcNow.AddDays(-1);
             else throw new InvalidOperationException(String.Format("Unknown period '{0}'.", timeAgo));
 
-            Redis.Client.SetEntry(
-                String.Format("hangfire:job:{0}:checked", JobSteps.DefaultJobId),
+            Redis.Client.SetEntryInHash(
+                String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
+                "Checked",
                 JobHelper.ToStringTimestamp(time));
         }
 
@@ -28,8 +29,9 @@ namespace HangFire.Tests
             else if (timeAgo.Equals("day")) time = DateTime.UtcNow.AddDays(-1);
             else throw new InvalidOperationException(String.Format("Unknown period '{0}'.", timeAgo));
 
-            Redis.Client.SetEntry(
-                String.Format("hangfire:job:{0}:fetched", JobSteps.DefaultJobId),
+            Redis.Client.SetEntryInHash(
+                String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
+                "Fetched",
                 JobHelper.ToStringTimestamp(time));
         }
 
@@ -45,8 +47,9 @@ namespace HangFire.Tests
         [Then(@"it marks the job as 'checked'")]
         public void ThenItMarksTheJobAsChecked()
         {
-            var checkedTimestamp = Redis.Client.GetValue(
-                String.Format("hangfire:job:{0}:checked", JobSteps.DefaultJobId));
+            var checkedTimestamp = Redis.Client.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
+                "Checked");
 
             Assert.IsNotNull(checkedTimestamp);
             var date = JobHelper.FromStringTimestamp(checkedTimestamp);
@@ -57,8 +60,9 @@ namespace HangFire.Tests
         [Then(@"the job has the 'checked' flag set")]
         public void ThenTheJobHasTheCheckedFlagSet()
         {
-            var checkedTimestamp = Redis.Client.GetValue(
-                String.Format("hangfire:job:{0}:checked", JobSteps.DefaultJobId));
+            var checkedTimestamp = Redis.Client.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
+                "Checked");
 
             Assert.IsNotNull(checkedTimestamp);
         }
@@ -66,8 +70,9 @@ namespace HangFire.Tests
         [Then(@"the job does not have the 'checked' flag set")]
         public void ThenTheJobDoesNotHaveTheCheckedFlagSet()
         {
-            var checkedTimestamp = Redis.Client.GetValue(
-                String.Format("hangfire:job:{0}:checked", JobSteps.DefaultJobId));
+            var checkedTimestamp = Redis.Client.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
+                "Checked");
 
             Assert.IsNull(checkedTimestamp);
         }
@@ -75,8 +80,8 @@ namespace HangFire.Tests
         [Then(@"the job has the 'fetched' flag set")]
         public void ThenTheJobHasTheFetchedFlagSet()
         {
-            var fetchedTimestamp = Redis.Client.GetValue(
-                String.Format("hangfire:job:{0}:fetched", JobSteps.DefaultJobId));
+            var fetchedTimestamp = Redis.Client.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobSteps.DefaultJobId), "Fetched");
 
             Assert.IsNotNull(fetchedTimestamp);
         }
@@ -84,8 +89,8 @@ namespace HangFire.Tests
         [Then(@"the job does not have the 'fetched' flag set")]
         public void ThenTheJobDoesNotHaveTheFetchedFlagSet()
         {
-            var fetchedTimestamp = Redis.Client.GetValue(
-                String.Format("hangfire:job:{0}:fetched", JobSteps.DefaultJobId));
+            var fetchedTimestamp = Redis.Client.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobSteps.DefaultJobId), "Fetched");
 
             Assert.IsNull(fetchedTimestamp);
         }

@@ -1,0 +1,100 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Pages
+@inherits RazorPage
+@{
+    Layout = new LayoutPage
+        {
+            Title = Queue.ToUpperInvariant(),
+            Subtitle = "Dequeued jobs",
+            Breadcrumbs = new Dictionary<string, string>
+                {
+                    { "Queues", Request.LinkTo("/queues") },
+                    { Queue.ToUpperInvariant(), Request.LinkTo("/queues/" + Queue) }
+                },
+            BreadcrumbsTitle = "Dequeued jobs",    
+        };
+
+    int from, perPage;
+
+    int.TryParse(Request.QueryString["from"], out from);
+    int.TryParse(Request.QueryString["count"], out perPage);
+
+    var pager = new Pager(from, perPage, JobStorage.DequeuedCount(Queue))
+    {
+        BasePageUrl = Request.LinkTo("/queues/dequeued/" + Queue)
+    };
+
+    var dequeuedJobs = JobStorage.DequeuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
+}
+
+@if (pager.TotalPageCount == 0)
+{
+    <div class="alert alert-info">
+        The queue is empty.
+    </div>
+}
+else
+{
+    @RenderPartial(new PerPageSelector(pager))
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>State</th>
+                <th>Job type</th>
+                <th>Args</th>
+                <th>Created</th>
+                <th>Fetched</th>
+                <th>Checked</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var job in dequeuedJobs)
+            {
+                <tr>
+                    <td>
+                        <a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
+                    </td>
+                    <td>
+                        <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
+                            @job.Value.State</span>
+                    </td>
+                    <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                    <td>
+                        <pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre>
+                    </td>
+                    <td>
+                        @if (job.Value.CreatedAt.HasValue)
+                        {
+                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.CreatedAt.Value)">
+                                @job.Value.CreatedAt
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        @if (job.Value.FetchedAt.HasValue)
+                        {
+                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.FetchedAt.Value)">
+                                @job.Value.FetchedAt
+                            </span>
+                        }
+                    </td>
+                    <td>
+                        @if (job.Value.CheckedAt.HasValue)
+                        {
+                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.CheckedAt.Value)">
+                                @job.Value.CheckedAt
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    @RenderPartial(new Paginator(pager))
+}

@@ -25,6 +25,9 @@ namespace HangFire.Web
 
             RegisterPathHandlerFactory("/queues", x => new QueuesPage());
             RegisterPathHandlerFactory(
+                "/queues/dequeued/(?<Queue>.+)",
+                x => new DequeuedJobsPage(x.Groups["Queue"].Value));
+            RegisterPathHandlerFactory(
                 "/queues/(?<Queue>.+)",
                 x => new EnqueuedJobsPage(x.Groups["Queue"].Value));
 

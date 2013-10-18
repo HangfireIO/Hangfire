@@ -428,7 +428,7 @@ WriteLiteral("                            <li class=\"active\">");
 
             
             #line 119 "..\..\Pages\LayoutPage.cshtml"
-                                          Write(Title);
+                                           Write(BreadcrumbsTitle ?? Title);
 
             
             #line default

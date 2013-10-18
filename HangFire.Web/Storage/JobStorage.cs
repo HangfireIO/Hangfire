@@ -26,6 +26,14 @@ namespace HangFire.Web
             }
         }
 
+        public static long DequeuedCount(string queue)
+        {
+            lock (Redis)
+            {
+                return Redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
+            }
+        }
+
         public static long FailedCount()
         {
             lock (Redis)
@@ -249,23 +257,52 @@ namespace HangFire.Web
         public static IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(
             string queue, int from, int perPage)
         {
-            var firstJobIds = Redis.GetRangeFromList(
-                String.Format("hangfire:queue:{0}", queue), 
-                from, 
-                from + perPage - 1);
+            lock (Redis)
+            {
+                var jobIds = Redis.GetRangeFromList(
+                    String.Format("hangfire:queue:{0}", queue),
+                    from,
+                    from + perPage - 1);
 
-            return GetJobsWithProperties(
-                Redis,
-                firstJobIds,
-                new[] { "Type", "Args" },
-                new[] { "EnqueuedAt", "State" },
-                (job, state) => new EnqueuedJobDto
-                {
-                    Type = job[0],
-                    Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                    EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                    InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
-                });
+                return GetJobsWithProperties(
+                    Redis,
+                    jobIds,
+                    new[] { "Type", "Args" },
+                    new[] { "EnqueuedAt", "State" },
+                    (job, state) => new EnqueuedJobDto
+                        {
+                            Type = job[0],
+                            Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                            EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                            InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                        });
+            }
+        }
+
+        public static IList<KeyValuePair<string, DequeuedJobDto>> DequeuedJobs(
+            string queue, int from, int perPage)
+        {
+            lock (Redis)
+            {
+                var jobIds = Redis.GetRangeFromList(
+                    String.Format("hangfire:queue:{0}:dequeued", queue),
+                    from, from + perPage - 1);
+
+                return GetJobsWithProperties(
+                    Redis,
+                    jobIds,
+                    new[] { "Type", "Args", "State", "CreatedAt", "Fetched", "Checked" },
+                    null,
+                    (job, state) => new DequeuedJobDto
+                        {
+                            Type = job[0],
+                            Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                            State = job[2],
+                            CreatedAt = JobHelper.FromNullableStringTimestamp(job[3]),
+                            FetchedAt = JobHelper.FromNullableStringTimestamp(job[4]),
+                            CheckedAt = JobHelper.FromNullableStringTimestamp(job[5])
+                        });
+            }
         }
 
         public static IDictionary<DateTime, long> HourlySucceededJobs()
@@ -424,7 +461,7 @@ namespace HangFire.Web
                 {
                     JobId = x,
                     Job = redis.GetValuesFromHash(String.Format("hangfire:job:{0}", x), properties),
-                    State = redis.GetValuesFromHash(String.Format("hangfire:job:{0}:state", x), stateProperties)
+                    State = stateProperties != null ? redis.GetValuesFromHash(String.Format("hangfire:job:{0}:state", x), stateProperties) : null
                 })
                 .Select(x => new KeyValuePair<string, T>(
                     x.JobId,

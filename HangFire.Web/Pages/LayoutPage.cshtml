@@ -116,7 +116,7 @@
                             {
                                 <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
                             }
-                            <li class="active">@Title</li>
+                            <li class="active">@(BreadcrumbsTitle ?? Title)</li>
                         </ol>
                     }
 

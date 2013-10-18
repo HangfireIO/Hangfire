@@ -85,6 +85,7 @@ namespace HangFire.Client
             var job = new Dictionary<string, string>();
             job["Type"] = jobType.AssemblyQualifiedName;
             job["Args"] = JobHelper.ToJson(ClientJobDescriptor.SerializeProperties(jobArgs));
+            job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
             return job;
         }

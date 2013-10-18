@@ -56,8 +56,9 @@ namespace HangFire.Server
 
             using (var pipeline = _redis.CreatePipeline())
             {
-                pipeline.QueueCommand(x => x.SetEntry(
-                    String.Format("hangfire:job:{0}:fetched", jobId),
+                pipeline.QueueCommand(x => x.SetEntryInHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "Fetched",
                     JobHelper.ToStringTimestamp(DateTime.UtcNow)));
 
                 pipeline.QueueCommand(
@@ -91,9 +92,12 @@ namespace HangFire.Server
                     jobId,
                     -1));
 
-                transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:job:{0}:fetched", jobId),
-                    String.Format("hangfire:job:{0}:checked", jobId)));
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "Fetched"));
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "Checked"));
 
                 transaction.Commit();
             }
