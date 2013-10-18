@@ -59,7 +59,7 @@ WriteLiteral("\r\n");
   
     Layout = new LayoutPage
         {
-            Title = Queue, 
+            Title = Queue.ToUpperInvariant(), 
             Subtitle = "Enqueued jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {

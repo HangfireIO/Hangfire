@@ -103,13 +103,13 @@ WriteLiteral(@"    <table class=""table table-striped"">
             
             #line default
             #line hidden
-WriteLiteral("                <tr>\r\n                    <td>\r\n                        <a href=\"" +
-"");
+WriteLiteral("                <tr>\r\n                    <td>\r\n                        <a class=" +
+"\"label-queue\" href=\"");
 
 
             
             #line 33 "..\..\Pages\QueuesPage.cshtml"
-                            Write(Request.LinkTo("/queues/" + queue.Name));
+                                                Write(Request.LinkTo("/queues/" + queue.Name));
 
             
             #line default

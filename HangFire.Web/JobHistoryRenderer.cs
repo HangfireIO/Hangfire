@@ -83,7 +83,7 @@ namespace HangFire.Web
         private static IHtmlString EnqueuedRenderer(IDictionary<string, string> properties)
         {
             return new HtmlString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-primary\">{0}</span></dd></dl>",
+                "<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-queue label-primary\">{0}</span></dd></dl>",
                 properties["Queue"]));
         }
 

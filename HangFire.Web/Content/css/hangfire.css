@@ -237,3 +237,7 @@ html, body {
 .paginator .btn.active {
     color: #333;
 }
+
+.label-queue {
+    text-transform: uppercase;
+}

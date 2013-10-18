@@ -42,11 +42,11 @@ namespace HangFire.Web
             string label;
             if (queue != null)
             {
-                label = "<span class=\"label label-primary\">" + queue + "</span>";
+                label = "<span class=\"label label-queue label-primary\">" + queue + "</span>";
             }
             else
             {
-                label = "<span class=\"label label-danger\"><i>Unknown</i></span>";
+                label = "<span class=\"label label-queue label-danger\"><i>Unknown</i></span>";
             }
 
             return new HtmlString(label);
