@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using HangFire.States;
+using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -13,6 +14,8 @@ namespace HangFire.Server
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
         private readonly IRedisClient _redis = RedisFactory.CreateClient();
+
+        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly ILog _logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
 
@@ -146,11 +149,12 @@ namespace HangFire.Server
                 while (true)
                 {
                     FindAndRequeueTimedOutJobs();
-                    Thread.Sleep(SleepTimeout);
+
+                    if (_stopped.WaitOne(SleepTimeout))
+                    {
+                        break;
+                    }
                 }
-            }
-            catch (ThreadInterruptedException)
-            {
             }
             catch (Exception ex)
             {
@@ -162,7 +166,7 @@ namespace HangFire.Server
 
         void IThreadWrappable.Dispose(Thread thread)
         {
-            thread.Interrupt();
+            _stopped.Set();
             thread.Join();
         }
     }

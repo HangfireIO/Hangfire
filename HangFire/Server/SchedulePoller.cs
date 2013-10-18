@@ -15,6 +15,9 @@ namespace HangFire.Server
         private readonly TimeSpan _pollInterval;
         private readonly IRedisClient _redis = RedisFactory.CreateClient();
 
+        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
         public SchedulePoller(TimeSpan pollInterval)
         {
             _pollInterval = pollInterval;
@@ -71,17 +74,16 @@ namespace HangFire.Server
             {
                 while (true)
                 {
-                    if (!EnqueueNextScheduledJob())
+                    var wasEnqueued = EnqueueNextScheduledJob();
+
+                    if (wasEnqueued && !_cts.IsCancellationRequested) 
+                        continue;
+
+                    if (_stopped.WaitOne(_pollInterval))
                     {
-                        Thread.Sleep(_pollInterval);
+                        break;
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (ThreadInterruptedException)
-            {
             }
             catch (Exception ex)
             {
@@ -94,7 +96,8 @@ namespace HangFire.Server
 
         void IThreadWrappable.Dispose(Thread thread)
         {
-            thread.Interrupt();
+            _cts.Cancel();
+            _stopped.Set();
             thread.Join();
         }
     }
