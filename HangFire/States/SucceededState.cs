@@ -37,6 +37,10 @@ namespace HangFire.States
                 String.Format("hangfire:job:{0}:history", JobId),
                 _jobExpirationTimeout));
 
+            transaction.QueueCommand(x => x.ExpireEntryIn(
+                String.Format("hangfire:job:{0}:state", JobId),
+                _jobExpirationTimeout));
+
             transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", JobId));
             transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
 
@@ -50,10 +54,13 @@ namespace HangFire.States
                 if (transaction == null) throw new ArgumentNullException("transaction");
 
                 transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:succeeded"));
+
                 transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
                     String.Format("hangfire:job:{0}", jobId)));
                 transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
                     String.Format("hangfire:job:{0}:history", jobId)));
+                transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
+                    String.Format("hangfire:job:{0}:state", jobId)));
             }
         }
     }
