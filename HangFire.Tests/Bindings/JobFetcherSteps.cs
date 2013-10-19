@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
+using System.Threading.Tasks;
 using HangFire.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
@@ -14,6 +16,8 @@ namespace HangFire.Tests
         private JobFetcher _fetcher;
         private JobPayload _payload;
         private IList<string> _queues;
+
+        private Exception _exception;
 
         [Given(@"the fetcher listening the queue")]
         public void GivenTheFetcherListeningTheQueue()
@@ -44,7 +48,21 @@ namespace HangFire.Tests
         [When(@"it dequeues a job.*")]
         public void WhenItDequeuesAJob()
         {
-            _payload = _fetcher.DequeueJob(new CancellationTokenSource().Token);
+            var cts = new CancellationTokenSource();
+            Task.Factory.StartNew(() =>
+                {
+                    Thread.Sleep(TimeSpan.FromMilliseconds(100)); 
+                    cts.Cancel();
+                });
+
+            try
+            {
+                _payload = _fetcher.DequeueJob(cts.Token);
+            }
+            catch (Exception ex)
+            {
+                _exception = ex;
+            }
         }
 
         [When(@"it dequeues (\d+) jobs?")]
@@ -68,10 +86,11 @@ namespace HangFire.Tests
             Assert.AreEqual(jobId, _payload.Id);
         }
 
-        [Then(@"the fetcher returns null")]
-        public void ThenTheFetcherReturnsNull()
+        [Then(@"the fetcher does not return any job")]
+        public void ThenTheFetcherDoesNotReturnAnyJob()
         {
-            Assert.IsNull(_payload);
+            Assert.IsNotNull(_exception);
+            Assert.AreEqual(typeof(OperationCanceledException).Name, _exception.GetType().Name);
         }
 
         [Then(@"all queues are empty")]
