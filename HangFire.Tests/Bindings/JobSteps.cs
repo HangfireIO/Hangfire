@@ -33,6 +33,15 @@ namespace HangFire.Tests
         [Given(@"the '(.+)' job of the '(.+)' type")]
         public void GivenTheJobOfTheType(string jobId, string type)
         {
+            Redis.Client.AddItemToList(
+                String.Format("hangfire:job:{0}:history", jobId),
+                "");
+
+            Redis.Client.SetEntryInHash(
+                String.Format("hangfire:job:{0}:state", jobId),
+                "StateProp",
+                "SomeValue");
+
             Redis.Client.SetRangeInHash(
                 String.Format("hangfire:job:{0}", jobId),
                 new Dictionary<string, string>

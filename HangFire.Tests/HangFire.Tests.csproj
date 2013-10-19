@@ -101,6 +101,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SchedulePoller.feature</DependentUpon>
     </Compile>
+    <Compile Include="States\StateBindings.cs" />
+    <Compile Include="States\SucceededState.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SucceededState.feature</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire\HangFire.csproj">
@@ -122,6 +128,10 @@
     <None Include="SchedulePoller.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SchedulePoller.feature.cs</LastGenOutput>
+    </None>
+    <None Include="States\SucceededState.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>SucceededState.feature.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Choose>

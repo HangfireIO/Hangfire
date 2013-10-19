@@ -55,6 +55,9 @@ namespace HangFire.States
 
                 transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:succeeded"));
 
+                transaction.QueueCommand(x => x.RemoveItemFromList(
+                    "hangfire:succeeded", jobId));
+
                 transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
                     String.Format("hangfire:job:{0}", jobId)));
                 transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(

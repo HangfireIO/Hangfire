@@ -45,6 +45,12 @@ namespace HangFire.States
             Descriptors.Add(stateName, descriptor);
         }
 
+        public static JobStateDescriptor GetDescriptor(
+            string stateName)
+        {
+            return Descriptors.ContainsKey(stateName) ? Descriptors[stateName] : null;
+        }
+
         public static bool Apply(
             IRedisClient redis, JobState state, params string[] allowedStates)
         {
@@ -92,9 +98,10 @@ namespace HangFire.States
             {
                 if (!String.IsNullOrEmpty(oldState))
                 {
-                    if (Descriptors.ContainsKey(oldState))
+                    var descriptor = GetDescriptor(oldState);
+                    if (descriptor != null)
                     {
-                        Descriptors[oldState].Unapply(transaction, state.JobId);
+                        descriptor.Unapply(transaction, state.JobId);
                     }
 
                     transaction.QueueCommand(x => x.RemoveEntry(
