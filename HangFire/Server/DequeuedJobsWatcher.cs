@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using HangFire.States;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -13,11 +12,16 @@ namespace HangFire.Server
         private static readonly TimeSpan SleepTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
-        private readonly IRedisClient _redis = RedisFactory.CreateClient();
+        private readonly IRedisClient _redis;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly ILog _logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
+
+        public DequeuedJobsWatcher(IRedisClientsManager redisManager)
+        {
+            _redis = redisManager.GetClient();
+        }
 
         public void Dispose()
         {

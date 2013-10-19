@@ -8,12 +8,14 @@ namespace HangFire.Server
     {
         private readonly TimeSpan _fetchTimeout;
 
-        private readonly IRedisClient _redis
-            = RedisFactory.CreateClient();
+        private readonly IRedisClient _redis;
 
         public JobFetcher(
+            IRedisClientsManager redisManager,
             string queue, TimeSpan? fetchTimeout = null)
         {
+            _redis = redisManager.GetClient();
+
             Queue = queue;
 
             _fetchTimeout = fetchTimeout ?? TimeSpan.FromSeconds(5);

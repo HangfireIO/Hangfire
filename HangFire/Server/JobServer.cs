@@ -24,18 +24,24 @@ namespace HangFire.Server
 
         private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
 
-        private readonly IRedisClient _redis = RedisFactory.CreateClient();
+        private readonly IRedisClientsManager _redisManager;
+        private readonly IRedisClient _redis;
+
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
         public JobServer(
+            IRedisClientsManager redisManager,
             string machineName,
             int workerCount,
             IEnumerable<string> queues, 
             TimeSpan pollInterval,
             JobActivator jobActivator)
         {
+            _redis = redisManager.GetClient();
+
+            _redisManager = redisManager;
             _workerCount = workerCount;
             _queues = queues;
             _pollInterval = pollInterval;
@@ -70,10 +76,10 @@ namespace HangFire.Server
 
         private void StartServer()
         {
-            _manager = new JobManager(_context, _workerCount, _queues);
-            _schedulePoller = new ThreadWrapper(new SchedulePoller(_pollInterval));
-            _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher());
-            _serverWatchdog = new ThreadWrapper(new ServerWatchdog());
+            _manager = new JobManager(_redisManager, _context, _workerCount, _queues);
+            _schedulePoller = new ThreadWrapper(new SchedulePoller(_redisManager, _pollInterval));
+            _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher(_redisManager));
+            _serverWatchdog = new ThreadWrapper(new ServerWatchdog(_redisManager));
         }
 
         private void StopServer()

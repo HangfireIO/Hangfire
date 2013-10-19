@@ -10,8 +10,7 @@ namespace HangFire.Tests
     public static class Redis
     {
         private const int RedisDb = 5;
-        private const string RedisHost = "localhost";
-        private const int RedisPort = 6379;
+        private const string RedisHost = "localhost:6379";
 
         private static readonly object _lock = new object();
 
@@ -23,12 +22,11 @@ namespace HangFire.Tests
             Monitor.Enter(_lock);
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            Client = new RedisClient(RedisHost, RedisPort, null, RedisDb);
-            Client.FlushDb();
-
             RedisFactory.Db = RedisDb;
             RedisFactory.Host = RedisHost;
-            RedisFactory.Port = RedisPort;
+
+            Client = RedisFactory.BasicManager.GetClient();
+            Client.FlushDb();
         }
 
         [AfterScenario("redis")]

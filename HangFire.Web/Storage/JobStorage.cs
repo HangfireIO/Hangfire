@@ -8,7 +8,7 @@ namespace HangFire.Web
 {
     internal static class JobStorage
     {
-        private static readonly IRedisClient Redis = RedisFactory.CreateClient();
+        private static readonly IRedisClient Redis = RedisFactory.BasicManager.GetClient();
 
         public static long ScheduledCount()
         {

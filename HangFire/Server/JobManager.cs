@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Logging;
+using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -19,7 +20,11 @@ namespace HangFire.Server
 
         private bool _stopSent;
         
-        public JobManager(ServerContext context, int workerCount, IEnumerable<string> queues)
+        public JobManager(
+            IRedisClientsManager redisManager,
+            ServerContext context, 
+            int workerCount, 
+            IEnumerable<string> queues)
         {
             _workers = new List<Worker>(workerCount);
             _freeWorkers = new BlockingCollection<Worker>();
@@ -29,13 +34,13 @@ namespace HangFire.Server
             for (var i = 0; i < workerCount; i++)
             {
                 _workers.Add(
-                    new Worker(this, new WorkerContext(context, i)));
+                    new Worker(redisManager, this, new WorkerContext(context, i)));
             }
 
             _logger.Info("Workers were started.");
 
             _fetcher = new PrioritizedJobFetcher(
-                queues, workerCount);
+                redisManager, queues, workerCount);
 
             _managerThread = new Thread(Work)
                 {

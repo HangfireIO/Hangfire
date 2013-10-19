@@ -56,7 +56,9 @@ namespace HangFire
                 throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
             }
 
-            _server = new JobServer(MachineName, WorkerCount, Queues, PollInterval, JobActivator);
+            _server = new JobServer(
+                RedisFactory.BasicManager,
+                MachineName, WorkerCount, Queues, PollInterval, JobActivator);
         }
 
         /// <summary>

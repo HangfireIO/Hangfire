@@ -73,7 +73,6 @@ namespace ConsoleSample
         {
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            RedisFactory.Port = 6379;
             RedisFactory.Db = 3;
 
             GlobalJobFilters.Filters.Add(new HistoryStatisticsFilter());

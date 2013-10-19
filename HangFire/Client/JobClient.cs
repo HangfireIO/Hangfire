@@ -8,7 +8,12 @@ namespace HangFire.Client
     internal class JobClient : IDisposable
     {
         private readonly JobCreator _jobCreator = JobCreator.Current;
-        private readonly IRedisClient _redis = RedisFactory.GetManager().GetClient();
+        private readonly IRedisClient _redis;
+
+        public JobClient(IRedisClientsManager redisManager)
+        {
+            _redis = redisManager.GetClient();
+        }
 
         public string Async(Type jobType, object args = null)
         {

@@ -13,8 +13,13 @@ namespace HangFire.Server
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
-        private readonly IRedisClient _redis = RedisFactory.CreateClient();
+        private readonly IRedisClient _redis;
         private readonly ILog _logger = LogManager.GetLogger(typeof (ServerWatchdog));
+
+        public ServerWatchdog(IRedisClientsManager redisManager)
+        {
+            _redis = redisManager.GetClient();
+        }
 
         public void RemoveTimedOutServers()
         {

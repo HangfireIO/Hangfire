@@ -13,13 +13,14 @@ namespace HangFire.Server
         private readonly ILog _logger = LogManager.GetLogger("SchedulePoller");
 
         private readonly TimeSpan _pollInterval;
-        private readonly IRedisClient _redis = RedisFactory.CreateClient();
+        private readonly IRedisClient _redis;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public SchedulePoller(TimeSpan pollInterval)
+        public SchedulePoller(IRedisClientsManager redisManager, TimeSpan pollInterval)
         {
+            _redis = redisManager.GetClient();
             _pollInterval = pollInterval;
         }
 

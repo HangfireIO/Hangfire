@@ -520,7 +520,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
             
             #line 144 "..\..\Pages\LayoutPage.cshtml"
-                   Write(String.Format("redis://{0}:{1}/{2}", RedisFactory.Host, RedisFactory.Port, RedisFactory.Db));
+                   Write(String.Format("redis://{0}/{1}", RedisFactory.Host, RedisFactory.Db));
 
             
             #line default

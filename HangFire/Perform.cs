@@ -27,7 +27,7 @@ namespace HangFire
 
         public static string Async(Type jobType, object args)
         {
-            using (var client = new JobClient())
+            using (var client = new JobClient(RedisFactory.PooledManager))
             {
                 return client.Async(jobType, args);
             }
@@ -54,7 +54,7 @@ namespace HangFire
 
         public static string In(TimeSpan interval, Type jobType, object args)
         {
-            using (var client = new JobClient())
+            using (var client = new JobClient(RedisFactory.PooledManager))
             {
                 return client.In(interval, jobType, args);
             }

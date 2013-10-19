@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -11,12 +12,13 @@ namespace HangFire.Server
             = new List<PrefetchJobFetcher>();
 
         public PrioritizedJobFetcher(
+            IRedisClientsManager redisManager,
             IEnumerable<string> queues, int prefetchCount)
         {
             foreach (var queue in queues)
             {
                 _fetchers.Add(new PrefetchJobFetcher(
-                                  new JobFetcher(queue), prefetchCount));
+                    new JobFetcher(redisManager, queue), prefetchCount));
             }
         }
 
