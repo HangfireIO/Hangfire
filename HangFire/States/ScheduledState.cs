@@ -8,8 +8,8 @@ namespace HangFire.States
     {
         public static readonly string Name = "Scheduled";
 
-        public ScheduledState(string jobId, string reason, DateTime enqueueAt)
-            : base(jobId, reason)
+        public ScheduledState(string reason, DateTime enqueueAt)
+            : base(reason)
         {
             EnqueueAt = enqueueAt;
         }
@@ -27,14 +27,14 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(IRedisTransaction transaction)
+        public override void Apply(IRedisTransaction transaction, string jobId)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
             var timestamp = JobHelper.ToTimestamp(EnqueueAt);
 
             transaction.QueueCommand(x => x.AddItemToSortedSet(
-                "hangfire:schedule", JobId, timestamp));
+                "hangfire:schedule", jobId, timestamp));
         }
 
         public class Descriptor : JobStateDescriptor

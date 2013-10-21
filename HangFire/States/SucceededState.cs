@@ -10,8 +10,8 @@ namespace HangFire.States
 
         public static readonly string Name = "Succeeded";
 
-        public SucceededState(string jobId, string reason)
-            : base(jobId, reason)
+        public SucceededState(string reason)
+            : base(reason)
         {
         }
 
@@ -25,23 +25,23 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(IRedisTransaction transaction)
+        public override void Apply(IRedisTransaction transaction, string jobId)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
             transaction.QueueCommand(x => x.ExpireEntryIn(
-                String.Format("hangfire:job:{0}", JobId),
+                String.Format("hangfire:job:{0}", jobId),
                 _jobExpirationTimeout));
 
             transaction.QueueCommand(x => x.ExpireEntryIn(
-                String.Format("hangfire:job:{0}:history", JobId),
+                String.Format("hangfire:job:{0}:history", jobId),
                 _jobExpirationTimeout));
 
             transaction.QueueCommand(x => x.ExpireEntryIn(
-                String.Format("hangfire:job:{0}:state", JobId),
+                String.Format("hangfire:job:{0}:state", jobId),
                 _jobExpirationTimeout));
 
-            transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", JobId));
+            transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", jobId));
             transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
 
             transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));

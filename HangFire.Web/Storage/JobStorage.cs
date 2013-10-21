@@ -386,7 +386,8 @@ namespace HangFire.Web
 
                 return JobState.Apply(
                     Redis,
-                    new EnqueuedState(jobId, "The job has been retried by a user.", queue),
+                    jobId,
+                    new EnqueuedState("The job has been retried by a user.", queue),
                     FailedState.Name);
             }
         }
@@ -405,7 +406,8 @@ namespace HangFire.Web
 
                 return JobState.Apply(
                     Redis,
-                    new EnqueuedState(jobId, "The job has been enqueued by a user.", queue),
+                    jobId,
+                    new EnqueuedState("The job has been enqueued by a user.", queue),
                     ScheduledState.Name);
             }
         }

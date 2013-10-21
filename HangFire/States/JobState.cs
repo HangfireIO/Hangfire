@@ -8,18 +8,16 @@ namespace HangFire.States
 {
     public abstract class JobState
     {
-        protected JobState(string jobId, string reason)
+        protected JobState(string reason)
         {
-            JobId = jobId;
             Reason = reason;
         }
 
-        public string JobId { get; private set; }
         public string Reason { get; private set; }
 
         public abstract string StateName { get; }
 
-        public abstract void Apply(IRedisTransaction transaction);
+        public abstract void Apply(IRedisTransaction transaction, string jobId);
 
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Method can return volatile data.")]
         public virtual IDictionary<string, string> GetProperties()
@@ -52,7 +50,7 @@ namespace HangFire.States
         }
 
         public static bool Apply(
-            IRedisClient redis, JobState state, params string[] allowedStates)
+            IRedisClient redis, string jobId, JobState state, params string[] allowedStates)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");
@@ -61,33 +59,33 @@ namespace HangFire.States
                 .OfType<IStateChangedFilter>().ToList();
 
             using (redis.AcquireLock(
-                String.Format("hangfire:job:{0}:state-lock", state.JobId), TimeSpan.FromMinutes(1)))
+                String.Format("hangfire:job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
             {
                 foreach (var filter in changingFilters)
                 {
                     var oldState = state;
-                    state = filter.OnStateChanged(redis, oldState);
+                    state = filter.OnStateChanged(redis, jobId, oldState);
 
                     if (oldState != state)
                     {
-                        AppendHistory(redis, oldState, false);
+                        AppendHistory(redis, jobId, oldState, false);
                     }
                 }
 
                 var appliedFilters = GlobalJobFilters.Filters
                     .OfType<IStateAppliedFilter>().ToList();
 
-                return ApplyState(redis, state, appliedFilters, allowedStates);
+                return ApplyState(redis, jobId, state, appliedFilters, allowedStates);
             }
         }
 
         private static bool ApplyState(
-            IRedisClient redis, JobState state, 
+            IRedisClient redis, string jobId, JobState state, 
             IList<IStateAppliedFilter> filters, params string[] allowedStates)
         {
             // TODO: what to do when job does not exists?
             var oldState = redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", state.JobId), "State");
+                String.Format("hangfire:job:{0}", jobId), "State");
             
             if (allowedStates.Length > 0 && !allowedStates.Contains(oldState))
             {
@@ -101,25 +99,25 @@ namespace HangFire.States
                     var descriptor = GetDescriptor(oldState);
                     if (descriptor != null)
                     {
-                        descriptor.Unapply(transaction, state.JobId);
+                        descriptor.Unapply(transaction, jobId);
                     }
 
                     transaction.QueueCommand(x => x.RemoveEntry(
-                        String.Format("hangfire:job:{0}:state", state.JobId)));
+                        String.Format("hangfire:job:{0}:state", jobId)));
 
                     foreach (var filter in filters)
                     {
-                        filter.OnStateUnapplied(transaction, oldState);
+                        filter.OnStateUnapplied(transaction, jobId, oldState);
                     }
                 }
 
-                AppendHistory(transaction, state, true);
+                AppendHistory(transaction, jobId, state, true);
 
-                state.Apply(transaction);
+                state.Apply(transaction, jobId);
 
                 foreach (var filter in filters)
                 {
-                    filter.OnStateApplied(transaction, state);
+                    filter.OnStateApplied(transaction, jobId, state);
                 }
 
                 return transaction.Commit();
@@ -127,17 +125,17 @@ namespace HangFire.States
         }
 
         private static void AppendHistory(
-            IRedisClient redis, JobState state, bool appendToJob)
+            IRedisClient redis, string jobId, JobState state, bool appendToJob)
         {
             using (var transaction = redis.CreateTransaction())
             {
-                AppendHistory(transaction, state, appendToJob);
+                AppendHistory(transaction, jobId, state, appendToJob);
                 transaction.Commit();
             }
         }
 
         private static void AppendHistory(
-            IRedisTransaction transaction, JobState state, bool appendToJob)
+            IRedisTransaction transaction, string jobId, JobState state, bool appendToJob)
         {
             var properties = state.GetProperties();
             var now = DateTime.UtcNow;
@@ -147,12 +145,12 @@ namespace HangFire.States
             if (appendToJob)
             {
                 transaction.QueueCommand(x => x.SetEntryInHash(
-                    String.Format("hangfire:job:{0}", state.JobId),
+                    String.Format("hangfire:job:{0}", jobId),
                     "State",
                     state.StateName));
 
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}:state", state.JobId),
+                    String.Format("hangfire:job:{0}:state", jobId),
                     properties));
             }
 
@@ -160,7 +158,7 @@ namespace HangFire.States
             properties.Add("CreatedAt", JobHelper.ToStringTimestamp(now));
 
             transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:job:{0}:history", state.JobId),
+                String.Format("hangfire:job:{0}:history", jobId),
                 JobHelper.ToJson(properties)));
         }
     }

@@ -8,8 +8,8 @@ namespace HangFire.States
     {
         public static readonly string Name = "Enqueued";
 
-        public EnqueuedState(string jobId, string reason, string queue) 
-            : base(jobId, reason)
+        public EnqueuedState(string reason, string queue) 
+            : base(reason)
         {
             Queue = queue;
         }
@@ -27,13 +27,13 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(IRedisTransaction transaction)
+        public override void Apply(IRedisTransaction transaction, string jobId)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
             transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", Queue));
             transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:queue:{0}", Queue), JobId));
+                String.Format("hangfire:queue:{0}", Queue), jobId));
         }
     }
 }

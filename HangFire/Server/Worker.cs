@@ -141,7 +141,8 @@ namespace HangFire.Server
 
             if (!JobState.Apply(
                 _redis,
-                new ProcessingState(payload.Id, "Worker has started processing.", _context.ServerName),
+                payload.Id,
+                new ProcessingState("Worker has started processing.", _context.ServerName),
                 EnqueuedState.Name))
             {
                 return;
@@ -185,14 +186,16 @@ namespace HangFire.Server
             {
                 JobState.Apply(
                     _redis,
-                    new SucceededState(payload.Id, "The job has been completed successfully."),
+                    payload.Id,
+                    new SucceededState("The job has been completed successfully."),
                     ProcessingState.Name);
             }
             else
             {
                 JobState.Apply(
                     _redis,
-                    new FailedState(payload.Id, "The job has been failed.", exception),
+                    payload.Id,
+                    new FailedState("The job has been failed.", exception),
                     ProcessingState.Name);
             }
 

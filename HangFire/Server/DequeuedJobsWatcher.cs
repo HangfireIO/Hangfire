@@ -111,15 +111,16 @@ namespace HangFire.Server
             {
                 JobState.Apply(
                     _redis,
-                    new EnqueuedState(jobId, "Requeued due to time out", queue),
+                    jobId,
+                    new EnqueuedState("Requeued due to time out", queue),
                     recoverFromStates);
             }
             else
             {
                 JobState.Apply(
                     _redis,
+                    jobId,
                     new FailedState(
-                        jobId,
                         "Failed to re-queue the job.",
                         new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType))),
                     recoverFromStates);

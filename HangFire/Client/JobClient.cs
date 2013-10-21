@@ -32,7 +32,7 @@ namespace HangFire.Client
 
             var jobId = GenerateId();
 
-            var state = new EnqueuedState(jobId, "Enqueued by the Сlient", queue);
+            var state = new EnqueuedState("Enqueued by the Сlient", queue);
             var job = CreateJob(jobType, args);
 
             var context = new CreateContext(
@@ -68,7 +68,7 @@ namespace HangFire.Client
 
             var jobId = GenerateId();
 
-            var state = new ScheduledState(jobId, "Scheduled by the Client", DateTime.UtcNow.Add(interval));
+            var state = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(interval));
             var job = CreateJob(jobType, args);
 
             var context = new CreateContext(

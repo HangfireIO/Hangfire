@@ -18,7 +18,7 @@ namespace HangFire
 
     public class RecurringJobsFilter : IStateChangedFilter
     {
-        public JobState OnStateChanged(IRedisClient redis, JobState state)
+        public JobState OnStateChanged(IRedisClient redis, string jobId, JobState state)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");
@@ -29,7 +29,7 @@ namespace HangFire
             }
 
             var jobType = redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", state.JobId),
+                String.Format("hangfire:job:{0}", jobId),
                 "Type");
             var type = Type.GetType(jobType);
 
@@ -39,7 +39,6 @@ namespace HangFire
             if (recurringAttribute != null)
             {
                 return new ScheduledState(
-                    state.JobId, 
                     "Scheduled as a recurring job.",
                     DateTime.UtcNow.AddSeconds(recurringAttribute.Seconds));
             }

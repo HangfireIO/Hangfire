@@ -55,14 +55,15 @@ namespace HangFire.Server
             if (!String.IsNullOrEmpty(queue))
             {
                 JobState.Apply(
-                    _redis, new EnqueuedState(jobId, "Enqueued by schedule poller.", queue),
+                    _redis, jobId, new EnqueuedState("Enqueued by schedule poller.", queue),
                     ScheduledState.Name);
             }
             else
             {
                 JobState.Apply(
                     _redis,
-                    new FailedState(jobId, "Could not enqueue the schedule job.",
+                    jobId,
+                    new FailedState("Could not enqueue the schedule job.",
                                     new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType))),
                     ScheduledState.Name);
             }

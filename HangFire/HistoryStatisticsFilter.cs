@@ -6,7 +6,7 @@ namespace HangFire
 {
     public class HistoryStatisticsFilter : IStateChangedFilter
     {
-        public JobState OnStateChanged(IRedisClient redis, JobState state)
+        public JobState OnStateChanged(IRedisClient redis, string jobId, JobState state)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");

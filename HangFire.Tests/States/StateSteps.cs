@@ -21,38 +21,38 @@ namespace HangFire.Tests.States
         [Given(@"the Succeeded state")]
         public void GivenTheSucceededState()
         {
-            _state = new SucceededState(JobSteps.DefaultJobId, "Some reason");
+            _state = new SucceededState("Some reason");
         }
 
         [Given(@"the Failed state")]
         public void GivenTheFailedState()
         {
             _failedException = new InvalidOperationException("Hello");
-            _state = new FailedState(JobSteps.DefaultJobId, "SomeReason", _failedException);
+            _state = new FailedState("SomeReason", _failedException);
         }
 
         [Given(@"the Processing state")]
         public void GivenTheProcessingState()
         {
-            _state = new ProcessingState(JobSteps.DefaultJobId, "SomeReason", "TestServer");
+            _state = new ProcessingState("SomeReason", "TestServer");
         }
 
         [Given(@"the Scheduled state with the date set to tomorrow")]
         public void GivenTheScheduledStateWithTheDateSetToTomorrow()
         {
-            _state = new ScheduledState(JobSteps.DefaultJobId, "SomeReason", DateTime.UtcNow.AddDays(1));
+            _state = new ScheduledState("SomeReason", DateTime.UtcNow.AddDays(1));
         }
 
         [Given(@"the Enqueued state with the 'test' value for the 'queue' argument")]
         public void GivenTheEnqueueStateWithTheValueForTheQueueArgument()
         {
-            _state = new EnqueuedState(JobSteps.DefaultJobId, "SomeReason", "test");
+            _state = new EnqueuedState("SomeReason", "test");
         }
 
         [Given(@"a '(.+)' state")]
         public void GivenAState(string state)
         {
-            _stateMock = new Mock<JobState>(JobSteps.DefaultJobId, "SomeReason");
+            _stateMock = new Mock<JobState>("SomeReason");
             _stateMock.Setup(x => x.StateName).Returns(state);
             _stateMock.Setup(x => x.GetProperties()).Returns(new Dictionary<string, string>());
 
@@ -72,7 +72,7 @@ namespace HangFire.Tests.States
         {
             using (var transaction = Redis.Client.CreateTransaction())
             {
-                _state.Apply(transaction);
+                _state.Apply(transaction, JobSteps.DefaultJobId);
                 transaction.Commit();
             }
         }
@@ -96,7 +96,7 @@ namespace HangFire.Tests.States
         [When(@"I apply the state")]
         public void WhenIApplyTheState()
         {
-            JobState.Apply(Redis.Client, _state);
+            JobState.Apply(Redis.Client, JobSteps.DefaultJobId, _state);
         }
 
         [Then(@"the state name is equal to '(.+)'")]
@@ -261,7 +261,7 @@ namespace HangFire.Tests.States
         public void ThenApplyMethodHasCalled()
         {
             _stateMock.Verify(
-                x => x.Apply(It.Is<IRedisTransaction>(y => y != null)), 
+                x => x.Apply(It.Is<IRedisTransaction>(y => y != null), It.Is<string>(y => y == JobSteps.DefaultJobId)), 
                 Times.Once);
         }
     }

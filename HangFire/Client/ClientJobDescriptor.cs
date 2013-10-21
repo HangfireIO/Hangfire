@@ -32,7 +32,7 @@ namespace HangFire.Client
                 String.Format("hangfire:job:{0}", JobId),
                 Job);
 
-            JobState.Apply(_redis, _state);
+            JobState.Apply(_redis, JobId, _state);
         }
 
         public void SetParameter(string name, object value)

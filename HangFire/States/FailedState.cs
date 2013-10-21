@@ -8,8 +8,8 @@ namespace HangFire.States
     {
         public static readonly string Name = "Failed";
 
-        public FailedState(string jobId, string reason, Exception exception) 
-            : base(jobId, reason)
+        public FailedState(string reason, Exception exception) 
+            : base(reason)
         {
             Exception = exception;
         }
@@ -29,13 +29,13 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(IRedisTransaction transaction)
+        public override void Apply(IRedisTransaction transaction, string jobId)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
             transaction.QueueCommand(x => x.AddItemToSortedSet(
                         "hangfire:failed",
-                        JobId,
+                        jobId,
                         JobHelper.ToTimestamp(DateTime.UtcNow)));
         }
 

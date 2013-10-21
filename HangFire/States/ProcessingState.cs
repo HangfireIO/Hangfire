@@ -8,8 +8,8 @@ namespace HangFire.States
     {
         public static readonly string Name = "Processing";
 
-        public ProcessingState(string jobId, string reason, string serverName) 
-            : base(jobId, reason)
+        public ProcessingState(string reason, string serverName) 
+            : base(reason)
         {
             ServerName = serverName;
         }
@@ -27,12 +27,12 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(IRedisTransaction transaction)
+        public override void Apply(IRedisTransaction transaction, string jobId)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
 
             transaction.QueueCommand(x => x.AddItemToSortedSet(
-                "hangfire:processing", JobId, JobHelper.ToTimestamp(DateTime.UtcNow)));
+                "hangfire:processing", jobId, JobHelper.ToTimestamp(DateTime.UtcNow)));
         }
 
         public class Descriptor : JobStateDescriptor

@@ -8,7 +8,7 @@ namespace HangFire
     {
         private const int MaxRetryAttempts = 3;
 
-        public JobState OnStateChanged(IRedisClient redis, JobState state)
+        public JobState OnStateChanged(IRedisClient redis, string jobId, JobState state)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");
@@ -20,7 +20,7 @@ namespace HangFire
             }
 
             var retryCount = redis.IncrementValueInHash(
-                String.Format("hangfire:job:{0}", state.JobId),
+                String.Format("hangfire:job:{0}", jobId),
                 "RetryCount",
                 1);
 
@@ -31,7 +31,6 @@ namespace HangFire
                 // If attempt number is less than max attempts, we should
                 // schedule the job to run again later.
                 return new ScheduledState(
-                    state.JobId, 
                     String.Format("Retry attempt {0} of {1}.", retryCount, MaxRetryAttempts), 
                     delay);
             }

@@ -6,7 +6,7 @@ namespace HangFire
 {
     public interface IStateAppliedFilter : IJobFilter
     {
-        void OnStateApplied(IRedisTransaction transaction, JobState state);
-        void OnStateUnapplied(IRedisTransaction transaction, string state);
+        void OnStateApplied(IRedisTransaction transaction, string jobId, JobState state);
+        void OnStateUnapplied(IRedisTransaction transaction, string jobId, string state);
     }
 }
