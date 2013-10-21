@@ -38,6 +38,9 @@ namespace HangFire.Client
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
 
+            // TODO: this method could be called from the Created method of a filter.
+            //       In this case we'll lose the assigning value.
+
             _jobParameters.Add(name, JobHelper.ToJson(value));
         }
 
@@ -56,7 +59,8 @@ namespace HangFire.Client
                 String.Format("hangfire:job:{0}", JobId),
                 _jobParameters);
 
-            // TODO: creation is non-atomic.
+            // TODO: creation is non-atomic. If the following line will not be called,
+            //       the job's key will stay for a long time in Redis.
 
             _stateMachine.ChangeState(JobId, _state);
         }
