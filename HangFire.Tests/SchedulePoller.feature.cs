@@ -81,15 +81,15 @@ this.ScenarioSetup(scenarioInfo);
 #line 5
     testRunner.Given("a scheduled job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 6
-  testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 7
-  testRunner.Then("the job becomes Enqueued", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job becomes Enqueued", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 8
-   testRunner.And("the schedule does not contain it anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the schedule does not contain it anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 9
-   testRunner.But("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line 10
-   testRunner.And("schedule poller returns \'true\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("schedule poller returns \'true\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -106,15 +106,15 @@ this.ScenarioSetup(scenarioInfo);
 #line 13
     testRunner.Given("a future job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 14
-  testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 15
-  testRunner.Then("the job remains to be in the Scheduled state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job remains to be in the Scheduled state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 16
-   testRunner.And("the schedule contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the schedule contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 17
-   testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 18
-   testRunner.And("schedule poller returns \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("schedule poller returns \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -131,13 +131,13 @@ this.ScenarioSetup(scenarioInfo);
 #line 21
     testRunner.Given("a scheduled job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 22
-   testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 23
-  testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 24
-  testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 25
-   testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -154,7 +154,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 28
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 29
-  testRunner.Then("schedule poller returns \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("schedule poller returns \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -171,9 +171,9 @@ this.ScenarioSetup(scenarioInfo);
 #line 32
     testRunner.Given("a scheduled job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 33
-  testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 34
-  testRunner.Then("the job moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -190,11 +190,11 @@ this.ScenarioSetup(scenarioInfo);
 #line 37
     testRunner.Given("a scheduled job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 38
-   testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 39
-  testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 40
-  testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

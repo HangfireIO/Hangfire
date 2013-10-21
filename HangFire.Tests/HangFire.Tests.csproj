@@ -78,6 +78,7 @@
     <Compile Include="Bindings\JobFetcherSteps.cs" />
     <Compile Include="Bindings\SchedulePollerSteps.cs" />
     <Compile Include="Bindings\ServerSteps.cs" />
+    <Compile Include="Common\DictionaryAssert.cs" />
     <Compile Include="HangFireJobActivatorTests.cs" />
     <Compile Include="Bindings\JobSteps.cs" />
     <Compile Include="JobFetcher.feature.cs">
@@ -101,7 +102,32 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SchedulePoller.feature</DependentUpon>
     </Compile>
-    <Compile Include="States\StateBindings.cs" />
+    <Compile Include="States\EnqueuedState.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EnqueuedState.feature</DependentUpon>
+    </Compile>
+    <Compile Include="States\FailedState.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FailedState.feature</DependentUpon>
+    </Compile>
+    <Compile Include="States\ProcessingState.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ProcessingState.feature</DependentUpon>
+    </Compile>
+    <Compile Include="States\ScheduledState.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScheduledState.feature</DependentUpon>
+    </Compile>
+    <Compile Include="States\States.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>States.feature</DependentUpon>
+    </Compile>
+    <Compile Include="States\StateSteps.cs" />
     <Compile Include="States\SucceededState.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -128,6 +154,26 @@
     <None Include="SchedulePoller.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SchedulePoller.feature.cs</LastGenOutput>
+    </None>
+    <None Include="States\EnqueuedState.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>EnqueuedState.feature.cs</LastGenOutput>
+    </None>
+    <None Include="States\FailedState.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>FailedState.feature.cs</LastGenOutput>
+    </None>
+    <None Include="States\ProcessingState.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>ProcessingState.feature.cs</LastGenOutput>
+    </None>
+    <None Include="States\ScheduledState.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>ScheduledState.feature.cs</LastGenOutput>
+    </None>
+    <None Include="States\States.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>States.feature.cs</LastGenOutput>
     </None>
     <None Include="States\SucceededState.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

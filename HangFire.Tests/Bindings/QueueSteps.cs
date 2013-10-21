@@ -55,6 +55,7 @@ namespace HangFire.Tests
         }
 
         [Then(@"the '(.+)' queue contains the job")]
+        [Then(@"the '(.+)' queue still contains the job")]
         public void ThenTheQueueContainsTheJob(string queue)
         {
             var jobIds = Redis.Client.GetAllItemsFromList(

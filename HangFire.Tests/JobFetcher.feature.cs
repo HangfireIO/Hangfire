@@ -81,11 +81,11 @@ this.ScenarioSetup(scenarioInfo);
 #line 5
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 6
-   testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 7
-  testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 8
-  testRunner.Then("the fetcher returns the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher returns the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -102,13 +102,13 @@ this.ScenarioSetup(scenarioInfo);
 #line 11
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 12
-   testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 13
-  testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 14
-  testRunner.Then("the queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 15
-   testRunner.But("the dequeued jobs list contains it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("the dequeued jobs list contains it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -125,11 +125,11 @@ this.ScenarioSetup(scenarioInfo);
 #line 18
     testRunner.Given("an empty queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 19
-   testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 20
-  testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 21
-  testRunner.Then("the fetcher does not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher does not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -146,17 +146,17 @@ this.ScenarioSetup(scenarioInfo);
 #line 24
     testRunner.Given("the \'first\' job in the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 25
-   testRunner.And("the \'second\' job in the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the \'second\' job in the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 26
-   testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 27
-  testRunner.When("it dequeues a job for the first time", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("it dequeues a job for the first time", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 28
-  testRunner.Then("the fetcher returns the \'first\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher returns the \'first\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 29
-  testRunner.When("it dequeues a job for the second time", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("it dequeues a job for the second time", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 30
-  testRunner.Then("the fetcher returns the \'second\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher returns the \'second\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -173,11 +173,11 @@ this.ScenarioSetup(scenarioInfo);
 #line 33
     testRunner.Given("a job in the \'another\' queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 34
-   testRunner.And("the fetcher listening the \'default\' queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+     testRunner.And("the fetcher listening the \'default\' queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 35
-  testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 36
-  testRunner.Then("the fetcher does not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher does not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -194,11 +194,11 @@ this.ScenarioSetup(scenarioInfo);
 #line 39
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 40
-   testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the fetcher listening the queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 41
-  testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 42
-  testRunner.Then("the job has the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job has the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

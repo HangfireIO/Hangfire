@@ -146,12 +146,10 @@ namespace HangFire.States
             
             if (appendToJob)
             {
-                transaction.QueueCommand(x => x.SetRangeInHash(
+                transaction.QueueCommand(x => x.SetEntryInHash(
                     String.Format("hangfire:job:{0}", state.JobId),
-                    new Dictionary<string, string>
-                        {
-                            { "State", state.StateName },
-                        }));
+                    "State",
+                    state.StateName));
 
                 transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format("hangfire:job:{0}:state", state.JobId),
