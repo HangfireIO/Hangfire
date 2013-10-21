@@ -57,7 +57,7 @@ namespace HangFire.Client
             var preContext = new CreatingContext(createContext);
             Func<CreatedContext> continuation = () =>
             {
-                jobDescriptor.Enqueue();
+                jobDescriptor.Create();
                 return new CreatedContext(createContext, false, null);
             };
 

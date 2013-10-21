@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using HangFire.Client;
+using HangFire.States;
 
 namespace HangFire
 {
@@ -27,9 +28,17 @@ namespace HangFire
 
         public static string Async(Type jobType, object args)
         {
+            if (jobType == null)
+            {
+                throw new ArgumentNullException("jobType");
+            }
+
             using (var client = new JobClient(RedisFactory.PooledManager))
             {
-                return client.Async(jobType, args);
+                var queue = JobHelper.GetQueue(jobType);
+                var enqueuedState = new EnqueuedState("Enqueued by the Сlient", queue);
+
+                return client.CreateJob(jobType, enqueuedState, args);
             }
         }
 
@@ -56,7 +65,8 @@ namespace HangFire
         {
             using (var client = new JobClient(RedisFactory.PooledManager))
             {
-                return client.In(interval, jobType, args);
+                var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(interval));
+                return client.CreateJob(jobType, scheduledState, args);
             }
         }
     }

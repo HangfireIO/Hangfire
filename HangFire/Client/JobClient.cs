@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using HangFire.States;
 using ServiceStack.Redis;
 
@@ -15,40 +16,17 @@ namespace HangFire.Client
             _redis = redisManager.GetClient();
         }
 
-        public string Async(Type jobType, object args = null)
+        public string CreateJob(Type jobType, JobState state, object args)
         {
-            if (jobType == null)
-            {
-                throw new ArgumentNullException("jobType");
-            }
-            if (!typeof (BackgroundJob).IsAssignableFrom(jobType))
-            {
-                throw new ArgumentException(
-                    String.Format("The type '{0}' must inherit '{1}'.", jobType, typeof(BackgroundJob)), 
-                    "jobType");
-            }
-
-            var queue = JobHelper.GetQueue(jobType);
-
-            var jobId = GenerateId();
-
-            var state = new EnqueuedState("Enqueued by the Сlient", queue);
-            var job = CreateJob(jobType, args);
-
-            var context = new CreateContext(
-                new ClientJobDescriptor(_redis, jobId, job, state));
-            
-            _jobCreator.CreateJob(context);
-
-            return jobId;
+            return CreateJob(jobType, state, PropertiesToDictionary(args));
         }
 
-        public string In(TimeSpan interval, Type jobType, object args = null)
+        public string CreateJob(
+            Type jobType, JobState state, IDictionary<string, string> args)
         {
-            if (jobType == null)
-            {
-                throw new ArgumentNullException("jobType");
-            }
+            if (jobType == null) throw new ArgumentNullException("jobType");
+            if (state == null) throw new ArgumentNullException("state");
+
             if (!typeof(BackgroundJob).IsAssignableFrom(jobType))
             {
                 throw new ArgumentException(
@@ -56,23 +34,11 @@ namespace HangFire.Client
                     "jobType");
             }
 
-            if (interval != interval.Duration())
-            {
-                throw new ArgumentOutOfRangeException("interval", "Interval value can not be negative.");
-            }
-
-            if (interval.Equals(TimeSpan.Zero))
-            {
-                return Async(jobType, args);
-            }
-
             var jobId = GenerateId();
-
-            var state = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(interval));
-            var job = CreateJob(jobType, args);
+            var jobParameters = CreateJobParameters(jobType, args);
 
             var context = new CreateContext(
-                new ClientJobDescriptor(_redis, jobId, job, state));
+                new ClientJobDescriptor(_redis, jobId, jobParameters, state));
 
             _jobCreator.CreateJob(context);
 
@@ -84,12 +50,12 @@ namespace HangFire.Client
             _redis.Dispose();
         }
 
-        private static Dictionary<string, string> CreateJob(
-            Type jobType, object jobArgs)
+        private static Dictionary<string, string> CreateJobParameters(
+            Type jobType, IDictionary<string, string> jobArgs)
         {
             var job = new Dictionary<string, string>();
             job["Type"] = jobType.AssemblyQualifiedName;
-            job["Args"] = JobHelper.ToJson(ClientJobDescriptor.SerializeProperties(jobArgs));
+            job["Args"] = JobHelper.ToJson(jobArgs);
             job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
             return job;
@@ -98,6 +64,41 @@ namespace HangFire.Client
         private static string GenerateId()
         {
             return Guid.NewGuid().ToString();
+        }
+
+        private static IDictionary<string, string> PropertiesToDictionary(object obj)
+        {
+            var result = new Dictionary<string, string>();
+            if (obj != null)
+            {
+                foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
+                {
+                    var propertyValue = descriptor.GetValue(obj);
+                    string value = null;
+
+                    if (propertyValue != null)
+                    {
+                        try
+                        {
+                            var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
+                            value = converter.ConvertToInvariantString(propertyValue);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new InvalidOperationException(
+                                String.Format(
+                                    "Could not convert property '{0}' of type '{1}' to a string. See the inner exception for details.",
+                                    descriptor.Name,
+                                    descriptor.PropertyType),
+                                ex);
+                        }
+                    }
+
+                    result.Add(descriptor.Name, value);
+                }
+            }
+
+            return result;
         }
     }
 }
