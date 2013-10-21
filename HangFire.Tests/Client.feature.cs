@@ -212,7 +212,7 @@ this.FeatureBackground();
 #line 35
      testRunner.When("I create a job with an empty id", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 36
-     testRunner.Then("A \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -231,7 +231,7 @@ this.FeatureBackground();
 #line 39
      testRunner.When("I create a job with null type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 40
-     testRunner.Then("A \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -252,7 +252,7 @@ this.FeatureBackground();
 #line 43
      testRunner.When("I create a job with the incorrect type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 44
-     testRunner.Then("A \'System.ArgumentException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("a \'System.ArgumentException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -271,7 +271,7 @@ this.FeatureBackground();
 #line 47
      testRunner.When("I create a job with an empty state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 48
-     testRunner.Then("A \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

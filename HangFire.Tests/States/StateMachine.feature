@@ -1,5 +1,5 @@
 ﻿@redis
-Feature: States
+Feature: State machine
 
 Scenario: The job's state should be changed after applying the state
     Given a job

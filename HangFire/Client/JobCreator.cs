@@ -115,7 +115,7 @@ namespace HangFire.Client
         private static void InvokeExceptionFilters(
             ClientExceptionContext context, IEnumerable<IClientExceptionFilter> filters)
         {
-            foreach (var filter in filters.Reverse())
+            foreach (var filter in filters)
             {
                 filter.OnClientException(context);
             }

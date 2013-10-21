@@ -75,6 +75,13 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ClientFilters.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ClientFilters.feature</DependentUpon>
+    </Compile>
+    <Compile Include="Common\TestClientExceptionFilter.cs" />
+    <Compile Include="Common\TestClientFilter.cs" />
     <Compile Include="UnitTests\PerformTests.cs" />
     <Compile Include="Bindings\JobFetcherSteps.cs" />
     <Compile Include="Bindings\SchedulePollerSteps.cs" />
@@ -129,12 +136,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ScheduledState.feature</DependentUpon>
     </Compile>
-    <Compile Include="States\States.feature.cs">
+    <Compile Include="States\StateMachine.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>States.feature</DependentUpon>
+      <DependentUpon>StateMachine.feature</DependentUpon>
     </Compile>
-    <Compile Include="States\StateSteps.cs" />
+    <Compile Include="Bindings\StateSteps.cs" />
     <Compile Include="States\SucceededState.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -152,6 +159,10 @@
     <None Include="Client.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>Client.feature.cs</LastGenOutput>
+    </None>
+    <None Include="ClientFilters.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>ClientFilters.feature.cs</LastGenOutput>
     </None>
     <None Include="DequeuedJobsWatcher.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
@@ -182,9 +193,9 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ScheduledState.feature.cs</LastGenOutput>
     </None>
-    <None Include="States\States.feature">
+    <None Include="States\StateMachine.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>States.feature.cs</LastGenOutput>
+      <LastGenOutput>StateMachine.feature.cs</LastGenOutput>
     </None>
     <None Include="States\SucceededState.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
