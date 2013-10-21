@@ -75,6 +75,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="UnitTests\PerformTests.cs" />
     <Compile Include="Bindings\JobFetcherSteps.cs" />
     <Compile Include="Bindings\SchedulePollerSteps.cs" />
     <Compile Include="Bindings\ServerSteps.cs" />
@@ -83,16 +84,16 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Client.feature</DependentUpon>
     </Compile>
-    <Compile Include="ClientSteps.cs" />
+    <Compile Include="Bindings\ClientSteps.cs" />
     <Compile Include="Common\DictionaryAssert.cs" />
-    <Compile Include="HangFireJobActivatorTests.cs" />
+    <Compile Include="UnitTests\HangFireJobActivatorTests.cs" />
     <Compile Include="Bindings\JobSteps.cs" />
     <Compile Include="JobFetcher.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JobFetcher.feature</DependentUpon>
     </Compile>
-    <Compile Include="JobInvokerTests.cs" />
+    <Compile Include="UnitTests\JobInvokerTests.cs" />
     <Compile Include="Bindings\QueueSteps.cs" />
     <Compile Include="Bindings\Redis.cs" />
     <Compile Include="DequeuedJobsWatcher.feature.cs">

@@ -7,6 +7,9 @@ namespace HangFire
 {
     public static class Perform
     {
+        internal static Func<IJobClient> CreateJobClientCallback
+            = () => new JobClient(RedisFactory.PooledManager);
+            
         [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
         public static string Async<TJob>()
             where TJob : BackgroundJob
@@ -33,7 +36,7 @@ namespace HangFire
                 throw new ArgumentNullException("jobType");
             }
 
-            using (var client = new JobClient(RedisFactory.PooledManager))
+            using (var client = CreateJobClientCallback())
             {
                 var queue = JobHelper.GetQueue(jobType);
                 var enqueuedState = new EnqueuedState("Enqueued by the Сlient", queue);
@@ -63,7 +66,9 @@ namespace HangFire
 
         public static string In(TimeSpan interval, Type jobType, object args)
         {
-            using (var client = new JobClient(RedisFactory.PooledManager))
+            if (jobType == null) throw new ArgumentNullException("jobType");
+
+            using (var client = CreateJobClientCallback())
             {
                 var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(interval));
                 return client.CreateJob(GenerateId(), jobType, scheduledState, args);

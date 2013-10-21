@@ -12,13 +12,18 @@ namespace HangFire.Client
 
         static JobCreator()
         {
-            Current = new JobCreator(
-                GlobalJobFilters.Filters.OfType<IClientFilter>(),
-                GlobalJobFilters.Filters.OfType<IClientExceptionFilter>());
+            Current = new JobCreator();
         }
 
         private readonly IEnumerable<IClientFilter> _clientFilters;
         private readonly IEnumerable<IClientExceptionFilter> _clientExceptionFilters;
+
+        public JobCreator()
+            : this(
+                GlobalJobFilters.Filters.OfType<IClientFilter>(),
+                GlobalJobFilters.Filters.OfType<IClientExceptionFilter>())
+        {
+        }
 
         public JobCreator(
             IEnumerable<IClientFilter> clientFilters,

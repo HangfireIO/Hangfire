@@ -1,8 +1,7 @@
 ﻿using System;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace HangFire.Tests
+namespace HangFire.Tests.UnitTests
 {
     [TestClass]
     public class HangFireJobActivatorTests

@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Moq;
-using ServiceStack.Text;
-
-namespace HangFire.Tests
+namespace HangFire.Tests.UnitTests
 {
     [TestClass]
     public class JobInvokerTests

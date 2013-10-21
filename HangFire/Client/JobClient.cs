@@ -6,16 +6,23 @@ using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
-    internal class JobClient : IDisposable
+    internal class JobClient : IJobClient
     {
-        private readonly JobCreator _jobCreator = JobCreator.Current;
+        private readonly JobCreator _jobCreator;
         private readonly IRedisClient _redis;
 
         public JobClient(IRedisClientsManager redisManager)
+            : this(redisManager, JobCreator.Current)
+        {
+        }
+
+        public JobClient(IRedisClientsManager redisManager, JobCreator jobCreator)
         {
             if (redisManager == null) throw new ArgumentNullException("redisManager");
+            if (jobCreator == null) throw new ArgumentNullException("jobCreator");
 
             _redis = redisManager.GetClient();
+            _jobCreator = jobCreator;
         }
 
         public string CreateJob(
@@ -49,7 +56,7 @@ namespace HangFire.Client
             return jobId;
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             _redis.Dispose();
         }

@@ -65,6 +65,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Client\IJobClient.cs" />
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Client\ClientJobDescriptor.cs" />
