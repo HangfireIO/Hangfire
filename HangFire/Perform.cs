@@ -38,7 +38,7 @@ namespace HangFire
                 var queue = JobHelper.GetQueue(jobType);
                 var enqueuedState = new EnqueuedState("Enqueued by the Сlient", queue);
 
-                return client.CreateJob(jobType, enqueuedState, args);
+                return client.CreateJob(GenerateId(), jobType, enqueuedState, args);
             }
         }
 
@@ -66,8 +66,13 @@ namespace HangFire
             using (var client = new JobClient(RedisFactory.PooledManager))
             {
                 var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(interval));
-                return client.CreateJob(jobType, scheduledState, args);
+                return client.CreateJob(GenerateId(), jobType, scheduledState, args);
             }
+        }
+
+        private static string GenerateId()
+        {
+            return Guid.NewGuid().ToString();
         }
     }
 }

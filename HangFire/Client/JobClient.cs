@@ -13,19 +13,24 @@ namespace HangFire.Client
 
         public JobClient(IRedisClientsManager redisManager)
         {
+            if (redisManager == null) throw new ArgumentNullException("redisManager");
+
             _redis = redisManager.GetClient();
         }
 
-        public string CreateJob(Type jobType, JobState state, object args)
+        public string CreateJob(
+            string jobId, Type jobType, JobState state, object args)
         {
-            return CreateJob(jobType, state, PropertiesToDictionary(args));
+            return CreateJob(jobId, jobType, state, PropertiesToDictionary(args));
         }
 
         public string CreateJob(
-            Type jobType, JobState state, IDictionary<string, string> args)
+            string jobId, Type jobType, JobState state, IDictionary<string, string> args)
         {
+            if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
             if (jobType == null) throw new ArgumentNullException("jobType");
             if (state == null) throw new ArgumentNullException("state");
+            if (args == null) throw new ArgumentNullException("args");
 
             if (!typeof(BackgroundJob).IsAssignableFrom(jobType))
             {
@@ -34,7 +39,6 @@ namespace HangFire.Client
                     "jobType");
             }
 
-            var jobId = GenerateId();
             var jobParameters = CreateJobParameters(jobType, args);
 
             var context = new CreateContext(
@@ -61,41 +65,35 @@ namespace HangFire.Client
             return job;
         }
 
-        private static string GenerateId()
-        {
-            return Guid.NewGuid().ToString();
-        }
-
         private static IDictionary<string, string> PropertiesToDictionary(object obj)
         {
             var result = new Dictionary<string, string>();
-            if (obj != null)
+            if (obj == null) return result;
+
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
             {
-                foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
+                var propertyValue = descriptor.GetValue(obj);
+                string value = null;
+
+                if (propertyValue != null)
                 {
-                    var propertyValue = descriptor.GetValue(obj);
-                    string value = null;
-
-                    if (propertyValue != null)
+                    try
                     {
-                        try
-                        {
-                            var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
-                            value = converter.ConvertToInvariantString(propertyValue);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new InvalidOperationException(
-                                String.Format(
-                                    "Could not convert property '{0}' of type '{1}' to a string. See the inner exception for details.",
-                                    descriptor.Name,
-                                    descriptor.PropertyType),
-                                ex);
-                        }
+                        var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
+                        value = converter.ConvertToInvariantString(propertyValue);
                     }
-
-                    result.Add(descriptor.Name, value);
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            String.Format(
+                                "Could not convert property '{0}' of type '{1}' to a string. See the inner exception for details.",
+                                descriptor.Name,
+                                descriptor.PropertyType),
+                            ex);
+                    }
                 }
+
+                result.Add(descriptor.Name, value);
             }
 
             return result;

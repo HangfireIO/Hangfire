@@ -60,11 +60,6 @@ namespace HangFire.Server
 
         public string JobId { get; private set; }
 
-        public void Perform()
-        {
-            _jobInstance.Perform();
-        }
-
         public void SetParameter(string name, object value)
         {
             _redis.SetEntryInHash(
@@ -82,13 +77,23 @@ namespace HangFire.Server
             return JobHelper.FromJson<T>(value);
         }
 
-        public void Dispose()
+        internal void Perform()
+        {
+            _jobInstance.Perform();
+        }
+
+        internal void Dispose()
         {
             var disposable = _jobInstance as IDisposable;
             if (disposable != null)
             {
                 disposable.Dispose();
             }
+        }
+
+        void IDisposable.Dispose()
+        {
+            Dispose();
         }
     }
 }

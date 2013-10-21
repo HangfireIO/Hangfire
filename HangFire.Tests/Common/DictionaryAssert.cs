@@ -34,6 +34,11 @@ namespace HangFire.Tests
                 {
                     Assert.IsFalse(String.IsNullOrEmpty(actual[name]));
                 }
+                else if (value.StartsWith("<Assembly qualified name of "))
+                {
+                    var splitted = value.Split('\'');
+                    Assert.AreEqual(Type.GetType(splitted[1]).AssemblyQualifiedName, actual[name]);
+                }
                 else
                 {
                     Assert.AreEqual(value, actual[name]);
