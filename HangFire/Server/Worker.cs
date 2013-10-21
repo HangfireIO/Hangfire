@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using HangFire.Filters;
@@ -16,6 +15,7 @@ namespace HangFire.Server
         private readonly Thread _thread;
 
         private readonly IRedisClient _redis;
+        private readonly StateMachine _stateMachine;
         protected readonly ILog Logger;
 
         private readonly ManualResetEventSlim _jobIsReady
@@ -36,6 +36,7 @@ namespace HangFire.Server
             WorkerContext context)
         {
             _redis = redisManager.GetClient();
+            _stateMachine = new StateMachine(_redis);
 
             _manager = manager;
             _context = context;
@@ -139,11 +140,8 @@ namespace HangFire.Server
                 return;
             }
 
-            if (!JobState.Apply(
-                _redis,
-                payload.Id,
-                new ProcessingState("Worker has started processing.", _context.ServerName),
-                EnqueuedState.Name))
+            var processingState = new ProcessingState("Worker has started processing.", _context.ServerName);
+            if (!_stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name))
             {
                 return;
             }
@@ -182,22 +180,17 @@ namespace HangFire.Server
                 }
             }
 
+            JobState state;
             if (exception == null)
             {
-                JobState.Apply(
-                    _redis,
-                    payload.Id,
-                    new SucceededState("The job has been completed successfully."),
-                    ProcessingState.Name);
+                state = new SucceededState("The job has been completed successfully.");
             }
             else
             {
-                JobState.Apply(
-                    _redis,
-                    payload.Id,
-                    new FailedState("The job has been failed.", exception),
-                    ProcessingState.Name);
+                state = new FailedState("The job has been failed.", exception);
             }
+
+            _stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
 
             // Checkpoint #4. The job was performed, and it is in the one
             // of the explicit states (Succeeded, Scheduled and so on).

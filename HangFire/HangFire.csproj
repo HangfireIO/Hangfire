@@ -121,6 +121,7 @@
     <Compile Include="States\JobStateDescriptor.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
+    <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="HistoryStatisticsFilter.cs" />
   </ItemGroup>

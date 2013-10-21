@@ -82,7 +82,7 @@ namespace HangFire.Tests.States
         {
             using (var transaction = Redis.Client.CreateTransaction())
             {
-                var descriptor = JobState.GetDescriptor(_state.StateName);
+                var descriptor = StateMachine.GetStateDescriptor(_state.StateName);
 
                 if (descriptor != null)
                 {
@@ -96,7 +96,8 @@ namespace HangFire.Tests.States
         [When(@"I apply the state")]
         public void WhenIApplyTheState()
         {
-            JobState.Apply(Redis.Client, JobSteps.DefaultJobId, _state);
+            var stateMachine = new StateMachine(Redis.Client);
+            stateMachine.ChangeState(JobSteps.DefaultJobId, _state);
         }
 
         [Then(@"the state name is equal to '(.+)'")]

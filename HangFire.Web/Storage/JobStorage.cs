@@ -384,11 +384,10 @@ namespace HangFire.Web
 
                 // TODO: clear retry attempts counter.
 
-                return JobState.Apply(
-                    Redis,
-                    jobId,
-                    new EnqueuedState("The job has been retried by a user.", queue),
-                    FailedState.Name);
+                var stateMachine = new StateMachine(Redis);
+                var state = new EnqueuedState("The job has been retried by a user.", queue);
+
+                return stateMachine.ChangeState(jobId, state, FailedState.Name);
             }
         }
 
@@ -404,11 +403,10 @@ namespace HangFire.Web
                     return false;
                 }
 
-                return JobState.Apply(
-                    Redis,
-                    jobId,
-                    new EnqueuedState("The job has been enqueued by a user.", queue),
-                    ScheduledState.Name);
+                var stateMachine = new StateMachine(Redis);
+                var state = new EnqueuedState("The job has been enqueued by a user.", queue);
+
+                return stateMachine.ChangeState(jobId, state, ScheduledState.Name);
             }
         }
 

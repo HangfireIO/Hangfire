@@ -8,8 +8,9 @@ namespace HangFire.Client
     public class ClientJobDescriptor
     {
         private readonly IRedisClient _redis;
-        private readonly JobState _state;
+        private readonly StateMachine _stateMachine;
 
+        private readonly JobState _state;
         private readonly IDictionary<string, string> _jobParameters; 
 
         internal ClientJobDescriptor(
@@ -19,6 +20,8 @@ namespace HangFire.Client
             JobState state)
         {
             _redis = redis;
+            _stateMachine = new StateMachine(redis);
+
             _state = state;
             _jobParameters = jobParameters;
             JobId = jobId;
@@ -32,7 +35,7 @@ namespace HangFire.Client
                 String.Format("hangfire:job:{0}", JobId),
                 _jobParameters);
 
-            JobState.Apply(_redis, JobId, _state);
+            _stateMachine.ChangeState(JobId, _state);
         }
 
         public void SetParameter(string name, object value)

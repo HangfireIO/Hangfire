@@ -13,6 +13,7 @@ namespace HangFire.Server
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
         private readonly IRedisClient _redis;
+        private readonly StateMachine _stateMachine;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
@@ -21,6 +22,7 @@ namespace HangFire.Server
         public DequeuedJobsWatcher(IRedisClientsManager redisManager)
         {
             _redis = redisManager.GetClient();
+            _stateMachine = new StateMachine(_redis);
         }
 
         public void Dispose()
@@ -104,27 +106,20 @@ namespace HangFire.Server
                 "Type");
 
             var queue = JobHelper.TryToGetQueue(jobType);
-
-            var recoverFromStates = new[] { EnqueuedState.Name, ProcessingState.Name };
+            JobState state;
 
             if (!String.IsNullOrEmpty(queue))
             {
-                JobState.Apply(
-                    _redis,
-                    jobId,
-                    new EnqueuedState("Requeued due to time out", queue),
-                    recoverFromStates);
+                state = new EnqueuedState("Requeued due to time out", queue);
             }
             else
             {
-                JobState.Apply(
-                    _redis,
-                    jobId,
-                    new FailedState(
-                        "Failed to re-queue the job.",
-                        new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType))),
-                    recoverFromStates);
+                state = new FailedState(
+                    "Failed to re-queue the job.",
+                    new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType)));
             }
+
+            _stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
         }
 
         private static bool TimedOutByFetchedTime(string fetchedTimestamp)

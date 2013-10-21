@@ -14,6 +14,7 @@ namespace HangFire.Server
 
         private readonly TimeSpan _pollInterval;
         private readonly IRedisClient _redis;
+        private readonly StateMachine _stateMachine;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -21,6 +22,8 @@ namespace HangFire.Server
         public SchedulePoller(IRedisClientsManager redisManager, TimeSpan pollInterval)
         {
             _redis = redisManager.GetClient();
+            _stateMachine = new StateMachine(_redis);
+
             _pollInterval = pollInterval;
         }
 
@@ -52,21 +55,19 @@ namespace HangFire.Server
             var jobType = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
             var queue = JobHelper.TryToGetQueue(jobType);
 
+            JobState state;
+
             if (!String.IsNullOrEmpty(queue))
             {
-                JobState.Apply(
-                    _redis, jobId, new EnqueuedState("Enqueued by schedule poller.", queue),
-                    ScheduledState.Name);
+                state = new EnqueuedState("Enqueued by schedule poller.", queue);
             }
             else
             {
-                JobState.Apply(
-                    _redis,
-                    jobId,
-                    new FailedState("Could not enqueue the schedule job.",
-                                    new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType))),
-                    ScheduledState.Name);
+                state = new FailedState("Could not enqueue the schedule job.",
+                    new InvalidOperationException(String.Format("Could not find the type '{0}'.", jobType)));
             }
+
+            _stateMachine.ChangeState(jobId, state, ScheduledState.Name);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
