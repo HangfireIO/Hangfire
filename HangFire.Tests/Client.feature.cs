@@ -197,6 +197,84 @@ this.FeatureBackground();
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty id causes an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void CreatingAJobWithAnEmptyIdCausesAnException()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty id causes an exception", ((string[])(null)));
+#line 34
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 35
+     testRunner.When("I create a job with an empty id", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 36
+     testRunner.Then("A \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty type causes an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void CreatingAJobWithAnEmptyTypeCausesAnException()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty type causes an exception", ((string[])(null)));
+#line 38
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 39
+     testRunner.When("I create a job with null type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 40
+     testRunner.Then("A \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with the type, that is not derived from the \'BackgroundJob\' causes" +
+            " an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void CreatingAJobWithTheTypeThatIsNotDerivedFromTheBackgroundJobCausesAnException()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with the type, that is not derived from the \'BackgroundJob\' causes" +
+                    " an exception", ((string[])(null)));
+#line 42
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 43
+     testRunner.When("I create a job with the incorrect type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 44
+     testRunner.Then("A \'System.ArgumentException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty state causes an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void CreatingAJobWithAnEmptyStateCausesAnException()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty state causes an exception", ((string[])(null)));
+#line 46
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 47
+     testRunner.When("I create a job with an empty state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 48
+     testRunner.Then("A \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

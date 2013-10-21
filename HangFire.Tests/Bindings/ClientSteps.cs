@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Dynamic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HangFire.Client;
 using HangFire.States;
@@ -16,6 +16,7 @@ namespace HangFire.Tests
         private JobClient _client;
         private Mock<JobState> _stateMock;
         private IDictionary<string, string> _arguments = new Dictionary<string, string>();
+        private Exception _exception;
 
         [Given("a client")]
         public void GivenAClient()
@@ -43,6 +44,58 @@ namespace HangFire.Tests
         {
             _arguments = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
             When("I create a job");
+        }
+
+        [When("I create a job with an empty id")]
+        public void WhenICreateAJobWithAnEmptyId()
+        {
+            try
+            {
+                _client.CreateJob(null, typeof (TestJob), new Mock<JobState>("1").Object, null);
+            }
+            catch (Exception ex)
+            {
+                _exception = ex;
+            }
+        }
+
+        [When("I create a job with null type")]
+        public void WhenICreateAJobWithNullType()
+        {
+            try
+            {
+                _client.CreateJob(JobSteps.DefaultJobId, null, new Mock<JobState>("1").Object, null);
+            }
+            catch (Exception ex)
+            {
+                _exception = ex;
+            }
+        }
+
+        [When("I create a job with an empty state")]
+        public void WhenICreateAJobWithAnEmptyState()
+        {
+            try
+            {
+                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), null, null);
+            }
+            catch (Exception ex)
+            {
+                _exception = ex;
+            }
+        }
+
+        [When("I create a job with the incorrect type")]
+        public void WhenICreateAJobWithTheIncorrectType()
+        {
+            try
+            {
+                _client.CreateJob(JobSteps.DefaultJobId, typeof(ClientSteps), null, null);
+            }
+            catch (Exception ex)
+            {
+                _exception = ex;
+            }
         }
 
         [Then("the storage contains the job")]
@@ -80,6 +133,13 @@ namespace HangFire.Tests
             _stateMock.Verify(
                 x => x.Apply(It.IsAny<IRedisTransaction>(), JobSteps.DefaultJobId), 
                 Times.Once);
+        }
+
+        [Then("A '(.+)' is thrown")]
+        public void ThenAnExceptionIsThrown(string exceptionType)
+        {
+            Assert.IsNotNull(_exception);
+            Assert.IsInstanceOfType(_exception, Type.GetType(exceptionType, true));
         }
     }
 }

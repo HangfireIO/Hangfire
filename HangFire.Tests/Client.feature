@@ -30,3 +30,19 @@ Scenario: Arguments are converted to a JSON string and contained in the 'Args' p
 Scenario: The given state was applied to the job
      When I create a job
      Then the given state was applied to it
+
+Scenario: Creating a job with an empty id causes an exception
+     When I create a job with an empty id
+     Then A 'System.ArgumentNullException' is thrown
+
+Scenario: Creating a job with an empty type causes an exception
+     When I create a job with null type
+     Then A 'System.ArgumentNullException' is thrown
+
+Scenario: Creating a job with the type, that is not derived from the 'BackgroundJob' causes an exception
+     When I create a job with the incorrect type
+     Then A 'System.ArgumentException' is thrown
+
+Scenario: Creating a job with an empty state causes an exception
+     When I create a job with an empty state
+     Then A 'System.ArgumentNullException' is thrown
