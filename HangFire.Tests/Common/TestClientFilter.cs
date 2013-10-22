@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using HangFire.Filters;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HangFire.Tests
 {
@@ -28,6 +29,8 @@ namespace HangFire.Tests
 
         public void OnCreating(CreatingContext filterContext)
         {
+            Assert.IsNotNull(filterContext);
+
             _results.Add(String.Format("{0}::{1}", _name, "OnCreating"));
 
             if (_cancelsTheCreation)
@@ -43,6 +46,8 @@ namespace HangFire.Tests
 
         public void OnCreated(CreatedContext filterContext)
         {
+            Assert.IsNotNull(filterContext);
+
             _results.Add(String.Format("{0}::{1}", _name, "OnCreated") 
                 + (filterContext.Canceled ? " (with the canceled flag set)" : null));
 

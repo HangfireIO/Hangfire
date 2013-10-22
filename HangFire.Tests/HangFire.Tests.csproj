@@ -82,6 +82,8 @@
     </Compile>
     <Compile Include="Common\TestClientExceptionFilter.cs" />
     <Compile Include="Common\TestClientFilter.cs" />
+    <Compile Include="Common\TestStateAppliedFilter.cs" />
+    <Compile Include="Common\TestStateChangingFilter.cs" />
     <Compile Include="UnitTests\PerformTests.cs" />
     <Compile Include="Bindings\JobFetcherSteps.cs" />
     <Compile Include="Bindings\SchedulePollerSteps.cs" />
@@ -136,7 +138,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ScheduledState.feature</DependentUpon>
     </Compile>
-    <Compile Include="States\StateMachine.feature.cs">
+    <Compile Include="StateMachine.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>StateMachine.feature</DependentUpon>
@@ -193,7 +195,7 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ScheduledState.feature.cs</LastGenOutput>
     </None>
-    <None Include="States\StateMachine.feature">
+    <None Include="StateMachine.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>StateMachine.feature.cs</LastGenOutput>
     </None>

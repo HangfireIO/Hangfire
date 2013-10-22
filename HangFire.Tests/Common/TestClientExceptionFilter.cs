@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using HangFire.Filters;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HangFire.Tests
 {
@@ -19,6 +20,8 @@ namespace HangFire.Tests
 
         public void OnClientException(ClientExceptionContext filterContext)
         {
+            Assert.IsNotNull(filterContext);
+
             _results.Add(_name);
 
             if (_handlesException)

@@ -7,7 +7,7 @@ namespace HangFire.States
 {
     public class StateMachine
     {
-        private static readonly IDictionary<string, JobStateDescriptor> Descriptors
+        internal static readonly IDictionary<string, JobStateDescriptor> Descriptors
             = new Dictionary<string, JobStateDescriptor>();
 
         static StateMachine()
@@ -24,19 +24,15 @@ namespace HangFire.States
             Descriptors.Add(stateName, descriptor);
         }
 
-        internal static JobStateDescriptor GetStateDescriptor(
-            string stateName)
-        {
-            return Descriptors.ContainsKey(stateName) ? Descriptors[stateName] : null;
-        }
-
         private readonly IRedisClient _redis;
+        private readonly IDictionary<string, JobStateDescriptor> _stateDescriptors;
         private readonly IEnumerable<IStateChangedFilter> _stateChangedFilters;
         private readonly IEnumerable<IStateAppliedFilter> _stateAppliedFilters;
 
         public StateMachine(IRedisClient redis)
             : this(
                 redis, 
+                Descriptors,
                 GlobalJobFilters.Filters.OfType<IStateChangedFilter>().ToList(),
                 GlobalJobFilters.Filters.OfType<IStateAppliedFilter>().ToList())
         {
@@ -44,14 +40,17 @@ namespace HangFire.States
 
         internal StateMachine(
             IRedisClient redis, 
+            IDictionary<string, JobStateDescriptor> stateDescriptors,
             IEnumerable<IStateChangedFilter> stateChangedFilters,
             IEnumerable<IStateAppliedFilter> stateAppliedFilters)
         {
             if (redis == null) throw new ArgumentNullException("redis");
+            if (stateDescriptors == null) throw new ArgumentNullException("stateDescriptors");
             if (stateChangedFilters == null) throw new ArgumentNullException("stateChangedFilters");
             if (stateAppliedFilters == null) throw new ArgumentNullException("stateAppliedFilters");
 
             _redis = redis;
+            _stateDescriptors = stateDescriptors;
             _stateChangedFilters = stateChangedFilters;
             _stateAppliedFilters = stateAppliedFilters;
         }
@@ -64,6 +63,19 @@ namespace HangFire.States
             using (_redis.AcquireLock(
                 String.Format("hangfire:job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
             {
+                var currentState = _redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", jobId), "State");
+
+                if (currentState == null)
+                {
+                    return false;
+                }
+
+                if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
+                {
+                    return false;
+                }
+
                 foreach (var filter in _stateChangedFilters)
                 {
                     var oldState = state;
@@ -75,32 +87,22 @@ namespace HangFire.States
                     }
                 }
 
-                return ApplyState(jobId, state, allowedCurrentStates);
+                return ApplyState(jobId, currentState, state);
             }
         }
 
         private bool ApplyState(
             string jobId, 
-            JobState state,
-            params string[] allowedStates)
+            string currentState,
+            JobState newState)
         {
-            // TODO: what to do when job does not exists?
-            var oldState = _redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", jobId), "State");
-
-            if (allowedStates.Length > 0 && !allowedStates.Contains(oldState))
-            {
-                return false;
-            }
-
             using (var transaction = _redis.CreateTransaction())
             {
-                if (!String.IsNullOrEmpty(oldState))
+                if (currentState != String.Empty)
                 {
-                    var descriptor = GetStateDescriptor(oldState);
-                    if (descriptor != null)
+                    if (_stateDescriptors.ContainsKey(currentState))
                     {
-                        descriptor.Unapply(transaction, jobId);
+                        _stateDescriptors[currentState].Unapply(transaction, jobId);
                     }
 
                     transaction.QueueCommand(x => x.RemoveEntry(
@@ -108,17 +110,17 @@ namespace HangFire.States
 
                     foreach (var filter in _stateAppliedFilters)
                     {
-                        filter.OnStateUnapplied(transaction, jobId, oldState);
+                        filter.OnStateUnapplied(transaction, jobId, currentState);
                     }
                 }
 
-                AppendHistory(transaction, jobId, state, true);
+                AppendHistory(transaction, jobId, newState, true);
 
-                state.Apply(transaction, jobId);
+                newState.Apply(transaction, jobId);
 
                 foreach (var filter in _stateAppliedFilters)
                 {
-                    filter.OnStateApplied(transaction, jobId, state);
+                    filter.OnStateApplied(transaction, jobId, newState);
                 }
 
                 return transaction.Commit();
@@ -138,7 +140,7 @@ namespace HangFire.States
         private void AppendHistory(
             IRedisTransaction transaction, string jobId, JobState state, bool appendToJob)
         {
-            var properties = state.GetProperties();
+            var properties = new Dictionary<string, string>(state.GetProperties());
             var now = DateTime.UtcNow;
 
             properties.Add("State", state.StateName);

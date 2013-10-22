@@ -9,7 +9,7 @@ namespace HangFire.Tests
     [Binding]
     public class JobSteps : Steps
     {
-        public const string DefaultJobId = "some-id";
+        public const string DefaultJobId = "some_id";
         private static readonly Type DefaultJobType = typeof(TestJob);
 
         [Given(@"a job")]
@@ -49,6 +49,19 @@ namespace HangFire.Tests
                         { "Type", type },
                         { "Args", JobHelper.ToJson(new Dictionary<string, string>()) },
                         { "State", EnqueuedState.Name },
+                    });
+        }
+
+        [Given(@"a job with empty state")]
+        public void GivenAJobWithEmptyState()
+        {
+            Redis.Client.SetRangeInHash(
+                String.Format("hangfire:job:{0}", DefaultJobId),
+                new Dictionary<string, string>
+                    {
+                        { "Type", typeof(TestJob).AssemblyQualifiedName },
+                        { "Args", JobHelper.ToJson(new Dictionary<string, string>()) },
+                        { "State", String.Empty }
                     });
         }
 
