@@ -26,6 +26,11 @@ namespace HangFire.Server
         {
             foreach (var fetcher in _fetchers)
             {
+                fetcher.SendStop();
+            }
+
+            foreach (var fetcher in _fetchers)
+            {
                 fetcher.Dispose();
             }
         }

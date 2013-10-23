@@ -21,6 +21,8 @@ namespace HangFire.Server
         private CancellationTokenSource _cts
             = new CancellationTokenSource();
 
+        private bool _stopSent;
+
         private readonly ILog _logger = LogManager.GetLogger(typeof (PrefetchJobFetcher));
 
         public PrefetchJobFetcher(JobFetcher innerFetcher, int count)
@@ -63,17 +65,27 @@ namespace HangFire.Server
             return payload;
         }
 
+        public void SendStop()
+        {
+            _stopSent = true;
+
+            _cts.Cancel();
+
+            lock (_items)
+            {
+                Monitor.Pulse(_items);
+            }
+        }
+
         public void Dispose()
         {
+            if (!_stopSent)
+            {
+                SendStop();
+            }
+
             if (_cts != null)
             {
-                _cts.Cancel();
-
-                lock (_items)
-                {
-                    Monitor.Pulse(_items);
-                }
-
                 _prefetchThread.Join();
 
                 RequeuePrefetched();
