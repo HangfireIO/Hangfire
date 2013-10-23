@@ -8,7 +8,6 @@ namespace HangFire.Tests
     public class ServerSteps : Steps
     {
         public const string DefaultServerName = "TestServer";
-        public const string DefaultInstanceId = "some-server-id";
 
         [Given(@"a dequeued job")]
         public void GivenADequeuedJob()
