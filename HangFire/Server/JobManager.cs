@@ -17,8 +17,6 @@ namespace HangFire.Server
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ILog _logger = LogManager.GetLogger(typeof (JobManager));
-
-        private bool _stopSent;
         
         public JobManager(
             IRedisClientsManager redisManager,
@@ -50,31 +48,22 @@ namespace HangFire.Server
             _managerThread.Start();
         }
 
-        public void SendStop()
-        {
-            _stopSent = true;
-
-            _cts.Cancel();
-
-            foreach (var worker in _workers)
-            {
-                worker.SendStop();
-            }
-        }
-
         public void Dispose()
         {
-            if (!_stopSent)
-            {
-                SendStop();
-            }
+            _cts.Cancel();
 
             _managerThread.Join();
 
             foreach (var worker in _workers)
             {
+                worker.SendStop();
+            }
+
+            foreach (var worker in _workers)
+            {
                 worker.Dispose();
             }
+
             _logger.Info("Workers were stopped.");
 
             _fetcher.Dispose();
