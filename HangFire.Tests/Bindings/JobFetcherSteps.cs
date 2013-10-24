@@ -74,11 +74,14 @@ namespace HangFire.Tests
             }
         }
 
-        [Then(@"the fetcher returns the job")]
+        [Then(@"the fetcher returns the payload")]
         public void ThenTheFetcherReturnsTheJob()
         {
+            Assert.IsNotNull(_payload);
             Assert.AreEqual(JobSteps.DefaultJobId, _payload.Id);
+            
         }
+
 
         [Then(@"the fetcher returns the '(.+)' job")]
         public void ThenTheFetcherReturnsTheJob(string jobId)

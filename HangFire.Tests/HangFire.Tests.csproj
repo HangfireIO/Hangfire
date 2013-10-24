@@ -77,15 +77,22 @@
   <ItemGroup>
     <Compile Include="Bindings\ServerWatchdogSteps.cs" />
     <Compile Include="Bindings\Transforms.cs" />
+    <Compile Include="Bindings\JobManagerSteps.cs" />
     <Compile Include="ClientFilters.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ClientFilters.feature</DependentUpon>
     </Compile>
-    <Compile Include="Common\TestClientExceptionFilter.cs" />
-    <Compile Include="Common\TestClientFilter.cs" />
+    <Compile Include="Common\BrokenJob.cs" />
+    <Compile Include="Common\TestExceptionFilter.cs" />
+    <Compile Include="Common\TestFilter.cs" />
     <Compile Include="Common\TestStateAppliedFilter.cs" />
     <Compile Include="Common\TestStateChangingFilter.cs" />
+    <Compile Include="ServerFilters.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ServerFilters.feature</DependentUpon>
+    </Compile>
     <Compile Include="ServerWatchdog.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -156,6 +163,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SucceededState.feature</DependentUpon>
     </Compile>
+    <Compile Include="JobManager.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>JobManager.feature</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire\HangFire.csproj">
@@ -186,6 +198,10 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SchedulePoller.feature.cs</LastGenOutput>
     </None>
+    <None Include="ServerFilters.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>ServerFilters.feature.cs</LastGenOutput>
+    </None>
     <None Include="ServerWatchdog.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ServerWatchdog.feature.cs</LastGenOutput>
@@ -213,6 +229,10 @@
     <None Include="States\SucceededState.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SucceededState.feature.cs</LastGenOutput>
+    </None>
+    <None Include="JobManager.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>JobManager.feature.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Choose>

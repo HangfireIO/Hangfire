@@ -8,17 +8,15 @@ namespace HangFire.Server
 {
     internal class JobPerformer
     {
-        static JobPerformer()
-        {
-            Current = new JobPerformer(
-                GlobalJobFilters.Filters.OfType<IServerFilter>(),
-                GlobalJobFilters.Filters.OfType<IServerExceptionFilter>());
-        }
-
-        public static JobPerformer Current { get; private set; }
-
         private readonly IEnumerable<IServerFilter> _serverFilters;
         private readonly IEnumerable<IServerExceptionFilter> _serverExceptionFilters;
+
+        public JobPerformer()
+            : this(
+                GlobalJobFilters.Filters.OfType<IServerFilter>(),
+                GlobalJobFilters.Filters.OfType<IServerExceptionFilter>())
+        {
+        }
 
         public JobPerformer(
             IEnumerable<IServerFilter> serverFilters, 
@@ -109,7 +107,7 @@ namespace HangFire.Server
             ServerExceptionContext context,
             IEnumerable<IServerExceptionFilter> filters)
         {
-            foreach (var filter in filters.Reverse())
+            foreach (var filter in filters)
             {
                 filter.OnServerException(context);
             }

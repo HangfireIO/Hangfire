@@ -7,7 +7,7 @@ using ServiceStack.Logging;
 
 namespace HangFire.Server
 {
-    internal class PrefetchJobFetcher : IJobFetcher
+    internal class PrefetchJobFetcher : IJobFetcher, IStoppable
     {
         private readonly JobFetcher _innerFetcher;
         private readonly int _count;
@@ -18,7 +18,7 @@ namespace HangFire.Server
         private readonly Thread _prefetchThread;
         private readonly ManualResetEventSlim _jobIsReady
             = new ManualResetEventSlim(false);
-        private CancellationTokenSource _cts
+        private readonly CancellationTokenSource _cts
             = new CancellationTokenSource();
 
         private bool _stopSent;
@@ -65,7 +65,7 @@ namespace HangFire.Server
             return payload;
         }
 
-        public void SendStop()
+        public void Stop()
         {
             _stopSent = true;
 
@@ -81,21 +81,17 @@ namespace HangFire.Server
         {
             if (!_stopSent)
             {
-                SendStop();
+                Stop();
             }
 
-            if (_cts != null)
-            {
-                _prefetchThread.Join();
+            _prefetchThread.Join();
 
-                RequeuePrefetched();
+            RequeuePrefetched();
 
-                _innerFetcher.Dispose();
+            _innerFetcher.Dispose();
 
-                _jobIsReady.Dispose();
-                _cts.Dispose();
-                _cts = null;
-            }
+            _jobIsReady.Dispose();
+            _cts.Dispose();
         }
 
         private void RequeuePrefetched()

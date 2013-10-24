@@ -55,13 +55,21 @@ namespace HangFire.Tests
             CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
         }
 
+        [Then(@"it should be removed from the dequeued list")]
+        [Then(@"the job should be removed from the dequeued list")]
         [Then(@"the dequeued jobs list does not contain the job anymore")]
         public void ThenTheDequeuedJobsListDoesNotContainTheJob()
+        {
+            ThenTheJobShouldBeRemovedFromTheDequeuedList(JobSteps.DefaultJobId);
+        }
+
+        [Then(@"the '(\w+)' job should be removed from the dequeued list")]
+        public void ThenTheJobShouldBeRemovedFromTheDequeuedList(string jobId)
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));
 
-            CollectionAssert.DoesNotContain(jobIds, JobSteps.DefaultJobId);
+            CollectionAssert.DoesNotContain(jobIds, jobId);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace HangFire.Server
 
         private readonly Thread _serverThread;
 
-        private JobManager _manager;
+        private ThreadWrapper _manager;
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _fetchedJobsWatcher;
         private ThreadWrapper _serverWatchdog;
@@ -58,7 +58,7 @@ namespace HangFire.Server
             _context = new ServerContext(
                 serverName,
                 jobActivator ?? new JobActivator(),
-                JobPerformer.Current);
+                new JobPerformer());
 
             _serverThread = new Thread(RunServer)
                 {
@@ -76,7 +76,12 @@ namespace HangFire.Server
 
         private void StartServer()
         {
-            _manager = new JobManager(_redisManager, _context, _workerCount, _queues);
+            _manager = new ThreadWrapper(new JobManager(
+                new PrioritizedJobFetcher(_redisManager, _queues, _workerCount),
+                _redisManager, 
+                _context, 
+                _workerCount));
+            
             _schedulePoller = new ThreadWrapper(new SchedulePoller(_redisManager, _pollInterval));
             _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher(_redisManager));
             _serverWatchdog = new ThreadWrapper(new ServerWatchdog(_redisManager));

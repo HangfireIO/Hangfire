@@ -70,12 +70,12 @@ namespace HangFire.Tests
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher returns job id when it dequeues a job")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher returns the job payload when it dequeues a job")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobFetcher")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FetcherReturnsJobIdWhenItDequeuesAJob()
+        public virtual void FetcherReturnsTheJobPayloadWhenItDequeuesAJob()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher returns job id when it dequeues a job", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher returns the job payload when it dequeues a job", ((string[])(null)));
 #line 4
 this.ScenarioSetup(scenarioInfo);
 #line 5
@@ -85,7 +85,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 7
      testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 8
-     testRunner.Then("the fetcher returns the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher returns the payload", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

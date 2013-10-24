@@ -1,68 +1,51 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    internal class JobManager
+    internal class JobManager : IThreadWrappable, IDisposable
     {
-        private readonly List<Worker> _workers;
+        private readonly DisposableCollection<Worker> _workers;
         private readonly BlockingCollection<Worker> _freeWorkers;
 
-        private readonly Thread _managerThread;
         private readonly IJobFetcher _fetcher;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly ILog _logger = LogManager.GetLogger(typeof (JobManager));
         
         public JobManager(
+            IJobFetcher fetcher,
             IRedisClientsManager redisManager,
-            ServerContext context, 
-            int workerCount, 
-            IEnumerable<string> queues)
+            ServerContext context,
+            int workerCount)
         {
-            _workers = new List<Worker>(workerCount);
             _freeWorkers = new BlockingCollection<Worker>();
 
             _logger.Info(String.Format("Starting {0} workers...", workerCount));
 
+            _workers = new DisposableCollection<Worker>();
+
             for (var i = 0; i < workerCount; i++)
             {
-                _workers.Add(
-                    new Worker(redisManager, this, new WorkerContext(context, i)));
+                var workerContext = new WorkerContext(context, i);
+
+                var worker = new Worker(this, redisManager, workerContext);
+                worker.Start();
+
+                _workers.Add(worker);
             }
 
             _logger.Info("Workers were started.");
 
-            _fetcher = new PrioritizedJobFetcher(
-                redisManager, queues, workerCount);
-
-            _managerThread = new Thread(Work)
-                {
-                    Name = typeof(JobManager).Name,
-                    IsBackground = true
-                };
-            _managerThread.Start();
+            _fetcher = fetcher;
         }
 
         public void Dispose()
         {
-            _cts.Cancel();
-
-            _managerThread.Join();
-
-            foreach (var worker in _workers)
-            {
-                worker.SendStop();
-            }
-
-            foreach (var worker in _workers)
-            {
-                worker.Dispose();
-            }
+            _workers.Dispose();
 
             _logger.Info("Workers were stopped.");
 
@@ -72,26 +55,37 @@ namespace HangFire.Server
             _cts.Dispose();
         }
 
+        public void ProcessNextJob(CancellationToken cancellationToken)
+        {
+            Worker worker;
+            do
+            {
+                worker = _freeWorkers.Take(cancellationToken);
+            }
+            while (worker.Crashed);
+
+            var jobId = _fetcher.DequeueJob(cancellationToken);
+            worker.Process(jobId);
+        }
+
         internal void NotifyReady(Worker worker)
         {
             _freeWorkers.Add(worker);
         }
 
-        private void Work()
+        void IThreadWrappable.Dispose(Thread thread)
+        {
+            _cts.Cancel();
+            thread.Join();
+        }
+
+        void IThreadWrappable.Work()
         {
             try
             {
                 while (true)
                 {
-                    Worker worker;
-                    do
-                    {
-                        worker = _freeWorkers.Take(_cts.Token);
-                    }
-                    while (worker.Crashed);
-
-                    var jobId = _fetcher.DequeueJob(_cts.Token);
-                    worker.Process(jobId);
+                    ProcessNextJob(_cts.Token);
                 }
             }
             catch (OperationCanceledException)

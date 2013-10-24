@@ -10,7 +10,7 @@ namespace HangFire.Tests
     public class JobSteps : Steps
     {
         public const string DefaultJobId = "some_id";
-        private static readonly Type DefaultJobType = typeof(TestJob);
+        public static readonly Type DefaultJobType = typeof(TestJob);
 
         [Given(@"a job")]
         public void GivenAJob()
@@ -65,6 +65,7 @@ namespace HangFire.Tests
                     });
         }
 
+        [Given(@"its state is (.+)")]
         [Given(@"it's state is (.+)")]
         public void GivenItsStateIs(string state)
         {
@@ -74,6 +75,8 @@ namespace HangFire.Tests
                 state);
         }
 
+        [Then(@"the state of the job should be (\w+)")]
+        [Then(@"its state should be (\w+)")]
         [Then(@"the job moved to the (.+) state")]
         [Then(@"the job remains to be in the (.+) state")]
         [Then(@"the job becomes (.+)")]

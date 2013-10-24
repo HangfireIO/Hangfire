@@ -36,37 +36,37 @@ namespace HangFire.Tests
         [Given("the client filter '(.+)'")]
         public void GivenTheClientFilter(string name)
         {
-            _clientFilters.Add(new TestClientFilter(name, _clientFilterResults));
+            _clientFilters.Add(new TestFilter(name, _clientFilterResults));
         }
 
         [Given("the client filter '(.+)' that cancels the job")]
         public void GivenTheClientFilterThatCancelsTheJob(string name)
         {
-            _clientFilters.Add(new TestClientFilter(name, _clientFilterResults, false, true));
+            _clientFilters.Add(new TestFilter(name, _clientFilterResults, false, true));
         }
 
         [Given("the client filter '(.+)' that handles an exception")]
         public void GivenTheClientFilterThatHandlesAnException(string name)
         {
-            _clientFilters.Add(new TestClientFilter(name, _clientFilterResults, false, false, true));
+            _clientFilters.Add(new TestFilter(name, _clientFilterResults, false, false, true));
         }
 
         [Given("the client filter '(.+)' that throws an exception")]
         public void GivenTheClientFilterThatThrowsAnException(string name)
         {
-            _clientFilters.Add(new TestClientFilter(name, _clientFilterResults, true, false, false));
+            _clientFilters.Add(new TestFilter(name, _clientFilterResults, true, false, false));
         }
 
         [Given("the exception filter '(.+)'")]
         public void GivenTheExceptionFilter(string name)
         {
-            _exceptionFilters.Add(new TestClientExceptionFilter(name, _exceptionFilterResults));
+            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionFilterResults));
         }
 
         [Given("the exception filter '(.+)' that handles an exception")]
         public void GivenTheExceptionFilterThatHandlesAnException(string name)
         {
-            _exceptionFilters.Add(new TestClientExceptionFilter(name, _exceptionFilterResults, true));
+            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionFilterResults, true));
         }
 
         [When("I create a job")]
@@ -101,7 +101,7 @@ namespace HangFire.Tests
         [When(@"there is a buggy filter \(for example\)")]
         public void WhenThereWasAnExceptionWhileCreatingAJob()
         {
-            _clientFilters.Add(new TestClientFilter("buggy", _clientFilterResults, true));
+            _clientFilters.Add(new TestFilter("buggy", _clientFilterResults, true));
         }
 
         [When("I create a job with an empty id")]

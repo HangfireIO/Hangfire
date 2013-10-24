@@ -1,11 +1,11 @@
 ﻿@redis
 Feature: JobFetcher
 
-Scenario: Fetcher returns job id when it dequeues a job
+Scenario: Fetcher returns the job payload when it dequeues a job
     Given an enqueued job
       And the fetcher listening the queue
      When it dequeues a job
-     Then the fetcher returns the job
+     Then the fetcher returns the payload
 
 Scenario: Fetcher removes the dequeued job from the queue and adds it to the dequeued list
     Given an enqueued job

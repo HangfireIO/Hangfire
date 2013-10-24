@@ -22,6 +22,24 @@ namespace HangFire.Tests
             Given(String.Format("a job in the '{0}' queue", DefaultQueue));
         }
 
+        [Given(@"an enqueued broken job")]
+        public void GivenAnEnqueuedBrokenJob()
+        {
+            Given(String.Format("a job of the '{0}' type", typeof(BrokenJob).AssemblyQualifiedName));
+
+            Redis.Client.EnqueueItemOnList(
+                String.Format("hangfire:queue:{0}", DefaultQueue),
+                JobSteps.DefaultJobId);
+        }
+
+        [Given(@"the '(\w+)' job, that was enqueued")]
+        public void GivenAnUnexistingEnqueuedJob(string jobId)
+        {
+            Redis.Client.EnqueueItemOnList(
+                String.Format("hangfire:queue:{0}", DefaultQueue),
+                jobId);
+        }
+
         [Given(@"a job in the '(.+)' queue")]
         public void GivenAJobInTheQueue(string queue)
         {

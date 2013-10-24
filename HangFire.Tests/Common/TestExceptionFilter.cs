@@ -4,13 +4,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HangFire.Tests
 {
-    public class TestClientExceptionFilter : IClientExceptionFilter
+    public class TestExceptionFilter : IClientExceptionFilter, IServerExceptionFilter
     {
         private readonly string _name;
         private readonly IList<string> _results;
         private readonly bool _handlesException;
 
-        public TestClientExceptionFilter(
+        public TestExceptionFilter(
             string name, IList<string> results, bool handlesException = false)
         {
             _name = name;
@@ -19,6 +19,18 @@ namespace HangFire.Tests
         }
 
         public void OnClientException(ClientExceptionContext filterContext)
+        {
+            Assert.IsNotNull(filterContext);
+
+            _results.Add(_name);
+
+            if (_handlesException)
+            {
+                filterContext.ExceptionHandled = true;
+            }
+        }
+
+        public void OnServerException(ServerExceptionContext filterContext)
         {
             Assert.IsNotNull(filterContext);
 

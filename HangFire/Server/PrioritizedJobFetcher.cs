@@ -8,8 +8,8 @@ namespace HangFire.Server
 {
     internal class PrioritizedJobFetcher : IJobFetcher
     {
-        private readonly List<PrefetchJobFetcher> _fetchers
-            = new List<PrefetchJobFetcher>();
+        private readonly DisposableCollection<PrefetchJobFetcher> _fetchers
+            = new DisposableCollection<PrefetchJobFetcher>();
 
         public PrioritizedJobFetcher(
             IRedisClientsManager redisManager,
@@ -24,15 +24,7 @@ namespace HangFire.Server
 
         public void Dispose()
         {
-            foreach (var fetcher in _fetchers)
-            {
-                fetcher.SendStop();
-            }
-
-            foreach (var fetcher in _fetchers)
-            {
-                fetcher.Dispose();
-            }
+            _fetchers.Dispose();
         }
 
         public JobPayload DequeueJob(CancellationToken cancellationToken)

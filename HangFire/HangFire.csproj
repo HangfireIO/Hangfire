@@ -87,7 +87,9 @@
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />
+    <Compile Include="Server\DisposableCollection.cs" />
     <Compile Include="Server\IJobFetcher.cs" />
+    <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\JobFetcher.cs" />
     <Compile Include="Server\JobManager.cs" />

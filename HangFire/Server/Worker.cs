@@ -8,14 +8,15 @@ using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    internal class Worker : IDisposable
+    internal class Worker : IDisposable, IStoppable
     {
         private readonly JobManager _manager;
         private readonly WorkerContext _context;
-        private readonly Thread _thread;
-
         private readonly IRedisClient _redis;
         private readonly StateMachine _stateMachine;
+
+        private Thread _thread;
+
         protected readonly ILog Logger;
 
         private readonly ManualResetEventSlim _jobIsReady
@@ -31,8 +32,8 @@ namespace HangFire.Server
         private JobPayload _jobPayload;
 
         public Worker(
+            JobManager manager,
             IRedisClientsManager redisManager,
-            JobManager manager, 
             WorkerContext context)
         {
             _redis = redisManager.GetClient();
@@ -41,17 +42,20 @@ namespace HangFire.Server
             _manager = manager;
             _context = context;
 
-            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", _context.WorkerNumber));
+            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", context.WorkerNumber));
+        }
 
+        public void Start()
+        {
             _thread = new Thread(DoWork)
-                {
-                    Name = String.Format("HangFire.Worker.{0}", _context.WorkerNumber),
-                    IsBackground = true
-                };
+            {
+                Name = String.Format("HangFire.Worker.{0}", _context.WorkerNumber),
+                IsBackground = true
+            };
             _thread.Start();
         }
 
-        public void SendStop()
+        public void Stop()
         {
             _stopSent = true;
             _cts.Cancel();
@@ -89,46 +93,21 @@ namespace HangFire.Server
         {
             if (!_stopSent)
             {
-                SendStop();
+                Stop();
             }
 
-            _thread.Join();
+            if (_thread != null)
+            {
+                _thread.Join();
+                _thread = null;
+            }
 
             _cts.Dispose();
             _jobIsReady.Dispose();
+
+            _redis.Dispose();
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
-        private void DoWork()
-        {
-            try
-            {
-                while (true)
-                {
-                    _manager.NotifyReady(this);
-                    _jobIsReady.Wait(_cts.Token);
-
-                    lock (_jobLock)
-                    {
-                        PerformJob(_jobPayload);
-                        _jobIsReady.Reset();
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception ex)
-            {
-                Crashed = true;
-                Logger.Fatal(
-                    String.Format(
-                        "Unexpected exception caught. The worker will be stopped."),
-                    ex);
-            }
-        }
-
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We need to catch all user-code exceptions.")]
         private void PerformJob(JobPayload payload)
         {
             if (String.IsNullOrEmpty(payload.Type))
@@ -196,12 +175,43 @@ namespace HangFire.Server
             // of the explicit states (Succeeded, Scheduled and so on).
             // It should not be re-queued, but we still need to remove it's
             // processing information.
+        }
 
-            JobFetcher.RemoveFromFetchedQueue(
-                _redis, payload.Id, payload.Queue);
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
+        private void DoWork()
+        {
+            try
+            {
+                while (true)
+                {
+                    _manager.NotifyReady(this);
+                    _jobIsReady.Wait(_cts.Token);
 
-            // Success point. No things must be done after previous command
-            // was succeeded.
+                    lock (_jobLock)
+                    {
+                        PerformJob(_jobPayload);
+
+                        JobFetcher.RemoveFromFetchedQueue(
+                            _redis, _jobPayload.Id, _jobPayload.Queue);
+
+                        // Success point. No things must be done after previous command
+                        // was succeeded.
+
+                        _jobIsReady.Reset();
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Crashed = true;
+                Logger.Fatal(
+                    String.Format(
+                        "Unexpected exception caught. The worker will be stopped."),
+                    ex);
+            }
         }
     }
 }
