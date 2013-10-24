@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using HangFire.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -8,6 +12,19 @@ namespace HangFire.Tests
     public class ServerSteps : Steps
     {
         public const string DefaultServerName = "TestServer";
+
+        private readonly TimeSpan _serverStartupTimeout = TimeSpan.FromMilliseconds(50);
+        private JobServer _server;
+
+        [After]
+        public void TearDown()
+        {
+            if (_server != null)
+            {
+                _server.Dispose();
+                _server = null;
+            }
+        }
 
         [Given(@"a dequeued job")]
         public void GivenADequeuedJob()
@@ -45,6 +62,43 @@ namespace HangFire.Tests
                 JobSteps.DefaultJobId);
         }
 
+        [When(@"the '(\w+)' server starts")]
+        public void WhenTheServerStarts(string name)
+        {
+            WhenTheServerStartsWithWorkers(name, 1);
+        }
+
+        [When(@"the '(\w+)' server starts with (\d+) workers")]
+        public void WhenTheServerStartsWithWorkers(string name, int workers)
+        {
+            CreateServer(name, workers, new [] { "critical" });
+        }
+
+        [When(@"the '(\w+)' server starts with the queues (\w+), (\w+)")]
+        public void WhenTheServerStartsWithTheQueues(string name, string queue1, string queue2)
+        {
+            CreateServer(name, 1, new [] { queue1, queue2 });
+        }
+
+        private void CreateServer(string name, int workers, IEnumerable<string> queues)
+        {
+            _server = new JobServer(
+                RedisFactory.BasicManager,
+                name,
+                workers,
+                queues,
+                null,
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromSeconds(1));
+        }
+
+        [When(@"the '(\w+)' server shuts down")]
+        public void WhenTheServerShutsDown(string name)
+        {
+            WhenTheServerStarts(name);
+            _server.Dispose();
+        }
+
         [Then(@"the dequeued jobs list contains it")]
         [Then(@"the dequeued jobs list still contains the job")]
         public void ThenTheDequeuedJobsListContainsTheJob()
@@ -70,6 +124,49 @@ namespace HangFire.Tests
                 String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));
 
             CollectionAssert.DoesNotContain(jobIds, jobId);
+        }
+
+        [Then(@"the servers set should contain the '(\w+)' server")]
+        public void ThenTheServersSetShouldContainTheServer(string name)
+        {
+            Thread.Sleep(_serverStartupTimeout);
+            Assert.IsTrue(Redis.Client.SetContainsItem("hangfire:servers", name));
+        }
+
+        [Then(@"the servers set should not contain the '(\w+)' server")]
+        public void ThenTheServersSetShouldNotContainTheServer(string name)
+        {
+            Thread.Sleep(_serverStartupTimeout);
+            Assert.IsFalse(Redis.Client.SetContainsItem("hangfire:servers", name));
+        }
+
+        [Then(@"the '(\w+)' server's properties should contain the following items:")]
+        public void ThenTheServersPropertiesShouldContainTheFollowingItems(string name, Table table)
+        {
+            var properties = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:server:{0}", name));
+            DictionaryAssert.ContainsFollowingItems(table, properties);
+        }
+
+        [Then(@"the '(\w+)' server's queues list should contain queues (\w+), (\w+)")]
+        public void ThenTheServerSQueuesListShouldContainQueues(string name, string queue1, string queue2)
+        {
+            var registeredQueues = Redis.Client.GetAllItemsFromList(String.Format("hangfire:server:{0}:queues", name));
+
+            Assert.AreEqual(2, registeredQueues.Count);
+            Assert.AreEqual(queue1, registeredQueues[0]);
+            Assert.AreEqual(queue2, registeredQueues[1]);
+        }
+
+        [Then(@"the storage should not contain an entry for the '(\w+)' server properties")]
+        public void ThenTheStorageShouldNotContainAnEntryForTheServerProperties(string name)
+        {
+            Assert.IsFalse(Redis.Client.ContainsKey(String.Format("hangfire:server:{0}", name)));
+        }
+
+        [Then(@"the storage should not contain an entry for the '(\w+)' server queues")]
+        public void ThenTheStorageShouldNotContainAnEntryForTheServerQueues(string name)
+        {
+            Assert.IsFalse(Redis.Client.ContainsKey(String.Format("hangfire:server:{0}:queues", name)));
         }
     }
 }

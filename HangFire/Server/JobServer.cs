@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using ServiceStack.Logging;
@@ -14,6 +13,7 @@ namespace HangFire.Server
         private readonly int _workerCount;
         private readonly IEnumerable<string> _queues;
         private readonly TimeSpan _pollInterval;
+        private readonly TimeSpan _fetchTimeout;
 
         private readonly Thread _serverThread;
 
@@ -33,11 +33,12 @@ namespace HangFire.Server
 
         public JobServer(
             IRedisClientsManager redisManager,
-            string machineName,
+            string serverName,
             int workerCount,
             IEnumerable<string> queues, 
+            JobActivator jobActivator,
             TimeSpan pollInterval,
-            JobActivator jobActivator)
+            TimeSpan fetchTimeout)
         {
             _redis = redisManager.GetClient();
 
@@ -45,6 +46,7 @@ namespace HangFire.Server
             _workerCount = workerCount;
             _queues = queues;
             _pollInterval = pollInterval;
+            _fetchTimeout = fetchTimeout;
 
             if (queues == null) throw new ArgumentNullException("queues");
 
@@ -52,8 +54,6 @@ namespace HangFire.Server
             {
                 throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value must be positive.");
             }
-
-            var serverName = String.Format("{0}:{1}", machineName, Process.GetCurrentProcess().Id);
 
             _context = new ServerContext(
                 serverName,
@@ -77,7 +77,7 @@ namespace HangFire.Server
         private void StartServer()
         {
             _manager = new ThreadWrapper(new JobManager(
-                new PrioritizedJobFetcher(_redisManager, _queues, _workerCount),
+                new PrioritizedJobFetcher(_redisManager, _queues, _workerCount, _fetchTimeout),
                 _redisManager, 
                 _context, 
                 _workerCount));

@@ -88,6 +88,11 @@
     <Compile Include="Common\TestFilter.cs" />
     <Compile Include="Common\TestStateAppliedFilter.cs" />
     <Compile Include="Common\TestStateChangingFilter.cs" />
+    <Compile Include="Server.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Server.feature</DependentUpon>
+    </Compile>
     <Compile Include="ServerFilters.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -197,6 +202,10 @@
     <None Include="SchedulePoller.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SchedulePoller.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Server.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>Server.feature.cs</LastGenOutput>
     </None>
     <None Include="ServerFilters.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

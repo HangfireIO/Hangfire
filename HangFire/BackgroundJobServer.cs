@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using HangFire.Server;
 
@@ -56,9 +57,11 @@ namespace HangFire
                 throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
             }
 
+            var serverName = String.Format("{0}:{1}", MachineName, Process.GetCurrentProcess().Id);
+
             _server = new JobServer(
                 RedisFactory.BasicManager,
-                MachineName, WorkerCount, Queues, PollInterval, JobActivator);
+                serverName, WorkerCount, Queues, JobActivator, PollInterval, TimeSpan.FromSeconds(5));
         }
 
         /// <summary>

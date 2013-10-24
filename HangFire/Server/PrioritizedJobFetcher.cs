@@ -13,12 +13,14 @@ namespace HangFire.Server
 
         public PrioritizedJobFetcher(
             IRedisClientsManager redisManager,
-            IEnumerable<string> queues, int prefetchCount)
+            IEnumerable<string> queues, 
+            int prefetchCount,
+            TimeSpan fetchTimeout)
         {
             foreach (var queue in queues)
             {
                 _fetchers.Add(new PrefetchJobFetcher(
-                    new JobFetcher(redisManager, queue), prefetchCount));
+                    new JobFetcher(redisManager, queue, fetchTimeout), prefetchCount));
             }
         }
 
