@@ -1,10 +1,13 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Web;
 
 namespace HangFire.Web
 {
     public abstract class RazorPage : GenericHandler
     {
+        public static Func<Exception, RazorPage> ExceptionHandler;
+
         private readonly StringBuilder _content = new StringBuilder();
         private string _innerContent;
 
@@ -14,7 +17,24 @@ namespace HangFire.Web
 
         public override void ProcessRequest()
         {
-            Response.Write(TransformText(null));
+            string text;
+            try
+            {
+                text = TransformText(null);
+            }
+            catch (Exception ex)
+            {
+                if (ExceptionHandler == null)
+                {
+                    throw;
+                }
+
+                var handler = ExceptionHandler(ex);
+                text = handler.TransformText(null);
+                Response.StatusCode = 500;
+            }
+
+            Response.Write(text);
         }
 
         public string TransformText(string innerContent)

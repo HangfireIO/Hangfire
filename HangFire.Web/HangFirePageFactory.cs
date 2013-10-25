@@ -17,6 +17,8 @@ namespace HangFire.Web
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static HangFirePageFactory()
         {
+            RazorPage.ExceptionHandler = ex => new ErrorPage(ex);
+
             RegisterDefaultPathHandlerFactory(() => new DashboardPage());
 
             RegisterPathHandlerFactory(

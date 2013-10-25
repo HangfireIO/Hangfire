@@ -1,0 +1,25 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using Pages
+@inherits RazorPage
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+    <title>Error - HangFire</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="@Request.LinkTo("/css/styles.css")" />
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron" style="margin-top: 40px;">
+
+            <h1>HangFire <small>An exception occured</small></h1>
+            <p class="lead">@Exception.Message</p>
+
+            <pre>@HtmlHelper.MarkupStackTrace(Exception.ToString())</pre>
+        </div>
+    </div>
+</body>
+</html>

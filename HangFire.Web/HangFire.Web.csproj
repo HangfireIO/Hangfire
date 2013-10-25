@@ -74,6 +74,10 @@
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
     <Compile Include="JavaScriptHandler.cs" />
+    <None Include="Pages\ErrorPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>ErrorPage.generated.cs</LastGenOutput>
+    </None>
     <None Include="Pages\DequeuedJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>DequeuedJobsPage.generated.cs</LastGenOutput>
@@ -96,6 +100,14 @@
     </None>
     <Compile Include="JobHistoryRenderer.cs" />
     <Compile Include="Pager.cs" />
+    <Compile Include="Pages\ErrorPage.cs">
+      <DependentUpon>ErrorPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\ErrorPage.generated.cs">
+      <DependentUpon>ErrorPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Pages\DequeuedJobsPage.generated.cs">
       <DependentUpon>DequeuedJobsPage.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
