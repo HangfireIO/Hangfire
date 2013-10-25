@@ -17,8 +17,10 @@ namespace HangFire
         /// Enqueues a new argumentless job of the <typeparamref name="TJob"/> 
         /// type to its queue.
         /// </summary>
+        /// 
         /// <typeparam name="TJob">Type of the job.</typeparam>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the <typeparamref name="TJob"/> has invalid queue name.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
@@ -32,9 +34,11 @@ namespace HangFire
         /// Enqueues a new job of the <typeparamref name="TJob"/> type to its
         /// queue with the specified arguments in the <paramref name="args"/> parameter.
         /// </summary>
+        /// 
         /// <typeparam name="TJob">Type of the job</typeparam>
         /// <param name="args">Job arguments.</param>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the <typeparamref name="TJob"/> has invalid queue name.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
@@ -47,8 +51,10 @@ namespace HangFire
         /// <summary>
         /// Enqueues a new argumentless job of the specified type to its queue.
         /// </summary>
+        /// 
         /// <param name="type">Type of the job.</param>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="type"/> is null.</exception>
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the <paramref name="type"/> has invalid queue name.</exception>
@@ -62,9 +68,11 @@ namespace HangFire
         /// Enqueues a new job of the specified type to its queue with the 
         /// given arguments in the <paramref name="args"/> parameter.
         /// </summary>
+        /// 
         /// <param name="type">Type of the job.</param>
         /// <param name="args">Job arguments.</param>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="type"/> is null.</exception>
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the <paramref name="type"/> has invalid queue name.</exception>
@@ -89,9 +97,11 @@ namespace HangFire
         /// Schedules a new argumentless job of the specified type to perform 
         /// after the given <paramref name="delay"/>.
         /// </summary>
+        /// 
         /// <typeparam name="TJob">The type of the job.</typeparam>
         /// <param name="delay">Delay, after which the job should be performed.</param>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string In<TJob>(TimeSpan delay)
@@ -105,10 +115,12 @@ namespace HangFire
         /// given <paramref name="delay"/> with the arguments defined in 
         /// the <paramref name="args"/> parameter.
         /// </summary>
+        /// 
         /// <typeparam name="TJob">The type of the job.</typeparam>
         /// <param name="delay">Delay, after which the job should be performed.</param>
         /// <param name="args">Job arguments.</param>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string In<TJob>(TimeSpan delay, object args)
@@ -121,9 +133,11 @@ namespace HangFire
         /// Schedules a new argumentless job of the specified type to perform 
         /// after the given <paramref name="delay"/>.
         /// </summary>
+        /// 
         /// <param name="delay">Delay, after which the job should be performed.</param>
         /// <param name="type">The type of the job.</param>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string In(TimeSpan delay, Type type)
@@ -136,10 +150,12 @@ namespace HangFire
         /// <paramref name="delay"/> with the arguments defined in the
         /// <paramref name="args"/> parameter.
         /// </summary>
+        /// 
         /// <param name="delay">Delay, after which the job should be performed.</param>
         /// <param name="type">The type of the job.</param>
         /// <param name="args">Job arguments.</param>
         /// <returns>The unique identifier of the job.</returns>
+        /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string In(TimeSpan delay, Type type, object args)
