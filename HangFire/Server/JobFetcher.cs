@@ -79,10 +79,6 @@ namespace HangFire.Server
             return new JobPayload(jobId, Queue, jobType, jobArgs);
         }
 
-        public void Stop()
-        {
-        }
-
         public void Dispose()
         {
             _redis.Dispose();

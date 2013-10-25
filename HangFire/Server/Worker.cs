@@ -10,7 +10,7 @@ namespace HangFire.Server
 {
     internal class Worker : IDisposable, IStoppable
     {
-        private readonly IJobFetcher _fetcher;
+        private readonly JobManager _manager;
         private readonly WorkerContext _context;
         private readonly IRedisClient _redis;
         private readonly StateMachine _stateMachine;
@@ -19,18 +19,27 @@ namespace HangFire.Server
 
         protected readonly ILog Logger;
 
+        private readonly ManualResetEventSlim _jobIsReady
+            = new ManualResetEventSlim(false);
+
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+        private readonly object _crashedLock = new object();
+        private readonly object _jobLock = new object();
+        private bool _crashed;
         private bool _stopSent;
 
+        private JobPayload _jobPayload;
+
         public Worker(
-            IJobFetcher fetcher,
+            JobManager manager,
             IRedisClientsManager redisManager,
             WorkerContext context)
         {
             _redis = redisManager.GetClient();
             _stateMachine = new StateMachine(_redis);
 
-            _fetcher = fetcher;
+            _manager = manager;
             _context = context;
 
             Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", context.WorkerNumber));
@@ -50,7 +59,34 @@ namespace HangFire.Server
         {
             _stopSent = true;
             _cts.Cancel();
-            _fetcher.Stop();
+        }
+
+        internal bool Crashed
+        {
+            get
+            {
+                lock (_crashedLock)
+                {
+                    return _crashed;
+                }
+            }
+            private set
+            {
+                lock (_crashedLock)
+                {
+                    _crashed = value;
+                }
+            }
+        }
+
+        public void Process(JobPayload payload)
+        {
+            lock (_jobLock)
+            {
+                _jobPayload = payload;
+            }
+
+            _jobIsReady.Set();
         }
 
         public void Dispose()
@@ -66,28 +102,10 @@ namespace HangFire.Server
                 _thread = null;
             }
 
-            _fetcher.Dispose();
             _cts.Dispose();
+            _jobIsReady.Dispose();
 
             _redis.Dispose();
-        }
-
-        public void ProcessNextJob(CancellationToken cancellationToken)
-        {
-            var nextJob = _fetcher.DequeueJob(cancellationToken);
-
-            PerformJob(nextJob);
-
-            // Checkpoint #4. The job was performed, and it is in the one
-            // of the explicit states (Succeeded, Scheduled and so on).
-            // It should not be re-queued, but we still need to remove it's
-            // processing information.
-
-            JobFetcher.RemoveFromFetchedQueue(
-                _redis, nextJob.Id, nextJob.Queue);
-
-            // Success point. No things must be done after previous command
-            // was succeeded.
         }
 
         private void PerformJob(JobPayload payload)
@@ -152,6 +170,11 @@ namespace HangFire.Server
             }
 
             _stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
+
+            // Checkpoint #4. The job was performed, and it is in the one
+            // of the explicit states (Succeeded, Scheduled and so on).
+            // It should not be re-queued, but we still need to remove it's
+            // processing information.
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
@@ -161,7 +184,21 @@ namespace HangFire.Server
             {
                 while (true)
                 {
-                    ProcessNextJob(_cts.Token);
+                    _manager.NotifyReady(this);
+                    _jobIsReady.Wait(_cts.Token);
+
+                    lock (_jobLock)
+                    {
+                        PerformJob(_jobPayload);
+
+                        JobFetcher.RemoveFromFetchedQueue(
+                            _redis, _jobPayload.Id, _jobPayload.Queue);
+
+                        // Success point. No things must be done after previous command
+                        // was succeeded.
+
+                        _jobIsReady.Reset();
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -169,6 +206,7 @@ namespace HangFire.Server
             }
             catch (Exception ex)
             {
+                Crashed = true;
                 Logger.Fatal(
                     String.Format(
                         "Unexpected exception caught. The worker will be stopped."),

@@ -40,18 +40,13 @@ namespace HangFire.Server
 
             foreach (var fetcher in _fetchers)
             {
-                if ( fetcher.PrefetchedCount > 0)
+                if (fetcher.PrefetchedCount > 0)
                 {
                     return fetcher.DequeueJob(cancellationToken);
                 }
             }
 
             throw new InvalidOperationException();
-        }
-
-        public void Stop()
-        {
-            _fetchers.Stop();
         }
     }
 }

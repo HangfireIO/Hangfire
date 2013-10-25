@@ -92,6 +92,7 @@
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\JobFetcher.cs" />
+    <Compile Include="Server\JobManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="Server\PrefetchJobFetcher.cs" />
     <Compile Include="Server\PrioritizedJobFetcher.cs" />

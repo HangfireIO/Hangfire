@@ -6,20 +6,15 @@ namespace HangFire.Server
     internal class DisposableCollection<T> : List<T>
         where T : IDisposable
     {
-        public void Stop()
+        public void Dispose()
         {
-            if (typeof(IStoppable).IsAssignableFrom(typeof(T)))
+            if (typeof (IStoppable).IsAssignableFrom(typeof (T)))
             {
                 foreach (var item in this)
                 {
                     ((IStoppable)item).Stop();
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            Stop();
 
             foreach (var item in this)
             {

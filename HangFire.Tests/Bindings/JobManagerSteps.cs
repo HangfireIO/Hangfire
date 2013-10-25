@@ -8,7 +8,7 @@ using TechTalk.SpecFlow;
 namespace HangFire.Tests
 {
     [Binding]
-    public class WorkerSteps : Steps
+    public class JobManagerSteps : Steps
     {
         private readonly IList<IServerFilter> _serverFilters = new List<IServerFilter>();
         private readonly IList<IServerExceptionFilter> _exceptionFilters = new List<IServerExceptionFilter>();
@@ -21,6 +21,12 @@ namespace HangFire.Tests
         {
             TestJob.Performed = false;
             TestJob.Disposed = false;
+        }
+
+        [Given(@"a manager")]
+        public void GivenAManager()
+        {
+            
         }
 
         [Given(@"a server filter '(\w+)'")]
@@ -59,7 +65,7 @@ namespace HangFire.Tests
             _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionResults, true));
         }
 
-        [When(@"the worker processes the next job")]
+        [When(@"the manager processes the next job")]
         public void WhenTheWorkerPerformsTheJob()
         {
             var context = new ServerContext(
@@ -67,12 +73,13 @@ namespace HangFire.Tests
                 new JobActivator(),
                 new JobPerformer(_serverFilters, _exceptionFilters));
 
-            using (var worker = new Worker(
+            using (var manager = new JobManager(
                 new JobFetcher(RedisFactory.BasicManager, QueueSteps.DefaultQueue),
                 RedisFactory.BasicManager,
-                new WorkerContext(context, 1)))
+                context,
+                1))
             {
-                worker.ProcessNextJob(new CancellationTokenSource().Token);
+                manager.ProcessNextJob(new CancellationTokenSource().Token);
             }
         }
 
