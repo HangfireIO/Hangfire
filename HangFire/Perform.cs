@@ -14,7 +14,7 @@ namespace HangFire
     public static class Perform
     {
         /// <summary>
-        /// Enqueues an argumentless job of the <typeparamref name="TJob"/> 
+        /// Enqueues a new argumentless job of the <typeparamref name="TJob"/> 
         /// type to its queue.
         /// </summary>
         /// <typeparam name="TJob">Type of the job.</typeparam>
@@ -29,7 +29,7 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Enqueues a job of the <typeparamref name="TJob"/> type to its
+        /// Enqueues a new job of the <typeparamref name="TJob"/> type to its
         /// queue with the specified arguments in the <paramref name="args"/> parameter.
         /// </summary>
         /// <typeparam name="TJob">Type of the job</typeparam>
@@ -45,7 +45,7 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Enqueues an argumentless job of the specified type to its queue.
+        /// Enqueues a new argumentless job of the specified type to its queue.
         /// </summary>
         /// <param name="type">Type of the job.</param>
         /// <returns>The unique identifier of the job.</returns>
@@ -59,7 +59,7 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Enqueues a job of the specified type to its queue with the 
+        /// Enqueues a new job of the specified type to its queue with the 
         /// given arguments in the <paramref name="args"/> parameter.
         /// </summary>
         /// <param name="type">Type of the job.</param>
