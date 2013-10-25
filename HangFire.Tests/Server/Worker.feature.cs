@@ -19,19 +19,19 @@ namespace HangFire.Tests.Server
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "1.9.0.77")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [Microsoft.VisualStudio.TestTools.UnitTesting.TestClassAttribute()]
-    public partial class JobManagerFeature
+    public partial class WorkerFeature
     {
         
         private static TechTalk.SpecFlow.ITestRunner testRunner;
         
-#line 1 "JobManager.feature"
+#line 1 "Worker.feature"
 #line hidden
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.ClassInitializeAttribute()]
         public static void FeatureSetup(Microsoft.VisualStudio.TestTools.UnitTesting.TestContext testContext)
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Job manager", "", ProgrammingLanguage.CSharp, new string[] {
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Worker", "", ProgrammingLanguage.CSharp, new string[] {
                         "redis"});
             testRunner.OnFeatureStart(featureInfo);
         }
@@ -47,9 +47,9 @@ namespace HangFire.Tests.Server
         public virtual void TestInitialize()
         {
             if (((TechTalk.SpecFlow.FeatureContext.Current != null) 
-                        && (TechTalk.SpecFlow.FeatureContext.Current.FeatureInfo.Title != "Job manager")))
+                        && (TechTalk.SpecFlow.FeatureContext.Current.FeatureInfo.Title != "Worker")))
             {
-                HangFire.Tests.Server.JobManagerFeature.FeatureSetup(null);
+                HangFire.Tests.Server.WorkerFeature.FeatureSetup(null);
             }
         }
         
@@ -70,18 +70,18 @@ namespace HangFire.Tests.Server
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Manager should perform a job")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Job manager")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Worker should perform a job")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Worker")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ManagerShouldPerformAJob()
+        public virtual void WorkerShouldPerformAJob()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Manager should perform a job", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Worker should perform a job", ((string[])(null)));
 #line 4
 this.ScenarioSetup(scenarioInfo);
 #line 5
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 6
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 7
      testRunner.Then("the job should be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -90,7 +90,7 @@ this.ScenarioSetup(scenarioInfo);
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Successfully performed job should have the Succeeded state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Job manager")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Worker")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void SuccessfullyPerformedJobShouldHaveTheSucceededState()
         {
@@ -100,7 +100,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 10
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 11
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 12
      testRunner.Then("its state should be Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 13
@@ -111,7 +111,7 @@ this.ScenarioSetup(scenarioInfo);
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("After performing the broken job, it should have the Failed state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Job manager")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Worker")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void AfterPerformingTheBrokenJobItShouldHaveTheFailedState()
         {
@@ -121,7 +121,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 16
     testRunner.Given("an enqueued broken job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 17
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 18
      testRunner.Then("its state should be Failed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 19
@@ -133,7 +133,7 @@ this.ScenarioSetup(scenarioInfo);
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("An unexisting job should not be processed, but it should be removed from the dequ" +
             "eued list")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Job manager")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Worker")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void AnUnexistingJobShouldNotBeProcessedButItShouldBeRemovedFromTheDequeuedList()
         {
@@ -144,7 +144,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 22
     testRunner.Given("the \'unexisting\' job, that was enqueued", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 23
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 24
      testRunner.Then("there should be no performing actions", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 25
@@ -156,7 +156,7 @@ this.ScenarioSetup(scenarioInfo);
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Worker should processes only jobs in the Enqueued state, but it should remove the" +
             " job from the dequeued list anyway")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Job manager")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Worker")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void WorkerShouldProcessesOnlyJobsInTheEnqueuedStateButItShouldRemoveTheJobFromTheDequeuedListAnyway()
         {
@@ -169,7 +169,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 29
       testRunner.And("its state is Processing", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 30
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 31
      testRunner.Then("the job should not be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 32
@@ -180,7 +180,7 @@ this.ScenarioSetup(scenarioInfo);
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Disposable job should be disposed after processing")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Job manager")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Worker")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void DisposableJobShouldBeDisposedAfterProcessing()
         {
@@ -190,7 +190,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 35
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 36
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 37
      testRunner.Then("the job should be disposed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden

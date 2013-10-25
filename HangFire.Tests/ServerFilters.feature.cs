@@ -83,7 +83,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 6
       testRunner.And("a server filter \'test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 7
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
@@ -115,7 +115,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 17
       testRunner.And("a server filter \'second\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 18
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
@@ -151,7 +151,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 30
       testRunner.And("a server filter \'third\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 31
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 32
      testRunner.Then("the job should not be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
@@ -185,7 +185,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 42
       testRunner.And("a server filter \'second\' that throws an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 43
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
@@ -221,7 +221,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 55
       testRunner.And("a server filter \'third\' that throws an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 56
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
@@ -259,7 +259,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 68
       testRunner.And("a server exception filter \'test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 69
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 70
      testRunner.Then("the server exception filter should be executed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 71
@@ -284,7 +284,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 76
       testRunner.And("a server exception filter \'second\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 77
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
@@ -318,7 +318,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 88
       testRunner.And("a server exception filter \'third\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 89
-     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+     testRunner.When("the worker processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});

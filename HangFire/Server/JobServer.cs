@@ -17,7 +17,9 @@ namespace HangFire.Server
 
         private readonly Thread _serverThread;
 
-        private ThreadWrapper _manager;
+        private readonly DisposableCollection<Worker> _workers
+            = new DisposableCollection<Worker>();
+
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _fetchedJobsWatcher;
         private ThreadWrapper _serverWatchdog;
@@ -76,11 +78,23 @@ namespace HangFire.Server
 
         private void StartServer()
         {
-            _manager = new ThreadWrapper(new JobManager(
-                new PrioritizedJobFetcher(_redisManager, _queues, _workerCount, _fetchTimeout),
-                _redisManager, 
-                _context, 
-                _workerCount));
+            _logger.Info(String.Format("Starting {0} workers...", _workerCount));
+
+            for (var i = 0; i < _workerCount; i++)
+            {
+                var workerContext = new WorkerContext(_context, i);
+
+                var worker = new Worker(
+                    new PrioritizedJobFetcher(_redisManager, _queues, 1, _fetchTimeout), 
+                    _redisManager, 
+                    workerContext);
+
+                worker.Start();
+
+                _workers.Add(worker);
+            }
+
+            _logger.Info("Workers were started.");
             
             _schedulePoller = new ThreadWrapper(new SchedulePoller(_redisManager, _pollInterval));
             _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher(_redisManager));
@@ -92,7 +106,8 @@ namespace HangFire.Server
             _serverWatchdog.Dispose();
             _fetchedJobsWatcher.Dispose();
             _schedulePoller.Dispose();
-            _manager.Dispose();
+
+            _workers.Dispose();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
