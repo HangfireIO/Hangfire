@@ -14,7 +14,7 @@ namespace HangFire.Tests
         public void GivenAScheduledJob()
         {
             Given("a job");
-            And("it's state is Scheduled");
+            And("its state is Scheduled");
 
             Redis.Client.AddItemToSortedSet(
                 "hangfire:schedule",
@@ -26,7 +26,7 @@ namespace HangFire.Tests
         public void GivenAScheduleJobOfType(string type)
         {
             Given(String.Format("a job of the '{0}' type", type));
-            And("it's state is Scheduled");
+            And("its state is Scheduled");
 
             Redis.Client.AddItemToSortedSet(
                 "hangfire:schedule",
@@ -38,7 +38,7 @@ namespace HangFire.Tests
         public void GivenAFutureJob()
         {
             Given("a job");
-            And("it's state is Scheduled");
+            And("its state is Scheduled");
 
             Redis.Client.AddItemToSortedSet(
                 "hangfire:schedule",

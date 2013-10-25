@@ -66,7 +66,6 @@ namespace HangFire.Tests
         }
 
         [Given(@"its state is (.+)")]
-        [Given(@"it's state is (.+)")]
         public void GivenItsStateIs(string state)
         {
             Redis.Client.SetEntryInHash(

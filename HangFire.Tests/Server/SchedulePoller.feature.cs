@@ -131,7 +131,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 21
     testRunner.Given("a scheduled job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 22
-      testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("its state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 23
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 24
@@ -160,12 +160,12 @@ this.ScenarioSetup(scenarioInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Poller move the job to the Failed state when it could not find it\'s type")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Poller move the job to the Failed state when it could not find its type")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "SchedulePoller")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void PollerMoveTheJobToTheFailedStateWhenItCouldNotFindItSType()
+        public virtual void PollerMoveTheJobToTheFailedStateWhenItCouldNotFindItsType()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poller move the job to the Failed state when it could not find it\'s type", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poller move the job to the Failed state when it could not find its type", ((string[])(null)));
 #line 31
 this.ScenarioSetup(scenarioInfo);
 #line 32
@@ -190,7 +190,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 37
     testRunner.Given("a scheduled job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 38
-      testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("its state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 39
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 40

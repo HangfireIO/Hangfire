@@ -173,7 +173,7 @@ namespace HangFire.Server
 
             // Checkpoint #4. The job was performed, and it is in the one
             // of the explicit states (Succeeded, Scheduled and so on).
-            // It should not be re-queued, but we still need to remove it's
+            // It should not be re-queued, but we still need to remove its
             // processing information.
         }
 

@@ -87,7 +87,7 @@ namespace HangFire.Tests.States
         public void GivenAJobInTheStateWithRegisteredDescriptor()
         {
             Given("a job");
-            Given("it's state is Old");
+            Given("its state is Old");
 
             _oldStateDescriptorMock = new Mock<JobStateDescriptor>();
             _descriptors.Add("Old", _oldStateDescriptorMock.Object);

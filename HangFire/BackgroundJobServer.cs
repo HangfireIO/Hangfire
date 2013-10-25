@@ -48,7 +48,7 @@ namespace HangFire
         public JobActivator JobActivator { get; set; }
 
         /// <summary>
-        /// Starts the server and all it's workers.
+        /// Starts the server and all its workers.
         /// </summary>
         public virtual void Start()
         {
@@ -65,7 +65,7 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Stops the server and it's workers.
+        /// Stops the server and its workers.
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", Justification = "Pair for the `Start` method",MessageId = "Stop")]
         public virtual bool Stop()

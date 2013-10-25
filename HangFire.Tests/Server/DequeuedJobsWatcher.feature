@@ -49,7 +49,7 @@ Scenario: Timed out jobs in the 'Fetched' state should be re-queued
 @checkpoint-3
 Scenario: Job's state is changed to the Enqueued when the job is being timed out after proceeding to the Processing state
     Given a dequeued job
-      And it's state is Processing
+      And its state is Processing
       And it was fetched a day ago
      When the watcher runs
      Then the job moved to the Enqueued state
@@ -58,13 +58,13 @@ Scenario: Job's state is changed to the Enqueued when the job is being timed out
 @checkpoint-4
 Scenario: Timed out job in the Succeeded state does not move to the Enqueued state
     Given a dequeued job
-      And it's state is Succeeded
+      And its state is Succeeded
       And it was fetched a day ago
      When the watcher runs
      Then the job remains to be in the Succeeded state
       But the dequeued jobs list does not contain the job anymore
 
-Scenario: Job is being enqueued on it's actual queue after timing out
+Scenario: Job is being enqueued on its actual queue after timing out
       And a dequeued job from the 'test' queue
       And it was fetched a day ago
      When the watcher runs
@@ -79,7 +79,7 @@ Scenario: When the server could not find the job's type, the job is moved to the
 
 Scenario: Succeeded job of non-existing type will not be moved to the failed state
     Given a dequeued job of the 'NonExisting' type
-      And it's state is Succeeded
+      And its state is Succeeded
       And it was fetched a day ago
      When the watcher runs
      Then the job remains to be in the Succeeded state

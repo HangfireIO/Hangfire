@@ -222,7 +222,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 51
     testRunner.Given("a dequeued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 52
-      testRunner.And("it\'s state is Processing", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("its state is Processing", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 53
       testRunner.And("it was fetched a day ago", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 54
@@ -249,7 +249,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 60
     testRunner.Given("a dequeued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 61
-      testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("its state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 62
       testRunner.And("it was fetched a day ago", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 63
@@ -263,12 +263,12 @@ this.ScenarioSetup(scenarioInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Job is being enqueued on it\'s actual queue after timing out")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Job is being enqueued on its actual queue after timing out")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void JobIsBeingEnqueuedOnItSActualQueueAfterTimingOut()
+        public virtual void JobIsBeingEnqueuedOnItsActualQueueAfterTimingOut()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Job is being enqueued on it\'s actual queue after timing out", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Job is being enqueued on its actual queue after timing out", ((string[])(null)));
 #line 67
 this.ScenarioSetup(scenarioInfo);
 #line 68
@@ -320,7 +320,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 81
     testRunner.Given("a dequeued job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 82
-      testRunner.And("it\'s state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("its state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 83
       testRunner.And("it was fetched a day ago", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 84

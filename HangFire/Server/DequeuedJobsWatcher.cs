@@ -72,9 +72,9 @@ namespace HangFire.Server
                 // 1. It is going to move to the implicit 'Fetched' state
                 //    in a short time.
                 // 2. It will stay in the 'Dequeued' state forever due to
-                //    it's processing server is dead.
+                //    its processing server is dead.
 
-                // To ensure it's server is dead, we'll move the job to
+                // To ensure its server is dead, we'll move the job to
                 // the implicit 'Checked' state with the current timestamp
                 // and will not do anything else at this pass of the watcher.
                 // If job's state will still be 'Checked' on the later passes
