@@ -75,6 +75,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Bindings\ClientSteps.cs" />
     <Compile Include="Bindings\ServerWatchdogSteps.cs" />
     <Compile Include="Bindings\Transforms.cs" />
     <Compile Include="Bindings\JobManagerSteps.cs" />
@@ -83,7 +84,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ClientFilters.feature</DependentUpon>
     </Compile>
+    <Compile Include="Client\JobClient.feature.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>JobClient.feature</DependentUpon>
+    </Compile>
     <Compile Include="Common\BrokenJob.cs" />
+    <Compile Include="Common\CriticalQueueJob.cs" />
+    <Compile Include="Common\EmptyQueueJob.cs" />
+    <Compile Include="Common\InvalidQueueJob.cs" />
     <Compile Include="Common\TestExceptionFilter.cs" />
     <Compile Include="Common\TestFilter.cs" />
     <Compile Include="Common\TestStateAppliedFilter.cs" />
@@ -98,12 +107,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ServerFilters.feature</DependentUpon>
     </Compile>
-    <Compile Include="ServerWatchdog.feature.cs">
+    <Compile Include="Server\ServerWatchdog.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ServerWatchdog.feature</DependentUpon>
     </Compile>
-    <Compile Include="UnitTests\PerformTests.cs" />
     <Compile Include="Bindings\JobFetcherSteps.cs" />
     <Compile Include="Bindings\SchedulePollerSteps.cs" />
     <Compile Include="Bindings\ServerSteps.cs" />
@@ -112,11 +120,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Client.feature</DependentUpon>
     </Compile>
-    <Compile Include="Bindings\ClientSteps.cs" />
+    <Compile Include="Bindings\JobClientSteps.cs" />
     <Compile Include="Common\DictionaryAssert.cs" />
     <Compile Include="UnitTests\HangFireJobActivatorTests.cs" />
     <Compile Include="Bindings\JobSteps.cs" />
-    <Compile Include="JobFetcher.feature.cs">
+    <Compile Include="Server\JobFetcher.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JobFetcher.feature</DependentUpon>
@@ -124,7 +132,7 @@
     <Compile Include="UnitTests\JobInvokerTests.cs" />
     <Compile Include="Bindings\QueueSteps.cs" />
     <Compile Include="Bindings\Redis.cs" />
-    <Compile Include="DequeuedJobsWatcher.feature.cs">
+    <Compile Include="Server\DequeuedJobsWatcher.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DequeuedJobsWatcher.feature</DependentUpon>
@@ -132,7 +140,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Bindings\DequeuedJobsWatcherSteps.cs" />
     <Compile Include="Common\TestJob.cs" />
-    <Compile Include="SchedulePoller.feature.cs">
+    <Compile Include="Server\SchedulePoller.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SchedulePoller.feature</DependentUpon>
@@ -168,7 +176,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SucceededState.feature</DependentUpon>
     </Compile>
-    <Compile Include="JobManager.feature.cs">
+    <Compile Include="Server\JobManager.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JobManager.feature</DependentUpon>
@@ -190,16 +198,20 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ClientFilters.feature.cs</LastGenOutput>
     </None>
-    <None Include="DequeuedJobsWatcher.feature">
+    <None Include="Client\JobClient.feature">
+      <Generator>SpecFlowSingleFileGenerator</Generator>
+      <LastGenOutput>JobClient.feature.cs</LastGenOutput>
+    </None>
+    <None Include="Server\DequeuedJobsWatcher.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>DequeuedJobsWatcher.feature.cs</LastGenOutput>
     </None>
-    <None Include="JobFetcher.feature">
+    <None Include="Server\JobFetcher.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>JobFetcher.feature.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
-    <None Include="SchedulePoller.feature">
+    <None Include="Server\SchedulePoller.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SchedulePoller.feature.cs</LastGenOutput>
     </None>
@@ -211,7 +223,7 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ServerFilters.feature.cs</LastGenOutput>
     </None>
-    <None Include="ServerWatchdog.feature">
+    <None Include="Server\ServerWatchdog.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ServerWatchdog.feature.cs</LastGenOutput>
     </None>
@@ -239,7 +251,7 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SucceededState.feature.cs</LastGenOutput>
     </None>
-    <None Include="JobManager.feature">
+    <None Include="Server\JobManager.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>JobManager.feature.cs</LastGenOutput>
     </None>

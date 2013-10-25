@@ -1,80 +1,160 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using HangFire.Client;
 using HangFire.States;
+using ServiceStack.Redis;
 
 namespace HangFire
 {
+    /// <summary>
+    /// The top-level class of the HangFire Client part. Provides several
+    /// static methods to create jobs. All methods are thread-safe
+    /// and use the <see cref="PooledRedisClientManager"/> to use a
+    /// pooled Redis connections factory.
+    /// </summary>
     public static class Perform
     {
-        internal static Func<IJobClient> CreateJobClientCallback
-            = () => new JobClient(RedisFactory.PooledManager);
-            
-        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
+        /// <summary>
+        /// Enqueues an argumentless job of the <typeparamref name="TJob"/> 
+        /// type to its queue.
+        /// </summary>
+        /// <typeparam name="TJob">Type of the job.</typeparam>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the <typeparamref name="TJob"/> has invalid queue name.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string Async<TJob>()
             where TJob : BackgroundJob
         {
             return Async<TJob>(null);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
+        /// <summary>
+        /// Enqueues a job of the <typeparamref name="TJob"/> type to its
+        /// queue with the specified arguments in the <paramref name="args"/> parameter.
+        /// </summary>
+        /// <typeparam name="TJob">Type of the job</typeparam>
+        /// <param name="args">Job arguments.</param>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the <typeparamref name="TJob"/> has invalid queue name.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string Async<TJob>(object args)
             where TJob : BackgroundJob
         {
             return Async(typeof(TJob), args);
         }
 
-        public static string Async(Type jobType)
+        /// <summary>
+        /// Enqueues an argumentless job of the specified type to its queue.
+        /// </summary>
+        /// <param name="type">Type of the job.</param>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="type"/> is null.</exception>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the <paramref name="type"/> has invalid queue name.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        public static string Async(Type type)
         {
-            return Async(jobType, null);
+            return Async(type, null);
         }
 
-        public static string Async(Type jobType, object args)
+        /// <summary>
+        /// Enqueues a job of the specified type to its queue with the 
+        /// given arguments in the <paramref name="args"/> parameter.
+        /// </summary>
+        /// <param name="type">Type of the job.</param>
+        /// <param name="args">Job arguments.</param>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="type"/> is null.</exception>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the <paramref name="type"/> has invalid queue name.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        public static string Async(Type type, object args)
         {
-            if (jobType == null)
+            if (type == null)
             {
-                throw new ArgumentNullException("jobType");
+                throw new ArgumentNullException("type");
             }
 
-            using (var client = CreateJobClientCallback())
+            using (var client = new JobClient(RedisFactory.PooledManager))
             {
-                var queue = JobHelper.GetQueue(jobType);
+                var queue = JobHelper.GetQueue(type);
                 var enqueuedState = new EnqueuedState("Enqueued by the Сlient", queue);
 
-                return client.CreateJob(GenerateId(), jobType, enqueuedState, args);
+                return client.CreateJob(GenerateId(), type, enqueuedState, args);
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
-        public static string In<TJob>(TimeSpan interval)
+        /// <summary>
+        /// Schedules a new argumentless job of the specified type to perform 
+        /// after the given <paramref name="delay"/>.
+        /// </summary>
+        /// <typeparam name="TJob">The type of the job.</typeparam>
+        /// <param name="delay">Delay, after which the job should be performed.</param>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        public static string In<TJob>(TimeSpan delay)
             where TJob : BackgroundJob
         {
-            return In<TJob>(interval, null);
+            return In<TJob>(delay, null);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
-        public static string In<TJob>(TimeSpan interval, object args)
+        /// <summary>
+        /// Schedules a new job of the specified type to perform after the 
+        /// given <paramref name="delay"/> with the arguments defined in 
+        /// the <paramref name="args"/> parameter.
+        /// </summary>
+        /// <typeparam name="TJob">The type of the job.</typeparam>
+        /// <param name="delay">Delay, after which the job should be performed.</param>
+        /// <param name="args">Job arguments.</param>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        public static string In<TJob>(TimeSpan delay, object args)
             where TJob : BackgroundJob
         {
-            return In(interval, typeof(TJob), args);
+            return In(delay, typeof(TJob), args);
         }
 
-        public static string In(TimeSpan interval, Type jobType)
+        /// <summary>
+        /// Schedules a new argumentless job of the specified type to perform 
+        /// after the given <paramref name="delay"/>.
+        /// </summary>
+        /// <param name="delay">Delay, after which the job should be performed.</param>
+        /// <param name="type">The type of the job.</param>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        public static string In(TimeSpan delay, Type type)
         {
-            return In(interval, jobType, null);
+            return In(delay, type, null);
         }
 
-        public static string In(TimeSpan interval, Type jobType, object args)
+        /// <summary>
+        /// Schedules a new job of the specified type to perform after the given
+        /// <paramref name="delay"/> with the arguments defined in the
+        /// <paramref name="args"/> parameter.
+        /// </summary>
+        /// <param name="delay">Delay, after which the job should be performed.</param>
+        /// <param name="type">The type of the job.</param>
+        /// <param name="args">Job arguments.</param>
+        /// <returns>The unique identifier of the job.</returns>
+        /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
+        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        public static string In(TimeSpan delay, Type type, object args)
         {
-            if (jobType == null) throw new ArgumentNullException("jobType");
-
-            using (var client = CreateJobClientCallback())
+            using (var client = new JobClient(RedisFactory.BasicManager))
             {
-                var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(interval));
-                return client.CreateJob(GenerateId(), jobType, scheduledState, args);
+                var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(delay));
+                return client.CreateJob(GenerateId(), type, scheduledState, args);
             }
         }
 
+        /// <summary>
+        /// Generates a unique identifier for the job.
+        /// </summary>
+        /// <returns>Unique identifier for the job.</returns>
         private static string GenerateId()
         {
             return Guid.NewGuid().ToString();

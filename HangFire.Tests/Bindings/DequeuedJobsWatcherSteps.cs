@@ -1,4 +1,5 @@
 ﻿using System;
+using HangFire.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -38,7 +39,7 @@ namespace HangFire.Tests
         [When(@"the watcher runs")]
         public void WhenTimedOutJobsHandlerRuns()
         {
-            using (var watcher = new Server.DequeuedJobsWatcher(RedisFactory.BasicManager))
+            using (var watcher = new DequeuedJobsWatcher(RedisFactory.BasicManager))
             {
                 watcher.FindAndRequeueTimedOutJobs();
             }

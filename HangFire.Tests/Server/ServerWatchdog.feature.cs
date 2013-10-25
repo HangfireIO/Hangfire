@@ -11,7 +11,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace HangFire.Tests
+namespace HangFire.Tests.Server
 {
     using TechTalk.SpecFlow;
     
@@ -50,7 +50,7 @@ namespace HangFire.Tests
             if (((TechTalk.SpecFlow.FeatureContext.Current != null) 
                         && (TechTalk.SpecFlow.FeatureContext.Current.FeatureInfo.Title != "Server watchdog")))
             {
-                HangFire.Tests.ServerWatchdogFeature.FeatureSetup(null);
+                HangFire.Tests.Server.ServerWatchdogFeature.FeatureSetup(null);
             }
         }
         

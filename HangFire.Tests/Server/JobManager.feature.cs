@@ -11,7 +11,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace HangFire.Tests
+namespace HangFire.Tests.Server
 {
     using TechTalk.SpecFlow;
     
@@ -49,7 +49,7 @@ namespace HangFire.Tests
             if (((TechTalk.SpecFlow.FeatureContext.Current != null) 
                         && (TechTalk.SpecFlow.FeatureContext.Current.FeatureInfo.Title != "Job manager")))
             {
-                HangFire.Tests.JobManagerFeature.FeatureSetup(null);
+                HangFire.Tests.Server.JobManagerFeature.FeatureSetup(null);
             }
         }
         

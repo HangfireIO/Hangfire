@@ -271,7 +271,7 @@ this.FeatureBackground();
 #line 67
      testRunner.Then("the client exception filter was executed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 68
-      testRunner.And("a \'System.Exception\' was thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the CreateJobFailedException was thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -305,7 +305,7 @@ this.FeatureBackground();
 #line 75
      testRunner.Then("the client exception filters were executed in the following order:", ((string)(null)), table6, "Then ");
 #line 79
-      testRunner.And("a \'System.Exception\' was thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the CreateJobFailedException was thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }

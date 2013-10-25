@@ -65,7 +65,7 @@ Scenario: Client exception filters are executed when there was an exception whil
      When there is a buggy filter (for example)
       And I create a job
      Then the client exception filter was executed
-      And a 'System.Exception' was thrown
+      And the CreateJobFailedException was thrown
 
 Scenario: Multiple exception filters are executed depending on their order
     Given the exception filter 'first'
@@ -76,7 +76,7 @@ Scenario: Multiple exception filters are executed depending on their order
           | Filter |
           | first  |
           | second |
-      And a 'System.Exception' was thrown
+      And the CreateJobFailedException was thrown
 
 Scenario: Exception filter can handle the exception
     Given the exception filter 'first'

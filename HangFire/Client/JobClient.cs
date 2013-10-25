@@ -6,7 +6,7 @@ using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
-    internal class JobClient : IJobClient
+    internal class JobClient : IDisposable
     {
         private readonly JobCreator _jobCreator;
         private readonly IRedisClient _redis;
@@ -46,14 +46,21 @@ namespace HangFire.Client
                     "jobType");
             }
 
-            var jobParameters = CreateJobParameters(jobType, args);
+            try
+            {
+                var jobParameters = CreateJobParameters(jobType, args);
 
-            var context = new CreateContext(
-                new ClientJobDescriptor(_redis, jobId, jobParameters, state));
+                var context = new CreateContext(
+                    new ClientJobDescriptor(_redis, jobId, jobParameters, state));
 
-            _jobCreator.CreateJob(context);
+                _jobCreator.CreateJob(context);
 
-            return jobId;
+                return jobId;
+            }
+            catch (Exception ex)
+            {
+                throw new CreateJobFailedException("Job creation was failed. See the inner exception for details.", ex);
+            }
         }
 
         public virtual void Dispose()

@@ -1,89 +1,86 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using HangFire.Client;
-using HangFire.Filters;
-using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using ServiceStack.Redis;
 using TechTalk.SpecFlow;
 
 namespace HangFire.Tests
 {
     [Binding]
-    public class ClientSteps : Steps
+    public class ClientSteps
     {
-        private JobClient _client;
-        private Mock<JobState> _stateMock;
-        private IDictionary<string, string> _arguments = new Dictionary<string, string>();
+        private string _jobId;
         private Exception _exception;
 
-        private readonly IList<IClientFilter> _clientFilters = new List<IClientFilter>();
-        private readonly IList<string> _clientFilterResults = new List<string>();
-
-        private readonly IList<IClientExceptionFilter> _exceptionFilters = new List<IClientExceptionFilter>();
-        private readonly IList<string> _exceptionFilterResults = new List<string>();
-
-        [Given("a client")]
-        public void GivenAClient()
+        [Given(@"the following job type:")]
+        public void GivenTheJobType(string typeDefinition)
         {
-            _client = new JobClient(
-                RedisFactory.BasicManager,
-                new JobCreator(_clientFilters, _exceptionFilters));
         }
 
-        [Given("the client filter '(.+)'")]
-        public void GivenTheClientFilter(string name)
+        [When(@"I call the `(.+)`")]
+        public void WhenICallThe(string code)
         {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults));
-        }
-
-        [Given("the client filter '(.+)' that cancels the job")]
-        public void GivenTheClientFilterThatCancelsTheJob(string name)
-        {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults, false, true));
-        }
-
-        [Given("the client filter '(.+)' that handles an exception")]
-        public void GivenTheClientFilterThatHandlesAnException(string name)
-        {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults, false, false, true));
-        }
-
-        [Given("the client filter '(.+)' that throws an exception")]
-        public void GivenTheClientFilterThatThrowsAnException(string name)
-        {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults, true, false, false));
-        }
-
-        [Given("the exception filter '(.+)'")]
-        public void GivenTheExceptionFilter(string name)
-        {
-            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionFilterResults));
-        }
-
-        [Given("the exception filter '(.+)' that handles an exception")]
-        public void GivenTheExceptionFilterThatHandlesAnException(string name)
-        {
-            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionFilterResults, true));
-        }
-
-        [When("I create a job")]
-        [When("I create an argumentless job")]
-        public void WhenICreateAJob()
-        {
-            _stateMock = new Mock<JobState>("SomeReason");
-            _stateMock.Setup(x => x.StateName).Returns("Test");
-            _stateMock.Setup(x => x.GetProperties()).Returns(new Dictionary<string, string>());
-
             try
             {
-                _client.CreateJob(
-                    JobSteps.DefaultJobId,
-                    typeof(TestJob),
-                    _stateMock.Object,
-                    _arguments);
+                if (code.Equals("Perform.Async<TestJob>()"))
+                {
+                    _jobId = Perform.Async<TestJob>();
+                }
+                else if (code.Equals("Perform.Async<TestJob>(new { ArticleId = 3, Author = \"odinserj\" })"))
+                {
+                    _jobId = Perform.Async<TestJob>(new { ArticleId = 3, Author = "odinserj" });
+                }
+                else if (code.Equals("Perform.Async(typeof(TestJob))"))
+                {
+                    _jobId = Perform.Async(typeof (TestJob));
+                }
+                else if (code.Equals("Perform.Async(null)"))
+                {
+                    _jobId = Perform.Async(null);
+                }
+                else if (code.Equals("Perform.Async(typeof(TestJob), new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.Async(typeof (TestJob), new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.Async(null, new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.Async(null, new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.In<TestJob>(TimeSpan.FromDays(1))"))
+                {
+                    _jobId = Perform.In<TestJob>(TimeSpan.FromDays(1));
+                }
+                else if (code.Equals("Perform.In<TestJob>(TimeSpan.FromDays(1), new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.In<TestJob>(TimeSpan.FromDays(1), new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.In(TimeSpan.FromDays(1), typeof(TestJob))"))
+                {
+                    _jobId = Perform.In(TimeSpan.FromDays(1), typeof (TestJob));
+                }
+                else if (code.Equals("Perform.In(TimeSpan.FromDays(1), typeof(TestJob), new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.In(TimeSpan.FromDays(1), typeof (TestJob), new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.Async<CriticalQueueJob>()"))
+                {
+                    _jobId = Perform.Async<CriticalQueueJob>();
+                }
+                else if (code.Equals("Perform.Async<InvalidQueueJob>()"))
+                {
+                    _jobId = Perform.Async<InvalidQueueJob>();
+                }
+                else if (code.Equals("Perform.Async<EmptyQueueJob>()"))
+                {
+                    _jobId = Perform.Async<EmptyQueueJob>();
+                }
+                else
+                {
+                    ScenarioContext.Current.Pending();
+                }
+            }
+            catch (PendingStepException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -91,158 +88,95 @@ namespace HangFire.Tests
             }
         }
 
-        [When("I create a job with the following arguments:")]
-        public void WhenICreateAJobWithTheFollowingArguments(Table table)
+        [Then(@"the argumentless '(\w+)' should be created")]
+        public void ThenTheArgumentlessJobShouldBeCreated(string type)
         {
-            _arguments = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
-            When("I create a job");
+            var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", _jobId));
+            Assert.AreNotEqual(0, job.Count);
+            Assert.IsTrue(job["Type"].Contains(type));
+
+            var args = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]);
+            Assert.AreEqual(0, args.Count);
         }
 
-        [When(@"there is a buggy filter \(for example\)")]
-        public void WhenThereWasAnExceptionWhileCreatingAJob()
+        [Then(@"it should be enqueued to the default queue")]
+        public void ThenItShouldBeEnqueuedToTheDefaultQueue()
         {
-            _clientFilters.Add(new TestFilter("buggy", _clientFilterResults, true));
+            ThenItShouldBeEnqueuedToTheQueue(QueueSteps.DefaultQueue);
         }
 
-        [When("I create a job with an empty id")]
-        public void WhenICreateAJobWithAnEmptyId()
+        [Then(@"it should be enqueued to the '(\w+)' queue")]
+        public void ThenItShouldBeEnqueuedToTheQueue(string name)
         {
-            try
-            {
-                _client.CreateJob(null, typeof(TestJob), new Mock<JobState>("1").Object, null);
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
+            var jobIds = Redis.Client.GetAllItemsFromList(
+                String.Format("hangfire:queue:{0}", name));
+
+            Assert.AreEqual(1, jobIds.Count);
+            Assert.AreEqual(_jobId, jobIds[0]);
         }
 
-        [When("I create a job with null type")]
-        public void WhenICreateAJobWithNullType()
+        [Then(@"it should be scheduled for tomorrow")]
+        public void ThenItShouldBeScheduledForTomorrow()
         {
-            try
-            {
-                _client.CreateJob(JobSteps.DefaultJobId, null, new Mock<JobState>("1").Object, null);
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
+            Assert.IsTrue(Redis.Client.SortedSetContainsItem("hangfire:schedule", _jobId));
+            var score = Redis.Client.GetItemScoreInSortedSet("hangfire:schedule", _jobId);
+            var timestamp = JobHelper.FromTimestamp((long) score);
+
+            Assert.IsTrue(DateTime.UtcNow.Date.AddDays(1) <= timestamp);
+            Assert.IsTrue(timestamp < DateTime.UtcNow.Date.AddDays(2));
         }
 
-        [When("I create a job with an empty state")]
-        public void WhenICreateAJobWithAnEmptyState()
-        {
-            try
-            {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), null, null);
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-        }
-
-        [When("I create a job with the incorrect type")]
-        public void WhenICreateAJobWithTheIncorrectType()
-        {
-            try
-            {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(ClientSteps), null, null);
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-        }
-
-        [Then("the storage contains the job")]
-        public void ThenTheStorageContainsIt()
-        {
-            Assert.IsTrue(Redis.Client.ContainsKey("hangfire:job:" + JobSteps.DefaultJobId));
-        }
-
-        [Then("the storage does not contain the job")]
-        public void ThenTheStorageDoesNotContainTheJob()
-        {
-            Assert.IsFalse(Redis.Client.ContainsKey("hangfire:job:" + JobSteps.DefaultJobId));
-        }
-
-        [Then("it has the following parameters:")]
-        public void ThenItHasTheFollowingParameters(Table table)
-        {
-            var job = Redis.Client.GetAllEntriesFromHash("hangfire:job:" + JobSteps.DefaultJobId);
-            DictionaryAssert.ContainsFollowingItems(table, job);
-        }
-
-        [Then("the job contains all of the above arguments in the JSON format")]
-        public void ThenTheJobContainsAllOfTheAboveArguments()
-        {
-            var argsJson = Redis.Client.GetValueFromHash(
-                "hangfire:job:" + JobSteps.DefaultJobId,
-                "Args");
-            var args = JobHelper.FromJson<Dictionary<string, string>>(argsJson);
-
-            Assert.AreEqual(_arguments.Count, args.Count);
-            foreach (var pair in _arguments)
-            {
-                Assert.IsTrue(args.ContainsKey(pair.Key));
-                Assert.AreEqual(_arguments[pair.Key], pair.Value);
-            }
-        }
-
-        [Then("the given state was applied to it")]
-        public void ThenTheGivenStateWasAppliedToIt()
-        {
-            _stateMock.Verify(
-                x => x.Apply(It.IsAny<IRedisTransaction>(), JobSteps.DefaultJobId),
-                Times.Once);
-        }
-
-        [Then("a '(.+)' was thrown")]
-        [Then("a '(.+)' is thrown")]
-        public void ThenAnExceptionIsThrown(string exceptionType)
+        [Then(@"a '(.+)' should be thrown")]
+        public void AnExceptionShouldBeThrown(string exceptionType)
         {
             Assert.IsNotNull(_exception);
             Assert.IsInstanceOfType(_exception, Type.GetType(exceptionType, true));
         }
 
-        [Then("only the following client filter methods were executed:")]
-        [Then("the client filter methods were executed in the following order:")]
-        public void ThenTheClientFilterMethodsWereExecuted(Table table)
+        [Then(@"the '(\w+)' should be created with the following arguments:")]
+        public void ThenTheJobShouldBeCreatedWithTheFollowingArguments(string type, Table table)
         {
-            Assert.AreEqual(table.RowCount, _clientFilterResults.Count);
+            var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", _jobId));
+            Assert.AreNotEqual(0, job.Count);
+            Assert.IsTrue(job["Type"].Contains(type));
 
-            for (var i = 0; i < table.RowCount; i++)
-            {
-                var method = table.Rows[i]["Method"];
-                Assert.AreEqual(method, _clientFilterResults[i]);
-            }
+            var args = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]);
+            DictionaryAssert.ContainsFollowingItems(table, args);
         }
 
-        [Then("the client exception filter was executed")]
-        public void ThenTheClientFilterWasExecuted()
+        [Then(@"the argumentless '(\w+)' should be added to the default queue")]
+        public void ThenTheArgumentlessJobShouldBeAddedToTheDefaultQueue(string type)
         {
-            Assert.AreNotEqual(0, _exceptionFilterResults.Count);
+            ThenTheArgumentlessJobShouldBeCreated(type);
+            ThenItShouldBeEnqueuedToTheDefaultQueue();
         }
 
-        [Then("the following exceptions filter were executed:")]
-        [Then("the client exception filters were executed in the following order:")]
-        public void ThenTheClientExceptionFiltersWereExecuted(Table table)
+        [Then(@"the '(\w+)' should be added to the default queue with the following arguments:")]
+        public void ThenTheJobShouldBeAddedToTheDefaultQueueWithArguments(string type, Table table)
         {
-            Assert.AreEqual(table.RowCount, _exceptionFilterResults.Count);
-
-            for (var i = 0; i < table.RowCount; i++)
-            {
-                var filter = table.Rows[i]["Filter"];
-                Assert.AreEqual(filter, _exceptionFilterResults[i]);
-            }
+            ThenTheJobShouldBeCreatedWithTheFollowingArguments(type, table);
+            ThenItShouldBeEnqueuedToTheDefaultQueue();
         }
 
-        [Then("no exception were thrown")]
-        public void ThenNoExceptionWereThrown()
+        [Then(@"the argumentless '(\w+)' should be scheduled for tomorrow")]
+        public void ThenTheArgumentlessJobShouldBeScheduledForTomorrow(string type)
         {
-            Assert.IsNull(_exception);
+            ThenTheArgumentlessJobShouldBeCreated(type);
+            ThenItShouldBeScheduledForTomorrow();
+        }
+
+        [Then(@"the '(\w+)' should be scheduled for tomorrow with the following arguments:")]
+        public void ThenTheJobShouldBeScheduledForTomorrowWithArguments(string type, Table table)
+        {
+            ThenTheJobShouldBeCreatedWithTheFollowingArguments(type, table);
+            ThenItShouldBeScheduledForTomorrow();
+        }
+
+        [Then(@"the argumentless '(\w+)' should be added to the '(\w+)' queue")]
+        public void ThenTheArgumentlessJobShouldBeAddedToTheQueue(string type, string queue)
+        {
+            ThenTheArgumentlessJobShouldBeCreated(type);
+            ThenItShouldBeEnqueuedToTheQueue(queue);
         }
     }
 }

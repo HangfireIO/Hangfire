@@ -72,206 +72,319 @@ namespace HangFire.Tests
         public virtual void FeatureBackground()
         {
 #line 4
+#line hidden
 #line 5
-    testRunner.Given("a client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("the following job type:", "public class TestJob : BackgroundJob\r\n{\r\n    public int ArticleId { get; set; }\r\n" +
+                    "    public string Author { get; set; }\r\n\r\n    public override void Perform()\r\n  " +
+                    "  {\r\n    }\r\n}          ", ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The client creates the job in the storage")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.Async<TJob>()` method should enqueue a job of the given type")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void TheClientCreatesTheJobInTheStorage()
+        public virtual void ThePerform_AsyncTJobMethodShouldEnqueueAJobOfTheGivenType()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The client creates the job in the storage", ((string[])(null)));
-#line 7
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async<TJob>()` method should enqueue a job of the given type", ((string[])(null)));
+#line 21
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 8
-     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 9
-     testRunner.Then("the storage contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 22
+     testRunner.When("I call the `Perform.Async<TestJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 23
+     testRunner.Then("the argumentless \'TestJob\' should be added to the default queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The job contains the \'Type\' parameter equal to the assembly qualified type name")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.Async<TJob>(object args)` method should enqueue job with the given a" +
+            "rguments")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void TheJobContainsTheTypeParameterEqualToTheAssemblyQualifiedTypeName()
+        public virtual void ThePerform_AsyncTJobObjectArgsMethodShouldEnqueueJobWithTheGivenArguments()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The job contains the \'Type\' parameter equal to the assembly qualified type name", ((string[])(null)));
-#line 11
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async<TJob>(object args)` method should enqueue job with the given a" +
+                    "rguments", ((string[])(null)));
+#line 25
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 12
-     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 26
+     testRunner.When("I call the `Perform.Async<TestJob>(new { ArticleId = 3, Author = \"odinserj\" })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
                         "Name",
                         "Value"});
             table1.AddRow(new string[] {
-                        "Type",
-                        "<Assembly qualified name of \'HangFire.Tests.TestJob\' type>"});
-#line 13
-     testRunner.Then("it has the following parameters:", ((string)(null)), table1, "Then ");
+                        "ArticleId",
+                        "3"});
+            table1.AddRow(new string[] {
+                        "Author",
+                        "odinserj"});
+#line 27
+     testRunner.Then("the \'TestJob\' should be added to the default queue with the following arguments:", ((string)(null)), table1, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("If the arguments were not provided, the \'Args\' parameter contains the empty JSON " +
-            "value")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.Async(Type type)` method should enqueue a job of the given type")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void IfTheArgumentsWereNotProvidedTheArgsParameterContainsTheEmptyJSONValue()
+        public virtual void ThePerform_AsyncTypeTypeMethodShouldEnqueueAJobOfTheGivenType()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("If the arguments were not provided, the \'Args\' parameter contains the empty JSON " +
-                    "value", ((string[])(null)));
-#line 17
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async(Type type)` method should enqueue a job of the given type", ((string[])(null)));
+#line 32
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 18
-     testRunner.When("I create an argumentless job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 33
+     testRunner.When("I call the `Perform.Async(typeof(TestJob))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 34
+     testRunner.Then("the argumentless \'TestJob\' should be added to the default queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Passing the null type argument to the `Perform.Async(Type type)` method should ca" +
+            "use exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void PassingTheNullTypeArgumentToThePerform_AsyncTypeTypeMethodShouldCauseException()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Passing the null type argument to the `Perform.Async(Type type)` method should ca" +
+                    "use exception", ((string[])(null)));
+#line 36
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 37
+     testRunner.When("I call the `Perform.Async(null)`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 38
+     testRunner.Then("a \'System.ArgumentNullException\' should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.Async(Type type, object args)` method should enqueue job of the give" +
+            "n type")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void ThePerform_AsyncTypeTypeObjectArgsMethodShouldEnqueueJobOfTheGivenType()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async(Type type, object args)` method should enqueue job of the give" +
+                    "n type", ((string[])(null)));
+#line 40
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 41
+     testRunner.When("I call the `Perform.Async(typeof(TestJob), new { ArticleId = 3 })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
                         "Name",
                         "Value"});
             table2.AddRow(new string[] {
-                        "Args",
-                        "{}"});
-#line 19
-     testRunner.Then("it has the following parameters:", ((string)(null)), table2, "Then ");
+                        "ArticleId",
+                        "3"});
+#line 42
+     testRunner.Then("the \'TestJob\' should be added to the default queue with the following arguments:", ((string)(null)), table2, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Arguments are converted to a JSON string and contained in the \'Args\' parameter")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Passing the null type argument to the `Perform.Async(Type type, object args)` met" +
+            "hod should cause exception")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ArgumentsAreConvertedToAJSONStringAndContainedInTheArgsParameter()
+        public virtual void PassingTheNullTypeArgumentToThePerform_AsyncTypeTypeObjectArgsMethodShouldCauseException()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Arguments are converted to a JSON string and contained in the \'Args\' parameter", ((string[])(null)));
-#line 23
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Passing the null type argument to the `Perform.Async(Type type, object args)` met" +
+                    "hod should cause exception", ((string[])(null)));
+#line 46
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
+#line 47
+     testRunner.When("I call the `Perform.Async(null, new { ArticleId = 3 })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 48
+     testRunner.Then("a \'System.ArgumentNullException\' should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.Async<TJob>()` method should enqueue a job to its actual queue")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void ThePerform_AsyncTJobMethodShouldEnqueueAJobToItsActualQueue()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async<TJob>()` method should enqueue a job to its actual queue", ((string[])(null)));
+#line 53
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line hidden
+#line 54
+    testRunner.Given("the following job type:", "[Queue(\"critical\")]\r\npublic class CriticalQueueJob : BackgroundJob\r\n{\r\n    public" +
+                    " override void Perform()\r\n    {\r\n    }\r\n}", ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 64
+     testRunner.When("I call the `Perform.Async<CriticalQueueJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 65
+     testRunner.Then("the argumentless \'CriticalQueueJob\' should be added to the \'critical\' queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the queue name should contain only lowercase letters, digits and underscores")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void TheQueueNameShouldContainOnlyLowercaseLettersDigitsAndUnderscores()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the queue name should contain only lowercase letters, digits and underscores", ((string[])(null)));
+#line 67
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line hidden
+#line 68
+    testRunner.Given("the following job type:", "[Queue(\" $InvalidQueue\")]\r\npublic class InvalidQueueJob : BackgroundJob\r\n{\r\n    p" +
+                    "ublic override void Perform()\r\n    {\r\n    }\r\n}", ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 78
+     testRunner.When("I call the `Perform.Async<InvalidQueueJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 79
+     testRunner.Then("a \'System.InvalidOperationException\' should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("if the QueueAttribute contains an empty or null string, then the actual queue sho" +
+            "uld be the default queue")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void IfTheQueueAttributeContainsAnEmptyOrNullStringThenTheActualQueueShouldBeTheDefaultQueue()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("if the QueueAttribute contains an empty or null string, then the actual queue sho" +
+                    "uld be the default queue", ((string[])(null)));
+#line 81
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line hidden
+#line 82
+    testRunner.Given("the following job type:", "[Queue(\"\")]\r\npublic class EmptyQueueJob : BackgroundJob\r\n{\r\n    public override v" +
+                    "oid Perform()\r\n    {\r\n    }\r\n}", ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 92
+     testRunner.When("I call the `Perform.Async<EmptyQueueJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 93
+     testRunner.Then("the argumentless \'EmptyQueueJob\' should be added to the default queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.In<TestJob>(TimeSpan delay)` method should schedule a job of the giv" +
+            "en type")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void ThePerform_InTestJobTimeSpanDelayMethodShouldScheduleAJobOfTheGivenType()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.In<TestJob>(TimeSpan delay)` method should schedule a job of the giv" +
+                    "en type", ((string[])(null)));
+#line 98
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 99
+     testRunner.When("I call the `Perform.In<TestJob>(TimeSpan.FromDays(1))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 100
+     testRunner.Then("the argumentless \'TestJob\' should be scheduled for tomorrow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.In<TestJob>(TimeSpan delay, object args)` method should schedule a j" +
+            "ob of the given type")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void ThePerform_InTestJobTimeSpanDelayObjectArgsMethodShouldScheduleAJobOfTheGivenType()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.In<TestJob>(TimeSpan delay, object args)` method should schedule a j" +
+                    "ob of the given type", ((string[])(null)));
+#line 102
+this.ScenarioSetup(scenarioInfo);
+#line 4
+this.FeatureBackground();
+#line 103
+     testRunner.When("I call the `Perform.In<TestJob>(TimeSpan.FromDays(1), new { ArticleId = 3 })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
                         "Name",
                         "Value"});
             table3.AddRow(new string[] {
                         "ArticleId",
-                        "5"});
-            table3.AddRow(new string[] {
-                        "State",
-                        "Deleted"});
-#line 24
-     testRunner.When("I create a job with the following arguments:", ((string)(null)), table3, "When ");
-#line 28
-     testRunner.Then("the job contains all of the above arguments in the JSON format", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+                        "3"});
+#line 104
+     testRunner.Then("the \'TestJob\' should be scheduled for tomorrow with the following arguments:", ((string)(null)), table3, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The given state was applied to the job")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the `Perform.In(TimeSpan delay, Type type)` method should schedule a job of the g" +
+            "iven type")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void TheGivenStateWasAppliedToTheJob()
+        public virtual void ThePerform_InTimeSpanDelayTypeTypeMethodShouldScheduleAJobOfTheGivenType()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The given state was applied to the job", ((string[])(null)));
-#line 30
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.In(TimeSpan delay, Type type)` method should schedule a job of the g" +
+                    "iven type", ((string[])(null)));
+#line 108
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 31
-     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 32
-     testRunner.Then("the given state was applied to it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 109
+     testRunner.When("I call the `Perform.In(TimeSpan.FromDays(1), typeof(TestJob))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 110
+     testRunner.Then("the argumentless \'TestJob\' should be scheduled for tomorrow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty id causes an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The `Perform.In(TimeSpan delay, Type type, object args)` method should schedule a" +
+            " job of the given type")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void CreatingAJobWithAnEmptyIdCausesAnException()
+        public virtual void ThePerform_InTimeSpanDelayTypeTypeObjectArgsMethodShouldScheduleAJobOfTheGivenType()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty id causes an exception", ((string[])(null)));
-#line 34
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The `Perform.In(TimeSpan delay, Type type, object args)` method should schedule a" +
+                    " job of the given type", ((string[])(null)));
+#line 112
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 35
-     testRunner.When("I create a job with an empty id", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 36
-     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 113
+     testRunner.When("I call the `Perform.In(TimeSpan.FromDays(1), typeof(TestJob), new { ArticleId = 3" +
+                    " })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty type causes an exception")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void CreatingAJobWithAnEmptyTypeCausesAnException()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty type causes an exception", ((string[])(null)));
-#line 38
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 39
-     testRunner.When("I create a job with null type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 40
-     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with the type, that is not derived from the \'BackgroundJob\' causes" +
-            " an exception")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void CreatingAJobWithTheTypeThatIsNotDerivedFromTheBackgroundJobCausesAnException()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with the type, that is not derived from the \'BackgroundJob\' causes" +
-                    " an exception", ((string[])(null)));
-#line 42
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 43
-     testRunner.When("I create a job with the incorrect type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 44
-     testRunner.Then("a \'System.ArgumentException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty state causes an exception")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void CreatingAJobWithAnEmptyStateCausesAnException()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty state causes an exception", ((string[])(null)));
-#line 46
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 47
-     testRunner.When("I create a job with an empty state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 48
-     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+            TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table4.AddRow(new string[] {
+                        "ArticleId",
+                        "3"});
+#line 114
+     testRunner.Then("the \'TestJob\' should be scheduled for tomorrow with the following arguments:", ((string)(null)), table4, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
