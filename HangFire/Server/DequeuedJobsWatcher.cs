@@ -105,18 +105,16 @@ namespace HangFire.Server
                 String.Format("hangfire:job:{0}", jobId),
                 "Type");
 
-            var queue = JobHelper.TryToGetQueue(jobType);
             JobState state;
 
-            if (!String.IsNullOrEmpty(queue))
+            try
             {
+                var queue = JobHelper.GetQueue(Type.GetType(jobType));
                 state = new EnqueuedState("Requeued due to time out", queue);
             }
-            else
+            catch (Exception ex)
             {
-                state = new FailedState(
-                    "Failed to re-queue the job.",
-                    new InvalidOperationException(String.Format("Could not find type '{0}'.", jobType)));
+                state = new FailedState("Failed to re-queue the job", ex);
             }
 
             _stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);

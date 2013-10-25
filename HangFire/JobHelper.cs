@@ -9,7 +9,6 @@ namespace HangFire
     {
         public const string DefaultQueue = "default";
 
-        // TODO: use this method only in the Web assembly
         public static string TryToGetQueue(string jobType)
         {
             var type = Type.GetType(jobType);
