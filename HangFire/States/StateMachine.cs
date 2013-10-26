@@ -55,6 +55,32 @@ namespace HangFire.States
             _stateAppliedFilters = stateAppliedFilters;
         }
 
+        public bool CreateInState(
+            string jobId, IDictionary<string, string> parameters, JobState state)
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    parameters));
+
+                foreach (var filter in _stateChangedFilters)
+                {
+                    var oldState = state;
+                    state = filter.OnStateChanged(_redis, jobId, oldState);
+
+                    if (oldState != state)
+                    {
+                        AppendHistory(transaction, jobId, oldState, false);
+                    }
+                }
+
+                ApplyState(jobId, null, state, transaction);
+
+                return transaction.Commit();
+            }
+        }
+
         public bool ChangeState(
             string jobId, JobState state, params string[] allowedCurrentStates)
         {
@@ -98,32 +124,37 @@ namespace HangFire.States
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                if (currentState != String.Empty)
+                ApplyState(jobId, currentState, newState, transaction);
+
+                return transaction.Commit();
+            }
+        }
+
+        private void ApplyState(string jobId, string currentState, JobState newState, IRedisTransaction transaction)
+        {
+            if (!String.IsNullOrEmpty(currentState))
+            {
+                if (_stateDescriptors.ContainsKey(currentState))
                 {
-                    if (_stateDescriptors.ContainsKey(currentState))
-                    {
-                        _stateDescriptors[currentState].Unapply(transaction, jobId);
-                    }
-
-                    transaction.QueueCommand(x => x.RemoveEntry(
-                        String.Format("hangfire:job:{0}:state", jobId)));
-
-                    foreach (var filter in _stateAppliedFilters)
-                    {
-                        filter.OnStateUnapplied(transaction, jobId, currentState);
-                    }
+                    _stateDescriptors[currentState].Unapply(transaction, jobId);
                 }
 
-                AppendHistory(transaction, jobId, newState, true);
-
-                newState.Apply(transaction, jobId);
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:job:{0}:state", jobId)));
 
                 foreach (var filter in _stateAppliedFilters)
                 {
-                    filter.OnStateApplied(transaction, jobId, newState);
+                    filter.OnStateUnapplied(transaction, jobId, currentState);
                 }
+            }
 
-                return transaction.Commit();
+            AppendHistory(transaction, jobId, newState, true);
+
+            newState.Apply(transaction, jobId);
+
+            foreach (var filter in _stateAppliedFilters)
+            {
+                filter.OnStateApplied(transaction, jobId, newState);
             }
         }
 

@@ -7,7 +7,6 @@ namespace HangFire.Client
 {
     public class ClientJobDescriptor
     {
-        private readonly IRedisClient _redis;
         private readonly StateMachine _stateMachine;
 
         private readonly JobState _state;
@@ -24,7 +23,6 @@ namespace HangFire.Client
             if (jobParameters == null) throw new ArgumentNullException("jobParameters");
             if (state == null) throw new ArgumentNullException("state");
 
-            _redis = redis;
             _stateMachine = new StateMachine(redis);
 
             _state = state;
@@ -55,14 +53,7 @@ namespace HangFire.Client
 
         internal void Create()
         {
-            _redis.SetRangeInHash(
-                String.Format("hangfire:job:{0}", JobId),
-                _jobParameters);
-
-            // TODO: creation is non-atomic. If the following line will not be called,
-            //       the job's key will stay for a long time in Redis.
-
-            _stateMachine.ChangeState(JobId, _state);
+            _stateMachine.CreateInState(JobId, _jobParameters, _state);
         }
     }
 }
