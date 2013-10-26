@@ -31,7 +31,8 @@ namespace HangFire.Tests.Client
         public static void FeatureSetup(Microsoft.VisualStudio.TestTools.UnitTesting.TestContext testContext)
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "JobClient", "", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "JobClient", "\r\n  A a user, I expect that my jobs are created and the initial state\r\n  is appli" +
+                    "ed to them.", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -70,41 +71,43 @@ namespace HangFire.Tests.Client
         
         public virtual void FeatureBackground()
         {
-#line 3
-#line 4
+#line 6
+#line 7
     testRunner.Given("a client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The client creates the job in the storage")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The client creates should create a job in the storage")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void TheClientCreatesTheJobInTheStorage()
+        public virtual void TheClientCreatesShouldCreateAJobInTheStorage()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The client creates the job in the storage", ((string[])(null)));
-#line 6
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The client creates should create a job in the storage", ((string[])(null)));
+#line 9
 this.ScenarioSetup(scenarioInfo);
-#line 3
+#line 6
 this.FeatureBackground();
-#line 7
+#line 10
      testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 8
-     testRunner.Then("the storage contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 11
+     testRunner.Then("the storage should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The job contains the \'Type\' parameter equal to the assembly qualified type name")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The job should contain the \'Type\' parameter that is equal to the assembly qualifi" +
+            "ed type name")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void TheJobContainsTheTypeParameterEqualToTheAssemblyQualifiedTypeName()
+        public virtual void TheJobShouldContainTheTypeParameterThatIsEqualToTheAssemblyQualifiedTypeName()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The job contains the \'Type\' parameter equal to the assembly qualified type name", ((string[])(null)));
-#line 10
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The job should contain the \'Type\' parameter that is equal to the assembly qualifi" +
+                    "ed type name", ((string[])(null)));
+#line 13
 this.ScenarioSetup(scenarioInfo);
-#line 3
+#line 6
 this.FeatureBackground();
-#line 11
+#line 14
      testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
@@ -113,25 +116,25 @@ this.FeatureBackground();
             table1.AddRow(new string[] {
                         "Type",
                         "<Assembly qualified name of \'HangFire.Tests.TestJob\' type>"});
-#line 12
-     testRunner.Then("it has the following parameters:", ((string)(null)), table1, "Then ");
+#line 15
+     testRunner.Then("it should have the following parameters:", ((string)(null)), table1, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("If the arguments were not provided, the \'Args\' parameter contains the empty JSON " +
-            "value")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("If the arguments were not provided, the \'Args\' parameter should contain the empty" +
+            " JSON value")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void IfTheArgumentsWereNotProvidedTheArgsParameterContainsTheEmptyJSONValue()
+        public virtual void IfTheArgumentsWereNotProvidedTheArgsParameterShouldContainTheEmptyJSONValue()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("If the arguments were not provided, the \'Args\' parameter contains the empty JSON " +
-                    "value", ((string[])(null)));
-#line 16
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("If the arguments were not provided, the \'Args\' parameter should contain the empty" +
+                    " JSON value", ((string[])(null)));
+#line 19
 this.ScenarioSetup(scenarioInfo);
-#line 3
+#line 6
 this.FeatureBackground();
-#line 17
+#line 20
      testRunner.When("I create an argumentless job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
@@ -140,21 +143,23 @@ this.FeatureBackground();
             table2.AddRow(new string[] {
                         "Args",
                         "{}"});
-#line 18
-     testRunner.Then("it has the following parameters:", ((string)(null)), table2, "Then ");
+#line 21
+     testRunner.Then("it should have the following parameters:", ((string)(null)), table2, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Arguments are converted to a JSON string and contained in the \'Args\' parameter")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Arguments should be converted to a JSON string and contained in the \'Args\' parame" +
+            "ter")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void ArgumentsAreConvertedToAJSONStringAndContainedInTheArgsParameter()
+        public virtual void ArgumentsShouldBeConvertedToAJSONStringAndContainedInTheArgsParameter()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Arguments are converted to a JSON string and contained in the \'Args\' parameter", ((string[])(null)));
-#line 22
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Arguments should be converted to a JSON string and contained in the \'Args\' parame" +
+                    "ter", ((string[])(null)));
+#line 25
 this.ScenarioSetup(scenarioInfo);
-#line 3
+#line 6
 this.FeatureBackground();
 #line hidden
             TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
@@ -166,102 +171,102 @@ this.FeatureBackground();
             table3.AddRow(new string[] {
                         "State",
                         "Deleted"});
-#line 23
+#line 26
      testRunner.When("I create a job with the following arguments:", ((string)(null)), table3, "When ");
-#line 27
-     testRunner.Then("the job contains all of the above arguments in the JSON format", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The given state was applied to the job")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void TheGivenStateWasAppliedToTheJob()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The given state was applied to the job", ((string[])(null)));
-#line 29
-this.ScenarioSetup(scenarioInfo);
-#line 3
-this.FeatureBackground();
 #line 30
-     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 31
-     testRunner.Then("the given state was applied to it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should contain all of the above arguments in the JSON format", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty id causes an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The specified state should be applied to the job")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void CreatingAJobWithAnEmptyIdCausesAnException()
+        public virtual void TheSpecifiedStateShouldBeAppliedToTheJob()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty id causes an exception", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The specified state should be applied to the job", ((string[])(null)));
+#line 32
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
 #line 33
-this.ScenarioSetup(scenarioInfo);
-#line 3
-this.FeatureBackground();
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 34
-     testRunner.When("I create a job with an empty id", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 35
-     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the given state should be applied to it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty type causes an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty id should cause an exception")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void CreatingAJobWithAnEmptyTypeCausesAnException()
+        public virtual void CreatingAJobWithAnEmptyIdShouldCauseAnException()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty type causes an exception", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty id should cause an exception", ((string[])(null)));
+#line 36
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
 #line 37
-this.ScenarioSetup(scenarioInfo);
-#line 3
-this.FeatureBackground();
+     testRunner.When("I create a job with an empty id", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 38
-     testRunner.When("I create a job with null type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 39
-     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("a \'System.ArgumentNullException\' should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with the type, that is not derived from the \'BackgroundJob\' causes" +
-            " an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty type should cause an exception")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void CreatingAJobWithTheTypeThatIsNotDerivedFromTheBackgroundJobCausesAnException()
+        public virtual void CreatingAJobWithAnEmptyTypeShouldCauseAnException()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with the type, that is not derived from the \'BackgroundJob\' causes" +
-                    " an exception", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty type should cause an exception", ((string[])(null)));
+#line 40
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
 #line 41
-this.ScenarioSetup(scenarioInfo);
-#line 3
-this.FeatureBackground();
+     testRunner.When("I create a job with null type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 42
-     testRunner.When("I create a job with the incorrect type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 43
-     testRunner.Then("a \'System.ArgumentException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("a \'System.ArgumentNullException\' should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty state causes an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with the type, that is not derived from the \'BackgroundJob\' should" +
+            " cause an exception")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
-        public virtual void CreatingAJobWithAnEmptyStateCausesAnException()
+        public virtual void CreatingAJobWithTheTypeThatIsNotDerivedFromTheBackgroundJobShouldCauseAnException()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty state causes an exception", ((string[])(null)));
-#line 45
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with the type, that is not derived from the \'BackgroundJob\' should" +
+                    " cause an exception", ((string[])(null)));
+#line 44
 this.ScenarioSetup(scenarioInfo);
-#line 3
+#line 6
 this.FeatureBackground();
+#line 45
+     testRunner.When("I create a job with the incorrect type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 46
+     testRunner.Then("a \'System.ArgumentException\' should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with an empty state should cause an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
+        public virtual void CreatingAJobWithAnEmptyStateShouldCauseAnException()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with an empty state should cause an exception", ((string[])(null)));
+#line 48
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 49
      testRunner.When("I create a job with an empty state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 47
-     testRunner.Then("a \'System.ArgumentNullException\' is thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 50
+     testRunner.Then("a \'System.ArgumentNullException\' should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
