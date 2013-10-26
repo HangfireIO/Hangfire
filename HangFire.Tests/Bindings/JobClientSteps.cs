@@ -144,7 +144,7 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(null, typeof(TestJob), new Mock<JobState>("1").Object, null);
+                _client.CreateJob(null, typeof(TestJob), new Mock<JobState>("1").Object, new {});
             }
             catch (Exception ex)
             {
@@ -157,7 +157,7 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(JobSteps.DefaultJobId, null, new Mock<JobState>("1").Object, null);
+                _client.CreateJob(JobSteps.DefaultJobId, null, new Mock<JobState>("1").Object, new {});
             }
             catch (Exception ex)
             {
@@ -170,7 +170,7 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), null, null);
+                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), null, new {});
             }
             catch (Exception ex)
             {
@@ -183,7 +183,20 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(JobClientSteps), null, null);
+                _client.CreateJob(JobSteps.DefaultJobId, typeof(JobClientSteps), new Mock<JobState>("1").Object, new {});
+            }
+            catch (Exception ex)
+            {
+                _exception = ex;
+            }
+        }
+
+        [When("I create a job with a null dictionary as arguments")]
+        public void WhenICreateAJobWithANullDictionaryAsArguments()
+        {
+            try
+            {
+                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), new Mock<JobState>("1").Object, null);
             }
             catch (Exception ex)
             {

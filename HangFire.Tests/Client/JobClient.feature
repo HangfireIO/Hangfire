@@ -48,3 +48,7 @@ Scenario: Creating a job with the type, that is not derived from the 'Background
 Scenario: Creating a job with an empty state should cause an exception
      When I create a job with an empty state
      Then a 'System.ArgumentNullException' should be thrown by the client
+
+Scenario: Creating a job with a null dictionary as arguments should cause an exception
+     When I create a job with a null dictionary as arguments
+     Then a 'System.ArgumentNullException' should be thrown by the client

@@ -270,6 +270,24 @@ this.FeatureBackground();
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Creating a job with a null dictionary as arguments should cause an exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobClient")]
+        public virtual void CreatingAJobWithANullDictionaryAsArgumentsShouldCauseAnException()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Creating a job with a null dictionary as arguments should cause an exception", ((string[])(null)));
+#line 52
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 53
+     testRunner.When("I create a job with a null dictionary as arguments", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 54
+     testRunner.Then("a \'System.ArgumentNullException\' should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore
