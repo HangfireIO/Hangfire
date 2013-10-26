@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HangFire.Filters;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -23,10 +24,10 @@ namespace HangFire.Tests.States
 
         private readonly IDictionary<string, JobStateDescriptor> _descriptors
             = new Dictionary<string, JobStateDescriptor>();
-        private readonly IList<IStateChangedFilter> _stateChangingFilters 
+        private readonly IList<IStateChangingFilter> _stateChangingFilters 
+            = new List<IStateChangingFilter>();
+        private readonly IList<IStateChangedFilter> _stateAppliedFilters
             = new List<IStateChangedFilter>();
-        private readonly IList<IStateAppliedFilter> _stateAppliedFilters
-            = new List<IStateAppliedFilter>();
 
         private readonly IList<string> _stateChangingResults = new List<string>(); 
         private readonly IList<string> _stateAppliedResults = new List<string>(); 
@@ -111,7 +112,7 @@ namespace HangFire.Tests.States
         [Given(@"a state applied filter '(\w+)'")]
         public void GivenAStateAppliedFilter(string name)
         {
-            _stateAppliedFilters.Add(new TestStateAppliedFilter(name, _stateAppliedResults));
+            _stateAppliedFilters.Add(new TestStateChangedFilter(name, _stateAppliedResults));
         }
 
         [When(@"I apply it")]

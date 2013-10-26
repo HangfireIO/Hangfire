@@ -1,11 +1,11 @@
-﻿using HangFire.Filters;
-using HangFire.States;
+﻿using HangFire.States;
 using ServiceStack.Redis;
 
-namespace HangFire
+namespace HangFire.Filters
 {
     public interface IStateChangedFilter : IJobFilter
     {
-        JobState OnStateChanged(IRedisClient redis, string jobId, JobState state);
+        void OnStateApplied(IRedisTransaction transaction, string jobId, JobState state);
+        void OnStateUnapplied(IRedisTransaction transaction, string jobId, string state);
     }
 }

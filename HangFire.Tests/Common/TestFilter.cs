@@ -30,6 +30,10 @@ namespace HangFire.Tests
         public void OnCreating(CreatingContext filterContext)
         {
             Assert.IsNotNull(filterContext);
+            Assert.IsNotNull(filterContext.JobDescriptor);
+            Assert.IsNotNull(filterContext.JobDescriptor.JobId);
+            Assert.IsNotNull(filterContext.JobDescriptor.Type);
+            Assert.IsNotNull(filterContext.JobDescriptor.State);
 
             if (_cancelsTheCreation)
             {
@@ -47,6 +51,7 @@ namespace HangFire.Tests
         public void OnCreated(CreatedContext filterContext)
         {
             Assert.IsNotNull(filterContext);
+            Assert.IsNotNull(filterContext.JobDescriptor);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnCreated") 
                 + (filterContext.Canceled ? " (with the canceled flag set)" : null));
@@ -60,6 +65,7 @@ namespace HangFire.Tests
         public void OnPerforming(PerformingContext filterContext)
         {
             Assert.IsNotNull(filterContext);
+            Assert.IsNotNull(filterContext.JobDescriptor);
 
             if (_cancelsTheCreation)
             {
@@ -77,6 +83,7 @@ namespace HangFire.Tests
         public void OnPerformed(PerformedContext filterContext)
         {
             Assert.IsNotNull(filterContext);
+            Assert.IsNotNull(filterContext.JobDescriptor);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnPerformed")
                 + (filterContext.Canceled ? " (with the canceled flag set)" : null));

@@ -99,7 +99,7 @@
     <Compile Include="Common\InvalidQueueJob.cs" />
     <Compile Include="Common\TestExceptionFilter.cs" />
     <Compile Include="Common\TestFilter.cs" />
-    <Compile Include="Common\TestStateAppliedFilter.cs" />
+    <Compile Include="Common\TestStateChangedFilter.cs" />
     <Compile Include="Common\TestStateChangingFilter.cs" />
     <Compile Include="JobActivator.feature.cs">
       <AutoGen>True</AutoGen>

@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Filters;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceStack.Redis;
 
 namespace HangFire.Tests
 {
-    public class TestStateAppliedFilter : IStateAppliedFilter
+    public class TestStateChangedFilter : IStateChangedFilter
     {
         private readonly string _name;
         private readonly IList<string> _results;
 
-        public TestStateAppliedFilter(string name, IList<string> results)
+        public TestStateChangedFilter(string name, IList<string> results)
         {
             _name = name;
             _results = results;

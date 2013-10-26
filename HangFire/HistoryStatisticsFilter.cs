@@ -1,12 +1,13 @@
 ﻿using System;
+using HangFire.Filters;
 using HangFire.States;
 using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class HistoryStatisticsFilter : IStateChangedFilter
+    public class HistoryStatisticsFilter : IStateChangingFilter
     {
-        public JobState OnStateChanged(IRedisClient redis, string jobId, JobState state)
+        public JobState OnStateChanging(IRedisClient redis, string jobId, JobState state)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");

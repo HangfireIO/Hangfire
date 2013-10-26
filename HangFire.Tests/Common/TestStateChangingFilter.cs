@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Filters;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceStack.Redis;
 
 namespace HangFire.Tests
 {
-    public class TestStateChangingFilter : IStateChangedFilter
+    public class TestStateChangingFilter : IStateChangingFilter
     {
         private readonly string _name;
         private readonly IList<string> _results;
@@ -19,7 +20,7 @@ namespace HangFire.Tests
             _changeState = changeState;
         }
 
-        public JobState OnStateChanged(IRedisClient redis, string jobId, JobState state)
+        public JobState OnStateChanging(IRedisClient redis, string jobId, JobState state)
         {
             Assert.IsNotNull(redis);
             Assert.IsFalse(String.IsNullOrEmpty(jobId));

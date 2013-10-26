@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HangFire.Filters;
 using ServiceStack.Redis;
 
 namespace HangFire.States
@@ -26,23 +27,23 @@ namespace HangFire.States
 
         private readonly IRedisClient _redis;
         private readonly IDictionary<string, JobStateDescriptor> _stateDescriptors;
-        private readonly IEnumerable<IStateChangedFilter> _stateChangedFilters;
-        private readonly IEnumerable<IStateAppliedFilter> _stateAppliedFilters;
+        private readonly IEnumerable<IStateChangingFilter> _stateChangedFilters;
+        private readonly IEnumerable<IStateChangedFilter> _stateAppliedFilters;
 
         public StateMachine(IRedisClient redis)
             : this(
                 redis, 
                 Descriptors,
-                GlobalJobFilters.Filters.OfType<IStateChangedFilter>().ToList(),
-                GlobalJobFilters.Filters.OfType<IStateAppliedFilter>().ToList())
+                GlobalJobFilters.Filters.OfType<IStateChangingFilter>().ToList(),
+                GlobalJobFilters.Filters.OfType<IStateChangedFilter>().ToList())
         {
         }
 
         internal StateMachine(
             IRedisClient redis, 
             IDictionary<string, JobStateDescriptor> stateDescriptors,
-            IEnumerable<IStateChangedFilter> stateChangedFilters,
-            IEnumerable<IStateAppliedFilter> stateAppliedFilters)
+            IEnumerable<IStateChangingFilter> stateChangedFilters,
+            IEnumerable<IStateChangedFilter> stateAppliedFilters)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (stateDescriptors == null) throw new ArgumentNullException("stateDescriptors");
@@ -56,7 +57,9 @@ namespace HangFire.States
         }
 
         public bool CreateInState(
-            string jobId, IDictionary<string, string> parameters, JobState state)
+            string jobId, 
+            IDictionary<string, string> parameters, 
+            JobState state)
         {
             using (var transaction = _redis.CreateTransaction())
             {
@@ -67,7 +70,7 @@ namespace HangFire.States
                 foreach (var filter in _stateChangedFilters)
                 {
                     var oldState = state;
-                    state = filter.OnStateChanged(_redis, jobId, oldState);
+                    state = filter.OnStateChanging(_redis, jobId, oldState);
 
                     if (oldState != state)
                     {
@@ -105,7 +108,7 @@ namespace HangFire.States
                 foreach (var filter in _stateChangedFilters)
                 {
                     var oldState = state;
-                    state = filter.OnStateChanged(_redis, jobId, oldState);
+                    state = filter.OnStateChanging(_redis, jobId, oldState);
 
                     if (oldState != state)
                     {

@@ -72,7 +72,7 @@
     <Compile Include="Filters\Client\ClientExceptionContext.cs" />
     <Compile Include="Filters\GlobalJobFilterCollection.cs" />
     <Compile Include="Filters\Client\IClientExceptionFilter.cs" />
-    <Compile Include="Filters\IStateChangedFilter.cs" />
+    <Compile Include="Filters\IStateChangingFilter.cs" />
     <Compile Include="Filters\Server\IServerExceptionFilter.cs" />
     <Compile Include="Filters\Client\CreatedContext.cs" />
     <Compile Include="Filters\Client\CreatingContext.cs" />
@@ -83,7 +83,7 @@
     <Compile Include="Filters\Server\PerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
-    <Compile Include="Filters\IStateAppliedFilter.cs" />
+    <Compile Include="Filters\IStateChangedFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringJobsFilter.cs" />
     <Compile Include="RetryJobsFilter.cs" />
