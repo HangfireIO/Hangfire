@@ -4,7 +4,7 @@ using System.Web;
 
 namespace HangFire.Web
 {
-    public abstract class RazorPage : GenericHandler
+    internal abstract class RazorPage : GenericHandler
     {
         public static Func<Exception, RazorPage> ExceptionHandler;
 

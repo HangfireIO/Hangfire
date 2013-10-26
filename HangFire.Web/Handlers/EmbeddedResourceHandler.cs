@@ -6,7 +6,7 @@ using System.Web;
 
 namespace HangFire.Web
 {
-    public abstract class EmbeddedResourceHandler : GenericHandler
+    internal abstract class EmbeddedResourceHandler : GenericHandler
     {
         public bool CacheResponse { get; set; }
         public string ContentType { get; set; }

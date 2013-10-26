@@ -2,7 +2,7 @@
 
 namespace HangFire.Web
 {
-    public abstract class GenericHandler : IHttpHandler
+    internal abstract class GenericHandler : IHttpHandler
     {
         protected GenericHandler()
         {

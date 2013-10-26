@@ -7,7 +7,7 @@ using HangFire.Web.Pages;
 
 namespace HangFire.Web
 {
-    public class HangFirePageFactory : IHttpHandlerFactory
+    internal class HangFirePageFactory : IHttpHandlerFactory
     {
         private static readonly List<Tuple<string, Func<Match, IHttpHandler>>> PathHandlerFactories
             = new List<Tuple<string, Func<Match, IHttpHandler>>>();

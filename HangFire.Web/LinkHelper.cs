@@ -4,7 +4,7 @@ using System.Web;
 
 namespace HangFire.Web
 {
-    static class LinkHelper
+    internal static class LinkHelper
     {
         public static string LinkTo(this HttpRequestBase request, string link)
         {

@@ -2,7 +2,7 @@
 
 namespace HangFire.Web
 {
-    public class SingleResourceHandler : EmbeddedResourceHandler
+    internal class SingleResourceHandler : EmbeddedResourceHandler
     {
         private readonly Assembly _assembly;
         private readonly string _resourceName;
