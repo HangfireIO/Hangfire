@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -66,14 +64,13 @@ namespace HangFire.Tests
                 jobId);
         }
 
-        [Then(@"the queue contains the job")]
+        [Then(@"the queue should contain the job")]
         public void ThenTheQueueContainsTheJob()
         {
-            Then(String.Format("the '{0}' queue contains the job", DefaultQueue));
+            Then(String.Format("the '{0}' queue should contain the job", DefaultQueue));
         }
 
-        [Then(@"the '(.+)' queue contains the job")]
-        [Then(@"the '(.+)' queue still contains the job")]
+        [Then(@"the '(.+)' queue should contain the job")]
         public void ThenTheQueueContainsTheJob(string queue)
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
@@ -82,14 +79,14 @@ namespace HangFire.Tests
             CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
         }
 
-        [Then(@"the queue does not contain the job anymore")]
-        [Then(@"the queue does not contain the job")]
+        [Then(@"the queue should not contain the job anymore")]
+        [Then(@"the queue should not contain the job")]
         public void ThenTheQueueDoesNotContainTheJob()
         {
-            Then(String.Format("the '{0}' queue does not contain the job", DefaultQueue));
+            Then(String.Format("the '{0}' queue should not contain the job", DefaultQueue));
         }
 
-        [Then(@"the '(.+)' queue does not contain the job")]
+        [Then(@"the '(.+)' queue should not contain the job")]
         public void ThenTheQueueDoesNotContainTheJob(string queue)
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
@@ -98,7 +95,7 @@ namespace HangFire.Tests
             CollectionAssert.DoesNotContain(jobIds, JobSteps.DefaultJobId);
         }
 
-        [Then(@"the '(.+)' queue is empty")]
+        [Then(@"the '(.+)' queue should be empty")]
         public void ThenTheQueueIsEmpty(string queue)
         {
             var length = Redis.Client.GetListCount(
@@ -106,7 +103,7 @@ namespace HangFire.Tests
             Assert.AreEqual(0, length);
         }
 
-        [Then(@"the '(.+)' queue length is (\d+)")]
+        [Then(@"the '(.+)' queue length should be (\d+)")]
         public void ThenTheQueueLengthIs(string queue, int length)
         {
             var actualLength = Redis.Client.GetListCount(

@@ -45,7 +45,7 @@ namespace HangFire.Tests
             }
         }
         
-        [Then(@"it marks the job as 'checked'")]
+        [Then(@"it should mark the job as 'checked'")]
         public void ThenItMarksTheJobAsChecked()
         {
             var checkedTimestamp = Redis.Client.GetValueFromHash(
@@ -58,7 +58,7 @@ namespace HangFire.Tests
             Assert.IsTrue(date > DateTime.UtcNow.AddMinutes(-1));
         }
 
-        [Then(@"the job has the 'checked' flag set")]
+        [Then(@"the job should have the 'checked' flag set")]
         public void ThenTheJobHasTheCheckedFlagSet()
         {
             var checkedTimestamp = Redis.Client.GetValueFromHash(
@@ -68,7 +68,7 @@ namespace HangFire.Tests
             Assert.IsNotNull(checkedTimestamp);
         }
 
-        [Then(@"the job does not have the 'checked' flag set")]
+        [Then(@"the job should not have the 'checked' flag set")]
         public void ThenTheJobDoesNotHaveTheCheckedFlagSet()
         {
             var checkedTimestamp = Redis.Client.GetValueFromHash(
@@ -78,7 +78,7 @@ namespace HangFire.Tests
             Assert.IsNull(checkedTimestamp);
         }
 
-        [Then(@"the job has the 'fetched' flag set")]
+        [Then(@"the job should have the 'fetched' flag set")]
         public void ThenTheJobHasTheFetchedFlagSet()
         {
             var fetchedTimestamp = Redis.Client.GetValueFromHash(
@@ -87,7 +87,7 @@ namespace HangFire.Tests
             Assert.IsNotNull(fetchedTimestamp);
         }
 
-        [Then(@"the job does not have the 'fetched' flag set")]
+        [Then(@"the job should not have the 'fetched' flag set")]
         public void ThenTheJobDoesNotHaveTheFetchedFlagSet()
         {
             var fetchedTimestamp = Redis.Client.GetValueFromHash(

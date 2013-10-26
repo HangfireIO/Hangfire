@@ -174,7 +174,7 @@ namespace HangFire.Tests.States
             stateMachine.ChangeState(JobSteps.DefaultJobId, _stateMocks[state].Object, allowedState);
         }
 
-        [Then(@"the state name is equal to '(.+)'")]
+        [Then(@"the state name should be equal to '(.+)'")]
         public void ThenTheStateNameIsEqualTo(string name)
         {
             Assert.AreEqual(name, _state.StateName);
@@ -240,7 +240,7 @@ namespace HangFire.Tests.States
             Assert.AreEqual(0, Redis.Client.GetListCount("hangfire:succeeded"));
         }
 
-        [Then(@"properties table contains the following items:")]
+        [Then(@"properties table should contain the following items:")]
         public void ThenPropertiesTableContainsTheFollowingItems(Table table)
         {
             DictionaryAssert.ContainsFollowingItems(table, _state.GetProperties());
@@ -259,19 +259,19 @@ namespace HangFire.Tests.States
             Assert.AreEqual(0, Redis.Client.GetSortedSetCount("hangfire:failed"));
         }
 
-        [Then(@"the processing set contains the job")]
+        [Then(@"the processing set should contain the job")]
         public void ThenTheProcessingSetContainsTheJob()
         {
             Assert.IsTrue(Redis.Client.SortedSetContainsItem("hangfire:processing", JobSteps.DefaultJobId));
         }
 
-        [Then(@"the processing set does not contain the job")]
+        [Then(@"the processing set should not contain the job")]
         public void ThenTheProcessingSetDoesNotContainTheJob()
         {
             Assert.IsFalse(Redis.Client.SortedSetContainsItem("hangfire:processing", JobSteps.DefaultJobId));
         }
 
-        [Then(@"processing timestamp is set to UtcNow")]
+        [Then(@"processing timestamp should be set to UtcNow")]
         public void ThenProcessingTimestampIsSetToUtcNow()
         {
             var score = Redis.Client.GetItemScoreInSortedSet("hangfire:processing", JobSteps.DefaultJobId);
@@ -281,7 +281,7 @@ namespace HangFire.Tests.States
             Assert.IsTrue(timestamp < DateTime.UtcNow.AddSeconds(1));
         }
 
-        [Then(@"the schedule contains the job that will be enqueued tomorrow")]
+        [Then(@"the schedule should contain the job that will be enqueued tomorrow")]
         public void ThenTheScheduleContainsTheJobThatWillBeEnqueuedTomorrow()
         {
             Assert.IsTrue(Redis.Client.SortedSetContainsItem("hangfire:schedule", JobSteps.DefaultJobId));
@@ -292,26 +292,26 @@ namespace HangFire.Tests.States
             Assert.IsTrue(timestamp < DateTime.UtcNow.Date.AddDays(2));
         }
 
-        [Then(@"the schedule does not contain the job")]
+        [Then(@"the schedule should not contain the job")]
         public void ThenTheScheduleDoesNotContainTheJob()
         {
             Assert.IsFalse(Redis.Client.SortedSetContainsItem("hangfire:schedule", JobSteps.DefaultJobId));
         }
 
-        [Then(@"the '(.+)' queue was added to the queues set")]
+        [Then(@"the '(.+)' queue should be added to the queues set")]
         public void ThenTheQueueWasAddedToTheQueuesSet(string queue)
         {
             Assert.IsTrue(Redis.Client.SetContainsItem("hangfire:queues", queue));
         }
 
-        [Then(@"the job state is changed to '(.+)'")]
+        [Then(@"the job state should be changed to '(.+)'")]
         public void ThenTheJobStateIsChangedTo(string state)
         {
             var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", JobSteps.DefaultJobId));
             Assert.AreEqual(state, job["State"]);
         }
 
-        [Then(@"the job's state entry contains the following items:")]
+        [Then(@"the job's state entry should contain the following items:")]
         public void ThenTheJobsStateEntryContainsTheFollowingItems(Table table)
         {
             var stateEntry = Redis.Client.GetAllEntriesFromHash(
@@ -319,7 +319,7 @@ namespace HangFire.Tests.States
             DictionaryAssert.ContainsFollowingItems(table, stateEntry);
         }
 
-        [Then(@"the last history entry contains the following items:")]
+        [Then(@"the last history entry should contain the following items:")]
         public void ThenTheHistoryEntryShouldContainTheFollowingItems(Table table)
         {
             var entry = Redis.Client.RemoveStartFromList(
@@ -332,7 +332,7 @@ namespace HangFire.Tests.States
             DictionaryAssert.ContainsFollowingItems(table, history);
         }
 
-        [Then(@"the '(\w+)' state was applied to the job")]
+        [Then(@"the '(\w+)' state should be applied to the job")]
         public void ThenApplyMethodHasCalled(string state)
         {
             _stateMocks[state].Verify(
@@ -340,7 +340,7 @@ namespace HangFire.Tests.States
                 Times.Once);
         }
 
-        [Then(@"the '(\w+)' state was not applied to the job")]
+        [Then(@"the '(\w+)' state should not be applied to the job")]
         public void ThenTheStateWasNotAppliedToTheJob(string state)
         {
             _stateMocks[state].Verify(
@@ -348,14 +348,14 @@ namespace HangFire.Tests.States
                 Times.Never);
         }
 
-        [Then(@"the old state was unapplied")]
+        [Then(@"the old state should be unapplied")]
         public void ThenTheOldStateWasUnapplied()
         {
             _oldStateDescriptorMock.Verify(
                 x => x.Unapply(It.Is<IRedisTransaction>(y => y != null), It.Is<string>(y => y == JobSteps.DefaultJobId)));
         }
 
-        [Then(@"the old state was not unapplied")]
+        [Then(@"the old state should not be unapplied")]
         public void ThenTheOldStateWasNotUnapplied()
         {
             _oldStateDescriptorMock.Verify(
@@ -393,7 +393,7 @@ namespace HangFire.Tests.States
             }
         }
 
-        [Then(@"changing filters were executed in the following order:")]
+        [Then(@"changing filters should be executed in the following order:")]
         public void ThenChangingFiltersWereExecutedInTheFollowingOrder(Table table)
         {
             Assert.AreEqual(table.RowCount, _stateChangingResults.Count);
@@ -404,13 +404,13 @@ namespace HangFire.Tests.States
             }
         }
 
-        [Then(@"changing filters were not executed")]
+        [Then(@"changing filters should not be executed")]
         public void ThenChangingFiltersWereNotExecuted()
         {
             Assert.AreEqual(0, _stateChangingResults.Count);
         }
 
-        [Then(@"the history for following states were added:")]
+        [Then(@"the history for the following states should be added:")]
         public void ThenTheHistoryForFollowingStatesWereAdded(Table table)
         {
             var serializedHistory = Redis.Client.GetAllItemsFromList(
@@ -423,7 +423,7 @@ namespace HangFire.Tests.States
             }
         }
 
-        [Then(@"state applied filter methods were executed in the following order:")]
+        [Then(@"state applied filter methods should be executed in the following order:")]
         public void ThenStateAppliedFilterMethodsWereExecutedInTheFollowingOrder(Table table)
         {
             Assert.AreEqual(table.RowCount, _stateAppliedResults.Count);

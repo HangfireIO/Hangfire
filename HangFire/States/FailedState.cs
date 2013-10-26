@@ -31,8 +31,6 @@ namespace HangFire.States
 
         public override void Apply(IRedisTransaction transaction, string jobId)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-
             transaction.QueueCommand(x => x.AddItemToSortedSet(
                         "hangfire:failed",
                         jobId,
@@ -43,8 +41,6 @@ namespace HangFire.States
         {
             public override void Unapply(IRedisTransaction transaction, string jobId)
             {
-                if (transaction == null) throw new ArgumentNullException("transaction");
-
                 transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
             }
         }

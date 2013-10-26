@@ -70,12 +70,12 @@ namespace HangFire.Tests.Server
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher returns the job payload when it dequeues a job")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher should return the job payload when it dequeues a job")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobFetcher")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FetcherReturnsTheJobPayloadWhenItDequeuesAJob()
+        public virtual void FetcherShouldReturnTheJobPayloadWhenItDequeuesAJob()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher returns the job payload when it dequeues a job", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher should return the job payload when it dequeues a job", ((string[])(null)));
 #line 6
 this.ScenarioSetup(scenarioInfo);
 #line 7
@@ -85,18 +85,20 @@ this.ScenarioSetup(scenarioInfo);
 #line 9
      testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 10
-     testRunner.Then("the fetcher returns the payload", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher should return the payload", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher removes the dequeued job from the queue and adds it to the dequeued list")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher should remove the dequeued job from the queue and adds it to the dequeued" +
+            " list")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobFetcher")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FetcherRemovesTheDequeuedJobFromTheQueueAndAddsItToTheDequeuedList()
+        public virtual void FetcherShouldRemoveTheDequeuedJobFromTheQueueAndAddsItToTheDequeuedList()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher removes the dequeued job from the queue and adds it to the dequeued list", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher should remove the dequeued job from the queue and adds it to the dequeued" +
+                    " list", ((string[])(null)));
 #line 12
 this.ScenarioSetup(scenarioInfo);
 #line 13
@@ -106,20 +108,22 @@ this.ScenarioSetup(scenarioInfo);
 #line 15
      testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 16
-     testRunner.Then("the queue does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue should not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 17
-      testRunner.But("the dequeued jobs list contains it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("the dequeued jobs list should contain it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher returns null when it tries to dequeue a job from an empty queue")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher should not return any job when it tries to dequeue a job from an empty qu" +
+            "eue")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobFetcher")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FetcherReturnsNullWhenItTriesToDequeueAJobFromAnEmptyQueue()
+        public virtual void FetcherShouldNotReturnAnyJobWhenItTriesToDequeueAJobFromAnEmptyQueue()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher returns null when it tries to dequeue a job from an empty queue", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher should not return any job when it tries to dequeue a job from an empty qu" +
+                    "eue", ((string[])(null)));
 #line 19
 this.ScenarioSetup(scenarioInfo);
 #line 20
@@ -129,18 +133,18 @@ this.ScenarioSetup(scenarioInfo);
 #line 22
      testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 23
-     testRunner.Then("the fetcher does not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher should not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher dequeues jobs in the FIFO order")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher should dequeue jobs in the FIFO order")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobFetcher")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FetcherDequeuesJobsInTheFIFOOrder()
+        public virtual void FetcherShouldDequeueJobsInTheFIFOOrder()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher dequeues jobs in the FIFO order", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher should dequeue jobs in the FIFO order", ((string[])(null)));
 #line 25
 this.ScenarioSetup(scenarioInfo);
 #line 26
@@ -152,22 +156,22 @@ this.ScenarioSetup(scenarioInfo);
 #line 29
      testRunner.When("it dequeues a job for the first time", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 30
-     testRunner.Then("the fetcher returns the \'first\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher should return the \'first\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 31
      testRunner.When("it dequeues a job for the second time", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 32
-     testRunner.Then("the fetcher returns the \'second\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher should return the \'second\' job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher listens only specified queue")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher should listen only specified queue")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobFetcher")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FetcherListensOnlySpecifiedQueue()
+        public virtual void FetcherShouldListenOnlySpecifiedQueue()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher listens only specified queue", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher should listen only specified queue", ((string[])(null)));
 #line 34
 this.ScenarioSetup(scenarioInfo);
 #line 35
@@ -177,18 +181,18 @@ this.ScenarioSetup(scenarioInfo);
 #line 37
      testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 38
-     testRunner.Then("the fetcher does not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the fetcher should not return any job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher sets the \'fetched\' flag when it dequeues a job")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Fetcher should set the \'fetched\' flag when it dequeues a job")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "JobFetcher")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FetcherSetsTheFetchedFlagWhenItDequeuesAJob()
+        public virtual void FetcherShouldSetTheFetchedFlagWhenItDequeuesAJob()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher sets the \'fetched\' flag when it dequeues a job", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Fetcher should set the \'fetched\' flag when it dequeues a job", ((string[])(null)));
 #line 40
 this.ScenarioSetup(scenarioInfo);
 #line 41
@@ -198,7 +202,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 43
      testRunner.When("it dequeues a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 44
-     testRunner.Then("the job has the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should have the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

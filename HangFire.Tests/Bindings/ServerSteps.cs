@@ -99,8 +99,8 @@ namespace HangFire.Tests
             _server.Dispose();
         }
 
-        [Then(@"the dequeued jobs list contains it")]
-        [Then(@"the dequeued jobs list still contains the job")]
+        [Then(@"the dequeued jobs list should contain the job")]
+        [Then(@"the dequeued jobs list should contain it")]
         public void ThenTheDequeuedJobsListContainsTheJob()
         {
             var jobIds = Redis.Client.GetAllItemsFromList(
@@ -111,7 +111,6 @@ namespace HangFire.Tests
 
         [Then(@"it should be removed from the dequeued list")]
         [Then(@"the job should be removed from the dequeued list")]
-        [Then(@"the dequeued jobs list does not contain the job anymore")]
         public void ThenTheDequeuedJobsListDoesNotContainTheJob()
         {
             ThenTheJobShouldBeRemovedFromTheDequeuedList(JobSteps.DefaultJobId);

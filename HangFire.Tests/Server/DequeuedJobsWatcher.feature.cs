@@ -71,13 +71,13 @@ namespace HangFire.Tests.Server
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("A job in the implicit \'Dequeued\' state moved to the \'Checked\' state")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("A job in the implicit \'Dequeued\' state should be moved to the \'Checked\' state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("checkpoint-1-1")]
-        public virtual void AJobInTheImplicitDequeuedStateMovedToTheCheckedState()
+        public virtual void AJobInTheImplicitDequeuedStateShouldBeMovedToTheCheckedState()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("A job in the implicit \'Dequeued\' state moved to the \'Checked\' state", new string[] {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("A job in the implicit \'Dequeued\' state should be moved to the \'Checked\' state", new string[] {
                         "checkpoint-1-1"});
 #line 8
 this.ScenarioSetup(scenarioInfo);
@@ -86,7 +86,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 10
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 11
-     testRunner.Then("it marks the job as \'checked\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("it should mark the job as \'checked\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -109,11 +109,11 @@ this.ScenarioSetup(scenarioInfo);
 #line 17
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 18
-     testRunner.Then("the dequeued jobs list still contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the dequeued jobs list should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 19
-      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 20
-      testRunner.And("the job has the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -136,11 +136,11 @@ this.ScenarioSetup(scenarioInfo);
 #line 26
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 27
-     testRunner.Then("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 28
-      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 29
-      testRunner.And("the job does not have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should not have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -167,13 +167,13 @@ this.ScenarioSetup(scenarioInfo);
 #line 36
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 37
-     testRunner.Then("the dequeued jobs list still contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the dequeued jobs list should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 38
-      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 39
-      testRunner.And("the job has the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 40
-      testRunner.And("the job has the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should have the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -196,27 +196,27 @@ this.ScenarioSetup(scenarioInfo);
 #line 46
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 47
-     testRunner.Then("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 48
-      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 49
-      testRunner.And("the job does not have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should not have the \'checked\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 50
-      testRunner.And("the job does not have the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the job should not have the \'fetched\' flag set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Job\'s state is changed to the Enqueued when the job is being timed out after proc" +
-            "eeding to the Processing state")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Job\'s state should be changed to the Enqueued when the job is being timed out aft" +
+            "er proceeding to the Processing state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("checkpoint-3")]
-        public virtual void JobSStateIsChangedToTheEnqueuedWhenTheJobIsBeingTimedOutAfterProceedingToTheProcessingState()
+        public virtual void JobSStateShouldBeChangedToTheEnqueuedWhenTheJobIsBeingTimedOutAfterProceedingToTheProcessingState()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Job\'s state is changed to the Enqueued when the job is being timed out after proc" +
-                    "eeding to the Processing state", new string[] {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Job\'s state should be changed to the Enqueued when the job is being timed out aft" +
+                    "er proceeding to the Processing state", new string[] {
                         "checkpoint-3"});
 #line 53
 this.ScenarioSetup(scenarioInfo);
@@ -229,21 +229,21 @@ this.ScenarioSetup(scenarioInfo);
 #line 57
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 58
-     testRunner.Then("the job moved to the Enqueued state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be moved to the Enqueued state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 59
-      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("it should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Timed out job in the Succeeded state does not move to the Enqueued state")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Timed out job in the Succeeded state should not move to the Enqueued state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("checkpoint-4")]
-        public virtual void TimedOutJobInTheSucceededStateDoesNotMoveToTheEnqueuedState()
+        public virtual void TimedOutJobInTheSucceededStateShouldNotMoveToTheEnqueuedState()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Timed out job in the Succeeded state does not move to the Enqueued state", new string[] {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Timed out job in the Succeeded state should not move to the Enqueued state", new string[] {
                         "checkpoint-4"});
 #line 62
 this.ScenarioSetup(scenarioInfo);
@@ -256,20 +256,20 @@ this.ScenarioSetup(scenarioInfo);
 #line 66
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 67
-     testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 68
-      testRunner.But("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("it should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Job is being enqueued on its actual queue after timing out")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Job should be enqueued on its actual queue after timing out")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void JobIsBeingEnqueuedOnItsActualQueueAfterTimingOut()
+        public virtual void JobShouldBeEnqueuedOnItsActualQueueAfterTimingOut()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Job is being enqueued on its actual queue after timing out", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Job should be enqueued on its actual queue after timing out", ((string[])(null)));
 #line 70
 this.ScenarioSetup(scenarioInfo);
 #line 71
@@ -279,20 +279,20 @@ this.ScenarioSetup(scenarioInfo);
 #line 73
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 74
-     testRunner.Then("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When the server could not find the job\'s type, the job is moved to the Failed sta" +
-            "te")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When the server could not find the job\'s type, the job should be moved to the Fai" +
+            "led state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void WhenTheServerCouldNotFindTheJobSTypeTheJobIsMovedToTheFailedState()
+        public virtual void WhenTheServerCouldNotFindTheJobSTypeTheJobShouldBeMovedToTheFailedState()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When the server could not find the job\'s type, the job is moved to the Failed sta" +
-                    "te", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When the server could not find the job\'s type, the job should be moved to the Fai" +
+                    "led state", ((string[])(null)));
 #line 76
 this.ScenarioSetup(scenarioInfo);
 #line 77
@@ -302,20 +302,20 @@ this.ScenarioSetup(scenarioInfo);
 #line 79
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 80
-     testRunner.Then("the job moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 81
-      testRunner.And("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("it should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Succeeded job of non-existing type will not be moved to the failed state")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Succeeded job of non-existing type should not be moved to the failed state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void SucceededJobOfNon_ExistingTypeWillNotBeMovedToTheFailedState()
+        public virtual void SucceededJobOfNon_ExistingTypeShouldNotBeMovedToTheFailedState()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Succeeded job of non-existing type will not be moved to the failed state", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Succeeded job of non-existing type should not be moved to the failed state", ((string[])(null)));
 #line 83
 this.ScenarioSetup(scenarioInfo);
 #line 84
@@ -327,9 +327,9 @@ this.ScenarioSetup(scenarioInfo);
 #line 87
      testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 88
-     testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 89
-      testRunner.But("the dequeued jobs list does not contain the job anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("it should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line hidden
             this.ScenarioCleanup();
         }

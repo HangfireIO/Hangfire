@@ -5,11 +5,11 @@ Background:
     Given a job
       And the Failed state
 
-Scenario: State name is 'Failed'
-     Then the state name is equal to 'Failed'
+Scenario: State name should be 'Failed'
+     Then the state name should be equal to 'Failed'
 
-Scenario: It has the correct properties set
-     Then properties table contains the following items:
+Scenario: It should have the correct properties set
+     Then properties table should contain the following items:
           | Name             | Value                            |
           | FailedAt         | <UtcNow timestamp>               |
           | ExceptionType    | System.InvalidOperationException |

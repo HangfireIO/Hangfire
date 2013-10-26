@@ -30,7 +30,7 @@ Scenario: Server filter should be able to cancel the performing of a job
       And a server filter 'third'
      When the manager processes the next job
      Then the job should not be performed
-      And only the following server filter methods were executed:
+      And only the following server filter methods should be executed:
           | Method                                          |
           | first::OnPerforming                             |
           | second::OnPerforming                            |
@@ -41,7 +41,7 @@ Scenario: Server filter's OnPerformed could be skipped if there was an exception
       And a server filter 'first'
       And a server filter 'second' that throws an exception
      When the manager processes the next job
-     Then only the following server filter methods were executed:
+     Then only the following server filter methods should be executed:
           | Method               |
           | first::OnPerforming  |
           | second::OnPerforming |

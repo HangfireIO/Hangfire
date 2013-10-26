@@ -74,7 +74,7 @@ namespace HangFire.Tests
             }
         }
 
-        [Then(@"the fetcher returns the payload")]
+        [Then(@"the fetcher should return the payload")]
         public void ThenTheFetcherReturnsTheJob()
         {
             Assert.IsNotNull(_payload);
@@ -83,20 +83,20 @@ namespace HangFire.Tests
         }
 
 
-        [Then(@"the fetcher returns the '(.+)' job")]
+        [Then(@"the fetcher should return the '(.+)' job")]
         public void ThenTheFetcherReturnsTheJob(string jobId)
         {
             Assert.AreEqual(jobId, _payload.Id);
         }
 
-        [Then(@"the fetcher does not return any job")]
+        [Then(@"the fetcher should not return any job")]
         public void ThenTheFetcherDoesNotReturnAnyJob()
         {
             Assert.IsNotNull(_exception);
             Assert.AreEqual(typeof(OperationCanceledException).Name, _exception.GetType().Name);
         }
 
-        [Then(@"all queues are empty")]
+        [Then(@"all queues should be empty")]
         public void ThenAllQueuesAreEmpty()
         {
             foreach (var queue in _queues)

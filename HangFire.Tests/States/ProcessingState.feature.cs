@@ -80,29 +80,29 @@ namespace HangFire.Tests.States
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State name is \'Processing\'")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State name should be \'Processing\'")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Processing state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void StateNameIsProcessing()
+        public virtual void StateNameShouldBeProcessing()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name is \'Processing\'", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name should be \'Processing\'", ((string[])(null)));
 #line 8
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 9
-     testRunner.Then("the state name is equal to \'Processing\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the state name should be equal to \'Processing\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("It has the correct properties set")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("It should have the correct properties set")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Processing state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ItHasTheCorrectPropertiesSet()
+        public virtual void ItShouldHaveTheCorrectPropertiesSet()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It has the correct properties set", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It should have the correct properties set", ((string[])(null)));
 #line 11
 this.ScenarioSetup(scenarioInfo);
 #line 4
@@ -118,7 +118,7 @@ this.FeatureBackground();
                         "ServerName",
                         "TestServer"});
 #line 12
-     testRunner.Then("properties table contains the following items:", ((string)(null)), table1, "Then ");
+     testRunner.Then("properties table should contain the following items:", ((string)(null)), table1, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -137,9 +137,9 @@ this.FeatureBackground();
 #line 18
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 19
-     testRunner.Then("the processing set contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the processing set should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 20
-      testRunner.And("processing timestamp is set to UtcNow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("processing timestamp should be set to UtcNow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -160,7 +160,7 @@ this.FeatureBackground();
 #line 24
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 25
-     testRunner.Then("the processing set does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the processing set should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

@@ -29,8 +29,6 @@ namespace HangFire.States
 
         public override void Apply(IRedisTransaction transaction, string jobId)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-
             transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", Queue));
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:queue:{0}", Queue), jobId));

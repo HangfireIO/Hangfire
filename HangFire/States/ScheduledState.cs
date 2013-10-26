@@ -29,8 +29,6 @@ namespace HangFire.States
 
         public override void Apply(IRedisTransaction transaction, string jobId)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-
             var timestamp = JobHelper.ToTimestamp(EnqueueAt);
 
             transaction.QueueCommand(x => x.AddItemToSortedSet(
@@ -41,8 +39,6 @@ namespace HangFire.States
         {
             public override void Unapply(IRedisTransaction transaction, string jobId)
             {
-                if (transaction == null) throw new ArgumentNullException("transaction");
-
                 transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:schedule", jobId));
             }
         }

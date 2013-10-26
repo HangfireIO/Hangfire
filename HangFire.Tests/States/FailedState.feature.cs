@@ -80,29 +80,29 @@ namespace HangFire.Tests.States
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State name is \'Failed\'")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State name should be \'Failed\'")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Failed state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void StateNameIsFailed()
+        public virtual void StateNameShouldBeFailed()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name is \'Failed\'", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name should be \'Failed\'", ((string[])(null)));
 #line 8
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 9
-     testRunner.Then("the state name is equal to \'Failed\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the state name should be equal to \'Failed\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("It has the correct properties set")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("It should have the correct properties set")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Failed state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ItHasTheCorrectPropertiesSet()
+        public virtual void ItShouldHaveTheCorrectPropertiesSet()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It has the correct properties set", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It should have the correct properties set", ((string[])(null)));
 #line 11
 this.ScenarioSetup(scenarioInfo);
 #line 4
@@ -124,7 +124,7 @@ this.FeatureBackground();
                         "ExceptionDetails",
                         "<Non-empty>"});
 #line 12
-     testRunner.Then("properties table contains the following items:", ((string)(null)), table1, "Then ");
+     testRunner.Then("properties table should contain the following items:", ((string)(null)), table1, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

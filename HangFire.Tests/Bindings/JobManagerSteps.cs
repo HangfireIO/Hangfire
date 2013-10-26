@@ -107,7 +107,7 @@ namespace HangFire.Tests
             Assert.IsTrue(TestJob.Disposed);
         }
 
-        [Then(@"only the following server filter methods were executed:")]
+        [Then(@"only the following server filter methods should be executed:")]
         [Then(@"the server filter methods should be executed in the following order:")]
         public void ThenTheServerFilterMethodsShouldBeExecutedInTheFollowingOrder(Table table)
         {

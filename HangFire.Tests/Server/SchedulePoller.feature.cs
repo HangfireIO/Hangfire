@@ -71,12 +71,12 @@ namespace HangFire.Tests.Server
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Scheduled jobs are being enqueued on their actual queues")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Scheduled jobs should be enqueued on their actual queues")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "SchedulePoller")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ScheduledJobsAreBeingEnqueuedOnTheirActualQueues()
+        public virtual void ScheduledJobsShouldBeEnqueuedOnTheirActualQueues()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Scheduled jobs are being enqueued on their actual queues", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Scheduled jobs should be enqueued on their actual queues", ((string[])(null)));
 #line 7
 this.ScenarioSetup(scenarioInfo);
 #line 8
@@ -84,24 +84,24 @@ this.ScenarioSetup(scenarioInfo);
 #line 9
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 10
-     testRunner.Then("the job becomes Enqueued", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be in the Enqueued state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 11
-      testRunner.And("the schedule does not contain it anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the schedule should not contain it anymore", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 12
-      testRunner.But("the queue contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
+      testRunner.But("the queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
 #line 13
-      testRunner.And("schedule poller returns \'true\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("schedule poller should return \'true\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Future jobs are not being enqueued")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Future jobs should not be enqueued")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "SchedulePoller")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void FutureJobsAreNotBeingEnqueued()
+        public virtual void FutureJobsShouldNotBeEnqueued()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Future jobs are not being enqueued", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Future jobs should not be enqueued", ((string[])(null)));
 #line 15
 this.ScenarioSetup(scenarioInfo);
 #line 16
@@ -109,24 +109,24 @@ this.ScenarioSetup(scenarioInfo);
 #line 17
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 18
-     testRunner.Then("the job remains to be in the Scheduled state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be in the Scheduled state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 19
-      testRunner.And("the schedule contains the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the schedule should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 20
-      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 21
-      testRunner.And("schedule poller returns \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("schedule poller should return \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Poller will enqueue only jobs in the Scheduled state")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Poller should enqueue only jobs in the Scheduled state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "SchedulePoller")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void PollerWillEnqueueOnlyJobsInTheScheduledState()
+        public virtual void PollerShouldEnqueueOnlyJobsInTheScheduledState()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poller will enqueue only jobs in the Scheduled state", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poller should enqueue only jobs in the Scheduled state", ((string[])(null)));
 #line 23
 this.ScenarioSetup(scenarioInfo);
 #line 24
@@ -136,26 +136,26 @@ this.ScenarioSetup(scenarioInfo);
 #line 26
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 27
-     testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 28
-      testRunner.And("the queue does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the queue should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Returns false when there are no jobs in the schedule")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Should return false when there are no jobs in the schedule")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "SchedulePoller")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ReturnsFalseWhenThereAreNoJobsInTheSchedule()
+        public virtual void ShouldReturnFalseWhenThereAreNoJobsInTheSchedule()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Returns false when there are no jobs in the schedule", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Should return false when there are no jobs in the schedule", ((string[])(null)));
 #line 30
 this.ScenarioSetup(scenarioInfo);
 #line 31
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 32
-     testRunner.Then("schedule poller returns \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("schedule poller should return \'false\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -174,7 +174,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 36
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 37
-     testRunner.Then("the job moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -195,7 +195,7 @@ this.ScenarioSetup(scenarioInfo);
 #line 42
      testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 43
-     testRunner.Then("the job remains to be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the job should be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

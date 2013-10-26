@@ -80,29 +80,29 @@ namespace HangFire.Tests.States
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State name is \'Scheduled\'")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State name should be \'Scheduled\'")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Scheduled state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void StateNameIsScheduled()
+        public virtual void StateNameShouldBeScheduled()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name is \'Scheduled\'", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name should be \'Scheduled\'", ((string[])(null)));
 #line 8
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 9
-     testRunner.Then("the state name is equal to \'Scheduled\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the state name should be equal to \'Scheduled\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("It has the correct properties set")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("It should have the correct properties set")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Scheduled state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ItHasTheCorrectPropertiesSet()
+        public virtual void ItShouldHaveTheCorrectPropertiesSet()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It has the correct properties set", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It should have the correct properties set", ((string[])(null)));
 #line 11
 this.ScenarioSetup(scenarioInfo);
 #line 4
@@ -118,7 +118,7 @@ this.FeatureBackground();
                         "EnqueueAt",
                         "<Tomorrow timestamp>"});
 #line 12
-     testRunner.Then("properties table contains the following items:", ((string)(null)), table1, "Then ");
+     testRunner.Then("properties table should contain the following items:", ((string)(null)), table1, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -137,7 +137,7 @@ this.FeatureBackground();
 #line 18
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 19
-     testRunner.Then("the schedule contains the job that will be enqueued tomorrow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the schedule should contain the job that will be enqueued tomorrow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -158,7 +158,7 @@ this.FeatureBackground();
 #line 23
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 24
-     testRunner.Then("the schedule does not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the schedule should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

@@ -164,7 +164,7 @@ this.ScenarioSetup(scenarioInfo);
             table3.AddRow(new string[] {
                         "first::OnPerformed (with the canceled flag set)"});
 #line 33
-      testRunner.And("only the following server filter methods were executed:", ((string)(null)), table3, "And ");
+      testRunner.And("only the following server filter methods should be executed:", ((string)(null)), table3, "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -196,7 +196,7 @@ this.ScenarioSetup(scenarioInfo);
             table4.AddRow(new string[] {
                         "first::OnPerformed"});
 #line 44
-     testRunner.Then("only the following server filter methods were executed:", ((string)(null)), table4, "Then ");
+     testRunner.Then("only the following server filter methods should be executed:", ((string)(null)), table4, "Then ");
 #line 49
       testRunner.And("the state of the job should be Failed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden

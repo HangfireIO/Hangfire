@@ -5,11 +5,11 @@ Background:
     Given a job
     Given the Succeeded state
 
-Scenario: State name is 'Succeeded'
-     Then the state name is equal to 'Succeeded'
+Scenario: State name should be 'Succeeded'
+     Then the state name should be equal to 'Succeeded'
 
-Scenario: It has the correct properties set
-     Then properties table contains the following items:
+Scenario: It should have the correct properties set
+     Then properties table should contain the following items:
           | Name        | Value              |
           | SucceededAt | <UtcNow timestamp> |
 

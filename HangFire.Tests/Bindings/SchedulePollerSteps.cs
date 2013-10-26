@@ -55,7 +55,7 @@ namespace HangFire.Tests
             }
         }
 
-        [Then(@"the schedule does not contain it anymore")]
+        [Then(@"the schedule should not contain it anymore")]
         public void ThenTheScheduleDoesNotContainItAnymore()
         {
             Assert.IsFalse(Redis.Client.SortedSetContainsItem(
@@ -63,7 +63,7 @@ namespace HangFire.Tests
                 JobSteps.DefaultJobId));
         }
 
-        [Then(@"the schedule contains the job")]
+        [Then(@"the schedule should contain the job")]
         public void ThenTheScheduleContainsTheJob()
         {
             Assert.IsTrue(Redis.Client.SortedSetContainsItem(
@@ -71,7 +71,7 @@ namespace HangFire.Tests
                 JobSteps.DefaultJobId));
         }
 
-        [Then(@"schedule poller returns '(.+)'")]
+        [Then(@"schedule poller should return '(.+)'")]
         public void ThenTheSchedulePollerReturns(bool result)
         {
             Assert.AreEqual(result, _pollerResult);
