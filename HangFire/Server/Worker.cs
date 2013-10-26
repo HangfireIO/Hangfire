@@ -132,16 +132,15 @@ namespace HangFire.Server
 
             Exception exception = null;
 
-            ServerJobDescriptor jobDescriptor = null;
             try
             {
-                jobDescriptor = new ServerJobDescriptor(
-                    _redis, _context.Activator, payload);
+                using (var descriptor = new ServerJobDescriptor(
+                    _redis, _context.Activator, payload))
+                {
+                    var performContext = new PerformContext(_context, descriptor);
 
-                var performContext = new PerformContext(
-                    _context, jobDescriptor);
-
-                _context.Performer.PerformJob(performContext);
+                    _context.Performer.PerformJob(performContext);
+                }
             }
             catch (Exception ex)
             {
@@ -150,13 +149,6 @@ namespace HangFire.Server
                 Logger.Error(String.Format(
                     "Failed to process the job '{0}': unexpected exception caught.",
                     payload.Id));
-            }
-            finally
-            {
-                if (jobDescriptor != null)
-                {
-                    jobDescriptor.Dispose();
-                }
             }
 
             JobState state;
