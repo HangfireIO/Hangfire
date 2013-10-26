@@ -26,7 +26,7 @@ namespace HangFire
 
             var attribute = jobType
                 .GetCustomAttributes(true)
-                .Cast<QueueAttribute>()
+                .OfType<QueueAttribute>()
                 .FirstOrDefault();
 
             var queueName = attribute != null 
