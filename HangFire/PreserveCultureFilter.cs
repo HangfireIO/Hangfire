@@ -6,9 +6,9 @@ using HangFire.Filters;
 
 namespace HangFire
 {
-    public class PreserveCultureFilter : JobFilter
+    public class PreserveCultureFilter : IClientFilter, IServerFilter
     {
-        public override void OnCreating(CreatingContext filterContext)
+        public void OnCreating(CreatingContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
@@ -18,7 +18,11 @@ namespace HangFire
                 "CurrentUICulture", Thread.CurrentThread.CurrentUICulture.Name);
         }
 
-        public override void OnPerforming(PerformingContext filterContext)
+        public void OnCreated(CreatedContext filterContext)
+        {
+        }
+
+        public void OnPerforming(PerformingContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
@@ -42,7 +46,7 @@ namespace HangFire
             }
         }
 
-        public override void OnPerformed(PerformedContext filterContext)
+        public void OnPerformed(PerformedContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 

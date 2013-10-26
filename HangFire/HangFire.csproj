@@ -76,9 +76,8 @@
     <Compile Include="Filters\Server\IServerExceptionFilter.cs" />
     <Compile Include="Filters\Client\CreatedContext.cs" />
     <Compile Include="Filters\Client\CreatingContext.cs" />
-    <Compile Include="Filters\Server\PerformContext.cs" />
+    <Compile Include="Server\PerformContext.cs" />
     <Compile Include="Filters\Server\ServerExceptionContext.cs" />
-    <Compile Include="Filters\JobFilter.cs" />
     <Compile Include="Filters\Server\PerformedContext.cs" />
     <Compile Include="Filters\Server\PerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />

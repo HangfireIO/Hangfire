@@ -27,11 +27,11 @@ namespace HangFire.Tests
             _results.Add(String.Format("{0}::{1}", _name, "OnStateApplied"));
         }
 
-        public void OnStateUnapplied(IRedisTransaction transaction, string jobId, string state)
+        public void OnStateUnapplied(IRedisTransaction transaction, string jobId, string stateName)
         {
             Assert.IsNotNull(transaction);
             Assert.IsFalse(String.IsNullOrEmpty(jobId));
-            Assert.IsFalse(String.IsNullOrEmpty(state));
+            Assert.IsFalse(String.IsNullOrEmpty(stateName));
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateUnapplied"));
         }

@@ -114,7 +114,7 @@ namespace HangFire.Client
             try
             {
                 var descriptor = new ClientJobDescriptor(_redis, id, type, args, state);
-                var context = new CreateContext(descriptor);
+                var context = new CreateContext(_redis, descriptor);
 
                 _jobCreator.CreateJob(context);
             }

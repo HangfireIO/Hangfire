@@ -1,31 +1,26 @@
 ﻿using System.Collections.Generic;
-using ServiceStack.Redis;
 
-namespace HangFire.Client
+namespace HangFire.Server
 {
     /// <summary>
     /// Provides information about the context in which the job
-    /// is being created.
+    /// is being performed.
     /// </summary>
-    public class CreateContext
+    public class PerformContext : WorkerContext
     {
-        internal CreateContext(CreateContext context)
-            : this(context.Redis, context.JobDescriptor)
+        internal PerformContext(PerformContext context)
+            : this(context, context.JobDescriptor)
         {
             Items = context.Items;
         }
 
-        internal CreateContext(IRedisClient redis, ClientJobDescriptor jobDescriptor)
+        internal PerformContext(
+            WorkerContext workerContext, ServerJobDescriptor jobDescriptor)
+            : base(workerContext)
         {
-            Redis = redis;
             JobDescriptor = jobDescriptor;
             Items = new Dictionary<string, object>();
         }
-
-        /// <summary>
-        /// Gets the Redis connection of the current client.
-        /// </summary>
-        public IRedisClient Redis { get; private set; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it
@@ -36,8 +31,8 @@ namespace HangFire.Client
 
         /// <summary>
         /// Gets the client job descriptor that is associated with the
-        /// current <see cref="CreateContext"/> object.
+        /// current <see cref="PerformContext"/> object.
         /// </summary>
-        public ClientJobDescriptor JobDescriptor { get; private set; }
+        public ServerJobDescriptor JobDescriptor { get; private set; }
     }
 }

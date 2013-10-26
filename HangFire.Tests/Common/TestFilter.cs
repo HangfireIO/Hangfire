@@ -30,6 +30,8 @@ namespace HangFire.Tests
         public void OnCreating(CreatingContext filterContext)
         {
             Assert.IsNotNull(filterContext);
+            Assert.IsNotNull(filterContext.Items);
+            Assert.IsNotNull(filterContext.Redis);
             Assert.IsNotNull(filterContext.JobDescriptor);
             Assert.IsNotNull(filterContext.JobDescriptor.JobId);
             Assert.IsNotNull(filterContext.JobDescriptor.Type);
@@ -51,6 +53,8 @@ namespace HangFire.Tests
         public void OnCreated(CreatedContext filterContext)
         {
             Assert.IsNotNull(filterContext);
+            Assert.IsNotNull(filterContext.Redis);
+            Assert.IsNotNull(filterContext.Items);
             Assert.IsNotNull(filterContext.JobDescriptor);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnCreated") 
