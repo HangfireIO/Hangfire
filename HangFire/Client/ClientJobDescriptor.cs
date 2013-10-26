@@ -1,37 +1,73 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using HangFire.Filters;
 using HangFire.States;
 using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
+    /// <summary>
+    /// Provides information about the job being created.
+    /// </summary>
     public class ClientJobDescriptor
     {
         private readonly StateMachine _stateMachine;
 
-        private readonly JobState _state;
-        private readonly IDictionary<string, string> _jobParameters; 
+        private readonly IDictionary<string, string> _jobParameters
+            = new Dictionary<string, string>(); 
 
         internal ClientJobDescriptor(
             IRedisClient redis,
             string jobId, 
-            IDictionary<string, string> jobParameters,
+            Type type,
+            IDictionary<string, string> arguments,
             JobState state)
         {
-            if (redis == null) throw new ArgumentNullException("redis");
-            if (jobId == null) throw new ArgumentNullException("jobId");
-            if (jobParameters == null) throw new ArgumentNullException("jobParameters");
-            if (state == null) throw new ArgumentNullException("state");
+            Debug.Assert(redis != null);
+            Debug.Assert(jobId != null);
+            Debug.Assert(type != null);
+            Debug.Assert(arguments != null);
+            Debug.Assert(state != null);
 
             _stateMachine = new StateMachine(redis);
 
-            _state = state;
-            _jobParameters = jobParameters;
             JobId = jobId;
+            Type = type;
+            State = state;
+            
+            _jobParameters["Type"] = type.AssemblyQualifiedName;
+            _jobParameters["Args"] = JobHelper.ToJson(arguments);
         }
 
-        public string JobId { get; set; } 
+        /// <summary>
+        /// Gets the state of the creating job.
+        /// </summary>
+        public string JobId { get; private set; }
 
+        /// <summary>
+        /// Gets the type of the creating job.
+        /// </summary>
+        public Type Type { get; private set; }
+
+        /// <summary>
+        /// Gets the initial state of the creating job. Note, that
+        /// the final state of the created job could be changed after 
+        /// the registered instances of the <see cref="IStateChangingFilter"/>
+        /// class are doing their job.
+        /// </summary>
+        public JobState State { get; private set; }
+
+        /// <summary>
+        /// Sets the job parameter of the specified <paramref name="name"/>
+        /// to the corresponding <paramref name="value"/>. The value of the
+        /// parameter is being serialized to a JSON string.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the parameter.</param>
+        /// <param name="value">The value of the parameter.</param>
+        /// 
+        /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
         public void SetParameter(string name, object value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
@@ -42,6 +78,18 @@ namespace HangFire.Client
             _jobParameters.Add(name, JobHelper.ToJson(value));
         }
 
+        /// <summary>
+        /// Gets the job parameter of the specified <paramref name="name"/>
+        /// if it exists. The parameter is being deserialized from a JSON 
+        /// string value to the given type <typeparamref name="T"/>.
+        /// </summary>
+        /// 
+        /// <typeparam name="T">The type of the parameter.</typeparam>
+        /// <param name="name">The name of the parameter.</param>
+        /// <returns>The value of the given parameter if it exists or null otherwise.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
+        /// <exception cref="NotSupportedException">Could not deserialize the parameter value to the type <typeparamref name="T"/>.</exception>
         public T GetParameter<T>(string name)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
@@ -53,7 +101,7 @@ namespace HangFire.Client
 
         internal void Create()
         {
-            _stateMachine.CreateInState(JobId, _jobParameters, _state);
+            _stateMachine.CreateInState(JobId, _jobParameters, State);
         }
     }
 }

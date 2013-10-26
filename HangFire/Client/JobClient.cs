@@ -113,10 +113,8 @@ namespace HangFire.Client
 
             try
             {
-                var jobParameters = CreateJobParameters(type, args);
-
-                var context = new CreateContext(
-                    new ClientJobDescriptor(_redis, id, jobParameters, state));
+                var descriptor = new ClientJobDescriptor(_redis, id, type, args, state);
+                var context = new CreateContext(descriptor);
 
                 _jobCreator.CreateJob(context);
             }
@@ -135,17 +133,6 @@ namespace HangFire.Client
         public virtual void Dispose()
         {
             _redis.Dispose();
-        }
-
-        private static Dictionary<string, string> CreateJobParameters(
-            Type jobType, IDictionary<string, string> jobArgs)
-        {
-            var job = new Dictionary<string, string>();
-            job["Type"] = jobType.AssemblyQualifiedName;
-            job["Args"] = JobHelper.ToJson(jobArgs);
-            job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
-
-            return job;
         }
 
         private static IDictionary<string, string> PropertiesToDictionary(object obj)
