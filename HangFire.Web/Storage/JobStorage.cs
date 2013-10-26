@@ -10,6 +10,17 @@ namespace HangFire.Web
     {
         private static readonly IRedisClient Redis = RedisFactory.BasicManager.GetClient();
 
+        public static string TryToGetQueue(string jobType)
+        {
+            var type = Type.GetType(jobType);
+            if (type == null)
+            {
+                return null;
+            }
+
+            return JobHelper.GetQueue(type);
+        }
+
         public static long ScheduledCount()
         {
             lock (Redis)
@@ -69,7 +80,7 @@ namespace HangFire.Web
                         ServerName = state[1],
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Type = job[0],
-                        Queue = JobHelper.TryToGetQueue(job[0]),
+                        Queue = TryToGetQueue(job[0]),
                         StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InProcessingState = ProcessingState.Name.Equals(
                             state[2], StringComparison.OrdinalIgnoreCase),
@@ -123,7 +134,7 @@ namespace HangFire.Web
                     {
                         ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(jobs[job.Key][1]),
-                        Queue = JobHelper.TryToGetQueue(jobs[job.Key][0]),
+                        Queue = TryToGetQueue(jobs[job.Key][0]),
                         Type = jobs[job.Key][0],
                         InScheduledState =
                             ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
@@ -210,7 +221,7 @@ namespace HangFire.Web
                     (job, state) => new FailedJobDto
                     {
                         Type = job[0],
-                        Queue = JobHelper.TryToGetQueue(job[0]),
+                        Queue = TryToGetQueue(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         ExceptionType = state[1],
@@ -238,7 +249,7 @@ namespace HangFire.Web
                     (job, state) => new SucceededJobDto
                     {
                         Type = job[0],
-                        Queue = JobHelper.TryToGetQueue(job[0]),
+                        Queue = TryToGetQueue(job[0]),
                         Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
@@ -376,7 +387,7 @@ namespace HangFire.Web
             {
                 var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
 
-                var queue = JobHelper.TryToGetQueue(jobType);
+                var queue = TryToGetQueue(jobType);
                 if (String.IsNullOrEmpty(queue))
                 {
                     return false;
@@ -396,7 +407,7 @@ namespace HangFire.Web
             lock (Redis)
             {
                 var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-                var queue = JobHelper.TryToGetQueue(jobType);
+                var queue = TryToGetQueue(jobType);
 
                 if (String.IsNullOrEmpty(queue))
                 {

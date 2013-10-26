@@ -9,17 +9,6 @@ namespace HangFire
     {
         public const string DefaultQueue = "default";
 
-        public static string TryToGetQueue(string jobType)
-        {
-            var type = Type.GetType(jobType);
-            if (type == null)
-            {
-                return null;
-            }
-
-            return GetQueue(type);
-        }
-
         public static string GetQueue(Type jobType)
         {
             if (jobType == null) throw new ArgumentNullException("jobType");
