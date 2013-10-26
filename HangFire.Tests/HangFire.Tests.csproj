@@ -93,6 +93,8 @@
     <Compile Include="Common\BrokenJob.cs" />
     <Compile Include="Common\CriticalQueueJob.cs" />
     <Compile Include="Common\CustomConstructorJob.cs" />
+    <Compile Include="Common\CustomType.cs" />
+    <Compile Include="Common\CustomTypeConverter.cs" />
     <Compile Include="Common\EmptyQueueJob.cs" />
     <Compile Include="Common\InvalidQueueJob.cs" />
     <Compile Include="Common\TestExceptionFilter.cs" />

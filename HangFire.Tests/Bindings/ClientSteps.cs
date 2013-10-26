@@ -16,6 +16,11 @@ namespace HangFire.Tests
         {
         }
 
+        [Given(@"the custom types:")]
+        public void GivenTheCustomTypes(string typeDefinition)
+        {
+        }
+
         [When(@"I call the `(.+)`")]
         public void WhenICallThe(string code)
         {
@@ -72,6 +77,10 @@ namespace HangFire.Tests
                 else if (code.Equals("Perform.Async<EmptyQueueJob>()"))
                 {
                     _jobId = Perform.Async<EmptyQueueJob>();
+                }
+                else if (code.Equals("Perform.Async<TestJob>(new { Author = new CustomType() })"))
+                {
+                    _jobId = Perform.Async<TestJob>(new { Author = new CustomType() });
                 }
                 else
                 {

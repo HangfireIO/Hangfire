@@ -31,6 +31,23 @@ Scenario: the `Perform.Async<TJob>(object args)` method should enqueue job with 
           | ArticleId | 3        |
           | Author    | odinserj |
 
+Scenario: When one or more of the job arguments can not be converted using the custom TypeConverter, an exception should be raised
+    Given the custom types:
+          """ 
+          [TypeConverter(typeof(CustomTypeConverter))
+          public class CustomType {}
+
+          public class CustomTypeConverter : TypeConverter
+          {
+              public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+              {
+                  throw new NotSupportedException();
+              }
+          }
+          """
+     When I call the `Perform.Async<TestJob>(new { Author = new CustomType() })`
+     Then a 'System.InvalidOperationException' should be thrown
+
 Scenario: the `Perform.Async(Type type)` method should enqueue a job of the given type
      When I call the `Perform.Async(typeof(TestJob))`
      Then the argumentless 'TestJob' should be added to the default queue
