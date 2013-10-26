@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 
 namespace HangFire.Client
 {
@@ -22,13 +18,6 @@ namespace HangFire.Client
         /// <param name="inner">The exception that is the cause of this exception, not null.</param>
         public CreateJobFailedException(string message, Exception inner) 
             : base(message, inner)
-        {
-        }
-
-        protected CreateJobFailedException(
-            SerializationInfo info,
-            StreamingContext context) 
-            : base(info, context)
         {
         }
     }
