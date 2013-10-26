@@ -1,6 +1,9 @@
 ﻿@redis
 Feature: Re-queueing of timed out jobs
 
+    As an Administrator, I want the jobs to recovered automatically 
+    after a server failure, which took them into the processing.
+
 @checkpoint-1-1
 Scenario: A job in the implicit 'Dequeued' state moved to the 'Checked' state
     Given a dequeued job

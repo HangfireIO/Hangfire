@@ -1,6 +1,8 @@
 ﻿@redis
 Feature: Client
 
+    As a Developer, I want to define and create jobs.
+
 Background:
     Given the following job type:
           """

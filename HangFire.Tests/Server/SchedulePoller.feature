@@ -1,6 +1,9 @@
 ﻿@redis
 Feature: SchedulePoller
 
+    As an Administrator (or a Developer), I want the scheduled 
+    jobs to added to their actual queues when their time has come.
+
 Scenario: Scheduled jobs are being enqueued on their actual queues
     Given a scheduled job
      When the poller runs

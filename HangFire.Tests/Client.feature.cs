@@ -31,7 +31,7 @@ namespace HangFire.Tests
         public static void FeatureSetup(Microsoft.VisualStudio.TestTools.UnitTesting.TestContext testContext)
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Client", "", ProgrammingLanguage.CSharp, new string[] {
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Client", "\r\n  As a Developer, I want to define and create jobs.", ProgrammingLanguage.CSharp, new string[] {
                         "redis"});
             testRunner.OnFeatureStart(featureInfo);
         }
@@ -71,9 +71,9 @@ namespace HangFire.Tests
         
         public virtual void FeatureBackground()
         {
-#line 4
+#line 6
 #line hidden
-#line 5
+#line 7
     testRunner.Given("the following job type:", "public class TestJob : BackgroundJob\r\n{\r\n    public int ArticleId { get; set; }\r\n" +
                     "    public string Author { get; set; }\r\n\r\n    public override void Perform()\r\n  " +
                     "  {\r\n    }\r\n}          ", ((TechTalk.SpecFlow.Table)(null)), "Given ");
@@ -87,13 +87,13 @@ namespace HangFire.Tests
         public virtual void ThePerform_AsyncTJobMethodShouldEnqueueAJobOfTheGivenType()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async<TJob>()` method should enqueue a job of the given type", ((string[])(null)));
-#line 21
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 22
-     testRunner.When("I call the `Perform.Async<TestJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 23
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 24
+     testRunner.When("I call the `Perform.Async<TestJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 25
      testRunner.Then("the argumentless \'TestJob\' should be added to the default queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -108,11 +108,11 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async<TJob>(object args)` method should enqueue job with the given a" +
                     "rguments", ((string[])(null)));
-#line 25
+#line 27
 this.ScenarioSetup(scenarioInfo);
-#line 4
+#line 6
 this.FeatureBackground();
-#line 26
+#line 28
      testRunner.When("I call the `Perform.Async<TestJob>(new { ArticleId = 3, Author = \"odinserj\" })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
@@ -124,7 +124,7 @@ this.FeatureBackground();
             table1.AddRow(new string[] {
                         "Author",
                         "odinserj"});
-#line 27
+#line 29
      testRunner.Then("the \'TestJob\' should be added to the default queue with the following arguments:", ((string)(null)), table1, "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -137,13 +137,13 @@ this.FeatureBackground();
         public virtual void ThePerform_AsyncTypeTypeMethodShouldEnqueueAJobOfTheGivenType()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async(Type type)` method should enqueue a job of the given type", ((string[])(null)));
-#line 32
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 33
-     testRunner.When("I call the `Perform.Async(typeof(TestJob))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 34
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 35
+     testRunner.When("I call the `Perform.Async(typeof(TestJob))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 36
      testRunner.Then("the argumentless \'TestJob\' should be added to the default queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -158,13 +158,13 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Passing the null type argument to the `Perform.Async(Type type)` method should ca" +
                     "use exception", ((string[])(null)));
-#line 36
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 37
-     testRunner.When("I call the `Perform.Async(null)`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 38
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 39
+     testRunner.When("I call the `Perform.Async(null)`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 40
      testRunner.Then("a \'System.ArgumentNullException\' should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -179,11 +179,11 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async(Type type, object args)` method should enqueue job of the give" +
                     "n type", ((string[])(null)));
-#line 40
+#line 42
 this.ScenarioSetup(scenarioInfo);
-#line 4
+#line 6
 this.FeatureBackground();
-#line 41
+#line 43
      testRunner.When("I call the `Perform.Async(typeof(TestJob), new { ArticleId = 3 })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table2 = new TechTalk.SpecFlow.Table(new string[] {
@@ -192,7 +192,7 @@ this.FeatureBackground();
             table2.AddRow(new string[] {
                         "ArticleId",
                         "3"});
-#line 42
+#line 44
      testRunner.Then("the \'TestJob\' should be added to the default queue with the following arguments:", ((string)(null)), table2, "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -207,13 +207,13 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Passing the null type argument to the `Perform.Async(Type type, object args)` met" +
                     "hod should cause exception", ((string[])(null)));
-#line 46
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 47
-     testRunner.When("I call the `Perform.Async(null, new { ArticleId = 3 })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 48
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 49
+     testRunner.When("I call the `Perform.Async(null, new { ArticleId = 3 })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 50
      testRunner.Then("a \'System.ArgumentNullException\' should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -226,17 +226,17 @@ this.FeatureBackground();
         public virtual void ThePerform_AsyncTJobMethodShouldEnqueueAJobToItsActualQueue()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.Async<TJob>()` method should enqueue a job to its actual queue", ((string[])(null)));
-#line 53
+#line 55
 this.ScenarioSetup(scenarioInfo);
-#line 4
+#line 6
 this.FeatureBackground();
 #line hidden
-#line 54
+#line 56
     testRunner.Given("the following job type:", "[Queue(\"critical\")]\r\npublic class CriticalQueueJob : BackgroundJob\r\n{\r\n    public" +
                     " override void Perform()\r\n    {\r\n    }\r\n}", ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 64
+#line 66
      testRunner.When("I call the `Perform.Async<CriticalQueueJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 65
+#line 67
      testRunner.Then("the argumentless \'CriticalQueueJob\' should be added to the \'critical\' queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -249,17 +249,17 @@ this.FeatureBackground();
         public virtual void TheQueueNameShouldContainOnlyLowercaseLettersDigitsAndUnderscores()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the queue name should contain only lowercase letters, digits and underscores", ((string[])(null)));
-#line 67
+#line 69
 this.ScenarioSetup(scenarioInfo);
-#line 4
+#line 6
 this.FeatureBackground();
 #line hidden
-#line 68
+#line 70
     testRunner.Given("the following job type:", "[Queue(\" $InvalidQueue\")]\r\npublic class InvalidQueueJob : BackgroundJob\r\n{\r\n    p" +
                     "ublic override void Perform()\r\n    {\r\n    }\r\n}", ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 78
+#line 80
      testRunner.When("I call the `Perform.Async<InvalidQueueJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 79
+#line 81
      testRunner.Then("a \'System.InvalidOperationException\' should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -274,17 +274,17 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("if the QueueAttribute contains an empty or null string, then the actual queue sho" +
                     "uld be the default queue", ((string[])(null)));
-#line 81
+#line 83
 this.ScenarioSetup(scenarioInfo);
-#line 4
+#line 6
 this.FeatureBackground();
 #line hidden
-#line 82
+#line 84
     testRunner.Given("the following job type:", "[Queue(\"\")]\r\npublic class EmptyQueueJob : BackgroundJob\r\n{\r\n    public override v" +
                     "oid Perform()\r\n    {\r\n    }\r\n}", ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 92
+#line 94
      testRunner.When("I call the `Perform.Async<EmptyQueueJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 93
+#line 95
      testRunner.Then("the argumentless \'EmptyQueueJob\' should be added to the default queue", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -299,13 +299,13 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.In<TestJob>(TimeSpan delay)` method should schedule a job of the giv" +
                     "en type", ((string[])(null)));
-#line 98
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 99
-     testRunner.When("I call the `Perform.In<TestJob>(TimeSpan.FromDays(1))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 100
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 101
+     testRunner.When("I call the `Perform.In<TestJob>(TimeSpan.FromDays(1))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 102
      testRunner.Then("the argumentless \'TestJob\' should be scheduled for tomorrow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -320,11 +320,11 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.In<TestJob>(TimeSpan delay, object args)` method should schedule a j" +
                     "ob of the given type", ((string[])(null)));
-#line 102
+#line 104
 this.ScenarioSetup(scenarioInfo);
-#line 4
+#line 6
 this.FeatureBackground();
-#line 103
+#line 105
      testRunner.When("I call the `Perform.In<TestJob>(TimeSpan.FromDays(1), new { ArticleId = 3 })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
@@ -333,7 +333,7 @@ this.FeatureBackground();
             table3.AddRow(new string[] {
                         "ArticleId",
                         "3"});
-#line 104
+#line 106
      testRunner.Then("the \'TestJob\' should be scheduled for tomorrow with the following arguments:", ((string)(null)), table3, "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -348,13 +348,13 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the `Perform.In(TimeSpan delay, Type type)` method should schedule a job of the g" +
                     "iven type", ((string[])(null)));
-#line 108
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 109
-     testRunner.When("I call the `Perform.In(TimeSpan.FromDays(1), typeof(TestJob))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 110
+this.ScenarioSetup(scenarioInfo);
+#line 6
+this.FeatureBackground();
+#line 111
+     testRunner.When("I call the `Perform.In(TimeSpan.FromDays(1), typeof(TestJob))`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 112
      testRunner.Then("the argumentless \'TestJob\' should be scheduled for tomorrow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -369,11 +369,11 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The `Perform.In(TimeSpan delay, Type type, object args)` method should schedule a" +
                     " job of the given type", ((string[])(null)));
-#line 112
+#line 114
 this.ScenarioSetup(scenarioInfo);
-#line 4
+#line 6
 this.FeatureBackground();
-#line 113
+#line 115
      testRunner.When("I call the `Perform.In(TimeSpan.FromDays(1), typeof(TestJob), new { ArticleId = 3" +
                     " })`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
@@ -383,7 +383,7 @@ this.FeatureBackground();
             table4.AddRow(new string[] {
                         "ArticleId",
                         "3"});
-#line 114
+#line 116
      testRunner.Then("the \'TestJob\' should be scheduled for tomorrow with the following arguments:", ((string)(null)), table4, "Then ");
 #line hidden
             this.ScenarioCleanup();

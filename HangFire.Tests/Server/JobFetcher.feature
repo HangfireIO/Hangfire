@@ -1,6 +1,8 @@
 ﻿@redis
 Feature: JobFetcher
 
+    As a user, I expect that my enqueued jobs will be dequeued by the Server.
+
 Scenario: Fetcher returns the job payload when it dequeues a job
     Given an enqueued job
       And the fetcher listening the queue

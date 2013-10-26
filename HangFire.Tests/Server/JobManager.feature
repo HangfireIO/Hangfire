@@ -1,6 +1,8 @@
 ﻿@redis
 Feature: Job manager
 
+    As a user, I expect that my enqueued jobs will be processed by the Server.
+
 Scenario: Manager should perform a job
     Given an enqueued job
      When the manager processes the next job
