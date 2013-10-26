@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using HangFire.Client;
 using HangFire.States;
 using ServiceStack.Redis;
@@ -6,10 +7,10 @@ using ServiceStack.Redis;
 namespace HangFire
 {
     /// <summary>
-    /// The top-level class of the HangFire Client part. Provides several
-    /// static methods to create jobs. All methods are thread-safe
-    /// and use the <see cref="PooledRedisClientManager"/> to use a
-    /// pooled Redis connections factory.
+    /// <p>The top-level class of the HangFire Client part. Provides several
+    /// static methods to create jobs using guids as a unique identifier.</p>
+    /// <p>All methods are thread-safe and use the <see cref="PooledRedisClientManager"/> 
+    /// to take pooled Redis connections when creating a job.</p>
     /// </summary>
     public static class Perform
     {
@@ -22,8 +23,8 @@ namespace HangFire
         /// <returns>The unique identifier of the job.</returns>
         /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when the <typeparamref name="TJob"/> has invalid queue name.</exception>
-        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        /// <exception cref="InvalidOperationException">The <typeparamref name="TJob"/> has invalid queue name.</exception>
+        /// <exception cref="CreateJobFailedException">Creation of the job was failed.</exception>
         public static string Async<TJob>()
             where TJob : BackgroundJob
         {
@@ -40,8 +41,9 @@ namespace HangFire
         /// <returns>The unique identifier of the job.</returns>
         /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when the <typeparamref name="TJob"/> has invalid queue name.</exception>
-        /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
+        /// <exception cref="InvalidOperationException">The <typeparamref name="TJob"/> has invalid queue name.</exception>
+        /// <exception cref="InvalidOperationException">Could not serialize one or more properties of the <paramref name="args"/> object using its <see cref="TypeConverter"/>.</exception>
+        /// <exception cref="CreateJobFailedException">Creation of the job was failed.</exception>
         public static string Async<TJob>(object args)
             where TJob : BackgroundJob
         {
@@ -76,6 +78,7 @@ namespace HangFire
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="type"/> is null.</exception>
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the <paramref name="type"/> has invalid queue name.</exception>
+        /// <exception cref="InvalidOperationException">Could not serialize one or more properties of the <paramref name="args"/> object using its <see cref="TypeConverter"/>.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string Async(Type type, object args)
         {
@@ -88,8 +91,10 @@ namespace HangFire
             {
                 var queue = JobHelper.GetQueue(type);
                 var enqueuedState = new EnqueuedState("Enqueued by the Сlient", queue);
-
-                return client.CreateJob(GenerateId(), type, enqueuedState, args);
+                var uniqueId = GenerateId();
+                
+                client.CreateJob(uniqueId, type, enqueuedState, args);
+                return uniqueId;
             }
         }
 
@@ -122,6 +127,7 @@ namespace HangFire
         /// <returns>The unique identifier of the job.</returns>
         /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <typeparamref name="TJob"/>.</exception>
+        /// <exception cref="InvalidOperationException">Could not serialize one or more properties of the <paramref name="args"/> object using its <see cref="TypeConverter"/>.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string In<TJob>(TimeSpan delay, object args)
             where TJob : BackgroundJob
@@ -157,13 +163,17 @@ namespace HangFire
         /// <returns>The unique identifier of the job.</returns>
         /// 
         /// <exception cref="ArgumentException">The <see cref="BackgroundJob"/> type is not assignable from the given <paramref name="type"/>.</exception>
+        /// <exception cref="InvalidOperationException">Could not serialize one or more properties of the <paramref name="args"/> object using the <see cref="TypeConverter"/>.</exception>
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string In(TimeSpan delay, Type type, object args)
         {
             using (var client = new JobClient(RedisFactory.BasicManager))
             {
                 var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(delay));
-                return client.CreateJob(GenerateId(), type, scheduledState, args);
+                var uniqueId = GenerateId();
+
+                client.CreateJob(uniqueId, type, scheduledState, args);
+                return uniqueId;
             }
         }
 
