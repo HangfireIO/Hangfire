@@ -25,6 +25,8 @@ namespace HangFire.Tests
         private readonly IList<IClientExceptionFilter> _exceptionFilters = new List<IClientExceptionFilter>();
         private readonly IList<string> _exceptionFilterResults = new List<string>();
 
+        private IDictionary<string, string> _parameters;
+            
         [Given("a client")]
         public void GivenAClient()
         {
@@ -55,6 +57,39 @@ namespace HangFire.Tests
         public void GivenTheClientFilterThatThrowsAnException(string name)
         {
             _clientFilters.Add(new TestFilter(name, _clientFilterResults, true, false, false));
+        }
+
+        [Given("the client filter '(.+)' that sets the following parameters in the OnCreating method:")]
+        public void GivenTheFilterThetSetsTheFollowingParametersInTheOnCreatingMethod(string name, Table table)
+        {
+            _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
+
+            _clientFilters.Add(new TestFilter(
+                name, 
+                _clientFilterResults, 
+                setOnCreatingParameters: _parameters));
+        }
+
+        [Given(@"the client filter '(\w+)' that reads all of the above parameters")]
+        public void GivenTheClientFilterThatReadsAllOfTheAboveParameters(string name)
+        {
+            _clientFilters.Add(new TestFilter(
+                name, _clientFilterResults, readParameters: _parameters));
+        }
+
+        [Given(@"the client filter '(\w+)' that gets the following parameters in the OnCreating method:")]
+        public void GivenTheClientFilterThatGetsTheFollowingParametersInTheOnCreatingMethod(string name, Table table)
+        {
+            _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
+            GivenTheClientFilterThatReadsAllOfTheAboveParameters(name);
+        }
+
+        [Given(@"the client filter '(\w+)' that sets the following parameters in the OnCreated method:")]
+        public void GivenTheClientFilterThatSetsTheFollowingParametersInTheOnCreatedMethod(string name, Table table)
+        {
+            _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
+            _clientFilters.Add(new TestFilter(
+                name, _clientFilterResults, setOnCreatedParameters: _parameters));
         }
 
         [Given("the exception filter '(.+)'")]
@@ -249,6 +284,23 @@ namespace HangFire.Tests
         public void ThenNoExceptionWereThrown()
         {
             Assert.IsNull(_exception);
+        }
+
+        [Then(@"it should have all of the above parameters encoded as JSON string")]
+        public void ThenItShouldHaveAllOfTheAboveParametersEncodedAsJsonString()
+        {
+            var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", JobSteps.DefaultJobId));
+            foreach (var parameter in _parameters)
+            {
+                Assert.IsTrue(job.ContainsKey(parameter.Key));
+                Assert.AreEqual(parameter.Value, JobHelper.FromJson<string>(job[parameter.Key]));
+            }
+        }
+
+        [Then(@"the '(\w+)' client filter got the actual values of the parameters")]
+        public void ThenTheClientFilterGotTheActualValuesOfTheParameters(string name)
+        {
+            // Assert methods are called in the TestFilter class
         }
     }
 }

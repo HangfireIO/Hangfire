@@ -143,37 +143,191 @@ this.FeatureBackground();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("I should be able to set a job parameter in the client filter")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void IShouldBeAbleToSetAJobParameterInTheClientFilter()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("I should be able to set a job parameter in the client filter", ((string[])(null)));
+#line 30
+this.ScenarioSetup(scenarioInfo);
+#line 7
+this.FeatureBackground();
+#line hidden
+            TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table3.AddRow(new string[] {
+                        "Culture",
+                        "en-US"});
+            table3.AddRow(new string[] {
+                        "UICulture",
+                        "ru-RU"});
+#line 31
+    testRunner.Given("the client filter \'first\' that sets the following parameters in the OnCreating me" +
+                    "thod:", ((string)(null)), table3, "Given ");
+#line 35
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 36
+     testRunner.Then("it should have all of the above parameters encoded as JSON string", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When I specify an empty or null parameter name, an exception should be thrown")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void WhenISpecifyAnEmptyOrNullParameterNameAnExceptionShouldBeThrown()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I specify an empty or null parameter name, an exception should be thrown", ((string[])(null)));
+#line 38
+this.ScenarioSetup(scenarioInfo);
+#line 7
+this.FeatureBackground();
+#line hidden
+            TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table4.AddRow(new string[] {
+                        "",
+                        "en-US"});
+#line 39
+    testRunner.Given("the client filter \'first\' that sets the following parameters in the OnCreating me" +
+                    "thod:", ((string)(null)), table4, "Given ");
+#line 42
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 43
+     testRunner.Then("the CreateJobFailedException should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Client filter should be able to read the parameters that were set by one of the p" +
+            "revious filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void ClientFilterShouldBeAbleToReadTheParametersThatWereSetByOneOfThePreviousFilters()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Client filter should be able to read the parameters that were set by one of the p" +
+                    "revious filters", ((string[])(null)));
+#line 45
+this.ScenarioSetup(scenarioInfo);
+#line 7
+this.FeatureBackground();
+#line hidden
+            TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table5.AddRow(new string[] {
+                        "Culture",
+                        "en-GB"});
+#line 46
+    testRunner.Given("the client filter \'first\' that sets the following parameters in the OnCreating me" +
+                    "thod:", ((string)(null)), table5, "Given ");
+#line 49
+      testRunner.And("the client filter \'second\' that reads all of the above parameters", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 50
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 51
+     testRunner.Then("the \'second\' client filter got the actual values of the parameters", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When I specify an empty or null parameter name in the GetParameter method call, a" +
+            "n exception should be thrown")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void WhenISpecifyAnEmptyOrNullParameterNameInTheGetParameterMethodCallAnExceptionShouldBeThrown()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I specify an empty or null parameter name in the GetParameter method call, a" +
+                    "n exception should be thrown", ((string[])(null)));
+#line 53
+this.ScenarioSetup(scenarioInfo);
+#line 7
+this.FeatureBackground();
+#line hidden
+            TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table6.AddRow(new string[] {
+                        "",
+                        "en-GB"});
+#line 54
+    testRunner.Given("the client filter \'first\' that gets the following parameters in the OnCreating me" +
+                    "thod:", ((string)(null)), table6, "Given ");
+#line 57
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 58
+     testRunner.Then("the CreateJobFailedException should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("I should not be able to set parameters after the job was created")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void IShouldNotBeAbleToSetParametersAfterTheJobWasCreated()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("I should not be able to set parameters after the job was created", ((string[])(null)));
+#line 60
+this.ScenarioSetup(scenarioInfo);
+#line 7
+this.FeatureBackground();
+#line hidden
+            TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table7.AddRow(new string[] {
+                        "Culture",
+                        "en-US"});
+#line 61
+    testRunner.Given("the client filter \'first\' that sets the following parameters in the OnCreated met" +
+                    "hod:", ((string)(null)), table7, "Given ");
+#line 64
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 65
+     testRunner.Then("the CreateJobFailedException should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When client filter cancels the creation of the job, it should not be created")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client filters")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void WhenClientFilterCancelsTheCreationOfTheJobItShouldNotBeCreated()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When client filter cancels the creation of the job, it should not be created", ((string[])(null)));
-#line 30
+#line 67
 this.ScenarioSetup(scenarioInfo);
 #line 7
 this.FeatureBackground();
-#line 31
+#line 68
     testRunner.Given("the client filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 32
+#line 69
       testRunner.And("the client filter \'second\' that cancels the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 33
+#line 70
       testRunner.And("the client filter \'third\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 34
+#line 71
      testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 35
+#line 72
      testRunner.Then("the storage should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-            TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table8 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
-            table3.AddRow(new string[] {
+            table8.AddRow(new string[] {
                         "first::OnCreating"});
-            table3.AddRow(new string[] {
+            table8.AddRow(new string[] {
                         "second::OnCreating"});
-            table3.AddRow(new string[] {
+            table8.AddRow(new string[] {
                         "first::OnCreated (with the canceled flag set)"});
-#line 36
-      testRunner.And("only the following client filter methods should be executed:", ((string)(null)), table3, "And ");
+#line 73
+      testRunner.And("only the following client filter methods should be executed:", ((string)(null)), table8, "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -185,27 +339,27 @@ this.FeatureBackground();
         public virtual void ClientFilterSOnCreatedCouldBeSkippedIfThereWasAnException()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Client filter\'s OnCreated could be skipped if there was an exception", ((string[])(null)));
-#line 42
+#line 79
 this.ScenarioSetup(scenarioInfo);
 #line 7
 this.FeatureBackground();
-#line 43
+#line 80
     testRunner.Given("the client filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 44
+#line 81
       testRunner.And("the client filter \'second\' that throws an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 45
+#line 82
      testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-            TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table9 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
-            table4.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "first::OnCreating"});
-            table4.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "second::OnCreating"});
-            table4.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "first::OnCreated"});
-#line 46
-     testRunner.Then("only the following client filter methods should be executed:", ((string)(null)), table4, "Then ");
+#line 83
+     testRunner.Then("only the following client filter methods should be executed:", ((string)(null)), table9, "Then ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -217,34 +371,34 @@ this.FeatureBackground();
         public virtual void WhenAClientFilterHandlesAnExceptionItShouldNotBeThrownOutside()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When a client filter handles an exception, it should not be thrown outside", ((string[])(null)));
-#line 52
+#line 89
 this.ScenarioSetup(scenarioInfo);
 #line 7
 this.FeatureBackground();
-#line 53
+#line 90
     testRunner.Given("the client filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 54
+#line 91
       testRunner.And("the client filter \'second\' that handles an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 55
+#line 92
       testRunner.And("the client filter \'third\' that throws an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 56
+#line 93
      testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-            TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table10 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
-            table5.AddRow(new string[] {
+            table10.AddRow(new string[] {
                         "first::OnCreating"});
-            table5.AddRow(new string[] {
+            table10.AddRow(new string[] {
                         "second::OnCreating"});
-            table5.AddRow(new string[] {
+            table10.AddRow(new string[] {
                         "third::OnCreating"});
-            table5.AddRow(new string[] {
+            table10.AddRow(new string[] {
                         "second::OnCreated"});
-            table5.AddRow(new string[] {
+            table10.AddRow(new string[] {
                         "first::OnCreated"});
-#line 57
-     testRunner.Then("the client filter methods should be executed in the following order:", ((string)(null)), table5, "Then ");
-#line 64
+#line 94
+     testRunner.Then("the client filter methods should be executed in the following order:", ((string)(null)), table10, "Then ");
+#line 101
       testRunner.And("an exception should not be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -259,19 +413,19 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Client exception filters should be executed when there was an exception while cre" +
                     "ating a job", ((string[])(null)));
-#line 66
+#line 103
 this.ScenarioSetup(scenarioInfo);
 #line 7
 this.FeatureBackground();
-#line 67
+#line 104
     testRunner.Given("the exception filter \'test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 68
+#line 105
      testRunner.When("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 69
+#line 106
       testRunner.And("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 70
+#line 107
      testRunner.Then("the client exception filter should be executed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line 71
+#line 108
       testRunner.And("the CreateJobFailedException should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -284,28 +438,28 @@ this.FeatureBackground();
         public virtual void MultipleExceptionFiltersShouldBeExecutedDependingOnTheirOrder()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Multiple exception filters should be executed depending on their order", ((string[])(null)));
-#line 73
+#line 110
 this.ScenarioSetup(scenarioInfo);
 #line 7
 this.FeatureBackground();
-#line 74
+#line 111
     testRunner.Given("the exception filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 75
+#line 112
       testRunner.And("the exception filter \'second\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 76
+#line 113
      testRunner.When("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 77
+#line 114
       testRunner.And("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-            TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
-            table6.AddRow(new string[] {
+            table11.AddRow(new string[] {
                         "first"});
-            table6.AddRow(new string[] {
+            table11.AddRow(new string[] {
                         "second"});
-#line 78
-     testRunner.Then("the client exception filters should be executed in the following order:", ((string)(null)), table6, "Then ");
-#line 82
+#line 115
+     testRunner.Then("the client exception filters should be executed in the following order:", ((string)(null)), table11, "Then ");
+#line 119
       testRunner.And("the CreateJobFailedException should be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -320,32 +474,32 @@ this.FeatureBackground();
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When a client exception filter handles an exception, it should not be thrown outs" +
                     "ide", ((string[])(null)));
-#line 84
+#line 121
 this.ScenarioSetup(scenarioInfo);
 #line 7
 this.FeatureBackground();
-#line 85
+#line 122
     testRunner.Given("the exception filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 86
+#line 123
       testRunner.And("the exception filter \'second\' that handles an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 87
+#line 124
       testRunner.And("the exception filter \'third\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 88
+#line 125
      testRunner.When("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 89
+#line 126
       testRunner.And("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
-            TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table12 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
-            table7.AddRow(new string[] {
+            table12.AddRow(new string[] {
                         "first"});
-            table7.AddRow(new string[] {
+            table12.AddRow(new string[] {
                         "second"});
-            table7.AddRow(new string[] {
+            table12.AddRow(new string[] {
                         "third"});
-#line 90
-     testRunner.Then("the following client exception filters should be executed:", ((string)(null)), table7, "Then ");
-#line 95
+#line 127
+     testRunner.Then("the following client exception filters should be executed:", ((string)(null)), table12, "Then ");
+#line 132
       testRunner.And("an exception should not be thrown by the client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();

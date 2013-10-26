@@ -15,7 +15,9 @@ namespace HangFire.Client
         private readonly StateMachine _stateMachine;
 
         private readonly IDictionary<string, string> _jobParameters
-            = new Dictionary<string, string>(); 
+            = new Dictionary<string, string>();
+
+        private bool _jobWasCreated;
 
         internal ClientJobDescriptor(
             IRedisClient redis,
@@ -70,10 +72,12 @@ namespace HangFire.Client
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
         public void SetParameter(string name, object value)
         {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 
-            // TODO: this method could be called from the Created method of a filter.
-            //       In this case we'll lose the assigning value.
+            if (_jobWasCreated)
+            {
+                throw new InvalidOperationException("Could not set parameter for a created job.");
+            }
 
             _jobParameters.Add(name, JobHelper.ToJson(value));
         }
@@ -92,7 +96,7 @@ namespace HangFire.Client
         /// <exception cref="NotSupportedException">Could not deserialize the parameter value to the type <typeparamref name="T"/>.</exception>
         public T GetParameter<T>(string name)
         {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 
             return _jobParameters.ContainsKey(name)
                 ? JobHelper.FromJson<T>(_jobParameters[name])
@@ -101,6 +105,7 @@ namespace HangFire.Client
 
         internal void Create()
         {
+            _jobWasCreated = true;
             _stateMachine.CreateInState(JobId, _jobParameters, State);
         }
     }
