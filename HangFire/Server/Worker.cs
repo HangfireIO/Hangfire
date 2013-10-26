@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using HangFire.Filters;
 using HangFire.States;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -108,67 +107,6 @@ namespace HangFire.Server
             _redis.Dispose();
         }
 
-        private void PerformJob(JobPayload payload)
-        {
-            if (String.IsNullOrEmpty(payload.Type))
-            {
-                Logger.Warn(String.Format(
-                    "Could not process the job '{0}': it does not exist in the storage.",
-                    payload.Id));
-
-                return;
-            }
-
-            var processingState = new ProcessingState("Worker has started processing.", _context.ServerName);
-            if (!_stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name))
-            {
-                return;
-            }
-
-            // Checkpoint #3. Job is in the Processing state. However, there are
-            // no guarantees that it was performed. We need to re-queue it even
-            // it was performed to guarantee that it was performed AT LEAST once.
-            // It will be re-queued after the JobTimeout was expired.
-
-            Exception exception = null;
-
-            try
-            {
-                using (var descriptor = new ServerJobDescriptor(
-                    _redis, _context.Activator, payload))
-                {
-                    var performContext = new PerformContext(_context, descriptor);
-
-                    _context.Performer.PerformJob(performContext);
-                }
-            }
-            catch (Exception ex)
-            {
-                exception = ex;
-
-                Logger.Error(String.Format(
-                    "Failed to process the job '{0}': unexpected exception caught.",
-                    payload.Id));
-            }
-
-            JobState state;
-            if (exception == null)
-            {
-                state = new SucceededState("The job has been completed successfully.");
-            }
-            else
-            {
-                state = new FailedState("The job has been failed.", exception);
-            }
-
-            _stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
-
-            // Checkpoint #4. The job was performed, and it is in the one
-            // of the explicit states (Succeeded, Scheduled and so on).
-            // It should not be re-queued, but we still need to remove its
-            // processing information.
-        }
-
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
         private void DoWork()
         {
@@ -182,6 +120,11 @@ namespace HangFire.Server
                     lock (_jobLock)
                     {
                         PerformJob(_jobPayload);
+
+                        // Checkpoint #4. The job was performed, and it is in the one
+                        // of the explicit states (Succeeded, Scheduled and so on).
+                        // It should not be re-queued, but we still need to remove its
+                        // processing information.
 
                         JobFetcher.RemoveFromFetchedQueue(
                             _redis, _jobPayload.Id, _jobPayload.Queue);
@@ -204,6 +147,54 @@ namespace HangFire.Server
                         "Unexpected exception caught. The worker will be stopped."),
                     ex);
             }
+        }
+
+        private void PerformJob(JobPayload payload)
+        {
+            if (String.IsNullOrEmpty(payload.Type))
+            {
+                Logger.Warn(String.Format(
+                    "Could not process the job '{0}': it does not exist in the storage.",
+                    payload.Id));
+
+                return;
+            }
+
+            var processingState = new ProcessingState("Worker has started processing.", _context.ServerName);
+            if (!_stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name))
+            {
+                return;
+            }
+
+            // Checkpoint #3. Job is in the Processing state. However, there are
+            // no guarantees that it was performed. We need to re-queue it even
+            // it was performed to guarantee that it was performed AT LEAST once.
+            // It will be re-queued after the JobTimeout was expired.
+
+            JobState state;
+
+            try
+            {
+                using (var descriptor = new ServerJobDescriptor(
+                    _redis, _context.Activator, payload))
+                {
+                    var performContext = new PerformContext(_context, descriptor);
+
+                    _context.Performer.PerformJob(performContext);
+                }
+
+                state = new SucceededState("The job has been completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(String.Format(
+                    "Failed to process the job '{0}': unexpected exception caught.",
+                    payload.Id));
+
+                state = new FailedState("The job has been failed.", ex);
+            }
+
+            _stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
         }
     }
 }
