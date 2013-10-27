@@ -32,7 +32,7 @@ namespace HangFire.States
 
         public StateMachine(IRedisClient redis)
             : this(
-                redis, 
+                redis,
                 Descriptors,
                 GlobalJobFilters.Filters.OfType<IStateChangingFilter>().ToList(),
                 GlobalJobFilters.Filters.OfType<IStateChangedFilter>().ToList())
@@ -40,7 +40,7 @@ namespace HangFire.States
         }
 
         internal StateMachine(
-            IRedisClient redis, 
+            IRedisClient redis,
             IDictionary<string, JobStateDescriptor> stateDescriptors,
             IEnumerable<IStateChangingFilter> stateChangedFilters,
             IEnumerable<IStateChangedFilter> stateAppliedFilters)
@@ -57,8 +57,8 @@ namespace HangFire.States
         }
 
         public bool CreateInState(
-            string jobId, 
-            IDictionary<string, string> parameters, 
+            string jobId,
+            IDictionary<string, string> parameters,
             JobState state)
         {
             using (var transaction = _redis.CreateTransaction())
@@ -67,18 +67,30 @@ namespace HangFire.States
                     String.Format("hangfire:job:{0}", jobId),
                     parameters));
 
-                foreach (var filter in _stateChangedFilters)
+                transaction.QueueCommand(x => x.ExpireEntryIn(
+                    String.Format("hangfire:job:{0}", jobId),
+                    TimeSpan.FromHours(1)));
+
+                transaction.Commit();
+            }
+
+            foreach (var filter in _stateChangedFilters)
+            {
+                var oldState = state;
+                state = filter.OnStateChanging(_redis, jobId, oldState);
+
+                if (oldState != state)
                 {
-                    var oldState = state;
-                    state = filter.OnStateChanging(_redis, jobId, oldState);
-
-                    if (oldState != state)
-                    {
-                        AppendHistory(transaction, jobId, oldState, false);
-                    }
+                    AppendHistory(jobId, oldState, false);
                 }
+            }
 
+            using (var transaction = _redis.CreateTransaction())
+            {
                 ApplyState(jobId, null, state, transaction);
+
+                transaction.QueueCommand(x =>
+                    ((IRedisNativeClient)x).Persist(String.Format("hangfire:job:{0}", jobId)));
 
                 return transaction.Commit();
             }
@@ -121,7 +133,7 @@ namespace HangFire.States
         }
 
         private bool ApplyState(
-            string jobId, 
+            string jobId,
             string currentState,
             JobState newState)
         {
