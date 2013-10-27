@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
@@ -33,6 +34,18 @@ namespace HangFire.Tests
         [Given(@"the '(.+)' job of the '(.+)' type")]
         public void GivenTheJobOfTheType(string jobId, string type)
         {
+            GivenTheJobOfTheTypeWithTheFollowingArguments(jobId, type, new Table("Name", "Value"));
+        }
+
+        [Given(@"a job of the '(\w+)' type with the following arguments:")]
+        public void GivenAJobOfTheTypeWithTheFollowingArguments(string type, Table args)
+        {
+            GivenTheJobOfTheTypeWithTheFollowingArguments(JobSteps.DefaultJobId, type, args);
+        }
+
+        [Given(@"the '(.+)' job of the '(.+)' type with the following arguments:")]
+        public void GivenTheJobOfTheTypeWithTheFollowingArguments(string jobId, string type, Table args)
+        {
             Redis.Client.AddItemToList(
                 String.Format("hangfire:job:{0}:history", jobId),
                 "");
@@ -47,9 +60,18 @@ namespace HangFire.Tests
                 new Dictionary<string, string>
                     {
                         { "Type", type },
-                        { "Args", JobHelper.ToJson(new Dictionary<string, string>()) },
+                        { "Args", JobHelper.ToJson(args.Rows.ToDictionary(x => x["Name"], x => x["Value"])) },
                         { "State", EnqueuedState.Name },
                     });
+        }
+
+        [Given(@"an enqueued CustomJob with the following arguments:")]
+        public void GivenAnEnqueuedCustomJobWithTheFollowingArguments(Table table)
+        {
+            GivenAJobOfTheTypeWithTheFollowingArguments(typeof(CustomJob).AssemblyQualifiedName, table);
+            Redis.Client.EnqueueItemOnList(
+                String.Format("hangfire:queue:{0}", QueueSteps.DefaultQueue),
+                DefaultJobId);
         }
 
         [Given(@"a job with empty state")]

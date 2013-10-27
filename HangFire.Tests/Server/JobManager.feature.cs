@@ -196,6 +196,42 @@ this.ScenarioSetup(scenarioInfo);
 #line hidden
             this.ScenarioCleanup();
         }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Job arguments should be deserialized correctly")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Job manager")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void JobArgumentsShouldBeDeserializedCorrectly()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Job arguments should be deserialized correctly", ((string[])(null)));
+#line 41
+this.ScenarioSetup(scenarioInfo);
+#line hidden
+#line 42
+    testRunner.Given("the following job type:", "public void CustomJob : BackgroundJob\r\n{\r\n    public int ArticleId { get; set; }\r" +
+                    "\n    public string Author { get; set; }\r\n\r\n    public override void Perform()\r\n " +
+                    "   {\r\n    }\r\n} ", ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table1.AddRow(new string[] {
+                        "ArticleId",
+                        "2"});
+            table1.AddRow(new string[] {
+                        "Author",
+                        "nobody"});
+#line 54
+      testRunner.And("an enqueued CustomJob with the following arguments:", ((string)(null)), table1, "And ");
+#line 58
+     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 59
+     testRunner.Then("the last ArticleId should be equal to 2", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 60
+      testRunner.And("the last Author should be equal to \'nobody\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
     }
 }
 #pragma warning restore

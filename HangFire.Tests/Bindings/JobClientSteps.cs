@@ -67,7 +67,7 @@ namespace HangFire.Tests
             _clientFilters.Add(new TestFilter(
                 name, 
                 _clientFilterResults, 
-                setOnCreatingParameters: _parameters));
+                setOnPreMethodParameters: _parameters));
         }
 
         [Given(@"the client filter '(\w+)' that reads all of the above parameters")]
@@ -89,7 +89,7 @@ namespace HangFire.Tests
         {
             _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
             _clientFilters.Add(new TestFilter(
-                name, _clientFilterResults, setOnCreatedParameters: _parameters));
+                name, _clientFilterResults, setOnPostMethodParameters: _parameters));
         }
 
         [Given("the exception filter '(.+)'")]

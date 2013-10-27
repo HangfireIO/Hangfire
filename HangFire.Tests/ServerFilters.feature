@@ -23,6 +23,42 @@ Scenario: Multiple server filters should be executed depending on their order
           | second::OnPerformed  |
           | first::OnPerformed   |
 
+Scenario: I should be able to set a job parameter in the server filter
+    Given an enqueued job
+      And the server filter 'first' that sets the following parameters:
+          | Name      | Value |
+          | Culture   | en-US |
+          | UICulture | ru-RU |
+     When the manager processes the next job
+     Then the job should have all of the above parameters encoded as JSON string
+      And the job should be performed
+
+Scenario: When I specify an empty or null parameter name, an exception should be thrown
+    Given an enqueued job
+      And the server filter 'first' that sets the following parameters:
+          | Name | Value |
+          |      | en-US |
+     When the manager processes the next job
+     Then the job should be performed
+
+Scenario: Server filter should be able to read the job parameters
+    Given an enqueued job
+      And the server filter 'first' that sets the following parameters:
+          | Name    | Value |
+          | Culture | en-GB |
+      And the server filter 'second' that reads all of the above parameters
+     When the manager processes the next job
+     Then the 'second' server filter got the actual values of the parameters
+      And the job should be performed
+
+Scenario: When I specify an empty or null parameter name in the GetParameter method call, an exception should be thrown
+    Given an enqueued job
+      And the server filter 'first' that gets the following parameters:
+          | Name | Value |
+          |      | en-GB |
+     When the manager processes the next job
+     Then the job should not be performed
+
 Scenario: Server filter should be able to cancel the performing of a job
     Given an enqueued job
       And a server filter 'first'

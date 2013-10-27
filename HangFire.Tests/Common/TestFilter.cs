@@ -12,9 +12,9 @@ namespace HangFire.Tests
         private readonly bool _throwException;
         private readonly bool _cancelsTheCreation;
         private readonly bool _handlesException;
-        private readonly IDictionary<string, string> _setOnCreatingParameters;
+        private readonly IDictionary<string, string> _setOnPreMethodParameters;
         private readonly IDictionary<string, string> _readParameters;
-        private readonly IDictionary<string, string> _setOnCreatedParameters;
+        private readonly IDictionary<string, string> _setOnPostMethodParameters;
 
         public TestFilter(
             string name, 
@@ -22,18 +22,18 @@ namespace HangFire.Tests
             bool throwException = false, 
             bool cancelsTheCreation = false,
             bool handlesException = false,
-            IDictionary<string, string> setOnCreatingParameters = null,
+            IDictionary<string, string> setOnPreMethodParameters = null,
             IDictionary<string, string> readParameters = null,
-            IDictionary<string, string> setOnCreatedParameters = null)
+            IDictionary<string, string> setOnPostMethodParameters = null)
         {
             _name = name;
             _results = results;
             _throwException = throwException;
             _cancelsTheCreation = cancelsTheCreation;
             _handlesException = handlesException;
-            _setOnCreatingParameters = setOnCreatingParameters;
+            _setOnPreMethodParameters = setOnPreMethodParameters;
             _readParameters = readParameters;
-            _setOnCreatedParameters = setOnCreatedParameters;
+            _setOnPostMethodParameters = setOnPostMethodParameters;
         }
 
         public void OnCreating(CreatingContext filterContext)
@@ -53,9 +53,9 @@ namespace HangFire.Tests
 
             _results.Add(String.Format("{0}::{1}", _name, "OnCreating"));
 
-            if (_setOnCreatingParameters != null)
+            if (_setOnPreMethodParameters != null)
             {
-                foreach (var parameter in _setOnCreatingParameters)
+                foreach (var parameter in _setOnPreMethodParameters)
                 {
                     filterContext.JobDescriptor.SetParameter(parameter.Key, parameter.Value);
                 }
@@ -87,9 +87,9 @@ namespace HangFire.Tests
             _results.Add(String.Format("{0}::{1}", _name, "OnCreated") 
                 + (filterContext.Canceled ? " (with the canceled flag set)" : null));
 
-            if (_setOnCreatedParameters != null)
+            if (_setOnPostMethodParameters != null)
             {
-                foreach (var parameter in _setOnCreatedParameters)
+                foreach (var parameter in _setOnPostMethodParameters)
                 {
                     filterContext.JobDescriptor.SetParameter(parameter.Key, parameter.Value);
                 }
@@ -115,6 +115,8 @@ namespace HangFire.Tests
         {
             Assert.IsNotNull(filterContext);
             Assert.IsNotNull(filterContext.JobDescriptor);
+            Assert.IsNotNull(filterContext.JobDescriptor.JobId);
+            Assert.IsNotNull(filterContext.JobDescriptor.Type);
 
             if (_cancelsTheCreation)
             {
@@ -122,6 +124,24 @@ namespace HangFire.Tests
             }
 
             _results.Add(String.Format("{0}::{1}", _name, "OnPerforming"));
+
+            if (_setOnPreMethodParameters != null)
+            {
+                foreach (var parameter in _setOnPreMethodParameters)
+                {
+                    filterContext.JobDescriptor.SetParameter(parameter.Key, parameter.Value);
+                }
+            }
+
+            if (_readParameters != null)
+            {
+                foreach (var parameter in _readParameters)
+                {
+                    Assert.AreEqual(
+                        parameter.Value,
+                        filterContext.JobDescriptor.GetParameter<string>(parameter.Key));
+                }
+            }
             
             if (_throwException)
             {

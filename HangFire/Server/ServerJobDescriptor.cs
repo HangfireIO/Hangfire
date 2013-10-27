@@ -21,15 +21,15 @@ namespace HangFire.Server
 
             JobId = payload.Id;
 
-            var type = Type.GetType(payload.Type, true, true);
-            _jobInstance = activator.ActivateJob(type);
+            Type = Type.GetType(payload.Type, true, true);
+            _jobInstance = activator.ActivateJob(Type);
 
             if (_jobInstance == null)
             {
                 throw new InvalidOperationException(String.Format(
                     "{0} returned NULL instance of the '{1}' type.",
                     activator.GetType().FullName,
-                    type.FullName));
+                    Type.FullName));
             }
 
             var args = JobHelper.FromJson<Dictionary<string, string>>(payload.Args);
@@ -59,6 +59,8 @@ namespace HangFire.Server
         }
 
         public string JobId { get; private set; }
+
+        public Type Type { get; private set; }
 
         public void SetParameter(string name, object value)
         {

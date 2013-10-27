@@ -134,37 +134,160 @@ this.ScenarioSetup(scenarioInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("I should be able to set a job parameter in the server filter")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void IShouldBeAbleToSetAJobParameterInTheServerFilter()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("I should be able to set a job parameter in the server filter", ((string[])(null)));
+#line 26
+this.ScenarioSetup(scenarioInfo);
+#line 27
+    testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table3.AddRow(new string[] {
+                        "Culture",
+                        "en-US"});
+            table3.AddRow(new string[] {
+                        "UICulture",
+                        "ru-RU"});
+#line 28
+      testRunner.And("the server filter \'first\' that sets the following parameters:", ((string)(null)), table3, "And ");
+#line 32
+     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 33
+     testRunner.Then("the job should have all of the above parameters encoded as JSON string", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 34
+      testRunner.And("the job should be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When I specify an empty or null parameter name, an exception should be thrown")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void WhenISpecifyAnEmptyOrNullParameterNameAnExceptionShouldBeThrown()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I specify an empty or null parameter name, an exception should be thrown", ((string[])(null)));
+#line 36
+this.ScenarioSetup(scenarioInfo);
+#line 37
+    testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table4.AddRow(new string[] {
+                        "",
+                        "en-US"});
+#line 38
+      testRunner.And("the server filter \'first\' that sets the following parameters:", ((string)(null)), table4, "And ");
+#line 41
+     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 42
+     testRunner.Then("the job should be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Server filter should be able to read the job parameters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void ServerFilterShouldBeAbleToReadTheJobParameters()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server filter should be able to read the job parameters", ((string[])(null)));
+#line 44
+this.ScenarioSetup(scenarioInfo);
+#line 45
+    testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table5.AddRow(new string[] {
+                        "Culture",
+                        "en-GB"});
+#line 46
+      testRunner.And("the server filter \'first\' that sets the following parameters:", ((string)(null)), table5, "And ");
+#line 49
+      testRunner.And("the server filter \'second\' that reads all of the above parameters", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 50
+     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 51
+     testRunner.Then("the \'second\' server filter got the actual values of the parameters", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 52
+      testRunner.And("the job should be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When I specify an empty or null parameter name in the GetParameter method call, a" +
+            "n exception should be thrown")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void WhenISpecifyAnEmptyOrNullParameterNameInTheGetParameterMethodCallAnExceptionShouldBeThrown()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When I specify an empty or null parameter name in the GetParameter method call, a" +
+                    "n exception should be thrown", ((string[])(null)));
+#line 54
+this.ScenarioSetup(scenarioInfo);
+#line 55
+    testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+            TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
+                        "Name",
+                        "Value"});
+            table6.AddRow(new string[] {
+                        "",
+                        "en-GB"});
+#line 56
+      testRunner.And("the server filter \'first\' that gets the following parameters:", ((string)(null)), table6, "And ");
+#line 59
+     testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 60
+     testRunner.Then("the job should not be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Server filter should be able to cancel the performing of a job")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void ServerFilterShouldBeAbleToCancelThePerformingOfAJob()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server filter should be able to cancel the performing of a job", ((string[])(null)));
-#line 26
+#line 62
 this.ScenarioSetup(scenarioInfo);
-#line 27
+#line 63
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 28
+#line 64
       testRunner.And("a server filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 29
+#line 65
       testRunner.And("a server filter \'second\' that cancels the performing", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 30
+#line 66
       testRunner.And("a server filter \'third\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 31
+#line 67
      testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 32
+#line 68
      testRunner.Then("the job should not be performed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-            TechTalk.SpecFlow.Table table3 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
-            table3.AddRow(new string[] {
+            table7.AddRow(new string[] {
                         "first::OnPerforming"});
-            table3.AddRow(new string[] {
+            table7.AddRow(new string[] {
                         "second::OnPerforming"});
-            table3.AddRow(new string[] {
+            table7.AddRow(new string[] {
                         "first::OnPerformed (with the canceled flag set)"});
-#line 33
-      testRunner.And("only the following server filter methods should be executed:", ((string)(null)), table3, "And ");
+#line 69
+      testRunner.And("only the following server filter methods should be executed:", ((string)(null)), table7, "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -176,28 +299,28 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void ServerFilterSOnPerformedCouldBeSkippedIfThereWasAnException()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server filter\'s OnPerformed could be skipped if there was an exception", ((string[])(null)));
-#line 39
+#line 75
 this.ScenarioSetup(scenarioInfo);
-#line 40
+#line 76
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 41
+#line 77
       testRunner.And("a server filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 42
+#line 78
       testRunner.And("a server filter \'second\' that throws an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 43
+#line 79
      testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-            TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table8 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
-            table4.AddRow(new string[] {
+            table8.AddRow(new string[] {
                         "first::OnPerforming"});
-            table4.AddRow(new string[] {
+            table8.AddRow(new string[] {
                         "second::OnPerforming"});
-            table4.AddRow(new string[] {
+            table8.AddRow(new string[] {
                         "first::OnPerformed"});
-#line 44
-     testRunner.Then("only the following server filter methods should be executed:", ((string)(null)), table4, "Then ");
-#line 49
+#line 80
+     testRunner.Then("only the following server filter methods should be executed:", ((string)(null)), table8, "Then ");
+#line 85
       testRunner.And("the state of the job should be Failed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -210,34 +333,34 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void ServerFilterCanHandleTheException()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server filter can handle the exception", ((string[])(null)));
-#line 51
+#line 87
 this.ScenarioSetup(scenarioInfo);
-#line 52
+#line 88
     testRunner.Given("an enqueued job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 53
+#line 89
       testRunner.And("a server filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 54
+#line 90
       testRunner.And("a server filter \'second\' that handles an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 55
+#line 91
       testRunner.And("a server filter \'third\' that throws an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 56
+#line 92
      testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-            TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table9 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
-            table5.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "first::OnPerforming"});
-            table5.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "second::OnPerforming"});
-            table5.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "third::OnPerforming"});
-            table5.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "second::OnPerformed"});
-            table5.AddRow(new string[] {
+            table9.AddRow(new string[] {
                         "first::OnPerformed"});
-#line 57
-     testRunner.Then("the server filter methods should be executed in the following order:", ((string)(null)), table5, "Then ");
-#line 64
+#line 93
+     testRunner.Then("the server filter methods should be executed in the following order:", ((string)(null)), table9, "Then ");
+#line 100
       testRunner.And("the state of the job should be Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -252,17 +375,17 @@ this.ScenarioSetup(scenarioInfo);
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server exception filters are executed when there was an exception while performin" +
                     "g a job", ((string[])(null)));
-#line 66
+#line 102
 this.ScenarioSetup(scenarioInfo);
-#line 67
+#line 103
     testRunner.Given("an enqueued broken job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 68
+#line 104
       testRunner.And("a server exception filter \'test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 69
+#line 105
      testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 70
+#line 106
      testRunner.Then("the server exception filter should be executed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line 71
+#line 107
       testRunner.And("the state of the job should be Failed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -275,26 +398,26 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void MultipleServerExceptionFiltersAreExecutedDependingOnTheirOrder()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Multiple server exception filters are executed depending on their order", ((string[])(null)));
-#line 73
+#line 109
 this.ScenarioSetup(scenarioInfo);
-#line 74
+#line 110
     testRunner.Given("an enqueued broken job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 75
+#line 111
       testRunner.And("a server exception filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 76
+#line 112
       testRunner.And("a server exception filter \'second\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 77
+#line 113
      testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-            TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table10 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
-            table6.AddRow(new string[] {
+            table10.AddRow(new string[] {
                         "first"});
-            table6.AddRow(new string[] {
+            table10.AddRow(new string[] {
                         "second"});
-#line 78
-     testRunner.Then("the server exception filters should be executed in the following order:", ((string)(null)), table6, "Then ");
-#line 82
+#line 114
+     testRunner.Then("the server exception filters should be executed in the following order:", ((string)(null)), table10, "Then ");
+#line 118
       testRunner.And("the state of the job should be Failed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -307,30 +430,30 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void ServerExceptionFilterCanHandleTheException()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server exception filter can handle the exception", ((string[])(null)));
-#line 84
+#line 120
 this.ScenarioSetup(scenarioInfo);
-#line 85
+#line 121
     testRunner.Given("an enqueued broken job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 86
+#line 122
       testRunner.And("a server exception filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 87
+#line 123
       testRunner.And("a server exception filter \'second\' that handles an exception", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 88
+#line 124
       testRunner.And("a server exception filter \'third\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 89
+#line 125
      testRunner.When("the manager processes the next job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-            TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
-            table7.AddRow(new string[] {
+            table11.AddRow(new string[] {
                         "first"});
-            table7.AddRow(new string[] {
+            table11.AddRow(new string[] {
                         "second"});
-            table7.AddRow(new string[] {
+            table11.AddRow(new string[] {
                         "third"});
-#line 90
-     testRunner.Then("the following server exception filters should be executed:", ((string)(null)), table7, "Then ");
-#line 95
+#line 126
+     testRunner.Then("the following server exception filters should be executed:", ((string)(null)), table11, "Then ");
+#line 131
       testRunner.And("the state of the job should be Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();

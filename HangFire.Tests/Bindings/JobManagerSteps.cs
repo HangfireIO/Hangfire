@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using HangFire.Filters;
 using HangFire.Server;
@@ -15,7 +17,8 @@ namespace HangFire.Tests
 
         private readonly IList<string> _serverResults = new List<string>();
         private readonly IList<string> _exceptionResults = new List<string>();
-    
+        private Dictionary<string, string> _parameters;
+
         [BeforeScenario]
         public void BeforeScenario()
         {
@@ -51,6 +54,28 @@ namespace HangFire.Tests
         public void GivenAServerFilterThatHandlesAnException(string name)
         {
             _serverFilters.Add(new TestFilter(name, _serverResults, false, false, true));
+        }
+
+        [Given(@"the server filter '(\w+)' that sets the following parameters:")]
+        public void GivenTheServerFilterThatSetsTheFollowingParameters(string name, Table table)
+        {
+            _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
+
+            _serverFilters.Add(
+                new TestFilter(name, _serverResults, setOnPreMethodParameters: _parameters));
+        }
+
+        [Given(@"the server filter '(\w+)' that gets the following parameters:")]
+        public void GivenTheClientFilterThatGetsTheFollowingParametersInTheOnCreatingMethod(string name, Table table)
+        {
+            _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
+            GivenTheServerFilterThatReadsAllOfTheAboveParameters(name);
+        }
+
+        [Given(@"the server filter '(\w+)' that reads all of the above parameters")]
+        public void GivenTheServerFilterThatReadsAllOfTheAboveParameters(string name)
+        {
+            _serverFilters.Add(new TestFilter(name, _serverResults, readParameters: _parameters));
         }
 
         [Given(@"a server exception filter '(\w+)'")]
@@ -136,6 +161,35 @@ namespace HangFire.Tests
             {
                 var filter = table.Rows[i]["Filter"];
                 Assert.AreEqual(filter, _exceptionResults[i]);
+            }
+        }
+
+        [Then(@"the last ArticleId should be equal to (\d+)")]
+        public void ThenTheLastArticleIdShouldBeEqualTo(int value)
+        {
+            Assert.AreEqual(value, CustomJob.LastArticleId);
+        }
+
+        [Then(@"the last Author should be equal to '(.+)'")]
+        public void ThenTheLastAuthorShouldBeEqualTo(string value)
+        {
+            Assert.AreEqual(value, CustomJob.LastAuthor);
+        }
+
+        [Then(@"the '(\w+)' server filter got the actual values of the parameters")]
+        public void ThenTheServerFilterGotTheActualValuesOfTheParameters(string name)
+        {
+            // Assert methods are called in the TestFilter class
+        }
+
+        [Then(@"the job should have all of the above parameters encoded as JSON string")]
+        public void ThenItShouldHaveAllOfTheAboveParametersEncodedAsJsonString()
+        {
+            var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", JobSteps.DefaultJobId));
+            foreach (var parameter in _parameters)
+            {
+                Assert.IsTrue(job.ContainsKey(parameter.Key));
+                Assert.AreEqual(parameter.Value, JobHelper.FromJson<string>(job[parameter.Key]));
             }
         }
     }

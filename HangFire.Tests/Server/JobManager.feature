@@ -37,3 +37,24 @@ Scenario: Disposable job should be disposed after processing
     Given an enqueued job
      When the manager processes the next job
      Then the job should be disposed
+
+Scenario: Job arguments should be deserialized correctly
+    Given the following job type:
+          """
+          public void CustomJob : BackgroundJob
+          {
+              public int ArticleId { get; set; }
+              public string Author { get; set; }
+
+              public override void Perform()
+              {
+              }
+          } 
+          """
+      And an enqueued CustomJob with the following arguments:
+          | Name      | Value  |
+          | ArticleId | 2      |
+          | Author    | nobody |
+     When the manager processes the next job
+     Then the last ArticleId should be equal to 2
+      And the last Author should be equal to 'nobody'
