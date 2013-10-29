@@ -27,40 +27,42 @@ namespace HangFire.States
 
         private readonly IRedisClient _redis;
         private readonly IDictionary<string, JobStateDescriptor> _stateDescriptors;
-        private readonly IEnumerable<IStateChangingFilter> _stateChangedFilters;
-        private readonly IEnumerable<IStateChangedFilter> _stateAppliedFilters;
+
+        private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk
+            = JobFilterProviders.Providers.GetFilters;
 
         public StateMachine(IRedisClient redis)
             : this(
                 redis,
                 Descriptors,
-                GlobalJobFilters.Filters.OfType<IStateChangingFilter>().ToList(),
-                GlobalJobFilters.Filters.OfType<IStateChangedFilter>().ToList())
+                null)
         {
         }
 
         internal StateMachine(
             IRedisClient redis,
             IDictionary<string, JobStateDescriptor> stateDescriptors,
-            IEnumerable<IStateChangingFilter> stateChangedFilters,
-            IEnumerable<IStateChangedFilter> stateAppliedFilters)
+            IEnumerable<object> filters)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (stateDescriptors == null) throw new ArgumentNullException("stateDescriptors");
-            if (stateChangedFilters == null) throw new ArgumentNullException("stateChangedFilters");
-            if (stateAppliedFilters == null) throw new ArgumentNullException("stateAppliedFilters");
 
             _redis = redis;
             _stateDescriptors = stateDescriptors;
-            _stateChangedFilters = stateChangedFilters;
-            _stateAppliedFilters = stateAppliedFilters;
+            
+            if (filters != null)
+            {
+                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Invoke, null));
+            }
         }
-
+        
         public bool CreateInState(
             string jobId,
             IDictionary<string, string> parameters,
             JobState state)
         {
+            var filterInfo = GetFilters();
+
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
@@ -74,7 +76,7 @@ namespace HangFire.States
                 transaction.Commit();
             }
 
-            foreach (var filter in _stateChangedFilters)
+            foreach (var filter in filterInfo.StateChangingFilters)
             {
                 var oldState = state;
                 state = filter.OnStateChanging(_redis, jobId, oldState);
@@ -87,7 +89,7 @@ namespace HangFire.States
 
             using (var transaction = _redis.CreateTransaction())
             {
-                ApplyState(jobId, null, state, transaction);
+                ApplyState(jobId, null, state, transaction, filterInfo.StateChangedFilters);
 
                 transaction.QueueCommand(x =>
                     ((IRedisNativeClient)x).Persist(String.Format("hangfire:job:{0}", jobId)));
@@ -100,6 +102,8 @@ namespace HangFire.States
             string jobId, JobState state, params string[] allowedCurrentStates)
         {
             if (state == null) throw new ArgumentNullException("state");
+
+            var filterInfo = GetFilters();
 
             using (_redis.AcquireLock(
                 String.Format("hangfire:job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
@@ -117,7 +121,7 @@ namespace HangFire.States
                     return false;
                 }
 
-                foreach (var filter in _stateChangedFilters)
+                foreach (var filter in filterInfo.StateChangingFilters)
                 {
                     var oldState = state;
                     state = filter.OnStateChanging(_redis, jobId, oldState);
@@ -128,24 +132,30 @@ namespace HangFire.States
                     }
                 }
 
-                return ApplyState(jobId, currentState, state);
+                return ApplyState(jobId, currentState, state, filterInfo.StateChangedFilters);
             }
         }
 
         private bool ApplyState(
             string jobId,
             string currentState,
-            JobState newState)
+            JobState newState,
+            IEnumerable<IStateChangedFilter> stateChangedFilters)
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                ApplyState(jobId, currentState, newState, transaction);
+                ApplyState(jobId, currentState, newState, transaction, stateChangedFilters);
 
                 return transaction.Commit();
             }
         }
 
-        private void ApplyState(string jobId, string currentState, JobState newState, IRedisTransaction transaction)
+        private void ApplyState(
+            string jobId, 
+            string currentState, 
+            JobState newState, 
+            IRedisTransaction transaction,
+            IEnumerable<IStateChangedFilter> stateChangedFilters)
         {
             if (!String.IsNullOrEmpty(currentState))
             {
@@ -157,7 +167,7 @@ namespace HangFire.States
                 transaction.QueueCommand(x => x.RemoveEntry(
                     String.Format("hangfire:job:{0}:state", jobId)));
 
-                foreach (var filter in _stateAppliedFilters)
+                foreach (var filter in stateChangedFilters)
                 {
                     filter.OnStateUnapplied(transaction, jobId, currentState);
                 }
@@ -167,7 +177,7 @@ namespace HangFire.States
 
             newState.Apply(transaction, jobId);
 
-            foreach (var filter in _stateAppliedFilters)
+            foreach (var filter in stateChangedFilters)
             {
                 filter.OnStateApplied(transaction, jobId, newState);
             }
@@ -209,6 +219,11 @@ namespace HangFire.States
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:job:{0}:history", jobId),
                 JobHelper.ToJson(properties)));
+        }
+
+        private JobFilterInfo GetFilters()
+        {
+            return new JobFilterInfo(_getFiltersThunk(null));
         }
     }
 }

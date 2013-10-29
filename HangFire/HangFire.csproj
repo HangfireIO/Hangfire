@@ -69,10 +69,20 @@
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Client\ClientJobDescriptor.cs" />
+    <Compile Include="Filters\JobFilter.cs" />
+    <Compile Include="Filters\JobFilterProviderCollection.cs" />
+    <Compile Include="Filters\JobFilterProviders.cs" />
+    <Compile Include="Filters\JobFilterScope.cs" />
+    <Compile Include="Filters\ReflectedAttributeCache.cs" />
     <Compile Include="Filters\Client\ClientExceptionContext.cs" />
     <Compile Include="Filters\GlobalJobFilterCollection.cs" />
     <Compile Include="Filters\Client\IClientExceptionFilter.cs" />
+    <Compile Include="Filters\IJobFilterProvider.cs" />
     <Compile Include="Filters\IStateChangingFilter.cs" />
+    <Compile Include="Filters\JobDescriptor.cs" />
+    <Compile Include="Filters\JobFilterAttribute.cs" />
+    <Compile Include="Filters\JobFilterAttributeFilterProvider.cs" />
+    <Compile Include="Filters\JobFilterInfo.cs" />
     <Compile Include="Filters\Server\IServerExceptionFilter.cs" />
     <Compile Include="Filters\Client\CreatedContext.cs" />
     <Compile Include="Filters\Client\CreatingContext.cs" />
@@ -84,8 +94,8 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="Filters\IStateChangedFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="RecurringJobsFilter.cs" />
-    <Compile Include="RetryJobsFilter.cs" />
+    <Compile Include="RecurringAttribute.cs" />
+    <Compile Include="RetryAttribute.cs" />
     <Compile Include="Server\DisposableCollection.cs" />
     <Compile Include="Server\IJobFetcher.cs" />
     <Compile Include="Server\IStoppable.cs" />
@@ -104,7 +114,7 @@
     <Compile Include="Filters\Client\IClientFilter.cs" />
     <Compile Include="Filters\IJobFilter.cs" />
     <Compile Include="Filters\Server\IServerFilter.cs" />
-    <Compile Include="PreserveCultureFilter.cs" />
+    <Compile Include="PreserveCultureAttribute.cs" />
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="Perform.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
@@ -125,7 +135,7 @@
     <Compile Include="States\ScheduledState.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
-    <Compile Include="HistoryStatisticsFilter.cs" />
+    <Compile Include="HistoryStatisticsAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec" />

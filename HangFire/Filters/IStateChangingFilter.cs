@@ -6,7 +6,7 @@ namespace HangFire.Filters
     /// <summary>
     /// Defines methods that are required for a state changing filter.
     /// </summary>
-    public interface IStateChangingFilter : IJobFilter
+    public interface IStateChangingFilter
     {
         /// <summary>
         /// Called when the current state of the job is being changed to the

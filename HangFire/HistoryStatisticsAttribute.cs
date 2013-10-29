@@ -5,8 +5,13 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class HistoryStatisticsFilter : IStateChangingFilter
+    public class HistoryStatisticsAttribute : JobFilterAttribute, IStateChangingFilter
     {
+        public HistoryStatisticsAttribute()
+        {
+            Order = 30;
+        }
+
         public JobState OnStateChanging(IRedisClient redis, string jobId, JobState state)
         {
             if (redis == null) throw new ArgumentNullException("redis");

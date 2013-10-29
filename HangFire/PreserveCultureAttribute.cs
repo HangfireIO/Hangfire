@@ -6,7 +6,7 @@ using HangFire.Filters;
 
 namespace HangFire
 {
-    public class PreserveCultureFilter : IClientFilter, IServerFilter
+    public class PreserveCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter
     {
         public void OnCreating(CreatingContext filterContext)
         {

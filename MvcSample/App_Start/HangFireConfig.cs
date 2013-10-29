@@ -27,7 +27,7 @@ namespace MvcSample
                 MachineName = Environment.MachineName
             };
 
-            GlobalJobFilters.Filters.Add(new PreserveCultureFilter());
+            GlobalJobFilters.Filters.Add(new PreserveCultureAttribute());
 
             //_server.Start();
         }

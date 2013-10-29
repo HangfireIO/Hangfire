@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HangFire.Filters
 {
@@ -14,9 +16,9 @@ namespace HangFire.Filters
     /// You can register a global filter using the 
     /// <see cref="GlobalJobFilters.Filters"/> registration endpoint.
     /// </remarks>
-    public class GlobalJobFilterCollection : IEnumerable<IJobFilter>
+    public class GlobalJobFilterCollection : IJobFilterProvider, IEnumerable<JobFilter>
     {
-        private readonly List<IJobFilter> _filters = new List<IJobFilter>();
+        private readonly List<JobFilter> _filters = new List<JobFilter>();
 
         /// <summary>
         /// Gets the number of filters in the global job filter collection.
@@ -33,9 +35,26 @@ namespace HangFire.Filters
         /// Adds the specified filter to the global filter collection.
         /// </summary>
         /// <param name="filter">The filter instance.</param>
-        public void Add(IJobFilter filter)
+        public void Add(object filter)
         {
-            _filters.Add(filter);
+            AddInternal(filter, order: null);
+        }
+
+        /// <summary>
+        /// Adds the specified filter to the global filter collection 
+        /// using the specified filter run order.
+        /// </summary>
+        /// <param name="filter">The filter instance.</param>
+        /// <param name="order">The run order.</param>
+        public void Add(object filter, int order)
+        {
+            AddInternal(filter, order);
+        }
+
+        private void AddInternal(object filter, int? order)
+        {
+            ValidateFilterInstance(filter);
+            _filters.Add(new JobFilter(filter, JobFilterScope.Global, order));
         }
 
         /// <summary>
@@ -51,28 +70,47 @@ namespace HangFire.Filters
         /// </summary>
         /// <param name="filter">The filter instance.</param>
         /// <returns>True if the global filter collection contains the filter, otherwise false.</returns>
-        public bool Contains(IJobFilter filter)
+        public bool Contains(object filter)
         {
-            return _filters.Contains(filter);
+            return _filters.Any(x => x == filter);
         }
 
         /// <summary>
         /// Removes all filters that match the specified filter.
         /// </summary>
         /// <param name="filter">The filter instance.</param>
-        public void Remove(IJobFilter filter)
+        public void Remove(object filter)
         {
             _filters.RemoveAll(x => x == filter);
         }
 
-        public IEnumerator<IJobFilter> GetEnumerator()
+        public IEnumerator<JobFilter> GetEnumerator()
         {
             return _filters.GetEnumerator();
+        }
+
+        IEnumerable<JobFilter> IJobFilterProvider.GetFilters(JobDescriptor descriptor)
+        {
+            return this;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        private static void ValidateFilterInstance(object instance)
+        {
+            if (instance != null &&
+                !(instance is IClientFilter 
+                || instance is IServerFilter 
+                || instance is IClientExceptionFilter 
+                || instance is IServerExceptionFilter
+                || instance is IStateChangedFilter
+                || instance is IStateChangingFilter))
+            {
+                throw new InvalidOperationException("Unsupported filter instance");
+            }
         }
     }
 }

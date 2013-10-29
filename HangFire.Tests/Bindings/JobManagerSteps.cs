@@ -12,8 +12,7 @@ namespace HangFire.Tests
     [Binding]
     public class JobManagerSteps : Steps
     {
-        private readonly IList<IServerFilter> _serverFilters = new List<IServerFilter>();
-        private readonly IList<IServerExceptionFilter> _exceptionFilters = new List<IServerExceptionFilter>();
+        private readonly IList<object> _filters = new List<object>();
 
         private readonly IList<string> _serverResults = new List<string>();
         private readonly IList<string> _exceptionResults = new List<string>();
@@ -35,25 +34,25 @@ namespace HangFire.Tests
         [Given(@"a server filter '(\w+)'")]
         public void GivenAServerFilter(string name)
         {
-            _serverFilters.Add(new TestFilter(name, _serverResults));
+            _filters.Add(new TestFilter(name, _serverResults));
         }
 
         [Given(@"a server filter '(\w+)' that cancels the performing")]
         public void GivenAServerFilterThatCancelsThePerforming(string name)
         {
-            _serverFilters.Add(new TestFilter(name, _serverResults, false, true));
+            _filters.Add(new TestFilter(name, _serverResults, false, true));
         }
 
         [Given(@"a server filter '(\w+)' that throws an exception")]
         public void GivenAServerFilterThatThrowsAnException(string name)
         {
-            _serverFilters.Add(new TestFilter(name, _serverResults, true));
+            _filters.Add(new TestFilter(name, _serverResults, true));
         }
 
         [Given(@"a server filter '(\w+)' that handles an exception")]
         public void GivenAServerFilterThatHandlesAnException(string name)
         {
-            _serverFilters.Add(new TestFilter(name, _serverResults, false, false, true));
+            _filters.Add(new TestFilter(name, _serverResults, false, false, true));
         }
 
         [Given(@"the server filter '(\w+)' that sets the following parameters:")]
@@ -61,7 +60,7 @@ namespace HangFire.Tests
         {
             _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
 
-            _serverFilters.Add(
+            _filters.Add(
                 new TestFilter(name, _serverResults, setOnPreMethodParameters: _parameters));
         }
 
@@ -75,19 +74,19 @@ namespace HangFire.Tests
         [Given(@"the server filter '(\w+)' that reads all of the above parameters")]
         public void GivenTheServerFilterThatReadsAllOfTheAboveParameters(string name)
         {
-            _serverFilters.Add(new TestFilter(name, _serverResults, readParameters: _parameters));
+            _filters.Add(new TestFilter(name, _serverResults, readParameters: _parameters));
         }
 
         [Given(@"a server exception filter '(\w+)'")]
         public void GivenAServerExceptionFilter(string name)
         {
-            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionResults));
+            _filters.Add(new TestExceptionFilter(name, _exceptionResults));
         }
 
         [Given(@"a server exception filter '(\w+)' that handles an exception")]
         public void GivenAServerExceptionFilterThatHandlesAnException(string name)
         {
-            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionResults, true));
+            _filters.Add(new TestExceptionFilter(name, _exceptionResults, true));
         }
 
         [When(@"the manager processes the next job")]
@@ -96,7 +95,7 @@ namespace HangFire.Tests
             var context = new ServerContext(
                 ServerSteps.DefaultServerName,
                 new JobActivator(),
-                new JobPerformer(_serverFilters, _exceptionFilters));
+                new JobPerformer(_filters));
 
             using (var manager = new JobManager(
                 new JobFetcher(RedisFactory.BasicManager, QueueSteps.DefaultQueue),

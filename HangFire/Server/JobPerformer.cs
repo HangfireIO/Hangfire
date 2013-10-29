@@ -8,37 +8,39 @@ namespace HangFire.Server
 {
     internal class JobPerformer
     {
-        private readonly IEnumerable<IServerFilter> _serverFilters;
-        private readonly IEnumerable<IServerExceptionFilter> _serverExceptionFilters;
+        private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk 
+            = JobFilterProviders.Providers.GetFilters;
 
         public JobPerformer()
-            : this(
-                GlobalJobFilters.Filters.OfType<IServerFilter>(),
-                GlobalJobFilters.Filters.OfType<IServerExceptionFilter>())
         {
         }
 
-        public JobPerformer(
-            IEnumerable<IServerFilter> serverFilters, 
-            IEnumerable<IServerExceptionFilter> serverExceptionFilters)
+        internal JobPerformer(IEnumerable<object> filters)
+            : this()
         {
-            if (serverFilters == null) throw new ArgumentNullException("serverFilters");
-            if (serverExceptionFilters == null) throw new ArgumentNullException("serverExceptionFilters");
+            if (filters != null)
+            {
+                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Invoke, null));
+            }
+        }
 
-            _serverFilters = serverFilters;
-            _serverExceptionFilters = serverExceptionFilters;
+        protected virtual JobFilterInfo GetFilters(JobDescriptor descriptor)
+        {
+            return new JobFilterInfo(_getFiltersThunk(descriptor));
         }
 
         public void PerformJob(PerformContext context)
         {
+            var filterInfo = GetFilters(context.JobDescriptor);
+
             try
             {
-                PerformJobWithFilters(context, _serverFilters);
+                PerformJobWithFilters(context, filterInfo.ServerFilters);
             }
             catch (Exception ex)
             {
                 var exceptionContext = new ServerExceptionContext(context, ex);
-                InvokeServerExceptionFilters(exceptionContext, _serverExceptionFilters);
+                InvokeServerExceptionFilters(exceptionContext, filterInfo.ServerExceptionFilters);
 
                 if (!exceptionContext.ExceptionHandled)
                 {
@@ -107,7 +109,7 @@ namespace HangFire.Server
             ServerExceptionContext context,
             IEnumerable<IServerExceptionFilter> filters)
         {
-            foreach (var filter in filters)
+            foreach (var filter in filters.Reverse())
             {
                 filter.OnServerException(context);
             }

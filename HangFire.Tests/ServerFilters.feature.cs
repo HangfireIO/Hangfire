@@ -367,14 +367,14 @@ this.ScenarioSetup(scenarioInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Server exception filters are executed when there was an exception while performin" +
-            "g a job")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Server exception filters should be executed when there was an exception while per" +
+            "forming a job")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ServerExceptionFiltersAreExecutedWhenThereWasAnExceptionWhilePerformingAJob()
+        public virtual void ServerExceptionFiltersShouldBeExecutedWhenThereWasAnExceptionWhilePerformingAJob()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server exception filters are executed when there was an exception while performin" +
-                    "g a job", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server exception filters should be executed when there was an exception while per" +
+                    "forming a job", ((string[])(null)));
 #line 102
 this.ScenarioSetup(scenarioInfo);
 #line 103
@@ -392,12 +392,12 @@ this.ScenarioSetup(scenarioInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Multiple server exception filters are executed depending on their order")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Multiple server exception filters should be executed in the reversed order")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void MultipleServerExceptionFiltersAreExecutedDependingOnTheirOrder()
+        public virtual void MultipleServerExceptionFiltersShouldBeExecutedInTheReversedOrder()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Multiple server exception filters are executed depending on their order", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Multiple server exception filters should be executed in the reversed order", ((string[])(null)));
 #line 109
 this.ScenarioSetup(scenarioInfo);
 #line 110
@@ -412,9 +412,9 @@ this.ScenarioSetup(scenarioInfo);
             TechTalk.SpecFlow.Table table10 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
             table10.AddRow(new string[] {
-                        "first"});
-            table10.AddRow(new string[] {
                         "second"});
+            table10.AddRow(new string[] {
+                        "first"});
 #line 114
      testRunner.Then("the server exception filters should be executed in the following order:", ((string)(null)), table10, "Then ");
 #line 118
@@ -424,12 +424,12 @@ this.ScenarioSetup(scenarioInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Server exception filter can handle the exception")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Server exception filter should be able to handle the exception")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Server filters")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void ServerExceptionFilterCanHandleTheException()
+        public virtual void ServerExceptionFilterShouldBeAbleToHandleTheException()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server exception filter can handle the exception", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Server exception filter should be able to handle the exception", ((string[])(null)));
 #line 120
 this.ScenarioSetup(scenarioInfo);
 #line 121
@@ -446,11 +446,11 @@ this.ScenarioSetup(scenarioInfo);
             TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
             table11.AddRow(new string[] {
-                        "first"});
+                        "third"});
             table11.AddRow(new string[] {
                         "second"});
             table11.AddRow(new string[] {
-                        "third"});
+                        "first"});
 #line 126
      testRunner.Then("the following server exception filters should be executed:", ((string)(null)), table11, "Then ");
 #line 131

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using HangFire.Filters;
 using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    public class ServerJobDescriptor : IDisposable
+    public class ServerJobDescriptor : JobDescriptor, IDisposable
     {
         private readonly IRedisClient _redis;
         private readonly BackgroundJob _jobInstance;
@@ -57,10 +58,6 @@ namespace HangFire.Server
                 }
             }
         }
-
-        public string JobId { get; private set; }
-
-        public Type Type { get; private set; }
 
         public void SetParameter(string name, object value)
         {

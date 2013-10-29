@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines methods that are required for a server filter.
     /// </summary>
-    public interface IServerFilter : IJobFilter
+    public interface IServerFilter
     {
         /// <summary>
         /// Called before the performance of the job.

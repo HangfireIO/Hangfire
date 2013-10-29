@@ -72,12 +72,11 @@ namespace ConsoleSample
         public static void Main()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
-
+            
             RedisFactory.Db = 3;
 
-            GlobalJobFilters.Filters.Add(new HistoryStatisticsFilter());
-            GlobalJobFilters.Filters.Add(new RetryJobsFilter());
-            GlobalJobFilters.Filters.Add(new RecurringJobsFilter());
+            GlobalJobFilters.Filters.Add(new HistoryStatisticsAttribute(), 20);
+            GlobalJobFilters.Filters.Add(new RetryAttribute());
 
             using (var server = new BackgroundJobServer("critical", "default"))
             {

@@ -6,8 +6,7 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class RecurringAttribute : Attribute
+    public class RecurringAttribute : JobFilterAttribute, IStateChangingFilter
     {
         public RecurringAttribute(int seconds)
         {
@@ -15,10 +14,7 @@ namespace HangFire
         }
 
         public int Seconds { get; private set; }
-    }
 
-    public class RecurringJobsFilter : IStateChangingFilter
-    {
         public JobState OnStateChanging(IRedisClient redis, string jobId, JobState state)
         {
             if (redis == null) throw new ArgumentNullException("redis");

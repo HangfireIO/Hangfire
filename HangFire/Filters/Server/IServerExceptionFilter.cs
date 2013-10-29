@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines methods that are required for the server exception filter.
     /// </summary>
-    public interface IServerExceptionFilter : IJobFilter
+    public interface IServerExceptionFilter
     {
         /// <summary>
         /// Called when an exception occured during the performance of the job.

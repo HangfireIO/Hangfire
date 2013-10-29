@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines methods that are required for a client filter.
     /// </summary>
-    public interface IClientFilter : IJobFilter
+    public interface IClientFilter
     {
         /// <summary>
         /// Called before the creation of the job. 

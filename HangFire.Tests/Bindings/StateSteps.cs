@@ -24,10 +24,8 @@ namespace HangFire.Tests.States
 
         private readonly IDictionary<string, JobStateDescriptor> _descriptors
             = new Dictionary<string, JobStateDescriptor>();
-        private readonly IList<IStateChangingFilter> _stateChangingFilters 
-            = new List<IStateChangingFilter>();
-        private readonly IList<IStateChangedFilter> _stateAppliedFilters
-            = new List<IStateChangedFilter>();
+        private readonly IList<object> _filters 
+            = new List<object>();
 
         private readonly IList<string> _stateChangingResults = new List<string>(); 
         private readonly IList<string> _stateAppliedResults = new List<string>(); 
@@ -97,7 +95,7 @@ namespace HangFire.Tests.States
         [Given(@"a state changing filter '([a-zA-Z]+)'")]
         public void GivenAStateChangingFilter(string name)
         {
-            _stateChangingFilters.Add(new TestStateChangingFilter(name, _stateChangingResults));
+            _filters.Add(new TestStateChangingFilter(name, _stateChangingResults));
         }
 
         [Given(@"a state changing filter '(\w+)' that changes the state to the '(\w+)'")]
@@ -105,14 +103,14 @@ namespace HangFire.Tests.States
         {
             Given(String.Format("a '{0}' state", state));
 
-            _stateChangingFilters.Add(
+            _filters.Add(
                 new TestStateChangingFilter(name, _stateChangingResults, _stateMocks[state].Object));
         }
 
         [Given(@"a state applied filter '(\w+)'")]
         public void GivenAStateAppliedFilter(string name)
         {
-            _stateAppliedFilters.Add(new TestStateChangedFilter(name, _stateAppliedResults));
+            _filters.Add(new TestStateChangedFilter(name, _stateAppliedResults));
         }
 
         [When(@"I apply it")]
@@ -144,7 +142,7 @@ namespace HangFire.Tests.States
         public void WhenIApplyTheState()
         {
             var stateMachine = new StateMachine(
-                Redis.Client, _descriptors, _stateChangingFilters, _stateAppliedFilters);
+                Redis.Client, _descriptors, _filters);
             stateMachine.ChangeState(JobSteps.DefaultJobId, _state);
         }
 
@@ -161,7 +159,7 @@ namespace HangFire.Tests.States
         public void WhenIChangeTheStateOfTheJobToThe(string jobId, string state)
         {
             var stateMachine = new StateMachine(
-                Redis.Client, _descriptors, _stateChangingFilters, _stateAppliedFilters);
+                Redis.Client, _descriptors, _filters);
             stateMachine.ChangeState(jobId, _stateMocks[state].Object);
         }
 
@@ -170,7 +168,7 @@ namespace HangFire.Tests.States
             string state, string allowedState)
         {
             var stateMachine = new StateMachine(
-                Redis.Client, _descriptors, _stateChangingFilters, _stateAppliedFilters);
+                Redis.Client, _descriptors, _filters);
             stateMachine.ChangeState(JobSteps.DefaultJobId, _stateMocks[state].Object, allowedState);
         }
 

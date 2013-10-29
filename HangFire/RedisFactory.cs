@@ -21,12 +21,12 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Gets or sets Redis hostname. Default: "localhost:6379"
+        /// Gets or sets Redis hostname. Default: "localhost:6379".
         /// </summary>
         public static string Host { get; set; }
 
         /// <summary>
-        /// Gets or sets Redis database number. Default: 0
+        /// Gets or sets Redis database number. Default: 0.
         /// </summary>
         public static int Db { get; set; }
 

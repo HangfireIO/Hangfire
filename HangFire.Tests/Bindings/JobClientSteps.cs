@@ -19,10 +19,8 @@ namespace HangFire.Tests
         private IDictionary<string, string> _arguments = new Dictionary<string, string>();
         private Exception _exception;
 
-        private readonly IList<IClientFilter> _clientFilters = new List<IClientFilter>();
+        private readonly IList<object> _filters = new List<object>();
         private readonly IList<string> _clientFilterResults = new List<string>();
-
-        private readonly IList<IClientExceptionFilter> _exceptionFilters = new List<IClientExceptionFilter>();
         private readonly IList<string> _exceptionFilterResults = new List<string>();
 
         private IDictionary<string, string> _parameters;
@@ -32,31 +30,31 @@ namespace HangFire.Tests
         {
             _client = new JobClient(
                 RedisFactory.BasicManager,
-                new JobCreator(_clientFilters, _exceptionFilters));
+                new JobCreator(_filters));
         }
 
         [Given("the client filter '(.+)'")]
         public void GivenTheClientFilter(string name)
         {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults));
+            _filters.Add(new TestFilter(name, _clientFilterResults));
         }
 
         [Given("the client filter '(.+)' that cancels the job")]
         public void GivenTheClientFilterThatCancelsTheJob(string name)
         {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults, false, true));
+            _filters.Add(new TestFilter(name, _clientFilterResults, false, true));
         }
 
         [Given("the client filter '(.+)' that handles an exception")]
         public void GivenTheClientFilterThatHandlesAnException(string name)
         {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults, false, false, true));
+            _filters.Add(new TestFilter(name, _clientFilterResults, false, false, true));
         }
 
         [Given("the client filter '(.+)' that throws an exception")]
         public void GivenTheClientFilterThatThrowsAnException(string name)
         {
-            _clientFilters.Add(new TestFilter(name, _clientFilterResults, true, false, false));
+            _filters.Add(new TestFilter(name, _clientFilterResults, true, false, false));
         }
 
         [Given("the client filter '(.+)' that sets the following parameters in the OnCreating method:")]
@@ -64,7 +62,7 @@ namespace HangFire.Tests
         {
             _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
 
-            _clientFilters.Add(new TestFilter(
+            _filters.Add(new TestFilter(
                 name, 
                 _clientFilterResults, 
                 setOnPreMethodParameters: _parameters));
@@ -73,7 +71,7 @@ namespace HangFire.Tests
         [Given(@"the client filter '(\w+)' that reads all of the above parameters")]
         public void GivenTheClientFilterThatReadsAllOfTheAboveParameters(string name)
         {
-            _clientFilters.Add(new TestFilter(
+            _filters.Add(new TestFilter(
                 name, _clientFilterResults, readParameters: _parameters));
         }
 
@@ -88,20 +86,26 @@ namespace HangFire.Tests
         public void GivenTheClientFilterThatSetsTheFollowingParametersInTheOnCreatedMethod(string name, Table table)
         {
             _parameters = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
-            _clientFilters.Add(new TestFilter(
+            _filters.Add(new TestFilter(
                 name, _clientFilterResults, setOnPostMethodParameters: _parameters));
         }
 
         [Given("the exception filter '(.+)'")]
         public void GivenTheExceptionFilter(string name)
         {
-            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionFilterResults));
+            _filters.Add(new TestExceptionFilter(name, _exceptionFilterResults));
         }
 
         [Given("the exception filter '(.+)' that handles an exception")]
         public void GivenTheExceptionFilterThatHandlesAnException(string name)
         {
-            _exceptionFilters.Add(new TestExceptionFilter(name, _exceptionFilterResults, true));
+            _filters.Add(new TestExceptionFilter(name, _exceptionFilterResults, true));
+        }
+
+        [Given(@"there is a buggy filter \(for example\)")]
+        public void WhenThereWasAnExceptionWhileCreatingAJob()
+        {
+            _filters.Add(new TestFilter("buggy", _clientFilterResults, true));
         }
         
         [When("I create a job")]
@@ -131,12 +135,6 @@ namespace HangFire.Tests
         {
             _arguments = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
             When("I create a job");
-        }
-
-        [When(@"there is a buggy filter \(for example\)")]
-        public void WhenThereWasAnExceptionWhileCreatingAJob()
-        {
-            _clientFilters.Add(new TestFilter("buggy", _clientFilterResults, true));
         }
 
         [When("I create a job with an empty id")]

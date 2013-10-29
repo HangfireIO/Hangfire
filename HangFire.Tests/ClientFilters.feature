@@ -6,7 +6,7 @@ Feature: Client filters
 
 Background:
     Given a client
-    
+
 Scenario: Client filters should be executed when I create a job
     Given the client filter 'test'
      When I create a job
@@ -102,31 +102,31 @@ Scenario: When a client filter handles an exception, it should not be thrown out
 
 Scenario: Client exception filters should be executed when there was an exception while creating a job
     Given the exception filter 'test'
-     When there is a buggy filter (for example)
-      And I create a job
+      And there is a buggy filter (for example)
+     When I create a job
      Then the client exception filter should be executed
       And the CreateJobFailedException should be thrown by the client
 
-Scenario: Multiple exception filters should be executed depending on their order
+Scenario: Multiple exception filters should be executed in the reversed order
     Given the exception filter 'first'
       And the exception filter 'second'
-     When there is a buggy filter (for example)
-      And I create a job
+      And there is a buggy filter (for example)
+     When I create a job
      Then the client exception filters should be executed in the following order:
           | Filter |
-          | first  |
           | second |
+          | first  |
       And the CreateJobFailedException should be thrown by the client
 
 Scenario: When a client exception filter handles an exception, it should not be thrown outside
     Given the exception filter 'first'
       And the exception filter 'second' that handles an exception
       And the exception filter 'third'
-     When there is a buggy filter (for example)
-      And I create a job
+      And there is a buggy filter (for example)
+     When I create a job
      Then the following client exception filters should be executed:
           | Filter |
-          | first  |
-          | second |
           | third  |
+          | second |
+          | first  |
       And an exception should not be thrown by the client

@@ -99,25 +99,25 @@ Scenario: Server filter can handle the exception
           | first::OnPerformed   |
       And the state of the job should be Succeeded
 
-Scenario: Server exception filters are executed when there was an exception while performing a job
+Scenario: Server exception filters should be executed when there was an exception while performing a job
     Given an enqueued broken job
       And a server exception filter 'test'
      When the manager processes the next job
      Then the server exception filter should be executed
       And the state of the job should be Failed
 
-Scenario: Multiple server exception filters are executed depending on their order
+Scenario: Multiple server exception filters should be executed in the reversed order
     Given an enqueued broken job
       And a server exception filter 'first'
       And a server exception filter 'second'
      When the manager processes the next job
      Then the server exception filters should be executed in the following order:
           | Filter |
-          | first  |
           | second |
+          | first  |
       And the state of the job should be Failed
 
-Scenario: Server exception filter can handle the exception
+Scenario: Server exception filter should be able to handle the exception
     Given an enqueued broken job
       And a server exception filter 'first'
       And a server exception filter 'second' that handles an exception
@@ -125,7 +125,7 @@ Scenario: Server exception filter can handle the exception
      When the manager processes the next job
      Then the following server exception filters should be executed:
           | Filter |
-          | first  |
-          | second |
           | third  |
+          | second |
+          | first  |
       And the state of the job should be Succeeded

@@ -420,9 +420,9 @@ this.FeatureBackground();
 #line 104
     testRunner.Given("the exception filter \'test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 105
-     testRunner.When("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+      testRunner.And("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 106
-      testRunner.And("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 107
      testRunner.Then("the client exception filter should be executed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 108
@@ -432,12 +432,12 @@ this.FeatureBackground();
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Multiple exception filters should be executed depending on their order")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Multiple exception filters should be executed in the reversed order")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Client filters")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void MultipleExceptionFiltersShouldBeExecutedDependingOnTheirOrder()
+        public virtual void MultipleExceptionFiltersShouldBeExecutedInTheReversedOrder()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Multiple exception filters should be executed depending on their order", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Multiple exception filters should be executed in the reversed order", ((string[])(null)));
 #line 110
 this.ScenarioSetup(scenarioInfo);
 #line 7
@@ -447,16 +447,16 @@ this.FeatureBackground();
 #line 112
       testRunner.And("the exception filter \'second\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 113
-     testRunner.When("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+      testRunner.And("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 114
-      testRunner.And("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table11 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
             table11.AddRow(new string[] {
-                        "first"});
-            table11.AddRow(new string[] {
                         "second"});
+            table11.AddRow(new string[] {
+                        "first"});
 #line 115
      testRunner.Then("the client exception filters should be executed in the following order:", ((string)(null)), table11, "Then ");
 #line 119
@@ -485,18 +485,18 @@ this.FeatureBackground();
 #line 124
       testRunner.And("the exception filter \'third\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 125
-     testRunner.When("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+      testRunner.And("there is a buggy filter (for example)", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 126
-      testRunner.And("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+     testRunner.When("I create a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table12 = new TechTalk.SpecFlow.Table(new string[] {
                         "Filter"});
             table12.AddRow(new string[] {
-                        "first"});
+                        "third"});
             table12.AddRow(new string[] {
                         "second"});
             table12.AddRow(new string[] {
-                        "third"});
+                        "first"});
 #line 127
      testRunner.Then("the following client exception filters should be executed:", ((string)(null)), table12, "Then ");
 #line 132

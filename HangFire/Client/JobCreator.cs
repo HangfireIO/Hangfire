@@ -15,38 +15,40 @@ namespace HangFire.Client
             Current = new JobCreator();
         }
 
-        private readonly IEnumerable<IClientFilter> _clientFilters;
-        private readonly IEnumerable<IClientExceptionFilter> _clientExceptionFilters;
+        private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk 
+            = JobFilterProviders.Providers.GetFilters;
 
         public JobCreator()
-            : this(
-                GlobalJobFilters.Filters.OfType<IClientFilter>(),
-                GlobalJobFilters.Filters.OfType<IClientExceptionFilter>())
         {
         }
 
-        public JobCreator(
-            IEnumerable<IClientFilter> clientFilters,
-            IEnumerable<IClientExceptionFilter> clientExceptionFilters)
+        internal JobCreator(IEnumerable<object> filters)
+            : this()
         {
-            if (clientFilters == null) throw new ArgumentNullException("clientFilters");
-            if (clientExceptionFilters == null) throw new ArgumentNullException("clientExceptionFilters");
+            if (filters != null)
+            {
+                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Invoke, null));
+            }
+        }
 
-            _clientFilters = clientFilters;
-            _clientExceptionFilters = clientExceptionFilters;
+        protected virtual JobFilterInfo GetFilters(JobDescriptor descriptor)
+        {
+            return new JobFilterInfo(_getFiltersThunk(descriptor));
         }
 
         public void CreateJob(CreateContext context)
         {
+            var filterInfo = GetFilters(context.JobDescriptor);
+
             try
             {
-                CreateWithFilters(context, context.JobDescriptor, _clientFilters);
+                CreateWithFilters(context, context.JobDescriptor, filterInfo.ClientFilters);
             }
             catch (Exception ex)
             {
                 var exceptionContext = new ClientExceptionContext(context, ex);
 
-                InvokeExceptionFilters(exceptionContext, _clientExceptionFilters);
+                InvokeExceptionFilters(exceptionContext, filterInfo.ClientExceptionFilters);
                 if (!exceptionContext.ExceptionHandled)
                 {
                     throw;
@@ -115,7 +117,7 @@ namespace HangFire.Client
         private static void InvokeExceptionFilters(
             ClientExceptionContext context, IEnumerable<IClientExceptionFilter> filters)
         {
-            foreach (var filter in filters)
+            foreach (var filter in filters.Reverse())
             {
                 filter.OnClientException(context);
             }

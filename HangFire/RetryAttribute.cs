@@ -5,7 +5,7 @@ using ServiceStack.Redis;
 
 namespace HangFire
 {
-    public class RetryJobsFilter : IStateChangingFilter
+    public class RetryAttribute : JobFilterAttribute, IStateChangingFilter
     {
         private const int MaxRetryAttempts = 3;
 

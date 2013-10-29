@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines methods that are required for the client exception filter.
     /// </summary>
-    public interface IClientExceptionFilter : IJobFilter
+    public interface IClientExceptionFilter
     {
         /// <summary>
         /// Called when an exception occured during the creation of the job.

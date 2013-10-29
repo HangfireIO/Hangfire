@@ -10,7 +10,7 @@ namespace HangFire.Client
     /// <summary>
     /// Provides information about the job being created.
     /// </summary>
-    public class ClientJobDescriptor
+    public class ClientJobDescriptor : JobDescriptor
     {
         private readonly StateMachine _stateMachine;
 
@@ -41,16 +41,6 @@ namespace HangFire.Client
             _jobParameters["Type"] = type.AssemblyQualifiedName;
             _jobParameters["Args"] = JobHelper.ToJson(arguments);
         }
-
-        /// <summary>
-        /// Gets the state of the creating job.
-        /// </summary>
-        public string JobId { get; private set; }
-
-        /// <summary>
-        /// Gets the type of the creating job.
-        /// </summary>
-        public Type Type { get; private set; }
 
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
