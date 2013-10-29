@@ -73,12 +73,11 @@ namespace HangFire.Web
 
                 return GetJobsWithProperties(Redis,
                     jobIds,
-                    new[] { "Type", "Args" },
+                    new[] { "Type" },
                     new[] { "StartedAt", "ServerName", "State" },
                     (job, state) => new ProcessingJobDto
                     {
                         ServerName = state[1],
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         Type = job[0],
                         Queue = TryToGetQueue(job[0]),
                         StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
@@ -115,7 +114,7 @@ namespace HangFire.Web
                         pipeline.QueueCommand(
                             x => x.GetValuesFromHash(
                                 String.Format("hangfire:job:{0}", job.Key),
-                                new[] { "Type", "Args" }),
+                                new[] { "Type" }),
                             x => jobs.Add(job.Key, x));
 
                         pipeline.QueueCommand(
@@ -133,7 +132,6 @@ namespace HangFire.Web
                     job => new ScheduleDto
                     {
                         ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(jobs[job.Key][1]),
                         Queue = TryToGetQueue(jobs[job.Key][0]),
                         Type = jobs[job.Key][0],
                         InScheduledState =
@@ -244,13 +242,12 @@ namespace HangFire.Web
                 return GetJobsWithProperties(
                     Redis,
                     succeededJobIds,
-                    new[] { "Type", "Args" },
+                    new[] { "Type" },
                     new[] { "SucceededAt", "State" },
                     (job, state) => new SucceededJobDto
                     {
                         Type = job[0],
                         Queue = TryToGetQueue(job[0]),
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
@@ -291,12 +288,11 @@ namespace HangFire.Web
                     var jobs = GetJobsWithProperties(
                         Redis,
                         firstJobIds,
-                        new[] { "Type", "Args" },
+                        new[] { "Type" },
                         new[] { "EnqueuedAt", "State" },
                         (job, state) => new EnqueuedJobDto
                         {
                             Type = job[0],
-                            Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                             EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                             InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                         });
@@ -327,12 +323,11 @@ namespace HangFire.Web
                 return GetJobsWithProperties(
                     Redis,
                     jobIds,
-                    new[] { "Type", "Args" },
+                    new[] { "Type" },
                     new[] { "EnqueuedAt", "State" },
                     (job, state) => new EnqueuedJobDto
                     {
                         Type = job[0],
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
                         EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
@@ -351,16 +346,15 @@ namespace HangFire.Web
                 return GetJobsWithProperties(
                     Redis,
                     jobIds,
-                    new[] { "Type", "Args", "State", "CreatedAt", "Fetched", "Checked" },
+                    new[] { "Type", "State", "CreatedAt", "Fetched", "Checked" },
                     null,
                     (job, state) => new DequeuedJobDto
                     {
                         Type = job[0],
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
-                        State = job[2],
-                        CreatedAt = JobHelper.FromNullableStringTimestamp(job[3]),
-                        FetchedAt = JobHelper.FromNullableStringTimestamp(job[4]),
-                        CheckedAt = JobHelper.FromNullableStringTimestamp(job[5])
+                        State = job[1],
+                        CreatedAt = JobHelper.FromNullableStringTimestamp(job[2]),
+                        FetchedAt = JobHelper.FromNullableStringTimestamp(job[3]),
+                        CheckedAt = JobHelper.FromNullableStringTimestamp(job[4])
                     });
             }
         }

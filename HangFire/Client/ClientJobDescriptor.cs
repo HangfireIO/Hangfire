@@ -40,6 +40,7 @@ namespace HangFire.Client
             
             _jobParameters["Type"] = type.AssemblyQualifiedName;
             _jobParameters["Args"] = JobHelper.ToJson(arguments);
+            _jobParameters["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
         }
 
         /// <summary>

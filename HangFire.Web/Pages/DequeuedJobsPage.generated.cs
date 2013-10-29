@@ -129,7 +129,6 @@ WriteLiteral(@"    <table class=""table"">
                 <th>Id</th>
                 <th>State</th>
                 <th>Job type</th>
-                <th>Args</th>
                 <th>Created</th>
                 <th>Fetched</th>
                 <th>Checked</th>
@@ -140,7 +139,7 @@ WriteLiteral(@"    <table class=""table"">
 
 
             
-            #line 56 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 55 "..\..\Pages\DequeuedJobsPage.cshtml"
              foreach (var job in dequeuedJobs)
             {
 
@@ -152,7 +151,7 @@ WriteLiteral("                <tr>\r\n                    <td>\r\n              
 
 
             
-            #line 60 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 59 "..\..\Pages\DequeuedJobsPage.cshtml"
                             Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -162,7 +161,7 @@ WriteLiteral("\">");
 
 
             
-            #line 60 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 59 "..\..\Pages\DequeuedJobsPage.cshtml"
                                                                 Write(HtmlHelper.JobId(job.Key));
 
             
@@ -173,7 +172,7 @@ WriteLiteral("</a>\r\n                    </td>\r\n                    <td>\r\n 
 
 
             
-            #line 63 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 62 "..\..\Pages\DequeuedJobsPage.cshtml"
                                                              Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null);
 
             
@@ -183,7 +182,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 64 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 63 "..\..\Pages\DequeuedJobsPage.cshtml"
                        Write(job.Value.State);
 
             
@@ -193,27 +192,17 @@ WriteLiteral("</span>\r\n                    </td>\r\n                    <td>")
 
 
             
-            #line 66 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 65 "..\..\Pages\DequeuedJobsPage.cshtml"
                    Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td>\r\n                        <pre class=\"pre-args\">");
+WriteLiteral("</td>\r\n                    <td>\r\n");
 
 
             
-            #line 68 "..\..\Pages\DequeuedJobsPage.cshtml"
-                                         Write(HtmlHelper.FormatProperties(job.Value.Args));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</pre>\r\n                    </td>\r\n                    <td>\r\n");
-
-
-            
-            #line 71 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 67 "..\..\Pages\DequeuedJobsPage.cshtml"
                          if (job.Value.CreatedAt.HasValue)
                         {
 
@@ -224,7 +213,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 73 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 69 "..\..\Pages\DequeuedJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.CreatedAt.Value));
 
             
@@ -234,7 +223,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 74 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 70 "..\..\Pages\DequeuedJobsPage.cshtml"
                            Write(job.Value.CreatedAt);
 
             
@@ -244,7 +233,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 76 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 72 "..\..\Pages\DequeuedJobsPage.cshtml"
                         }
 
             
@@ -254,7 +243,7 @@ WriteLiteral("                    </td>\r\n                    <td>\r\n");
 
 
             
-            #line 79 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 75 "..\..\Pages\DequeuedJobsPage.cshtml"
                          if (job.Value.FetchedAt.HasValue)
                         {
 
@@ -265,7 +254,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 81 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 77 "..\..\Pages\DequeuedJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.FetchedAt.Value));
 
             
@@ -275,7 +264,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 82 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 78 "..\..\Pages\DequeuedJobsPage.cshtml"
                            Write(job.Value.FetchedAt);
 
             
@@ -285,7 +274,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 84 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 80 "..\..\Pages\DequeuedJobsPage.cshtml"
                         }
 
             
@@ -295,7 +284,7 @@ WriteLiteral("                    </td>\r\n                    <td>\r\n");
 
 
             
-            #line 87 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 83 "..\..\Pages\DequeuedJobsPage.cshtml"
                          if (job.Value.CheckedAt.HasValue)
                         {
 
@@ -306,7 +295,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 89 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 85 "..\..\Pages\DequeuedJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.CheckedAt.Value));
 
             
@@ -316,7 +305,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 90 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 86 "..\..\Pages\DequeuedJobsPage.cshtml"
                            Write(job.Value.CheckedAt);
 
             
@@ -326,7 +315,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 92 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 88 "..\..\Pages\DequeuedJobsPage.cshtml"
                         }
 
             
@@ -336,7 +325,7 @@ WriteLiteral("                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 95 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 91 "..\..\Pages\DequeuedJobsPage.cshtml"
             }
 
             
@@ -346,21 +335,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 98 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 94 "..\..\Pages\DequeuedJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 99 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 95 "..\..\Pages\DequeuedJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 99 "..\..\Pages\DequeuedJobsPage.cshtml"
+            #line 95 "..\..\Pages\DequeuedJobsPage.cshtml"
                                         
 }
             

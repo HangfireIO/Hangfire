@@ -32,7 +32,6 @@ else
             <tr>
                 <th>Id</th>
                 <th>Job type</th>
-                <th>Args</th>
                 <th>Server</th>
                 <th>Started</th>
             </tr>
@@ -52,9 +51,6 @@ else
                     </td>
                     <td>
                         @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
-                    </td>
-                    <td>
-                        <pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre>
                     </td>
                     <td>
                         @job.Value.ServerName

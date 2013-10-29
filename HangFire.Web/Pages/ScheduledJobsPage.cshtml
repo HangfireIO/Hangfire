@@ -33,7 +33,6 @@ else
                 <th>Id</th>
                 <th>Enqueue</th>
                 <th>Job type</th>
-                <th>Args</th>
                 <th></th>
             </tr>
         </thead>
@@ -52,9 +51,6 @@ else
                 <td data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt)">@job.Value.ScheduledAt</td>
                 <td>
                     @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
-                </td>
-                <td>
-                    <pre class="pre-args">@HtmlHelper.FormatProperties(job.Value.Args)</pre>
                 </td>
                 <td>
                     @if (job.Value.InScheduledState)

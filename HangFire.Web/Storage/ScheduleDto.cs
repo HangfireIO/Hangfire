@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace HangFire.Web
 {
@@ -8,7 +7,6 @@ namespace HangFire.Web
         public DateTime ScheduledAt { get; set; }
         public string Type { get; set; }
         public string Queue { get; set; }
-        public Dictionary<string, string> Args { get; set; }
         public bool InScheduledState { get; set; }
     }
 }

@@ -96,22 +96,14 @@ Write(RenderPartial(new PerPageSelector(pager)));
             
             #line default
             #line hidden
-WriteLiteral(@"    <table class=""table"">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Job type</th>
-                <th>Args</th>
-                <th>Server</th>
-                <th>Started</th>
-            </tr>
-        </thead>
-        <tbody>
-");
+WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
+">Id</th>\r\n                <th>Job type</th>\r\n                <th>Server</th>\r\n  " +
+"              <th>Started</th>\r\n            </tr>\r\n        </thead>\r\n        <tb" +
+"ody>\r\n");
 
 
             
-            #line 41 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 40 "..\..\Pages\ProcessingJobsPage.cshtml"
              foreach (var job in processingJobs)
             {
 
@@ -122,7 +114,7 @@ WriteLiteral("                <tr class=\"");
 
 
             
-            #line 43 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 42 "..\..\Pages\ProcessingJobsPage.cshtml"
                        Write(!job.Value.InProcessingState ? "obsolete-data" : null);
 
             
@@ -132,7 +124,7 @@ WriteLiteral("\">\r\n                    <td>\r\n                        <a href
 
 
             
-            #line 45 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 44 "..\..\Pages\ProcessingJobsPage.cshtml"
                             Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -142,7 +134,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 46 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 45 "..\..\Pages\ProcessingJobsPage.cshtml"
                        Write(HtmlHelper.JobId(job.Key));
 
             
@@ -152,7 +144,7 @@ WriteLiteral("\r\n                        </a>\r\n");
 
 
             
-            #line 48 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 47 "..\..\Pages\ProcessingJobsPage.cshtml"
                          if (!job.Value.InProcessingState)
                         {
 
@@ -164,7 +156,7 @@ WriteLiteral("                            <span title=\"Job\'s state has been ch
 
 
             
-            #line 51 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 50 "..\..\Pages\ProcessingJobsPage.cshtml"
                         }
 
             
@@ -174,7 +166,7 @@ WriteLiteral("                    </td>\r\n                    <td>\r\n         
 
 
             
-            #line 54 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 53 "..\..\Pages\ProcessingJobsPage.cshtml"
                    Write(HtmlHelper.QueueLabel(job.Value.Queue));
 
             
@@ -184,29 +176,17 @@ WriteLiteral("&nbsp;");
 
 
             
-            #line 54 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 53 "..\..\Pages\ProcessingJobsPage.cshtml"
                                                                 Write(HtmlHelper.JobType(job.Value.Type));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </td>\r\n                    <td>\r\n                        <p" +
-"re class=\"pre-args\">");
+WriteLiteral("\r\n                    </td>\r\n                    <td>\r\n                        ");
 
 
             
-            #line 57 "..\..\Pages\ProcessingJobsPage.cshtml"
-                                         Write(HtmlHelper.FormatProperties(job.Value.Args));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</pre>\r\n                    </td>\r\n                    <td>\r\n                    " +
-"    ");
-
-
-            
-            #line 60 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 56 "..\..\Pages\ProcessingJobsPage.cshtml"
                    Write(job.Value.ServerName);
 
             
@@ -216,7 +196,7 @@ WriteLiteral("\r\n                    </td>\r\n                    <td>\r\n");
 
 
             
-            #line 63 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 59 "..\..\Pages\ProcessingJobsPage.cshtml"
                          if (job.Value.StartedAt.HasValue)
                         {
 
@@ -227,7 +207,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 65 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 61 "..\..\Pages\ProcessingJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.StartedAt.Value));
 
             
@@ -237,7 +217,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 66 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 62 "..\..\Pages\ProcessingJobsPage.cshtml"
                            Write(job.Value.StartedAt);
 
             
@@ -247,7 +227,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 68 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 64 "..\..\Pages\ProcessingJobsPage.cshtml"
                         }
 
             
@@ -257,7 +237,7 @@ WriteLiteral("                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 71 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 67 "..\..\Pages\ProcessingJobsPage.cshtml"
             }
 
             
@@ -267,21 +247,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 74 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 70 "..\..\Pages\ProcessingJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 75 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 71 "..\..\Pages\ProcessingJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 75 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 71 "..\..\Pages\ProcessingJobsPage.cshtml"
                                         
 }
 
