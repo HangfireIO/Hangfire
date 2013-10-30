@@ -76,7 +76,7 @@ namespace HangFire.Server
 
         private void StartServer()
         {
-            _manager = new ThreadWrapper(new JobManager(
+            _manager = new ThreadWrapper(new WorkerManager(
                 new PrioritizedJobFetcher(_redisManager, _queues, _workerCount, _fetchTimeout),
                 _redisManager, 
                 _context, 

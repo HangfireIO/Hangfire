@@ -6,7 +6,7 @@ using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    internal class JobManager : IThreadWrappable, IDisposable
+    internal class WorkerManager : IThreadWrappable, IDisposable
     {
         private readonly DisposableCollection<Worker> _workers;
         private readonly BlockingCollection<Worker> _freeWorkers;
@@ -14,9 +14,9 @@ namespace HangFire.Server
         private readonly IJobFetcher _fetcher;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        private readonly ILog _logger = LogManager.GetLogger(typeof (JobManager));
+        private readonly ILog _logger = LogManager.GetLogger(typeof (WorkerManager));
         
-        public JobManager(
+        public WorkerManager(
             IJobFetcher fetcher,
             IRedisClientsManager redisManager,
             ServerContext context,

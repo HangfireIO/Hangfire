@@ -9,7 +9,7 @@ namespace HangFire.Server
 {
     internal class Worker : IDisposable, IStoppable
     {
-        private readonly JobManager _manager;
+        private readonly WorkerManager _manager;
         private readonly WorkerContext _context;
         private readonly IRedisClient _redis;
         private readonly StateMachine _stateMachine;
@@ -31,7 +31,7 @@ namespace HangFire.Server
         private JobPayload _jobPayload;
 
         public Worker(
-            JobManager manager,
+            WorkerManager manager,
             IRedisClientsManager redisManager,
             WorkerContext context)
         {

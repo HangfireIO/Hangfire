@@ -1,5 +1,5 @@
 ﻿@redis
-Feature: Job manager
+Feature: Worker manager
 
     As a user, I expect that my enqueued jobs will be processed by the Server.
 

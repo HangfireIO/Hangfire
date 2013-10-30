@@ -79,7 +79,7 @@
     <Compile Include="Bindings\JobActivatorSteps.cs" />
     <Compile Include="Bindings\ServerWatchdogSteps.cs" />
     <Compile Include="Bindings\Transforms.cs" />
-    <Compile Include="Bindings\JobManagerSteps.cs" />
+    <Compile Include="Bindings\WorkerManagerSteps.cs" />
     <Compile Include="ClientFilters.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -184,10 +184,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SucceededState.feature</DependentUpon>
     </Compile>
-    <Compile Include="Server\JobManager.feature.cs">
+    <Compile Include="Server\WorkerManager.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>JobManager.feature</DependentUpon>
+      <DependentUpon>WorkerManager.feature</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -263,9 +263,9 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>SucceededState.feature.cs</LastGenOutput>
     </None>
-    <None Include="Server\JobManager.feature">
+    <None Include="Server\WorkerManager.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>JobManager.feature.cs</LastGenOutput>
+      <LastGenOutput>WorkerManager.feature.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <Choose>

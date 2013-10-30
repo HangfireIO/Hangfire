@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using HangFire.Filters;
 using HangFire.Server;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
@@ -10,7 +9,7 @@ using TechTalk.SpecFlow;
 namespace HangFire.Tests
 {
     [Binding]
-    public class JobManagerSteps : Steps
+    public class WorkerManagerSteps : Steps
     {
         private readonly IList<object> _filters = new List<object>();
 
@@ -97,7 +96,7 @@ namespace HangFire.Tests
                 new JobActivator(),
                 new JobPerformer(_filters));
 
-            using (var manager = new JobManager(
+            using (var manager = new HangFire.Server.WorkerManager(
                 new JobFetcher(RedisFactory.BasicManager, QueueSteps.DefaultQueue),
                 RedisFactory.BasicManager,
                 context,
