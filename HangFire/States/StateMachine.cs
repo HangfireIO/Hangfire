@@ -22,6 +22,9 @@ namespace HangFire.States
         public static void RegisterStateDescriptor(
             string stateName, JobStateDescriptor descriptor)
         {
+            if (descriptor == null) throw new ArgumentNullException("descriptor");
+            if (String.IsNullOrEmpty(stateName)) throw new ArgumentNullException("stateName");
+            
             Descriptors.Add(stateName, descriptor);
         }
 
@@ -61,6 +64,10 @@ namespace HangFire.States
             IDictionary<string, string> parameters,
             JobState state)
         {
+            if (descriptor == null) throw new ArgumentNullException("descriptor");
+            if (parameters == null) throw new ArgumentNullException("parameters");
+            if (state == null) throw new ArgumentNullException("state");
+
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
@@ -91,6 +98,7 @@ namespace HangFire.States
         public bool ChangeState(
             string jobId, JobState state, params string[] allowedCurrentStates)
         {
+            if (String.IsNullOrWhiteSpace(jobId)) throw new ArgumentNullException("jobId");
             if (state == null) throw new ArgumentNullException("state");
 
             using (_redis.AcquireLock(

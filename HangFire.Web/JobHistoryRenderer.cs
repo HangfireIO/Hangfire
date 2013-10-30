@@ -77,7 +77,7 @@ namespace HangFire.Web
         private static IHtmlString ProcessingRenderer(IDictionary<string, string> properties)
         {
             return new HtmlString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Server:</dt><dd><span class=\"label label-default\">{0}</span></dd></dl>", properties["ServerName"]));
+                "<dl class=\"dl-horizontal\"><dt>Server:</dt><dd><span class=\"label label-default\">{0}</span></dd></dl>", properties["ServerName"].ToUpperInvariant()));
         }
 
         private static IHtmlString EnqueuedRenderer(IDictionary<string, string> properties)

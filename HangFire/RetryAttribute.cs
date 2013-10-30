@@ -7,6 +7,7 @@ namespace HangFire
 {
     public class RetryAttribute : JobFilterAttribute, IStateChangingFilter
     {
+        private int _attempts;
         private const int DefaultRetryAttempts = 3;
 
         public RetryAttribute()
@@ -14,7 +15,18 @@ namespace HangFire
             Attempts = DefaultRetryAttempts;
         }
 
-        public int Attempts { get; set; }
+        public int Attempts
+        {
+            get { return _attempts; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException("value", "Attempts value must be equal or greater that zero.");
+                }
+                _attempts = value;
+            }
+        }
 
         public JobState OnStateChanging(
             JobDescriptor descriptor, JobState state, IRedisClient redis)

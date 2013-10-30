@@ -8,11 +8,11 @@ namespace HangFire.Client
 {
     internal class JobCreator
     {
-        public static JobCreator Current { get; private set; }
+        public static JobCreator Instance { get; private set; }
 
         static JobCreator()
         {
-            Current = new JobCreator();
+            Instance = new JobCreator();
         }
 
         private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk 

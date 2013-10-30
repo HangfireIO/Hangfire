@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using HangFire.Server;
+using HangFire.States;
 
 namespace HangFire
 {
     public class BackgroundJobServer : IDisposable
     {
         private JobServer _server;
+        private IEnumerable<string> _queues;
+        private int _workerCount;
+        private string _machineName;
+        private TimeSpan _pollInterval;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/>.
@@ -24,22 +30,71 @@ namespace HangFire
             PollInterval = TimeSpan.FromSeconds(15);
 
             WorkerCount = workerCount;
-            Queues = queues ?? new[] { "default" };
+            Queues = queues ?? new[] { EnqueuedState.DefaultQueue };
         }
 
-        public IEnumerable<string> Queues { get; private set; } 
+        public IEnumerable<string> Queues
+        {
+            get { return _queues; }
+            set
+            {
+                foreach (var queue in value)
+                {
+                    EnqueuedState.ValidateQueueName(queue);
+                }
 
-        public int WorkerCount { get; private set; }
+                _queues = value;
+            }
+        }
+
+        public int WorkerCount
+        {
+            get { return _workerCount; }
+            set
+            {
+                if (value <= 0) throw new ArgumentOutOfRangeException("value", "Worker count value must be more than zero.");
+                _workerCount = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the server name.
         /// </summary>
-        public string MachineName { get; set; }
+        public string MachineName
+        {
+            get { return _machineName; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value", "Machine name value can not be null.");
+                }
+
+                if (!Regex.IsMatch(value, @"^[a-zA-Z0-9\-]+$"))
+                {
+                    throw new ArgumentException("Machine name must consist only of letters, digits and hyphens.");
+                }
+
+                _machineName = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the poll interval for scheduled jobs.
         /// </summary>
-        public TimeSpan PollInterval { get; set; }
+        public TimeSpan PollInterval
+        {
+            get { return _pollInterval; }
+            set
+            {
+                if (value != value.Duration())
+                {
+                    throw new ArgumentException("The poll interval value must be positive.");    
+                }
+
+                _pollInterval = value;
+            }
+        }
 
         /// <summary>
         /// Get or sets an instance of the <see cref="HangFire.JobActivator"/> class
@@ -57,7 +112,7 @@ namespace HangFire
                 throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
             }
 
-            var serverName = String.Format("{0}:{1}", MachineName, Process.GetCurrentProcess().Id);
+            var serverName = String.Format("{0}:{1}", MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
             _server = new JobServer(
                 RedisFactory.BasicManager,

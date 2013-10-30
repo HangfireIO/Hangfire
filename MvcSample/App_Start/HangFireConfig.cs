@@ -20,12 +20,8 @@ namespace MvcSample
             // If you have custom Redis installation, use the
             // following method to configure HangFire:
             RedisFactory.Db = 3;
-            
-            _server = new AspNetBackgroundJobServer(
-                Environment.ProcessorCount, "default")
-            {
-                MachineName = Environment.MachineName
-            };
+
+            _server = new AspNetBackgroundJobServer();
 
             GlobalJobFilters.Filters.Add(new PreserveCultureAttribute());
 

@@ -120,7 +120,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
             
             #line 36 "..\..\Pages\ServersPage.cshtml"
-                   Write(server.Name);
+                   Write(server.Name.ToUpperInvariant());
 
             
             #line default

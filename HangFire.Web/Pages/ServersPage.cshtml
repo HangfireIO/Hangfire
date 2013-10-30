@@ -33,7 +33,7 @@ else
             @foreach (var server in servers)
             {
                 <tr>
-                    <td>@server.Name</td>
+                    <td>@server.Name.ToUpperInvariant()</td>
                     <td>@server.WorkersCount</td>
                     <td>@HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel)))</td>
                     <td data-moment="@JobHelper.ToStringTimestamp(server.StartedAt)">@server.StartedAt</td>

@@ -16,7 +16,6 @@ namespace ConsoleSample
         }
     }
 
-    [Queue("default")]
     public class FastDefaultJob : BackgroundJob
     {
         public override void Perform()

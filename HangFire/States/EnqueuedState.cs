@@ -58,6 +58,11 @@ namespace HangFire.States
 
         public static void ValidateQueueName(string queue)
         {
+            if (String.IsNullOrWhiteSpace(queue))
+            {
+                throw new ArgumentNullException("queue");
+            }
+
             if (!Regex.IsMatch(queue, @"^[a-z0-9_]+$"))
             {
                 throw new InvalidOperationException(String.Format(

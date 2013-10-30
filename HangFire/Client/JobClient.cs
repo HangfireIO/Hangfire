@@ -21,7 +21,7 @@ namespace HangFire.Client
         /// <see cref="JobCreator"/> instance.
         /// </summary>
         public JobClient(IRedisClientsManager redisManager)
-            : this(redisManager, JobCreator.Current)
+            : this(redisManager, JobCreator.Instance)
         {
         }
 
