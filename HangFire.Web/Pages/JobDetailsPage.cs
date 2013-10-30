@@ -6,7 +6,6 @@ namespace HangFire.Web.Pages
     {
         public JobDetailsPage(string jobId)
         {
-            // TODO: throw 400 exception
             JobId = Guid.Parse(jobId);
         }
 

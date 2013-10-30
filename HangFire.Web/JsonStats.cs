@@ -17,7 +17,6 @@ namespace HangFire.Web
                 Response.ContentType = "application/json";
                 Response.ContentEncoding = Encoding.UTF8;
                 Response.Write(serialized);
-                // TODO: use Response.End();
             }
         }
     }
