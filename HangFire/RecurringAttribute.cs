@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using HangFire.Filters;
 using HangFire.States;
 using ServiceStack.Redis;
@@ -8,12 +7,12 @@ namespace HangFire
 {
     public class RecurringAttribute : JobFilterAttribute, IStateChangingFilter
     {
-        public RecurringAttribute(int seconds)
+        public RecurringAttribute(int intervalInSeconds)
         {
-            Seconds = seconds;
+            RepeatInterval = intervalInSeconds;
         }
 
-        public int Seconds { get; private set; }
+        public int RepeatInterval { get; private set; }
 
         public JobState OnStateChanging(
             JobDescriptor descriptor, JobState state, IRedisClient redis)
@@ -28,7 +27,7 @@ namespace HangFire
 
             return new ScheduledState(
                 "Scheduled as a recurring job",
-                DateTime.UtcNow.AddSeconds(Seconds));;
+                DateTime.UtcNow.AddSeconds(RepeatInterval));
         }
     }
 }

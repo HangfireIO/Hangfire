@@ -58,7 +58,7 @@ namespace ConsoleSample
         }
     }
 
-    [Queue("critical"), Recurring(30)]
+    [Queue("critical"), Recurring(intervalInSeconds: 30)]
     public class RecurringJob : BackgroundJob
     {
         public override void Perform()
