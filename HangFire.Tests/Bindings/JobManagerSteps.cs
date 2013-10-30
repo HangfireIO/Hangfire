@@ -122,7 +122,6 @@ namespace HangFire.Tests
         [Then(@"there should be no performing actions")]
         public void ThenThereShouldBeNoPerformingActions()
         {
-            // TODO: what is this?
         }
 
         [Then(@"the job should be disposed")]
