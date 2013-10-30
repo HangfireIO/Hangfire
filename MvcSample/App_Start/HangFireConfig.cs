@@ -1,7 +1,4 @@
-﻿using System;
-
-using HangFire;
-using HangFire.Server;
+﻿using HangFire;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(
@@ -22,9 +19,6 @@ namespace MvcSample
             RedisFactory.Db = 3;
 
             _server = new AspNetBackgroundJobServer();
-
-            GlobalJobFilters.Filters.Add(new PreserveCultureAttribute());
-
             //_server.Start();
         }
 

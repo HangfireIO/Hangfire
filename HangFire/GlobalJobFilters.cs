@@ -10,6 +10,8 @@ namespace HangFire
         static GlobalJobFilters()
         {
             Filters = new GlobalJobFilterCollection();
+            Filters.Add(new PreserveCultureAttribute());
+            Filters.Add(new RetryAttribute { Attempts = 3 });
         }
 
         /// <summary>
