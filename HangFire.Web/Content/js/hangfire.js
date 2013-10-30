@@ -6,7 +6,7 @@
             
             this._graph = new Rickshaw.Graph({
                 element: element,
-                width: 800,
+                width: $(element).innerWidth(),
                 height: 200,
                 renderer: 'bar',
                 interpolation: 'linear',
@@ -47,14 +47,18 @@
             this._failed = statistics.failed;
         };
 
+        RealtimeGraph.prototype.update = function() {
+            this._graph.update();
+        };
+
         return RealtimeGraph;
     })();
 
     hangFire.HistoryGraph = (function() {
         function HistoryGraph(element, succeeded, failed) {
-            var graph = new Rickshaw.Graph({
+            this._graph = new Rickshaw.Graph({
                 element: element,
-                width: 800,
+                width: $(element).innerWidth(),
                 height: 200,
                 series: [
                     {
@@ -69,20 +73,24 @@
                 ]
             });
 
-            var xAxis = new Rickshaw.Graph.Axis.Time({ graph: graph });
+            var xAxis = new Rickshaw.Graph.Axis.Time({ graph: this._graph });
             var yAxis = new Rickshaw.Graph.Axis.Y({
-                graph: graph,
+                graph: this._graph,
                 tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
                 tickTreatment: 'glow'
             });
             
             var hoverDetail = new Rickshaw.Graph.HoverDetail({
-                graph: graph,
+                graph: this._graph,
                 yFormatter: function(y) { return Math.floor(y); }
             });
 
-            graph.render();
+            this._graph.render();
         }
+
+        HistoryGraph.prototype.update = function() {
+            this._graph.update();
+        };
 
         return HistoryGraph;
     })();
@@ -138,15 +146,36 @@
             this._poller = new HangFire.StatisticsPoller(
                 config.pollUrl, config.pollInterval);
 
-            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
-            this.historyGraph = this._createHistoryGraph('historyGraph');
-
+            this._createGraphs();
             this._registerStatisticsUpdater();
 
             this._poller.start();
 
             this._initialize();
         }
+
+        Page.prototype._createGraphs = function() {
+            this.realtimeGraph = this._createRealtimeGraph('realtimeGraph');
+            this.historyGraph = this._createHistoryGraph('historyGraph');
+            
+            var debounce = function (fn, timeout) {
+                var timeoutId = -1;
+                return function() {
+                    if (timeoutId > -1) {
+                        window.clearTimeout(timeoutId);
+                    }
+                    timeoutId = window.setTimeout(fn, timeout);
+                };
+            };
+
+            var self = this;
+            window.onresize = debounce(function () {
+                $('#realtimeGraph').html('');
+                $('#historyGraph').html('');
+
+                self._createGraphs();
+            }, 125);
+        };
 
         Page.prototype._createRealtimeGraph = function(elementId) {
             var realtimeElement = document.getElementById(elementId);

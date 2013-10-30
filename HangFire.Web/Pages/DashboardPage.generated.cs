@@ -79,23 +79,24 @@ WriteLiteral("\r\n");
             #line default
             #line hidden
 WriteLiteral("\r\n<h3>Realtime graph</h3>\r\n<div id=\"realtimeGraph\"></div>\r\n\r\n<h3>\r\n    <div class" +
-"=\"btn-group pull-right\">\r\n        <a href=\"?period=day\" class=\"btn btn-default ");
+"=\"btn-group pull-right\" style=\"margin-top: 2px;\">\r\n        <a href=\"?period=day\"" +
+" class=\"btn btn-sm btn-default ");
 
 
             
             #line 30 "..\..\Pages\DashboardPage.cshtml"
-                                                 Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
+                                                        Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
             #line default
             #line hidden
 WriteLiteral("\">\r\n            Day\r\n        </a>\r\n        <a href=\"?period=week\" class=\"btn btn-" +
-"default ");
+"sm btn-default ");
 
 
             
             #line 33 "..\..\Pages\DashboardPage.cshtml"
-                                                  Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
+                                                         Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
             #line default
