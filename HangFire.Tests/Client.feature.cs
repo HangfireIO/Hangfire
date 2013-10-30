@@ -293,7 +293,7 @@ this.FeatureBackground();
 #line 97
      testRunner.When("I call the `Perform.Async<InvalidQueueJob>()`", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 98
-     testRunner.Then("a \'System.InvalidOperationException\' should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("a CreateJobFailedException should be thrown", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

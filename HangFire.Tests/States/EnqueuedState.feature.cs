@@ -75,7 +75,7 @@ namespace HangFire.Tests.States
 #line 5
     testRunner.Given("a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line 6
-      testRunner.And("the Enqueued state with the \'test\' value for the \'queue\' argument", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the Enqueued state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
         }
         
@@ -116,7 +116,7 @@ this.FeatureBackground();
                         "<UtcNow timestamp>"});
             table1.AddRow(new string[] {
                         "Queue",
-                        "test"});
+                        "default"});
 #line 12
      testRunner.Then("properties table should contain the following items:", ((string)(null)), table1, "Then ");
 #line hidden
@@ -137,9 +137,9 @@ this.FeatureBackground();
 #line 18
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line 19
-     testRunner.Then("the \'test\' queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the \'default\' queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 20
-      testRunner.And("the \'test\' queue should be added to the queues set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+      testRunner.And("the \'default\' queue should be added to the queues set", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
         }
@@ -160,7 +160,7 @@ this.FeatureBackground();
 #line 24
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line 25
-     testRunner.Then("the \'test\' queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+     testRunner.Then("the \'default\' queue should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
         }

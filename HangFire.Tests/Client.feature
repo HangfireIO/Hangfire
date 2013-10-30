@@ -95,7 +95,7 @@ Scenario: the queue name should contain only lowercase letters, digits and under
           }
           """
      When I call the `Perform.Async<InvalidQueueJob>()`
-     Then a 'System.InvalidOperationException' should be thrown
+     Then a CreateJobFailedException should be thrown
 
 Scenario: if the QueueAttribute contains an empty or null string, then the actual queue should be the default queue
     Given the following job type:

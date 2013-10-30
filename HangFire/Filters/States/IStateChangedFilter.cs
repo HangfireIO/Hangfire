@@ -12,18 +12,20 @@ namespace HangFire.Filters
         /// Called after the specified <paramref name="state"/> was applied
         /// to the job within the given <paramref name="transaction"/>.
         /// </summary>
-        /// <param name="transaction">The current transaction.</param>
-        /// <param name="jobId">The job, whose state was changed.</param>
+        /// <param name="descriptor">The descriptor of the job, whose state was changed.</param>
         /// <param name="state">The applied state.</param>
-        void OnStateApplied(IRedisTransaction transaction, string jobId, JobState state);
+        /// <param name="transaction">The current transaction.</param>
+        void OnStateApplied(
+            JobDescriptor descriptor, JobState state, IRedisTransaction transaction);
 
         /// <summary>
         /// Called when the state with specified <paramref name="stateName"/> was 
         /// unapplied from the job within the given <paramref name="transaction"/>.
         /// </summary>
-        /// <param name="transaction">The current transaction.</param>
-        /// <param name="jobId">The job, whose state is changing.</param>
+        /// <param name="descriptor">The descriptor of the job, whose state is changing.</param>
         /// <param name="stateName">The unapplied state name.</param>
-        void OnStateUnapplied(IRedisTransaction transaction, string jobId, string stateName);
+        /// <param name="transaction">The current transaction.</param>
+        void OnStateUnapplied(
+            JobDescriptor descriptor, string stateName, IRedisTransaction transaction);
     }
 }

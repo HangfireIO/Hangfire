@@ -22,18 +22,6 @@ namespace HangFire.Tests
                 JobHelper.ToTimestamp(DateTime.UtcNow.AddMinutes(-1)));
         }
 
-        [Given(@"a scheduled job of the '(.+)' type")]
-        public void GivenAScheduleJobOfType(string type)
-        {
-            Given(String.Format("a job of the '{0}' type", type));
-            And("its state is Scheduled");
-
-            Redis.Client.AddItemToSortedSet(
-                "hangfire:schedule",
-                JobSteps.DefaultJobId,
-                JobHelper.ToTimestamp(DateTime.UtcNow.AddMinutes(-1)));
-        }
-
         [Given(@"a future job")]
         public void GivenAFutureJob()
         {

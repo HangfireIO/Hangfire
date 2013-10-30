@@ -82,15 +82,9 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string Async(Type type, object args)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
             using (var client = new JobClient(RedisFactory.PooledManager))
             {
-                var queue = JobHelper.GetQueue(type);
-                var enqueuedState = new EnqueuedState("Enqueued by the Сlient", queue);
+                var enqueuedState = new EnqueuedState("Enqueued by the Сlient");
                 var uniqueId = GenerateId();
                 
                 client.CreateJob(uniqueId, type, enqueuedState, args);

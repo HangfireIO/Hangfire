@@ -283,56 +283,6 @@ this.ScenarioSetup(scenarioInfo);
 #line hidden
             this.ScenarioCleanup();
         }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("When the server could not find the job\'s type, the job should be moved to the Fai" +
-            "led state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void WhenTheServerCouldNotFindTheJobSTypeTheJobShouldBeMovedToTheFailedState()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("When the server could not find the job\'s type, the job should be moved to the Fai" +
-                    "led state", ((string[])(null)));
-#line 76
-this.ScenarioSetup(scenarioInfo);
-#line 77
-    testRunner.Given("a dequeued job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 78
-      testRunner.And("it was fetched a day ago", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 79
-     testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 80
-     testRunner.Then("the job should be moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line 81
-      testRunner.And("it should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Succeeded job of non-existing type should not be moved to the failed state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "Re-queueing of timed out jobs")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void SucceededJobOfNon_ExistingTypeShouldNotBeMovedToTheFailedState()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Succeeded job of non-existing type should not be moved to the failed state", ((string[])(null)));
-#line 83
-this.ScenarioSetup(scenarioInfo);
-#line 84
-    testRunner.Given("a dequeued job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 85
-      testRunner.And("its state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 86
-      testRunner.And("it was fetched a day ago", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 87
-     testRunner.When("the watcher runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 88
-     testRunner.Then("the job should be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line 89
-      testRunner.But("it should be removed from the dequeued list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "But ");
-#line hidden
-            this.ScenarioCleanup();
-        }
     }
 }
 #pragma warning restore

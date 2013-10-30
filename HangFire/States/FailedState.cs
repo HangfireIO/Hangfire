@@ -18,7 +18,7 @@ namespace HangFire.States
 
         public override string StateName { get { return Name; } }
 
-        public override IDictionary<string, string> GetProperties()
+        public override IDictionary<string, string> GetProperties(JobDescriptor descriptor)
         {
             return new Dictionary<string, string>
                 {
@@ -29,19 +29,20 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(IRedisTransaction transaction, string jobId)
+        public override void Apply(JobDescriptor descriptor, IRedisTransaction transaction)
         {
             transaction.QueueCommand(x => x.AddItemToSortedSet(
                         "hangfire:failed",
-                        jobId,
+                        descriptor.JobId,
                         JobHelper.ToTimestamp(DateTime.UtcNow)));
         }
 
         public class Descriptor : JobStateDescriptor
         {
-            public override void Unapply(IRedisTransaction transaction, string jobId)
+            public override void Unapply(JobDescriptor descriptor, IRedisTransaction transaction)
             {
-                transaction.QueueCommand(x => x.RemoveItemFromSortedSet("hangfire:failed", jobId));
+                transaction.QueueCommand(x => x.RemoveItemFromSortedSet(
+                    "hangfire:failed", descriptor.JobId));
             }
         }
     }

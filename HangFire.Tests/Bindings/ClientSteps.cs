@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -140,6 +141,13 @@ namespace HangFire.Tests
         {
             Assert.IsNotNull(_exception);
             Assert.IsInstanceOfType(_exception, Type.GetType(exceptionType, true));
+        }
+
+        [Then(@"a CreateJobFailedException should be thrown")]
+        public void ACreateJobFailedExceptionShouldBeThrown()
+        {
+            Assert.IsNotNull(_exception);
+            Assert.IsInstanceOfType(_exception, typeof(CreateJobFailedException));
         }
 
         [Then(@"the '(\w+)' should be created with the following arguments:")]

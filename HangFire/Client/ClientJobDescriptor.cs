@@ -25,6 +25,7 @@ namespace HangFire.Client
             Type type,
             IDictionary<string, string> arguments,
             JobState state)
+            : base(jobId, type)
         {
             Debug.Assert(redis != null);
             Debug.Assert(jobId != null);
@@ -34,8 +35,6 @@ namespace HangFire.Client
 
             _stateMachine = new StateMachine(redis);
 
-            JobId = jobId;
-            Type = type;
             State = state;
             
             _jobParameters["Type"] = type.AssemblyQualifiedName;
@@ -97,7 +96,7 @@ namespace HangFire.Client
         internal void Create()
         {
             _jobWasCreated = true;
-            _stateMachine.CreateInState(JobId, _jobParameters, State);
+            _stateMachine.CreateInState(this, _jobParameters, State);
         }
     }
 }

@@ -18,19 +18,23 @@ namespace HangFire.Tests
             _results = results;
         }
 
-        public void OnStateApplied(IRedisTransaction transaction, string jobId, JobState state)
+        public void OnStateApplied(
+            JobDescriptor descriptor, JobState state, IRedisTransaction transaction)
         {
             Assert.IsNotNull(transaction);
-            Assert.IsFalse(String.IsNullOrEmpty(jobId));
+            Assert.IsNotNull(descriptor);
+            Assert.IsFalse(String.IsNullOrEmpty(descriptor.JobId));
             Assert.IsNotNull(state);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateApplied"));
         }
 
-        public void OnStateUnapplied(IRedisTransaction transaction, string jobId, string stateName)
+        public void OnStateUnapplied(
+            JobDescriptor descriptor, string stateName, IRedisTransaction transaction)
         {
             Assert.IsNotNull(transaction);
-            Assert.IsFalse(String.IsNullOrEmpty(jobId));
+            Assert.IsNotNull(descriptor);
+            Assert.IsFalse(String.IsNullOrEmpty(descriptor.JobId));
             Assert.IsFalse(String.IsNullOrEmpty(stateName));
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateUnapplied"));

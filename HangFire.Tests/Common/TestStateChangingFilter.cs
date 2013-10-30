@@ -20,10 +20,12 @@ namespace HangFire.Tests
             _changeState = changeState;
         }
 
-        public JobState OnStateChanging(IRedisClient redis, string jobId, JobState state)
+        public JobState OnStateChanging(
+            JobDescriptor descriptor, JobState state, IRedisClient redis)
         {
             Assert.IsNotNull(redis);
-            Assert.IsFalse(String.IsNullOrEmpty(jobId));
+            Assert.IsNotNull(descriptor);
+            Assert.IsFalse(String.IsNullOrEmpty(descriptor.JobId));
             Assert.IsNotNull(state);
 
             _results.Add(_name);

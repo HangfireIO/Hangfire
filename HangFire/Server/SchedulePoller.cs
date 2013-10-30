@@ -41,32 +41,15 @@ namespace HangFire.Server
                 return false;
             }
 
-            EnqueueScheduledJob(jobId);
+            var enqueuedState = new EnqueuedState("Enqueued by the schedule poller");
+            _stateMachine.ChangeState(jobId, enqueuedState, ScheduledState.Name);
+
             return true;
         }
 
         public void Dispose()
         {
             _redis.Dispose();
-        }
-
-        private void EnqueueScheduledJob(string jobId)
-        {
-            var jobType = _redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-            
-            JobState state;
-
-            try
-            {
-                var queue = JobHelper.GetQueue(Type.GetType(jobType));
-                state = new EnqueuedState("Enqueued by the schedule poller", queue);
-            }
-            catch (Exception ex)
-            {
-                state = new FailedState("Could not enqueue the scheduled job", ex);
-            }
-
-            _stateMachine.ChangeState(jobId, state, ScheduledState.Name);
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]

@@ -15,7 +15,8 @@ namespace HangFire
 
         public int Seconds { get; private set; }
 
-        public JobState OnStateChanging(IRedisClient redis, string jobId, JobState state)
+        public JobState OnStateChanging(
+            JobDescriptor descriptor, JobState state, IRedisClient redis)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");
@@ -25,22 +26,9 @@ namespace HangFire
                 return state;
             }
 
-            var jobType = redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", jobId),
-                "Type");
-            var type = Type.GetType(jobType);
-
-            // TODO: check the type for null.
-            var recurringAttribute = type.GetCustomAttributes(true).OfType<RecurringAttribute>().SingleOrDefault();
-
-            if (recurringAttribute != null)
-            {
-                return new ScheduledState(
-                    "Scheduled as a recurring job.",
-                    DateTime.UtcNow.AddSeconds(recurringAttribute.Seconds));
-            }
-
-            return state;
+            return new ScheduledState(
+                "Scheduled as a recurring job",
+                DateTime.UtcNow.AddSeconds(Seconds));;
         }
     }
 }

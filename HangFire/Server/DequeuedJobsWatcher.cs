@@ -93,31 +93,12 @@ namespace HangFire.Server
             {
                 if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
-                    TryToRequeueTheJob(jobId);
+                    var state = new EnqueuedState("Requeued due to time out");
+                    _stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
+
                     JobFetcher.RemoveFromFetchedQueue(_redis, jobId, queue);
                 }
             }
-        }
-
-        private void TryToRequeueTheJob(string jobId)
-        {
-            var jobType = _redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", jobId),
-                "Type");
-
-            JobState state;
-
-            try
-            {
-                var queue = JobHelper.GetQueue(Type.GetType(jobType));
-                state = new EnqueuedState("Requeued due to time out", queue);
-            }
-            catch (Exception ex)
-            {
-                state = new FailedState("Failed to re-queue the job", ex);
-            }
-
-            _stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
         }
 
         private static bool TimedOutByFetchedTime(string fetchedTimestamp)

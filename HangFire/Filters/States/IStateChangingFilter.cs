@@ -15,10 +15,11 @@ namespace HangFire.Filters
         /// be changed through returning the different state in the implementation
         /// of this method.
         /// </summary>
-        /// <param name="redis">Redis connection.</param>
-        /// <param name="jobId">The job, whose state is changing.</param>
+        /// <param name="descriptor">The descriptor of the job, whose state is changing.</param>
         /// <param name="state">The current state candidate.</param>
         /// <returns>The new state candidate, which will be applied to the job.</returns>
-        JobState OnStateChanging(IRedisClient redis, string jobId, JobState state);
+        /// <param name="redis">Redis connection.</param>
+        JobState OnStateChanging(
+            JobDescriptor descriptor, JobState state, IRedisClient redis);
     }
 }

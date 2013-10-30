@@ -72,18 +72,3 @@ Scenario: Job should be enqueued on its actual queue after timing out
       And it was fetched a day ago
      When the watcher runs
      Then the queue should contain the job
-
-Scenario: When the server could not find the job's type, the job should be moved to the Failed state
-    Given a dequeued job of the 'NonExisting' type
-      And it was fetched a day ago
-     When the watcher runs
-     Then the job should be moved to the Failed state
-      And it should be removed from the dequeued list
-
-Scenario: Succeeded job of non-existing type should not be moved to the failed state
-    Given a dequeued job of the 'NonExisting' type
-      And its state is Succeeded
-      And it was fetched a day ago
-     When the watcher runs
-     Then the job should be in the Succeeded state
-      But it should be removed from the dequeued list

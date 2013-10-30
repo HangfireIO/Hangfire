@@ -228,6 +228,27 @@ this.ScenarioSetup(scenarioInfo);
         }
         
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the state should be changed to the Failed state when it could not find its type")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void TheStateShouldBeChangedToTheFailedStateWhenItCouldNotFindItsType()
+        {
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the state should be changed to the Failed state when it could not find its type", ((string[])(null)));
+#line 50
+this.ScenarioSetup(scenarioInfo);
+#line 51
+    testRunner.Given("a job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 52
+      testRunner.And("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 53
+     testRunner.When("I change the state of the job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 54
+     testRunner.Then("the job should be moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            this.ScenarioCleanup();
+        }
+        
+        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
         [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the state should not be changed if allowed current states array does not contain " +
             "the current state")]
         [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
@@ -236,20 +257,20 @@ this.ScenarioSetup(scenarioInfo);
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the state should not be changed if allowed current states array does not contain " +
                     "the current state", ((string[])(null)));
-#line 50
+#line 56
 this.ScenarioSetup(scenarioInfo);
-#line 51
+#line 57
     testRunner.Given("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 52
+#line 58
       testRunner.And("a job in the \'Old\' state with registered descriptor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 53
+#line 59
      testRunner.When("I change the state of the job to the \'Test\' allowing only transition from the \'En" +
                     "queued\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 54
+#line 60
      testRunner.Then("the job should be in the Old state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line 55
+#line 61
       testRunner.And("the old state should not be unapplied", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 56
+#line 62
       testRunner.And("the \'Test\' state should not be applied to the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -262,17 +283,17 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void StateChangingFiltersShouldBeExecutedInTheOrderTheyWereDefined()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State changing filters should be executed in the order they were defined", ((string[])(null)));
-#line 58
+#line 64
 this.ScenarioSetup(scenarioInfo);
-#line 59
+#line 65
     testRunner.Given("a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 60
+#line 66
       testRunner.And("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 61
+#line 67
       testRunner.And("a state changing filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 62
+#line 68
       testRunner.And("a state changing filter \'second\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 63
+#line 69
      testRunner.When("I change the state of the job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table4 = new TechTalk.SpecFlow.Table(new string[] {
@@ -281,7 +302,7 @@ this.ScenarioSetup(scenarioInfo);
                         "first"});
             table4.AddRow(new string[] {
                         "second"});
-#line 64
+#line 70
      testRunner.Then("changing filters should be executed in the following order:", ((string)(null)), table4, "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -294,21 +315,21 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void TheStateChangingFiltersShouldBeAbleToModifyTheState()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The state changing filters should be able to modify the state", ((string[])(null)));
-#line 69
-this.ScenarioSetup(scenarioInfo);
-#line 70
-    testRunner.Given("a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 71
-      testRunner.And("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 72
-      testRunner.And("a state changing filter \'first\' that changes the state to the \'AnotherTest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 73
-     testRunner.When("I change the state of the job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 74
-     testRunner.Then("the job state should be changed to \'AnotherTest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line 75
-      testRunner.And("the \'Test\' state should not be applied to the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+this.ScenarioSetup(scenarioInfo);
 #line 76
+    testRunner.Given("a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 77
+      testRunner.And("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 78
+      testRunner.And("a state changing filter \'first\' that changes the state to the \'AnotherTest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 79
+     testRunner.When("I change the state of the job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 80
+     testRunner.Then("the job state should be changed to \'AnotherTest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 81
+      testRunner.And("the \'Test\' state should not be applied to the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line 82
       testRunner.And("the \'AnotherTest\' state should be applied to the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             TechTalk.SpecFlow.Table table5 = new TechTalk.SpecFlow.Table(new string[] {
@@ -317,7 +338,7 @@ this.ScenarioSetup(scenarioInfo);
             table5.AddRow(new string[] {
                         "State",
                         "AnotherTest"});
-#line 77
+#line 83
       testRunner.And("the job\'s state entry should contain the following items:", ((string)(null)), table5, "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -330,17 +351,17 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void TheJobHistoryShouldContainEveryChangedState()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The job history should contain every changed state", ((string[])(null)));
-#line 81
+#line 87
 this.ScenarioSetup(scenarioInfo);
-#line 82
+#line 88
     testRunner.Given("a job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 83
+#line 89
       testRunner.And("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 84
+#line 90
       testRunner.And("a state changing filter \'first\' that changes the state to the \'AnotherTest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 85
+#line 91
       testRunner.And("a state changing filter \'second\' that changes the state to the \'YetAnotherTest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 86
+#line 92
      testRunner.When("I change the state of the job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table6 = new TechTalk.SpecFlow.Table(new string[] {
@@ -351,7 +372,7 @@ this.ScenarioSetup(scenarioInfo);
                         "AnotherTest"});
             table6.AddRow(new string[] {
                         "Test"});
-#line 87
+#line 93
      testRunner.Then("the history for the following states should be added:", ((string)(null)), table6, "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -364,13 +385,13 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void TheStateOfTheUnexistingJobShouldNotBeChanged()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The state of the unexisting job should not be changed", ((string[])(null)));
-#line 93
+#line 99
 this.ScenarioSetup(scenarioInfo);
-#line 94
+#line 100
     testRunner.Given("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 95
+#line 101
      testRunner.When("I change the state of the \'unexisting\' job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 96
+#line 102
      testRunner.Then("the \'Test\' state should not be applied to the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -383,15 +404,15 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void ChangingFiltersAreShouldNotBeExecutedForUnexistingJob()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Changing filters are should not be executed for unexisting job", ((string[])(null)));
-#line 98
+#line 104
 this.ScenarioSetup(scenarioInfo);
-#line 99
+#line 105
     testRunner.Given("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 100
+#line 106
       testRunner.And("a state changing filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 101
+#line 107
      testRunner.When("I change the state of the \'unexisting\' job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 102
+#line 108
      testRunner.Then("changing filters should not be executed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -406,18 +427,18 @@ this.ScenarioSetup(scenarioInfo);
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Changing filters should not be executed if the transition is not allowed for the " +
                     "current state", ((string[])(null)));
-#line 104
+#line 110
 this.ScenarioSetup(scenarioInfo);
-#line 105
+#line 111
     testRunner.Given("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 106
+#line 112
       testRunner.And("a job in the \'Old\' state with registered descriptor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 107
+#line 113
       testRunner.And("a state changing filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 108
+#line 114
      testRunner.When("I change the state of the job to the \'Test\' allowing only transition from the \'En" +
                     "queued\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 109
+#line 115
      testRunner.Then("changing filters should not be executed", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -430,17 +451,17 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void StateAppliedFiltersShouldBeExecutedInTheOrderTheyWereDefined()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State applied filters should be executed in the order they were defined", ((string[])(null)));
-#line 111
+#line 117
 this.ScenarioSetup(scenarioInfo);
-#line 112
+#line 118
     testRunner.Given("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 113
+#line 119
       testRunner.And("a job in the \'Old\' state with registered descriptor", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 114
+#line 120
       testRunner.And("a state applied filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 115
+#line 121
       testRunner.And("a state applied filter \'second\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 116
+#line 122
      testRunner.When("I change the state of the job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table7 = new TechTalk.SpecFlow.Table(new string[] {
@@ -453,7 +474,7 @@ this.ScenarioSetup(scenarioInfo);
                         "first::OnStateApplied"});
             table7.AddRow(new string[] {
                         "second::OnStateApplied"});
-#line 117
+#line 123
      testRunner.Then("state applied filter methods should be executed in the following order:", ((string)(null)), table7, "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -466,22 +487,22 @@ this.ScenarioSetup(scenarioInfo);
         public virtual void OnStateUnappliedMethodShouldNotBeCalledWhenTheStateIsEmpty()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("OnStateUnapplied method should not be called when the state is empty", ((string[])(null)));
-#line 124
+#line 130
 this.ScenarioSetup(scenarioInfo);
-#line 125
+#line 131
     testRunner.Given("a \'Test\' state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 126
+#line 132
       testRunner.And("a job with empty state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 127
+#line 133
       testRunner.And("a state applied filter \'first\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 128
+#line 134
      testRunner.When("I change the state of the job to the \'Test\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
             TechTalk.SpecFlow.Table table8 = new TechTalk.SpecFlow.Table(new string[] {
                         "Method"});
             table8.AddRow(new string[] {
                         "first::OnStateApplied"});
-#line 129
+#line 135
      testRunner.Then("state applied filter methods should be executed in the following order:", ((string)(null)), table8, "Then ");
 #line hidden
             this.ScenarioCleanup();

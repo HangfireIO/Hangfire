@@ -14,9 +14,9 @@ namespace HangFire.States
 
         public abstract string StateName { get; }
 
-        public abstract void Apply(IRedisTransaction transaction, string jobId);
+        public abstract void Apply(JobDescriptor descriptor, IRedisTransaction transaction);
         
-        public virtual IDictionary<string, string> GetProperties()
+        public virtual IDictionary<string, string> GetProperties(JobDescriptor descriptor)
         {
             return new Dictionary<string, string>();
         }

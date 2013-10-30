@@ -159,46 +159,6 @@ this.ScenarioSetup(scenarioInfo);
 #line hidden
             this.ScenarioCleanup();
         }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Poller move the job to the Failed state when it could not find its type")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "SchedulePoller")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void PollerMoveTheJobToTheFailedStateWhenItCouldNotFindItsType()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poller move the job to the Failed state when it could not find its type", ((string[])(null)));
-#line 34
-this.ScenarioSetup(scenarioInfo);
-#line 35
-    testRunner.Given("a scheduled job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 36
-     testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 37
-     testRunner.Then("the job should be moved to the Failed state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Poller will fail only jobs in the Scheduled state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "SchedulePoller")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
-        public virtual void PollerWillFailOnlyJobsInTheScheduledState()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Poller will fail only jobs in the Scheduled state", ((string[])(null)));
-#line 39
-this.ScenarioSetup(scenarioInfo);
-#line 40
-    testRunner.Given("a scheduled job of the \'NonExisting\' type", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
-#line 41
-      testRunner.And("its state is Succeeded", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 42
-     testRunner.When("the poller runs", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 43
-     testRunner.Then("the job should be in the Succeeded state", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
     }
 }
 #pragma warning restore

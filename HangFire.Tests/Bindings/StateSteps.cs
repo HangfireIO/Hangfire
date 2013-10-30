@@ -57,10 +57,10 @@ namespace HangFire.Tests.States
             _state = new ScheduledState("SomeReason", DateTime.UtcNow.AddDays(1));
         }
 
-        [Given(@"the Enqueued state with the 'test' value for the 'queue' argument")]
-        public void GivenTheEnqueueStateWithTheValueForTheQueueArgument()
+        [Given(@"the Enqueued state")]
+        public void GivenTheEnqueuedState()
         {
-            _state = new EnqueuedState("SomeReason", "test");
+            _state = new EnqueuedState("SomeReason");
         }
 
         [Given(@"a '(.+)' state")]
@@ -68,7 +68,8 @@ namespace HangFire.Tests.States
         {
             var mock = new Mock<JobState>("SomeReason");
             mock.Setup(x => x.StateName).Returns(state);
-            mock.Setup(x => x.GetProperties()).Returns(new Dictionary<string, string>());
+            mock.Setup(x => x.GetProperties(It.IsAny<JobDescriptor>()))
+                .Returns(new Dictionary<string, string>());
 
             _stateMocks.Add(state, mock);
         }
@@ -79,7 +80,8 @@ namespace HangFire.Tests.States
             Given(String.Format("a '{0}' state", state));
 
             _stateProperties = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
-            _stateMocks[state].Setup(x => x.GetProperties()).Returns(_stateProperties);
+            _stateMocks[state].Setup(x => x.GetProperties(It.IsAny<JobDescriptor>()))
+                .Returns(_stateProperties);
         }
 
         [Given(@"a job in the 'Old' state with registered descriptor")]
@@ -118,7 +120,8 @@ namespace HangFire.Tests.States
         {
             using (var transaction = Redis.Client.CreateTransaction())
             {
-                _state.Apply(transaction, JobSteps.DefaultJobId);
+                var descriptor = new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType);
+                _state.Apply(descriptor, transaction);
                 transaction.Commit();
             }
         }
@@ -130,8 +133,9 @@ namespace HangFire.Tests.States
             {
                 if (StateMachine.Descriptors.ContainsKey(_state.StateName))
                 {
+                    var descriptor = new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType);
                     StateMachine.Descriptors[_state.StateName]
-                        .Unapply(transaction, JobSteps.DefaultJobId);
+                        .Unapply(descriptor, transaction);
                 }
 
                 transaction.Commit();
@@ -241,7 +245,9 @@ namespace HangFire.Tests.States
         [Then(@"properties table should contain the following items:")]
         public void ThenPropertiesTableContainsTheFollowingItems(Table table)
         {
-            DictionaryAssert.ContainsFollowingItems(table, _state.GetProperties());
+            DictionaryAssert.ContainsFollowingItems(
+                table, 
+                _state.GetProperties(new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType)));
         }
 
         [Then(@"the job should be added to the failed set")]
@@ -334,7 +340,7 @@ namespace HangFire.Tests.States
         public void ThenApplyMethodHasCalled(string state)
         {
             _stateMocks[state].Verify(
-                x => x.Apply(It.Is<IRedisTransaction>(y => y != null), It.Is<string>(y => y == JobSteps.DefaultJobId)), 
+                x => x.Apply(It.Is<JobDescriptor>(y => y.JobId == JobSteps.DefaultJobId), It.Is<IRedisTransaction>(y => y != null)), 
                 Times.Once);
         }
 
@@ -342,7 +348,7 @@ namespace HangFire.Tests.States
         public void ThenTheStateWasNotAppliedToTheJob(string state)
         {
             _stateMocks[state].Verify(
-                x => x.Apply(It.IsAny<IRedisTransaction>(), It.IsAny<string>()),
+                x => x.Apply(It.IsAny<JobDescriptor>(), It.IsAny<IRedisTransaction>()),
                 Times.Never);
         }
 
@@ -350,14 +356,14 @@ namespace HangFire.Tests.States
         public void ThenTheOldStateWasUnapplied()
         {
             _oldStateDescriptorMock.Verify(
-                x => x.Unapply(It.Is<IRedisTransaction>(y => y != null), It.Is<string>(y => y == JobSteps.DefaultJobId)));
+                x => x.Unapply(It.Is<JobDescriptor>(y => y.JobId == JobSteps.DefaultJobId), It.Is<IRedisTransaction>(y => y != null)));
         }
 
         [Then(@"the old state should not be unapplied")]
         public void ThenTheOldStateWasNotUnapplied()
         {
             _oldStateDescriptorMock.Verify(
-                x => x.Unapply(It.IsAny<IRedisTransaction>(), It.IsAny<string>()),
+                x => x.Unapply(It.IsAny<JobDescriptor>(), It.IsAny<IRedisTransaction>()),
                 Times.Never);
         }
 

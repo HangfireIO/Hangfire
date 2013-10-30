@@ -78,8 +78,8 @@
     <Compile Include="Filters\GlobalJobFilterCollection.cs" />
     <Compile Include="Filters\Client\IClientExceptionFilter.cs" />
     <Compile Include="Filters\IJobFilterProvider.cs" />
-    <Compile Include="Filters\IStateChangingFilter.cs" />
-    <Compile Include="Filters\JobDescriptor.cs" />
+    <Compile Include="Filters\States\IStateChangingFilter.cs" />
+    <Compile Include="JobDescriptor.cs" />
     <Compile Include="Filters\JobFilterAttribute.cs" />
     <Compile Include="Filters\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Filters\JobFilterInfo.cs" />
@@ -92,7 +92,7 @@
     <Compile Include="Filters\Server\PerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
-    <Compile Include="Filters\IStateChangedFilter.cs" />
+    <Compile Include="Filters\States\IStateChangedFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RecurringAttribute.cs" />
     <Compile Include="RetryAttribute.cs" />

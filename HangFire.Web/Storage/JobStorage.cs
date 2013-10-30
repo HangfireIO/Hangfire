@@ -18,7 +18,7 @@ namespace HangFire.Web
                 return null;
             }
 
-            return JobHelper.GetQueue(type);
+            return EnqueuedState.GetQueue(type);
         }
 
         public static long ScheduledCount()
@@ -379,18 +379,10 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-
-                var queue = TryToGetQueue(jobType);
-                if (String.IsNullOrEmpty(queue))
-                {
-                    return false;
-                }
-
                 // TODO: clear retry attempts counter.
 
                 var stateMachine = new StateMachine(Redis);
-                var state = new EnqueuedState("The job has been retried by a user.", queue);
+                var state = new EnqueuedState("The job has been retried by a user.");
 
                 return stateMachine.ChangeState(jobId, state, FailedState.Name);
             }
@@ -400,16 +392,8 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                var jobType = Redis.GetValueFromHash(String.Format("hangfire:job:{0}", jobId), "Type");
-                var queue = TryToGetQueue(jobType);
-
-                if (String.IsNullOrEmpty(queue))
-                {
-                    return false;
-                }
-
                 var stateMachine = new StateMachine(Redis);
-                var state = new EnqueuedState("The job has been enqueued by a user.", queue);
+                var state = new EnqueuedState("The job has been enqueued by a user.");
 
                 return stateMachine.ChangeState(jobId, state, ScheduledState.Name);
             }

@@ -36,11 +36,6 @@ namespace HangFire.Filters
 
         public virtual IEnumerable<JobFilter> GetFilters(JobDescriptor descriptor)
         {
-            if (descriptor == null)
-            {
-                return Enumerable.Empty<JobFilter>();
-            }
-
             var typeFilters = GetJobAttributes(descriptor)
                 .Select(attr => new JobFilter(attr, JobFilterScope.Invoke, null));
 

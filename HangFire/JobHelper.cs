@@ -1,31 +1,10 @@
 ﻿using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using ServiceStack.Text;
 
 namespace HangFire
 {
     public static class JobHelper
     {
-        public const string DefaultQueue = "default";
-
-        public static string GetQueue(Type jobType)
-        {
-            if (jobType == null) throw new ArgumentNullException("jobType");
-
-            var attribute = jobType
-                .GetCustomAttributes(true)
-                .OfType<QueueAttribute>()
-                .FirstOrDefault();
-
-            var queueName = attribute != null 
-                ? !String.IsNullOrEmpty(attribute.Name) ? attribute.Name : DefaultQueue
-                : DefaultQueue;
-            ValidateQueueName(queueName);
-
-            return queueName;
-        }
-
         public static string ToJson(object value)
         {
             return JsonSerializer.SerializeToString(value);
@@ -67,15 +46,6 @@ namespace HangFire
             }
 
             return FromStringTimestamp(value);
-        }
-
-        public static void ValidateQueueName(string queue)
-        {
-            if (!Regex.IsMatch(queue, @"^[a-z0-9_]+$"))
-            {
-                throw new InvalidOperationException(String.Format(
-                    "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'", queue));
-            }
         }
     }
 }

@@ -12,7 +12,8 @@ namespace HangFire
             Order = 30;
         }
 
-        public JobState OnStateChanging(IRedisClient redis, string jobId, JobState state)
+        public JobState OnStateChanging(
+            JobDescriptor descriptor, JobState state, IRedisClient redis)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (state == null) throw new ArgumentNullException("state");

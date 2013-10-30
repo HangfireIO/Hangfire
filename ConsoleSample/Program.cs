@@ -49,6 +49,7 @@ namespace ConsoleSample
         }
     }
 
+    [Retry(Attempts = 0)]
     public class ErrorJob : BackgroundJob
     {
         public override void Perform()

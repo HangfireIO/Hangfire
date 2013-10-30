@@ -15,14 +15,17 @@ namespace HangFire.Server
             IRedisClient redis,
             JobActivator activator,
             JobPayload payload)
+            : base(payload.Id, payload.Type)
         {
             _redis = redis;
             if (activator == null) throw new ArgumentNullException("activator");
             if (payload == null) throw new ArgumentNullException("payload");
 
-            JobId = payload.Id;
+            if (Type == null)
+            {
+                throw new InvalidOperationException("Could not instantiate the job. See the inner exception for details.", TypeLoadException);
+            }
 
-            Type = Type.GetType(payload.Type, true, true);
             _jobInstance = activator.ActivateJob(Type);
 
             if (_jobInstance == null)

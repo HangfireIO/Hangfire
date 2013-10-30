@@ -114,7 +114,8 @@ namespace HangFire.Tests
         {
             _stateMock = new Mock<JobState>("SomeReason");
             _stateMock.Setup(x => x.StateName).Returns("Test");
-            _stateMock.Setup(x => x.GetProperties()).Returns(new Dictionary<string, string>());
+            _stateMock.Setup(x => x.GetProperties(It.IsAny<JobDescriptor>()))
+                .Returns(new Dictionary<string, string>());
 
             try
             {
@@ -241,7 +242,7 @@ namespace HangFire.Tests
         public void ThenTheGivenStateWasAppliedToIt()
         {
             _stateMock.Verify(
-                x => x.Apply(It.IsAny<IRedisTransaction>(), JobSteps.DefaultJobId),
+                x => x.Apply(It.Is<JobDescriptor>(y => y.JobId == JobSteps.DefaultJobId), It.IsAny<IRedisTransaction>()),
                 Times.Once);
         }
 

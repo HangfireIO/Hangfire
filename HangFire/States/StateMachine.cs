@@ -57,42 +57,32 @@ namespace HangFire.States
         }
         
         public bool CreateInState(
-            string jobId,
+            JobDescriptor descriptor,
             IDictionary<string, string> parameters,
             JobState state)
         {
-            var filterInfo = GetFilters();
-
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}", jobId),
+                    String.Format("hangfire:job:{0}", descriptor.JobId),
                     parameters));
 
                 transaction.QueueCommand(x => x.ExpireEntryIn(
-                    String.Format("hangfire:job:{0}", jobId),
+                    String.Format("hangfire:job:{0}", descriptor.JobId),
                     TimeSpan.FromHours(1)));
 
                 transaction.Commit();
             }
 
-            foreach (var filter in filterInfo.StateChangingFilters)
-            {
-                var oldState = state;
-                state = filter.OnStateChanging(_redis, jobId, oldState);
-
-                if (oldState != state)
-                {
-                    AppendHistory(jobId, oldState, false);
-                }
-            }
+            var filterInfo = GetFilters(descriptor);
+            state = InvokeStateChangingFilters(descriptor, state, filterInfo.StateChangingFilters);
 
             using (var transaction = _redis.CreateTransaction())
             {
-                ApplyState(jobId, null, state, transaction, filterInfo.StateChangedFilters);
+                ApplyState(descriptor, null, state, transaction, filterInfo.StateChangedFilters);
 
                 transaction.QueueCommand(x =>
-                    ((IRedisNativeClient)x).Persist(String.Format("hangfire:job:{0}", jobId)));
+                    ((IRedisNativeClient)x).Persist(String.Format("hangfire:job:{0}", descriptor.JobId)));
 
                 return transaction.Commit();
             }
@@ -103,17 +93,36 @@ namespace HangFire.States
         {
             if (state == null) throw new ArgumentNullException("state");
 
-            var filterInfo = GetFilters();
-
             using (_redis.AcquireLock(
                 String.Format("hangfire:job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
             {
-                var currentState = _redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", jobId), "State");
+                var typeAndState = _redis.GetValuesFromHash(
+                    String.Format("hangfire:job:{0}", jobId), "Type", "State");
 
-                if (currentState == null)
+                var jobType = typeAndState[0];
+                var currentState = typeAndState[1];
+
+                if (jobType == null)
                 {
+                    // The job does not exist
                     return false;
+                }
+
+                var descriptor = new JobDescriptor(jobId, jobType);
+                if (descriptor.Type == null)
+                {
+                    // If the job type could not be loaded, we are unable to
+                    // load corresponding filters, unable to process the job
+                    // and sometimes unable to change its state (the enqueued
+                    // state depends on the type of a job).
+
+                    return ApplyState(
+                        descriptor,
+                        currentState,
+                        new FailedState(
+                            String.Format("Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.", state.StateName, descriptor.JobId),
+                            descriptor.TypeLoadException),
+                        Enumerable.Empty<IStateChangedFilter>());
                 }
 
                 if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
@@ -121,37 +130,45 @@ namespace HangFire.States
                     return false;
                 }
 
-                foreach (var filter in filterInfo.StateChangingFilters)
-                {
-                    var oldState = state;
-                    state = filter.OnStateChanging(_redis, jobId, oldState);
+                var filterInfo = GetFilters(descriptor);
+                state = InvokeStateChangingFilters(descriptor, state, filterInfo.StateChangingFilters);
 
-                    if (oldState != state)
-                    {
-                        AppendHistory(jobId, oldState, false);
-                    }
-                }
-
-                return ApplyState(jobId, currentState, state, filterInfo.StateChangedFilters);
+                return ApplyState(descriptor, currentState, state, filterInfo.StateChangedFilters);
             }
         }
 
+        private JobState InvokeStateChangingFilters(
+            JobDescriptor descriptor, JobState state, IEnumerable<IStateChangingFilter> filters)
+        {
+            foreach (var filter in filters)
+            {
+                var oldState = state;
+                state = filter.OnStateChanging(descriptor, oldState, _redis);
+
+                if (oldState != state)
+                {
+                    AppendHistory(descriptor, oldState, false);
+                }
+            }
+            return state;
+        }
+
         private bool ApplyState(
-            string jobId,
+            JobDescriptor descriptor,
             string currentState,
             JobState newState,
             IEnumerable<IStateChangedFilter> stateChangedFilters)
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                ApplyState(jobId, currentState, newState, transaction, stateChangedFilters);
+                ApplyState(descriptor, currentState, newState, transaction, stateChangedFilters);
 
                 return transaction.Commit();
             }
         }
 
         private void ApplyState(
-            string jobId, 
+            JobDescriptor descriptor, 
             string currentState, 
             JobState newState, 
             IRedisTransaction transaction,
@@ -161,42 +178,45 @@ namespace HangFire.States
             {
                 if (_stateDescriptors.ContainsKey(currentState))
                 {
-                    _stateDescriptors[currentState].Unapply(transaction, jobId);
+                    _stateDescriptors[currentState].Unapply(descriptor, transaction);
                 }
 
                 transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:job:{0}:state", jobId)));
+                    String.Format("hangfire:job:{0}:state", descriptor.JobId)));
 
                 foreach (var filter in stateChangedFilters)
                 {
-                    filter.OnStateUnapplied(transaction, jobId, currentState);
+                    filter.OnStateUnapplied(descriptor, currentState, transaction);
                 }
             }
 
-            AppendHistory(transaction, jobId, newState, true);
+            AppendHistory(transaction, descriptor, newState, true);
 
-            newState.Apply(transaction, jobId);
+            newState.Apply(descriptor, transaction);
 
             foreach (var filter in stateChangedFilters)
             {
-                filter.OnStateApplied(transaction, jobId, newState);
+                filter.OnStateApplied(descriptor, newState, transaction);
             }
         }
 
         private void AppendHistory(
-            string jobId, JobState state, bool appendToJob)
+            JobDescriptor descriptor, JobState state, bool appendToJob)
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                AppendHistory(transaction, jobId, state, appendToJob);
+                AppendHistory(transaction, descriptor, state, appendToJob);
                 transaction.Commit();
             }
         }
 
         private void AppendHistory(
-            IRedisTransaction transaction, string jobId, JobState state, bool appendToJob)
+            IRedisTransaction transaction, 
+            JobDescriptor descriptor, 
+            JobState state, 
+            bool appendToJob)
         {
-            var properties = new Dictionary<string, string>(state.GetProperties());
+            var properties = new Dictionary<string, string>(state.GetProperties(descriptor));
             var now = DateTime.UtcNow;
 
             properties.Add("State", state.StateName);
@@ -204,12 +224,12 @@ namespace HangFire.States
             if (appendToJob)
             {
                 transaction.QueueCommand(x => x.SetEntryInHash(
-                    String.Format("hangfire:job:{0}", jobId),
+                    String.Format("hangfire:job:{0}", descriptor.JobId),
                     "State",
                     state.StateName));
 
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}:state", jobId),
+                    String.Format("hangfire:job:{0}:state", descriptor.JobId),
                     properties));
             }
 
@@ -217,13 +237,13 @@ namespace HangFire.States
             properties.Add("CreatedAt", JobHelper.ToStringTimestamp(now));
 
             transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:job:{0}:history", jobId),
+                String.Format("hangfire:job:{0}:history", descriptor.JobId),
                 JobHelper.ToJson(properties)));
         }
 
-        private JobFilterInfo GetFilters()
+        private JobFilterInfo GetFilters(JobDescriptor descriptor)
         {
-            return new JobFilterInfo(_getFiltersThunk(null));
+            return new JobFilterInfo(_getFiltersThunk(descriptor));
         }
     }
 }

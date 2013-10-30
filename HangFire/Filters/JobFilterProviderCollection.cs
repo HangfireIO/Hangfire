@@ -53,6 +53,11 @@ namespace HangFire.Filters
         /// <returns>The collection of filter providers.</returns>
         public IEnumerable<JobFilter> GetFilters(JobDescriptor descriptor)
         {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException("descriptor");
+            }
+
             IEnumerable<JobFilter> combinedFilters =
                 Items.SelectMany(fp => fp.GetFilters(descriptor))
                     .OrderBy(filter => filter, _filterComparer);

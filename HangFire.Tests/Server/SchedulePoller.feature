@@ -30,14 +30,3 @@ Scenario: Poller should enqueue only jobs in the Scheduled state
 Scenario: Should return false when there are no jobs in the schedule
      When the poller runs
      Then schedule poller should return 'false'
-
-Scenario: Poller move the job to the Failed state when it could not find its type
-    Given a scheduled job of the 'NonExisting' type
-     When the poller runs
-     Then the job should be moved to the Failed state
-
-Scenario: Poller will fail only jobs in the Scheduled state
-    Given a scheduled job of the 'NonExisting' type
-      And its state is Succeeded
-     When the poller runs
-     Then the job should be in the Succeeded state

@@ -47,6 +47,12 @@ Scenario: the job history record and the state entry should contain the state pr
      Then the last history entry should contain all of the above properties
       And the state entry should contain all of the above properties
 
+Scenario: the state should be changed to the Failed state when it could not find its type
+    Given a job of the 'NonExisting' type
+      And a 'Test' state
+     When I change the state of the job to the 'Test'
+     Then the job should be moved to the Failed state
+
 Scenario: the state should not be changed if allowed current states array does not contain the current state
     Given a 'Test' state
       And a job in the 'Old' state with registered descriptor
