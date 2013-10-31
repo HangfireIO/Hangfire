@@ -48,7 +48,7 @@ namespace HangFire.Server
                     DequeuedLockTimeout))
                 {
                     Logger.DebugFormat(
-                        "Finding timed out jobs in the '{0}' queue...", queue);
+                        "Looking for timed out jobs in the '{0}' queue...", queue);
 
                     var jobIds = _redis.GetAllItemsFromList(
                         String.Format("hangfire:queue:{0}:dequeued", queue));

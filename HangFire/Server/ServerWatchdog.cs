@@ -49,6 +49,8 @@ namespace HangFire.Server
                 pipeline.Flush();
             }
 
+            Logger.DebugFormat("Looking for timed out servers...");
+
             foreach (var heartbeat in heartbeats)
             {
                 var maxTime = new DateTime(
