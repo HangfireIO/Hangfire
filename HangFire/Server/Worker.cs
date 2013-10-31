@@ -119,18 +119,22 @@ namespace HangFire.Server
 
                     lock (_jobLock)
                     {
-                        PerformJob(_jobPayload);
+                        JobServer.RetryOnException(
+                            () =>
+                            {
+                                PerformJob(_jobPayload);
 
-                        // Checkpoint #4. The job was performed, and it is in the one
-                        // of the explicit states (Succeeded, Scheduled and so on).
-                        // It should not be re-queued, but we still need to remove its
-                        // processing information.
+                                // Checkpoint #4. The job was performed, and it is in the one
+                                // of the explicit states (Succeeded, Scheduled and so on).
+                                // It should not be re-queued, but we still need to remove its
+                                // processing information.
 
-                        JobFetcher.RemoveFromFetchedQueue(
-                            _redis, _jobPayload.Id, _jobPayload.Queue);
+                                JobFetcher.RemoveFromFetchedQueue(
+                                    _redis, _jobPayload.Id, _jobPayload.Queue);
 
-                        // Success point. No things must be done after previous command
-                        // was succeeded.
+                                // Success point. No things must be done after previous command
+                                // was succeeded.
+                            }, _cts.Token.WaitHandle);
 
                         _jobIsReady.Reset();
                     }

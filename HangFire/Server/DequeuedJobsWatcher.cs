@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using HangFire.States;
+using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -8,8 +9,9 @@ namespace HangFire.Server
 {
     internal class DequeuedJobsWatcher : IThreadWrappable, IDisposable
     {
-        private static readonly TimeSpan CheckedTimeout = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan SleepTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan DequeuedLockTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan CheckedTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan SleepTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
         private readonly IRedisClient _redis;
@@ -38,7 +40,7 @@ namespace HangFire.Server
             {
                 using (_redis.AcquireLock(
                     String.Format("hangfire:queue:{0}:dequeued:lock", queue),
-                    TimeSpan.FromMinutes(1)))
+                    DequeuedLockTimeout))
                 {
                     var jobIds = _redis.GetAllItemsFromList(
                         String.Format("hangfire:queue:{0}:dequeued", queue));
@@ -127,7 +129,7 @@ namespace HangFire.Server
             {
                 while (true)
                 {
-                    FindAndRequeueTimedOutJobs();
+                    JobServer.RetryOnException(FindAndRequeueTimedOutJobs, _stopped);
 
                     if (_stopped.WaitOne(SleepTimeout))
                     {

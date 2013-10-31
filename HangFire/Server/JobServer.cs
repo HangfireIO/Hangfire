@@ -9,6 +9,8 @@ namespace HangFire.Server
 {
     internal class JobServer : IDisposable
     {
+        private const int RetryAttempts = 10;
+
         private readonly ServerContext _context;
         private readonly int _workerCount;
         private readonly IEnumerable<string> _queues;
@@ -35,7 +37,7 @@ namespace HangFire.Server
             IRedisClientsManager redisManager,
             string serverName,
             int workerCount,
-            IEnumerable<string> queues, 
+            IEnumerable<string> queues,
             JobActivator jobActivator,
             TimeSpan pollInterval,
             TimeSpan fetchTimeout)
@@ -78,10 +80,10 @@ namespace HangFire.Server
         {
             _manager = new ThreadWrapper(new WorkerManager(
                 new PrioritizedJobFetcher(_redisManager, _queues, _workerCount, _fetchTimeout),
-                _redisManager, 
-                _context, 
+                _redisManager,
+                _context,
                 _workerCount));
-            
+
             _schedulePoller = new ThreadWrapper(new SchedulePoller(_redisManager, _pollInterval));
             _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher(_redisManager));
             _serverWatchdog = new ThreadWrapper(new ServerWatchdog(_redisManager));
@@ -105,7 +107,7 @@ namespace HangFire.Server
 
                 while (true)
                 {
-                    Heartbeat();
+                    RetryOnException(Heartbeat, _stopped);
 
                     if (_stopped.WaitOne(HeartbeatInterval))
                     {
@@ -171,6 +173,45 @@ namespace HangFire.Server
 
                 transaction.Commit();
             }
+        }
+
+        public static void RetryOnException(Action action, WaitHandle waitHandle)
+        {
+            for (var i = 0; i < RetryAttempts; i++)
+            {
+                try
+                {
+                    action();
+
+                    // Break the loop after successful invocation.
+                    break;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch
+                {
+                    // Break the loop after the retry attempts number exceeded.
+                    if (i == RetryAttempts - 1) throw;
+
+                    // Break the loop when the wait handle was signaled.
+                    if (SleepBackOffMultiplier(i, waitHandle))
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        private static bool SleepBackOffMultiplier(int i, WaitHandle waitHandle)
+        {
+            //exponential/random retry back-off.
+            var rand = new Random(Guid.NewGuid().GetHashCode());
+            var nextTry = rand.Next(
+                (int)Math.Pow(i, 2), (int)Math.Pow(i + 1, 2) + 1);
+
+            return waitHandle.WaitOne(TimeSpan.FromSeconds(nextTry));
         }
     }
 }

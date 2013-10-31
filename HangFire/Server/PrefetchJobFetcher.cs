@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using HangFire.States;
 using ServiceStack.Logging;
@@ -23,7 +22,7 @@ namespace HangFire.Server
 
         private bool _stopSent;
 
-        private readonly ILog _logger = LogManager.GetLogger(typeof (PrefetchJobFetcher));
+        private readonly ILog _logger = LogManager.GetLogger(typeof(PrefetchJobFetcher));
 
         public PrefetchJobFetcher(JobFetcher innerFetcher, int count)
         {
@@ -98,7 +97,7 @@ namespace HangFire.Server
         {
             try
             {
-                var enqueuedState = new EnqueuedState("Re-queue prefetched job.");
+                var enqueuedState = new EnqueuedState("Re-queue prefetched job");
                 var stateMachine = new StateMachine(_innerFetcher.Redis);
 
                 foreach (var payload in _items)
@@ -127,14 +126,18 @@ namespace HangFire.Server
                         }
                     }
 
-                    var payload = _innerFetcher.DequeueJob(_cts.Token);
+                    JobServer.RetryOnException(
+                        () =>
+                        {
+                            var payload = _innerFetcher.DequeueJob(_cts.Token);
 
-                    lock (_items)
-                    {
-                        _items.Add(payload);
+                            lock (_items)
+                            {
+                                _items.Add(payload);
 
-                        _jobIsReady.Set();
-                    }
+                                _jobIsReady.Set();
+                            }
+                        }, _cts.Token.WaitHandle);
                 }
             }
             catch (OperationCanceledException)

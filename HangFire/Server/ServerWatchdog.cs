@@ -71,7 +71,8 @@ namespace HangFire.Server
             {
                 while (true)
                 {
-                    RemoveTimedOutServers();
+                    JobServer.RetryOnException(RemoveTimedOutServers, _stopped);
+
                     if (_stopped.WaitOne(CheckInterval))
                     {
                         break;
