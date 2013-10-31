@@ -32,7 +32,7 @@ namespace HangFire.Server
 
             var jobId = _redis
                 .GetRangeFromSortedSetByLowestScore(
-                    "hangfire:schedule", Double.NegativeInfinity, timestamp, 0, 1)
+                    "hangfire:schedule", 0, timestamp, 0, 1)
                 .FirstOrDefault();
 
             if (String.IsNullOrEmpty(jobId))
