@@ -10,6 +10,7 @@
                 height: 200,
                 renderer: 'bar',
                 interpolation: 'linear',
+                stroke: true,
 
                 series: new Rickshaw.Series.FixedDuration([
                         { name: 'failed', color: '#d9534f' },
@@ -60,13 +61,16 @@
                 element: element,
                 width: $(element).innerWidth(),
                 height: 200,
+                renderer: 'area',
+                interpolation: 'linear',
+                stroke: true,
                 series: [
                     {
                         color: '#d9534f',
                         data: failed,
                         name: 'Failed'
                     }, {
-                        color: '#5cb85c',
+                        color: '#6ACD65',
                         data: succeeded,
                         name: 'Succeeded'
                     }
