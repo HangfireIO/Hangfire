@@ -187,10 +187,6 @@ namespace HangFire.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(String.Format(
-                    "Failed to process the job '{0}': unexpected exception caught.",
-                    payload.Id));
-
                 state = new FailedState("The job has been failed.", ex);
             }
 
