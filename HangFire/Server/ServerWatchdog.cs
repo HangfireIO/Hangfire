@@ -11,11 +11,12 @@ namespace HangFire.Server
         private static readonly TimeSpan ServerTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30);
 
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerWatchdog));
+
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly IRedisClient _redis;
-        private readonly ILog _logger = LogManager.GetLogger(typeof (ServerWatchdog));
-
+        
         public ServerWatchdog(IRedisClientsManager redisManager)
         {
             _redis = redisManager.GetClient();
@@ -56,6 +57,7 @@ namespace HangFire.Server
                 if (utcNow > maxTime.Add(ServerTimeout))
                 {
                     JobServer.RemoveServer(_redis, heartbeat.Key);
+                    Logger.InfoFormat("Server '{0}' was removed due to time out.", heartbeat.Key);
                 }
             }
         }
@@ -69,6 +71,8 @@ namespace HangFire.Server
         {
             try
             {
+                Logger.Info("Server watchdog has been started.");
+
                 while (true)
                 {
                     JobServer.RetryOnException(RemoveTimedOutServers, _stopped);
@@ -78,10 +82,12 @@ namespace HangFire.Server
                         break;
                     }
                 }
+
+                Logger.Info("Server watchdog has been stopped.");
             }
             catch (Exception ex)
             {
-                _logger.Fatal("Unexpected exception caught.", ex);
+                Logger.Fatal("Unexpected exception caught.", ex);
             }
         }
 

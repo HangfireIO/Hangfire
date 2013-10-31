@@ -82,8 +82,6 @@ namespace ConsoleSample
             {
                 server.Start();
 
-                Console.WriteLine("HangFire Server has been started. Press Ctrl+C to exit...");
-
                 var count = 1;
 
                 while (true)

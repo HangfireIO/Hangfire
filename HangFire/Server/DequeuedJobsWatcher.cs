@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using HangFire.States;
-using ServiceStack.Common;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -14,12 +13,12 @@ namespace HangFire.Server
         private static readonly TimeSpan SleepTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
+
         private readonly IRedisClient _redis;
         private readonly StateMachine _stateMachine;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
-
-        private readonly ILog _logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
 
         public DequeuedJobsWatcher(IRedisClientsManager redisManager)
         {
@@ -38,22 +37,48 @@ namespace HangFire.Server
 
             foreach (var queue in queues)
             {
+                // Allowing only one server at a time to process the timed out
+                // jobs from the specified queue.
+
+                Logger.DebugFormat(
+                    "Acquiring the lock for the dequeued list of the '{0}' queue...", queue);
+
                 using (_redis.AcquireLock(
                     String.Format("hangfire:queue:{0}:dequeued:lock", queue),
                     DequeuedLockTimeout))
                 {
+                    Logger.DebugFormat(
+                        "Finding timed out jobs in the '{0}' queue...", queue);
+
                     var jobIds = _redis.GetAllItemsFromList(
                         String.Format("hangfire:queue:{0}:dequeued", queue));
 
+                    var requeued = 0;
+
                     foreach (var jobId in jobIds)
                     {
-                        RequeueJobIfTimedOut(jobId, queue);
+                        if (RequeueJobIfTimedOut(jobId, queue))
+                        {
+                            requeued++;
+                        }
+                    }
+                    
+                    if (requeued == 0)
+                    {
+                        Logger.DebugFormat("No timed out jobs were found in the '{0}' queue", queue);
+                    }
+                    else
+                    {
+                        Logger.InfoFormat(
+                            "{0} timed out jobs were found in the '{1}' queue and re-queued.",
+                            requeued,
+                            queue);        
                     }
                 }
             }
         }
 
-        private void RequeueJobIfTimedOut(string jobId, string queue)
+        private bool RequeueJobIfTimedOut(string jobId, string queue)
         {
             var flags = _redis.GetValuesFromHash(
                 String.Format("hangfire:job:{0}", jobId),
@@ -99,8 +124,12 @@ namespace HangFire.Server
                     _stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
 
                     JobFetcher.RemoveFromFetchedQueue(_redis, jobId, queue);
+
+                    return true;
                 }
             }
+
+            return false;
         }
 
         private static bool TimedOutByFetchedTime(string fetchedTimestamp)
@@ -127,6 +156,8 @@ namespace HangFire.Server
         {
             try
             {
+                Logger.Info("Dequeued jobs watcher has been started.");
+
                 while (true)
                 {
                     JobServer.RetryOnException(FindAndRequeueTimedOutJobs, _stopped);
@@ -136,11 +167,13 @@ namespace HangFire.Server
                         break;
                     }
                 }
+
+                Logger.Info("Dequeued jobs watcher has been stopped.");
             }
             catch (Exception ex)
             {
-                _logger.Fatal(
-                    "Unexpected exception caught in the timed out jobs thread. Timed out jobs will not be re-queued.",
+                Logger.Fatal(
+                    "Unexpected exception caught in the dequeued jobs watcher. Timed out jobs will not be re-queued.",
                     ex);
             }
         }

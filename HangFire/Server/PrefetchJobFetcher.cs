@@ -8,6 +8,8 @@ namespace HangFire.Server
 {
     internal class PrefetchJobFetcher : IJobFetcher, IStoppable
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(PrefetchJobFetcher));
+
         private readonly JobFetcher _innerFetcher;
         private readonly int _count;
 
@@ -21,8 +23,6 @@ namespace HangFire.Server
             = new CancellationTokenSource();
 
         private bool _stopSent;
-
-        private readonly ILog _logger = LogManager.GetLogger(typeof(PrefetchJobFetcher));
 
         public PrefetchJobFetcher(JobFetcher innerFetcher, int count)
         {
@@ -95,6 +95,11 @@ namespace HangFire.Server
 
         private void RequeuePrefetched()
         {
+            if (_items.Count == 0)
+            {
+                return;
+            }
+
             try
             {
                 var enqueuedState = new EnqueuedState("Re-queue prefetched job");
@@ -105,10 +110,12 @@ namespace HangFire.Server
                     stateMachine.ChangeState(payload.Id, enqueuedState);
                     JobFetcher.RemoveFromFetchedQueue(_innerFetcher.Redis, payload.Id, _innerFetcher.Queue);
                 }
+
+                Logger.InfoFormat("{0} prefetched jobs were re-queued.", _items.Count);
             }
             catch (Exception ex)
             {
-                _logger.Error("An exception occured while trying to re-queue prefetched jobs. Some prefetched jobs may remain in the dequeue list.", ex);
+                Logger.Error("An exception occured while trying to re-queue prefetched jobs. Some prefetched jobs may remain in the dequeue list.", ex);
             }
         }
 
@@ -116,6 +123,8 @@ namespace HangFire.Server
         {
             try
             {
+                Logger.InfoFormat("Job fetcher for the '{0}' queue has been started.", _innerFetcher.Queue);
+
                 while (true)
                 {
                     lock (_items)
@@ -142,10 +151,11 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
+                Logger.Info("Job fetcher was stopped.");
             }
             catch (Exception ex)
             {
-                _logger.Fatal("Unexpected exception caught. Jobs will not be fetched.", ex);
+                Logger.Fatal("Unexpected exception caught. Jobs will not be fetched.", ex);
             }
         }
     }

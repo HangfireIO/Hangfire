@@ -15,12 +15,9 @@ namespace HangFire.Server
         private readonly StateMachine _stateMachine;
 
         private Thread _thread;
+        private readonly ILog _logger;
 
-        protected readonly ILog Logger;
-
-        private readonly ManualResetEventSlim _jobIsReady
-            = new ManualResetEventSlim(false);
-
+        private readonly ManualResetEventSlim _jobIsReady = new ManualResetEventSlim(false);
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         private readonly object _crashedLock = new object();
@@ -41,7 +38,7 @@ namespace HangFire.Server
             _manager = manager;
             _context = context;
 
-            Logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", context.WorkerNumber));
+            _logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", context.WorkerNumber));
         }
 
         public void Start()
@@ -112,6 +109,8 @@ namespace HangFire.Server
         {
             try
             {
+                _logger.DebugFormat("Worker #{0} has been started.", _context.WorkerNumber);
+
                 while (true)
                 {
                     _manager.NotifyReady(this);
@@ -142,11 +141,12 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
+                _logger.DebugFormat("Worker #{0} has been stopped.", _context.WorkerNumber);
             }
             catch (Exception ex)
             {
                 Crashed = true;
-                Logger.Fatal(
+                _logger.Fatal(
                     String.Format(
                         "Unexpected exception caught. The worker will be stopped."),
                     ex);
@@ -157,7 +157,7 @@ namespace HangFire.Server
         {
             if (String.IsNullOrEmpty(payload.Type))
             {
-                Logger.Warn(String.Format(
+                _logger.Warn(String.Format(
                     "Could not process the job '{0}': it does not exist in the storage.",
                     payload.Id));
 

@@ -9,7 +9,10 @@ namespace HangFire.Server
 {
     internal class JobServer : IDisposable
     {
+        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
         private const int RetryAttempts = 10;
+
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(JobServer));
 
         private readonly ServerContext _context;
         private readonly int _workerCount;
@@ -21,17 +24,13 @@ namespace HangFire.Server
 
         private ThreadWrapper _manager;
         private ThreadWrapper _schedulePoller;
-        private ThreadWrapper _fetchedJobsWatcher;
+        private ThreadWrapper _dequeuedJobsWatcher;
         private ThreadWrapper _serverWatchdog;
-
-        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
 
         private readonly IRedisClientsManager _redisManager;
         private readonly IRedisClient _redis;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
-
-        private readonly ILog _logger = LogManager.GetLogger("HangFire.Manager");
 
         public JobServer(
             IRedisClientsManager redisManager,
@@ -42,8 +41,6 @@ namespace HangFire.Server
             TimeSpan pollInterval,
             TimeSpan fetchTimeout)
         {
-            _redis = redisManager.GetClient();
-
             _redisManager = redisManager;
             _workerCount = workerCount;
             _queues = queues;
@@ -56,6 +53,8 @@ namespace HangFire.Server
             {
                 throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value must be positive.");
             }
+
+            _redis = redisManager.GetClient();
 
             _context = new ServerContext(
                 serverName,
@@ -85,14 +84,14 @@ namespace HangFire.Server
                 _workerCount));
 
             _schedulePoller = new ThreadWrapper(new SchedulePoller(_redisManager, _pollInterval));
-            _fetchedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher(_redisManager));
+            _dequeuedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher(_redisManager));
             _serverWatchdog = new ThreadWrapper(new ServerWatchdog(_redisManager));
         }
 
         private void StopServer()
         {
             _serverWatchdog.Dispose();
-            _fetchedJobsWatcher.Dispose();
+            _dequeuedJobsWatcher.Dispose();
             _schedulePoller.Dispose();
             _manager.Dispose();
         }
@@ -102,8 +101,12 @@ namespace HangFire.Server
         {
             try
             {
+                Logger.Info("Starting HangFire Server...");
+
                 AnnounceServer();
                 StartServer();
+
+                Logger.Info("HangFire Server has been started.");
 
                 while (true)
                 {
@@ -115,12 +118,16 @@ namespace HangFire.Server
                     }
                 }
 
+                Logger.Info("Stopping HangFire Server...");
+
                 StopServer();
                 RemoveServer(_redis, _context.ServerName);
+
+                Logger.Info("HangFire Server has been stopped.");
             }
             catch (Exception ex)
             {
-                _logger.Fatal("Unexpected exception caught.", ex);
+                Logger.Fatal("Unexpected exception caught.", ex);
             }
         }
 

@@ -10,7 +10,7 @@ namespace HangFire.Server
 {
     internal class SchedulePoller : IThreadWrappable, IDisposable
     {
-        private readonly ILog _logger = LogManager.GetLogger("SchedulePoller");
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(SchedulePoller));
 
         private readonly TimeSpan _pollInterval;
         private readonly IRedisClient _redis;
@@ -56,6 +56,10 @@ namespace HangFire.Server
         {
             try
             {
+                Logger.Info("Schedule poller has been started.");
+
+                int enqueued = 0;
+
                 while (true)
                 {
                     var wasEnqueued = false;
@@ -67,19 +71,26 @@ namespace HangFire.Server
                         }, _cts.Token.WaitHandle);
 
                     if (wasEnqueued && !_cts.IsCancellationRequested)
+                    {
+                        enqueued++;
                         continue;
+                    }
+
+                    Logger.InfoFormat("{0} scheduled jobs were enqueued.", enqueued);
+                    enqueued = 0;
 
                     if (_cts.Token.WaitHandle.WaitOne(_pollInterval))
                     {
                         break;
                     }
                 }
+
+                Logger.Info("Schedule poller has been stopped.");
             }
             catch (Exception ex)
             {
-                _logger.Fatal(
-                    "Scheduled jobs will not be added to their queues by this server instance: "
-                    + "unexpected exception caught in the SchedulePoller thread.",
+                Logger.Fatal(
+                    "Unexpected exception caught in the schedule poller. Scheduled jobs will not be added to their queues.",
                     ex);
             }
         }

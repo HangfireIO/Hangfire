@@ -8,13 +8,14 @@ namespace HangFire.Server
 {
     internal class WorkerManager : IThreadWrappable, IDisposable
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(WorkerManager));
+
         private readonly DisposableCollection<Worker> _workers;
         private readonly BlockingCollection<Worker> _freeWorkers;
 
         private readonly IJobFetcher _fetcher;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        private readonly ILog _logger = LogManager.GetLogger(typeof (WorkerManager));
         
         public WorkerManager(
             IJobFetcher fetcher,
@@ -23,12 +24,9 @@ namespace HangFire.Server
             int workerCount)
         {
             _freeWorkers = new BlockingCollection<Worker>();
-
-            _logger.Info(String.Format("Starting {0} workers...", workerCount));
-
             _workers = new DisposableCollection<Worker>();
 
-            for (var i = 0; i < workerCount; i++)
+            for (var i = 1; i <= workerCount; i++)
             {
                 var workerContext = new WorkerContext(context, i);
 
@@ -38,16 +36,16 @@ namespace HangFire.Server
                 _workers.Add(worker);
             }
 
-            _logger.Info("Workers were started.");
-
             _fetcher = fetcher;
         }
 
         public void Dispose()
         {
+            Logger.Info("Stopping workers...");
+
             _workers.Dispose();
 
-            _logger.Info("Workers were stopped.");
+            Logger.Info("Workers were stopped.");
 
             _fetcher.Dispose();
 
@@ -83,6 +81,8 @@ namespace HangFire.Server
         {
             try
             {
+                Logger.InfoFormat("Worker manager has been started with {0} workers.", _workers.Count);
+
                 while (true)
                 {
                     ProcessNextJob(_cts.Token);
@@ -90,11 +90,11 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
-                // TODO: log it
+                Logger.Info("Worker manager has been stopped.");
             }
             catch (Exception ex)
             {
-                _logger.Fatal(
+                Logger.Fatal(
                     String.Format(
                         "Unexpected exception caught. Jobs  will not be processed by this server."),
                     ex);
