@@ -143,7 +143,7 @@
                     <li>
                         @String.Format("redis://{0}/{1}", RedisFactory.Host, RedisFactory.Db)
                     </li>
-                    <li>Time: @DateTime.UtcNow UTC
+                    <li>Time: @DateTime.UtcNow GMT
                     </li>
                     <li>Generated in [@((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds) ms]
                     </li>

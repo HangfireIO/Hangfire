@@ -535,7 +535,7 @@ WriteLiteral("\r\n                    </li>\r\n                    <li>Time: ");
             
             #line default
             #line hidden
-WriteLiteral(" UTC\r\n                    </li>\r\n                    <li>Generated in [");
+WriteLiteral(" GMT\r\n                    </li>\r\n                    <li>Generated in [");
 
 
             
