@@ -76,8 +76,11 @@ namespace HangFire.Server
                         continue;
                     }
 
-                    Logger.InfoFormat("{0} scheduled jobs were enqueued.", enqueued);
-                    enqueued = 0;
+                    if (enqueued != 0)
+                    {
+                        Logger.InfoFormat("{0} scheduled jobs were enqueued.", enqueued);
+                        enqueued = 0;
+                    }
 
                     if (_cts.Token.WaitHandle.WaitOne(_pollInterval))
                     {
