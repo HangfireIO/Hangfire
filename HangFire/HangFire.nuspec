@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>HangFire</id>
+    <id>HangFire.Core</id>
     <version>$version$</version>
-    <title>$title$</title>
+    <title>HangFire.Core</title>
     <authors>odinserj</authors>
     <owners>odinserj</owners>
     <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
