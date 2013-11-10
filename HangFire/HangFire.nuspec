@@ -8,7 +8,7 @@
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.txt</licenseUrl>
+    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
     <description>$description$</description>
     <summary>Background job processing for ASP.NET applications</summary>
     <copyright>Copyright © 2013 Sergey Odinokov</copyright>
