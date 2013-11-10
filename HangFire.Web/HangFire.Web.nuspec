@@ -15,7 +15,6 @@
       these jobs asynchronously. Move your long running tasks out of the request 
       processing pipeline without losing control over them!
     </description>
-    <summary>Background job processing for ASP.NET applications</summary>
     <copyright>Copyright © 2013 Sergey Odinokov</copyright>
     <tags>AspNet Background Jobs Tasks Workers Threading Redis Queue</tags>
 	<dependencies>
