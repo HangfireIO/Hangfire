@@ -1,7 +1,4 @@
-HangFire
-=========
-
-HangFire provides support for simple, efficient and transparent background job processing for ASP.NET applications. It helps you to define, create and process these jobs asynchronously. Move your long running tasks out of the request processing pipeline without losing control over them!
+HangFire provides support for simple, efficient and transparent **background job processing for ASP.NET applications**. It helps you to define, create and process these jobs asynchronously. Move your long running tasks out of the request processing pipeline without losing control over them!
 
 - Mass newsletter
 - Batch import from xml, csv, json
@@ -17,13 +14,13 @@ HangFire stores the information about jobs in the [Redis storage](http://redis.i
 Installation
 -------------
 
-HangFire stores its data in the Redis server instance, so you need to install it first. To learn different options and their pros and cons, see the [Installing Redis]() page in the documentation. But for now we'll install it using the simplest method through the NuGet Package Manager Console:
+HangFire stores its data in the Redis server instance, so you need to install it first. To learn different options and their pros and cons, see *Redis installation* section of the [Installation page](https://github.com/odinserj/HangFire/wiki/Installation) in the documentation. But for now we'll install it using the simplest method through the NuGet Package Manager Console:
 
 <pre style="background-color: #202020;border: 4px solid silver;border-radius: 3px;color: #E2E2E2;display: block;padding: 10px;">PM> Install-Package Redis-32</pre>
 
 Package Manager will install the Redis binaries to the `<project-folder>\packages\redis-32.<*>\tools` folder. Just open this folder and run the `redis-server.exe` program.
 
-Next, install the HangFire into your **ASP.NET application** using the Package Manager again:
+Next, install the HangFire into your **ASP.NET application** using the Package Manager Console again:
 
 <pre style="background-color: #202020;border: 4px solid silver;border-radius: 3px;color: #E2E2E2;display: block;padding: 10px;">PM> Install-Package HangFire</pre>
 
@@ -36,7 +33,7 @@ During the installation of the HangFire package, the `App_Start\HangFireConfig.c
 <span style="color: #666;">http://&lt;your-site&gt;</span>/hangfire.axd
 </div>
 
-If you see a page like this, then the configuration step is finished. To learn more about configuration or if you do not see that page, the [Configuration page]() in the documentation, especially its Troubleshooting section.
+If you see a page like this, then the configuration step is finished. Otherwise, please refer to the [Troubleshooting page](https://github.com/odinserj/HangFire/wiki/Installation) in the documentation.
 
 ![HangFire Dashboard](https://github.com/odinserj/hangfire/raw/master/Examples/dashboard_min.png)
 
@@ -63,7 +60,7 @@ public void LongRunningJob : BackgroundJob
 }
 ```
 
-To learn more about job classes, see the [Defining Jobs page]() in the documentation.
+To learn more about job classes, see the [Defining Jobs page](https://github.com/odinserj/HangFire/wiki/Defining-jobs) in the documentation.
 
 ### 2. Create a job
 
@@ -79,7 +76,7 @@ You also can tell HangFire to delay the excecution of the job. After the given d
 Perform.In<LongRunningJob>(TimeSpan.FromDays(1), new { Name = "man" });
 ```
 
-To learn more about different options of the job creation process, see the [corresponding page]() in the documentation.
+To learn more about different options of the job creation process, see the [corresponding page](https://github.com/odinserj/HangFire/wiki/Creating-jobs) in the documentation.
 
 ### 3. Start the processing
 
@@ -90,7 +87,7 @@ var server = new AspNetBackgroundJobServer();
 server.Start();
 ```
 
-You can find more information about the [HangFire Server]() in the documentation.
+You can find more information about the [HangFire Server](https://github.com/odinserj/HangFire/wiki/Performing-jobs) in the documentation.
 
 License
 --------
@@ -108,4 +105,4 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see [http://www.gnu.org/licenses/]().
+along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
