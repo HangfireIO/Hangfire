@@ -4,12 +4,15 @@
     <id>HangFire.Core</id>
     <version>$version$</version>
     <title>HangFire.Core</title>
-    <authors>odinserj</authors>
+    <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
+    <projectUrl>http://hangfire.io</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.txt</licenseUrl>
     <description>$description$</description>
-    <copyright>Copyright (c) 2013 Sergey Odinokov.</copyright>
+    <summary>Background job processing for ASP.NET applications</summary>
+    <copyright>Copyright © 2013 Sergey Odinokov</copyright>
+    <tags>Background Jobs Tasks Workers Threading Redis Queue</tags>
 	<dependencies>
 		<dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
 		<dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
