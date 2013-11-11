@@ -92,6 +92,11 @@ server.Start();
 
 You can find more information about the [HangFire Server](https://github.com/odinserj/HangFire/wiki/Performing-jobs) in the documentation.
 
+Problems? Questions?
+---------------------
+
+If you have installation issues, problems or questions, just let me know. Open a [new issue](https://github.com/odinserj/HangFire/issues?state=open) and I'll answer to it.
+
 License
 --------
 
