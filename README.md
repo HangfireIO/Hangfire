@@ -1,7 +1,7 @@
 HangFire
 =========
 
-HangFire provides support for simple, efficient and transparent **background job processing for ASP.NET applications**. It helps you to define, create and process these jobs asynchronously. Move your long running tasks out of the request processing pipeline without losing control over them!
+HangFire helps to perform background jobs inside your ASP.NET application in a simple, efficient and transparent way. It allows you to define, create and process these jobs asynchronously. With this library, you can move your long running tasks out of the request processing pipeline without losing control over them:
 
 - Mass newsletter
 - Batch import from xml, csv, json
@@ -92,7 +92,7 @@ server.Start();
 
 You can find more information about the [HangFire Server](https://github.com/odinserj/HangFire/wiki/Performing-jobs) in the documentation.
 
-Problems? Questions?
+Questions? Problems? 
 ---------------------
 
 If you have installation issues, problems or questions, just let me know. Open a [new issue](https://github.com/odinserj/HangFire/issues?state=open) and I'll answer to it.
