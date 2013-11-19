@@ -46,7 +46,7 @@ namespace HangFire
             PollInterval = TimeSpan.FromSeconds(15);
 
             WorkerCount = workerCount;
-            Queues = queues ?? new[] { EnqueuedState.DefaultQueue };
+            Queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
         }
 
         public IEnumerable<string> Queues
