@@ -41,7 +41,7 @@ namespace HangFire.Tests
                 }
                 else if (code.Equals("Perform.Async(null)"))
                 {
-                    _jobId = Perform.Async(null);
+                    _jobId = Perform.Async((Type)null);
                 }
                 else if (code.Equals("Perform.Async(typeof(TestJob), new { ArticleId = 3 })"))
                 {

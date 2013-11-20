@@ -65,10 +65,29 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Client\ClientJobDescriptor.cs" />
+    <Compile Include="ExpressionUtil\BinaryExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\CachedExpressionCompiler.cs" />
+    <Compile Include="ExpressionUtil\ConditionalExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ConstantExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\DefaultExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ExpressionFingerprintChain.cs" />
+    <Compile Include="ExpressionUtil\FingerprintingExpressionVisitor.cs" />
+    <Compile Include="ExpressionUtil\HashCodeCombiner.cs" />
+    <Compile Include="ExpressionUtil\Hoisted.cs" />
+    <Compile Include="ExpressionUtil\HoistingExpressionVisitor.cs" />
+    <Compile Include="ExpressionUtil\IndexExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\LambdaExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\MemberExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\MethodCallExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ParameterExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\TypeBinaryExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\UnaryExpressionFingerprint.cs" />
     <Compile Include="Filters\JobFilter.cs" />
     <Compile Include="Filters\JobFilterProviderCollection.cs" />
     <Compile Include="Filters\JobFilterProviders.cs" />
@@ -138,7 +157,9 @@
     <Compile Include="HistoryStatisticsAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HangFire.nuspec" />
+    <None Include="HangFire.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

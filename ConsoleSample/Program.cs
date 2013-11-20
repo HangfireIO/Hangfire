@@ -30,6 +30,12 @@ namespace ConsoleSample
 
         public int Number { get; set; }
 
+        [Queue("critical")]
+        public void Execute(string name)
+        {
+            Console.WriteLine("Hello, {0}!", name);
+        }
+
         public override void Perform()
         {
             int time;
@@ -101,6 +107,24 @@ namespace ConsoleSample
                             for (var i = 0; i < workCount; i++)
                             {
                                 Perform.Async<ConsoleJob>(new { Number = count++ });
+                            }
+                            Console.WriteLine("Jobs enqueued.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+
+                    if (command.StartsWith("console", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var workCount = int.Parse(command.Substring(8));
+                            for (var i = 0; i < workCount; i++)
+                            {
+                                Perform.Async(() => Console.WriteLine("Hello, {0}!", "world"));
+                                Perform.Async<ConsoleJob>(x => x.Execute("world"));
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }

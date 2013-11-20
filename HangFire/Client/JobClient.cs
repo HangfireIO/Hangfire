@@ -54,6 +54,31 @@ namespace HangFire.Client
             _jobCreator = jobCreator;
         }
 
+        public void CreateJob(
+            string id, Type type, string methodName, Dictionary<string, object> parameters)
+        {
+            if (!typeof(BackgroundJob).IsAssignableFrom(type))
+            {
+                throw new ArgumentException(
+                    String.Format("The type '{0}' must inherit the '{1}' type.", type, typeof(BackgroundJob)),
+                    "type");
+            }
+
+            try
+            {
+                var descriptor = new ClientJobDescriptor(_redis, id, type, null, null);
+                var context = new CreateContext(_redis, descriptor);
+
+                _jobCreator.CreateJob(context);
+            }
+            catch (Exception ex)
+            {
+                throw new CreateJobFailedException(
+                    "Job creation was failed. See the inner exception for details.",
+                    ex);
+            }
+        }
+
         /// <summary>
         /// Creates a job of the specified <paramref name="type"/> with the
         /// given unique identifier and arguments provided in a anonymous object

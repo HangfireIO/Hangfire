@@ -15,7 +15,9 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
 using HangFire.Client;
 using HangFire.States;
 using ServiceStack.Redis;
@@ -30,6 +32,59 @@ namespace HangFire
     /// </summary>
     public static class Perform
     {
+        public static string Async(Expression<Action> methodCall)
+        {
+            return null;
+        }
+
+        public static string Async<TJob>(Expression<Action<TJob>> methodCall)
+        {
+            var callExpression = methodCall.Body as MethodCallExpression;
+            if (callExpression == null)
+            {
+                throw new InvalidOperationException("controllerAction должен указывать на метод");
+            }
+
+            var methodName = callExpression.Method.Name;
+
+            var parameters = callExpression.Method.GetParameters();
+            var arguments = new Dictionary<string, object>(parameters.Length);
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+
+                if (parameter.IsOut)
+                {
+                    throw new ArgumentException("Out parameters are not supported");
+                }
+
+                if (parameter.ParameterType.IsByRef)
+                {
+                    throw new ArgumentException("Passed by reference parameters are not supported");
+                }
+
+                // TODO: think about optional values
+
+                var value = GetArgumentValue(callExpression.Arguments[i]);
+                arguments.Add(parameter.Name, value);
+            }
+
+            return null;
+        }
+
+        private static object GetArgumentValue(Expression expression)
+        {
+            var constantExpression = expression as ConstantExpression;
+
+            if (constantExpression != null)
+            {
+                return constantExpression.Value;
+            }
+
+            return CachedExpressionCompiler.Evaluate(expression);
+        }
+
         /// <summary>
         /// Enqueues a new argumentless job of the <typeparamref name="TJob"/> 
         /// type to its queue.
