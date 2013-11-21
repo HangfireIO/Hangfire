@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using HangFire.Filters;
+
 using ServiceStack.Redis;
 
 namespace HangFire.Server
@@ -25,7 +25,9 @@ namespace HangFire.Server
     public class ServerJobDescriptor : JobDescriptor, IDisposable
     {
         private readonly IRedisClient _redis;
-        private readonly BackgroundJob _jobInstance;
+        private object _jobInstance;
+
+        private readonly Action _performJobCallback;
 
         internal ServerJobDescriptor(
             IRedisClient redis,
@@ -42,39 +44,63 @@ namespace HangFire.Server
                 throw new InvalidOperationException("Could not instantiate the job. See the inner exception for details.", TypeLoadException);
             }
 
+            if (String.IsNullOrWhiteSpace(payload.Method))
+            {
+                // Old background job invocation type, based on a BackgroundJob class.
+                // We need to initialize instance properties here.
+                ActivateJob(activator);
+                InitializePropertiesFromArguments(payload);
+
+                _performJobCallback = () => ((BackgroundJob)_jobInstance).Perform();
+            }
+            else
+            {
+                // New job invocation type, based on a given method. We need to find it first.
+                // TODO: wrap parameters in a custom class
+                var serialiedArgs = JobHelper.FromJson<List<ArgumentPair>>(payload.Args);
+                var argumentTypes = new Type[serialiedArgs.Count];
+                var arguments = new object[serialiedArgs.Count];
+
+                for (int i = 0; i < serialiedArgs.Count; i++)
+                {
+                    var serializedArg = serialiedArgs[i];
+                    object value;
+
+                    if (serializedArg.Type == typeof(object))
+                    {
+                        // Special case for handling object types, because string can not
+                        // be converted to object type.
+                        value = serializedArg.Value;
+                    }
+                    else
+                    {
+                        var converter = TypeDescriptor.GetConverter(serializedArg.Type);
+                        value = converter.ConvertFromInvariantString(serializedArg.Value);
+                    }
+
+                    argumentTypes[i] = serializedArg.Type;
+                    arguments[i] = value;
+                }
+
+                var methodInfo = Type.GetMethod(payload.Method, argumentTypes);
+
+                if (!methodInfo.IsStatic)
+                {
+                    ActivateJob(activator);
+                }
+
+                _performJobCallback = () => methodInfo.Invoke(_jobInstance, arguments);
+            }
+        }
+
+        private void ActivateJob(JobActivator activator)
+        {
             _jobInstance = activator.ActivateJob(Type);
 
             if (_jobInstance == null)
             {
-                throw new InvalidOperationException(String.Format(
-                    "{0} returned NULL instance of the '{1}' type.",
-                    activator.GetType().FullName,
-                    Type.FullName));
-            }
-
-            var args = JobHelper.FromJson<Dictionary<string, string>>(payload.Args);
-
-            foreach (var arg in args)
-            {
-                var propertyInfo = _jobInstance.GetType().GetProperty(arg.Key);
-                if (propertyInfo != null)
-                {
-                    var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
-
-                    try
-                    {
-                        var value = converter.ConvertFromInvariantString(arg.Value);
-                        propertyInfo.SetValue(_jobInstance, value, null);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new InvalidOperationException(
-                            String.Format(
-                                "Could not set the property '{0}' of the instance of class '{1}'. See the inner exception for details.",
-                                propertyInfo.Name, _jobInstance.GetType().Name),
-                            ex);
-                    }
-                }
+                throw new InvalidOperationException(
+                    String.Format("{0} returned NULL instance of the '{1}' type.", activator.GetType().FullName, Type.FullName));
             }
         }
 
@@ -97,7 +123,7 @@ namespace HangFire.Server
 
         internal void Perform()
         {
-            _jobInstance.Perform();
+            _performJobCallback();
         }
 
         internal void Dispose()
@@ -112,6 +138,35 @@ namespace HangFire.Server
         void IDisposable.Dispose()
         {
             Dispose();
+        }
+
+        private void InitializePropertiesFromArguments(JobPayload payload)
+        {
+            var args = JobHelper.FromJson<Dictionary<string, string>>(payload.Args);
+
+            foreach (var arg in args)
+            {
+                var propertyInfo = _jobInstance.GetType().GetProperty(arg.Key);
+                if (propertyInfo != null)
+                {
+                    var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
+
+                    try
+                    {
+                        var value = converter.ConvertFromInvariantString(arg.Value);
+                        propertyInfo.SetValue(_jobInstance, value, null);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            String.Format(
+                                "Could not set the property '{0}' of the instance of class '{1}'. See the inner exception for details.",
+                                propertyInfo.Name,
+                                _jobInstance.GetType().Name),
+                            ex);
+                    }
+                }
+            }
         }
     }
 }

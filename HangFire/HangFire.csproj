@@ -65,6 +65,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ArgumentPair.cs" />
     <Compile Include="CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
     <Compile Include="Client\JobCreator.cs" />

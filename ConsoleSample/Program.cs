@@ -116,11 +116,11 @@ namespace ConsoleSample
                         }
                     }
 
-                    if (command.StartsWith("console", StringComparison.OrdinalIgnoreCase))
+                    if (command.StartsWith("expr", StringComparison.OrdinalIgnoreCase))
                     {
                         try
                         {
-                            var workCount = int.Parse(command.Substring(8));
+                            var workCount = int.Parse(command.Substring(5));
                             for (var i = 0; i < workCount; i++)
                             {
                                 Perform.Async(() => Console.WriteLine("Hello, {0}!", "world"));

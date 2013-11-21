@@ -76,6 +76,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Bindings\ClientSteps.cs" />
+    <Compile Include="Bindings\CommonBinding.cs" />
     <Compile Include="Bindings\JobActivatorSteps.cs" />
     <Compile Include="Bindings\ServerWatchdogSteps.cs" />
     <Compile Include="Bindings\Transforms.cs" />

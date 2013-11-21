@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
+
 using HangFire.Filters;
 using HangFire.States;
 using ServiceStack.Redis;
@@ -39,14 +41,13 @@ namespace HangFire.Client
             IRedisClient redis,
             string jobId, 
             Type type,
-            IDictionary<string, string> arguments,
+            MethodInfo method,
             JobState state)
-            : base(jobId, type)
+            : base(jobId, type, method)
         {
             Debug.Assert(redis != null);
             Debug.Assert(jobId != null);
             Debug.Assert(type != null);
-            Debug.Assert(arguments != null);
             Debug.Assert(state != null);
 
             _stateMachine = new StateMachine(redis);
@@ -54,7 +55,12 @@ namespace HangFire.Client
             State = state;
             
             _jobParameters["Type"] = type.AssemblyQualifiedName;
-            _jobParameters["Args"] = JobHelper.ToJson(arguments);
+
+            if (method != null)
+            {
+                _jobParameters["Method"] = method.Name;
+            }
+
             _jobParameters["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
         }
 

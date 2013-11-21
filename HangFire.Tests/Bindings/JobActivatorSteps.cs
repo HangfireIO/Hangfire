@@ -7,7 +7,7 @@ namespace HangFire.Tests
     [Binding]
     public class JobActivatorSteps
     {
-        private BackgroundJob _jobInstance;
+        private object _jobInstance;
         private Exception _exception;
 
         [When(@"I call the `Activate` method with the '(\w+)' type argument")]

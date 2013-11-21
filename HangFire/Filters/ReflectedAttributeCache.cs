@@ -28,9 +28,17 @@ namespace HangFire.Filters
         private static readonly ConcurrentDictionary<Type, ReadOnlyCollection<JobFilterAttribute>> TypeFilterAttributeCache 
             = new ConcurrentDictionary<Type, ReadOnlyCollection<JobFilterAttribute>>();
 
+        private static readonly ConcurrentDictionary<MethodInfo, ReadOnlyCollection<JobFilterAttribute>> MethodFilterAttributeCache
+            = new ConcurrentDictionary<MethodInfo, ReadOnlyCollection<JobFilterAttribute>>();
+
         public static ICollection<JobFilterAttribute> GetTypeFilterAttributes(Type type)
         {
             return GetAttributes(TypeFilterAttributeCache, type);
+        }
+
+        public static ICollection<JobFilterAttribute> GetMethodFilterAttributes(MethodInfo methodInfo)
+        {
+            return GetAttributes(MethodFilterAttributeCache, methodInfo);
         }
 
         private static ReadOnlyCollection<TAttribute> GetAttributes<TMemberInfo, TAttribute>(

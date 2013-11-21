@@ -34,21 +34,14 @@ namespace HangFire
     {
         public static string Async(Expression<Action> methodCall)
         {
-            return null;
-        }
-
-        public static string Async<TJob>(Expression<Action<TJob>> methodCall)
-        {
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new InvalidOperationException("controllerAction должен указывать на метод");
+                throw new ArgumentException("Должен указывать на метод", "methodCall");
             }
 
-            var methodName = callExpression.Method.Name;
-
             var parameters = callExpression.Method.GetParameters();
-            var arguments = new Dictionary<string, object>(parameters.Length);
+            var arguments = new List<Tuple<Type, object>>(parameters.Length);
 
             for (int i = 0; i < parameters.Length; i++)
             {
@@ -56,21 +49,69 @@ namespace HangFire
 
                 if (parameter.IsOut)
                 {
-                    throw new ArgumentException("Out parameters are not supported");
+                    throw new ArgumentException("Out parameters are not supported", "methodCall");
                 }
 
                 if (parameter.ParameterType.IsByRef)
                 {
-                    throw new ArgumentException("Passed by reference parameters are not supported");
+                    throw new ArgumentException("Passed by reference parameters are not supported", "methodCall");
                 }
 
                 // TODO: think about optional values
 
                 var value = GetArgumentValue(callExpression.Arguments[i]);
-                arguments.Add(parameter.Name, value);
+                arguments.Add(new Tuple<Type, object>(parameter.ParameterType, value));
             }
 
-            return null;
+            using (var client = new JobClient(RedisFactory.PooledManager))
+            {
+                var enqueuedState = new EnqueuedState("Enqueued by the Сlient");
+                var uniqueId = GenerateId();
+
+                client.CreateJob(uniqueId, callExpression.Method.DeclaringType, callExpression.Method, arguments, enqueuedState);
+                return uniqueId;
+            }
+        }
+
+        public static string Async<TJob>(Expression<Action<TJob>> methodCall)
+        {
+            var callExpression = methodCall.Body as MethodCallExpression;
+            if (callExpression == null)
+            {
+                throw new ArgumentException("Должен указывать на метод", "methodCall");
+            }
+
+            var parameters = callExpression.Method.GetParameters();
+            var arguments = new List<Tuple<Type, object>>(parameters.Length);
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+
+                if (parameter.IsOut)
+                {
+                    throw new ArgumentException("Out parameters are not supported", "methodCall");
+                }
+
+                if (parameter.ParameterType.IsByRef)
+                {
+                    throw new ArgumentException("Passed by reference parameters are not supported", "methodCall");
+                }
+
+                // TODO: think about optional values
+
+                var value = GetArgumentValue(callExpression.Arguments[i]);
+                arguments.Add(new Tuple<Type, object>(parameter.ParameterType, value));
+            }
+
+            using (var client = new JobClient(RedisFactory.PooledManager))
+            {
+                var enqueuedState = new EnqueuedState("Enqueued by the Сlient");
+                var uniqueId = GenerateId();
+
+                client.CreateJob(uniqueId, typeof(TJob), callExpression.Method, arguments, enqueuedState);
+                return uniqueId;
+            }
         }
 
         private static object GetArgumentValue(Expression expression)
@@ -99,7 +140,7 @@ namespace HangFire
         public static string Async<TJob>()
             where TJob : BackgroundJob
         {
-            return Async<TJob>(null);
+            return Async<TJob>((Type)null);
         }
 
         /// <summary>
@@ -177,7 +218,7 @@ namespace HangFire
         public static string In<TJob>(TimeSpan delay)
             where TJob : BackgroundJob
         {
-            return In<TJob>(delay, null);
+            return In<TJob>(delay, (Type)null);
         }
 
         /// <summary>

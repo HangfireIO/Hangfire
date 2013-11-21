@@ -71,7 +71,12 @@ namespace HangFire.Filters
     ///     </item>
     ///     <item>
     ///         <description>
-    ///             <see cref="JobFilterScope.Invoke"/>.
+    ///             <see cref="Type"/>.
+    ///         </description>
+    ///     </item>
+    ///     <item>
+    ///         <description>
+    ///             <see cref="Method"/>.
     ///         </description>
     ///     </item>
     /// </list>
@@ -79,7 +84,7 @@ namespace HangFire.Filters
     /// Для примера, клиентский фильтр, у которого свойство Order имеет значение 0,
     /// а значение filter scope равно <see cref="JobFilterScope.Global"/>,
     /// будет выполнен раньше фильтра с тем же самым значением Order,
-    /// но c filter scope, равным <see cref="JobFilterScope.Invoke"/>.
+    /// но c filter scope, равным <see cref="Type"/>.
     /// 
     /// Значения Scope задаются, в основном, в реализациях интерфейса
     /// <see cref="IJobFilterProvider"/>. Так, класс <see cref="GlobalJobFilterCollection"/>
@@ -91,13 +96,19 @@ namespace HangFire.Filters
     public enum JobFilterScope
     {
         /// <summary>
-        /// Specifies an order before the <see cref="Invoke"/>.
+        /// Specifies an order before the <see cref="Type"/>.
         /// </summary>
         Global = 10,
 
         /// <summary>
-        /// Specifies an order after the <see cref="Global"/>.
+        /// Specifies an order after the <see cref="Global"/> and
+        /// before the <see cref="Method"/>.
         /// </summary>
-        Invoke = 20,
+        Type = 20,
+
+        /// <summary>
+        /// Specifies an order after the <see cref="Type"/>.
+        /// </summary>
+        Method = 30,
     }
 }

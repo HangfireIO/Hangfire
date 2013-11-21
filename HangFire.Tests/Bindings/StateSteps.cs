@@ -120,7 +120,7 @@ namespace HangFire.Tests.States
         {
             using (var transaction = Redis.Client.CreateTransaction())
             {
-                var descriptor = new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType);
+                var descriptor = new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType, null);
                 _state.Apply(descriptor, transaction);
                 transaction.Commit();
             }
@@ -133,7 +133,7 @@ namespace HangFire.Tests.States
             {
                 if (StateMachine.Descriptors.ContainsKey(_state.StateName))
                 {
-                    var descriptor = new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType);
+                    var descriptor = new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType, null);
                     StateMachine.Descriptors[_state.StateName]
                         .Unapply(descriptor, transaction);
                 }
@@ -247,7 +247,7 @@ namespace HangFire.Tests.States
         {
             DictionaryAssert.ContainsFollowingItems(
                 table, 
-                _state.GetProperties(new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType)));
+                _state.GetProperties(new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType, null)));
         }
 
         [Then(@"the job should be added to the failed set")]

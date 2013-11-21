@@ -71,7 +71,7 @@ namespace HangFire.States
             
             if (filters != null)
             {
-                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Invoke, null));
+                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
             }
         }
         

@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
+
 using HangFire.States;
 using ServiceStack.Redis;
 
@@ -55,18 +57,22 @@ namespace HangFire.Client
         }
 
         public void CreateJob(
-            string id, Type type, string methodName, Dictionary<string, object> parameters)
+            string id, Type type, MethodInfo method, List<Tuple<Type, object>> parameters, JobState state)
         {
-            if (!typeof(BackgroundJob).IsAssignableFrom(type))
-            {
-                throw new ArgumentException(
-                    String.Format("The type '{0}' must inherit the '{1}' type.", type, typeof(BackgroundJob)),
-                    "type");
-            }
-
             try
             {
-                var descriptor = new ClientJobDescriptor(_redis, id, type, null, null);
+                var arguments = new List<ArgumentPair>(parameters.Count);
+                foreach (var parameter in parameters)
+                {
+                    var converter = TypeDescriptor.GetConverter(parameter.Item1);
+                    var value = converter.ConvertToInvariantString(parameter.Item2);
+
+                    arguments.Add(new ArgumentPair { Type = parameter.Item1, Value = value });
+                }
+
+                var descriptor = new ClientJobDescriptor(_redis, id, type, method, state);
+                descriptor.SetParameter("Args", arguments);
+
                 var context = new CreateContext(_redis, descriptor);
 
                 _jobCreator.CreateJob(context);
@@ -154,7 +160,9 @@ namespace HangFire.Client
 
             try
             {
-                var descriptor = new ClientJobDescriptor(_redis, id, type, args, state);
+                var descriptor = new ClientJobDescriptor(_redis, id, type, null, state);
+                descriptor.SetParameter("Args", args);
+
                 var context = new CreateContext(_redis, descriptor);
 
                 _jobCreator.CreateJob(context);

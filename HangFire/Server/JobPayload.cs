@@ -19,17 +19,19 @@ namespace HangFire.Server
     internal class JobPayload
     {
         public JobPayload(
-            string id, string queue, string type, string args)
+            string id, string queue, string type, string method, string args)
         {
             Id = id;
             Queue = queue;
             Type = type;
+            Method = method;
             Args = args;
         }
 
         public string Id { get; private set; }
         public string Queue { get; private set; }
         public string Type { get; private set; }
+        public string Method { get; private set; }
         public string Args { get; private set; }
     }
 }

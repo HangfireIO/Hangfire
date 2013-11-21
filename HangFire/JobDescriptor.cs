@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+
 using HangFire.Filters;
 
 namespace HangFire
@@ -26,10 +28,11 @@ namespace HangFire
     /// </summary>
     public class JobDescriptor
     {
-        internal JobDescriptor(string jobId, Type jobType)
+        internal JobDescriptor(string jobId, Type jobType, MethodInfo method)
         {
             JobId = jobId;
             Type = jobType;
+            Method = method;
         }
 
         internal JobDescriptor(string jobId, string jobType)
@@ -58,19 +61,31 @@ namespace HangFire
 
         public Exception TypeLoadException { get; private set; }
 
-        internal IEnumerable<JobFilterAttribute> GetFilterAttributes(bool useCache)
+        public MethodInfo Method { get; protected set; }
+
+        internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
         {
             if (Type == null)
             {
                 return Enumerable.Empty<JobFilterAttribute>();
             }
 
-            if (useCache)
+            return useCache ? ReflectedAttributeCache.GetTypeFilterAttributes(Type) : GetFilterAttributes(Type);
+        }
+
+        internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
+        {
+            if (Method == null)
             {
-                return ReflectedAttributeCache.GetTypeFilterAttributes(Type);
+                return Enumerable.Empty<JobFilterAttribute>();
             }
 
-            return Type
+            return useCache ? ReflectedAttributeCache.GetMethodFilterAttributes(Method) : GetFilterAttributes(Method);
+        }
+
+        private IEnumerable<JobFilterAttribute> GetFilterAttributes(MemberInfo memberInfo)
+        {
+            return memberInfo
                 .GetCustomAttributes(typeof(JobFilterAttribute), inherit: true)
                 .Cast<JobFilterAttribute>();
         }

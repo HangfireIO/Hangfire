@@ -71,6 +71,7 @@ namespace HangFire.Server
 
             string jobArgs = null;
             string jobType = null;
+            string jobMethod = null;
 
             using (var pipeline = _redis.CreatePipeline())
             {
@@ -82,8 +83,8 @@ namespace HangFire.Server
                 pipeline.QueueCommand(
                     x => x.GetValuesFromHash(
                         String.Format("hangfire:job:{0}", jobId),
-                        new[] { "Type", "Args" }),
-                    x => { jobType = x[0]; jobArgs = x[1]; });
+                        new[] { "Type", "Args", "Method" }),
+                    x => { jobType = x[0]; jobArgs = x[1]; jobMethod = x[2]; });
 
                 pipeline.Flush();
             }
@@ -92,7 +93,7 @@ namespace HangFire.Server
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new JobPayload(jobId, Queue, jobType, jobArgs);
+            return new JobPayload(jobId, Queue, jobType, jobMethod, jobArgs);
         }
 
         public void Dispose()
