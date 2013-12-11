@@ -15,9 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq.Expressions;
 using HangFire.Client;
 using HangFire.States;
 using ServiceStack.Redis;
@@ -32,100 +30,6 @@ namespace HangFire
     /// </summary>
     public static class Perform
     {
-        public static string Async(Expression<Action> methodCall)
-        {
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Должен указывать на метод", "methodCall");
-            }
-
-            var parameters = callExpression.Method.GetParameters();
-            var arguments = new List<Tuple<Type, object>>(parameters.Length);
-
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-
-                if (parameter.IsOut)
-                {
-                    throw new ArgumentException("Out parameters are not supported", "methodCall");
-                }
-
-                if (parameter.ParameterType.IsByRef)
-                {
-                    throw new ArgumentException("Passed by reference parameters are not supported", "methodCall");
-                }
-
-                // TODO: think about optional values
-
-                var value = GetArgumentValue(callExpression.Arguments[i]);
-                arguments.Add(new Tuple<Type, object>(parameter.ParameterType, value));
-            }
-
-            using (var client = new JobClient(RedisFactory.PooledManager))
-            {
-                var enqueuedState = new EnqueuedState("Enqueued by the Сlient");
-                var uniqueId = GenerateId();
-
-                client.CreateJob(uniqueId, callExpression.Method.DeclaringType, callExpression.Method, arguments, enqueuedState);
-                return uniqueId;
-            }
-        }
-
-        public static string Async<TJob>(Expression<Action<TJob>> methodCall)
-        {
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Должен указывать на метод", "methodCall");
-            }
-
-            var parameters = callExpression.Method.GetParameters();
-            var arguments = new List<Tuple<Type, object>>(parameters.Length);
-
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-
-                if (parameter.IsOut)
-                {
-                    throw new ArgumentException("Out parameters are not supported", "methodCall");
-                }
-
-                if (parameter.ParameterType.IsByRef)
-                {
-                    throw new ArgumentException("Passed by reference parameters are not supported", "methodCall");
-                }
-
-                // TODO: think about optional values
-
-                var value = GetArgumentValue(callExpression.Arguments[i]);
-                arguments.Add(new Tuple<Type, object>(parameter.ParameterType, value));
-            }
-
-            using (var client = new JobClient(RedisFactory.PooledManager))
-            {
-                var enqueuedState = new EnqueuedState("Enqueued by the Сlient");
-                var uniqueId = GenerateId();
-
-                client.CreateJob(uniqueId, typeof(TJob), callExpression.Method, arguments, enqueuedState);
-                return uniqueId;
-            }
-        }
-
-        private static object GetArgumentValue(Expression expression)
-        {
-            var constantExpression = expression as ConstantExpression;
-
-            if (constantExpression != null)
-            {
-                return constantExpression.Value;
-            }
-
-            return CachedExpressionCompiler.Evaluate(expression);
-        }
-
         /// <summary>
         /// Enqueues a new argumentless job of the <typeparamref name="TJob"/> 
         /// type to its queue.
@@ -175,7 +79,7 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string Async(Type type)
         {
-            return Async(type, null);
+            return Async(type, (object)null);
         }
 
         /// <summary>

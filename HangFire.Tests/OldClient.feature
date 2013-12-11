@@ -1,5 +1,5 @@
 ﻿@redis
-Feature: Client
+Feature: Old Client
 
     As a Developer, I want to define and create jobs.
 

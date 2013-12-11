@@ -24,6 +24,8 @@ namespace HangFire.States
 {
     public class EnqueuedState : JobState
     {
+        public const string DefaultQueue = "default";
+
         public static readonly string Name = "Enqueued";
 
         public EnqueuedState(string reason) 
@@ -52,8 +54,6 @@ namespace HangFire.States
             transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:queue:{0}", queue), descriptor.JobId));
         }
-
-        public const string DefaultQueue = "default";
 
         public static string GetQueue(Type jobType)
         {

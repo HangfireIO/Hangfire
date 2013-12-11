@@ -24,11 +24,23 @@ using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
+    public interface IJobClient : IDisposable
+    {
+        void CreateJob(string id, JobInvocationData invocationData, JobState state);
+    }
+
+    public class JobInvocationData
+    {
+        public Type Type { get; set; }
+        public MethodInfo Method { get; set; }
+        public List<Tuple<Type, object>> Parameters { get; set; }
+    }
+
     /// <summary>
     /// Provides a set of methods to create a job in the storage
     /// and apply its initial state.
     /// </summary>
-    internal class JobClient : IDisposable
+    internal class JobClient : IJobClient
     {
         private readonly JobCreator _jobCreator;
         private readonly IRedisClient _redis;
@@ -56,13 +68,12 @@ namespace HangFire.Client
             _jobCreator = jobCreator;
         }
 
-        public void CreateJob(
-            string id, Type type, MethodInfo method, List<Tuple<Type, object>> parameters, JobState state)
+        public void CreateJob(string id, JobInvocationData invocationData, JobState state)
         {
             try
             {
-                var arguments = new List<ArgumentPair>(parameters.Count);
-                foreach (var parameter in parameters)
+                var arguments = new List<ArgumentPair>(invocationData.Parameters.Count);
+                foreach (var parameter in invocationData.Parameters)
                 {
                     var converter = TypeDescriptor.GetConverter(parameter.Item1);
                     var value = converter.ConvertToInvariantString(parameter.Item2);
@@ -70,7 +81,7 @@ namespace HangFire.Client
                     arguments.Add(new ArgumentPair { Type = parameter.Item1, Value = value });
                 }
 
-                var descriptor = new ClientJobDescriptor(_redis, id, type, method, state);
+                var descriptor = new ClientJobDescriptor(_redis, id, invocationData.Type, invocationData.Method, state);
                 descriptor.SetParameter("Args", arguments);
 
                 var context = new CreateContext(_redis, descriptor);

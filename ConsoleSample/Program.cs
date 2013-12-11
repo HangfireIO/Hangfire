@@ -84,7 +84,7 @@ namespace ConsoleSample
             GlobalJobFilters.Filters.Add(new HistoryStatisticsAttribute(), 20);
             GlobalJobFilters.Filters.Add(new RetryAttribute());
 
-            using (var server = new BackgroundJobServer("critical", "default"))
+            using (var server = new BackgroundJobServer(25, "critical", "default"))
             {
                 server.Start();
 
@@ -123,8 +123,8 @@ namespace ConsoleSample
                             var workCount = int.Parse(command.Substring(5));
                             for (var i = 0; i < workCount; i++)
                             {
-                                Perform.Async(() => Console.WriteLine("Hello, {0}!", "world"));
-                                Perform.Async<ConsoleJob>(x => x.Execute("world"));
+                                BackgroundJob.Enqueue(() => Console.WriteLine("Hello, {0}!", "world"));
+                                BackgroundJob.Enqueue<ConsoleJob>(x => x.Execute("world"));
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
