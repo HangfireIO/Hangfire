@@ -228,7 +228,7 @@ namespace HangFire
             {
                 var uniqueId = GenerateId();
 
-                var metadata = new JobMetadata
+                var metadata = new JobInvocationData
                 {
                     Type = type,
                     Method = callExpression.Method,
