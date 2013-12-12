@@ -16,6 +16,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using HangFire.Client;
 
 namespace HangFire.Filters
 {
@@ -45,14 +46,15 @@ namespace HangFire.Filters
             _cacheAttributeInstances = cacheAttributeInstances;
         }
 
-        protected virtual IEnumerable<JobFilterAttribute> GetJobAttributes(JobDescriptor descriptor)
+        protected virtual IEnumerable<JobFilterAttribute> GetJobAttributes(
+            JobInvocationData invocationData)
         {
-            return descriptor.GetTypeFilterAttributes(_cacheAttributeInstances);
+            return invocationData.GetTypeFilterAttributes(_cacheAttributeInstances);
         }
 
-        public virtual IEnumerable<JobFilter> GetFilters(JobDescriptor descriptor)
+        public virtual IEnumerable<JobFilter> GetFilters(JobInvocationData invocationData)
         {
-            var typeFilters = GetJobAttributes(descriptor)
+            var typeFilters = GetJobAttributes(invocationData)
                 .Select(attr => new JobFilter(attr, JobFilterScope.Type, null));
 
             return typeFilters.ToList();

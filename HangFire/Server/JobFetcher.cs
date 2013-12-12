@@ -15,6 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using ServiceStack.Redis;
 
@@ -69,9 +70,7 @@ namespace HangFire.Server
             // that is being inspected by the DequeuedJobsWatcher instance.
             // Job's has the implicit 'Dequeued' state.
 
-            string jobArgs = null;
-            string jobType = null;
-            string jobMethod = null;
+            Dictionary<string, string> job = null;
 
             using (var pipeline = _redis.CreatePipeline())
             {
@@ -80,11 +79,20 @@ namespace HangFire.Server
                     "Fetched",
                     JobHelper.ToStringTimestamp(DateTime.UtcNow)));
 
+                // ServiceStack.Redis library could not queue a command,
+                // that returns IDictionary, so, let's build it using MGET.
                 pipeline.QueueCommand(
                     x => x.GetValuesFromHash(
                         String.Format("hangfire:job:{0}", jobId),
-                        new[] { "Type", "Args", "Method" }),
-                    x => { jobType = x[0]; jobArgs = x[1]; jobMethod = x[2]; });
+                        new[] { "Type", "Args", "Method", "Arguments", "ParameterTypes" }),
+                    x => job = new Dictionary<string, string>
+                    {
+                        { "Type", x[0] },
+                        { "Args", x[1] },
+                        { "Method", x[2] },
+                        { "Arguments", x[3] },
+                        { "ParameterTypes", x[4] }
+                    });
 
                 pipeline.Flush();
             }
@@ -93,7 +101,7 @@ namespace HangFire.Server
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new JobPayload(jobId, Queue, jobType, jobMethod, jobArgs);
+            return new JobPayload(jobId, Queue, job);
         }
 
         public void Dispose()

@@ -37,7 +37,7 @@ namespace HangFire.States
 
         public override IDictionary<string, string> GetProperties(JobDescriptor descriptor)
         {
-            var queue = GetQueue(descriptor.Type);
+            var queue = GetQueue(descriptor.InvocationData.Type);
 
             return new Dictionary<string, string>
                 {
@@ -48,7 +48,7 @@ namespace HangFire.States
 
         public override void Apply(JobDescriptor descriptor, IRedisTransaction transaction)
         {
-            var queue = GetQueue(descriptor.Type);
+            var queue = GetQueue(descriptor.InvocationData.Type);
 
             transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queue));
             transaction.QueueCommand(x => x.EnqueueItemOnList(

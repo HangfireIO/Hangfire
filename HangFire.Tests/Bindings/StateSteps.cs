@@ -115,7 +115,7 @@ namespace HangFire.Tests.States
             _filters.Add(new TestStateChangedFilter(name, _stateAppliedResults));
         }
 
-        [When(@"I apply it")]
+        /*[When(@"I apply it")]
         public void WhenIApplyIt()
         {
             using (var transaction = Redis.Client.CreateTransaction())
@@ -124,9 +124,9 @@ namespace HangFire.Tests.States
                 _state.Apply(descriptor, transaction);
                 transaction.Commit();
             }
-        }
+        }*/
 
-        [When(@"after I unapply it")]
+        /*[When(@"after I unapply it")]
         public void WhenAfterIUnapplyIt()
         {
             using (var transaction = Redis.Client.CreateTransaction())
@@ -140,7 +140,7 @@ namespace HangFire.Tests.States
 
                 transaction.Commit();
             }
-        }
+        }*/
 
         [When(@"I change the state of the job")]
         public void WhenIApplyTheState()
@@ -242,13 +242,13 @@ namespace HangFire.Tests.States
             Assert.AreEqual(0, Redis.Client.GetListCount("hangfire:succeeded"));
         }
 
-        [Then(@"properties table should contain the following items:")]
+        /*[Then(@"properties table should contain the following items:")]
         public void ThenPropertiesTableContainsTheFollowingItems(Table table)
         {
             DictionaryAssert.ContainsFollowingItems(
                 table, 
                 _state.GetProperties(new JobDescriptor(JobSteps.DefaultJobId, JobSteps.DefaultJobType, null)));
-        }
+        }*/
 
         [Then(@"the job should be added to the failed set")]
         public void ThenTheJobShouldBeAddedToTheFailedSet()

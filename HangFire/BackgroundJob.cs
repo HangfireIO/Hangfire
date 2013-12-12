@@ -16,6 +16,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
 using HangFire.Client;
 using HangFire.States;
@@ -222,59 +224,41 @@ namespace HangFire
 
         private static string CreateInternal(Type type, MethodCallExpression callExpression, JobState state)
         {
-            var arguments = GetParameters(callExpression);
+            var arguments = GetArguments(callExpression);
 
             using (var client = ClientFactory())
             {
-                var uniqueId = GenerateId();
-
-                var metadata = new JobInvocationData
-                {
-                    Type = type,
-                    Method = callExpression.Method,
-                    Parameters = arguments
-                };
-
-                client.CreateJob(uniqueId, metadata, state);
-                return uniqueId;
+                var data = new JobInvocationData(type, callExpression.Method);
+                return client.CreateJob(data, arguments, state);
             }
         }
 
-        private static List<Tuple<Type, object>> GetParameters(MethodCallExpression callExpression)
+        private static string[] GetArguments(MethodCallExpression callExpression)
         {
-            var parameters = callExpression.Method.GetParameters();
-            var arguments = new List<Tuple<Type, object>>(parameters.Length);
+            var arguments = callExpression.Arguments.Select(GetArgumentValue).ToArray();
 
-            for (var i = 0; i < parameters.Length; i++)
+            var serializedArguments = new List<string>(arguments.Length);
+            foreach (var argument in arguments)
             {
-                var parameter = parameters[i];
+                string value = null;
 
-                // There is no guarantee that specified method will be invoked
-                // in the same process. Therefore, output parameters and parameters
-                // passed by reference are not supported.
-
-                if (parameter.IsOut)
+                if (argument != null)
                 {
-                    throw new ArgumentException("Out parameters are not supported", "callExpression");
+                    var converter = TypeDescriptor.GetConverter(argument.GetType());
+                    value = converter.ConvertToInvariantString(argument);
                 }
 
-                if (parameter.ParameterType.IsByRef)
-                {
-                    throw new ArgumentException("Passed by reference parameters are not supported", "callExpression");
-                }
+                // Logic, related to optional parameters and their default values, 
+                // can be skipped, because it is impossible to omit them in 
+                // lambda-expressions (leads to a compile-time error).
 
-                // Logic, related to optional parameters, can be skipped, because
-                // it is impossible to omit them in the lambda-expression (leads to
-                // compile-time error).
-
-                var value = GetParameterValue(callExpression.Arguments[i]);
-                arguments.Add(new Tuple<Type, object>(parameter.ParameterType, value));
+                serializedArguments.Add(value);
             }
 
-            return arguments;
+            return serializedArguments.ToArray();
         }
 
-        private static object GetParameterValue(Expression expression)
+        private static object GetArgumentValue(Expression expression)
         {
             var constantExpression = expression as ConstantExpression;
 
@@ -284,11 +268,6 @@ namespace HangFire
             }
 
             return CachedExpressionCompiler.Evaluate(expression);
-        }
-
-        private static string GenerateId()
-        {
-            return Guid.NewGuid().ToString();
         }
     }
 }

@@ -44,32 +44,33 @@ namespace HangFire.Tests
         #endregion
 
         [TestMethod]
-        public void Create_InstanceExpression_ReturnsUniqueIdentifier()
+        public void Create_InstanceExpression_ReturnIdentifierReturnedByClient()
         {
+            _jobClientMock
+                .Setup(x => x.CreateJob(
+                    It.IsAny<JobInvocationData>(), 
+                    It.IsAny<string[]>(), 
+                    It.IsAny<JobState>()))
+                .Returns("id");
+
             var id = BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
 
-            Assert.IsFalse(String.IsNullOrWhiteSpace(id));
-            Assert.AreNotEqual(Guid.Empty, Guid.Parse(id));
+            Assert.AreEqual("id", id);
         }
 
         [TestMethod]
-        public void Create_StaticExpression_ReturnsUniqueIdentifier()
+        public void Create_StaticExpression_ReturnsIdentifierFromReturnedByClient()
         {
+            _jobClientMock
+                .Setup(x => x.CreateJob(
+                    It.IsAny<JobInvocationData>(),
+                    It.IsAny<string[]>(),
+                    It.IsAny<JobState>()))
+                .Returns("id");
+
             var id = BackgroundJob.Create(() => TestService.StaticMethod(), _stateMock.Object);
 
-            Assert.IsFalse(String.IsNullOrWhiteSpace(id));
-            Assert.AreNotEqual(Guid.Empty, Guid.Parse(id));
-        }
-
-        [TestMethod]
-        public void Create_PassesUniqueIdentifier_ToClient()
-        {
-            var id = BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
-
-            _jobClientMock.Verify(client => client.CreateJob(
-                It.Is<string>(x => id == x),
-                It.IsAny<JobInvocationData>(),
-                It.IsAny<JobState>()));
+            Assert.AreEqual("id", id);
         }
 
         [TestMethod]
@@ -78,8 +79,8 @@ namespace HangFire.Tests
             BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
                 It.IsAny<JobInvocationData>(),
+                It.IsAny<string[]>(),
                 It.Is<JobState>(x => x == _stateMock.Object)));
         }
 
@@ -89,8 +90,8 @@ namespace HangFire.Tests
             BackgroundJob.Create(() => TestService.StaticMethod(), _stateMock.Object);
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
-                It.Is<JobInvocationData>(x => x.Type == typeof(TestService) && x.Method.Name == "StaticMethod" && x.Parameters.Count == 0),
+                It.Is<JobInvocationData>(x => x.Type == typeof(TestService) && x.Method.Name == "StaticMethod"),
+                It.Is<string[]>(x => x.Length == 0),
                 It.IsAny<JobState>()));
         }
 
@@ -100,8 +101,8 @@ namespace HangFire.Tests
             BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
-                It.Is<JobInvocationData>(x => x.Type == typeof(TestService) && x.Method.Name == "InstanceMethod" && x.Parameters.Count == 0),
+                It.Is<JobInvocationData>(x => x.Type == typeof(TestService) && x.Method.Name == "InstanceMethod"),
+                It.Is<string[]>(x => x.Length == 0),
                 It.IsAny<JobState>()));
         }
 
@@ -111,8 +112,8 @@ namespace HangFire.Tests
             BackgroundJob.Create<IService>(x => x.Method(), _stateMock.Object);
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
                 It.Is<JobInvocationData>(x => x.Type == typeof(IService) && x.Method.Name == "Method"),
+                It.Is<string[]>(x => x.Length == 0),
                 It.IsAny<JobState>()));
         }
 
@@ -122,8 +123,8 @@ namespace HangFire.Tests
             BackgroundJob.Create<DerivedTestService>(x => x.InstanceMethod(), _stateMock.Object);
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
                 It.Is<JobInvocationData>(x => x.Type == typeof(DerivedTestService)),
+                It.IsAny<string[]>(),
                 It.IsAny<JobState>()));
         }
 
@@ -133,8 +134,8 @@ namespace HangFire.Tests
             BackgroundJob.Enqueue(() => DerivedTestService.StaticMethod());
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
                 It.Is<JobInvocationData>(x => x.Type == typeof(DerivedTestService)),
+                It.IsAny<string[]>(),
                 It.IsAny<JobState>()));
         }
 
@@ -144,8 +145,8 @@ namespace HangFire.Tests
             BackgroundJob.Create<TestService>(x => x.InstanceMethod("Hello"), _stateMock.Object);
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
-                It.Is<JobInvocationData>(x => x.Parameters[0].Item1 == typeof(string) && (string)x.Parameters[0].Item2 == "Hello"),
+                It.IsAny<JobInvocationData>(),
+                It.Is<string[]>(x => x[0] == "Hello"),
                 It.IsAny<JobState>()));
         }
 
@@ -155,8 +156,8 @@ namespace HangFire.Tests
             BackgroundJob.Create(() => TestService.StaticMethod(34), _stateMock.Object);
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
-                It.Is<JobInvocationData>(x => x.Parameters[0].Item1 == typeof(int) && (int)x.Parameters[0].Item2 == 34),
+                It.IsAny<JobInvocationData>(),
+                It.Is<string[]>(x => x[0] == "34"),
                 It.IsAny<JobState>()));
         }
 
@@ -166,6 +167,8 @@ namespace HangFire.Tests
         {
             int a = 10;
             BackgroundJob.Create<DerivedTestService>(x => x.InstanceMethod(ref a), _stateMock.Object);
+
+            Assert.Inconclusive("Move to JobClient tests");
         }
 
         [TestMethod]
@@ -174,6 +177,8 @@ namespace HangFire.Tests
         {
             int a;
             BackgroundJob.Enqueue<DerivedTestService>(x => x.OutMethod(out a));
+
+            Assert.Inconclusive("Move to JobClient tests");
         }
 
         [TestMethod]
@@ -182,8 +187,8 @@ namespace HangFire.Tests
             BackgroundJob.Enqueue<TestService>(x => x.InstanceMethod());
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
                 It.IsAny<JobInvocationData>(),
+                It.IsAny<string[]>(),
                 It.Is<JobState>(x => x is EnqueuedState)));
         }
 
@@ -193,8 +198,8 @@ namespace HangFire.Tests
             BackgroundJob.Enqueue(() => TestService.StaticMethod());
 
             _jobClientMock.Verify(client => client.CreateJob(
-                It.IsAny<string>(),
                 It.IsAny<JobInvocationData>(),
+                It.IsAny<string[]>(),
                 It.Is<JobState>(x => x is EnqueuedState)));
         }
 
@@ -204,8 +209,8 @@ namespace HangFire.Tests
             BackgroundJob.Schedule<TestService>(x => x.InstanceMethod(), TimeSpan.FromHours(5));
 
             _jobClientMock.Verify(x => x.CreateJob(
-                It.IsAny<string>(),
                 It.IsAny<JobInvocationData>(),
+                It.IsAny<string[]>(),
                 It.Is<JobState>(y => 
                     y is ScheduledState 
                     && 
@@ -219,8 +224,8 @@ namespace HangFire.Tests
             BackgroundJob.Schedule(() => TestService.StaticMethod(), TimeSpan.FromHours(5));
 
             _jobClientMock.Verify(x => x.CreateJob(
-                It.IsAny<string>(),
                 It.IsAny<JobInvocationData>(),
+                It.IsAny<string[]>(),
                 It.Is<JobState>(y =>
                     y is ScheduledState
                     &&

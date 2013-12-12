@@ -65,12 +65,14 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ArgumentPair.cs" />
     <Compile Include="CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
+    <Compile Include="Client\IJobClient.cs" />
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Client\ClientJobDescriptor.cs" />
+    <Compile Include="Client\JobInvocationData.cs" />
+    <Compile Include="Client\JobLoadException.cs" />
     <Compile Include="ExpressionUtil\BinaryExpressionFingerprint.cs" />
     <Compile Include="ExpressionUtil\CachedExpressionCompiler.cs" />
     <Compile Include="ExpressionUtil\ConditionalExpressionFingerprint.cs" />
@@ -106,6 +108,7 @@
     <Compile Include="Filters\Server\IServerExceptionFilter.cs" />
     <Compile Include="Filters\Client\CreatedContext.cs" />
     <Compile Include="Filters\Client\CreatingContext.cs" />
+    <Compile Include="Server\OldFormatServerJobDescriptor.cs" />
     <Compile Include="Server\PerformContext.cs" />
     <Compile Include="Filters\Server\ServerExceptionContext.cs" />
     <Compile Include="Filters\Server\PerformedContext.cs" />
@@ -121,6 +124,7 @@
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\JobFetcher.cs" />
+    <Compile Include="Server\ServerJobDescriptorBase.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="Server\PrefetchJobFetcher.cs" />

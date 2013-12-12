@@ -31,7 +31,7 @@ namespace HangFire.Server
         }
 
         internal PerformContext(
-            WorkerContext workerContext, ServerJobDescriptor jobDescriptor)
+            WorkerContext workerContext, ServerJobDescriptorBase jobDescriptor)
             : base(workerContext)
         {
             JobDescriptor = jobDescriptor;
@@ -49,6 +49,6 @@ namespace HangFire.Server
         /// Gets the client job descriptor that is associated with the
         /// current <see cref="PerformContext"/> object.
         /// </summary>
-        public ServerJobDescriptor JobDescriptor { get; private set; }
+        public ServerJobDescriptorBase JobDescriptor { get; private set; }
     }
 }

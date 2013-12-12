@@ -14,24 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+
 namespace HangFire.Server
 {
     internal class JobPayload
     {
         public JobPayload(
-            string id, string queue, string type, string method, string args)
+            string id, string queue, Dictionary<string, string> job)
         {
             Id = id;
             Queue = queue;
-            Type = type;
-            Method = method;
-            Args = args;
+            Job = job;
         }
 
         public string Id { get; private set; }
         public string Queue { get; private set; }
-        public string Type { get; private set; }
-        public string Method { get; private set; }
-        public string Args { get; private set; }
+        public Dictionary<string, string> Job { get; private set; }
     }
 }

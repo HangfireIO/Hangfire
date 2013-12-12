@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HangFire.Client;
 using HangFire.Filters;
 using ServiceStack.Redis;
 
@@ -47,7 +48,7 @@ namespace HangFire.States
         private readonly IRedisClient _redis;
         private readonly IDictionary<string, JobStateDescriptor> _stateDescriptors;
 
-        private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk
+        private readonly Func<JobInvocationData, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
         public StateMachine(IRedisClient redis)
@@ -97,7 +98,7 @@ namespace HangFire.States
                 transaction.Commit();
             }
 
-            var filterInfo = GetFilters(descriptor);
+            var filterInfo = GetFilters(descriptor.InvocationData);
             state = InvokeStateChangingFilters(descriptor, state, filterInfo.StateChangingFilters);
 
             using (var transaction = _redis.CreateTransaction())
@@ -120,44 +121,48 @@ namespace HangFire.States
             using (_redis.AcquireLock(
                 String.Format("hangfire:job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
             {
-                var typeAndState = _redis.GetValuesFromHash(
-                    String.Format("hangfire:job:{0}", jobId), "Type", "State");
+                var job = _redis.GetAllEntriesFromHash(
+                    String.Format("hangfire:job:{0}", jobId));
 
-                var jobType = typeAndState[0];
-                var currentState = typeAndState[1];
-
-                if (jobType == null)
+                if (job.Count == 0)
                 {
                     // The job does not exist
                     return false;
                 }
 
-                var descriptor = new JobDescriptor(jobId, jobType);
-                if (descriptor.Type == null)
+                var currentState = job["State"];
+                if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
+                    {
+                        return false;
+                    }
+
+                try
+                {
+                    var invocationData = JobInvocationData.Deserialize(job);
+                    var descriptor = new JobDescriptor(jobId, invocationData);
+
+                    var filterInfo = GetFilters(invocationData);
+                    state = InvokeStateChangingFilters(descriptor, state, filterInfo.StateChangingFilters);
+
+                    return ApplyState(descriptor, currentState, state, filterInfo.StateChangedFilters);
+                }
+                catch (JobLoadException ex)
                 {
                     // If the job type could not be loaded, we are unable to
                     // load corresponding filters, unable to process the job
                     // and sometimes unable to change its state (the enqueued
                     // state depends on the type of a job).
 
+                    var descriptor = new JobDescriptor(jobId, null);
+
                     return ApplyState(
                         descriptor,
                         currentState,
                         new FailedState(
                             String.Format("Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.", state.StateName, descriptor.JobId),
-                            descriptor.TypeLoadException),
+                            ex),
                         Enumerable.Empty<IStateChangedFilter>());
                 }
-
-                if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
-                {
-                    return false;
-                }
-
-                var filterInfo = GetFilters(descriptor);
-                state = InvokeStateChangingFilters(descriptor, state, filterInfo.StateChangingFilters);
-
-                return ApplyState(descriptor, currentState, state, filterInfo.StateChangedFilters);
             }
         }
 
@@ -265,9 +270,9 @@ namespace HangFire.States
                 JobHelper.ToJson(properties)));
         }
 
-        private JobFilterInfo GetFilters(JobDescriptor descriptor)
+        private JobFilterInfo GetFilters(JobInvocationData invocationData)
         {
-            return new JobFilterInfo(_getFiltersThunk(descriptor));
+            return new JobFilterInfo(_getFiltersThunk(invocationData));
         }
     }
 }

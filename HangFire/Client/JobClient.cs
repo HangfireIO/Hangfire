@@ -16,26 +16,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
-
 using HangFire.States;
 using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
-    public interface IJobClient : IDisposable
-    {
-        void CreateJob(string id, JobInvocationData invocationData, JobState state);
-    }
-
-    public class JobInvocationData
-    {
-        public Type Type { get; set; }
-        public MethodInfo Method { get; set; }
-        public List<Tuple<Type, object>> Parameters { get; set; }
-    }
-
     /// <summary>
     /// Provides a set of methods to create a job in the storage
     /// and apply its initial state.
@@ -68,32 +54,19 @@ namespace HangFire.Client
             _jobCreator = jobCreator;
         }
 
-        public void CreateJob(string id, JobInvocationData invocationData, JobState state)
+        public string CreateJob(JobInvocationData data, string[] arguments, JobState state)
         {
-            try
-            {
-                var arguments = new List<ArgumentPair>(invocationData.Parameters.Count);
-                foreach (var parameter in invocationData.Parameters)
-                {
-                    var converter = TypeDescriptor.GetConverter(parameter.Item1);
-                    var value = converter.ConvertToInvariantString(parameter.Item2);
+            var parameters = data.Method.GetParameters();
 
-                    arguments.Add(new ArgumentPair { Type = parameter.Item1, Value = value });
-                }
+            ValidateMethodParameters(parameters);
 
-                var descriptor = new ClientJobDescriptor(_redis, id, invocationData.Type, invocationData.Method, state);
-                descriptor.SetParameter("Args", arguments);
+            var id = Guid.NewGuid().ToString();
+            var descriptor = new ClientJobDescriptor(_redis, id, data, arguments, state);
+            var context = new CreateContext(_redis, descriptor);
 
-                var context = new CreateContext(_redis, descriptor);
+            _jobCreator.CreateJob(context);
 
-                _jobCreator.CreateJob(context);
-            }
-            catch (Exception ex)
-            {
-                throw new CreateJobFailedException(
-                    "Job creation was failed. See the inner exception for details.",
-                    ex);
-            }
+            return id;
         }
 
         /// <summary>
@@ -103,6 +76,28 @@ namespace HangFire.Client
         public virtual void Dispose()
         {
             _redis.Dispose();
+        }
+
+        private static void ValidateMethodParameters(IEnumerable<ParameterInfo> parameters)
+        {
+            foreach (var parameter in parameters)
+            {
+                // There is no guarantee that specified method will be invoked
+                // in the same process. Therefore, output parameters and parameters
+                // passed by reference are not supported.
+
+                if (parameter.IsOut)
+                {
+                    throw new NotSupportedException(
+                        "Output parameters are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+                }
+
+                if (parameter.ParameterType.IsByRef)
+                {
+                    throw new ArgumentException(
+                        "Parameters, passed by reference, are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+                }
+            }
         }
     }
 }

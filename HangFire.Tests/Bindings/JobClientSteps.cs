@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using HangFire.Client;
-using HangFire.Filters;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -14,6 +13,8 @@ namespace HangFire.Tests
     [Binding]
     public class JobClientSteps : Steps
     {
+        private string _jobId;
+
         private JobClient _client;
         private Mock<JobState> _stateMock;
         private IDictionary<string, string> _arguments = new Dictionary<string, string>();
@@ -108,7 +109,7 @@ namespace HangFire.Tests
             _filters.Add(new TestFilter("buggy", _clientFilterResults, true));
         }
         
-        [When("I create a job")]
+        /*[When("I create a job")]
         [When("I create an argumentless job")]
         public void WhenICreateAJob()
         {
@@ -119,8 +120,7 @@ namespace HangFire.Tests
 
             try
             {
-                _client.CreateJob(
-                    JobSteps.DefaultJobId,
+                _jobId = _client.CreateJob(
                     typeof(TestJob),
                     _stateMock.Object,
                     _arguments);
@@ -129,7 +129,7 @@ namespace HangFire.Tests
             {
                 _exception = ex;
             }
-        }
+        }*/
 
         [When("I create a job with the following arguments:")]
         public void WhenICreateAJobWithTheFollowingArguments(Table table)
@@ -138,7 +138,7 @@ namespace HangFire.Tests
             When("I create a job");
         }
 
-        [When("I create a job with an empty id")]
+        /*[When("I create a job with an empty id")]
         public void WhenICreateAJobWithAnEmptyId()
         {
             try
@@ -149,9 +149,9 @@ namespace HangFire.Tests
             {
                 _exception = ex;
             }
-        }
+        }*/
 
-        [When("I create a job with null type")]
+        /*[When("I create a job with null type")]
         public void WhenICreateAJobWithNullType()
         {
             try
@@ -162,9 +162,9 @@ namespace HangFire.Tests
             {
                 _exception = ex;
             }
-        }
+        }*/
 
-        [When("I create a job with an empty state")]
+        /*[When("I create a job with an empty state")]
         public void WhenICreateAJobWithAnEmptyState()
         {
             try
@@ -175,9 +175,9 @@ namespace HangFire.Tests
             {
                 _exception = ex;
             }
-        }
+        }*/
 
-        [When("I create a job with the incorrect type")]
+        /*[When("I create a job with the incorrect type")]
         public void WhenICreateAJobWithTheIncorrectType()
         {
             try
@@ -188,9 +188,9 @@ namespace HangFire.Tests
             {
                 _exception = ex;
             }
-        }
+        }*/
 
-        [When("I create a job with a null dictionary as arguments")]
+        /*[When("I create a job with a null dictionary as arguments")]
         public void WhenICreateAJobWithANullDictionaryAsArguments()
         {
             try
@@ -201,7 +201,7 @@ namespace HangFire.Tests
             {
                 _exception = ex;
             }
-        }
+        }*/
 
         [Then("the storage should contain the job")]
         public void ThenTheStorageContainsIt()

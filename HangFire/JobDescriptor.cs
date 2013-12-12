@@ -15,11 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
-using HangFire.Filters;
+using HangFire.Client;
 
 namespace HangFire
 {
@@ -28,25 +24,12 @@ namespace HangFire
     /// </summary>
     public class JobDescriptor
     {
-        internal JobDescriptor(string jobId, Type jobType, MethodInfo method)
+        internal JobDescriptor(string jobId, JobInvocationData invocationData)
         {
-            JobId = jobId;
-            Type = jobType;
-            Method = method;
-        }
+            if (jobId == null) throw new ArgumentNullException("jobId");
 
-        internal JobDescriptor(string jobId, string jobType)
-        {
             JobId = jobId;
-
-            try
-            {
-                Type = Type.GetType(jobType, throwOnError: true);
-            }
-            catch (Exception ex)
-            {
-                TypeLoadException = ex;
-            }
+            InvocationData = invocationData;
         }
 
         /// <summary>
@@ -54,40 +37,16 @@ namespace HangFire
         /// </summary>
         public string JobId { get; private set; }
 
-        /// <summary>
-        /// Gets the type of the creating job.
-        /// </summary>
-        public Type Type { get; private set; }
+        public JobInvocationData InvocationData { get; private set; }
 
-        public Exception TypeLoadException { get; private set; }
-
-        public MethodInfo Method { get; protected set; }
-
-        internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
+        public virtual void SetParameter(string name, object value)
         {
-            if (Type == null)
-            {
-                return Enumerable.Empty<JobFilterAttribute>();
-            }
-
-            return useCache ? ReflectedAttributeCache.GetTypeFilterAttributes(Type) : GetFilterAttributes(Type);
+            throw new NotSupportedException("Setting parameters is not allowed in this context.");
         }
 
-        internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
+        public virtual T GetParameter<T>(string name)
         {
-            if (Method == null)
-            {
-                return Enumerable.Empty<JobFilterAttribute>();
-            }
-
-            return useCache ? ReflectedAttributeCache.GetMethodFilterAttributes(Method) : GetFilterAttributes(Method);
-        }
-
-        private IEnumerable<JobFilterAttribute> GetFilterAttributes(MemberInfo memberInfo)
-        {
-            return memberInfo
-                .GetCustomAttributes(typeof(JobFilterAttribute), inherit: true)
-                .Cast<JobFilterAttribute>();
+            throw new NotSupportedException("Getting parameters is not allowed in this context.");
         }
     }
 }

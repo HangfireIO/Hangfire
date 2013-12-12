@@ -17,14 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using HangFire.Client;
 using HangFire.Filters;
 
 namespace HangFire.Server
 {
     internal class JobPerformer
     {
-        private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk 
+        private readonly Func<JobInvocationData, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
         public JobPerformer()
@@ -40,14 +40,14 @@ namespace HangFire.Server
             }
         }
 
-        protected virtual JobFilterInfo GetFilters(JobDescriptor descriptor)
+        protected virtual JobFilterInfo GetFilters(JobInvocationData invocationData)
         {
-            return new JobFilterInfo(_getFiltersThunk(descriptor));
+            return new JobFilterInfo(_getFiltersThunk(invocationData));
         }
 
         public void PerformJob(PerformContext context)
         {
-            var filterInfo = GetFilters(context.JobDescriptor);
+            var filterInfo = GetFilters(context.JobDescriptor.InvocationData);
 
             try
             {

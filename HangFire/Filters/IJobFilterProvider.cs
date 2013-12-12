@@ -15,6 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using HangFire.Client;
 
 namespace HangFire.Filters
 {
@@ -27,11 +28,11 @@ namespace HangFire.Filters
         /// Returns an enumerator that contains all the <see cref="IJobFilterProvider"/>.
         /// </summary>
         /// 
-        /// <param name="descriptor">Job descriptor, can be null.</param>
+        /// <param name="invocationData">Job invocation data.</param>
         /// 
         /// <returns>
         /// The enumerator that contains all the <see cref="IJobFilterProvider"/>.
         /// </returns>
-        IEnumerable<JobFilter> GetFilters(JobDescriptor descriptor);
+        IEnumerable<JobFilter> GetFilters(JobInvocationData invocationData);
     }
 }

@@ -31,7 +31,7 @@ namespace HangFire.Client
             Instance = new JobCreator();
         }
 
-        private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk 
+        private readonly Func<JobInvocationData, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
         public JobCreator()
@@ -47,14 +47,14 @@ namespace HangFire.Client
             }
         }
 
-        protected virtual JobFilterInfo GetFilters(JobDescriptor descriptor)
+        protected virtual JobFilterInfo GetFilters(JobInvocationData invocationData)
         {
-            return new JobFilterInfo(_getFiltersThunk(descriptor));
+            return new JobFilterInfo(_getFiltersThunk(invocationData));
         }
 
         public void CreateJob(CreateContext context)
         {
-            var filterInfo = GetFilters(context.JobDescriptor);
+            var filterInfo = GetFilters(context.JobDescriptor.InvocationData);
 
             try
             {
