@@ -22,27 +22,31 @@ using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
-    public class ClientJobDescriptorBase
+    public class ClientJobDescriptor
     {
-        protected IDictionary<string, string> _jobParameters;
-        protected bool _jobWasCreated;
+        private readonly IDictionary<string, string> _jobParameters;
         private readonly StateMachine _stateMachine;
 
-        public ClientJobDescriptorBase(
+        private bool _jobWasCreated;
+
+        public ClientJobDescriptor(
             IRedisClient redis,
             string jobId, 
             JobMethod jobMethod,
+            IDictionary<string, string> job,
             JobState state)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (jobMethod == null) throw new ArgumentNullException("jobMethod");
+            if (job == null) throw new ArgumentNullException("job");
             if (state == null) throw new ArgumentNullException("state");
 
             JobId = jobId;
             JobMethod = jobMethod;
             State = state;
 
+            _jobParameters = job;
             _stateMachine = new StateMachine(redis);
         }
 
@@ -104,45 +108,6 @@ namespace HangFire.Client
         {
             _jobWasCreated = true;
             _stateMachine.CreateInState(JobId, JobMethod, _jobParameters, State);
-        }
-    }
-
-    public class OldClientJobDescriptor : ClientJobDescriptorBase
-    {
-        internal OldClientJobDescriptor(
-            IRedisClient redis,
-            string jobId,
-            JobMethod jobMethod,
-            IDictionary<string, string> arguments,
-            JobState state)
-            : base(redis, jobId, jobMethod, state)
-        {
-            if (arguments == null) throw new ArgumentNullException("arguments");
-
-            _jobParameters = jobMethod.Serialize();
-            _jobParameters["Args"] = JobHelper.ToJson(arguments);
-            _jobParameters["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
-        }
-    }
-
-    /// <summary>
-    /// Provides information about the job being created.
-    /// </summary>
-    public class ClientJobDescriptor : ClientJobDescriptorBase
-    {
-        internal ClientJobDescriptor(
-            IRedisClient redis,
-            string jobId, 
-            JobMethod jobMethod,
-            string[] arguments,
-            JobState state)
-            : base(redis, jobId, jobMethod, state)
-        {
-            if (arguments == null) throw new ArgumentNullException("arguments");
-
-            _jobParameters = jobMethod.Serialize();
-            _jobParameters["Arguments"] = JobHelper.ToJson(arguments);
-            _jobParameters["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
         }
     }
 }

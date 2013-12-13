@@ -74,7 +74,7 @@ namespace HangFire.Client
 
         private static void CreateWithFilters(
             CreateContext createContext,
-            ClientJobDescriptorBase jobDescriptor,
+            ClientJobDescriptor jobDescriptor,
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(createContext);

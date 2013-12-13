@@ -34,7 +34,7 @@ namespace HangFire.Client
 
         internal CreateContext(
             IRedisClient redis, 
-            ClientJobDescriptorBase jobDescriptor)
+            ClientJobDescriptor jobDescriptor)
         {
             Redis = redis;
             JobDescriptor = jobDescriptor;
@@ -57,6 +57,6 @@ namespace HangFire.Client
         /// Gets the client job descriptor that is associated with the
         /// current <see cref="CreateContext"/> object.
         /// </summary>
-        public ClientJobDescriptorBase JobDescriptor { get; private set; }
+        public ClientJobDescriptor JobDescriptor { get; private set; }
     }
 }

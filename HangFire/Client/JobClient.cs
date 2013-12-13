@@ -55,14 +55,19 @@ namespace HangFire.Client
             _jobCreator = jobCreator;
         }
 
-        public string CreateJob(JobMethod data, string[] arguments, JobState state)
+        public string CreateJob(JobMethod method, string[] arguments, JobState state)
         {
-            var parameters = data.Method.GetParameters();
+            var parameters = method.Method.GetParameters();
 
             ValidateMethodParameters(parameters);
 
             var id = Guid.NewGuid().ToString();
-            var descriptor = new ClientJobDescriptor(_redis, id, data, arguments, state);
+
+            var job = method.Serialize();
+            job["Arguments"] = JobHelper.ToJson(arguments);
+            job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
+
+            var descriptor = new ClientJobDescriptor(_redis, id, method, job, state);
             var context = new CreateContext(_redis, descriptor);
 
             _jobCreator.CreateJob(context);
@@ -146,7 +151,12 @@ namespace HangFire.Client
             try
             {
                 var method = new JobMethod(type);
-                var descriptor = new OldClientJobDescriptor(_redis, id, method, args, state);
+
+                var job = method.Serialize();
+                job["Args"] = JobHelper.ToJson(args);
+                job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
+
+                var descriptor = new ClientJobDescriptor(_redis, id, method, job, state);
                 var context = new CreateContext(_redis, descriptor);
 
                 _jobCreator.CreateJob(context);
