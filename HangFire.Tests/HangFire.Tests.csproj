@@ -76,10 +76,12 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Bindings\ClientSteps.cs" />
+    <Compile Include="Bindings\CommonBinding.cs" />
     <Compile Include="Bindings\JobActivatorSteps.cs" />
     <Compile Include="Bindings\ServerWatchdogSteps.cs" />
     <Compile Include="Bindings\Transforms.cs" />
     <Compile Include="Bindings\WorkerManagerSteps.cs" />
+    <Compile Include="ClientApiTests.cs" />
     <Compile Include="ClientFilters.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -102,6 +104,7 @@
     <Compile Include="Common\TestFilter.cs" />
     <Compile Include="Common\TestStateChangedFilter.cs" />
     <Compile Include="Common\TestStateChangingFilter.cs" />
+    <Compile Include="GlobalLock.cs" />
     <Compile Include="JobActivator.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -125,10 +128,10 @@
     <Compile Include="Bindings\JobFetcherSteps.cs" />
     <Compile Include="Bindings\SchedulePollerSteps.cs" />
     <Compile Include="Bindings\ServerSteps.cs" />
-    <Compile Include="Client.feature.cs">
+    <Compile Include="OldClient.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Client.feature</DependentUpon>
+      <DependentUpon>OldClient.feature</DependentUpon>
     </Compile>
     <Compile Include="Bindings\JobClientSteps.cs" />
     <Compile Include="Common\DictionaryAssert.cs" />
@@ -198,9 +201,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Client.feature">
+    <None Include="OldClient.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>Client.feature.cs</LastGenOutput>
+      <LastGenOutput>OldClient.feature.cs</LastGenOutput>
     </None>
     <None Include="ClientFilters.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

@@ -15,8 +15,11 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
+using HangFire.Client;
 using HangFire.States;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -171,12 +174,8 @@ namespace HangFire.Server
 
         private void PerformJob(JobPayload payload)
         {
-            if (String.IsNullOrEmpty(payload.Type))
+            if (payload.Job.Values.All(x => x == null))
             {
-                _logger.Warn(String.Format(
-                    "Could not process the job '{0}': it does not exist in the storage.",
-                    payload.Id));
-
                 return;
             }
 
@@ -195,13 +194,29 @@ namespace HangFire.Server
 
             try
             {
-                using (var descriptor = new ServerJobDescriptor(
-                    _redis, _context.Activator, payload))
-                {
-                    var performContext = new PerformContext(_context, descriptor);
+                IJobPerformStrategy performStrategy;
 
-                    _context.Performer.PerformJob(performContext);
+                var jobMethod = JobMethod.Deserialize(payload.Job);
+                if (jobMethod.OldFormat)
+                {
+                    // For compatibility with the Old Client API.
+                    // TODO: remove it in version 1.0
+                    var arguments = JobHelper.FromJson<Dictionary<string, string>>(
+                        payload.Job["Args"]);
+
+                    performStrategy = new JobAsClassPerformStrategy(
+                        _context.Activator, jobMethod, arguments);
                 }
+                else
+                {
+                    var arguments = JobHelper.FromJson<string[]>(payload.Job["Arguments"]);
+
+                    performStrategy = new JobAsMethodPerformStrategy(
+                        _context.Activator, jobMethod, arguments);
+                }
+
+                var performContext = new PerformContext(_context, _redis, payload.Id, jobMethod);
+                _context.Performer.PerformJob(performContext, performStrategy);
 
                 state = new SucceededState("The job has been completed successfully.");
             }

@@ -14,7 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using HangFire.Client;
+using ServiceStack.Common.Utils;
+using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -25,16 +29,25 @@ namespace HangFire.Server
     public class PerformContext : WorkerContext
     {
         internal PerformContext(PerformContext context)
-            : this(context, context.JobDescriptor)
+            : this(context, context.Redis, context.JobId, context.JobMethod)
         {
             Items = context.Items;
         }
 
         internal PerformContext(
-            WorkerContext workerContext, ServerJobDescriptor jobDescriptor)
+            WorkerContext workerContext, 
+            IRedisClient redis, 
+            string jobId,
+            JobMethod jobMethod)
             : base(workerContext)
         {
-            JobDescriptor = jobDescriptor;
+            if (redis == null) throw new ArgumentNullException("redis");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (jobMethod == null) throw new ArgumentNullException("jobMethod");
+
+            Redis = redis;
+            JobId = jobId;
+            JobMethod = jobMethod;
             Items = new Dictionary<string, object>();
         }
 
@@ -45,10 +58,26 @@ namespace HangFire.Server
         /// </summary>
         public IDictionary<string, object> Items { get; private set; }
 
-        /// <summary>
-        /// Gets the client job descriptor that is associated with the
-        /// current <see cref="PerformContext"/> object.
-        /// </summary>
-        public ServerJobDescriptor JobDescriptor { get; private set; }
+        public string JobId { get; private set; }
+        public JobMethod JobMethod { get; private set; }
+
+        public IRedisClient Redis { get; private set; }
+
+        public void SetParameter(string name, object value)
+        {
+            Redis.SetEntryInHash(
+                String.Format("hangfire:job:{0}", JobId),
+                name,
+                JobHelper.ToJson(value));
+        }
+
+        public T GetParameter<T>(string name)
+        {
+            var value = Redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobId),
+                name);
+
+            return JobHelper.FromJson<T>(value);
+        }
     }
 }

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using HangFire.Client;
 
 namespace HangFire.Filters
 {
@@ -65,17 +66,17 @@ namespace HangFire.Filters
         /// <summary>
         /// Returns the collection of filter providers.
         /// </summary>
-        /// <param name="descriptor">Job descriptor, can be null.</param>
+        /// <param name="method">Job method, can be null.</param>
         /// <returns>The collection of filter providers.</returns>
-        public IEnumerable<JobFilter> GetFilters(JobDescriptor descriptor)
+        public IEnumerable<JobFilter> GetFilters(JobMethod method)
         {
-            if (descriptor == null)
+            if (method == null)
             {
-                throw new ArgumentNullException("descriptor");
+                return Enumerable.Empty<JobFilter>();
             }
 
             IEnumerable<JobFilter> combinedFilters =
-                Items.SelectMany(fp => fp.GetFilters(descriptor))
+                Items.SelectMany(fp => fp.GetFilters(method))
                     .OrderBy(filter => filter, _filterComparer);
 
             // Remove duplicates from the back forward

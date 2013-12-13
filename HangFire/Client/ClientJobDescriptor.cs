@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using HangFire.Filters;
 using HangFire.States;
 using ServiceStack.Redis;
@@ -26,37 +25,39 @@ namespace HangFire.Client
     /// <summary>
     /// Provides information about the job being created.
     /// </summary>
-    public class ClientJobDescriptor : JobDescriptor
+    public class ClientJobDescriptor 
     {
         private readonly StateMachine _stateMachine;
 
-        private readonly IDictionary<string, string> _jobParameters
-            = new Dictionary<string, string>();
+        private readonly IDictionary<string, string> _jobParameters;
 
         private bool _jobWasCreated;
 
         internal ClientJobDescriptor(
             IRedisClient redis,
             string jobId, 
-            Type type,
-            IDictionary<string, string> arguments,
+            JobMethod jobMethod,
+            string[] arguments,
             JobState state)
-            : base(jobId, type)
         {
-            Debug.Assert(redis != null);
-            Debug.Assert(jobId != null);
-            Debug.Assert(type != null);
-            Debug.Assert(arguments != null);
-            Debug.Assert(state != null);
+            if (redis == null) throw new ArgumentNullException("redis");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (jobMethod == null) throw new ArgumentNullException("jobMethod");
+            if (state == null) throw new ArgumentNullException("state");
 
             _stateMachine = new StateMachine(redis);
 
-            State = state;
-            
-            _jobParameters["Type"] = type.AssemblyQualifiedName;
-            _jobParameters["Args"] = JobHelper.ToJson(arguments);
+            _jobParameters = jobMethod.Serialize();
+            _jobParameters["Arguments"] = JobHelper.ToJson(arguments);
             _jobParameters["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
+
+            JobId = jobId;
+            JobMethod = jobMethod;
+            State = state;
         }
+
+        public string JobId { get; private set; }
+        public JobMethod JobMethod { get; private set; }
 
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
@@ -112,7 +113,7 @@ namespace HangFire.Client
         internal void Create()
         {
             _jobWasCreated = true;
-            _stateMachine.CreateInState(this, _jobParameters, State);
+            _stateMachine.CreateInState(JobId, JobMethod, _jobParameters, State);
         }
     }
 }

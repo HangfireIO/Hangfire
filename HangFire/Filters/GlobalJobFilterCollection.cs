@@ -18,6 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using HangFire.Client;
 
 namespace HangFire.Filters
 {
@@ -105,7 +106,7 @@ namespace HangFire.Filters
             return _filters.GetEnumerator();
         }
 
-        IEnumerable<JobFilter> IJobFilterProvider.GetFilters(JobDescriptor descriptor)
+        IEnumerable<JobFilter> IJobFilterProvider.GetFilters(JobMethod method)
         {
             return this;
         }

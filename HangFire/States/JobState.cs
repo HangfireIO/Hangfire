@@ -15,7 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using ServiceStack.Redis;
+using HangFire.Client;
 
 namespace HangFire.States
 {
@@ -30,9 +30,9 @@ namespace HangFire.States
 
         public abstract string StateName { get; }
 
-        public abstract void Apply(JobDescriptor descriptor, IRedisTransaction transaction);
+        public abstract void Apply(StateApplyingContext context);
         
-        public virtual IDictionary<string, string> GetProperties(JobDescriptor descriptor)
+        public virtual IDictionary<string, string> GetProperties(JobMethod data)
         {
             return new Dictionary<string, string>();
         }

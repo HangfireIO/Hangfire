@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using HangFire.Filters;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ServiceStack.Redis;
 
 namespace HangFire.Tests
 {
@@ -18,24 +17,16 @@ namespace HangFire.Tests
             _results = results;
         }
 
-        public void OnStateApplied(
-            JobDescriptor descriptor, JobState state, IRedisTransaction transaction)
+        public void OnStateApplied(StateApplyingContext context)
         {
-            Assert.IsNotNull(transaction);
-            Assert.IsNotNull(descriptor);
-            Assert.IsFalse(String.IsNullOrEmpty(descriptor.JobId));
-            Assert.IsNotNull(state);
+            Assert.IsNotNull(context);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateApplied"));
         }
 
-        public void OnStateUnapplied(
-            JobDescriptor descriptor, string stateName, IRedisTransaction transaction)
+        public void OnStateUnapplied(StateApplyingContext context)
         {
-            Assert.IsNotNull(transaction);
-            Assert.IsNotNull(descriptor);
-            Assert.IsFalse(String.IsNullOrEmpty(descriptor.JobId));
-            Assert.IsFalse(String.IsNullOrEmpty(stateName));
+            Assert.IsNotNull(context);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateUnapplied"));
         }

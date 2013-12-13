@@ -17,7 +17,6 @@
 using System;
 using HangFire.Filters;
 using HangFire.States;
-using ServiceStack.Redis;
 
 namespace HangFire
 {
@@ -44,20 +43,16 @@ namespace HangFire
             }
         }
 
-        public JobState OnStateChanging(
-            JobDescriptor descriptor, JobState state, IRedisClient redis)
+        public void OnStateChanging(StateChangingContext context)
         {
-            if (redis == null) throw new ArgumentNullException("redis");
-            if (state == null) throw new ArgumentNullException("state");
-
-            if (state.StateName != FailedState.Name)
+            if (context.CandidateState.StateName != FailedState.Name)
             {
                 // This filter accepts only failed job state.
-                return state;
+                return;
             }
 
-            var retryCount = redis.IncrementValueInHash(
-                String.Format("hangfire:job:{0}", descriptor.JobId),
+            var retryCount = context.Redis.IncrementValueInHash(
+                String.Format("hangfire:job:{0}", context.JobId),
                 "RetryCount",
                 1);
 
@@ -67,14 +62,10 @@ namespace HangFire
 
                 // If attempt number is less than max attempts, we should
                 // schedule the job to run again later.
-                return new ScheduledState(
+                context.CandidateState = new ScheduledState(
                     String.Format("Retry attempt {0} of {1}.", retryCount, Attempts), 
                     delay);
             }
-
-            // When we exceeded the number of attempts, we should leave
-            // the job in a failed state.
-            return state;
         }
 
         // delayed_job uses the same basic formula

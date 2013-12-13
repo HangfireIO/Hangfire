@@ -17,14 +17,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using HangFire.Client;
 using HangFire.Filters;
 
 namespace HangFire.Server
 {
     internal class JobPerformer
     {
-        private readonly Func<JobDescriptor, IEnumerable<JobFilter>> _getFiltersThunk 
+        private readonly Func<JobMethod, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
         public JobPerformer()
@@ -36,22 +36,22 @@ namespace HangFire.Server
         {
             if (filters != null)
             {
-                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Invoke, null));
+                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
             }
         }
 
-        protected virtual JobFilterInfo GetFilters(JobDescriptor descriptor)
+        protected virtual JobFilterInfo GetFilters(JobMethod method)
         {
-            return new JobFilterInfo(_getFiltersThunk(descriptor));
+            return new JobFilterInfo(_getFiltersThunk(method));
         }
 
-        public void PerformJob(PerformContext context)
+        public void PerformJob(PerformContext context, IJobPerformStrategy strategy)
         {
-            var filterInfo = GetFilters(context.JobDescriptor);
+            var filterInfo = GetFilters(context.JobMethod);
 
             try
             {
-                PerformJobWithFilters(context, filterInfo.ServerFilters);
+                PerformJobWithFilters(context, strategy, filterInfo.ServerFilters);
             }
             catch (Exception ex)
             {
@@ -67,12 +67,13 @@ namespace HangFire.Server
 
         private static void PerformJobWithFilters(
             PerformContext context,
+            IJobPerformStrategy strategy,
             IEnumerable<IServerFilter> filters)
         {
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                context.JobDescriptor.Perform();
+                strategy.Perform();
                 return new PerformedContext(context, false, null);
             };
 

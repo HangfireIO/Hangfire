@@ -12,14 +12,12 @@ namespace HangFire.Tests
         private const int RedisDb = 5;
         private const string RedisHost = "localhost:6379";
 
-        private static readonly object _lock = new object();
-
         public static IRedisClient Client;
 
         [BeforeScenario("redis")]
         public static void BeforeRedisScenario()
         {
-            Monitor.Enter(_lock);
+            GlobalLock.Acquire();
             LogManager.LogFactory = new ConsoleLogFactory();
 
             RedisFactory.Db = RedisDb;
@@ -38,7 +36,7 @@ namespace HangFire.Tests
             }
             finally
             {
-                Monitor.Exit(_lock);
+                GlobalLock.Release();
             }
         }
     }

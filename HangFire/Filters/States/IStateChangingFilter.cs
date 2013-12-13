@@ -15,7 +15,6 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using HangFire.States;
-using ServiceStack.Redis;
 
 namespace HangFire.Filters
 {
@@ -26,16 +25,11 @@ namespace HangFire.Filters
     {
         /// <summary>
         /// Called when the current state of the job is being changed to the
-        /// specified candidate <paramref name="state"/>.
+        /// specified candidate state.
         /// This state change could be intercepted and the final state could
-        /// be changed through returning the different state in the implementation
-        /// of this method.
+        /// be changed through setting the different state in the context 
+        /// in an implementation of this method.
         /// </summary>
-        /// <param name="descriptor">The descriptor of the job, whose state is changing.</param>
-        /// <param name="state">The current state candidate.</param>
-        /// <returns>The new state candidate, which will be applied to the job.</returns>
-        /// <param name="redis">Redis connection.</param>
-        JobState OnStateChanging(
-            JobDescriptor descriptor, JobState state, IRedisClient redis);
+        void OnStateChanging(StateChangingContext context);
     }
 }

@@ -17,7 +17,6 @@
 using System;
 using HangFire.Filters;
 using HangFire.States;
-using ServiceStack.Redis;
 
 namespace HangFire
 {
@@ -30,20 +29,14 @@ namespace HangFire
 
         public int RepeatInterval { get; private set; }
 
-        public JobState OnStateChanging(
-            JobDescriptor descriptor, JobState state, IRedisClient redis)
+        public void OnStateChanging(StateChangingContext context)
         {
-            if (redis == null) throw new ArgumentNullException("redis");
-            if (state == null) throw new ArgumentNullException("state");
-
-            if (state.StateName != SucceededState.Name)
+            if (context.CandidateState.StateName == SucceededState.Name)
             {
-                return state;
+                context.CandidateState = new ScheduledState(
+                    "Scheduled as a recurring job",
+                    DateTime.UtcNow.AddSeconds(RepeatInterval));
             }
-
-            return new ScheduledState(
-                "Scheduled as a recurring job",
-                DateTime.UtcNow.AddSeconds(RepeatInterval));
         }
     }
 }

@@ -1,36 +1,43 @@
 ﻿using System;
 using System.IO;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HangFire;
+using HangFire.States;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
 namespace ConsoleSample
 {
-    [Queue("critical")]
-    public class FastCriticalJob : BackgroundJob
-    {
-        public override void Perform()
-        {
-        }
-    }
-
-    public class FastDefaultJob : BackgroundJob
-    {
-        public override void Perform()
-        {
-        }
-    }
-
-    [Queue("critical")]
-    public class ConsoleJob : BackgroundJob
+    public class Services
     {
         private static readonly Random _random = new Random();
 
-        public int Number { get; set; }
+        public void EmptyDefault()
+        {
+        }
 
-        public override void Perform()
+        [Queue("critical")]
+        public void EmptyCritical()
+        {
+        }
+
+        [Retry(Attempts = 0)]
+        public void Error()
+        {
+            Console.WriteLine("Beginning error task...");
+            throw new InvalidOperationException(null, new FileLoadException());
+        }
+
+        [Queue("critical"), Recurring(intervalInSeconds: 30)]
+        public void Recurring()
+        {
+            Console.WriteLine("Performing recurring task...");
+        }
+
+        [Queue("critical")]
+        public void Random(int number)
         {
             int time;
             lock (_random)
@@ -44,29 +51,10 @@ namespace ConsoleSample
             }
 
             Thread.Sleep(TimeSpan.FromSeconds(5 + time));
-            Console.WriteLine("Finished task: " + Number);
+            Console.WriteLine("Finished task: " + number);
         }
     }
-
-    [Retry(Attempts = 0)]
-    public class ErrorJob : BackgroundJob
-    {
-        public override void Perform()
-        {
-            Console.WriteLine("Beginning error task...");
-            throw new InvalidOperationException(null, new FileLoadException());
-        }
-    }
-
-    [Queue("critical"), Recurring(intervalInSeconds: 30)]
-    public class RecurringJob : BackgroundJob
-    {
-        public override void Perform()
-        {
-            Console.WriteLine("Performing recurring task...");
-        }
-    }
-
+    
     public static class Program
     {
         public static void Main()
@@ -77,8 +65,8 @@ namespace ConsoleSample
 
             GlobalJobFilters.Filters.Add(new HistoryStatisticsAttribute(), 20);
             GlobalJobFilters.Filters.Add(new RetryAttribute());
-
-            using (var server = new BackgroundJobServer("critical", "default"))
+            
+            using (var server = new BackgroundJobServer(25, "critical", "default"))
             {
                 server.Start();
 
@@ -100,7 +88,25 @@ namespace ConsoleSample
                             var workCount = int.Parse(command.Substring(4));
                             for (var i = 0; i < workCount; i++)
                             {
-                                Perform.Async<ConsoleJob>(new { Number = count++ });
+                                var number = i;
+                                BackgroundJob.Enqueue<Services>(x => x.Random(number));
+                            }
+                            Console.WriteLine("Jobs enqueued.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+
+                    if (command.StartsWith("static", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var workCount = int.Parse(command.Substring(7));
+                            for (var i = 0; i < workCount; i++)
+                            {
+                                BackgroundJob.Enqueue(() => Console.WriteLine("Hello, {0}!", "world"));
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
@@ -115,19 +121,20 @@ namespace ConsoleSample
                         var workCount = int.Parse(command.Substring(6));
                         for (var i = 0; i < workCount; i++)
                         {
-                            Perform.Async<ErrorJob>(new { ArticleId = 2, Product = "Casio Privia PX-850" });
+                            BackgroundJob.Enqueue<Services>(x => x.Error());
                         }
                     }
 
                     if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var seconds = int.Parse(command.Substring(2));
-                        Perform.In<ConsoleJob>(TimeSpan.FromSeconds(seconds), new { Number = count++ });
+                        var number = count++;
+                        BackgroundJob.Schedule<Services>(x => x.Random(number), TimeSpan.FromSeconds(seconds));
                     }
 
                     if (command.StartsWith("recurring", StringComparison.OrdinalIgnoreCase))
                     {
-                        Perform.Async<RecurringJob>();
+                        BackgroundJob.Enqueue<Services>(x => x.Recurring());
                         Console.WriteLine("Recurring job added");
                     }
 
@@ -137,10 +144,16 @@ namespace ConsoleSample
                         {
                             var workCount = int.Parse(command.Substring(5));
                             Parallel.For(0, workCount, i =>
+                            {
+                                if (i % 2 == 0)
                                 {
-                                    var type = i % 2 == 0 ? typeof (FastCriticalJob) : typeof (FastDefaultJob);
-                                    Perform.Async(type, new { Number = i });
-                                });
+                                    BackgroundJob.Enqueue<Services>(x => x.EmptyCritical());
+                                }
+                                else
+                                {
+                                    BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
+                                }
+                            });
                             Console.WriteLine("Jobs enqueued.");
                         }
                         catch (Exception ex)

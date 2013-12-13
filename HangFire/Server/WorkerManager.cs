@@ -78,8 +78,8 @@ namespace HangFire.Server
             }
             while (worker.Crashed);
 
-            var jobId = _fetcher.DequeueJob(cancellationToken);
-            worker.Process(jobId);
+            var payload = _fetcher.DequeueJob(cancellationToken);
+            worker.Process(payload);
         }
 
         internal void NotifyReady(Worker worker)

@@ -65,10 +65,32 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
+    <Compile Include="Client\IJobClient.cs" />
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Client\ClientJobDescriptor.cs" />
+    <Compile Include="Client\JobMethod.cs" />
+    <Compile Include="Client\JobLoadException.cs" />
+    <Compile Include="ExpressionUtil\BinaryExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\CachedExpressionCompiler.cs" />
+    <Compile Include="ExpressionUtil\ConditionalExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ConstantExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\DefaultExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ExpressionFingerprintChain.cs" />
+    <Compile Include="ExpressionUtil\FingerprintingExpressionVisitor.cs" />
+    <Compile Include="ExpressionUtil\HashCodeCombiner.cs" />
+    <Compile Include="ExpressionUtil\Hoisted.cs" />
+    <Compile Include="ExpressionUtil\HoistingExpressionVisitor.cs" />
+    <Compile Include="ExpressionUtil\IndexExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\LambdaExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\MemberExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\MethodCallExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\ParameterExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\TypeBinaryExpressionFingerprint.cs" />
+    <Compile Include="ExpressionUtil\UnaryExpressionFingerprint.cs" />
     <Compile Include="Filters\JobFilter.cs" />
     <Compile Include="Filters\JobFilterProviderCollection.cs" />
     <Compile Include="Filters\JobFilterProviders.cs" />
@@ -79,13 +101,13 @@
     <Compile Include="Filters\Client\IClientExceptionFilter.cs" />
     <Compile Include="Filters\IJobFilterProvider.cs" />
     <Compile Include="Filters\States\IStateChangingFilter.cs" />
-    <Compile Include="JobDescriptor.cs" />
     <Compile Include="Filters\JobFilterAttribute.cs" />
     <Compile Include="Filters\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Filters\JobFilterInfo.cs" />
     <Compile Include="Filters\Server\IServerExceptionFilter.cs" />
     <Compile Include="Filters\Client\CreatedContext.cs" />
     <Compile Include="Filters\Client\CreatingContext.cs" />
+    <Compile Include="Server\JobAsClassPerformStrategy.cs" />
     <Compile Include="Server\PerformContext.cs" />
     <Compile Include="Filters\Server\ServerExceptionContext.cs" />
     <Compile Include="Filters\Server\PerformedContext.cs" />
@@ -101,6 +123,7 @@
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\JobFetcher.cs" />
+    <Compile Include="Server\IJobPerformStrategy.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="Server\PrefetchJobFetcher.cs" />
@@ -116,14 +139,13 @@
     <Compile Include="Filters\Server\IServerFilter.cs" />
     <Compile Include="PreserveCultureAttribute.cs" />
     <Compile Include="BackgroundJob.cs" />
-    <Compile Include="Perform.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="RedisFactory.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />
-    <Compile Include="Server\ServerJobDescriptor.cs" />
+    <Compile Include="Server\JobAsMethodPerformStrategy.cs" />
     <Compile Include="Server\JobPerformer.cs" />
     <Compile Include="Client\JobClient.cs" />
     <Compile Include="Server\Worker.cs" />
@@ -133,12 +155,17 @@
     <Compile Include="States\JobStateDescriptor.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
+    <Compile Include="States\StateApplyingContext.cs" />
+    <Compile Include="States\StateChangingContext.cs" />
+    <Compile Include="States\StateContext.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="HistoryStatisticsAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HangFire.nuspec" />
+    <None Include="HangFire.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

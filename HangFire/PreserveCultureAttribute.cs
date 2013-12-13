@@ -42,13 +42,13 @@ namespace HangFire
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
-            var cultureName = filterContext.JobDescriptor
+            var cultureName = filterContext
                 .GetParameter<string>("CurrentCulture");
-            var uiCultureName = filterContext.JobDescriptor
+            var uiCultureName = filterContext
                 .GetParameter<string>("CurrentUICulture");
 
             var thread = Thread.CurrentThread;
-
+            
             if (!String.IsNullOrEmpty(cultureName))
             {
                 filterContext.Items["PreviousCulture"] = thread.CurrentCulture;
