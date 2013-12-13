@@ -28,6 +28,7 @@ namespace HangFire
     /// <p>All methods are thread-safe and use the <see cref="PooledRedisClientManager"/> 
     /// to take pooled Redis connections when creating a job.</p>
     /// </summary>
+    [Obsolete("Old Client API is obsolete. Use static methods of the BackgroundJob class instead.")]
     public static class Perform
     {
         /// <summary>
