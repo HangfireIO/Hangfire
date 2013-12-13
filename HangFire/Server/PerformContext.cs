@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Client;
-using ServiceStack.Common.Utils;
 using ServiceStack.Redis;
 
 namespace HangFire.Server
@@ -63,7 +62,7 @@ namespace HangFire.Server
 
         public IRedisClient Redis { get; private set; }
 
-        public void SetParameter(string name, object value)
+        public void SetJobParameter(string name, object value)
         {
             Redis.SetEntryInHash(
                 String.Format("hangfire:job:{0}", JobId),
@@ -71,7 +70,7 @@ namespace HangFire.Server
                 JobHelper.ToJson(value));
         }
 
-        public T GetParameter<T>(string name)
+        public T GetJobParameter<T>(string name)
         {
             var value = Redis.GetValueFromHash(
                 String.Format("hangfire:job:{0}", JobId),

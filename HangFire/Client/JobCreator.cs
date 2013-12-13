@@ -54,11 +54,11 @@ namespace HangFire.Client
 
         public void CreateJob(CreateContext context)
         {
-            var filterInfo = GetFilters(context.JobDescriptor.JobMethod);
+            var filterInfo = GetFilters(context.JobMethod);
 
             try
             {
-                CreateWithFilters(context, context.JobDescriptor, filterInfo.ClientFilters);
+                CreateWithFilters(context, filterInfo.ClientFilters);
             }
             catch (Exception ex)
             {
@@ -73,15 +73,14 @@ namespace HangFire.Client
         }
 
         private static void CreateWithFilters(
-            CreateContext createContext,
-            ClientJobDescriptor jobDescriptor,
+            CreateContext context,
             IEnumerable<IClientFilter> filters)
         {
-            var preContext = new CreatingContext(createContext);
+            var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                jobDescriptor.Create();
-                return new CreatedContext(createContext, false, null);
+                context.CreateJob();
+                return new CreatedContext(context, false, null);
             };
 
             var thunk = filters.Reverse().Aggregate(continuation,

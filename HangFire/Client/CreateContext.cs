@@ -16,6 +16,8 @@
 
 using System;
 using System.Collections.Generic;
+using HangFire.Filters;
+using HangFire.States;
 using ServiceStack.Redis;
 
 namespace HangFire.Client
@@ -26,19 +28,39 @@ namespace HangFire.Client
     /// </summary>
     public class CreateContext
     {
+        private readonly IDictionary<string, string> _job;
+        private readonly StateMachine _stateMachine;
+
+        private bool _jobWasCreated;
+
         internal CreateContext(CreateContext context)
-            : this(context.Redis, context.JobDescriptor)
+            : this(context.Redis, context.JobId, context.JobMethod, context._job, context.InitialState)
         {
             Items = context.Items;
+            _jobWasCreated = context._jobWasCreated;
         }
 
         internal CreateContext(
             IRedisClient redis, 
-            ClientJobDescriptor jobDescriptor)
+            string jobId,
+            JobMethod jobMethod,
+            IDictionary<string, string> job,
+            JobState initialState)
         {
+            if (redis == null) throw new ArgumentNullException("redis");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (jobMethod == null) throw new ArgumentNullException("jobMethod");
+            if (job == null) throw new ArgumentNullException("job");
+            if (initialState == null) throw new ArgumentNullException("initialState");
+
             Redis = redis;
-            JobDescriptor = jobDescriptor;
+            JobId = jobId;
+            JobMethod = jobMethod;
+            InitialState = initialState;
             Items = new Dictionary<string, object>();
+
+            _job = job;
+            _stateMachine = new StateMachine(redis);
         }
 
         /// <summary>
@@ -53,10 +75,64 @@ namespace HangFire.Client
         /// </summary>
         public IDictionary<string, object> Items { get; private set; }
 
+        public string JobId { get; private set; }
+        public JobMethod JobMethod { get; private set; }
+
         /// <summary>
-        /// Gets the client job descriptor that is associated with the
-        /// current <see cref="CreateContext"/> object.
+        /// Gets the initial state of the creating job. Note, that
+        /// the final state of the created job could be changed after 
+        /// the registered instances of the <see cref="IStateChangingFilter"/>
+        /// class are doing their job.
         /// </summary>
-        public ClientJobDescriptor JobDescriptor { get; private set; }
+        public JobState InitialState { get; private set; }
+
+        /// <summary>
+        /// Sets the job parameter of the specified <paramref name="name"/>
+        /// to the corresponding <paramref name="value"/>. The value of the
+        /// parameter is being serialized to a JSON string.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the parameter.</param>
+        /// <param name="value">The value of the parameter.</param>
+        /// 
+        /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
+        public void SetJobParameter(string name, object value)
+        {
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+
+            if (_jobWasCreated)
+            {
+                throw new InvalidOperationException("Could not set parameter for a created job.");
+            }
+
+            _job.Add(name, JobHelper.ToJson(value));
+        }
+
+        /// <summary>
+        /// Gets the job parameter of the specified <paramref name="name"/>
+        /// if it exists. The parameter is being deserialized from a JSON 
+        /// string value to the given type <typeparamref name="T"/>.
+        /// </summary>
+        /// 
+        /// <typeparam name="T">The type of the parameter.</typeparam>
+        /// <param name="name">The name of the parameter.</param>
+        /// <returns>The value of the given parameter if it exists or null otherwise.</returns>
+        /// 
+        /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
+        /// <exception cref="NotSupportedException">Could not deserialize the parameter value to the type <typeparamref name="T"/>.</exception>
+        public T GetJobParameter<T>(string name)
+        {
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+
+            return _job.ContainsKey(name)
+                ? JobHelper.FromJson<T>(_job[name])
+                : default(T);
+        }
+
+        internal void CreateJob()
+        {
+            _jobWasCreated = true;
+            _stateMachine.CreateInState(JobId, JobMethod, _job, InitialState);
+        }
     }
 }

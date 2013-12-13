@@ -70,7 +70,6 @@
     <Compile Include="Client\IJobClient.cs" />
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
-    <Compile Include="Client\ClientJobDescriptor.cs" />
     <Compile Include="Client\JobMethod.cs" />
     <Compile Include="Client\JobLoadException.cs" />
     <Compile Include="ExpressionUtil\BinaryExpressionFingerprint.cs" />

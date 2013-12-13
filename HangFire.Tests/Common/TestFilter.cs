@@ -40,11 +40,6 @@ namespace HangFire.Tests
         {
             Assert.IsNotNull(filterContext);
             Assert.IsNotNull(filterContext.Items);
-            Assert.IsNotNull(filterContext.Redis);
-            Assert.IsNotNull(filterContext.JobDescriptor);
-            Assert.IsNotNull(filterContext.JobDescriptor.JobId);
-            Assert.IsNotNull(filterContext.JobDescriptor.JobMethod);
-            Assert.IsNotNull(filterContext.JobDescriptor.State);
 
             if (_cancelsTheCreation)
             {
@@ -57,7 +52,7 @@ namespace HangFire.Tests
             {
                 foreach (var parameter in _setOnPreMethodParameters)
                 {
-                    filterContext.JobDescriptor.SetParameter(parameter.Key, parameter.Value);
+                    filterContext.SetJobParameter(parameter.Key, parameter.Value);
                 }
             }
 
@@ -67,7 +62,7 @@ namespace HangFire.Tests
                 {
                     Assert.AreEqual(
                         parameter.Value, 
-                        filterContext.JobDescriptor.GetParameter<string>(parameter.Key));
+                        filterContext.GetJobParameter<string>(parameter.Key));
                 }
             }
             
@@ -80,9 +75,7 @@ namespace HangFire.Tests
         public void OnCreated(CreatedContext filterContext)
         {
             Assert.IsNotNull(filterContext);
-            Assert.IsNotNull(filterContext.Redis);
             Assert.IsNotNull(filterContext.Items);
-            Assert.IsNotNull(filterContext.JobDescriptor);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnCreated") 
                 + (filterContext.Canceled ? " (with the canceled flag set)" : null));
@@ -91,7 +84,7 @@ namespace HangFire.Tests
             {
                 foreach (var parameter in _setOnPostMethodParameters)
                 {
-                    filterContext.JobDescriptor.SetParameter(parameter.Key, parameter.Value);
+                    filterContext.SetJobParameter(parameter.Key, parameter.Value);
                 }
             }
 
@@ -101,7 +94,7 @@ namespace HangFire.Tests
                 {
                     Assert.AreEqual(
                         parameter.Value,
-                        filterContext.JobDescriptor.GetParameter<string>(parameter.Key));
+                        filterContext.GetJobParameter<string>(parameter.Key));
                 }
             }
 
@@ -126,7 +119,7 @@ namespace HangFire.Tests
             {
                 foreach (var parameter in _setOnPreMethodParameters)
                 {
-                    filterContext.SetParameter(parameter.Key, parameter.Value);
+                    filterContext.SetJobParameter(parameter.Key, parameter.Value);
                 }
             }
 
@@ -136,7 +129,7 @@ namespace HangFire.Tests
                 {
                     Assert.AreEqual(
                         parameter.Value,
-                        filterContext.GetParameter<string>(parameter.Key));
+                        filterContext.GetJobParameter<string>(parameter.Key));
                 }
             }
             

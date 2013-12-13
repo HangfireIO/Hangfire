@@ -67,9 +67,7 @@ namespace HangFire.Client
             job["Arguments"] = JobHelper.ToJson(arguments);
             job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
-            var descriptor = new ClientJobDescriptor(_redis, id, method, job, state);
-            var context = new CreateContext(_redis, descriptor);
-
+            var context = new CreateContext(_redis, id, method, job, state);
             _jobCreator.CreateJob(context);
 
             return id;
@@ -156,9 +154,7 @@ namespace HangFire.Client
                 job["Args"] = JobHelper.ToJson(args);
                 job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
-                var descriptor = new ClientJobDescriptor(_redis, id, method, job, state);
-                var context = new CreateContext(_redis, descriptor);
-
+                var context = new CreateContext(_redis, id, method, job, state);
                 _jobCreator.CreateJob(context);
             }
             catch (Exception ex)
