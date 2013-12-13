@@ -228,7 +228,7 @@ namespace HangFire
 
             using (var client = ClientFactory())
             {
-                var data = new JobInvocationData(type, callExpression.Method);
+                var data = new JobMethod(type, callExpression.Method);
                 return client.CreateJob(data, arguments, state);
             }
         }

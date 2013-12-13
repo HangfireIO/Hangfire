@@ -47,14 +47,14 @@ namespace HangFire.Filters
         }
 
         protected virtual IEnumerable<JobFilterAttribute> GetJobAttributes(
-            JobInvocationData invocationData)
+            JobMethod method)
         {
-            return invocationData.GetTypeFilterAttributes(_cacheAttributeInstances);
+            return method.GetTypeFilterAttributes(_cacheAttributeInstances);
         }
 
-        public virtual IEnumerable<JobFilter> GetFilters(JobInvocationData invocationData)
+        public virtual IEnumerable<JobFilter> GetFilters(JobMethod method)
         {
-            var typeFilters = GetJobAttributes(invocationData)
+            var typeFilters = GetJobAttributes(method)
                 .Select(attr => new JobFilter(attr, JobFilterScope.Type, null));
 
             return typeFilters.ToList();

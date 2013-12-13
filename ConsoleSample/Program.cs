@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HangFire;
+using HangFire.States;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
@@ -64,7 +65,7 @@ namespace ConsoleSample
 
             GlobalJobFilters.Filters.Add(new HistoryStatisticsAttribute(), 20);
             GlobalJobFilters.Filters.Add(new RetryAttribute());
-
+            
             using (var server = new BackgroundJobServer(25, "critical", "default"))
             {
                 server.Start();

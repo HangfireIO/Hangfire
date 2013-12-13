@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ServiceStack.Redis;
+using HangFire.Client;
 
 namespace HangFire.States
 {
@@ -35,9 +35,9 @@ namespace HangFire.States
 
         public override string StateName { get { return Name; } }
 
-        public override IDictionary<string, string> GetProperties(JobDescriptor descriptor)
+        public override IDictionary<string, string> GetProperties(JobMethod data)
         {
-            var queue = GetQueue(descriptor.InvocationData.Type);
+            var queue = GetQueue(data.Type);
 
             return new Dictionary<string, string>
                 {
@@ -46,13 +46,13 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(JobDescriptor descriptor, IRedisTransaction transaction)
+        public override void Apply(StateApplyingContext context)
         {
-            var queue = GetQueue(descriptor.InvocationData.Type);
+            var queue = GetQueue(context.JobMethod.Type);
 
-            transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queue));
-            transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:queue:{0}", queue), descriptor.JobId));
+            context.Transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queue));
+            context.Transaction.QueueCommand(x => x.EnqueueItemOnList(
+                String.Format("hangfire:queue:{0}", queue), context.JobId));
         }
 
         public static string GetQueue(Type jobType)

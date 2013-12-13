@@ -6,9 +6,9 @@ using HangFire.Filters;
 
 namespace HangFire.Client
 {
-    public class JobInvocationData
+    public class JobMethod
     {
-        public JobInvocationData(Type type, MethodInfo method)
+        public JobMethod(Type type, MethodInfo method)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
@@ -34,7 +34,7 @@ namespace HangFire.Client
             };
         }
 
-        internal static JobInvocationData Deserialize(Dictionary<string, string> job)
+        internal static JobMethod Deserialize(Dictionary<string, string> job)
         {
             if (job == null) throw new ArgumentNullException("job");
 
@@ -58,7 +58,7 @@ namespace HangFire.Client
                 var parameterTypes = JobHelper.FromJson<Type[]>(job["ParameterTypes"]);
                 var method = type.GetMethod(job["Method"], parameterTypes);
 
-                return new JobInvocationData(type, method) { OldFormat = oldFormat };
+                return new JobMethod(type, method) { OldFormat = oldFormat };
             }
             catch (Exception ex)
             {

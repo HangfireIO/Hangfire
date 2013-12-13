@@ -15,7 +15,6 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using HangFire.States;
-using ServiceStack.Redis;
 
 namespace HangFire.Filters
 {
@@ -25,23 +24,15 @@ namespace HangFire.Filters
     public interface IStateChangedFilter
     {
         /// <summary>
-        /// Called after the specified <paramref name="state"/> was applied
-        /// to the job within the given <paramref name="transaction"/>.
+        /// Called after the specified state was applied
+        /// to the job within the given transaction.
         /// </summary>
-        /// <param name="descriptor">The descriptor of the job, whose state was changed.</param>
-        /// <param name="state">The applied state.</param>
-        /// <param name="transaction">The current transaction.</param>
-        void OnStateApplied(
-            JobDescriptor descriptor, JobState state, IRedisTransaction transaction);
+        void OnStateApplied(StateApplyingContext context);
 
         /// <summary>
-        /// Called when the state with specified <paramref name="stateName"/> was 
-        /// unapplied from the job within the given <paramref name="transaction"/>.
+        /// Called when the state with specified state was 
+        /// unapplied from the job within the given transaction.
         /// </summary>
-        /// <param name="descriptor">The descriptor of the job, whose state is changing.</param>
-        /// <param name="stateName">The unapplied state name.</param>
-        /// <param name="transaction">The current transaction.</param>
-        void OnStateUnapplied(
-            JobDescriptor descriptor, string stateName, IRedisTransaction transaction);
+        void OnStateUnapplied(StateApplyingContext context);
     }
 }

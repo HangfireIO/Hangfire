@@ -43,7 +43,7 @@ namespace HangFire.Tests
             Assert.IsNotNull(filterContext.Redis);
             Assert.IsNotNull(filterContext.JobDescriptor);
             Assert.IsNotNull(filterContext.JobDescriptor.JobId);
-            Assert.IsNotNull(filterContext.JobDescriptor.InvocationData);
+            Assert.IsNotNull(filterContext.JobDescriptor.Method);
             Assert.IsNotNull(filterContext.JobDescriptor.State);
 
             if (_cancelsTheCreation)
@@ -116,7 +116,7 @@ namespace HangFire.Tests
             Assert.IsNotNull(filterContext);
             Assert.IsNotNull(filterContext.JobDescriptor);
             Assert.IsNotNull(filterContext.JobDescriptor.JobId);
-            Assert.IsNotNull(filterContext.JobDescriptor.InvocationData);
+            Assert.IsNotNull(filterContext.JobDescriptor.Method);
 
             if (_cancelsTheCreation)
             {

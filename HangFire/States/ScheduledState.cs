@@ -16,7 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using ServiceStack.Redis;
+using HangFire.Client;
 
 namespace HangFire.States
 {
@@ -34,7 +34,7 @@ namespace HangFire.States
 
         public override string StateName { get { return Name; } }
 
-        public override IDictionary<string, string> GetProperties(JobDescriptor descriptor)
+        public override IDictionary<string, string> GetProperties(JobMethod data)
         {
             return new Dictionary<string, string>
                 {
@@ -43,20 +43,20 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(JobDescriptor descriptor, IRedisTransaction transaction)
+        public override void Apply(StateApplyingContext context)
         {
             var timestamp = JobHelper.ToTimestamp(EnqueueAt);
 
-            transaction.QueueCommand(x => x.AddItemToSortedSet(
-                "hangfire:schedule", descriptor.JobId, timestamp));
+            context.Transaction.QueueCommand(x => x.AddItemToSortedSet(
+                "hangfire:schedule", context.JobId, timestamp));
         }
 
         public class Descriptor : JobStateDescriptor
         {
-            public override void Unapply(JobDescriptor descriptor, IRedisTransaction transaction)
+            public override void Unapply(StateApplyingContext context)
             {
-                transaction.QueueCommand(x => x.RemoveItemFromSortedSet(
-                    "hangfire:schedule", descriptor.JobId));
+                context.Transaction.QueueCommand(x => x.RemoveItemFromSortedSet(
+                    "hangfire:schedule", context.JobId));
             }
         }
     }

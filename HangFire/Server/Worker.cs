@@ -196,7 +196,7 @@ namespace HangFire.Server
             {
                 ServerJobDescriptorBase descriptor;
 
-                var invocationData = JobInvocationData.Deserialize(payload.Job);
+                var invocationData = JobMethod.Deserialize(payload.Job);
                 if (invocationData.OldFormat)
                 {
                     // For compatibility with the Old Client API.

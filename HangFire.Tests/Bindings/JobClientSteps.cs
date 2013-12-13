@@ -242,7 +242,7 @@ namespace HangFire.Tests
         public void ThenTheGivenStateWasAppliedToIt()
         {
             _stateMock.Verify(
-                x => x.Apply(It.Is<JobDescriptor>(y => y.JobId == JobSteps.DefaultJobId), It.IsAny<IRedisTransaction>()),
+                x => x.Apply(It.Is<StateApplyingContext>(y => y.JobId == JobSteps.DefaultJobId)),
                 Times.Once);
         }
 

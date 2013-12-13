@@ -54,7 +54,7 @@ namespace HangFire.Client
             _jobCreator = jobCreator;
         }
 
-        public string CreateJob(JobInvocationData data, string[] arguments, JobState state)
+        public string CreateJob(JobMethod data, string[] arguments, JobState state)
         {
             var parameters = data.Method.GetParameters();
 

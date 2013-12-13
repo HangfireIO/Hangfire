@@ -22,14 +22,14 @@ namespace HangFire
     /// <summary>
     /// Represents the base class for job descriptors.
     /// </summary>
-    public class JobDescriptor
+    public abstract class JobDescriptor
     {
-        internal JobDescriptor(string jobId, JobInvocationData invocationData)
+        internal JobDescriptor(string jobId, JobMethod method)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
 
             JobId = jobId;
-            InvocationData = invocationData;
+            Method = method;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace HangFire
         /// </summary>
         public string JobId { get; private set; }
 
-        public JobInvocationData InvocationData { get; private set; }
+        public JobMethod Method { get; private set; }
 
         public virtual void SetParameter(string name, object value)
         {

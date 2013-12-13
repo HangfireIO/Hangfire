@@ -24,7 +24,7 @@ namespace HangFire.Server
 {
     internal class JobPerformer
     {
-        private readonly Func<JobInvocationData, IEnumerable<JobFilter>> _getFiltersThunk 
+        private readonly Func<JobMethod, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
         public JobPerformer()
@@ -40,14 +40,14 @@ namespace HangFire.Server
             }
         }
 
-        protected virtual JobFilterInfo GetFilters(JobInvocationData invocationData)
+        protected virtual JobFilterInfo GetFilters(JobMethod method)
         {
-            return new JobFilterInfo(_getFiltersThunk(invocationData));
+            return new JobFilterInfo(_getFiltersThunk(method));
         }
 
         public void PerformJob(PerformContext context)
         {
-            var filterInfo = GetFilters(context.JobDescriptor.InvocationData);
+            var filterInfo = GetFilters(context.JobDescriptor.Method);
 
             try
             {

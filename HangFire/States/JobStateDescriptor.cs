@@ -14,13 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
-using ServiceStack.Redis;
-
 namespace HangFire.States
 {
     public abstract class JobStateDescriptor
     {
-        public virtual void Unapply(JobDescriptor descriptor, IRedisTransaction transaction)
+        public virtual void Unapply(StateApplyingContext context)
         {
         }
     }

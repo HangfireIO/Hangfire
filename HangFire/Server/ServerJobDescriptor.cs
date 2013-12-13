@@ -31,7 +31,7 @@ namespace HangFire.Server
             IRedisClient redis,
             JobActivator activator,
             string jobId,
-            JobInvocationData data,
+            JobMethod data,
             string[] arguments)
             : base(redis, jobId, data)
         {
@@ -49,12 +49,12 @@ namespace HangFire.Server
 
             try
             {
-                if (!InvocationData.Method.IsStatic)
+                if (!Method.Method.IsStatic)
                 {
                     instance = ActivateJob();
                 }
 
-                var parameters = InvocationData.Method.GetParameters();
+                var parameters = Method.Method.GetParameters();
                 var deserializedArguments = new List<object>(_arguments.Length);
 
                 for (var i = 0; i < parameters.Length; i++)
@@ -79,7 +79,7 @@ namespace HangFire.Server
                     deserializedArguments.Add(value);
                 }
 
-                InvocationData.Method.Invoke(instance, deserializedArguments.ToArray());
+                Method.Method.Invoke(instance, deserializedArguments.ToArray());
             }
             finally
             {
@@ -93,12 +93,12 @@ namespace HangFire.Server
 
         private object ActivateJob()
         {
-            var instance = _activator.ActivateJob(InvocationData.Type);
+            var instance = _activator.ActivateJob(Method.Type);
 
             if (instance == null)
             {
                 throw new InvalidOperationException(
-                    String.Format("JobActivator returned NULL instance of the '{0}' type.", InvocationData.Type));
+                    String.Format("JobActivator returned NULL instance of the '{0}' type.", Method.Type));
             }
 
             return instance;

@@ -11,8 +11,8 @@ namespace HangFire.Server
         protected ServerJobDescriptorBase(
             IRedisClient redis,
             string jobId, 
-            JobInvocationData invocationData) 
-            : base(jobId, invocationData)
+            JobMethod method) 
+            : base(jobId, method)
         {
             if (redis == null) throw new ArgumentNullException("redis");
 

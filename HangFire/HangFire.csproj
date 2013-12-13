@@ -71,7 +71,7 @@
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Client\ClientJobDescriptor.cs" />
-    <Compile Include="Client\JobInvocationData.cs" />
+    <Compile Include="Client\JobMethod.cs" />
     <Compile Include="Client\JobLoadException.cs" />
     <Compile Include="ExpressionUtil\BinaryExpressionFingerprint.cs" />
     <Compile Include="ExpressionUtil\CachedExpressionCompiler.cs" />
@@ -156,6 +156,9 @@
     <Compile Include="States\JobStateDescriptor.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
+    <Compile Include="States\StateApplyingContext.cs" />
+    <Compile Include="States\StateChangingContext.cs" />
+    <Compile Include="States\StateContext.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="HistoryStatisticsAttribute.cs" />

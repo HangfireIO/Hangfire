@@ -15,7 +15,7 @@ namespace HangFire.Server
             IRedisClient redis,
             JobActivator activator,
             string jobId,
-            JobInvocationData data,
+            JobMethod data,
             Dictionary<string, string> arguments)
             : base(redis, jobId, data)
         {
@@ -33,12 +33,12 @@ namespace HangFire.Server
 
             try
             {
-                instance = (BackgroundJob)_activator.ActivateJob(InvocationData.Type);
+                instance = (BackgroundJob)_activator.ActivateJob(Method.Type);
 
                 if (instance == null)
                 {
                     throw new InvalidOperationException(
-                        String.Format("JobActivator returned NULL instance of the '{0}' type.", InvocationData.Type));
+                        String.Format("JobActivator returned NULL instance of the '{0}' type.", Method.Type));
                 }
 
                 InitializeProperties(instance, _arguments);
@@ -58,7 +58,7 @@ namespace HangFire.Server
         {
             foreach (var arg in arguments)
             {
-                var propertyInfo = InvocationData.Type.GetProperty(arg.Key);
+                var propertyInfo = Method.Type.GetProperty(arg.Key);
                 if (propertyInfo != null)
                 {
                     var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
@@ -74,7 +74,7 @@ namespace HangFire.Server
                             String.Format(
                                 "Could not set the property '{0}' of the instance of class '{1}'. See the inner exception for details.",
                                 propertyInfo.Name,
-                                InvocationData.Type),
+                                Method.Type),
                             ex);
                     }
                 }

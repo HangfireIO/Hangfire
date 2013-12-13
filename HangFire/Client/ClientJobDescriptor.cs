@@ -36,7 +36,7 @@ namespace HangFire.Client
         internal ClientJobDescriptor(
             IRedisClient redis,
             string jobId, 
-            JobInvocationData data,
+            JobMethod data,
             string[] arguments,
             JobState state)
             : base(jobId, data)
@@ -109,7 +109,7 @@ namespace HangFire.Client
         internal void Create()
         {
             _jobWasCreated = true;
-            _stateMachine.CreateInState(this, _jobParameters, State);
+            _stateMachine.CreateInState(JobId, Method, _jobParameters, State);
         }
     }
 }
