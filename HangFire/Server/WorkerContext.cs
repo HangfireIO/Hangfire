@@ -29,7 +29,5 @@ namespace HangFire.Server
             WorkerNumber = workerNumber;
         }
 
-        public int WorkerNumber { get; private set; }
-        
-    }
+        public int WorkerNumber { get; private set; }    }
 }

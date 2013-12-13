@@ -18,43 +18,41 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using HangFire.Client;
-using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    public class ServerJobDescriptor : ServerJobDescriptorBase
+    internal class JobAsMethodPerformStrategy : IJobPerformStrategy
     {
         private readonly JobActivator _activator;
+        private readonly JobMethod _method;
         private readonly string[] _arguments;
 
-        internal ServerJobDescriptor(
-            IRedisClient redis,
+        public JobAsMethodPerformStrategy(
             JobActivator activator,
-            string jobId,
-            JobMethod data,
+            JobMethod method,
             string[] arguments)
-            : base(redis, jobId, data)
         {
             if (activator == null) throw new ArgumentNullException("activator");
-            if (data == null) throw new ArgumentNullException("data");
+            if (method == null) throw new ArgumentNullException("method");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
             _activator = activator;
+            _method = method;
             _arguments = arguments;
         }
 
-        internal override void Perform()
+        public void Perform()
         {
             object instance = null;
 
             try
             {
-                if (!Method.Method.IsStatic)
+                if (!_method.Method.IsStatic)
                 {
                     instance = ActivateJob();
                 }
 
-                var parameters = Method.Method.GetParameters();
+                var parameters = _method.Method.GetParameters();
                 var deserializedArguments = new List<object>(_arguments.Length);
 
                 for (var i = 0; i < parameters.Length; i++)
@@ -79,7 +77,7 @@ namespace HangFire.Server
                     deserializedArguments.Add(value);
                 }
 
-                Method.Method.Invoke(instance, deserializedArguments.ToArray());
+                _method.Method.Invoke(instance, deserializedArguments.ToArray());
             }
             finally
             {
@@ -93,12 +91,12 @@ namespace HangFire.Server
 
         private object ActivateJob()
         {
-            var instance = _activator.ActivateJob(Method.Type);
+            var instance = _activator.ActivateJob(_method.Type);
 
             if (instance == null)
             {
                 throw new InvalidOperationException(
-                    String.Format("JobActivator returned NULL instance of the '{0}' type.", Method.Type));
+                    String.Format("JobActivator returned NULL instance of the '{0}' type.", _method.Type));
             }
 
             return instance;

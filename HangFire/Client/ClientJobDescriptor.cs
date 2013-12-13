@@ -25,7 +25,7 @@ namespace HangFire.Client
     /// <summary>
     /// Provides information about the job being created.
     /// </summary>
-    public class ClientJobDescriptor : JobDescriptor
+    public class ClientJobDescriptor 
     {
         private readonly StateMachine _stateMachine;
 
@@ -36,24 +36,28 @@ namespace HangFire.Client
         internal ClientJobDescriptor(
             IRedisClient redis,
             string jobId, 
-            JobMethod data,
+            JobMethod jobMethod,
             string[] arguments,
             JobState state)
-            : base(jobId, data)
         {
             if (redis == null) throw new ArgumentNullException("redis");
             if (jobId == null) throw new ArgumentNullException("jobId");
-            if (data == null) throw new ArgumentNullException("data");
+            if (jobMethod == null) throw new ArgumentNullException("jobMethod");
             if (state == null) throw new ArgumentNullException("state");
 
             _stateMachine = new StateMachine(redis);
 
-            _jobParameters = data.Serialize();
+            _jobParameters = jobMethod.Serialize();
             _jobParameters["Arguments"] = JobHelper.ToJson(arguments);
             _jobParameters["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
+            JobId = jobId;
+            JobMethod = jobMethod;
             State = state;
         }
+
+        public string JobId { get; private set; }
+        public JobMethod JobMethod { get; private set; }
 
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
@@ -73,7 +77,7 @@ namespace HangFire.Client
         /// <param name="value">The value of the parameter.</param>
         /// 
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
-        public override void SetParameter(string name, object value)
+        public void SetParameter(string name, object value)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 
@@ -97,7 +101,7 @@ namespace HangFire.Client
         /// 
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
         /// <exception cref="NotSupportedException">Could not deserialize the parameter value to the type <typeparamref name="T"/>.</exception>
-        public override T GetParameter<T>(string name)
+        public T GetParameter<T>(string name)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 
@@ -109,7 +113,7 @@ namespace HangFire.Client
         internal void Create()
         {
             _jobWasCreated = true;
-            _stateMachine.CreateInState(JobId, Method, _jobParameters, State);
+            _stateMachine.CreateInState(JobId, JobMethod, _jobParameters, State);
         }
     }
 }

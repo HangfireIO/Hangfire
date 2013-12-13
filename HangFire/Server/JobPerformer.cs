@@ -45,13 +45,13 @@ namespace HangFire.Server
             return new JobFilterInfo(_getFiltersThunk(method));
         }
 
-        public void PerformJob(PerformContext context)
+        public void PerformJob(PerformContext context, IJobPerformStrategy strategy)
         {
-            var filterInfo = GetFilters(context.JobDescriptor.Method);
+            var filterInfo = GetFilters(context.JobMethod);
 
             try
             {
-                PerformJobWithFilters(context, filterInfo.ServerFilters);
+                PerformJobWithFilters(context, strategy, filterInfo.ServerFilters);
             }
             catch (Exception ex)
             {
@@ -67,12 +67,13 @@ namespace HangFire.Server
 
         private static void PerformJobWithFilters(
             PerformContext context,
+            IJobPerformStrategy strategy,
             IEnumerable<IServerFilter> filters)
         {
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                context.JobDescriptor.Perform();
+                strategy.Perform();
                 return new PerformedContext(context, false, null);
             };
 

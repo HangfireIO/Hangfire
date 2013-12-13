@@ -194,29 +194,29 @@ namespace HangFire.Server
 
             try
             {
-                ServerJobDescriptorBase descriptor;
+                IJobPerformStrategy performStrategy;
 
-                var invocationData = JobMethod.Deserialize(payload.Job);
-                if (invocationData.OldFormat)
+                var jobMethod = JobMethod.Deserialize(payload.Job);
+                if (jobMethod.OldFormat)
                 {
                     // For compatibility with the Old Client API.
                     // TODO: remove it in version 1.0
                     var arguments = JobHelper.FromJson<Dictionary<string, string>>(
                         payload.Job["Args"]);
 
-                    descriptor = new OldFormatServerJobDescriptor(
-                        _redis, _context.Activator, payload.Id, invocationData, arguments);
+                    performStrategy = new JobAsClassPerformStrategy(
+                        _context.Activator, jobMethod, arguments);
                 }
                 else
                 {
                     var arguments = JobHelper.FromJson<string[]>(payload.Job["Arguments"]);
 
-                    descriptor = new ServerJobDescriptor(
-                        _redis, _context.Activator, payload.Id, invocationData, arguments);
+                    performStrategy = new JobAsMethodPerformStrategy(
+                        _context.Activator, jobMethod, arguments);
                 }
 
-                var performContext = new PerformContext(_context, descriptor);
-                _context.Performer.PerformJob(performContext);
+                var performContext = new PerformContext(_context, _redis, payload.Id, jobMethod);
+                _context.Performer.PerformJob(performContext, performStrategy);
 
                 state = new SucceededState("The job has been completed successfully.");
             }

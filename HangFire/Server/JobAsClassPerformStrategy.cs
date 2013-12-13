@@ -2,43 +2,41 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using HangFire.Client;
-using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
-    internal class OldFormatServerJobDescriptor : ServerJobDescriptorBase
+    internal class JobAsClassPerformStrategy : IJobPerformStrategy
     {
         private readonly JobActivator _activator;
+        private readonly JobMethod _method;
         private readonly Dictionary<string, string> _arguments;
 
-        internal OldFormatServerJobDescriptor(
-            IRedisClient redis,
+        public JobAsClassPerformStrategy(
             JobActivator activator,
-            string jobId,
-            JobMethod data,
+            JobMethod method,
             Dictionary<string, string> arguments)
-            : base(redis, jobId, data)
         {
             if (activator == null) throw new ArgumentNullException("activator");
-            if (data == null) throw new ArgumentNullException("data");
+            if (method == null) throw new ArgumentNullException("method");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
             _activator = activator;
+            _method = method;
             _arguments = arguments;
         }
 
-        internal override void Perform()
+        public void Perform()
         {
             BackgroundJob instance = null;
 
             try
             {
-                instance = (BackgroundJob)_activator.ActivateJob(Method.Type);
+                instance = (BackgroundJob)_activator.ActivateJob(_method.Type);
 
                 if (instance == null)
                 {
                     throw new InvalidOperationException(
-                        String.Format("JobActivator returned NULL instance of the '{0}' type.", Method.Type));
+                        String.Format("JobActivator returned NULL instance of the '{0}' type.", _method.Type));
                 }
 
                 InitializeProperties(instance, _arguments);
@@ -58,7 +56,7 @@ namespace HangFire.Server
         {
             foreach (var arg in arguments)
             {
-                var propertyInfo = Method.Type.GetProperty(arg.Key);
+                var propertyInfo = _method.Type.GetProperty(arg.Key);
                 if (propertyInfo != null)
                 {
                     var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
@@ -74,7 +72,7 @@ namespace HangFire.Server
                             String.Format(
                                 "Could not set the property '{0}' of the instance of class '{1}'. See the inner exception for details.",
                                 propertyInfo.Name,
-                                Method.Type),
+                                _method.Type),
                             ex);
                     }
                 }

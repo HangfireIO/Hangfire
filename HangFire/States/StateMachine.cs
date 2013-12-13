@@ -269,7 +269,7 @@ namespace HangFire.States
             var now = DateTime.UtcNow;
 
             properties.Add("State", state.StateName);
-
+            
             if (appendToJob)
             {
                 transaction.QueueCommand(x => x.SetEntryInHash(

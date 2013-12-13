@@ -101,14 +101,13 @@
     <Compile Include="Filters\Client\IClientExceptionFilter.cs" />
     <Compile Include="Filters\IJobFilterProvider.cs" />
     <Compile Include="Filters\States\IStateChangingFilter.cs" />
-    <Compile Include="JobDescriptor.cs" />
     <Compile Include="Filters\JobFilterAttribute.cs" />
     <Compile Include="Filters\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Filters\JobFilterInfo.cs" />
     <Compile Include="Filters\Server\IServerExceptionFilter.cs" />
     <Compile Include="Filters\Client\CreatedContext.cs" />
     <Compile Include="Filters\Client\CreatingContext.cs" />
-    <Compile Include="Server\OldFormatServerJobDescriptor.cs" />
+    <Compile Include="Server\JobAsClassPerformStrategy.cs" />
     <Compile Include="Server\PerformContext.cs" />
     <Compile Include="Filters\Server\ServerExceptionContext.cs" />
     <Compile Include="Filters\Server\PerformedContext.cs" />
@@ -124,7 +123,7 @@
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="Server\JobFetcher.cs" />
-    <Compile Include="Server\ServerJobDescriptorBase.cs" />
+    <Compile Include="Server\IJobPerformStrategy.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="Server\PrefetchJobFetcher.cs" />
@@ -146,7 +145,7 @@
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />
-    <Compile Include="Server\ServerJobDescriptor.cs" />
+    <Compile Include="Server\JobAsMethodPerformStrategy.cs" />
     <Compile Include="Server\JobPerformer.cs" />
     <Compile Include="Client\JobClient.cs" />
     <Compile Include="Server\Worker.cs" />

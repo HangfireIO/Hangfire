@@ -54,7 +54,7 @@ namespace HangFire.Client
 
         public void CreateJob(CreateContext context)
         {
-            var filterInfo = GetFilters(context.JobDescriptor.Method);
+            var filterInfo = GetFilters(context.JobDescriptor.JobMethod);
 
             try
             {
