@@ -20,6 +20,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using HangFire.Client;
+using HangFire.Common;
+using HangFire.Common.States;
 using HangFire.States;
 
 namespace HangFire

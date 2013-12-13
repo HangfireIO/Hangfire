@@ -16,7 +16,8 @@
 
 using System;
 using System.Collections.Generic;
-using HangFire.Client;
+using HangFire.Common;
+using HangFire.Common.States;
 
 namespace HangFire.States
 {

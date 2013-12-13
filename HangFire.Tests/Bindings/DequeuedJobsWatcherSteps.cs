@@ -1,5 +1,7 @@
 ﻿using System;
+using HangFire.Common;
 using HangFire.Server;
+using HangFire.Server.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 

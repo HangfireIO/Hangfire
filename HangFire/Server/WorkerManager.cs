@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using HangFire.Server.Fetching;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 

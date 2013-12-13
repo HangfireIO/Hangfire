@@ -15,7 +15,8 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using HangFire.States;
+using HangFire.Common;
+using HangFire.Common.States;
 
 namespace HangFire.Client
 {

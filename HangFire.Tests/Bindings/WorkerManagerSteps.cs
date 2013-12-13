@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using HangFire.Common;
 using HangFire.Server;
+using HangFire.Server.Fetching;
+using HangFire.Server.Performing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 

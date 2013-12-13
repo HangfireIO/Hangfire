@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using HangFire.Common.States;
 using HangFire.Server;
-using HangFire.States;
 
 namespace HangFire
 {

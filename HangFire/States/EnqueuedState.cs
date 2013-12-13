@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using HangFire.Client;
 
-namespace HangFire.States
+namespace HangFire.Common.States
 {
     public class EnqueuedState : JobState
     {

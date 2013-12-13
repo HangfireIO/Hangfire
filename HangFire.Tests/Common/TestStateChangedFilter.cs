@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Common.States;
 using HangFire.Filters;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

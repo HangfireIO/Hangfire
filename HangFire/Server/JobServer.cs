@@ -18,6 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using HangFire.Common;
+using HangFire.Server.Components;
+using HangFire.Server.Fetching;
+using HangFire.Server.Performing;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 

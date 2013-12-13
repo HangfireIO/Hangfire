@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using HangFire.Client;
+using HangFire.Common.States;
 using HangFire.States;
 using ServiceStack.Redis;
 

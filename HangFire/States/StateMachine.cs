@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HangFire.Client;
-using HangFire.Filters;
+using HangFire.Common;
+using HangFire.Common.Filters;
+using HangFire.Common.States;
 using ServiceStack.Redis;
 
 namespace HangFire.States

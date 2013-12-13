@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Client.Filters;
 using HangFire.Filters;
+using HangFire.Server;
+using HangFire.Server.Filters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HangFire.Tests

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using HangFire.Client;
+using HangFire.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 

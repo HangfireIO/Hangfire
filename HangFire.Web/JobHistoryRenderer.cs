@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
+using HangFire.Common;
+using HangFire.Common.States;
 using HangFire.States;
 
 namespace HangFire.Web
