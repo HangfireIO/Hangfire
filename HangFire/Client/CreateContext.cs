@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using ServiceStack.Redis;
 
@@ -31,7 +32,9 @@ namespace HangFire.Client
             Items = context.Items;
         }
 
-        internal CreateContext(IRedisClient redis, ClientJobDescriptor jobDescriptor)
+        internal CreateContext(
+            IRedisClient redis, 
+            ClientJobDescriptorBase jobDescriptor)
         {
             Redis = redis;
             JobDescriptor = jobDescriptor;
@@ -54,6 +57,6 @@ namespace HangFire.Client
         /// Gets the client job descriptor that is associated with the
         /// current <see cref="CreateContext"/> object.
         /// </summary>
-        public ClientJobDescriptor JobDescriptor { get; private set; }
+        public ClientJobDescriptorBase JobDescriptor { get; private set; }
     }
 }

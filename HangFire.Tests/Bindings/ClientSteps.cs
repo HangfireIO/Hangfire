@@ -22,6 +22,82 @@ namespace HangFire.Tests
         {
         }
 
+        [When(@"I call the `(.+)`")]
+        public void WhenICallThe(string code)
+        {
+            try
+            {
+                if (code.Equals("Perform.Async<TestJob>()"))
+                {
+                    _jobId = Perform.Async<TestJob>();
+                }
+                else if (code.Equals("Perform.Async<TestJob>(new { ArticleId = 3, Author = \"odinserj\" })"))
+                {
+                    _jobId = Perform.Async<TestJob>(new { ArticleId = 3, Author = "odinserj" });
+                }
+                else if (code.Equals("Perform.Async(typeof(TestJob))"))
+                {
+                    _jobId = Perform.Async(typeof (TestJob));
+                }
+                else if (code.Equals("Perform.Async(null)"))
+                {
+                    _jobId = Perform.Async((Type)null);
+                }
+                else if (code.Equals("Perform.Async(typeof(TestJob), new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.Async(typeof (TestJob), new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.Async(null, new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.Async(null, new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.In<TestJob>(TimeSpan.FromDays(1))"))
+                {
+                    _jobId = Perform.In<TestJob>(TimeSpan.FromDays(1));
+                }
+                else if (code.Equals("Perform.In<TestJob>(TimeSpan.FromDays(1), new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.In<TestJob>(TimeSpan.FromDays(1), new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.In(TimeSpan.FromDays(1), typeof(TestJob))"))
+                {
+                    _jobId = Perform.In(TimeSpan.FromDays(1), typeof (TestJob));
+                }
+                else if (code.Equals("Perform.In(TimeSpan.FromDays(1), typeof(TestJob), new { ArticleId = 3 })"))
+                {
+                    _jobId = Perform.In(TimeSpan.FromDays(1), typeof (TestJob), new { ArticleId = 3 });
+                }
+                else if (code.Equals("Perform.Async<CriticalQueueJob>()"))
+                {
+                    _jobId = Perform.Async<CriticalQueueJob>();
+                }
+                else if (code.Equals("Perform.Async<InvalidQueueJob>()"))
+                {
+                    _jobId = Perform.Async<InvalidQueueJob>();
+                }
+                else if (code.Equals("Perform.Async<EmptyQueueJob>()"))
+                {
+                    _jobId = Perform.Async<EmptyQueueJob>();
+                }
+                else if (code.Equals("Perform.Async<TestJob>(new { Author = new CustomType() })"))
+                {
+                    _jobId = Perform.Async<TestJob>(new { Author = new CustomType() });
+                }
+                else
+                {
+                    ScenarioContext.Current.Pending();
+                }
+            }
+            catch (PendingStepException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _exception = ex;
+            }
+        }
+
         [Then(@"the argumentless '(\w+)' should be created")]
         public void ThenTheArgumentlessJobShouldBeCreated(string type)
         {

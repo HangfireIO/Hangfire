@@ -8,6 +8,14 @@ namespace HangFire.Client
 {
     public class JobMethod
     {
+        // For compatibility with the Old Client API
+        // TODO: remove this in version 1.0
+        public JobMethod(Type type)
+        {
+            Type = type;
+            OldFormat = true;
+        }
+
         public JobMethod(Type type, MethodInfo method)
         {
             if (type == null) throw new ArgumentNullException("type");
@@ -26,6 +34,16 @@ namespace HangFire.Client
 
         internal Dictionary<string, string> Serialize()
         {
+            // For compatibility with the Old Client API
+            // TODO: remove this in version 1.0
+            if (OldFormat)
+            {
+                return new Dictionary<string, string>
+                {
+                    { "Type", Type.AssemblyQualifiedName },
+                };
+            }
+
             return new Dictionary<string, string>
             {
                 { "Type", Type.AssemblyQualifiedName },
@@ -73,8 +91,8 @@ namespace HangFire.Client
                 return Enumerable.Empty<JobFilterAttribute>();
             }
 
-            return useCache 
-                ? ReflectedAttributeCache.GetTypeFilterAttributes(Type) 
+            return useCache
+                ? ReflectedAttributeCache.GetTypeFilterAttributes(Type)
                 : GetFilterAttributes(Type);
         }
 
@@ -85,8 +103,8 @@ namespace HangFire.Client
                 return Enumerable.Empty<JobFilterAttribute>();
             }
 
-            return useCache 
-                ? ReflectedAttributeCache.GetMethodFilterAttributes(Method) 
+            return useCache
+                ? ReflectedAttributeCache.GetMethodFilterAttributes(Method)
                 : GetFilterAttributes(Method);
         }
 
