@@ -48,12 +48,7 @@ namespace HangFire.Client
             }
         }
 
-        protected virtual JobFilterInfo GetFilters(JobMethod method)
-        {
-            return new JobFilterInfo(_getFiltersThunk(method));
-        }
-
-        public void CreateJob(CreateContext context)
+        public virtual void CreateJob(CreateContext context)
         {
             var filterInfo = GetFilters(context.JobMethod);
 
@@ -71,6 +66,11 @@ namespace HangFire.Client
                     throw;
                 }
             }
+        }
+
+        protected virtual JobFilterInfo GetFilters(JobMethod method)
+        {
+            return new JobFilterInfo(_getFiltersThunk(method));
         }
 
         private static void CreateWithFilters(
