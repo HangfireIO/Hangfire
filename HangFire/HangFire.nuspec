@@ -11,7 +11,7 @@
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
     <description>$description$</description>
     <copyright>Copyright © 2013 Sergey Odinokov</copyright>
-    <tags>Background Jobs Tasks Workers Threading Redis Queue</tags>
+    <tags>Async Background Jobs Tasks Workers Threading Redis Queue</tags>
 	<dependencies>
 		<dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
 		<dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
