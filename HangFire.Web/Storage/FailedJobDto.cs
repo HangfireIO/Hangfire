@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Common;
 
 namespace HangFire.Web
 {
     internal class FailedJobDto
     {
-        public string Type { get; set; }
-        public string Queue { get; set; }
-        public Dictionary<string, string> Args { get; set; }
+        public JobMethod Method { get; set; }
+        public string[] Arguments { get; set; }
+        public Dictionary<string, string> OldFormatArgs { get; set; }
         public DateTime? FailedAt { get; set; }
         public string ExceptionType { get; set; }
         public string ExceptionMessage { get; set; }

@@ -63,12 +63,12 @@ else
                         <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
                             @job.Value.State</span>
                     </td>
-                    <td>@HtmlHelper.JobType(job.Value.Type)</td>
+                    <td>@HtmlHelper.JobType(job.Value.Method)</td>
                     <td>
                         @if (job.Value.CreatedAt.HasValue)
                         {
                             <span data-moment="@JobHelper.ToStringTimestamp(job.Value.CreatedAt.Value)">
-                                @job.Value.CreatedAt
+                                @job.Value.CreatedAt 
                             </span>
                         }
                     </td>

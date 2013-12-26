@@ -108,7 +108,7 @@ namespace HangFire.Common
         [Obsolete("This property will be removed before 1.0. Use the new version of the Client API.")]
         public bool OldFormat { get; private set; }
 
-        internal Dictionary<string, string> Serialize()
+        public Dictionary<string, string> Serialize()
         {
             if (OldFormat)
             {
@@ -126,7 +126,7 @@ namespace HangFire.Common
             };
         }
 
-        internal static JobMethod Deserialize(Dictionary<string, string> job)
+        public static JobMethod Deserialize(Dictionary<string, string> job)
         {
             if (job == null) throw new ArgumentNullException("job");
 

@@ -21,6 +21,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
+using HangFire.Common;
+using HangFire.Common.States;
 
 namespace HangFire.Web
 {
@@ -34,6 +36,16 @@ namespace HangFire.Web
         public static IHtmlString JobId(string jobId)
         {
             return new HtmlString(jobId.Substring(0, 8));
+        }
+
+        public static string JobType(JobMethod method)
+        {
+            if (method == null)
+            {
+                return "Could not find the target method.";
+            }
+
+            return method.Type.FullName;
         }
 
         public static string JobType(string typeName)
@@ -51,6 +63,11 @@ namespace HangFire.Web
         public static string FormatProperties(IDictionary<string, string> properties)
         {
             return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
+        }
+
+        public static IHtmlString QueueLabel(JobMethod method)
+        {
+            return QueueLabel(method.GetQueue());
         }
 
         public static IHtmlString QueueLabel(string queue)

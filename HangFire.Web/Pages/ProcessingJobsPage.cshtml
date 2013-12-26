@@ -51,7 +51,7 @@ else
                         }
                     </td>
                     <td>
-                        @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
+                        @HtmlHelper.QueueLabel(job.Value.Method)&nbsp;@HtmlHelper.JobType(job.Value.Method)
                     </td>
                     <td>
                         @job.Value.ServerName

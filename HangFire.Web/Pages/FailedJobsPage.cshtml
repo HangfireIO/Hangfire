@@ -61,10 +61,10 @@ else
                             </span>
                         }
                     </td>
-                    <td>@HtmlHelper.QueueLabel(job.Value.Queue)</td>
+                    <td>@HtmlHelper.QueueLabel(job.Value.Method)</td>
                     <td class="@(job.Value.InFailedState ? "expander" : null)">
                         <div>
-                            @HtmlHelper.JobType(job.Value.Type)
+                            @HtmlHelper.JobType(job.Value.Method)
                         </div>
                         @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                         {
@@ -99,25 +99,28 @@ else
                                 {
                                     <pre class="stack-trace">@HtmlHelper.MarkupStackTrace(job.Value.ExceptionDetails)</pre>
                                 }
-
-                                <h4>Job Arguments</h4>
-                                <table class="table table-bordered table-striped table-condensed">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var arg in job.Value.Args)
-                                        {
+                                
+                                @if (job.Value.Method != null && job.Value.Method.OldFormat)
+                                {
+                                    <h4>Job Arguments</h4>
+                                    <table class="table table-bordered table-striped table-condensed">
+                                        <thead>
                                             <tr>
-                                                <td>@arg.Key</td>
-                                                <td><pre class="pre-args">"@arg.Value"</pre></td>
+                                                <th>Name</th>
+                                                <th>Value</th>
                                             </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var arg in job.Value.OldFormatArgs)
+                                            {
+                                                <tr>
+                                                    <td>@arg.Key</td>
+                                                    <td><pre class="pre-args">"@arg.Value"</pre></td>
+                                                </tr>
+                                            }
+                                        </tbody> 
+                                    </table>
+                                }
                             </div>
                         </td>
                     </tr>

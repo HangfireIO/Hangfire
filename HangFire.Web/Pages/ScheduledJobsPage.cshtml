@@ -51,7 +51,7 @@ else
                 </td>
                 <td data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt)">@job.Value.ScheduledAt</td>
                 <td>
-                    @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
+                    @HtmlHelper.QueueLabel(job.Value.Method)&nbsp;@HtmlHelper.JobType(job.Value.Method)
                 </td>
                 <td>
                     @if (job.Value.InScheduledState)

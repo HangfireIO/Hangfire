@@ -28,17 +28,6 @@ namespace HangFire.Web
     {
         private static readonly IRedisClient Redis = RedisFactory.BasicManager.GetClient();
 
-        public static string TryToGetQueue(string jobType)
-        {
-            var type = Type.GetType(jobType);
-            if (type == null)
-            {
-                return null;
-            }
-
-            return EnqueuedState.GetQueue(type);
-        }
-
         public static long ScheduledCount()
         {
             lock (Redis)
@@ -91,13 +80,12 @@ namespace HangFire.Web
 
                 return GetJobsWithProperties(Redis,
                     jobIds,
-                    new[] { "Type" },
+                    null,
                     new[] { "StartedAt", "ServerName", "State" },
-                    (job, state) => new ProcessingJobDto
+                    (method, job, state) => new ProcessingJobDto
                     {
                         ServerName = state[1],
-                        Type = job[0],
-                        Queue = TryToGetQueue(job[0]),
+                        Method = method,
                         StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InProcessingState = ProcessingState.Name.Equals(
                             state[2], StringComparison.OrdinalIgnoreCase),
@@ -132,7 +120,7 @@ namespace HangFire.Web
                         pipeline.QueueCommand(
                             x => x.GetValuesFromHash(
                                 String.Format("hangfire:job:{0}", job.Key),
-                                new[] { "Type" }),
+                                new[] { "Type", "Method", "ParameterTypes" }),
                             x => jobs.Add(job.Key, x));
 
                         pipeline.QueueCommand(
@@ -150,8 +138,7 @@ namespace HangFire.Web
                     job => new ScheduleDto
                     {
                         ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
-                        Queue = TryToGetQueue(jobs[job.Key][0]),
-                        Type = jobs[job.Key][0],
+                        Method = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
                         InScheduledState =
                             ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
                     });
@@ -232,13 +219,13 @@ namespace HangFire.Web
                 return GetJobsWithProperties(
                     Redis,
                     failedJobIds,
-                    new[] { "Type", "Args" },
+                    new[] { "Args", "Arguments" },
                     new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State" },
-                    (job, state) => new FailedJobDto
+                    (method, job, state) => new FailedJobDto
                     {
-                        Type = job[0],
-                        Queue = TryToGetQueue(job[0]),
-                        Args = JobHelper.FromJson<Dictionary<string, string>>(job[1]),
+                        Method = method,
+                        OldFormatArgs = JobHelper.FromJson<Dictionary<string, string>>(job[0]),
+                        Arguments = JobHelper.FromJson<string[]>(job[1]),
                         FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         ExceptionType = state[1],
                         ExceptionMessage = state[2],
@@ -260,12 +247,11 @@ namespace HangFire.Web
                 return GetJobsWithProperties(
                     Redis,
                     succeededJobIds,
-                    new[] { "Type" },
+                    null,
                     new[] { "SucceededAt", "State" },
-                    (job, state) => new SucceededJobDto
+                    (method, job, state) => new SucceededJobDto
                     {
-                        Type = job[0],
-                        Queue = TryToGetQueue(job[0]),
+                        Method = method,
                         SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
@@ -306,11 +292,11 @@ namespace HangFire.Web
                     var jobs = GetJobsWithProperties(
                         Redis,
                         firstJobIds,
-                        new[] { "Type" },
+                        null,
                         new[] { "EnqueuedAt", "State" },
-                        (job, state) => new EnqueuedJobDto
+                        (method, job, state) => new EnqueuedJobDto
                         {
-                            Type = job[0],
+                            Method = method,
                             EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                             InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                         });
@@ -341,11 +327,11 @@ namespace HangFire.Web
                 return GetJobsWithProperties(
                     Redis,
                     jobIds,
-                    new[] { "Type" },
+                    null,
                     new[] { "EnqueuedAt", "State" },
-                    (job, state) => new EnqueuedJobDto
+                    (method, job, state) => new EnqueuedJobDto
                     {
-                        Type = job[0],
+                        Method = method,
                         EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
@@ -364,15 +350,15 @@ namespace HangFire.Web
                 return GetJobsWithProperties(
                     Redis,
                     jobIds,
-                    new[] { "Type", "State", "CreatedAt", "Fetched", "Checked" },
+                    new[] { "State", "CreatedAt", "Fetched", "Checked" },
                     null,
-                    (job, state) => new DequeuedJobDto
+                    (method, job, state) => new DequeuedJobDto
                     {
-                        Type = job[0],
-                        State = job[1],
-                        CreatedAt = JobHelper.FromNullableStringTimestamp(job[2]),
-                        FetchedAt = JobHelper.FromNullableStringTimestamp(job[3]),
-                        CheckedAt = JobHelper.FromNullableStringTimestamp(job[4])
+                        Method = method,
+                        State = job[0],
+                        CreatedAt = JobHelper.FromNullableStringTimestamp(job[1]),
+                        FetchedAt = JobHelper.FromNullableStringTimestamp(job[2]),
+                        CheckedAt = JobHelper.FromNullableStringTimestamp(job[3])
                     });
             }
         }
@@ -424,7 +410,7 @@ namespace HangFire.Web
                 var job = Redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
                 if (job.Count == 0) return null;
 
-                var hiddenProperties = new[] { "Type", "Args", "State" };
+                var hiddenProperties = new[] { "Type", "Method", "ParameterTypes", "Arguments", "Args", "State" };
 
                 var historyList = Redis.GetAllItemsFromList(
                     String.Format("hangfire:job:{0}:history", jobId));
@@ -435,8 +421,9 @@ namespace HangFire.Web
 
                 return new JobDetailsDto
                 {
-                    Type = job["Type"],
-                    Arguments = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]),
+                    Method = TryToGetMethod(job["Type"], job["Method"], job["ParameterTypes"]),
+                    Arguments = job.ContainsKey("Arguments") ? JobHelper.FromJson<string[]>(job["Arguments"]) : null,
+                    OldFormatArguments = job.ContainsKey("Args") ? JobHelper.FromJson<Dictionary<string, string>>(job["Args"]) : null,
                     State = job.ContainsKey("State") ? job["State"] : null,
                     Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
                     History = history
@@ -510,12 +497,14 @@ namespace HangFire.Web
             IList<string> jobIds,
             string[] properties,
             string[] stateProperties,
-            Func<List<string>, List<string>, T> selector)
+            Func<JobMethod, List<string>, List<string>, T> selector)
         {
             if (jobIds.Count == 0) return new List<KeyValuePair<string, T>>();
 
             var jobs = new Dictionary<string, List<string>>(jobIds.Count);
             var states = new Dictionary<string, List<string>>(jobIds.Count);
+
+            properties = properties ?? new string[0];
 
             using (var pipeline = redis.CreatePipeline())
             {
@@ -524,7 +513,9 @@ namespace HangFire.Web
                     var id = jobId;
 
                     pipeline.QueueCommand(
-                        x => x.GetValuesFromHash(String.Format("hangfire:job:{0}", id), properties),
+                        x => x.GetValuesFromHash(
+                            String.Format("hangfire:job:{0}", id), 
+                            properties.Union(new [] { "Type", "Method", "ParameterTypes" }).ToArray()),
                         x => { if (!jobs.ContainsKey(id)) jobs.Add(id, x); });
 
                     if (stateProperties != null)
@@ -543,11 +534,17 @@ namespace HangFire.Web
                 {
                     JobId = x,
                     Job = jobs[x],
+                    Method = TryToGetMethod(
+                        jobs[x][properties.Length],
+                        jobs[x][properties.Length + 1],
+                        jobs[x][properties.Length + 2]),
                     State = states.ContainsKey(x) ? states[x] : null
                 })
                 .Select(x => new KeyValuePair<string, T>(
                     x.JobId,
-                    x.Job.TrueForAll(y => y == null) ? default(T) : selector(x.Job, x.State)))
+                    x.Job.TrueForAll(y => y == null) 
+                        ? default(T) 
+                        : selector(x.Method, x.Job, x.State)))
                 .ToList();
         }
 
@@ -605,6 +602,32 @@ namespace HangFire.Web
                 }
 
                 return stats;
+            }
+        }
+
+        private static JobMethod TryToGetMethod(
+            string type, string method, string parameterTypes)
+        {
+            try
+            {
+                var dictionary = new Dictionary<string, string>();
+                dictionary.Add("Type", type);
+
+                if (method != null)
+                {
+                    dictionary.Add("Method", method);
+                }
+
+                if (parameterTypes != null)
+                {
+                    dictionary.Add("ParameterTypes", parameterTypes);
+                }
+
+                return JobMethod.Deserialize(dictionary);
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
     }

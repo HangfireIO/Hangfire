@@ -85,4 +85,13 @@ namespace HangFire.Common.States
             }
         }
     }
+
+    public static class EnqueuedStateExtensions
+    {
+        public static string GetQueue(this JobMethod method)
+        {
+            if (method == null) return null;
+            return EnqueuedState.GetQueue(method.Type);
+        }
+    }
 }

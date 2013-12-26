@@ -19,11 +19,11 @@ else
         <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.State]) : null)">
             @job.State</span>
         <small>
-            @HtmlHelper.JobType(job.Type)
+            @HtmlHelper.JobType(job.Method)
         </small>
     </h3>
     
-    if (job.Arguments.Count > 0)
+    if (job.OldFormatArguments != null && job.OldFormatArguments.Count > 0)
     {
     <table class="table table-condensed table-bordered table-striped">
         <thead>
@@ -33,7 +33,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var arg in job.Arguments)
+            @foreach (var arg in job.OldFormatArguments)
             {
                 <tr>
                     <td>@arg.Key</td>

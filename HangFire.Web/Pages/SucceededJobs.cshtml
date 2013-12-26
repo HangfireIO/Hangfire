@@ -58,8 +58,8 @@ else
                     }
                     else
                     {
-                        <td>
-                            @HtmlHelper.QueueLabel(job.Value.Queue)&nbsp;@HtmlHelper.JobType(job.Value.Type)
+                        <td> 
+                            @HtmlHelper.QueueLabel(job.Value.Method)&nbsp;@HtmlHelper.JobType(job.Value.Method)
                         </td>
                         <td>
                             @if (job.Value.SucceededAt.HasValue)
