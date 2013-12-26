@@ -28,7 +28,7 @@ namespace HangFire
         {
             Filters = new GlobalJobFilterCollection();
             Filters.Add(new PreserveCultureAttribute());
-            Filters.Add(new RetryAttribute { Attempts = 3 });
+            Filters.Add(new RetryAttribute());
         }
 
         /// <summary>
