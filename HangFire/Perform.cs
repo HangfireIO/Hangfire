@@ -15,6 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using HangFire.Client;
 using HangFire.Common.States;
@@ -105,7 +106,7 @@ namespace HangFire
                 var enqueuedState = new EnqueuedState("Enqueued by the Сlient");
                 var uniqueId = GenerateId();
                 
-                client.CreateJob(uniqueId, type, enqueuedState, args);
+                client.CreateJob(uniqueId, type, enqueuedState, PropertiesToDictionary(args));
                 return uniqueId;
             }
         }
@@ -184,7 +185,7 @@ namespace HangFire
                 var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(delay));
                 var uniqueId = GenerateId();
 
-                client.CreateJob(uniqueId, type, scheduledState, args);
+                client.CreateJob(uniqueId, type, scheduledState, PropertiesToDictionary(args));
                 return uniqueId;
             }
         }
@@ -196,6 +197,42 @@ namespace HangFire
         private static string GenerateId()
         {
             return Guid.NewGuid().ToString();
+        }
+
+        private static IDictionary<string, string> PropertiesToDictionary(object obj)
+        {
+            var result = new Dictionary<string, string>();
+            if (obj == null) return result;
+
+            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
+            {
+                var propertyValue = descriptor.GetValue(obj);
+                string value = null;
+
+                if (propertyValue != null)
+                {
+                    var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
+
+                    try
+                    {
+                        value = converter.ConvertToInvariantString(propertyValue);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            String.Format(
+                                "Could not convert property '{0}' of type '{1}' to a string using the '{2}'. See the inner exception for details.",
+                                descriptor.Name,
+                                descriptor.PropertyType,
+                                converter.GetType()),
+                            ex);
+                    }
+                }
+
+                result.Add(descriptor.Name, value);
+            }
+
+            return result;
         }
     }
 }

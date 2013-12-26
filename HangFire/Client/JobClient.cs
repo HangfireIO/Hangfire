@@ -25,8 +25,9 @@ using ServiceStack.Redis;
 namespace HangFire.Client
 {
     /// <summary>
-    /// Provides a set of methods to create a job in the storage
-    /// and apply its initial state.
+    /// Provides low-level Client API. Creates jobs based on a 
+    /// given <see cref="JobMethod"/> data in a given <see cref="JobState"/>
+    /// and puts them into the storage in an atomic way.
     /// </summary>
     internal class JobClient : IJobClient
     {
@@ -56,8 +57,28 @@ namespace HangFire.Client
             _jobCreator = jobCreator;
         }
 
+        /// <summary>
+        /// Creates a job with a given <paramref name="method"/>, <paramref name="arguments"/>
+        /// and a <paramref name="state"/>, runs registered client filters and 
+        /// puts it into the storage.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// Each argument should be serialized into a string using the 
+        /// <see cref="TypeConverter.ConvertToInvariantString(object)"/> method of
+        /// a corresponding <see cref="TypeConverter"/> instance.
+        /// </remarks>
+        /// 
+        /// <param name="method">Method that will be called during the performance of the job.</param>
+        /// <param name="arguments">Serialized arguments that will be passed to a <paramref name="method"/>.</param>
+        /// <param name="state">The initial state of the job.</param>
+        /// <returns>The unique identifier of the created job.</returns>
         public string CreateJob(JobMethod method, string[] arguments, JobState state)
         {
+            if (method == null) throw new ArgumentNullException("method");
+            if (arguments == null) throw new ArgumentNullException("arguments");
+            if (state == null) throw new ArgumentNullException("state");
+
             var parameters = method.Method.GetParameters();
 
             ValidateMethodParameters(parameters);
@@ -72,37 +93,6 @@ namespace HangFire.Client
             _jobCreator.CreateJob(context);
 
             return id;
-        }
-
-        /// <summary>
-        /// Creates a job of the specified <paramref name="type"/> with the
-        /// given unique identifier and arguments provided in a anonymous object
-        /// in the <paramref name="args"/> parameter. After creating the job, the
-        /// specified <paramref name="state"/> will be applied to it.
-        /// </summary>
-        /// 
-        /// <remarks>
-        /// Job Arguments
-        /// 
-        /// Specified anonymous object in the <paramref name="args"/> parameter will
-        /// be converted into an instance of the <see cref="Dictionary{String, String}"/>
-        /// class.
-        /// Each anynymous property will act as a key, and each property value will act
-        /// as a key value. However, the values will be converted from its actual
-        /// type to a <see cref="string"/> type using the corresponding instance of the
-        /// <see cref="TypeConverter"/> class. If the actual type has custom 
-        /// converter defined and it throws an exception, then the 
-        /// <see cref="InvalidOperationException"/> will be re-thrown.
-        /// </remarks>
-        /// 
-        /// <param name="id">The unique identifier of the new job.</param>
-        /// <param name="type">The type of the job.</param>
-        /// <param name="state">The state, which will be applied when the job created.</param>
-        /// <param name="args">Arguments of the job as an anonymous object.</param>
-        public void CreateJob(
-            string id, Type type, JobState state, object args)
-        {
-            CreateJob(id, type, state, PropertiesToDictionary(args));
         }
 
         /// <summary>
@@ -132,6 +122,9 @@ namespace HangFire.Client
         /// <param name="type">The type of the job.</param>
         /// <param name="state">The state, which will be applied when the job created.</param>
         /// <param name="args">Arguments of the job.</param>
+        /// 
+        /// TODO: Remove it before 1.0
+        [Obsolete("Old Client API is obsolete and will be removed before version 1.0.")]
         public void CreateJob(
             string id, Type type, JobState state, IDictionary<string, string> args)
         {
@@ -195,42 +188,6 @@ namespace HangFire.Client
                         "Parameters, passed by reference, are not supported: there is no guarantee that specified method will be invoked inside the same process.");
                 }
             }
-        }
-
-         private static IDictionary<string, string> PropertiesToDictionary(object obj)
-        {
-            var result = new Dictionary<string, string>();
-            if (obj == null) return result;
-
-            foreach (PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
-            {
-                var propertyValue = descriptor.GetValue(obj);
-                string value = null;
-
-                if (propertyValue != null)
-                {
-                    var converter = TypeDescriptor.GetConverter(propertyValue.GetType());
-
-                    try
-                    {
-                        value = converter.ConvertToInvariantString(propertyValue);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new InvalidOperationException(
-                            String.Format(
-                                "Could not convert property '{0}' of type '{1}' to a string using the '{2}'. See the inner exception for details.",
-                                descriptor.Name,
-                                descriptor.PropertyType,
-                                converter.GetType()),
-                            ex);
-                    }
-                }
-
-                result.Add(descriptor.Name, value);
-            }
-
-            return result;
         }
     }
 }

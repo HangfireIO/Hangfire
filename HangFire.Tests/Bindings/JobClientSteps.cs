@@ -144,7 +144,7 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(null, typeof(TestJob), new Mock<JobState>("1").Object, new {});
+                _client.CreateJob(null, typeof(TestJob), new Mock<JobState>("1").Object, new Dictionary<string, string>());
             }
             catch (Exception ex)
             {
@@ -157,7 +157,7 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(JobSteps.DefaultJobId, null, new Mock<JobState>("1").Object, new {});
+                _client.CreateJob(JobSteps.DefaultJobId, null, new Mock<JobState>("1").Object, new Dictionary<string, string>());
             }
             catch (Exception ex)
             {
@@ -170,7 +170,7 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), null, new {});
+                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), null, new Dictionary<string, string>());
             }
             catch (Exception ex)
             {
@@ -183,7 +183,7 @@ namespace HangFire.Tests
         {
             try
             {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(JobClientSteps), new Mock<JobState>("1").Object, new {});
+                _client.CreateJob(JobSteps.DefaultJobId, typeof(JobClientSteps), new Mock<JobState>("1").Object, new Dictionary<string, string>());
             }
             catch (Exception ex)
             {
