@@ -1,6 +1,7 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 
 @using Common
+@using Common.States
 @using Pages
 @inherits RazorPage
 @{
@@ -58,8 +59,11 @@ else
                     }
                     else
                     {
-                        <td> 
-                            @HtmlHelper.QueueLabel(job.Value.Method)&nbsp;@HtmlHelper.JobType(job.Value.Method)
+                        <td>
+                            @HtmlHelper.QueueLabel(job.Value.Method.GetQueue())
+                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Method)">
+                                @HtmlHelper.DisplayMethod(job.Value.Method)    
+                            </span>
                         </td>
                         <td>
                             @if (job.Value.SucceededAt.HasValue)

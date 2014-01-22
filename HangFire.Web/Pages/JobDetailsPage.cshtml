@@ -9,13 +9,14 @@
 @{
     var job = JobStorage.JobDetails(JobId.ToString());
 
-    var title = "Job";
+    string title = null;
 
     if (job != null && job.Method != null)
     {
-        var separator = job.Method.Method.IsStatic ? "." : "::";
-        title = String.Format("{0}{1}{2}", job.Method.Type.Name, separator, job.Method.Method.Name);
+        title = HtmlHelper.DisplayMethod(job.Method);
     }
+
+    title = title ?? "Job";
 
     Layout = new LayoutPage { Title = title, Subtitle = JobId.ToString() };
 

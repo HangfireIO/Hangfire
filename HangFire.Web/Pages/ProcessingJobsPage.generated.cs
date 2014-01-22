@@ -179,21 +179,32 @@ WriteLiteral("                    </td>\r\n                    <td>\r\n         
             
             #line default
             #line hidden
-WriteLiteral("&nbsp;");
+WriteLiteral("\r\n                        <span title=\"");
 
 
             
-            #line 54 "..\..\Pages\ProcessingJobsPage.cshtml"
-                                                                 Write(HtmlHelper.JobType(job.Value.Method));
+            #line 55 "..\..\Pages\ProcessingJobsPage.cshtml"
+                                Write(HtmlHelper.DisplayMethodHint(job.Value.Method));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </td>\r\n                    <td>\r\n                        ");
+WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 57 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 56 "..\..\Pages\ProcessingJobsPage.cshtml"
+                       Write(HtmlHelper.DisplayMethod(job.Value.Method));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </span>\r\n                    </td>\r\n                   " +
+" <td>\r\n                        ");
+
+
+            
+            #line 60 "..\..\Pages\ProcessingJobsPage.cshtml"
                    Write(job.Value.ServerName);
 
             
@@ -203,7 +214,7 @@ WriteLiteral("\r\n                    </td>\r\n                    <td>\r\n");
 
 
             
-            #line 60 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 63 "..\..\Pages\ProcessingJobsPage.cshtml"
                          if (job.Value.StartedAt.HasValue)
                         {
 
@@ -214,7 +225,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 62 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 65 "..\..\Pages\ProcessingJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.StartedAt.Value));
 
             
@@ -224,7 +235,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 63 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 66 "..\..\Pages\ProcessingJobsPage.cshtml"
                            Write(job.Value.StartedAt);
 
             
@@ -234,7 +245,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 65 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 68 "..\..\Pages\ProcessingJobsPage.cshtml"
                         }
 
             
@@ -244,7 +255,7 @@ WriteLiteral("                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 68 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 71 "..\..\Pages\ProcessingJobsPage.cshtml"
             }
 
             
@@ -254,21 +265,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 71 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 74 "..\..\Pages\ProcessingJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 72 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 75 "..\..\Pages\ProcessingJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 72 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 75 "..\..\Pages\ProcessingJobsPage.cshtml"
                                         
 }
 

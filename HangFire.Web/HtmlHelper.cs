@@ -31,6 +31,22 @@ namespace HangFire.Web
 {
     internal static class HtmlHelper
     {
+        public static string DisplayMethod(JobMethod method)
+        {
+            if (method == null)
+            {
+                return null;
+            }
+
+            var separator = method.Method.IsStatic ? "." : "::";
+            return String.Format("{0}{1}{2}", method.Type.Name, separator, method.Method.Name);
+        }
+
+        public static string DisplayMethodHint(JobMethod method)
+        {
+            return method == null ? null : method.Type.FullName;
+        }
+
         public static IHtmlString Raw(string value)
         {
             return new HtmlString(value);
@@ -62,8 +78,6 @@ namespace HangFire.Web
 
             return type.FullName;
         }
-
-
 
         public static string FormatJob(
             JobMethod method, string[] arguments, IDictionary<string, string> oldArguments)

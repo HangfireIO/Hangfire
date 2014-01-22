@@ -121,6 +121,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\SucceededJobs1.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SucceededJobs.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\_Paginator.cs">
       <DependentUpon>_Paginator.cshtml</DependentUpon>
     </Compile>
@@ -157,11 +162,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DashboardPage.cshtml</DependentUpon>
-    </Compile>
-    <Compile Include="Pages\SucceededJobs.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SucceededJobs.cshtml</DependentUpon>
     </Compile>
     <Compile Include="AspNetBackgroundJobServer.cs" />
     <Compile Include="HangFirePageFactory.cs" />
@@ -206,7 +206,7 @@
     </None>
     <None Include="Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>SucceededJobs.generated.cs</LastGenOutput>
+      <LastGenOutput>SucceededJobs1.generated.cs</LastGenOutput>
     </None>
     <None Include="Pages\FailedJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>

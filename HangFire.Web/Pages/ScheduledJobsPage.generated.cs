@@ -198,21 +198,31 @@ WriteLiteral("</td>\r\n                <td>\r\n                    ");
             
             #line default
             #line hidden
-WriteLiteral("&nbsp;");
+WriteLiteral("\r\n                    <span title=\"");
 
 
             
-            #line 54 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                                             Write(HtmlHelper.JobType(job.Value.Method));
+            #line 55 "..\..\Pages\ScheduledJobsPage.cshtml"
+                            Write(HtmlHelper.DisplayMethodHint(job.Value.Method));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                </td>\r\n                <td>\r\n");
+WriteLiteral("\">\r\n                        ");
 
 
             
-            #line 57 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 56 "..\..\Pages\ScheduledJobsPage.cshtml"
+                   Write(HtmlHelper.DisplayMethod(job.Value.Method));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                    </span>\r\n                </td>\r\n                <td>\r\n");
+
+
+            
+            #line 60 "..\..\Pages\ScheduledJobsPage.cshtml"
                      if (job.Value.InScheduledState)
                     {
 
@@ -223,7 +233,7 @@ WriteLiteral("                        <button class=\"btn btn-default btn-sm\" d
 
 
             
-            #line 59 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 62 "..\..\Pages\ScheduledJobsPage.cshtml"
                                                                      Write(Request.LinkTo("/schedule/enqueue/" + job.Key));
 
             
@@ -235,7 +245,7 @@ WriteLiteral("\" data-loading-text=\"Enqueueing...\">\r\n                       
 
 
             
-            #line 63 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 66 "..\..\Pages\ScheduledJobsPage.cshtml"
                     }
 
             
@@ -245,7 +255,7 @@ WriteLiteral("                </td>\r\n            </tr>\r\n");
 
 
             
-            #line 66 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 69 "..\..\Pages\ScheduledJobsPage.cshtml"
         }
 
             
@@ -255,21 +265,21 @@ WriteLiteral("    </table>\r\n");
 
 
             
-            #line 68 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 71 "..\..\Pages\ScheduledJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 69 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 72 "..\..\Pages\ScheduledJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 69 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 72 "..\..\Pages\ScheduledJobsPage.cshtml"
                                         
 }
             
