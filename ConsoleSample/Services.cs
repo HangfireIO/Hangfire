@@ -49,5 +49,9 @@ namespace ConsoleSample
             Thread.Sleep(TimeSpan.FromSeconds(5 + time));
             Console.WriteLine("Finished task: " + number);
         }
+
+        public void Args(string name, int authorId, DateTime createdAt)
+        {
+        }
     }
 }

@@ -410,7 +410,7 @@ namespace HangFire.Web
                 var job = Redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
                 if (job.Count == 0) return null;
 
-                var hiddenProperties = new[] { "Type", "Method", "ParameterTypes", "Arguments", "Args", "State" };
+                var hiddenProperties = new[] { "Type", "Method", "ParameterTypes", "Arguments", "Args", "State", "CreatedAt" };
 
                 var historyList = Redis.GetAllItemsFromList(
                     String.Format("hangfire:job:{0}:history", jobId));
@@ -419,12 +419,17 @@ namespace HangFire.Web
                     .Select(JobHelper.FromJson<Dictionary<string, string>>)
                     .ToList();
 
+                // For compatibility
+                if (!job.ContainsKey("Method")) job.Add("Method", null);
+                if (!job.ContainsKey("ParameterTypes")) job.Add("ParameterTypes", null);
+
                 return new JobDetailsDto
                 {
                     Method = TryToGetMethod(job["Type"], job["Method"], job["ParameterTypes"]),
                     Arguments = job.ContainsKey("Arguments") ? JobHelper.FromJson<string[]>(job["Arguments"]) : null,
                     OldFormatArguments = job.ContainsKey("Args") ? JobHelper.FromJson<Dictionary<string, string>>(job["Args"]) : null,
                     State = job.ContainsKey("State") ? job["State"] : null,
+                    CreatedAt = job.ContainsKey("CreatedAt") ? JobHelper.FromStringTimestamp(job["CreatedAt"]) : (DateTime?)null,
                     Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
                     History = history
                 };

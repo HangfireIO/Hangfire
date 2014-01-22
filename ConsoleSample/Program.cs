@@ -77,6 +77,24 @@ namespace ConsoleSample
                         }
                     }
 
+                    if (command.StartsWith("old", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var workCount = int.Parse(command.Substring(4));
+                        for (var i = 0; i < workCount; i++)
+                        {
+                            Perform.Async<OldJob>(new { Hello = "world", Empty = (string)null, Number = 12.44 });
+                        }
+                    }
+
+                    if (command.StartsWith("args", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var workCount = int.Parse(command.Substring(5));
+                        for (var i = 0; i < workCount; i++)
+                        {
+                            BackgroundJob.Enqueue<Services>(x => x.Args(Guid.NewGuid().ToString(), 14442, DateTime.UtcNow));
+                        }
+                    }
+
                     if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var seconds = int.Parse(command.Substring(2));

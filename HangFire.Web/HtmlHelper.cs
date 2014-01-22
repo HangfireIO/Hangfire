@@ -16,13 +16,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using HangFire.Common;
 using HangFire.Common.States;
+using ServiceStack.Text;
 
 namespace HangFire.Web
 {
@@ -58,6 +61,108 @@ namespace HangFire.Web
             }
 
             return type.FullName;
+        }
+
+
+
+        public static string FormatJob(
+            JobMethod method, string[] arguments, IDictionary<string, string> oldArguments)
+        {
+            var builder = new StringBuilder();
+            var parameters = method.Method.GetParameters();
+
+            if (parameters.Length > 0)
+            {
+                builder.AppendLine("/* Arrange */");
+            }
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                var argument = arguments[i]; // TODO: check bounds
+
+                builder.Append("var ");
+                builder.Append(parameter.Name);
+                builder.Append(" = ");
+
+                if (!parameter.ParameterType.IsNumericType() && parameter.ParameterType != typeof(string))
+                {
+                    builder.AppendFormat("({0})", parameter.ParameterType.Name);
+                }
+
+                if (argument != null && !parameter.ParameterType.IsNumericType())
+                {
+                    builder.Append("\"");
+                }
+
+                if (argument == null)
+                {
+                    builder.Append("null");
+                }
+                else
+                {
+                    builder.Append(argument);
+                }
+
+                if (argument != null && !parameter.ParameterType.IsNumericType())
+                {
+                    builder.Append("\"");
+                }
+
+                builder.AppendLine(";");
+            }
+
+            if (parameters.Length > 0)
+            {
+                builder.AppendLine();
+                builder.AppendLine("/* Act */");
+            }
+            
+            if (method.Method.IsStatic)
+            {
+                builder.AppendFormat(
+                    "{0}.{1}.{2}({3});",
+                    method.Type.Namespace,
+                    method.Type.Name,
+                    method.Method.Name,
+                    String.Join(", ", parameters.Select(x => x.Name)));
+            }
+            else
+            {
+                var serviceName = Char.ToLower(method.Type.Name[0]) + method.Type.Name.Substring(1);
+
+                builder.AppendFormat(
+                    "var {0} = new {1}(/* ... */)",
+                    serviceName,
+                    method.Type.Name);
+
+                if (!method.OldFormat || oldArguments.Count == 0)
+                {
+                    builder.AppendLine(";");
+                }
+                else
+                {
+                    builder.AppendLine();
+                    builder.AppendLine("{");
+
+                    foreach (var argument in oldArguments)
+                    {
+                        builder.AppendFormat("    {0} = \"{1}\",", argument.Key, argument.Value);
+                        builder.AppendLine();
+                    }
+
+                    builder.AppendLine("}");
+                    builder.AppendLine();
+                }
+
+                builder.AppendFormat(
+                    "{0}.{1}({2});",
+                    serviceName,
+                    method.Method.Name,
+                    String.Join(", ", parameters.Select(x => x.Name)));
+            }
+
+            return builder.ToString();
         }
 
         public static string FormatProperties(IDictionary<string, string> properties)
