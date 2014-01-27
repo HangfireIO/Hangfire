@@ -36,7 +36,7 @@ namespace HangFire.Common.States
 
         public override IDictionary<string, string> GetProperties(JobMethod data)
         {
-            var queue = GetQueue(data.Type);
+            var queue = GetQueue(data);
 
             return new Dictionary<string, string>
                 {
@@ -47,21 +47,29 @@ namespace HangFire.Common.States
 
         public override void Apply(StateApplyingContext context)
         {
-            var queue = GetQueue(context.JobMethod.Type);
+            var queue = GetQueue(context.JobMethod);
 
             context.Transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queue));
             context.Transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format("hangfire:queue:{0}", queue), context.JobId));
         }
 
-        public static string GetQueue(Type jobType)
+        public static string GetQueue(JobMethod method)
         {
-            if (jobType == null) throw new ArgumentNullException("jobType");
+            if (method == null) throw new ArgumentNullException("method");
 
-            var attribute = jobType
+            var attribute = method.Method
                 .GetCustomAttributes(true)
                 .OfType<QueueAttribute>()
                 .FirstOrDefault();
+
+            if (attribute == null)
+            {
+                attribute = method.Type
+                    .GetCustomAttributes(true)
+                    .OfType<QueueAttribute>()
+                    .FirstOrDefault();
+            }
 
             var queueName = attribute != null
                 ? !String.IsNullOrEmpty(attribute.Name) ? attribute.Name : DefaultQueue
@@ -91,7 +99,7 @@ namespace HangFire.Common.States
         public static string GetQueue(this JobMethod method)
         {
             if (method == null) return null;
-            return EnqueuedState.GetQueue(method.Type);
+            return EnqueuedState.GetQueue(method);
         }
     }
 }
