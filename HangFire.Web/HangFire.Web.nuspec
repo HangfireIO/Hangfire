@@ -6,7 +6,7 @@
     <title>HangFire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io</projectUrl>
+    <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
     <description>
