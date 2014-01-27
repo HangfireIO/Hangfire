@@ -45,18 +45,27 @@ namespace HangFire.Common.Filters
             _cacheAttributeInstances = cacheAttributeInstances;
         }
 
-        protected virtual IEnumerable<JobFilterAttribute> GetJobAttributes(
+        protected virtual IEnumerable<JobFilterAttribute> GetJobTypeAttributes(
             JobMethod method)
         {
             return method.GetTypeFilterAttributes(_cacheAttributeInstances);
         }
 
+        protected virtual IEnumerable<JobFilterAttribute> GetJobMethodAttributes(
+            JobMethod method)
+        {
+            return method.GetMethodFilterAttributes(_cacheAttributeInstances);
+        }
+
         public virtual IEnumerable<JobFilter> GetFilters(JobMethod method)
         {
-            var typeFilters = GetJobAttributes(method)
+            var typeFilters = GetJobTypeAttributes(method)
                 .Select(attr => new JobFilter(attr, JobFilterScope.Type, null));
 
-            return typeFilters.ToList();
+            var methodFilters = GetJobMethodAttributes(method)
+                .Select(attr => new JobFilter(attr, JobFilterScope.Method, null));
+
+            return typeFilters.Union(methodFilters).ToList();
         }
     }
 }
