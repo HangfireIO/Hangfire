@@ -28,41 +28,33 @@
 }
 else
 {
-    var stateColor = JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.State)
-        ? JobHistoryRenderer.ForegroundStateColors[job.State]
-        : null;
-
-    <div class="job-snippet" style="@(stateColor != null ? String.Format("border-color: {0};", stateColor) : null)">
-        <div class="job-snippet-body">
-            <div class="job-snippet-code">
-                @if (job.CreatedAt.HasValue)
-                {
-                    <div class="pull-right job-creation-date" 
-                         data-moment="@JobHelper.ToStringTimestamp(job.CreatedAt.Value)"
-                         title="Created at"></div>
-                }
-                @if (job.Method != null)
-                {
-                    <pre><code>@HtmlHelper.FormatJob(job.Method, job.Arguments, job.OldFormatArguments)</code></pre>
-                }
-            </div>
-
-            @if (job.Properties.Count > 0)
+    <div class="job-snippet">
+        <div class="job-snippet-code">
+            @if (job.CreatedAt.HasValue)
             {
-                <div class="job-snippet-properties">
-                    <dl>
-                        @foreach (var property in job.Properties)
-                        {
-                            <dt>@property.Key</dt>
-                            <dd><pre>@property.Value</pre></dd>
-                        }
-                    </dl>
-                </div>
+                <div class="pull-right job-creation-date"
+                     data-moment="@JobHelper.ToStringTimestamp(job.CreatedAt.Value)"
+                     title="Created at"></div>
             }
+            @if (job.Method != null)
+            {
+                <pre><code>@HtmlHelper.FormatJob(job.Method, job.Arguments, job.OldFormatArguments)</code></pre>
+            }
+            <div class="clearfix"></div>
         </div>
-        <div class="job-snippet-footer">
 
-        </div>
+        @if (job.Properties.Count > 0)
+        {
+            <div class="job-snippet-properties">
+                <dl>
+                    @foreach (var property in job.Properties)
+                    {
+                        <dt>@property.Key</dt>
+                        <dd><pre>@property.Value</pre></dd>
+                    }
+                </dl>
+            </div>
+        }
     </div>
 
     if (job.History.Count > 0)

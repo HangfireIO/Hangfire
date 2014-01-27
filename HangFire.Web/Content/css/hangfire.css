@@ -210,6 +210,20 @@ html, body {
 
 /* Job Snippet styles */
 
+.job-snippet {
+    display: table;
+    width: 100%;
+    border: solid 1px #ccc;
+    -webkit-box-shadow: 0 0 3px #ccc;
+    -ms-box-shadow: 0 0 3px #ccc;
+    box-shadow: 0 0 3px #ccc;
+}
+
+.job-snippet > * {
+    display: table-cell;
+    vertical-align: top;
+}
+
 .job-snippet pre {
     border: none;
     margin: 0;
@@ -219,23 +233,14 @@ html, body {
     border-radius: 0;
 }
 
-.job-snippet .job-creation-date {
-    color: #777;
-}
-
-.job-snippet-body {
-    display: table;
-    width: 100%;
-}
-
-.job-snippet-body > * {
-    display: table-cell;
-    vertical-align: top;
-}
-
 .job-snippet-code {
     vertical-align: top;
-    padding-right: 20px;
+    padding: 16px;
+    background-color: #fcfcfc;
+}
+
+.job-snippet-code .job-creation-date {
+    color: #777;
 }
 
 .job-snippet-properties {
@@ -269,11 +274,6 @@ html, body {
     -ms-box-shadow: none;
     box-shadow: none;
     padding: 2px 4px;
-}
-
-.job-snippet-footer {
-    padding: 3px 10px;
-    line-height: 24px;
 }
 
 /* Job History styles */
