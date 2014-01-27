@@ -32,9 +32,10 @@ else
         <div class="job-snippet-code">
             @if (job.CreatedAt.HasValue)
             {
-                <div class="pull-right job-creation-date"
-                     data-moment="@JobHelper.ToStringTimestamp(job.CreatedAt.Value)"
-                     title="Created at"></div>
+                <div class="pull-right job-creation-date">
+                    Created
+                    <span data-moment="@JobHelper.ToStringTimestamp(job.CreatedAt.Value)"></span>
+                </div>
             }
             @if (job.Method != null)
             {
