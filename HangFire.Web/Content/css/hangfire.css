@@ -217,6 +217,8 @@ html, body {
     -webkit-box-shadow: 0 0 3px #ccc;
     -ms-box-shadow: 0 0 3px #ccc;
     box-shadow: 0 0 3px #ccc;
+    -ms-border-radius: 4px;
+    border-radius: 4px;
 }
 
 .job-snippet > * {
@@ -233,10 +235,39 @@ html, body {
     border-radius: 0;
 }
 
+.job-snippet pre code {
+    display: block; 
+    color: black;
+}
+
+.job-snippet pre .comment {
+    color: rgb(0, 128, 0);
+}
+
+.job-snippet pre .keyword {
+    color: rgb(0, 0, 255);
+}
+
+.job-snippet pre .string {
+    color: rgb(163, 21, 21);
+}
+
+.job-snippet pre .type {
+    color: rgb(43, 145, 175);
+}
+
+.job-snippet pre .xmldoc {
+    color: rgb(128, 128, 128);
+}
+
 .job-snippet-code {
     vertical-align: top;
     padding: 16px;
     background-color: #fcfcfc;
+    -ms-border-top-left-radius: 4px;
+    border-top-left-radius: 4px;
+    -ms-border-bottom-left-radius: 4px;
+    border-bottom-left-radius: 4px;
 }
 
 .job-snippet-code .job-creation-date {
@@ -250,6 +281,10 @@ html, body {
     -webkit-box-shadow: -1px 0 2px #ddd;
     -ms-box-shadow: -1px 0 2px #ddd;
     box-shadow: -1px 0 2px #ddd;
+    -ms-border-top-right-radius: 4px;
+    border-top-right-radius: 4px;
+    -ms-border-bottom-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 
 .job-snippet-properties dl {
@@ -285,11 +320,24 @@ html, body {
 .job-history-heading {
     padding: 5px 10px;
     color: #666;
+    -ms-border-top-left-radius: 4px;
+    border-top-left-radius: 4px;
+    -ms-border-top-right-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.job-history-current .job-history-heading {
+    -ms-border-radius: 4px;
+    border-radius: 4px;
 }
 
 .job-history-body {
     background-color: #f5f5f5;
     padding: 10px;
+    -ms-border-bottom-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+    -ms-border-bottom-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 
 .job-history-title {

@@ -25,7 +25,6 @@ namespace HangFire.Web
             "bootstrap.min.css", 
             "rickshaw.min.css", 
             "hangfire.css",
-            "vs.css",
         };
 
         public StyleSheetHandler() 

@@ -28,7 +28,6 @@ namespace HangFire.Web
             "d3.min.js", 
             "d3.layout.min.js", 
             "rickshaw.min.js", 
-            "highlight.pack.js",
             "hangfire.js",
         };
 

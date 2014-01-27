@@ -171,7 +171,7 @@ WriteLiteral("                <pre><code>");
 
             
             #line 41 "..\..\Pages\JobDetailsPage.cshtml"
-                      Write(HtmlHelper.FormatJob(job.Method, job.Arguments, job.OldFormatArguments));
+                      Write(JobMethodCallRenderer.Render(job.Method, job.Arguments, job.OldFormatArguments));
 
             
             #line default

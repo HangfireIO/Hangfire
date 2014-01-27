@@ -38,7 +38,7 @@ else
             }
             @if (job.Method != null)
             {
-                <pre><code>@HtmlHelper.FormatJob(job.Method, job.Arguments, job.OldFormatArguments)</code></pre>
+                <pre><code>@JobMethodCallRenderer.Render(job.Method, job.Arguments, job.OldFormatArguments)</code></pre>
             }
             <div class="clearfix"></div>
         </div>
