@@ -113,12 +113,6 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Get or sets an instance of the <see cref="HangFire.JobActivator"/> class
-        /// that will be used to instantinate jobs.
-        /// </summary>
-        public JobActivator JobActivator { get; set; }
-
-        /// <summary>
         /// Starts the server and all its workers.
         /// </summary>
         public virtual void Start()
@@ -132,7 +126,7 @@ namespace HangFire
 
             _server = new JobServer(
                 RedisFactory.BasicManager,
-                serverName, WorkerCount, Queues, JobActivator, PollInterval, TimeSpan.FromSeconds(5));
+                serverName, WorkerCount, Queues, PollInterval, TimeSpan.FromSeconds(5));
         }
 
         /// <summary>

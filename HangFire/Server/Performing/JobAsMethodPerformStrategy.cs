@@ -23,20 +23,18 @@ namespace HangFire.Server.Performing
 {
     internal class JobAsMethodPerformStrategy : IJobPerformStrategy
     {
-        private readonly JobActivator _activator;
+        private readonly JobActivator _activator = JobActivator.Current;
+
         private readonly JobMethod _method;
         private readonly string[] _arguments;
 
         public JobAsMethodPerformStrategy(
-            JobActivator activator,
             JobMethod method,
             string[] arguments)
         {
-            if (activator == null) throw new ArgumentNullException("activator");
             if (method == null) throw new ArgumentNullException("method");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
-            _activator = activator;
             _method = method;
             _arguments = arguments;
         }

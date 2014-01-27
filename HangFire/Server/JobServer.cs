@@ -57,7 +57,6 @@ namespace HangFire.Server
             string serverName,
             int workerCount,
             IEnumerable<string> queues,
-            JobActivator jobActivator,
             TimeSpan pollInterval,
             TimeSpan fetchTimeout)
         {
@@ -78,7 +77,6 @@ namespace HangFire.Server
 
             _context = new ServerContext(
                 serverName,
-                jobActivator ?? new JobActivator(),
                 new JobPerformer());
 
             _serverThread = new Thread(RunServer)

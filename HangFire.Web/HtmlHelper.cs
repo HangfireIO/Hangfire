@@ -146,7 +146,7 @@ namespace HangFire.Web
                 var serviceName = Char.ToLower(method.Type.Name[0]) + method.Type.Name.Substring(1);
 
                 builder.AppendFormat(
-                    "var {0} = new {1}(/* ... */)",
+                    "var {0} = JobActivator.Current.Activate<{1}>(/* ... */)",
                     serviceName,
                     method.Type.Name);
 

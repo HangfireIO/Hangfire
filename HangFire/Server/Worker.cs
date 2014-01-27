@@ -208,14 +208,14 @@ namespace HangFire.Server
                         payload.Job["Args"]);
 
                     performStrategy = new JobAsClassPerformStrategy(
-                        _context.Activator, jobMethod, arguments);
+                        jobMethod, arguments);
                 }
                 else
                 {
                     var arguments = JobHelper.FromJson<string[]>(payload.Job["Arguments"]);
 
                     performStrategy = new JobAsMethodPerformStrategy(
-                        _context.Activator, jobMethod, arguments);
+                        jobMethod, arguments);
                 }
 
                 var performContext = new PerformContext(_context, _redis, payload.Id, jobMethod);

@@ -96,10 +96,9 @@ namespace HangFire.Tests
         {
             var context = new ServerContext(
                 ServerSteps.DefaultServerName,
-                new JobActivator(),
                 new JobPerformer(_filters));
 
-            using (var manager = new HangFire.Server.WorkerManager(
+            using (var manager = new WorkerManager(
                 new JobFetcher(RedisFactory.BasicManager, QueueSteps.DefaultQueue),
                 RedisFactory.BasicManager,
                 context,
