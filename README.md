@@ -45,43 +45,25 @@ Usage
 
 HangFire consist of the four parts. The **Client** creates background jobs and places them into the **Storage**. The **Server** fetches jobs from the Storage and processes them. The **Monitor** provides the ability to see what's going on with your background jobs.
 
-To make things work, you need to do the following stuff.
+### 1. Create a job
 
-### 1. Define a job
+Job is a method invocation that will be performed asynchronously on the HangFire Server side. To create a job, you need to choose a method that will be called and define arguments of this method.
 
-Job is a piece of work that will be processed asynchonously. To define it, just create a new class, derive it from the `BackgroundJob` class, override the `Perform` method and provide some properties which will serve as arguments of your job.
+The first and default job creation method is based on job queue. Queue contains jobs that will be performed in the FIFO order. To enqueue a job, call the following method.
 
 ```csharp
-public void LongRunningJob : BackgroundJob
-{
-    public string Name { get; set; }
-
-    public override void Perform()
-    {
-        Console.WriteLine("Hello, {0}!", Name);
-    }
-}
+BackgroundJob.Enqueue(() => Console.WriteLine("Hello, {0}!", "world"));
 ```
 
-To learn more about job classes, see the [Defining Jobs page](https://github.com/odinserj/HangFire/wiki/Defining-jobs) in the documentation.
-
-### 2. Create a job
-
-You have different options about how to run the defined job. The first and default method is based on job queues. Each queue contains jobs that will be performed in the FIFO order. To enqueue a job, call the following method.
+You can also tell HangFire to delay the performance of a job:
 
 ```csharp
-Perform.Async<LongRunningJob>(new { Name = "man" });
-```
-
-You also can tell HangFire to delay the excecution of the job. After the given delay it will be enqueued to its queue and processed by the server.
-
-```csharp
-Perform.In<LongRunningJob>(TimeSpan.FromDays(1), new { Name = "man" });
+BackgroundJob.Schedule(() => Console.WriteLine("Hello, {0}!", "world"), TimeSpan.FromDays(1));
 ```
 
 To learn more about different options of the job creation process, see the [corresponding page](https://github.com/odinserj/HangFire/wiki/Creating-jobs) in the documentation.
 
-### 3. Start the processing
+### 2. Start the processing
 
 If you installed HangFire using the NuGet Package Manager, this step is already completed for you, see the `App_Start\HangFireConfig.cs` class. It contains instructions to run the HangFire Server with default options:
 
@@ -91,6 +73,19 @@ server.Start();
 ```
 
 You can find more information about the [HangFire Server](https://github.com/odinserj/HangFire/wiki/Performing-jobs) in the documentation.
+
+### 3. Relax
+
+HangFire processes each job in a reliable way. Your can stop your application, kill it using task manager, shutdown your computer<sup>1</sup>, enqueue broken jobs. HangFire contains auto-retrying facilities, and you can retry failed job manually using the integrated Monitor.
+
+So, HangFire is an ideal solution for performing background jobs in ASP.NET applications, because IIS Application Pools contain several mechanisms that can stop your application.
+
+* Idle Time-out
+* Recycling, including on configuration changes
+* Rapid-Fail protection
+* Application re-deployment
+
+1) Only processing is reliable. If your storage became broken, HangFire can not do anything. To guarantee the processing of each job, you should guarantee the reliability of your storage.
 
 Questions? Problems? 
 ---------------------
