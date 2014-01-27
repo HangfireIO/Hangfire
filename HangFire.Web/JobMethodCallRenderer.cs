@@ -20,7 +20,6 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using HangFire.Common;
-using HangFire.Server.Fetching;
 using ServiceStack.Text;
 
 namespace HangFire.Web
@@ -31,35 +30,7 @@ namespace HangFire.Web
             JobMethod method, string[] arguments, IDictionary<string, string> oldArguments)
         {
             var builder = new StringBuilder();
-            var parameters = method.Method.GetParameters();
-
-            if (parameters.Length > 0)
-            {
-                builder.AppendLine(WrapComment("/* Arrange */"));
-            }
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-                var argument = arguments[i]; // TODO: check bounds
-
-                builder.Append(WrapKeyword("var"));
-                builder.Append(" ");
-                builder.Append(Encode(parameter.Name));
-                builder.Append(" = ");
-
-                var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                builder.Append(argumentRenderer.Render(argument));
-
-                builder.AppendLine(";");
-            }
-
-            if (parameters.Length > 0)
-            {
-                builder.AppendLine();
-                builder.AppendLine(WrapComment("/* Act */"));
-            }
-
+            
             builder.Append(WrapKeyword("using"));
             builder.Append(" ");
             builder.Append(Encode(method.Type.Namespace));
@@ -67,15 +38,7 @@ namespace HangFire.Web
             builder.AppendLine();
             builder.AppendLine();
 
-            if (method.Method.IsStatic)
-            {
-                builder.AppendFormat(
-                    "{0}.{1}({2});",
-                    WrapType(Encode(method.Type.Name)),
-                    Encode(method.Method.Name),
-                    String.Join(", ", parameters.Select(x => Encode(x.Name))));
-            }
-            else
+            if (!method.Method.IsStatic)
             {
                 var serviceName = Char.ToLower(method.Type.Name[0]) + method.Type.Name.Substring(1);
 
@@ -101,7 +64,7 @@ namespace HangFire.Web
                         var propertyType = propertyInfo != null ? propertyInfo.PropertyType : null;
 
                         var argumentRenderer = ArgumentRenderer.GetRenderer(propertyType);
-                        builder.Append(argumentRenderer.Render(argument.Value));
+                        builder.Append(argumentRenderer.Render(null, argument.Value));
                         builder.Append(";");
 
                         if (propertyInfo == null)
@@ -116,12 +79,69 @@ namespace HangFire.Web
                     builder.AppendLine();
                 }
 
-                builder.AppendFormat(
-                    "{0}.{1}({2});",
-                    Encode(serviceName),
-                    Encode(method.Method.Name),
-                    String.Join(", ", parameters.Select(x => Encode(x.Name))));
+                builder.Append(Encode(serviceName));
             }
+            else
+            {
+                builder.Append(WrapType(Encode(method.Type.Name)));
+            }
+
+            builder.Append(".");
+            builder.Append(Encode(method.Method.Name));
+            builder.Append("(");
+
+            var parameters = method.Method.GetParameters();
+            
+            if (!method.OldFormat)
+            {
+                var renderedArguments = new List<string>(parameters.Length);
+                var renderedArgumentsTotalLength = 0;
+
+                const int splitStringMinLength = 200;
+
+                for (var i = 0; i < parameters.Length; i++)
+                {
+                    var parameter = parameters[i];
+
+                    if (i < arguments.Length)
+                    {
+                        var argument = arguments[i]; // TODO: check bounds
+
+                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+
+                        var renderedArgument = argumentRenderer.Render(parameter.Name, argument);
+                        renderedArguments.Add(renderedArgument);
+                        renderedArgumentsTotalLength += renderedArgument.Length;
+                    }
+                    else
+                    {
+                        renderedArguments.Add(Encode("<NO VALUE>"));
+                    }
+                }
+
+                for (int i = 0; i < renderedArguments.Count; i++)
+                {
+                    var renderedArgument = renderedArguments[i];
+                    if (renderedArgumentsTotalLength > splitStringMinLength)
+                    {
+                        builder.AppendLine();
+                        builder.Append("    ");
+                    }
+                    else if (i > 0)
+                    {
+                        builder.Append(" ");
+                    }
+
+                    builder.Append(renderedArgument);
+
+                    if (i < renderedArguments.Count - 1)
+                    {
+                        builder.Append(",");
+                    }
+                }
+            }
+
+            builder.Append(");");
 
             return new HtmlString(builder.ToString());
         }
@@ -176,7 +196,7 @@ namespace HangFire.Web
                 _valueRenderer = WrapString;
             }
 
-            public string Render(string value)
+            public string Render(string name, string value)
             {
                 if (value == null)
                 {
@@ -184,6 +204,13 @@ namespace HangFire.Web
                 }
 
                 var builder = new StringBuilder();
+
+                if (name != null)
+                {
+                    builder.AppendFormat(
+                        "<span title=\"{0}:\" data-placement=\"left\">", 
+                        HttpUtility.HtmlAttributeEncode(name));
+                }
 
                 if (_deserializationType != null)
                 {
@@ -196,6 +223,11 @@ namespace HangFire.Web
                 if (_deserializationType != null)
                 {
                     builder.Append(")");
+                }
+
+                if (name != null)
+                {
+                    builder.Append("</span>");
                 }
 
                 return builder.ToString();

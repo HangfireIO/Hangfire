@@ -576,8 +576,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.HangFire = windo
             
             #line default
             #line hidden
-WriteLiteral("\"></script>\r\n        <script>hljs.initHighlightingOnLoad();</script>\r\n    </body>" +
-"\r\n</html>\r\n");
+WriteLiteral("\"></script>\r\n    </body>\r\n</html>\r\n");
 
 
         }
