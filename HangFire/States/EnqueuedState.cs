@@ -58,10 +58,15 @@ namespace HangFire.Common.States
         {
             if (method == null) throw new ArgumentNullException("method");
 
-            var attribute = method.Method
-                .GetCustomAttributes(true)
-                .OfType<QueueAttribute>()
-                .FirstOrDefault();
+            QueueAttribute attribute = null;
+
+            if (!method.OldFormat)
+            {
+                attribute = method.Method
+                    .GetCustomAttributes(true)
+                    .OfType<QueueAttribute>()
+                    .FirstOrDefault();
+            }
 
             if (attribute == null)
             {
