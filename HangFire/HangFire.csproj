@@ -161,6 +161,7 @@
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="Filters\HistoryStatisticsAttribute.cs" />
+    <Compile Include="Storage\JobQueue.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec">

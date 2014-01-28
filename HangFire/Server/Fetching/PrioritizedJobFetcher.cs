@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using HangFire.Storage;
 using ServiceStack.Redis;
 
 namespace HangFire.Server.Fetching
@@ -45,7 +46,7 @@ namespace HangFire.Server.Fetching
             _fetchers.Dispose();
         }
 
-        public JobPayload DequeueJob(CancellationToken cancellationToken)
+        public QueuedJob DequeueJob(CancellationToken cancellationToken)
         {
             var waitHandles = _fetchers.Select(x => x.JobIsReady).ToList();
             waitHandles.Add(cancellationToken.WaitHandle);

@@ -24,6 +24,7 @@ using HangFire.Common.States;
 using HangFire.Server.Fetching;
 using HangFire.Server.Performing;
 using HangFire.States;
+using HangFire.Storage;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -47,7 +48,7 @@ namespace HangFire.Server
         private bool _crashed;
         private bool _stopSent;
 
-        private JobPayload _jobPayload;
+        private QueuedJob _job;
 
         public Worker(
             WorkerManager manager,
@@ -97,11 +98,11 @@ namespace HangFire.Server
             }
         }
 
-        public void Process(JobPayload payload)
+        public void Process(QueuedJob job)
         {
             lock (_jobLock)
             {
-                _jobPayload = payload;
+                _job = job;
             }
 
             _jobIsReady.Set();
@@ -143,15 +144,14 @@ namespace HangFire.Server
                         JobServer.RetryOnException(
                             () =>
                             {
-                                PerformJob(_jobPayload);
+                                PerformJob(_job.Payload);
 
                                 // Checkpoint #4. The job was performed, and it is in the one
                                 // of the explicit states (Succeeded, Scheduled and so on).
                                 // It should not be re-queued, but we still need to remove its
                                 // processing information.
 
-                                JobFetcher.RemoveFromFetchedQueue(
-                                    _redis, _jobPayload.Id, _jobPayload.Queue);
+                                _job.Complete(_redis);
 
                                 // Success point. No things must be done after previous command
                                 // was succeeded.

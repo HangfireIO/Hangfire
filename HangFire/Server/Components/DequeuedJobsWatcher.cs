@@ -20,6 +20,7 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Server.Fetching;
 using HangFire.States;
+using HangFire.Storage;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -142,7 +143,7 @@ namespace HangFire.Server.Components
                     var state = new EnqueuedState("Requeued due to time out");
                     _stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
 
-                    JobFetcher.RemoveFromFetchedQueue(_redis, jobId, queue);
+                    QueuedJob.Remove(_redis, queue, jobId);
 
                     return true;
                 }

@@ -19,6 +19,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 using ServiceStack.Logging;
 
 namespace HangFire.Server.Fetching
@@ -30,8 +31,8 @@ namespace HangFire.Server.Fetching
         private readonly JobFetcher _innerFetcher;
         private readonly int _count;
 
-        private readonly BlockingCollection<JobPayload> _items
-            = new BlockingCollection<JobPayload>(new ConcurrentQueue<JobPayload>());
+        private readonly BlockingCollection<QueuedJob> _items
+            = new BlockingCollection<QueuedJob>(new ConcurrentQueue<QueuedJob>());
 
         private readonly Thread _prefetchThread;
         private readonly ManualResetEventSlim _jobIsReady
@@ -64,9 +65,9 @@ namespace HangFire.Server.Fetching
             get { return _jobIsReady.WaitHandle; }
         }
 
-        public JobPayload DequeueJob(CancellationToken cancellationToken)
+        public QueuedJob DequeueJob(CancellationToken cancellationToken)
         {
-            var payload = _items.Take(cancellationToken);
+            var job = _items.Take(cancellationToken);
 
             lock (_items)
             {
@@ -78,7 +79,7 @@ namespace HangFire.Server.Fetching
                 Monitor.Pulse(_items);
             }
 
-            return payload;
+            return job;
         }
 
         public void Stop()
@@ -122,10 +123,10 @@ namespace HangFire.Server.Fetching
                 var enqueuedState = new EnqueuedState("Re-queue prefetched job");
                 var stateMachine = new StateMachine(_innerFetcher.Redis);
 
-                foreach (var payload in _items)
+                foreach (var job in _items)
                 {
-                    stateMachine.ChangeState(payload.Id, enqueuedState);
-                    JobFetcher.RemoveFromFetchedQueue(_innerFetcher.Redis, payload.Id, _innerFetcher.Queue);
+                    stateMachine.ChangeState(job.Payload.Id, enqueuedState);
+                    job.Complete(_innerFetcher.Redis, canceled: true);
                 }
 
                 Logger.InfoFormat("{0} prefetched jobs were re-queued.", _items.Count);
