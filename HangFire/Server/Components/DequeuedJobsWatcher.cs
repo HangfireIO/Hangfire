@@ -43,7 +43,7 @@ namespace HangFire.Server.Components
         public DequeuedJobsWatcher(IRedisClientsManager redisManager)
         {
             _redis = redisManager.GetClient();
-            _stateMachine = new StateMachine(_redis);
+            _stateMachine = new StateMachine(new RedisStorageConnection(_redis));
         }
 
         public void Dispose()

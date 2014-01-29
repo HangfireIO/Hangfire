@@ -20,7 +20,7 @@ using System.Linq;
 using HangFire.Common;
 using HangFire.Common.Filters;
 using HangFire.Common.States;
-using ServiceStack.Redis;
+using HangFire.Storage;
 
 namespace HangFire.States
 {
@@ -46,29 +46,29 @@ namespace HangFire.States
             Descriptors.Add(stateName, descriptor);
         }
 
-        private readonly IRedisClient _redis;
+        private readonly IStorageConnection _connection;
         private readonly IDictionary<string, JobStateDescriptor> _stateDescriptors;
 
         private readonly Func<JobMethod, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
-        public StateMachine(IRedisClient redis)
+        public StateMachine(IStorageConnection connection)
             : this(
-                redis,
+                connection,
                 Descriptors,
                 null)
         {
         }
 
         internal StateMachine(
-            IRedisClient redis,
+            IStorageConnection connection,
             IDictionary<string, JobStateDescriptor> stateDescriptors,
             IEnumerable<object> filters)
         {
-            if (redis == null) throw new ArgumentNullException("redis");
+            if (connection == null) throw new ArgumentNullException("connection");
             if (stateDescriptors == null) throw new ArgumentNullException("stateDescriptors");
 
-            _redis = redis;
+            _connection = connection;
             _stateDescriptors = stateDescriptors;
             
             if (filters != null)
@@ -88,26 +88,21 @@ namespace HangFire.States
             if (parameters == null) throw new ArgumentNullException("parameters");
             if (state == null) throw new ArgumentNullException("state");
 
-            using (var transaction = _redis.CreateTransaction())
+            using (var transaction = _connection.CreateWriteTransaction())
             {
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}", jobId),
-                    parameters));
-
-                transaction.QueueCommand(x => x.ExpireEntryIn(
-                    String.Format("hangfire:job:{0}", jobId),
-                    TimeSpan.FromHours(1)));
+                transaction.Jobs.Create(jobId, parameters);
+                transaction.Jobs.Expire(jobId, TimeSpan.FromHours(1));
 
                 transaction.Commit();
             }
 
             var filterInfo = GetFilters(method);
             var context = new StateContext(jobId, method);
-            var changingContext = new StateChangingContext(context, state, null, _redis);
+            var changingContext = new StateChangingContext(context, state, null, _connection);
 
             InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
 
-            using (var transaction = _redis.CreateTransaction())
+            using (var transaction = _connection.CreateWriteTransaction())
             {
                 var changedContext = new StateApplyingContext(
                     context,
@@ -119,8 +114,7 @@ namespace HangFire.States
                     changingContext.CandidateState,
                     filterInfo.StateChangedFilters);
 
-                transaction.QueueCommand(x =>
-                    ((IRedisNativeClient)x).Persist(String.Format("hangfire:job:{0}", jobId)));
+                transaction.Jobs.Persist(jobId);
 
                 return transaction.Commit();
             }
@@ -132,13 +126,12 @@ namespace HangFire.States
             if (String.IsNullOrWhiteSpace(jobId)) throw new ArgumentNullException("jobId");
             if (state == null) throw new ArgumentNullException("state");
 
-            using (_redis.AcquireLock(
-                String.Format("hangfire:job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
+            using (_connection.AcquireLock(
+                String.Format("job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
             {
-                var job = _redis.GetAllEntriesFromHash(
-                    String.Format("hangfire:job:{0}", jobId));
+                var job = _connection.Jobs.Get(jobId);
 
-                if (job.Count == 0)
+                if (job == null)
                 {
                     // The job does not exist
                     return false;
@@ -156,7 +149,7 @@ namespace HangFire.States
                     var filterInfo = GetFilters(jobMethod);
 
                     var context = new StateContext(jobId, jobMethod);
-                    var changingContext = new StateChangingContext(context, state, currentState, _redis);
+                    var changingContext = new StateChangingContext(context, state, currentState, _connection);
 
                     InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
                     
@@ -177,7 +170,7 @@ namespace HangFire.States
                                 state.StateName, jobId),
                             ex),
                         currentState,
-                        _redis);
+                        _connection);
 
                     return ApplyState(
                         changingContext,
@@ -205,7 +198,7 @@ namespace HangFire.States
             StateChangingContext context,
             IEnumerable<IStateChangedFilter> stateChangedFilters)
         {
-            using (var transaction = _redis.CreateTransaction())
+            using (var transaction = _connection.CreateWriteTransaction())
             {
                 var changedContext = new StateApplyingContext(
                     context,
@@ -230,16 +223,13 @@ namespace HangFire.States
                     _stateDescriptors[oldState].Unapply(context);
                 }
 
-                context.OldTransaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:job:{0}:state", context.JobId)));
-
                 foreach (var filter in stateChangedFilters)
                 {
                     filter.OnStateUnapplied(context);
                 }
             }
 
-            AppendHistory(context.OldTransaction, context, chosenState, true);
+            AppendHistory(context.Transaction, context, chosenState, true);
 
             chosenState.Apply(context);
 
@@ -252,7 +242,7 @@ namespace HangFire.States
         private void AppendHistory(
             StateContext context, JobState state, bool appendToJob)
         {
-            using (var transaction = _redis.CreateTransaction())
+            using (var transaction = _connection.CreateWriteTransaction())
             {
                 AppendHistory(transaction, context, state, appendToJob);
                 transaction.Commit();
@@ -260,7 +250,7 @@ namespace HangFire.States
         }
 
         private void AppendHistory(
-            IRedisTransaction transaction, 
+            IAtomicWriteTransaction transaction, 
             StateContext context, 
             JobState state, 
             bool appendToJob)
@@ -273,22 +263,13 @@ namespace HangFire.States
             
             if (appendToJob)
             {
-                transaction.QueueCommand(x => x.SetEntryInHash(
-                    String.Format("hangfire:job:{0}", context.JobId),
-                    "State",
-                    state.StateName));
-
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:job:{0}:state", context.JobId),
-                    properties));
+                transaction.Jobs.SetState(context.JobId, state.StateName, properties);
             }
 
             properties.Add("Reason", state.Reason);
             properties.Add("CreatedAt", JobHelper.ToStringTimestamp(now));
 
-            transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:job:{0}:history", context.JobId),
-                JobHelper.ToJson(properties)));
+            transaction.Jobs.AppendHistory(context.JobId, properties);
         }
 
         private JobFilterInfo GetFilters(JobMethod method)

@@ -121,7 +121,7 @@ namespace HangFire.Server.Fetching
             try
             {
                 var enqueuedState = new EnqueuedState("Re-queue prefetched job");
-                var stateMachine = new StateMachine(_innerFetcher.Redis);
+                var stateMachine = new StateMachine(new RedisStorageConnection(_innerFetcher.Redis));
 
                 foreach (var job in _items)
                 {

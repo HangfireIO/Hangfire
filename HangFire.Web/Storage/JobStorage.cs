@@ -20,6 +20,7 @@ using System.Linq;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 using ServiceStack.Redis;
 
 namespace HangFire.Web
@@ -385,7 +386,7 @@ namespace HangFire.Web
             {
                 // TODO: clear retry attempts counter.
 
-                var stateMachine = new StateMachine(Redis);
+                var stateMachine = new StateMachine(new RedisStorageConnection(Redis));
                 var state = new EnqueuedState("The job has been retried by a user.");
 
                 return stateMachine.ChangeState(jobId, state, FailedState.Name);
@@ -396,7 +397,7 @@ namespace HangFire.Web
         {
             lock (Redis)
             {
-                var stateMachine = new StateMachine(Redis);
+                var stateMachine = new StateMachine(new RedisStorageConnection(Redis));
                 var state = new EnqueuedState("The job has been enqueued by a user.");
 
                 return stateMachine.ChangeState(jobId, state, ScheduledState.Name);

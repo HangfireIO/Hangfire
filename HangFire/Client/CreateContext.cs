@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 using ServiceStack.Redis;
 
 namespace HangFire.Client
@@ -61,7 +62,7 @@ namespace HangFire.Client
             Items = new Dictionary<string, object>();
 
             _job = job;
-            _stateMachine = new StateMachine(redis);
+            _stateMachine = new StateMachine(new RedisStorageConnection(redis));
         }
 
         /// <summary>

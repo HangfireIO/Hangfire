@@ -21,6 +21,7 @@ using System.Threading;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
@@ -39,7 +40,7 @@ namespace HangFire.Server.Components
         public SchedulePoller(IRedisClientsManager redisManager, TimeSpan pollInterval)
         {
             _redis = redisManager.GetClient();
-            _stateMachine = new StateMachine(_redis);
+            _stateMachine = new StateMachine(new RedisStorageConnection(_redis));
 
             _pollInterval = pollInterval;
         }

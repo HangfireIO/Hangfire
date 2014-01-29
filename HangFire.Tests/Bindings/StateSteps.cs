@@ -5,6 +5,7 @@ using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ServiceStack.Common.Extensions;
@@ -122,7 +123,8 @@ namespace HangFire.Tests.States
         [When(@"I apply it")]
         public void WhenIApplyIt()
         {
-            using (var transaction = Redis.Client.CreateTransaction())
+            using (var transaction = 
+                new RedisAtomicWriteTransaction(Redis.Client.CreateTransaction()))
             {
                 var context = new StateApplyingContext(
                     new StateContext(JobSteps.DefaultJobId, _defaultData),
@@ -137,7 +139,8 @@ namespace HangFire.Tests.States
         [When(@"after I unapply it")]
         public void WhenAfterIUnapplyIt()
         {
-            using (var transaction = Redis.Client.CreateTransaction())
+            using (var transaction =
+                new RedisAtomicWriteTransaction(Redis.Client.CreateTransaction()))
             {
                 if (StateMachine.Descriptors.ContainsKey(_state.StateName))
                 {
@@ -157,7 +160,7 @@ namespace HangFire.Tests.States
         public void WhenIApplyTheState()
         {
             var stateMachine = new StateMachine(
-                Redis.Client, _descriptors, _filters);
+                new RedisStorageConnection(Redis.Client), _descriptors, _filters);
             stateMachine.ChangeState(JobSteps.DefaultJobId, _state);
         }
 
@@ -174,7 +177,7 @@ namespace HangFire.Tests.States
         public void WhenIChangeTheStateOfTheJobToThe(string jobId, string state)
         {
             var stateMachine = new StateMachine(
-                Redis.Client, _descriptors, _filters);
+                new RedisStorageConnection(Redis.Client), _descriptors, _filters);
             stateMachine.ChangeState(jobId, _stateMocks[state].Object);
         }
 
@@ -183,7 +186,7 @@ namespace HangFire.Tests.States
             string state, string allowedState)
         {
             var stateMachine = new StateMachine(
-                Redis.Client, _descriptors, _filters);
+                new RedisStorageConnection(Redis.Client), _descriptors, _filters);
             stateMachine.ChangeState(JobSteps.DefaultJobId, _stateMocks[state].Object, allowedState);
         }
 

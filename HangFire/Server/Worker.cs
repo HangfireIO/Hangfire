@@ -56,7 +56,7 @@ namespace HangFire.Server
             WorkerContext context)
         {
             _redis = redisManager.GetClient();
-            _stateMachine = new StateMachine(_redis);
+            _stateMachine = new StateMachine(new RedisStorageConnection(_redis));
 
             _manager = manager;
             _context = context;

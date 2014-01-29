@@ -18,7 +18,6 @@ using System;
 using HangFire.Common.Filters;
 using HangFire.Common.States;
 using HangFire.States;
-using HangFire.Storage;
 
 namespace HangFire.Filters
 {
@@ -31,7 +30,7 @@ namespace HangFire.Filters
 
         public void OnStateChanging(StateChangingContext context)
         {
-            using (var transaction = new RedisAtomicWriteTransaction(context.Redis.CreateTransaction()))
+            using (var transaction = context.Connection.CreateWriteTransaction())
             {
                 if (context.CandidateState.StateName == SucceededState.Name)
                 {

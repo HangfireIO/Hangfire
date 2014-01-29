@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using HangFire.Common;
 using ServiceStack.Redis;
 
 namespace HangFire.Storage
@@ -70,8 +72,14 @@ namespace HangFire.Storage
 
     public interface IWriteableStoredJobs
     {
+        void Create(string jobId, IDictionary<string, string> parameters);
+
         void Expire(string jobId, TimeSpan expireIn);
         void Persist(string jobId);
+
+        void SetState(string jobId, string state, Dictionary<string, string> stateProperties);
+
+        void AppendHistory(string jobId, Dictionary<string, string> properties);
     }
 
     public interface IWriteableStoredLists
@@ -151,14 +159,45 @@ namespace HangFire.Storage
                 expireIn));
         }
 
+        void IWriteableStoredJobs.Create(string jobId, IDictionary<string, string> parameters)
+        {
+            _transaction.QueueCommand(x => x.SetRangeInHash(
+                String.Format(Prefix + "job:{0}", jobId),
+                parameters));
+        }
+
         void IWriteableStoredJobs.Persist(string jobId)
         {
             _transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
-                    String.Format(Prefix + "job:{0}", jobId)));
+                String.Format(Prefix + "job:{0}", jobId)));
             _transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
                 String.Format(Prefix + "job:{0}:history", jobId)));
             _transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
                 String.Format(Prefix + "job:{0}:state", jobId)));
+        }
+
+        void IWriteableStoredJobs.SetState(
+            string jobId, string state, Dictionary<string, string> stateProperties)
+        {
+            _transaction.QueueCommand(x => x.SetEntryInHash(
+                    String.Format(Prefix + "job:{0}", jobId),
+                    "State",
+                    state));
+
+            _transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format(Prefix + "job:{0}:state", jobId)));
+
+            _transaction.QueueCommand(x => x.SetRangeInHash(
+                String.Format(Prefix + "job:{0}:state", jobId),
+                stateProperties));
+        }
+
+        void IWriteableStoredJobs.AppendHistory(
+            string jobId, Dictionary<string, string> properties)
+        {
+            _transaction.QueueCommand(x => x.EnqueueItemOnList(
+                String.Format(Prefix + "job:{0}:history", jobId),
+                JobHelper.ToJson(properties)));
         }
 
         void IWriteableStoredLists.AddToLeft(string key, string value)

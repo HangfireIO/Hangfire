@@ -15,7 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using ServiceStack.Redis;
+using HangFire.Storage;
 
 namespace HangFire.Common.States
 {
@@ -24,15 +24,18 @@ namespace HangFire.Common.States
         private JobState _candidateState;
 
         internal StateChangingContext(
-            StateContext context, JobState candidateState, string currentState, IRedisClient redis)
+            StateContext context, 
+            JobState candidateState, 
+            string currentState, 
+            IStorageConnection connection)
             : base(context)
         {
             if (candidateState == null) throw new ArgumentNullException("candidateState");
-            if (redis == null) throw new ArgumentNullException("redis");
+            if (connection == null) throw new ArgumentNullException("connection");
 
             CandidateState = candidateState;
             CurrentState = currentState;
-            Redis = redis;
+            Connection = connection;
         }
 
         public JobState CandidateState
@@ -50,23 +53,17 @@ namespace HangFire.Common.States
 
         public string CurrentState { get; private set; }
 
-        public IRedisClient Redis { get; private set; }
+        public IStorageConnection Connection { get; private set; }
 
-        public void SetJobParameter(string name, object value)
+        public void SetJobParameter<T>(string name, T value)
         {
-            Redis.SetEntryInHash(
-                String.Format("hangfire:job:{0}", JobId),
-                name,
-                JobHelper.ToJson(value));
+            Connection.Jobs.SetParameter(JobId, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            var value = Redis.GetValueFromHash(
-                String.Format("hangfire:job:{0}", JobId),
-                name);
-
-            return JobHelper.FromJson<T>(value);
+            return JobHelper.FromJson<T>(Connection.Jobs.GetParameter(
+                JobId, name));
         }
     }
 }
