@@ -51,5 +51,22 @@ namespace HangFire.Common.States
         public string CurrentState { get; private set; }
 
         public IRedisClient Redis { get; private set; }
+
+        public void SetJobParameter(string name, object value)
+        {
+            Redis.SetEntryInHash(
+                String.Format("hangfire:job:{0}", JobId),
+                name,
+                JobHelper.ToJson(value));
+        }
+
+        public T GetJobParameter<T>(string name)
+        {
+            var value = Redis.GetValueFromHash(
+                String.Format("hangfire:job:{0}", JobId),
+                name);
+
+            return JobHelper.FromJson<T>(value);
+        }
     }
 }

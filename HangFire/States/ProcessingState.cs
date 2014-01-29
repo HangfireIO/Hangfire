@@ -46,16 +46,19 @@ namespace HangFire.States
 
         public override void Apply(StateApplyingContext context)
         {
-            context.Transaction.QueueCommand(x => x.AddItemToSortedSet(
-                "hangfire:processing", context.JobId, JobHelper.ToTimestamp(DateTime.UtcNow)));
+            context.Transaction.Sets.Add(
+                "processing",
+                context.JobId,
+                JobHelper.ToTimestamp(DateTime.UtcNow));
         }
 
         public class Descriptor : JobStateDescriptor
         {
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.QueueCommand(x => x.RemoveItemFromSortedSet(
-                    "hangfire:processing", context.JobId));
+                context.Transaction.Sets.Remove(
+                    "processing",
+                    context.JobId);
             }
         }
     }

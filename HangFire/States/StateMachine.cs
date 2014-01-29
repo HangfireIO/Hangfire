@@ -230,7 +230,7 @@ namespace HangFire.States
                     _stateDescriptors[oldState].Unapply(context);
                 }
 
-                context.Transaction.QueueCommand(x => x.RemoveEntry(
+                context.OldTransaction.QueueCommand(x => x.RemoveEntry(
                     String.Format("hangfire:job:{0}:state", context.JobId)));
 
                 foreach (var filter in stateChangedFilters)
@@ -239,7 +239,7 @@ namespace HangFire.States
                 }
             }
 
-            AppendHistory(context.Transaction, context, chosenState, true);
+            AppendHistory(context.OldTransaction, context, chosenState, true);
 
             chosenState.Apply(context);
 

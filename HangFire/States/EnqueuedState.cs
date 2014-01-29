@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+// TODO: fix namespace
 namespace HangFire.Common.States
 {
     public class EnqueuedState : JobState
@@ -49,9 +50,7 @@ namespace HangFire.Common.States
         {
             var queue = GetQueue(context.JobMethod);
 
-            context.Transaction.QueueCommand(x => x.AddItemToSet("hangfire:queues", queue));
-            context.Transaction.QueueCommand(x => x.EnqueueItemOnList(
-                String.Format("hangfire:queue:{0}", queue), context.JobId));
+            context.Transaction.Queues.Enqueue(queue, context.JobId);
         }
 
         public static string GetQueue(JobMethod method)

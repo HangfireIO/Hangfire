@@ -48,18 +48,17 @@ namespace HangFire.States
 
         public override void Apply(StateApplyingContext context)
         {
-            context.Transaction.QueueCommand(x => x.AddItemToSortedSet(
-                "hangfire:failed",
+            context.Transaction.Sets.Add(
+                "failed",
                 context.JobId,
-                JobHelper.ToTimestamp(DateTime.UtcNow)));
+                JobHelper.ToTimestamp(DateTime.UtcNow));
         }
 
         public class Descriptor : JobStateDescriptor
         {
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.QueueCommand(x => x.RemoveItemFromSortedSet(
-                    "hangfire:failed", context.JobId));
+                context.Transaction.Sets.Remove("failed", context.JobId);
             }
         }
     }

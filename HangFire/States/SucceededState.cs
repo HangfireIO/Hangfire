@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
-using ServiceStack.Redis;
 
 namespace HangFire.States
 {
@@ -45,39 +44,24 @@ namespace HangFire.States
 
         public override void Apply(StateApplyingContext context)
         {
-            context.Transaction.QueueCommand(x => x.ExpireEntryIn(
-                String.Format("hangfire:job:{0}", context.JobId),
-                _jobExpirationTimeout));
+            context.Transaction.Jobs.Expire(context.JobId, _jobExpirationTimeout);
 
-            context.Transaction.QueueCommand(x => x.ExpireEntryIn(
-                String.Format("hangfire:job:{0}:history", context.JobId),
-                _jobExpirationTimeout));
+            context.Transaction.Lists.AddToLeft("succeeded", context.JobId);
+            context.Transaction.Lists.Trim("succeeded", 0, 99);
 
-            context.Transaction.QueueCommand(x => x.ExpireEntryIn(
-                String.Format("hangfire:job:{0}:state", context.JobId),
-                _jobExpirationTimeout));
-
-            context.Transaction.QueueCommand(x => x.EnqueueItemOnList("hangfire:succeeded", context.JobId));
-            context.Transaction.QueueCommand(x => x.TrimList("hangfire:succeeded", 0, 99));
-
-            context.Transaction.QueueCommand(x => x.IncrementValue("hangfire:stats:succeeded"));
+            context.Transaction.Values.Increment("stats:succeeded");
         }
 
         public class Descriptor : JobStateDescriptor
         {
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.QueueCommand(x => x.DecrementValue("hangfire:stats:succeeded"));
+                context.Transaction.Values.Decrement("stats:succeeded");
 
-                context.Transaction.QueueCommand(x => x.RemoveItemFromList(
-                    "hangfire:succeeded", context.JobId));
+                context.Transaction.Lists.Remove(
+                    "succeeded", context.JobId);
 
-                context.Transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
-                    String.Format("hangfire:job:{0}", context.JobId)));
-                context.Transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
-                    String.Format("hangfire:job:{0}:history", context.JobId)));
-                context.Transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(
-                    String.Format("hangfire:job:{0}:state", context.JobId)));
+                context.Transaction.Jobs.Persist(context.JobId);
             }
         }
     }
