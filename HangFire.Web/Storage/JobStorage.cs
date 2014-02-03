@@ -21,6 +21,7 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
+using HangFire.Storage.Redis;
 using ServiceStack.Redis;
 
 namespace HangFire.Web

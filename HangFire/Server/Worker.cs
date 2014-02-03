@@ -25,6 +25,7 @@ using HangFire.Server.Fetching;
 using HangFire.Server.Performing;
 using HangFire.States;
 using HangFire.Storage;
+using HangFire.Storage.Redis;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 

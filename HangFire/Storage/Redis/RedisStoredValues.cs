@@ -1,95 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HangFire.Common;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage
+namespace HangFire.Storage.Redis
 {
-    internal class RedisAtomicWriteTransaction : IAtomicWriteTransaction
-    {
-        private readonly IRedisTransaction _transaction;
-
-        public RedisAtomicWriteTransaction(IRedisTransaction transaction)
-        {
-            _transaction = transaction;
-
-            var storage = new RedisStoredValues(_transaction);
-
-            Values = storage;
-            Sets = storage;
-            Lists = storage;
-            Queues = storage;
-            Jobs = storage;
-        }
-
-        public IWriteableStoredValues Values { get; private set; }
-        public IWriteableStoredSets Sets { get; private set; }
-        public IWriteableStoredLists Lists { get; private set; }
-        public IWriteableJobQueue Queues { get; private set; }
-        public IWriteableStoredJobs Jobs { get; private set; }
-
-        public bool Commit()
-        {
-            return _transaction.Commit();
-        }
-
-        public void Dispose()
-        {
-            _transaction.Dispose();
-        }
-    }
-
-    public interface IAtomicWriteTransaction : IDisposable
-    {
-        IWriteableStoredValues Values { get; }
-        IWriteableStoredSets Sets { get; }
-        IWriteableStoredLists Lists { get; }
-        IWriteableJobQueue Queues { get; }
-        IWriteableStoredJobs Jobs { get; }
-
-        bool Commit();
-    }
-
-    public interface IWriteableStoredValues
-    {
-        void Increment(string key);
-        void Decrement(string key);
-
-        void ExpireIn(string key, TimeSpan expireIn);
-    }
-
-    public interface IWriteableStoredSets
-    {
-        void Add(string key, string value);
-        void Add(string key, string value, double score);
-        void Remove(string key, string value);
-    }
-
-    public interface IWriteableJobQueue
-    {
-        void Enqueue(string queue, string jobId);
-    }
-
-    public interface IWriteableStoredJobs
-    {
-        void Create(string jobId, IDictionary<string, string> parameters);
-
-        void Expire(string jobId, TimeSpan expireIn);
-        void Persist(string jobId);
-
-        void SetState(string jobId, string state, Dictionary<string, string> stateProperties);
-
-        void AppendHistory(string jobId, Dictionary<string, string> properties);
-    }
-
-    public interface IWriteableStoredLists
-    {
-        void AddToLeft(string key, string value);
-        void Remove(string key, string value);
-
-        void Trim(string key, int keepStartingFrom, int keepEndingAt);
-    }
-
     internal class RedisStoredValues : 
         IWriteableStoredSets, IWriteableStoredValues, IWriteableJobQueue,
         IWriteableStoredJobs, IWriteableStoredLists
@@ -180,12 +95,12 @@ namespace HangFire.Storage
             string jobId, string state, Dictionary<string, string> stateProperties)
         {
             _transaction.QueueCommand(x => x.SetEntryInHash(
-                    String.Format(Prefix + "job:{0}", jobId),
-                    "State",
-                    state));
+                String.Format(Prefix + "job:{0}", jobId),
+                "State",
+                state));
 
             _transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format(Prefix + "job:{0}:state", jobId)));
+                String.Format(Prefix + "job:{0}:state", jobId)));
 
             _transaction.QueueCommand(x => x.SetRangeInHash(
                 String.Format(Prefix + "job:{0}:state", jobId),

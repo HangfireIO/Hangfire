@@ -6,6 +6,7 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
+using HangFire.Storage.Redis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ServiceStack.Common.Extensions;

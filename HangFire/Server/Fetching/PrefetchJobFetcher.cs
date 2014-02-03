@@ -20,6 +20,7 @@ using System.Threading;
 using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
+using HangFire.Storage.Redis;
 using ServiceStack.Logging;
 
 namespace HangFire.Server.Fetching
