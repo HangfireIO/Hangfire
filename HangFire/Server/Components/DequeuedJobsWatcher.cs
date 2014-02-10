@@ -144,7 +144,7 @@ namespace HangFire.Server.Components
                     var state = new EnqueuedState("Requeued due to time out");
                     _stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
 
-                    QueuedJob.Remove(_redis, queue, jobId);
+                    RedisStorageConnection.RemoveFromDequeuedList(_redis, queue, jobId);
 
                     return true;
                 }

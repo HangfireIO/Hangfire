@@ -152,7 +152,8 @@ namespace HangFire.Server
                                 // It should not be re-queued, but we still need to remove its
                                 // processing information.
 
-                                _job.Complete(_redis);
+                                var connection = new RedisStorageConnection(_redis);
+                                _job.Complete(connection);
 
                                 // Success point. No things must be done after previous command
                                 // was succeeded.

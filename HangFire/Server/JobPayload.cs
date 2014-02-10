@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace HangFire.Server
 {
-    internal class JobPayload
+    public class JobPayload
     {
         public JobPayload(
             string id, string queue, Dictionary<string, string> job)

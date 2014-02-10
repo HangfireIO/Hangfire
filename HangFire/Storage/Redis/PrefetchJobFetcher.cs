@@ -127,7 +127,11 @@ namespace HangFire.Server.Fetching
                 foreach (var job in _items)
                 {
                     stateMachine.ChangeState(job.Payload.Id, enqueuedState);
-                    job.Complete(_innerFetcher.Redis, canceled: true);
+
+                    RedisStorageConnection.RemoveFromDequeuedList(
+                        _innerFetcher.Redis, 
+                        job.Payload.Queue,
+                        job.Payload.Id);
                 }
 
                 Logger.InfoFormat("{0} prefetched jobs were re-queued.", _items.Count);

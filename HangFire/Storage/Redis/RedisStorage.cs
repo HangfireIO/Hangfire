@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Common;
+using HangFire.Server;
 using ServiceStack.Redis;
 
 namespace HangFire.Storage.Redis
@@ -36,6 +37,11 @@ namespace HangFire.Storage.Redis
             return _redis.GetValueFromHash(
                 String.Format(Prefix + "job:{0}", id),
                 name);
+        }
+
+        public void Complete(JobPayload payload)
+        {
+            RedisStorageConnection.RemoveFromDequeuedList(_redis, payload.Queue, payload.Id);
         }
     }
 }

@@ -126,7 +126,7 @@
     <Compile Include="Server\Performing\IJobPerformStrategy.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
-    <Compile Include="Server\Fetching\PrefetchJobFetcher.cs" />
+    <Compile Include="Storage\Redis\PrefetchJobFetcher.cs" />
     <Compile Include="Server\Fetching\PrioritizedJobFetcher.cs" />
     <Compile Include="Server\Components\ServerWatchdog.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />

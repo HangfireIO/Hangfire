@@ -1,4 +1,5 @@
 using System;
+using HangFire.Server;
 using ServiceStack.Redis;
 
 namespace HangFire.Storage.Redis
@@ -31,5 +32,28 @@ namespace HangFire.Storage.Redis
         }
 
         public IStoredJobs Jobs { get; private set; }
+
+        public static void RemoveFromDequeuedList(
+            IRedisClient redis,
+            string queue,
+            string jobId)
+        {
+            using (var transaction = redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromList(
+                    String.Format("hangfire:queue:{0}:dequeued", queue),
+                    jobId,
+                    -1));
+
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "Fetched"));
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format("hangfire:job:{0}", jobId),
+                    "Checked"));
+
+                transaction.Commit();
+            }
+        }
     }
 }
