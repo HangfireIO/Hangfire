@@ -99,8 +99,7 @@ namespace HangFire.Tests
                 new JobPerformer(_filters));
 
             using (var manager = new WorkerManager(
-                new JobFetcher(RedisFactory.BasicManager, QueueSteps.DefaultQueue),
-                RedisFactory.BasicManager,
+                new JobFetcher(Redis.Storage.BasicManager.GetClient(), QueueSteps.DefaultQueue),
                 context,
                 1))
             {

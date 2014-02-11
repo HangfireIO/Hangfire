@@ -1,4 +1,6 @@
 ﻿using HangFire;
+using HangFire.Storage;
+using HangFire.Storage.Redis;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(
@@ -16,7 +18,7 @@ namespace MvcSample
         {
             // If you have custom Redis installation, use the
             // following method to configure HangFire:
-            RedisFactory.Db = 3;
+            JobStorage.SetCurrent(new RedisJobStorage("localhost:6379", 3));
 
             _server = new AspNetBackgroundJobServer();
             //_server.Start();

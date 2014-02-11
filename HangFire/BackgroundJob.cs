@@ -35,16 +35,17 @@ namespace HangFire
         [Obsolete("Background job definitions that are based on the BackgroundJob class are no longer supported. Please, see 'Upgrading' section of the documentation.")]
         public abstract void Perform();
 
-        private static JobStorage _storage = JobStorage.Current;
+        private static Func<IJobClient> _clientFactory =
+            () => new JobClient(JobStorage.Current.CreatePooledConnection());
         private static readonly object ClientFactoryLock = new object();
 
-        public static JobStorage Storage
+        public static Func<IJobClient> ClientFactory
         {
             get
             {
                 lock (ClientFactoryLock)
                 {
-                    return _storage;
+                    return _clientFactory;
                 }
             }
             set
@@ -56,7 +57,7 @@ namespace HangFire
                         throw new ArgumentNullException();
                     }
 
-                    _storage = value;
+                    _clientFactory = value;
                 }
             }
         }
@@ -224,7 +225,7 @@ namespace HangFire
         {
             var arguments = GetArguments(callExpression);
 
-            using (var client = new JobClient(Storage.CreatePooledConnection()))
+            using (var client = ClientFactory())
             {
                 var data = new JobMethod(type, callExpression.Method);
                 return client.CreateJob(data, arguments, state);

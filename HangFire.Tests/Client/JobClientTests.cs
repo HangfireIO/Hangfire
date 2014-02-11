@@ -2,6 +2,7 @@
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ServiceStack.Redis;
@@ -12,8 +13,7 @@ namespace HangFire.Tests.Client
     public class JobClientTests
     {
         private JobClient _client;
-        private Mock<IRedisClientsManager> _clientsManagerMock;
-        private Mock<IRedisClient> _redisMock;
+        private Mock<IStorageConnection> _connectionMock;
         private Mock<JobCreator> _creatorMock;
         private Mock<JobState> _stateMock;
         private JobMethod _method;
@@ -21,12 +21,10 @@ namespace HangFire.Tests.Client
         [TestInitialize]
         public void Initialize()
         {
-            _redisMock = new Mock<IRedisClient>();
-            _clientsManagerMock = new Mock<IRedisClientsManager>();
-            _clientsManagerMock.Setup(x => x.GetClient()).Returns(_redisMock.Object);
+            _connectionMock = new Mock<IStorageConnection>();
 
             _creatorMock = new Mock<JobCreator>();
-            _client = new JobClient(_clientsManagerMock.Object, _creatorMock.Object);
+            _client = new JobClient(_connectionMock.Object, _creatorMock.Object);
             _stateMock = new Mock<JobState>("SomeReason");
             _method = new JobMethod(typeof(JobClientTests), typeof(JobClientTests).GetMethod("Method"));
         }
@@ -45,7 +43,7 @@ namespace HangFire.Tests.Client
         public void Ctor_ThrowsAnException_WhenJobCreatorIsNull()
         {
 // ReSharper disable ObjectCreationAsStatement
-            new JobClient(_clientsManagerMock.Object, null);
+            new JobClient(_connectionMock.Object, null);
 // ReSharper restore ObjectCreationAsStatement
         }
 

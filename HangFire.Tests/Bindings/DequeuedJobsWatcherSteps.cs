@@ -41,7 +41,8 @@ namespace HangFire.Tests
         [When(@"the watcher runs")]
         public void WhenTimedOutJobsHandlerRuns()
         {
-            using (var watcher = new DequeuedJobsWatcher(RedisFactory.BasicManager))
+            using (var watcher = new DequeuedJobsWatcher(
+                Redis.Storage.BasicManager))
             {
                 watcher.FindAndRequeueTimedOutJobs();
             }

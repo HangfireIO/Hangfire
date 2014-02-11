@@ -28,7 +28,8 @@ namespace HangFire.Tests
         [Given(@"the fetcher listening the '(.+)' queue")]
         public void GivenTheFetcherListeningTheQueue(string queue)
         {
-            _fetcher = new JobFetcher(RedisFactory.BasicManager, queue, TimeSpan.FromSeconds(1));
+            _fetcher = new JobFetcher(
+                Redis.Storage.BasicManager.GetClient(), queue, TimeSpan.FromSeconds(1));
         }
 
         [Given(@"the following queues:")]

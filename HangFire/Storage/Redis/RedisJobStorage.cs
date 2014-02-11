@@ -37,6 +37,9 @@ namespace HangFire.Storage.Redis
                 () => new RedisMonitoringApi(_basicManager.GetClient()));
         }
 
+        public IRedisClientsManager BasicManager { get { return _basicManager; } }
+        public IRedisClientsManager PooledManager { get { return _pooledManager; } }
+
         public override IMonitoringApi Monitoring
         {
             get { return _monitoring.Value; }
@@ -56,7 +59,7 @@ namespace HangFire.Storage.Redis
             IEnumerable<string> queues, int workersCount)
         {
             return new PrioritizedJobFetcher(
-                _basicManager.GetClient(),
+                _basicManager,
                 queues, 
                 workersCount, 
                 _options.JobDequeueTimeOut);

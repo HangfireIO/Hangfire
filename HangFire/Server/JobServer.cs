@@ -44,7 +44,7 @@ namespace HangFire.Server
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _dequeuedJobsWatcher;
         private ThreadWrapper _serverWatchdog;
-        private IList<ThreadWrapper> _components; 
+        private IList<ThreadWrapper> _components = new List<ThreadWrapper>(); 
 
         private readonly IStorageConnection _connection;
 

@@ -53,7 +53,7 @@ namespace HangFire.Client
             if (connection == null) throw new ArgumentNullException("connection");
             if (jobCreator == null) throw new ArgumentNullException("jobCreator");
 
-            _connection = _connection;
+            _connection = connection;
             _jobCreator = jobCreator;
         }
 

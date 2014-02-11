@@ -29,7 +29,7 @@ namespace HangFire.Storage.Redis
             _redis.SetEntryInHash(
                 String.Format(Prefix + "job:{0}", id),
                 name,
-                JobHelper.ToJson(value));
+                value);
         }
 
         public string GetParameter(string id, string name)
