@@ -1,5 +1,6 @@
 using System;
-using HangFire.Server;
+using System.Collections.Generic;
+using HangFire.Common;
 using ServiceStack.Redis;
 
 namespace HangFire.Storage.Redis
@@ -12,7 +13,7 @@ namespace HangFire.Storage.Redis
         public RedisStorageConnection(IRedisClient redis)
         {
             _redis = redis;
-            var storage = new RedisStorage(redis);
+            var storage = new RedisStoredJobs(redis);
             Jobs = storage;
         }
 
@@ -32,6 +33,62 @@ namespace HangFire.Storage.Redis
         }
 
         public IStoredJobs Jobs { get; private set; }
+
+        public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.AddItemToSet(
+                    "hangfire:servers", serverId));
+
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format("hangfire:server:{0}", serverId),
+                    new Dictionary<string, string>
+                        {
+                            { "WorkerCount", workerCount.ToString() },
+                            { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
+                        }));
+
+                foreach (var queue in queues)
+                {
+                    var queue1 = queue;
+                    transaction.QueueCommand(x => x.AddItemToList(
+                        String.Format("hangfire:server:{0}:queues", serverId),
+                        queue1));
+                }
+
+                transaction.Commit();
+            }
+        }
+
+        public void RemoveServer(string serverId)
+        {
+            RemoveServer(_redis, serverId);
+        }
+
+        public static void RemoveServer(IRedisClient redis, string serverId)
+        {
+            using (var transaction = redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromSet(
+                    "hangfire:servers",
+                    serverId));
+
+                transaction.QueueCommand(x => x.RemoveEntry(
+                    String.Format("hangfire:server:{0}", serverId),
+                    String.Format("hangfire:server:{0}:queues", serverId)));
+
+                transaction.Commit();
+            }
+        }
+
+        public void Heartbeat(string serverId)
+        {
+            _redis.SetEntryInHash(
+                String.Format("hangfire:server:{0}", serverId),
+                "Heartbeat",
+                JobHelper.ToStringTimestamp(DateTime.UtcNow));
+        }
 
         public static void RemoveFromDequeuedList(
             IRedisClient redis,

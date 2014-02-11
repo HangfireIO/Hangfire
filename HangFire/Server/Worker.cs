@@ -21,13 +21,10 @@ using System.Linq;
 using System.Threading;
 using HangFire.Common;
 using HangFire.Common.States;
-using HangFire.Server.Fetching;
 using HangFire.Server.Performing;
 using HangFire.States;
 using HangFire.Storage;
-using HangFire.Storage.Redis;
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -35,8 +32,8 @@ namespace HangFire.Server
     {
         private readonly WorkerManager _manager;
         private readonly WorkerContext _context;
-        private readonly IRedisClient _redis;
         private readonly StateMachine _stateMachine;
+        private readonly IStorageConnection _connection;
 
         private Thread _thread;
         private readonly ILog _logger;
@@ -51,13 +48,10 @@ namespace HangFire.Server
 
         private QueuedJob _job;
 
-        public Worker(
-            WorkerManager manager,
-            IRedisClientsManager redisManager,
-            WorkerContext context)
+        public Worker(WorkerManager manager, WorkerContext context)
         {
-            _redis = redisManager.GetClient();
-            _stateMachine = new StateMachine(new RedisStorageConnection(_redis));
+            _connection = JobStorage.Current.CreateConnection();
+            _stateMachine = new StateMachine(_connection);
 
             _manager = manager;
             _context = context;
@@ -125,7 +119,7 @@ namespace HangFire.Server
             _cts.Dispose();
             _jobIsReady.Dispose();
 
-            _redis.Dispose();
+            _connection.Dispose();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
@@ -152,8 +146,7 @@ namespace HangFire.Server
                                 // It should not be re-queued, but we still need to remove its
                                 // processing information.
 
-                                var connection = new RedisStorageConnection(_redis);
-                                _job.Complete(connection);
+                                _job.Complete(_connection);
 
                                 // Success point. No things must be done after previous command
                                 // was succeeded.
@@ -220,7 +213,7 @@ namespace HangFire.Server
                         jobMethod, arguments);
                 }
 
-                var performContext = new PerformContext(_context, _redis, payload.Id, jobMethod);
+                var performContext = new PerformContext(_context, _connection, payload.Id, jobMethod);
                 _context.Performer.PerformJob(performContext, performStrategy);
 
                 state = new SucceededState("The job has been completed successfully.");

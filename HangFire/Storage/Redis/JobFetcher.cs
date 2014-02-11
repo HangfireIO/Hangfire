@@ -1,31 +1,46 @@
-﻿using System;
+﻿// This file is part of HangFire.
+// Copyright © 2013 Sergey Odinokov.
+// 
+// HangFire is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// HangFire is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using HangFire.Common;
-using HangFire.Server;
+using HangFire.Storage;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage
+namespace HangFire.Server.Fetching
 {
-    /// <summary>
-    /// Represents a job queue.
-    /// </summary>
-    internal class JobQueue
+    internal class JobFetcher : IJobFetcher
     {
         private readonly IRedisClient _redis;
-        private readonly string _queue;
-        private readonly TimeSpan _fetchTimeout;
+        private readonly TimeSpan? _fetchTimeout;
 
-        public JobQueue(IRedisClient redis, string queue, TimeSpan fetchTimeout)
+        public JobFetcher(
+            IRedisClient redis,
+            string queue, TimeSpan? fetchTimeout = null)
         {
             _redis = redis;
-            _queue = queue;
             _fetchTimeout = fetchTimeout;
+            Queue = queue;
         }
 
-        public QueuedJob TakeNext(CancellationToken cancellationToken)
+        public string Queue { get; private set; }
+        public IRedisClient Redis { get { return _redis; } }
+
+        public QueuedJob DequeueJob(CancellationToken cancellationToken)
         {
             string jobId;
 
@@ -34,8 +49,8 @@ namespace HangFire.Storage
                 cancellationToken.ThrowIfCancellationRequested();
 
                 jobId = _redis.BlockingPopAndPushItemBetweenLists(
-                    String.Format("hangfire:queue:{0}", _queue),
-                    String.Format("hangfire:queue:{0}:dequeued", _queue),
+                    String.Format("hangfire:queue:{0}", Queue),
+                    String.Format("hangfire:queue:{0}:dequeued", Queue),
                     _fetchTimeout);
             } while (jobId == null);
 
@@ -85,7 +100,12 @@ namespace HangFire.Storage
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new QueuedJob(new JobPayload(jobId, _queue, job));
+            return new QueuedJob(new JobPayload(jobId, Queue, job));
+        }
+
+        public void Dispose()
+        {
+            _redis.Dispose();
         }
     }
 }

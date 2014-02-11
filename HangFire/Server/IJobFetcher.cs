@@ -18,9 +18,9 @@ using System;
 using System.Threading;
 using HangFire.Storage;
 
-namespace HangFire.Server.Fetching
+namespace HangFire.Server
 {
-    internal interface IJobFetcher : IDisposable
+    public interface IJobFetcher : IDisposable
     {
         QueuedJob DequeueJob(CancellationToken cancellationToken);
     }

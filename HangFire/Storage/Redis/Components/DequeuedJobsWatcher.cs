@@ -18,14 +18,12 @@ using System;
 using System.Threading;
 using HangFire.Common;
 using HangFire.Common.States;
-using HangFire.Server.Fetching;
+using HangFire.Server;
 using HangFire.States;
-using HangFire.Storage;
-using HangFire.Storage.Redis;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
-namespace HangFire.Server.Components
+namespace HangFire.Storage.Redis.Components
 {
     internal class DequeuedJobsWatcher : IThreadWrappable, IDisposable
     {

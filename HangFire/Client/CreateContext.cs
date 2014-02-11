@@ -20,8 +20,6 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
-using HangFire.Storage.Redis;
-using ServiceStack.Redis;
 
 namespace HangFire.Client
 {
@@ -37,39 +35,36 @@ namespace HangFire.Client
         private bool _jobWasCreated;
 
         internal CreateContext(CreateContext context)
-            : this(context.Redis, context.JobId, context.JobMethod, context._job, context.InitialState)
+            : this(context.Connection, context.JobId, context.JobMethod, context._job, context.InitialState)
         {
             Items = context.Items;
             _jobWasCreated = context._jobWasCreated;
         }
 
         internal CreateContext(
-            IRedisClient redis, 
+            IStorageConnection connection, 
             string jobId,
             JobMethod jobMethod,
             IDictionary<string, string> job,
             JobState initialState)
         {
-            if (redis == null) throw new ArgumentNullException("redis");
+            if (connection == null) throw new ArgumentNullException("connection");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (jobMethod == null) throw new ArgumentNullException("jobMethod");
             if (job == null) throw new ArgumentNullException("job");
             if (initialState == null) throw new ArgumentNullException("initialState");
 
-            Redis = redis;
+            Connection = connection;
             JobId = jobId;
             JobMethod = jobMethod;
             InitialState = initialState;
             Items = new Dictionary<string, object>();
 
             _job = job;
-            _stateMachine = new StateMachine(new RedisStorageConnection(redis));
+            _stateMachine = new StateMachine(connection);
         }
 
-        /// <summary>
-        /// Gets the Redis connection of the current client.
-        /// </summary>
-        public IRedisClient Redis { get; private set; }
+        public IStorageConnection Connection { get; private set; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it

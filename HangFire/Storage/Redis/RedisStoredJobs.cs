@@ -6,12 +6,12 @@ using ServiceStack.Redis;
 
 namespace HangFire.Storage.Redis
 {
-    public class RedisStorage : IStoredJobs
+    public class RedisStoredJobs : IStoredJobs
     {
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
-        public RedisStorage(IRedisClient redis)
+        public RedisStoredJobs(IRedisClient redis)
         {
             _redis = redis;
         }

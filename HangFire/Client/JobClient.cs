@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Reflection;
 using HangFire.Common;
 using HangFire.Common.States;
-using ServiceStack.Redis;
+using HangFire.Storage;
 
 namespace HangFire.Client
 {
@@ -31,16 +31,16 @@ namespace HangFire.Client
     /// </summary>
     internal class JobClient : IJobClient
     {
+        private readonly IStorageConnection _connection;
         private readonly JobCreator _jobCreator;
-        private readonly IRedisClient _redis;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="JobClient"/> class
         /// with a specified Redis client manager and the default global
         /// <see cref="JobCreator"/> instance.
         /// </summary>
-        public JobClient(IRedisClientsManager redisManager)
-            : this(redisManager, JobCreator.Instance)
+        public JobClient(IStorageConnection connection)
+            : this(connection, JobCreator.Instance)
         {
         }
 
@@ -48,12 +48,12 @@ namespace HangFire.Client
         /// Initializes a new instance of the <see cref="JobClient"/> class
         /// with a specified Redis client manager and a job creator.
         /// </summary>
-        public JobClient(IRedisClientsManager redisManager, JobCreator jobCreator)
+        public JobClient(IStorageConnection connection, JobCreator jobCreator)
         {
-            if (redisManager == null) throw new ArgumentNullException("redisManager");
+            if (connection == null) throw new ArgumentNullException("connection");
             if (jobCreator == null) throw new ArgumentNullException("jobCreator");
 
-            _redis = redisManager.GetClient();
+            _connection = _connection;
             _jobCreator = jobCreator;
         }
 
@@ -89,7 +89,7 @@ namespace HangFire.Client
             job["Arguments"] = JobHelper.ToJson(arguments);
             job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
-            var context = new CreateContext(_redis, id, method, job, state);
+            var context = new CreateContext(_connection, id, method, job, state);
             _jobCreator.CreateJob(context);
 
             return id;
@@ -148,7 +148,7 @@ namespace HangFire.Client
                 job["Args"] = JobHelper.ToJson(args);
                 job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
-                var context = new CreateContext(_redis, id, method, job, state);
+                var context = new CreateContext(_connection, id, method, job, state);
                 _jobCreator.CreateJob(context);
             }
             catch (Exception ex)
@@ -165,7 +165,7 @@ namespace HangFire.Client
         /// </summary>
         public virtual void Dispose()
         {
-            _redis.Dispose();
+            _connection.Dispose();
         }
 
         private static void ValidateMethodParameters(IEnumerable<ParameterInfo> parameters)

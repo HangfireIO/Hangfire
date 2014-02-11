@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using HangFire.Common;
+using HangFire.Server;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
-namespace HangFire.Server.Components
+namespace HangFire.Storage.Redis.Components
 {
     internal class ServerWatchdog : IThreadWrappable, IDisposable
     {
@@ -75,7 +76,7 @@ namespace HangFire.Server.Components
 
                 if (utcNow > maxTime.Add(ServerTimeout))
                 {
-                    JobServer.RemoveServer(_redis, heartbeat.Key);
+                    RedisStorageConnection.RemoveServer(_redis, heartbeat.Key);
                     Logger.InfoFormat("Server '{0}' was removed due to time out.", heartbeat.Key);
                 }
             }

@@ -29,7 +29,7 @@ namespace HangFire.Server.Fetching
             = new DisposableCollection<PrefetchJobFetcher>();
 
         public PrioritizedJobFetcher(
-            IRedisClientsManager redisManager,
+            IRedisClient redis,
             IEnumerable<string> queues, 
             int prefetchCount,
             TimeSpan fetchTimeout)
@@ -37,7 +37,7 @@ namespace HangFire.Server.Fetching
             foreach (var queue in queues)
             {
                 _fetchers.Add(new PrefetchJobFetcher(
-                    new JobFetcher(redisManager, queue, fetchTimeout), prefetchCount));
+                    new JobFetcher(redis, queue, fetchTimeout), prefetchCount));
             }
         }
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.Server.Components;
+using HangFire.Storage.Redis.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 

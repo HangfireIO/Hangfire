@@ -23,6 +23,7 @@ using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 
 namespace HangFire
 {
@@ -34,21 +35,16 @@ namespace HangFire
         [Obsolete("Background job definitions that are based on the BackgroundJob class are no longer supported. Please, see 'Upgrading' section of the documentation.")]
         public abstract void Perform();
 
-        private static Func<IJobClient> _clientFactory = () => new JobClient(RedisFactory.PooledManager);
+        private static JobStorage _storage = JobStorage.Current;
         private static readonly object ClientFactoryLock = new object();
 
-        /// <summary>
-        /// Gets or sets the client factory callback that is used in 
-        /// the <see cref="BackgroundJob"/> class to resolve an instance 
-        /// of the <see cref="IJobClient"/> interface.
-        /// </summary>
-        public static Func<IJobClient> ClientFactory
+        public static JobStorage Storage
         {
             get
             {
                 lock (ClientFactoryLock)
                 {
-                    return _clientFactory;
+                    return _storage;
                 }
             }
             set
@@ -60,7 +56,7 @@ namespace HangFire
                         throw new ArgumentNullException();
                     }
 
-                    _clientFactory = value;
+                    _storage = value;
                 }
             }
         }
@@ -228,7 +224,7 @@ namespace HangFire
         {
             var arguments = GetArguments(callExpression);
 
-            using (var client = ClientFactory())
+            using (var client = new JobClient(Storage.CreatePooledConnection()))
             {
                 var data = new JobMethod(type, callExpression.Method);
                 return client.CreateJob(data, arguments, state);

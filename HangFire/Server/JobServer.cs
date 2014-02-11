@@ -17,13 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
-using HangFire.Common;
-using HangFire.Server.Components;
-using HangFire.Server.Fetching;
 using HangFire.Server.Performing;
+using HangFire.Storage;
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -46,21 +44,21 @@ namespace HangFire.Server
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _dequeuedJobsWatcher;
         private ThreadWrapper _serverWatchdog;
+        private IList<ThreadWrapper> _components; 
 
-        private readonly IRedisClientsManager _redisManager;
-        private readonly IRedisClient _redis;
+        private readonly IStorageConnection _connection;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         public JobServer(
-            IRedisClientsManager redisManager,
+            IStorageConnection connection,
             string serverName,
             int workerCount,
             IEnumerable<string> queues,
             TimeSpan pollInterval,
             TimeSpan fetchTimeout)
         {
-            _redisManager = redisManager;
+            _connection = connection;
             _workerCount = workerCount;
             _queues = queues;
             _pollInterval = pollInterval;
@@ -72,8 +70,6 @@ namespace HangFire.Server
             {
                 throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value must be positive.");
             }
-
-            _redis = redisManager.GetClient();
 
             _context = new ServerContext(
                 serverName,
@@ -95,22 +91,27 @@ namespace HangFire.Server
 
         private void StartServer()
         {
+            var storage = JobStorage.Current;
+
             _manager = new ThreadWrapper(new WorkerManager(
-                new PrioritizedJobFetcher(_redisManager, _queues, _workerCount, _fetchTimeout),
-                _redisManager,
+                storage.CreateFetcher(_queues, _workerCount),
                 _context,
                 _workerCount));
 
-            _schedulePoller = new ThreadWrapper(new SchedulePoller(_redisManager, _pollInterval));
-            _dequeuedJobsWatcher = new ThreadWrapper(new DequeuedJobsWatcher(_redisManager));
-            _serverWatchdog = new ThreadWrapper(new ServerWatchdog(_redisManager));
+            var components = storage.GetComponents();
+            foreach (var component in components)
+            {
+                _components.Add(new ThreadWrapper(component));
+            }
         }
 
         private void StopServer()
         {
-            _serverWatchdog.Dispose();
-            _dequeuedJobsWatcher.Dispose();
-            _schedulePoller.Dispose();
+            foreach (var component in _components.Reverse())
+            {
+                component.Dispose();
+            }
+
             _manager.Dispose();
         }
 
@@ -121,14 +122,16 @@ namespace HangFire.Server
             {
                 Logger.Info("Starting HangFire Server...");
 
-                AnnounceServer();
+                _connection.AnnounceServer(_context.ServerName, _workerCount, _queues);
                 StartServer();
 
                 Logger.Info("HangFire Server has been started.");
 
                 while (true)
                 {
-                    RetryOnException(Heartbeat, _stopped);
+                    RetryOnException(
+                        () => _connection.Heartbeat(_context.ServerName), 
+                        _stopped);
 
                     if (_stopped.WaitOne(HeartbeatInterval))
                     {
@@ -139,64 +142,13 @@ namespace HangFire.Server
                 Logger.Info("Stopping HangFire Server...");
 
                 StopServer();
-                RemoveServer(_redis, _context.ServerName);
+                _connection.RemoveServer(_context.ServerName);
 
                 Logger.Info("HangFire Server has been stopped.");
             }
             catch (Exception ex)
             {
                 Logger.Fatal("Unexpected exception caught.", ex);
-            }
-        }
-
-        private void AnnounceServer()
-        {
-            using (var transaction = _redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.AddItemToSet(
-                    "hangfire:servers", _context.ServerName));
-
-                transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:server:{0}", _context.ServerName),
-                    new Dictionary<string, string>
-                        {
-                            { "WorkerCount", _workerCount.ToString() },
-                            { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                        }));
-
-                foreach (var queue in _queues)
-                {
-                    var queue1 = queue;
-                    transaction.QueueCommand(x => x.AddItemToList(
-                        String.Format("hangfire:server:{0}:queues", _context.ServerName),
-                        queue1));
-                }
-
-                transaction.Commit();
-            }
-        }
-
-        private void Heartbeat()
-        {
-            _redis.SetEntryInHash(
-                String.Format("hangfire:server:{0}", _context.ServerName),
-                "Heartbeat",
-                JobHelper.ToStringTimestamp(DateTime.UtcNow));
-        }
-
-        public static void RemoveServer(IRedisClient redis, string serverName)
-        {
-            using (var transaction = redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.RemoveItemFromSet(
-                    "hangfire:servers",
-                    serverName));
-
-                transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}", serverName),
-                    String.Format("hangfire:server:{0}:queues", serverName)));
-
-                transaction.Commit();
             }
         }
 
