@@ -3,10 +3,11 @@
 @using System.Linq
 @using Common
 @using Pages
+@using HangFire.Storage
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Queues" };
-    var queues = JobStorage.Queues();
+    var queues = JobStorage.Current.Monitoring.Queues();
 }
 
 @if (queues.Count == 0)

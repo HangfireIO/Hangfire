@@ -2,6 +2,7 @@
 @using System
 @using System.Diagnostics
 @using System.Linq
+@using HangFire.Storage
 @inherits RazorPage
 <!DOCTYPE html>
 
@@ -45,7 +46,7 @@
 
             <div class="container">
                 <div class="col-md-3">
-                    @{ var statistics = JobStorage.GetStatistics(); }
+                    @{ var statistics = JobStorage.Current.Monitoring.GetStatistics(); }
 
                     <div id="stats" class="list-group">
                         <a class="list-group-item @(Request.PathInfo.Equals("/") ? "active" : null)"
@@ -140,9 +141,7 @@
                             @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
                         </a>
                     </li>
-                    <li>
-                        @String.Format("redis://{0}/{1}", RedisFactory.Host, RedisFactory.Db)
-                    </li>
+                    <li>@JobStorage.Current</li>
                     <li>Time: @DateTime.UtcNow GMT
                     </li>
                     <li>Generated in [@((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds) ms]

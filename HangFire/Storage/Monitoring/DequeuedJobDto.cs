@@ -1,9 +1,9 @@
 ﻿using System;
 using HangFire.Common;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class DequeuedJobDto
+    public class DequeuedJobDto
     {
         public JobMethod Method { get; set; }
         public string State { get; set; }

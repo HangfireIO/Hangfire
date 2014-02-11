@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using HangFire.Server;
+using HangFire.Storage.Monitoring;
 
 namespace HangFire.Storage
 {
@@ -14,6 +16,8 @@ namespace HangFire.Storage
 
         public static JobStorage Current { get { return _current; } }
 
+        public abstract IMonitoringApi Monitoring { get; }
+        
         public abstract IStorageConnection CreateConnection();
         public abstract IStorageConnection CreatePooledConnection();
 

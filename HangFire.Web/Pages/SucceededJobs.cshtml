@@ -1,8 +1,8 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
-
 @using Common
 @using Common.States
 @using Pages
+@using HangFire.Storage
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Succeeded Jobs" };
@@ -12,12 +12,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    var pager = new Pager(from, perPage, JobStorage.SucceededListCount())
+    var pager = new Pager(from, perPage, JobStorage.Current.Monitoring.SucceededListCount())
     {
         BasePageUrl = Request.LinkTo("/succeeded")
     };
 
-    var succeededJobs = JobStorage.SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
+    var succeededJobs = JobStorage.Current.Monitoring
+        .SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

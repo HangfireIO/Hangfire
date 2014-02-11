@@ -20,66 +20,76 @@ using System.Linq;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
-using HangFire.Storage.Redis;
+using HangFire.Storage.Monitoring;
 using ServiceStack.Redis;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Redis
 {
-    internal static class JobStorage
+    internal class RedisMonitoringApi : IMonitoringApi
     {
-        private static readonly IRedisClient Redis = RedisFactory.BasicManager.GetClient();
+        private readonly IRedisClient _redis;
 
-        public static long ScheduledCount()
+        public RedisMonitoringApi(IRedisClient redis)
         {
-            lock (Redis)
+            _redis = redis;
+        }
+
+        public void Dispose()
+        {
+            _redis.Dispose();
+        }
+
+        public long ScheduledCount()
+        {
+            lock (_redis)
             {
-                return Redis.GetSortedSetCount("hangfire:schedule");
+                return _redis.GetSortedSetCount("hangfire:schedule");
             }
         }
 
-        public static long EnqueuedCount(string queue)
+        public long EnqueuedCount(string queue)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return Redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
+                return _redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
             }
         }
 
-        public static long DequeuedCount(string queue)
+        public long DequeuedCount(string queue)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return Redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
+                return _redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
             }
         }
 
-        public static long FailedCount()
+        public long FailedCount()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return Redis.GetSortedSetCount("hangfire:failed");
+                return _redis.GetSortedSetCount("hangfire:failed");
             }
         }
 
-        public static long ProcessingCount()
+        public long ProcessingCount()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return Redis.GetSortedSetCount("hangfire:processing");
+                return _redis.GetSortedSetCount("hangfire:processing");
             }
         }
 
-        public static IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs(
+        public IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs(
             int from, int count)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var jobIds = Redis.GetRangeFromSortedSet(
+                var jobIds = _redis.GetRangeFromSortedSet(
                     "hangfire:processing",
                     from,
                     from + count - 1);
 
-                return GetJobsWithProperties(Redis,
+                return GetJobsWithProperties(_redis,
                     jobIds,
                     null,
                     new[] { "StartedAt", "ServerName", "State" },
@@ -95,11 +105,11 @@ namespace HangFire.Web
             }
         }
 
-        public static IDictionary<string, ScheduleDto> ScheduledJobs(int from, int count)
+        public IDictionary<string, ScheduleDto> ScheduledJobs(int from, int count)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var scheduledJobs = Redis.GetRangeWithScoresFromSortedSet(
+                var scheduledJobs = _redis.GetRangeWithScoresFromSortedSet(
                     "hangfire:schedule",
                     from,
                     from + count - 1);
@@ -112,7 +122,7 @@ namespace HangFire.Web
                 var jobs = new Dictionary<string, List<string>>();
                 var states = new Dictionary<string, string>();
 
-                using (var pipeline = Redis.CreatePipeline())
+                using (var pipeline = _redis.CreatePipeline())
                 {
                     foreach (var scheduledJob in scheduledJobs)
                     {
@@ -146,27 +156,27 @@ namespace HangFire.Web
             }
         }
 
-        public static IDictionary<DateTime, long> SucceededByDatesCount()
+        public IDictionary<DateTime, long> SucceededByDatesCount()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return GetTimelineStats(Redis, "succeeded");
+                return GetTimelineStats(_redis, "succeeded");
             }
         }
 
-        public static IDictionary<DateTime, long> FailedByDatesCount()
+        public IDictionary<DateTime, long> FailedByDatesCount()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return GetTimelineStats(Redis, "failed");
+                return GetTimelineStats(_redis, "failed");
             }
         }
 
-        public static IList<ServerDto> Servers()
+        public IList<ServerDto> Servers()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var serverNames = Redis.GetAllItemsFromSet("hangfire:servers");
+                var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
 
                 if (serverNames.Count == 0)
                 {
@@ -176,7 +186,7 @@ namespace HangFire.Web
                 var servers = new Dictionary<string, List<string>>();
                 var queues = new Dictionary<string, List<string>>();
 
-                using (var pipeline = Redis.CreatePipeline())
+                using (var pipeline = _redis.CreatePipeline())
                 {
                     foreach (var serverName in serverNames)
                     {
@@ -208,17 +218,17 @@ namespace HangFire.Web
             }
         }
 
-        public static IList<KeyValuePair<string, FailedJobDto>> FailedJobs(int from, int count)
+        public IList<KeyValuePair<string, FailedJobDto>> FailedJobs(int from, int count)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var failedJobIds = Redis.GetRangeFromSortedSetDesc(
+                var failedJobIds = _redis.GetRangeFromSortedSetDesc(
                     "hangfire:failed",
                     from,
                     from + count - 1);
 
                 return GetJobsWithProperties(
-                    Redis,
+                    _redis,
                     failedJobIds,
                     new[] { "Args", "Arguments" },
                     new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State" },
@@ -236,17 +246,17 @@ namespace HangFire.Web
             }
         }
 
-        public static IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs(int from, int count)
+        public IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs(int from, int count)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var succeededJobIds = Redis.GetRangeFromList(
+                var succeededJobIds = _redis.GetRangeFromList(
                     "hangfire:succeeded",
                     from,
                     from + count - 1);
 
                 return GetJobsWithProperties(
-                    Redis,
+                    _redis,
                     succeededJobIds,
                     null,
                     new[] { "SucceededAt", "State" },
@@ -259,11 +269,11 @@ namespace HangFire.Web
             }
         }
 
-        public static IList<QueueWithTopEnqueuedJobsDto> Queues()
+        public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var queues = Redis.GetAllItemsFromSet("hangfire:queues");
+                var queues = _redis.GetAllItemsFromSet("hangfire:queues");
                 var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
 
                 foreach (var queue in queues)
@@ -272,7 +282,7 @@ namespace HangFire.Web
                     long length = 0;
                     long dequeued = 0;
 
-                    using (var pipeline = Redis.CreatePipeline())
+                    using (var pipeline = _redis.CreatePipeline())
                     {
                         pipeline.QueueCommand(
                             x => x.GetRangeFromList(
@@ -291,7 +301,7 @@ namespace HangFire.Web
                     }
 
                     var jobs = GetJobsWithProperties(
-                        Redis,
+                        _redis,
                         firstJobIds,
                         null,
                         new[] { "EnqueuedAt", "State" },
@@ -315,18 +325,18 @@ namespace HangFire.Web
             }
         }
 
-        public static IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(
+        public IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(
             string queue, int from, int perPage)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var jobIds = Redis.GetRangeFromList(
+                var jobIds = _redis.GetRangeFromList(
                     String.Format("hangfire:queue:{0}", queue),
                     from,
                     from + perPage - 1);
 
                 return GetJobsWithProperties(
-                    Redis,
+                    _redis,
                     jobIds,
                     null,
                     new[] { "EnqueuedAt", "State" },
@@ -339,17 +349,17 @@ namespace HangFire.Web
             }
         }
 
-        public static IList<KeyValuePair<string, DequeuedJobDto>> DequeuedJobs(
+        public IList<KeyValuePair<string, DequeuedJobDto>> DequeuedJobs(
             string queue, int from, int perPage)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var jobIds = Redis.GetRangeFromList(
+                var jobIds = _redis.GetRangeFromList(
                     String.Format("hangfire:queue:{0}:dequeued", queue),
                     from, from + perPage - 1);
 
                 return GetJobsWithProperties(
-                    Redis,
+                    _redis,
                     jobIds,
                     new[] { "State", "CreatedAt", "Fetched", "Checked" },
                     null,
@@ -364,56 +374,56 @@ namespace HangFire.Web
             }
         }
 
-        public static IDictionary<DateTime, long> HourlySucceededJobs()
+        public IDictionary<DateTime, long> HourlySucceededJobs()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return GetHourlyTimelineStats(Redis, "succeeded");
+                return GetHourlyTimelineStats(_redis, "succeeded");
             }
         }
 
-        public static IDictionary<DateTime, long> HourlyFailedJobs()
+        public IDictionary<DateTime, long> HourlyFailedJobs()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return GetHourlyTimelineStats(Redis, "failed");
+                return GetHourlyTimelineStats(_redis, "failed");
             }
         }
 
-        public static bool RetryJob(string jobId)
+        public bool RetryJob(string jobId)
         {
-            lock (Redis)
+            lock (_redis)
             {
                 // TODO: clear retry attempts counter.
 
-                var stateMachine = new StateMachine(new RedisStorageConnection(Redis));
+                var stateMachine = new StateMachine(new RedisStorageConnection(_redis));
                 var state = new EnqueuedState("The job has been retried by a user.");
 
                 return stateMachine.ChangeState(jobId, state, FailedState.Name);
             }
         }
 
-        public static bool EnqueueScheduled(string jobId)
+        public bool EnqueueScheduled(string jobId)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var stateMachine = new StateMachine(new RedisStorageConnection(Redis));
+                var stateMachine = new StateMachine(new RedisStorageConnection(_redis));
                 var state = new EnqueuedState("The job has been enqueued by a user.");
 
                 return stateMachine.ChangeState(jobId, state, ScheduledState.Name);
             }
         }
 
-        public static JobDetailsDto JobDetails(string jobId)
+        public JobDetailsDto JobDetails(string jobId)
         {
-            lock (Redis)
+            lock (_redis)
             {
-                var job = Redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
+                var job = _redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
                 if (job.Count == 0) return null;
 
                 var hiddenProperties = new[] { "Type", "Method", "ParameterTypes", "Arguments", "Args", "State", "CreatedAt" };
 
-                var historyList = Redis.GetAllItemsFromList(
+                var historyList = _redis.GetAllItemsFromList(
                     String.Format("hangfire:job:{0}:history", jobId));
 
                 var history = historyList
@@ -437,7 +447,7 @@ namespace HangFire.Web
             }
         }
 
-        private static Dictionary<DateTime, long> GetHourlyTimelineStats(
+        private Dictionary<DateTime, long> GetHourlyTimelineStats(
             IRedisClient redis, string type)
         {
             var endDate = DateTime.UtcNow;
@@ -466,7 +476,7 @@ namespace HangFire.Web
             return result;
         }
 
-        private static Dictionary<DateTime, long> GetTimelineStats(
+        private Dictionary<DateTime, long> GetTimelineStats(
             IRedisClient redis, string type)
         {
             var endDate = DateTime.UtcNow.Date;
@@ -498,7 +508,7 @@ namespace HangFire.Web
             return result;
         }
 
-        private static IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(
+        private IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(
             IRedisClient redis,
             IList<string> jobIds,
             string[] properties,
@@ -554,23 +564,23 @@ namespace HangFire.Web
                 .ToList();
         }
 
-        public static long SucceededListCount()
+        public long SucceededListCount()
         {
-            lock (Redis)
+            lock (_redis)
             {
-                return Redis.GetListCount("hangfire:succeeded");
+                return _redis.GetListCount("hangfire:succeeded");
             }
         }
 
-        public static StatisticsDto GetStatistics()
+        public StatisticsDto GetStatistics()
         {
-            lock (Redis)
+            lock (_redis)
             {
                 var stats = new StatisticsDto();
 
-                var queues = Redis.GetAllItemsFromSet("hangfire:queues");
+                var queues = _redis.GetAllItemsFromSet("hangfire:queues");
 
-                using (var pipeline = Redis.CreatePipeline())
+                using (var pipeline = _redis.CreatePipeline())
                 {
                     pipeline.QueueCommand(
                         x => x.GetSetCount("hangfire:servers"),

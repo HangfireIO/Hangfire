@@ -1,9 +1,9 @@
 ﻿using System;
 using HangFire.Common;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class ProcessingJobDto
+    public class ProcessingJobDto
     {
         public JobMethod Method { get; set; }
         public bool InProcessingState { get; set; }

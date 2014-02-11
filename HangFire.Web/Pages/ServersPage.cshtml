@@ -3,13 +3,14 @@
 @using System.Linq
 @using Common
 @using Pages
+@using HangFire.Storage
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Servers" };
 }
 
 @{
-    var servers = JobStorage.Servers();
+    var servers = JobStorage.Current.Monitoring.Servers();
 }
 
 @if (servers.Count == 0)

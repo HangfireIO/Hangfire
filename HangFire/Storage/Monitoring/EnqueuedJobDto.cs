@@ -1,9 +1,9 @@
 ﻿using System;
 using HangFire.Common;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class EnqueuedJobDto
+    public class EnqueuedJobDto
     {
         public JobMethod Method { get; set; }
         public DateTime? EnqueuedAt { get; set; }

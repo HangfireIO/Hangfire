@@ -2,6 +2,7 @@
 @using System
 @using Common
 @using Pages
+@using HangFire.Storage
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Failed Jobs" };
@@ -11,12 +12,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    var pager = new Pager(from, perPage, JobStorage.FailedCount())
+    var pager = new Pager(from, perPage, JobStorage.Current.Monitoring.FailedCount())
     {
         BasePageUrl = Request.LinkTo("/failed")
     };
 
-    var failedJobs = JobStorage.FailedJobs(pager.FromRecord, pager.RecordsPerPage);
+    var failedJobs = JobStorage.Current.Monitoring
+        .FailedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

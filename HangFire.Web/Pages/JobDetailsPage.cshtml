@@ -5,9 +5,10 @@
 @using System.Web
 @using Common
 @using Pages
+@using HangFire.Storage
 @inherits RazorPage
 @{
-    var job = JobStorage.JobDetails(JobId.ToString());
+    var job = JobStorage.Current.Monitoring.JobDetails(JobId.ToString());
 
     string title = null;
 

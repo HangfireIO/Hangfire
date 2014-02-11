@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class QueueWithTopEnqueuedJobsDto
+    public class QueueWithTopEnqueuedJobsDto
     {
         public string Name { get; set; }
         public long Length { get; set; }

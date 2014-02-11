@@ -1,9 +1,9 @@
 ﻿using System;
 using HangFire.Common;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class SucceededJobDto
+    public class SucceededJobDto
     {
         public JobMethod Method { get; set; }
         public DateTime? SucceededAt { get; set; }

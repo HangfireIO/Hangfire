@@ -1,9 +1,9 @@
 ﻿using System;
 using HangFire.Common;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class ScheduleDto
+    public class ScheduleDto
     {
         public JobMethod Method { get; set; }
         public DateTime ScheduledAt { get; set; }

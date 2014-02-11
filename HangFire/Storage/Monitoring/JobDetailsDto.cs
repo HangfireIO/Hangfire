@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using HangFire.Common;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class JobDetailsDto
+    public class JobDetailsDto
     {
         public JobMethod Method { get; set; }
         public string[] Arguments { get; set; }

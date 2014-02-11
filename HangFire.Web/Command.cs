@@ -15,12 +15,16 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using HangFire.Storage;
 
 namespace HangFire.Web
 {
     internal static class Command
     {
-        public static readonly Func<string, bool> Retry = x => JobStorage.RetryJob(x);
-        public static readonly Func<string, bool> EnqueueScheduled = x => JobStorage.EnqueueScheduled(x);
+        public static readonly Func<string, bool> Retry 
+            = x => JobStorage.Current.Monitoring.RetryJob(x);
+
+        public static readonly Func<string, bool> EnqueueScheduled 
+            = x => JobStorage.Current.Monitoring.EnqueueScheduled(x);
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace HangFire.Web
+﻿namespace HangFire.Storage.Monitoring
 {
-    internal class StatisticsDto
+    public class StatisticsDto
     {
         public long Servers { get; set; }
         public long Enqueued { get; set; }

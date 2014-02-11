@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using HangFire.Common;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class FailedJobDto
+    public class FailedJobDto
     {
         public JobMethod Method { get; set; }
         public string[] Arguments { get; set; }

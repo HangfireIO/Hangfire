@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HangFire.Web
+namespace HangFire.Storage.Monitoring
 {
-    internal class ServerDto
+    public class ServerDto
     {
         public string Name { get; set; }
         public int WorkersCount { get; set; }
