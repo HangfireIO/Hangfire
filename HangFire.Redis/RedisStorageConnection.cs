@@ -28,9 +28,11 @@ namespace HangFire.Redis
             return new RedisAtomicWriteTransaction(_redis.CreateTransaction());
         }
 
-        public IDisposable AcquireLock(string resource, TimeSpan timeOut)
+        public IDisposable AcquireJobLock(string jobId)
         {
-            return _redis.AcquireLock(Prefix + resource, timeOut);
+            return _redis.AcquireLock(
+                Prefix + String.Format("job:{0}:state-lock", jobId),
+                TimeSpan.FromMinutes(1));
         }
 
         public IStoredJobs Jobs { get; private set; }

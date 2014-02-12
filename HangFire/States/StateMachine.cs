@@ -126,8 +126,7 @@ namespace HangFire.States
             if (String.IsNullOrWhiteSpace(jobId)) throw new ArgumentNullException("jobId");
             if (state == null) throw new ArgumentNullException("state");
 
-            using (_connection.AcquireLock(
-                String.Format("job:{0}:state-lock", jobId), TimeSpan.FromMinutes(1)))
+            using (_connection.AcquireJobLock(jobId))
             {
                 var job = _connection.Jobs.Get(jobId);
 

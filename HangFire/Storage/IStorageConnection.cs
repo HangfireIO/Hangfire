@@ -7,7 +7,7 @@ namespace HangFire.Storage
     {
         IAtomicWriteTransaction CreateWriteTransaction();
 
-        IDisposable AcquireLock(string resource, TimeSpan timeOut);
+        IDisposable AcquireJobLock(string jobId);
 
         IStoredJobs Jobs { get; }
 
