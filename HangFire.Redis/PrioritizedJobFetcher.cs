@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Redis;
 
-namespace HangFire.Server.Fetching
+namespace HangFire.Redis
 {
     internal class PrioritizedJobFetcher : IJobFetcher
     {

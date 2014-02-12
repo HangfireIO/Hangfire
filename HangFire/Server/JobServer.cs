@@ -25,7 +25,7 @@ using ServiceStack.Logging;
 
 namespace HangFire.Server
 {
-    internal class JobServer : IDisposable
+    public class JobServer : IDisposable
     {
         private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
         private const int RetryAttempts = 10;

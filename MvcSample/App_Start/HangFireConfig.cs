@@ -1,6 +1,6 @@
 ﻿using HangFire;
+using HangFire.Redis;
 using HangFire.Storage;
-using HangFire.Storage.Redis;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(

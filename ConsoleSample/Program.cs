@@ -2,8 +2,8 @@
 using System.Threading.Tasks;
 using HangFire;
 using HangFire.Filters;
+using HangFire.Redis;
 using HangFire.Storage;
-using HangFire.Storage.Redis;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 

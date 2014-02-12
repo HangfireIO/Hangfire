@@ -44,10 +44,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Redis, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ServiceStack.Redis.3.9.69\lib\net35\ServiceStack.Redis.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Text.3.9.69\lib\net35\ServiceStack.Text.dll</HintPath>
@@ -133,17 +129,11 @@
     <Compile Include="Storage\Monitoring\ServerDto.cs" />
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
-    <Compile Include="Storage\Redis\JobFetcher.cs" />
     <Compile Include="Server\Performing\IJobPerformStrategy.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="Storage\JobStorage.cs" />
-    <Compile Include="Storage\Redis\JobStorage.cs" />
-    <Compile Include="Storage\Redis\PrefetchJobFetcher.cs" />
-    <Compile Include="Storage\Redis\PrioritizedJobFetcher.cs" />
-    <Compile Include="Storage\Redis\Components\ServerWatchdog.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
-    <Compile Include="Storage\Redis\Components\DequeuedJobsWatcher.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
     <Compile Include="Common\States\JobState.cs" />
@@ -152,7 +142,6 @@
     <Compile Include="Server\Filters\IServerFilter.cs" />
     <Compile Include="Filters\PreserveCultureAttribute.cs" />
     <Compile Include="BackgroundJob.cs" />
-    <Compile Include="Storage\Redis\Components\SchedulePoller.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />
@@ -182,12 +171,6 @@
     <Compile Include="Storage\IWriteableStoredSets.cs" />
     <Compile Include="Storage\IWriteableStoredValues.cs" />
     <Compile Include="Storage\QueuedJob.cs" />
-    <Compile Include="Storage\Redis\RedisAtomicWriteTransaction.cs" />
-    <Compile Include="Storage\Redis\RedisJobStorage.cs" />
-    <Compile Include="Storage\Redis\RedisStorageOptions.cs" />
-    <Compile Include="Storage\Redis\RedisStoredJobs.cs" />
-    <Compile Include="Storage\Redis\RedisStorageConnection.cs" />
-    <Compile Include="Storage\Redis\RedisStoredValues.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec">

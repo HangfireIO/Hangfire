@@ -1,6 +1,7 @@
-﻿using ServiceStack.Redis;
+﻿using HangFire.Storage;
+using ServiceStack.Redis;
 
-namespace HangFire.Storage.Redis
+namespace HangFire.Redis
 {
     internal class RedisAtomicWriteTransaction : IAtomicWriteTransaction
     {

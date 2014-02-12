@@ -1,6 +1,6 @@
 ﻿using System;
 using HangFire.Common;
-using HangFire.Storage.Redis.Components;
+using HangFire.Redis.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 

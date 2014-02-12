@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using HangFire.Redis.Components;
 using HangFire.Server;
-using HangFire.Server.Fetching;
+using HangFire.Storage;
 using HangFire.Storage.Monitoring;
-using HangFire.Storage.Redis.Components;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.Redis
+namespace HangFire.Redis
 {
     public class RedisJobStorage : JobStorage
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace HangFire.Storage.Redis
+namespace HangFire.Redis
 {
     public class RedisStorageOptions
     {

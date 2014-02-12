@@ -23,7 +23,7 @@ using HangFire.States;
 using HangFire.Storage.Monitoring;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.Redis
+namespace HangFire.Redis
 {
     internal class RedisMonitoringApi : IMonitoringApi
     {

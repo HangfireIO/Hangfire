@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Common;
+using HangFire.Storage;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.Redis
+namespace HangFire.Redis
 {
     public class RedisStorageConnection : IStorageConnection
     {

@@ -16,7 +16,7 @@
 
 namespace HangFire.Server
 {
-    internal interface IStoppable
+    public interface IStoppable
     {
         void Stop();
     }

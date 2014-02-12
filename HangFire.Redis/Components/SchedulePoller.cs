@@ -25,7 +25,7 @@ using HangFire.States;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.Redis.Components
+namespace HangFire.Redis.Components
 {
     internal class SchedulePoller : IThreadWrappable, IDisposable
     {

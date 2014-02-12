@@ -22,9 +22,9 @@ using HangFire.Server;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 
-namespace HangFire.Storage.Redis.Components
+namespace HangFire.Redis.Components
 {
-    internal class ServerWatchdog : IThreadWrappable, IDisposable
+    public class ServerWatchdog : IThreadWrappable, IDisposable
     {
         private static readonly TimeSpan ServerTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30);
