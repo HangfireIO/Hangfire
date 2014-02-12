@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using HangFire.Common;
-using HangFire.Server;
-using HangFire.Server.Components;
+using HangFire.Redis.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -16,7 +14,7 @@ namespace HangFire.Tests
         [Given(@"a server watchdog")]
         public void GivenAServerWatchdog()
         {
-            _watchdog = new ServerWatchdog(RedisFactory.BasicManager);
+            _watchdog = new ServerWatchdog(Redis.Storage.BasicManager);
         }
 
         [Given(@"a server that was started (.+)")]

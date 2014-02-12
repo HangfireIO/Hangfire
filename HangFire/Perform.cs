@@ -20,19 +20,20 @@ using System.ComponentModel;
 using HangFire.Client;
 using HangFire.Common.States;
 using HangFire.States;
-using ServiceStack.Redis;
+using HangFire.Storage;
 
 namespace HangFire
 {
     /// <summary>
     /// <p>The top-level class of the HangFire Client part. Provides several
     /// static methods to create jobs using guids as a unique identifier.</p>
-    /// <p>All methods are thread-safe and use the <see cref="PooledRedisClientManager"/> 
-    /// to take pooled Redis connections when creating a job.</p>
+    /// <p>All methods are thread-safe and use the pooled connections.</p>
     /// </summary>
     [Obsolete("Old Client API is obsolete. Use static methods of the BackgroundJob class instead.")]
     public static class Perform
     {
+        private static readonly JobStorage _storage = JobStorage.Current;
+
         /// <summary>
         /// Enqueues a new argumentless job of the <typeparamref name="TJob"/> 
         /// type to its queue.
@@ -101,7 +102,7 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string Async(Type type, object args)
         {
-            using (var client = new JobClient(RedisFactory.PooledManager))
+            using (var client = new JobClient(_storage.CreatePooledConnection()))
             {
                 var enqueuedState = new EnqueuedState("Enqueued by the Сlient");
                 var uniqueId = GenerateId();
@@ -180,7 +181,7 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Thrown when job creation was failed.</exception>
         public static string In(TimeSpan delay, Type type, object args)
         {
-            using (var client = new JobClient(RedisFactory.BasicManager))
+            using (var client = new JobClient(_storage.CreatePooledConnection()))
             {
                 var scheduledState = new ScheduledState("Scheduled by the Client", DateTime.UtcNow.Add(delay));
                 var uniqueId = GenerateId();

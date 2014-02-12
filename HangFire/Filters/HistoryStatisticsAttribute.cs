@@ -30,32 +30,41 @@ namespace HangFire.Filters
 
         public void OnStateChanging(StateChangingContext context)
         {
-            using (var transaction = context.Redis.CreateTransaction())
+            using (var transaction = context.Connection.CreateWriteTransaction())
             {
                 if (context.CandidateState.StateName == SucceededState.Name)
                 {
-                    transaction.QueueCommand(x => x.IncrementValue(
-                        String.Format("hangfire:stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
+                    transaction.Values.Increment(
+                        String.Format("stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
+                    // TODO: set expiration date.
+
+                    // TODO: yyyy-MM-ddTHH-mm key
 
                     var hourlySucceededKey = String.Format(
-                        "hangfire:stats:succeeded:{0}",
+                        "stats:succeeded:{0}",
                         DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-                    transaction.QueueCommand(x => x.IncrementValue(hourlySucceededKey));
-                    transaction.QueueCommand(x => x.ExpireEntryIn(hourlySucceededKey, TimeSpan.FromDays(1)));
+
+                    transaction.Values.Increment(hourlySucceededKey);
+                    transaction.Values.ExpireIn(hourlySucceededKey, TimeSpan.FromDays(1));
                 }
                 else if (context.CandidateState.StateName == FailedState.Name)
                 {
-                    transaction.QueueCommand(x => x.IncrementValue(
-                        String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd"))));
+                    transaction.Values.Increment(
+                        String.Format("stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
+                    // TODO: set expiration date
 
-                    transaction.QueueCommand(x => x.IncrementValue(
-                        String.Format("hangfire:stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm"))));
+                    transaction.Values.Increment(
+                        String.Format("stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
+
+                    transaction.Values.Increment(
+                        String.Format("stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm")));
+                    // TODO: set expiration date
 
                     var hourlyFailedKey = String.Format(
-                        "hangfire:stats:failed:{0}",
+                        "stats:failed:{0}",
                         DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-                    transaction.QueueCommand(x => x.IncrementValue(hourlyFailedKey));
-                    transaction.QueueCommand(x => x.ExpireEntryIn(hourlyFailedKey, TimeSpan.FromDays(1)));
+                    transaction.Values.Increment(hourlyFailedKey);
+                    transaction.Values.ExpireIn(hourlyFailedKey, TimeSpan.FromDays(1));
                 }
 
                 transaction.Commit();

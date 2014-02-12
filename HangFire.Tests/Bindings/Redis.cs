@@ -1,4 +1,6 @@
 ﻿using System.Threading;
+using HangFire.Redis;
+using HangFire.Storage;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 using ServiceStack.Redis;
@@ -13,6 +15,7 @@ namespace HangFire.Tests
         private const string RedisHost = "localhost:6379";
 
         public static IRedisClient Client;
+        public static RedisJobStorage Storage;
 
         [BeforeScenario("redis")]
         public static void BeforeRedisScenario()
@@ -20,10 +23,10 @@ namespace HangFire.Tests
             GlobalLock.Acquire();
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            RedisFactory.Db = RedisDb;
-            RedisFactory.Host = RedisHost;
+            Storage = new RedisJobStorage(RedisHost, RedisDb);
+            JobStorage.SetCurrent(Storage);
 
-            Client = RedisFactory.BasicManager.GetClient();
+            Client = Storage.BasicManager.GetClient();
             Client.FlushDb();
         }
 

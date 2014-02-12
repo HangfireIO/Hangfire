@@ -21,6 +21,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using HangFire.Common.States;
 using HangFire.Server;
+using HangFire.Storage;
 
 namespace HangFire
 {
@@ -125,7 +126,7 @@ namespace HangFire
             var serverName = String.Format("{0}:{1}", MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
             _server = new JobServer(
-                RedisFactory.BasicManager,
+                JobStorage.Current.CreateConnection(),
                 serverName, WorkerCount, Queues, PollInterval, TimeSpan.FromSeconds(5));
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using HangFire.Common;
+using HangFire.Redis.Components;
 using HangFire.Server;
-using HangFire.Server.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -39,7 +39,8 @@ namespace HangFire.Tests
         [When(@"the poller runs")]
         public void WhenThePollerRuns()
         {
-            using (var poller = new SchedulePoller(RedisFactory.BasicManager, TimeSpan.FromSeconds(15)))
+            using (var poller = new SchedulePoller(
+                Redis.Storage.BasicManager, TimeSpan.FromSeconds(15)))
             {
                 _pollerResult = poller.EnqueueNextScheduledJob();
             }

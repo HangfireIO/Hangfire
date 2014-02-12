@@ -4,6 +4,7 @@ using System.Linq;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.Redis;
 using HangFire.States;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -30,7 +31,7 @@ namespace HangFire.Tests
         public void GivenAClient()
         {
             _client = new JobClient(
-                RedisFactory.BasicManager,
+                new RedisStorageConnection(Redis.Storage.BasicManager.GetClient()),
                 new JobCreator(_filters));
         }
 

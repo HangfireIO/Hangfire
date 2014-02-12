@@ -44,10 +44,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Redis, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ServiceStack.Redis.3.9.69\lib\net35\ServiceStack.Redis.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\ServiceStack.Text.3.9.69\lib\net35\ServiceStack.Text.dll</HintPath>
@@ -119,18 +115,25 @@
     <Compile Include="Filters\RecurringAttribute.cs" />
     <Compile Include="Filters\RetryAttribute.cs" />
     <Compile Include="Server\DisposableCollection.cs" />
-    <Compile Include="Server\Fetching\IJobFetcher.cs" />
+    <Compile Include="Server\IJobFetcher.cs" />
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
-    <Compile Include="Server\Fetching\JobFetcher.cs" />
+    <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
+    <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\FailedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\JobDetailsDto.cs" />
+    <Compile Include="Storage\Monitoring\ProcessingJobDto.cs" />
+    <Compile Include="Storage\Monitoring\QueueWithTopEnqueuedJobsDto.cs" />
+    <Compile Include="Storage\Monitoring\ScheduleDto.cs" />
+    <Compile Include="Storage\Monitoring\ServerDto.cs" />
+    <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
+    <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
     <Compile Include="Server\Performing\IJobPerformStrategy.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
-    <Compile Include="Server\Fetching\PrefetchJobFetcher.cs" />
-    <Compile Include="Server\Fetching\PrioritizedJobFetcher.cs" />
-    <Compile Include="Server\Components\ServerWatchdog.cs" />
+    <Compile Include="Storage\JobStorage.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
-    <Compile Include="Server\Components\DequeuedJobsWatcher.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
     <Compile Include="Common\States\JobState.cs" />
@@ -139,9 +142,7 @@
     <Compile Include="Server\Filters\IServerFilter.cs" />
     <Compile Include="Filters\PreserveCultureAttribute.cs" />
     <Compile Include="BackgroundJob.cs" />
-    <Compile Include="Server\Components\SchedulePoller.cs" />
     <Compile Include="QueueAttribute.cs" />
-    <Compile Include="RedisFactory.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />
@@ -161,6 +162,15 @@
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="Filters\HistoryStatisticsAttribute.cs" />
+    <Compile Include="Storage\IAtomicWriteTransaction.cs" />
+    <Compile Include="Storage\IStorageConnection.cs" />
+    <Compile Include="Storage\IStoredJobs.cs" />
+    <Compile Include="Storage\IWriteableJobQueue.cs" />
+    <Compile Include="Storage\IWriteableStoredJobs.cs" />
+    <Compile Include="Storage\IWriteableStoredLists.cs" />
+    <Compile Include="Storage\IWriteableStoredSets.cs" />
+    <Compile Include="Storage\IWriteableStoredValues.cs" />
+    <Compile Include="Storage\QueuedJob.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec">

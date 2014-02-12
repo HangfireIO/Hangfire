@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using HangFire.Common;
+using HangFire.Redis;
 using HangFire.Server;
-using HangFire.Server.Fetching;
 using HangFire.Server.Performing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
@@ -99,8 +99,7 @@ namespace HangFire.Tests
                 new JobPerformer(_filters));
 
             using (var manager = new WorkerManager(
-                new JobFetcher(RedisFactory.BasicManager, QueueSteps.DefaultQueue),
-                RedisFactory.BasicManager,
+                new JobFetcher(Redis.Storage.BasicManager.GetClient(), QueueSteps.DefaultQueue),
                 context,
                 1))
             {

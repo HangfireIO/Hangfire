@@ -1,4 +1,5 @@
-﻿Feature: JobClient
+﻿@redis
+Feature: JobClient
 
     A a user, I expect that my jobs are created and the initial state
     is applied to them.

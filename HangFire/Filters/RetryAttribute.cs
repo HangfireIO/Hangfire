@@ -52,14 +52,13 @@ namespace HangFire.Filters
                 return;
             }
 
-            var retryCount = context.Redis.IncrementValueInHash(
-                String.Format("hangfire:job:{0}", context.JobId),
-                "RetryCount",
-                1);
-
-            if (retryCount <= Attempts)
+            var retryCount = context.GetJobParameter<int>("RetryCount");
+            
+            if (retryCount < Attempts)
             {
                 var delay = DateTime.UtcNow.AddSeconds(SecondsToDelay(retryCount));
+
+                context.SetJobParameter("RetryCount", retryCount + 1);
 
                 // If attempt number is less than max attempts, we should
                 // schedule the job to run again later.

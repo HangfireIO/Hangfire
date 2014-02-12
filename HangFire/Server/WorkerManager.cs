@@ -17,9 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using HangFire.Server.Fetching;
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 
 namespace HangFire.Server
 {
@@ -36,7 +34,6 @@ namespace HangFire.Server
         
         public WorkerManager(
             IJobFetcher fetcher,
-            IRedisClientsManager redisManager,
             ServerContext context,
             int workerCount)
         {
@@ -47,7 +44,7 @@ namespace HangFire.Server
             {
                 var workerContext = new WorkerContext(context, i);
 
-                var worker = new Worker(this, redisManager, workerContext);
+                var worker = new Worker(this, workerContext);
                 worker.Start();
 
                 _workers.Add(worker);
@@ -79,8 +76,8 @@ namespace HangFire.Server
             }
             while (worker.Crashed);
 
-            var payload = _fetcher.DequeueJob(cancellationToken);
-            worker.Process(payload);
+            var job = _fetcher.DequeueJob(cancellationToken);
+            worker.Process(job);
         }
 
         internal void NotifyReady(Worker worker)

@@ -64,15 +64,22 @@
     <Compile Include="Services.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HangFire\HangFire.csproj">
-      <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
-      <Name>HangFire</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HangFire.Redis\HangFire.Redis.csproj">
+      <Project>{8f46f57b-3247-4aa7-b330-57ac088547eb}</Project>
+      <Name>HangFire.Redis</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HangFire.SqlServer\HangFire.SqlServer.csproj">
+      <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
+      <Name>HangFire.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HangFire\HangFire.csproj">
+      <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
+      <Name>HangFire</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

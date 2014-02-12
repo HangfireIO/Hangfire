@@ -48,16 +48,16 @@ namespace HangFire.States
         {
             var timestamp = JobHelper.ToTimestamp(EnqueueAt);
 
-            context.Transaction.QueueCommand(x => x.AddItemToSortedSet(
-                "hangfire:schedule", context.JobId, timestamp));
+            context.Transaction.Sets.Add(
+                "schedule", context.JobId, timestamp);
         }
 
         public class Descriptor : JobStateDescriptor
         {
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.QueueCommand(x => x.RemoveItemFromSortedSet(
-                    "hangfire:schedule", context.JobId));
+                context.Transaction.Sets.Remove(
+                    "schedule", context.JobId);
             }
         }
     }

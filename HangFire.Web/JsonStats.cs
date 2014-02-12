@@ -14,9 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Linq;
 using System.Text;
-using System.Web;
+using HangFire.Storage;
 using ServiceStack.Text;
 
 namespace HangFire.Web
@@ -25,7 +24,7 @@ namespace HangFire.Web
     {
         public override void ProcessRequest()
         {
-            var response = JobStorage.GetStatistics();
+            var response = JobStorage.Current.Monitoring.GetStatistics();
 
             using (JsConfig.With(emitCamelCaseNames: true))
             {

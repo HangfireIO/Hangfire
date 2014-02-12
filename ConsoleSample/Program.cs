@@ -2,6 +2,9 @@
 using System.Threading.Tasks;
 using HangFire;
 using HangFire.Filters;
+using HangFire.Redis;
+using HangFire.SqlServer;
+using HangFire.Storage;
 using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
 
@@ -12,8 +15,10 @@ namespace ConsoleSample
         public static void Main()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
-            
-            RedisFactory.Db = 3;
+
+            //JobStorage.SetCurrent(new RedisJobStorage("localhost:6379", 3));
+            JobStorage.SetCurrent(new SqlServerStorage(
+                @"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;"));
 
             GlobalJobFilters.Filters.Add(new HistoryStatisticsAttribute(), 20);
             GlobalJobFilters.Filters.Add(new RetryAttribute());

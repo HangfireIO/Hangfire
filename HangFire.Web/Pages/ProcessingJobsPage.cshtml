@@ -1,6 +1,7 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using Common
 @using Pages
+@using HangFire.Storage
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Processing Jobs" };
@@ -10,12 +11,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    var pager = new Pager(from, perPage, JobStorage.ProcessingCount())
+    var pager = new Pager(from, perPage, JobStorage.Current.Monitoring.ProcessingCount())
     {
         BasePageUrl = Request.LinkTo("/processing")
     };
 
-    var processingJobs = JobStorage.ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
+    var processingJobs = JobStorage.Current.Monitoring
+        .ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

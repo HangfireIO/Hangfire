@@ -15,20 +15,21 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using ServiceStack.Redis;
+using HangFire.Storage;
 
 namespace HangFire.Common.States
 {
     public class StateApplyingContext : StateContext
     {
         internal StateApplyingContext(
-            StateContext context, IRedisTransaction transaction)
+            StateContext context, IAtomicWriteTransaction transaction)
             : base(context)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
+
             Transaction = transaction;
         }
 
-        public IRedisTransaction Transaction { get; private set; }
+        public IAtomicWriteTransaction Transaction { get; private set; }
     }
 }

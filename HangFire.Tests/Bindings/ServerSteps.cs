@@ -83,7 +83,7 @@ namespace HangFire.Tests
         private void CreateServer(string name, int workers, IEnumerable<string> queues)
         {
             _server = new JobServer(
-                RedisFactory.BasicManager,
+                Redis.Storage.CreateConnection(),
                 name,
                 workers,
                 queues,

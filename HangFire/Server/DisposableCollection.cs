@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace HangFire.Server
 {
-    internal class DisposableCollection<T> : List<T>
+    public class DisposableCollection<T> : List<T>
         where T : IDisposable
     {
         public void Dispose()
