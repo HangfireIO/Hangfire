@@ -52,6 +52,7 @@ namespace ConsoleSample
 
         public void Args(string name, int authorId, DateTime createdAt)
         {
+            Console.WriteLine("{0}, {1}, {2}", name, authorId, createdAt);
         }
     }
 }

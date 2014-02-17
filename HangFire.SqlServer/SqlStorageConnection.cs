@@ -1,34 +1,68 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Transactions;
 using Dapper;
 using HangFire.Common;
+using HangFire.Server;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    public class SqlJobLock : IDisposable
+    public class SqlStoredJobs : IStoredJobs
     {
-        private readonly TransactionScope _transaction;
+        private readonly SqlConnection _connection;
 
-        public SqlJobLock(string jobId, IDbConnection connection)
+        public SqlStoredJobs(SqlConnection connection)
         {
-            _transaction = new TransactionScope(
-                TransactionScopeOption.Required, 
-                new TransactionOptions { IsolationLevel = System.Transactions.IsolationLevel.RepeatableRead });
-
-            connection.Query<string>(
-                "select Id from HangFire.Job where Id = @id",
-                new { id = jobId });
+            _connection = connection;
         }
 
-        public void Dispose()
+        public Dictionary<string, string> Get(string id)
         {
-            _transaction.Complete();
+            var job = _connection.Query<Job>(
+                @"select * from HangFire.Job where id = @id",
+                new { id = id })
+                .SingleOrDefault();
+
+            if (job == null) return null;
+
+            var data = JobHelper.FromJson<InvocationData>(job.InvocationData);
+            return new Dictionary<string, string>
+            {
+                { "Type", data.Type },
+                { "Method" , data.Method },
+                { "ParameterTypes", data.ParameterTypes },
+                { "Arguments", job.Arguments },
+                { "State", job.State },
+                { "CreatedAt", JobHelper.ToStringTimestamp(job.CreatedAt) }
+            };
+        }
+
+        public void SetParameter(string id, string name, string value)
+        {
+            _connection.Execute(
+                @"merge HangFire.JobParameter as Target "
+                + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
+                + @"on Target.JobId = Source.JobId AND Target.Name = Source.Name "
+                + @"when matched then update set Value = Source.Value "
+                + @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value)");
+        }
+
+        public string GetParameter(string id, string name)
+        {
+            return _connection.Query<string>(
+                @"select Value from HangFire.JobParameter where JobId = @id and Name = @name",
+                new { id = id, name = name })
+                .SingleOrDefault();
+        }
+
+        public void Complete(JobPayload payload)
+        {
+            // TODO: in some cases it is required to not to delete the job.
+            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and QueueName = @queueName",
+                new { id = payload.Id, queueName = payload.Queue });
         }
     }
 
@@ -39,6 +73,7 @@ namespace HangFire.SqlServer
         public SqlStorageConnection(SqlConnection connection)
         {
             _connection = connection;
+            Jobs = new SqlStoredJobs(_connection);
         }
 
         public void Dispose()
@@ -48,7 +83,7 @@ namespace HangFire.SqlServer
 
         public IAtomicWriteTransaction CreateWriteTransaction()
         {
-            throw new NotImplementedException();
+            return new SqlWriteTransaction(_connection);
         }
 
         public IDisposable AcquireJobLock(string jobId)

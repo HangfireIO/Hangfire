@@ -55,8 +55,11 @@
     <Compile Include="Entities\ServerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Entities\Queue.cs" />
+    <Compile Include="SqlJobLock.cs" />
+    <Compile Include="SqlServerFetcher.cs" />
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlStorageConnection.cs" />
+    <Compile Include="SqlWriteTransaction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
