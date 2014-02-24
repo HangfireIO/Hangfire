@@ -18,7 +18,7 @@ namespace HangFire.SqlServer
 
         public override IMonitoringApi Monitoring
         {
-            get { throw new System.NotImplementedException(); }
+            get { return new SqlServerMonitoringApi(new SqlConnection(_connectionString)); }
         }
 
         public override IStorageConnection CreateConnection()

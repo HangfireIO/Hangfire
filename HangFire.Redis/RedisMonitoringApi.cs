@@ -100,7 +100,6 @@ namespace HangFire.Redis
                         StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InProcessingState = ProcessingState.Name.Equals(
                             state[2], StringComparison.OrdinalIgnoreCase),
-                        State = state[2]
                     }).OrderBy(x => x.Value.StartedAt).ToList();
             }
         }
@@ -230,13 +229,11 @@ namespace HangFire.Redis
                 return GetJobsWithProperties(
                     _redis,
                     failedJobIds,
-                    new[] { "Args", "Arguments" },
+                    null,
                     new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State" },
                     (method, job, state) => new FailedJobDto
                     {
                         Method = method,
-                        OldFormatArgs = JobHelper.FromJson<Dictionary<string, string>>(job[0]),
-                        Arguments = JobHelper.FromJson<string[]>(job[1]),
                         FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         ExceptionType = state[1],
                         ExceptionMessage = state[2],

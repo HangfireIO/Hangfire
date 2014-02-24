@@ -146,6 +146,10 @@
       <Project>{8f46f57b-3247-4aa7-b330-57ac088547eb}</Project>
       <Name>HangFire.Redis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\HangFire.SqlServer\HangFire.SqlServer.csproj">
+      <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
+      <Name>HangFire.SqlServer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HangFire\HangFire.csproj">
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
       <Name>HangFire</Name>

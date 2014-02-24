@@ -103,28 +103,6 @@ else
                                 {
                                     <pre class="stack-trace">@HtmlHelper.MarkupStackTrace(job.Value.ExceptionDetails)</pre>
                                 }
-                                
-                                @if (job.Value.Method != null && job.Value.Method.OldFormat)
-                                {
-                                    <h4>Job Arguments</h4>
-                                    <table class="table table-bordered table-striped table-condensed">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Value</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var arg in job.Value.OldFormatArgs)
-                                            {
-                                                <tr>
-                                                    <td>@arg.Key</td>
-                                                    <td><pre class="pre-args">"@arg.Value"</pre></td>
-                                                </tr>
-                                            }
-                                        </tbody> 
-                                    </table>
-                                }
                             </div>
                         </td>
                     </tr>

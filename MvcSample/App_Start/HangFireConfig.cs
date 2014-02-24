@@ -1,5 +1,6 @@
 ﻿using HangFire;
 using HangFire.Redis;
+using HangFire.SqlServer;
 using HangFire.Storage;
 using HangFire.Web;
 
@@ -18,7 +19,9 @@ namespace MvcSample
         {
             // If you have custom Redis installation, use the
             // following method to configure HangFire:
-            JobStorage.SetCurrent(new RedisJobStorage("localhost:6379", 3));
+            //JobStorage.SetCurrent(new RedisJobStorage("localhost:6379", 3));
+            JobStorage.SetCurrent(new SqlServerStorage(
+                @"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;"));
 
             _server = new AspNetBackgroundJobServer();
             //_server.Start();

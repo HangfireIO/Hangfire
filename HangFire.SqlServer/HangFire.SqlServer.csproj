@@ -52,11 +52,13 @@
     <Compile Include="Entities\Job.cs" />
     <Compile Include="Entities\JobHistory.cs" />
     <Compile Include="Entities\JobQueue.cs" />
+    <Compile Include="Entities\Server.cs" />
     <Compile Include="Entities\ServerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Entities\Queue.cs" />
     <Compile Include="SqlJobLock.cs" />
     <Compile Include="SqlServerFetcher.cs" />
+    <Compile Include="SqlServerMonitoringApi.cs" />
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlStorageConnection.cs" />
     <Compile Include="SqlWriteTransaction.cs" />

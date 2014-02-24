@@ -102,7 +102,11 @@ namespace HangFire.SqlServer
             };
 
             _connection.Execute(
-                @"insert into HangFire.Server (Id, Data) values (@id, @data)",
+                @"merge HangFire.Server as Target "
+                + @"using (VALUES (@id, @data)) as Source (Id, Data) "
+                + @"on Target.Id = Source.Id "
+                + @"when matched then update set Data = Source.Data, LastHeartbeat = null "
+                + @"when not matched then insert (Id, Data) values (Source.Id, Source.Data);",
                 new { id = serverId, data = JobHelper.ToJson(data) });
         }
 
@@ -116,8 +120,8 @@ namespace HangFire.SqlServer
         public void Heartbeat(string serverId)
         {
             _connection.Execute(
-                @"update HangFire.Server set LastHeartbeat = @now",
-                new { now = DateTime.UtcNow });
+                @"update HangFire.Server set LastHeartbeat = @now where Id = @id",
+                new { now = DateTime.UtcNow, id = serverId });
         }
     }
 }
