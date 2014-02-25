@@ -33,10 +33,12 @@ namespace HangFire.SqlServer
 
             do
             {
-                var jobId = _connection.Query<Guid?>(
-                    @"update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE() "
-                    + @"output INSERTED.JobId "
-                    + @"where (FetchedAt is null) or (FetchedAt > DATEADD(minute, 15, GETUTCDATE())) ")
+                var jobId = _connection.Query<Guid?>(@"
+update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
+output INSERTED.JobId
+where (FetchedAt is null) or (FetchedAt < DATEADD(minute, -15, GETUTCDATE()))
+and QueueName in @queues",
+                    new { queues = _queues })
                     .SingleOrDefault();
 
                 if (jobId != null)

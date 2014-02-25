@@ -103,34 +103,50 @@ namespace HangFire.SqlServer
 
         void IWriteableStoredLists.AddToLeft(string key, string value)
         {
-            // throw new NotImplementedException();
+            _connection.Execute(
+                @"insert into HangFire.List ([Key], Value) values (@key, @value)",
+                new { key, value });
         }
 
         void IWriteableStoredSets.Add(string key, string value)
         {
-            // throw new NotImplementedException();
+            ((IWriteableStoredSets)this).Add(key, value, 0.0);
         }
 
         void IWriteableStoredSets.Add(string key, string value, double score)
         {
+            const string addSql = @"
+merge HangFire.[Set] as Target
+using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
+on Target.[Key] = Source.[Key] and Target.Value = Source.Value
+when matched then update set Score = Source.Score
+when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
 
+            _connection.Execute(addSql, new { key, value, score });
         }
 
         void IWriteableStoredSets.Remove(string key, string value)
         {
             _connection.Execute(
-                @"delete from HangFire.Set where [Key] = @key and Value = @value",
+                @"delete from HangFire.[Set] where [Key] = @key and Value = @value",
                 new { key, value });
         }
 
         void IWriteableStoredLists.Remove(string key, string value)
         {
-            // throw new NotImplementedException();
+            _connection.Execute(
+                @"delete from HangFire.List where [Key] = @key and Value = @value",
+                new { key, value });
         }
 
         void IWriteableStoredLists.Trim(string key, int keepStartingFrom, int keepEndingAt)
         {
-            // throw new NotImplementedException();
+            const string trimSql = @"
+with cte as (
+select row_number() over (order by Id desc) as row_num from HangFire.List)
+delete from cte where row_num not between @start and @end";
+
+            _connection.Execute(trimSql, new { start = keepStartingFrom + 1, end = keepEndingAt + 1 });
         }
 
         void IWriteableStoredValues.Increment(string key)

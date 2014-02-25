@@ -46,6 +46,7 @@ namespace HangFire.States
 
         public override void Apply(StateApplyingContext context)
         {
+            // TODO: Remove Redis-related stuff
             context.Transaction.Sets.Add(
                 "processing",
                 context.JobId,

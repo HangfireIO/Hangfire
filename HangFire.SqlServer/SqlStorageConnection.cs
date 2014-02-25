@@ -47,7 +47,8 @@ namespace HangFire.SqlServer
                 + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
                 + @"on Target.JobId = Source.JobId AND Target.Name = Source.Name "
                 + @"when matched then update set Value = Source.Value "
-                + @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value)");
+                + @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value)",
+                new { jobId = id, name, value });
         }
 
         public string GetParameter(string id, string name)
