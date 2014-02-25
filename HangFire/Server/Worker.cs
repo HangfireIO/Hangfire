@@ -136,6 +136,8 @@ namespace HangFire.Server
 
                     lock (_jobLock)
                     {
+                        if (_job == null) return;
+
                         JobServer.RetryOnException(
                             () =>
                             {

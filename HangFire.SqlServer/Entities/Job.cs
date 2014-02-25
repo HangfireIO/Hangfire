@@ -10,7 +10,7 @@ namespace HangFire.SqlServer.Entities
         public string Arguments { get; set; }
         public string StateData { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? ExpirationDate { get; set; }
+        public DateTime? ExpireAt { get; set; }
 
         public DateTime? FetchedAt { get; set; }
         public DateTime? CheckedAt { get; set; }

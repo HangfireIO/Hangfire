@@ -75,14 +75,14 @@ namespace HangFire.SqlServer
         void IWriteableStoredJobs.Expire(string jobId, TimeSpan expireIn)
         {
             _connection.Execute(
-                @"update HangFire.Job set ExpirationDate = @expireIn where Id = @id",
-                new { expireIn = DateTime.UtcNow.Add(expireIn), id = jobId });
+                @"update HangFire.Job set ExpireAt = @expireAt where Id = @id",
+                new { expireAt = DateTime.UtcNow.Add(expireIn), id = jobId });
         }
 
         void IWriteableStoredJobs.Persist(string jobId)
         {
             _connection.Execute(
-                @"update HangFire.Job set ExpirationDate = NULL where Id = @id",
+                @"update HangFire.Job set ExpireAt = NULL where Id = @id",
                 new { id = jobId });
         }
 
@@ -113,12 +113,14 @@ namespace HangFire.SqlServer
 
         void IWriteableStoredSets.Add(string key, string value, double score)
         {
-            // throw new NotImplementedException();
+
         }
 
         void IWriteableStoredSets.Remove(string key, string value)
         {
-            // throw new NotImplementedException();
+            _connection.Execute(
+                @"delete from HangFire.Set where [Key] = @key and Value = @value",
+                new { key, value });
         }
 
         void IWriteableStoredLists.Remove(string key, string value)
@@ -133,17 +135,33 @@ namespace HangFire.SqlServer
 
         void IWriteableStoredValues.Increment(string key)
         {
-            // throw new NotImplementedException();
+            const string decrementSql = @"
+merge HangFire.Value as Target
+using (VALUES (@key)) as Source ([Key])
+on Target.[Key] = Source.[Key]
+when matched then update set IntValue = IntValue + 1
+when not matched then insert ([Key], IntValue) values (Source.[Key], 1);";
+
+            _connection.Execute(decrementSql, new { key });
         }
 
         void IWriteableStoredValues.Decrement(string key)
         {
-            // throw new NotImplementedException();
+            const string decrementSql = @"
+merge HangFire.Value as Target
+using (VALUES (@key)) as Source ([Key])
+on Target.[Key] = Source.[Key]
+when matched then update set IntValue = IntValue - 1
+when not matched then insert ([Key], IntValue) values (Source.[Key], -1);";
+
+            _connection.Execute(decrementSql, new { key });
         }
 
         void IWriteableStoredValues.ExpireIn(string key, TimeSpan expireIn)
         {
-            // throw new NotImplementedException();
+            _connection.Execute(
+                @"update HangFire.Value set ExpireAt = @expireAt where [Key] = @key",
+                new { expireAt = DateTime.UtcNow.Add(expireIn), key = key });
         }
     }
 }

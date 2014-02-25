@@ -14,7 +14,7 @@ namespace HangFire.Storage.Monitoring
         IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs(
             int from, int count);
 
-        IDictionary<string, ScheduleDto> ScheduledJobs(int from, int count);
+        IList<KeyValuePair<string, ScheduleDto>> ScheduledJobs(int from, int count);
         IDictionary<DateTime, long> SucceededByDatesCount();
         IDictionary<DateTime, long> FailedByDatesCount();
         IList<ServerDto> Servers();

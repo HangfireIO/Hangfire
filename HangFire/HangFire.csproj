@@ -99,6 +99,7 @@
     <Compile Include="Common\Filters\JobFilterAttribute.cs" />
     <Compile Include="Common\Filters\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\Filters\JobFilterInfo.cs" />
+    <Compile Include="Common\States\IStateHandler.cs" />
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
     <Compile Include="Client\Filters\CreatedContext.cs" />
     <Compile Include="Client\Filters\CreatingContext.cs" />

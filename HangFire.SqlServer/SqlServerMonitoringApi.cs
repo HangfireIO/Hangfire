@@ -143,19 +143,26 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
             }
         }
 
-        public IDictionary<string, ScheduleDto> ScheduledJobs(int @from, int count)
+        public IList<KeyValuePair<string, ScheduleDto>> ScheduledJobs(int @from, int count)
         {
-            return new Dictionary<string, ScheduleDto>();
+            return GetJobs(
+                from, count,
+                ScheduledState.Name,
+                (method, stateData) => new ScheduleDto
+                {
+                    Method = method,
+                    ScheduledAt = JobHelper.FromStringTimestamp(stateData["ScheduledAt"])
+                });
         }
 
         public IDictionary<DateTime, long> SucceededByDatesCount()
         {
-            return new Dictionary<DateTime, long>();
+            return GetTimelineStats("succeeded");
         }
 
         public IDictionary<DateTime, long> FailedByDatesCount()
         {
-            return new Dictionary<DateTime, long>();
+            return GetTimelineStats("failed");
         }
 
         public IList<ServerDto> Servers()
@@ -302,12 +309,12 @@ where r.row_num between @start and @end";
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
         {
-            return new Dictionary<DateTime, long>();
+            return GetHourlyTimelineStats("succeeded");
         }
 
         public IDictionary<DateTime, long> HourlyFailedJobs()
         {
-            return new Dictionary<DateTime, long>();
+            return GetHourlyTimelineStats("failed");
         }
 
         public bool RetryJob(string jobId)
@@ -361,7 +368,6 @@ select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
 
         public long SucceededListCount()
         {
-            // TODO: add independent counter
             return GetNumberOfJobsByStateName(SucceededState.Name);
         }
 
@@ -373,6 +379,7 @@ select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
 select [State], count(id) as [Count] From HangFire.Job group by [State]
 select count(Id) from HangFire.Server
 select count(Name) from HangFire.Queue
+select IntValue from HangFire.Value where [Key] = 'stats:succeeded'
 ";
 
             using (var multi = _connection.QueryMultiple(sql))
@@ -385,13 +392,80 @@ select count(Name) from HangFire.Queue
                 stats.Failed = getCountIfExists(FailedState.Name);
                 stats.Processing = getCountIfExists(ProcessingState.Name);
                 stats.Scheduled = getCountIfExists(ScheduledState.Name);
-                stats.Succeeded = getCountIfExists(SucceededState.Name);
-
+                
                 stats.Servers = multi.Read<int>().Single();
                 stats.Queues = multi.Read<int>().Single();
+
+                stats.Succeeded = multi.Read<int>().SingleOrDefault();
             }
 
             return stats;
+        }
+
+        private Dictionary<DateTime, long> GetHourlyTimelineStats(string type)
+        {
+            var endDate = DateTime.UtcNow;
+            var dates = new List<DateTime>();
+            for (var i = 0; i < 24; i++)
+            {
+                dates.Add(endDate);
+                endDate = endDate.AddHours(-1);
+            }
+
+            var keys = dates.Select(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH"))).ToList();
+            var valuesMap = _connection.Query(
+                @"select [Key], IntValue from HangFire.Value where [Key] in @keys",
+                new { keys = keys })
+                .ToDictionary(x => (string)x.Key, x => (long)x.IntValue);
+
+            foreach (var key in keys)
+            {
+                if (!valuesMap.ContainsKey(key)) valuesMap.Add(key, 0);
+            }
+            
+            var result = new Dictionary<DateTime, long>();
+            for (var i = 0; i < dates.Count; i++)
+            {
+                var value = valuesMap[valuesMap.Keys.ElementAt(i)];
+                result.Add(dates[i], value);
+            }
+
+            return result;
+        }
+
+        private Dictionary<DateTime, long> GetTimelineStats(string type)
+        {
+            var endDate = DateTime.UtcNow.Date;
+            var startDate = endDate.AddDays(-7);
+            var dates = new List<DateTime>();
+
+            while (startDate <= endDate)
+            {
+                dates.Add(endDate);
+                endDate = endDate.AddDays(-1);
+            }
+
+            var stringDates = dates.Select(x => x.ToString("yyyy-MM-dd")).ToList();
+            var keys = stringDates.Select(x => String.Format("stats:{0}:{1}", type, x)).ToList();
+
+            var valuesMap = _connection.Query(
+                @"select [Key], IntValue from HangFire.Value where [Key] in @keys",
+                new { keys = keys })
+                .ToDictionary(x => (string)x.Key, x => (long)x.IntValue);
+
+            foreach (var key in keys)
+            {
+                if (!valuesMap.ContainsKey(key)) valuesMap.Add(key, 0);
+            }
+
+            var result = new Dictionary<DateTime, long>();
+            for (var i = 0; i < stringDates.Count; i++)
+            {
+                var value = valuesMap[valuesMap.Keys.ElementAt(i)];
+                result.Add(dates[i], value);
+            }
+
+            return result;
         }
     }
 }

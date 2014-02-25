@@ -104,7 +104,7 @@ namespace HangFire.Redis
             }
         }
 
-        public IDictionary<string, ScheduleDto> ScheduledJobs(int from, int count)
+        public IList<KeyValuePair<string, ScheduleDto>> ScheduledJobs(int from, int count)
         {
             lock (_redis)
             {
@@ -115,7 +115,7 @@ namespace HangFire.Redis
 
                 if (scheduledJobs.Count == 0)
                 {
-                    return new Dictionary<string, ScheduleDto>();
+                    return new List<KeyValuePair<string, ScheduleDto>>();
                 }
 
                 var jobs = new Dictionary<string, List<string>>();
@@ -143,15 +143,17 @@ namespace HangFire.Redis
                     pipeline.Flush();
                 }
 
-                return scheduledJobs.ToDictionary(
-                    job => job.Key,
-                    job => new ScheduleDto
-                    {
-                        ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
-                        Method = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
-                        InScheduledState =
-                            ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
-                    });
+                return scheduledJobs
+                    .Select(job => new KeyValuePair<string, ScheduleDto>(
+                        job.Key,
+                        new ScheduleDto
+                        {
+                            ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
+                            Method = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
+                            InScheduledState =
+                                ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
+                        }))
+                    .ToList();
             }
         }
 
