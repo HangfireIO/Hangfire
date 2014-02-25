@@ -60,7 +60,10 @@
     <Compile Include="SqlServerFetcher.cs" />
     <Compile Include="SqlServerMonitoringApi.cs" />
     <Compile Include="SqlServerStorage.cs" />
+    <Compile Include="SqlServerStorageOptions.cs" />
     <Compile Include="SqlStorageConnection.cs" />
+    <Compile Include="SqlStoredJobs.cs" />
+    <Compile Include="SqlStoredSets.cs" />
     <Compile Include="SqlWriteTransaction.cs" />
   </ItemGroup>
   <ItemGroup>

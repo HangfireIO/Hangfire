@@ -100,6 +100,7 @@
     <Compile Include="Common\Filters\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\Filters\JobFilterInfo.cs" />
     <Compile Include="Common\States\IStateHandler.cs" />
+    <Compile Include="Server\Components\SchedulePoller.cs" />
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
     <Compile Include="Client\Filters\CreatedContext.cs" />
     <Compile Include="Client\Filters\CreatingContext.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="Server\IJobFetcher.cs" />
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
+    <Compile Include="Storage\IStoredSets.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
     <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />

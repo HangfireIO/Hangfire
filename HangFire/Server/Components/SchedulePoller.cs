@@ -16,32 +16,29 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using HangFire.Common;
 using HangFire.Common.States;
-using HangFire.Server;
 using HangFire.States;
+using HangFire.Storage;
 using ServiceStack.Logging;
-using ServiceStack.Redis;
 
-namespace HangFire.Redis.Components
+namespace HangFire.Server.Components
 {
-    internal class SchedulePoller : IThreadWrappable, IDisposable
+    public class SchedulePoller : IThreadWrappable, IDisposable
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(SchedulePoller));
 
+        private readonly IStorageConnection _connection;
         private readonly TimeSpan _pollInterval;
-        private readonly IRedisClient _redis;
         private readonly StateMachine _stateMachine;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public SchedulePoller(IRedisClientsManager redisManager, TimeSpan pollInterval)
+        public SchedulePoller(IStorageConnection connection, TimeSpan pollInterval)
         {
-            _redis = redisManager.GetClient();
-            _stateMachine = new StateMachine(new RedisStorageConnection(_redis));
-
+            _connection = connection;
+            _stateMachine = new StateMachine(_connection);
             _pollInterval = pollInterval;
         }
 
@@ -49,10 +46,9 @@ namespace HangFire.Redis.Components
         {
             var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
-            var jobId = _redis
-                .GetRangeFromSortedSetByLowestScore(
-                    "hangfire:schedule", 0, timestamp, 0, 1)
-                .FirstOrDefault();
+            var jobId = _connection.Sets
+                .GetFirstByLowestScore("schedule", 0, timestamp);
+                
 
             if (String.IsNullOrEmpty(jobId))
             {
@@ -67,7 +63,7 @@ namespace HangFire.Redis.Components
 
         public void Dispose()
         {
-            _redis.Dispose();
+            _connection.Dispose();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]

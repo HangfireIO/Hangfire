@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HangFire.Redis.Components;
 using HangFire.Server;
+using HangFire.Server.Components;
 using HangFire.Storage;
 using HangFire.Storage.Monitoring;
 using ServiceStack.Redis;
@@ -67,7 +68,7 @@ namespace HangFire.Redis
 
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
-            yield return new SchedulePoller(_basicManager, _options.PollInterval);
+            yield return new SchedulePoller(CreateConnection(), _options.PollInterval);
             yield return new DequeuedJobsWatcher(_basicManager);
             yield return new ServerWatchdog(_basicManager);
         }

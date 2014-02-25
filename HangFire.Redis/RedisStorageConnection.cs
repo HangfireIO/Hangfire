@@ -14,8 +14,9 @@ namespace HangFire.Redis
         public RedisStorageConnection(IRedisClient redis)
         {
             _redis = redis;
-            var storage = new RedisStoredJobs(redis);
-            Jobs = storage;
+            
+            Jobs = new RedisStoredJobs(redis);
+            Sets = new RedisStoredSets(redis);
         }
 
         public void Dispose()
@@ -36,6 +37,7 @@ namespace HangFire.Redis
         }
 
         public IStoredJobs Jobs { get; private set; }
+        public IStoredSets Sets { get; private set; }
 
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
         {

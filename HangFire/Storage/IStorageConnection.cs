@@ -10,6 +10,7 @@ namespace HangFire.Storage
         IDisposable AcquireJobLock(string jobId);
 
         IStoredJobs Jobs { get; }
+        IStoredSets Sets { get; }
 
         void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues);
         void RemoveServer(string serverId);

@@ -58,7 +58,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Components\DequeuedJobsWatcher.cs" />
-    <Compile Include="Components\SchedulePoller.cs" />
     <Compile Include="Components\ServerWatchdog.cs" />
     <Compile Include="JobFetcher.cs" />
     <Compile Include="PrefetchJobFetcher.cs" />
@@ -70,6 +69,7 @@
     <Compile Include="RedisStorageConnection.cs" />
     <Compile Include="RedisStorageOptions.cs" />
     <Compile Include="RedisStoredJobs.cs" />
+    <Compile Include="RedisStoredSets.cs" />
     <Compile Include="RedisStoredValues.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -79,7 +79,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

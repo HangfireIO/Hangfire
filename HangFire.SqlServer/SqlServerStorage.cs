@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
 using HangFire.Server;
+using HangFire.Server.Components;
 using HangFire.Storage;
 using HangFire.Storage.Monitoring;
 
@@ -9,10 +10,20 @@ namespace HangFire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
+        private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
         public SqlServerStorage(string connectionString)
+            : this(connectionString, new SqlServerStorageOptions())
         {
+        }
+
+        public SqlServerStorage(string connectionString, SqlServerStorageOptions options)
+        {
+            if (connectionString == null) throw new ArgumentNullException("connectionString");
+            if (options == null) throw new ArgumentNullException("options");
+
+            _options = options;
             _connectionString = connectionString;
         }
 
@@ -38,7 +49,7 @@ namespace HangFire.SqlServer
 
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
-            return Enumerable.Empty<IThreadWrappable>();
+            yield return new SchedulePoller(CreateConnection(), _options.PollInterval);
         }
     }
 }
