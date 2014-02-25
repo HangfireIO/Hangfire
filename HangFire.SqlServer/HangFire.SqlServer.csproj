@@ -48,7 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\InvocationData.cs" />
-    <Compile Include="Entities\JobParameters.cs" />
+    <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\Job.cs" />
     <Compile Include="Entities\JobHistory.cs" />
     <Compile Include="Entities\JobQueue.cs" />

@@ -2,7 +2,7 @@
 
 namespace HangFire.SqlServer.Entities
 {
-    public class JobParameters
+    public class JobParameter
     {
         public Guid JobId { get; set; }
         public string Name { get; set; }

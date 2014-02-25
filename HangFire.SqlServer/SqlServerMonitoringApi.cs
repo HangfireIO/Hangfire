@@ -39,7 +39,7 @@ namespace HangFire.SqlServer
 
         public long EnqueuedCount(string queue)
         {
-            return _connection.Query<long>(
+            return _connection.Query<int>(
                 @"select count(JobId) from HangFire.JobQueue " 
                 + @"where QueueName = @queueName and FetchedAt is NULL",
                 new { queueName = queue })
@@ -48,7 +48,7 @@ namespace HangFire.SqlServer
 
         public long DequeuedCount(string queue)
         {
-            return _connection.Query<long>(
+            return _connection.Query<int>(
                 @"select count(JobId) from HangFire.JobQueue "
                 + @"where QueueName = @queueName and FetchedAt is not NULL",
                 new { queueName = queue })
@@ -92,35 +92,55 @@ namespace HangFire.SqlServer
             string stateName,
             Func<JobMethod, Dictionary<string, string>, TDto> selector)
         {
-            // TODO: add pagination
+            const string jobsSql = @"
+select * from (select *, row_number() over (order by CreatedAt desc) as row_num
+from HangFire.Job where State = @stateName) as j where j.row_num between @start and @end
+";
 
             var jobs = _connection.Query<Job>(
-                @"select * from (select *, row_number() over (order by CreatedAt desc) as row_num "+
-                @"from HangFire.Job where State = @stateName) as j where j.row_num between @start and @end",
+                jobsSql,
                 new { stateName = stateName, start = @from + 1, end = @from + count })
                 .ToList();
-            
+
+            return DeserializeJobs(jobs, selector);
+        }
+
+        private static IList<KeyValuePair<string, TDto>> DeserializeJobs<TDto>(
+            ICollection<Job> jobs,
+            Func<JobMethod, Dictionary<string, string>, TDto> selector)
+        {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
 
             foreach (var job in jobs)
             {
-                var data = JobHelper.FromJson<InvocationData>(job.InvocationData);
-                var serializedJobMethod = new Dictionary<string, string>
+                var stateData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                var dto = selector(DeserializeJobMethod(job.InvocationData), stateData);
+
+                result.Add(new KeyValuePair<string, TDto>(
+                    job.Id.ToString(), dto));
+            }
+
+            return result;
+        }
+
+        private static JobMethod DeserializeJobMethod(string invocationData)
+        {
+            var data = JobHelper.FromJson<InvocationData>(invocationData);
+            var serializedJobMethod = new Dictionary<string, string>
                 {
                     { "Type", data.Type },
                     { "Method", data.Method },
                     { "ParameterTypes", data.ParameterTypes }
                 };
-                var stateData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
 
-                // TODO: expected JobLoadException
-                var dto = selector(JobMethod.Deserialize(serializedJobMethod), stateData); 
-                
-                result.Add(new KeyValuePair<string, TDto>(
-                    job.Id.ToString(), dto));
+            try
+            {
+                return JobMethod.Deserialize(serializedJobMethod);
             }
-            
-            return result;
+            catch (JobLoadException)
+            {
+                return null;
+            }
         }
 
         public IDictionary<string, ScheduleDto> ScheduledJobs(int @from, int count)
@@ -191,19 +211,93 @@ namespace HangFire.SqlServer
                 });
         }
 
+        class QueueStatusDto
+        {
+            public string Name { get; set; }
+            public int Enqueued { get; set; }
+            public int Fetched { get; set; }
+        }
+
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            return new List<QueueWithTopEnqueuedJobsDto>();
+            const string queuesAndStatusSql = @"
+select 
+	[Name],
+	(select count(JobId) from HangFire.JobQueue as a where q.Name = a.QueueName and a.FetchedAt is null) as Enqueued,
+	(select count(JobId) from HangFire.JobQueue as b where q.Name = b.QueueName and b.FetchedAt is not null) as Fetched
+from HangFire.Queue as q";
+
+            var queues = _connection.Query<QueueStatusDto>(queuesAndStatusSql).ToList();
+            var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
+
+            foreach (var queue in queues)
+            {
+                result.Add(new QueueWithTopEnqueuedJobsDto
+                {
+                    Name = queue.Name,
+                    Length = queue.Enqueued,
+                    Dequeued = queue.Fetched,
+                    FirstJobs = new List<KeyValuePair<string, EnqueuedJobDto>>() // TODO: implement
+                });
+            }
+
+            return result;
         }
 
         public IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(string queue, int @from, int perPage)
         {
-            return new List<KeyValuePair<string, EnqueuedJobDto>>();
+            const string enqueuedJobsSql = @"
+select * from
+(select j.*, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
+left join HangFire.Job j on jq.JobId = j.Id
+where jq.QueueName = @queueName and jq.FetchedAt is null) as r
+where r.row_num between @start and @end";
+
+            var jobs = _connection.Query<Job>(
+                enqueuedJobsSql,
+                new { queueName = queue, start = from + 1, end = @from + perPage })
+                .ToList();
+
+            return DeserializeJobs(
+                jobs,
+                (method, stateData) => new EnqueuedJobDto
+                {
+                    Method = method,
+                    EnqueuedAt = JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                });
         }
 
         public IList<KeyValuePair<string, DequeuedJobDto>> DequeuedJobs(string queue, int @from, int perPage)
         {
-            return new List<KeyValuePair<string, DequeuedJobDto>>();
+            const string fetchedJobsSql = @"
+select * from
+(select j.*, jq.FetchedAt, jq.CheckedAt, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
+left join HangFire.Job j on jq.JobId = j.Id
+where jq.QueueName = @queueName and jq.FetchedAt is not null) as r
+where r.row_num between @start and @end";
+
+            var jobs = _connection.Query<Job>(
+                fetchedJobsSql,
+                new { queueName = queue, start = from + 1, end = @from + perPage })
+                .ToList();
+
+            var result = new List<KeyValuePair<string, DequeuedJobDto>>(jobs.Count);
+
+            foreach (var job in jobs)
+            {
+                result.Add(new KeyValuePair<string, DequeuedJobDto>(
+                    job.Id.ToString(),
+                    new DequeuedJobDto
+                    {
+                        Method = DeserializeJobMethod(job.InvocationData),
+                        State = job.State,
+                        CreatedAt = job.CreatedAt,
+                        CheckedAt = job.CheckedAt,
+                        FetchedAt = job.FetchedAt
+                    }));
+            }
+
+            return result;
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
@@ -228,7 +322,41 @@ namespace HangFire.SqlServer
 
         public JobDetailsDto JobDetails(string jobId)
         {
-            return new JobDetailsDto();
+            const string sql = @"
+select * from HangFire.Job where Id = @id
+select * from HangFire.JobParameter where JobId = @id
+select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
+
+            using (var multi = _connection.QueryMultiple(sql, new { id = jobId }))
+            {
+                var job = multi.Read<Job>().SingleOrDefault();
+                if (job == null) return null;
+
+                var parameters = multi.Read<JobParameter>().ToDictionary(x => x.Name, x => x.Value);
+                var history =
+                    multi.Read<JobHistory>()
+                        .ToList()
+                        .Select(x => JobHelper.FromJson<Dictionary<string, string>>(x.Data))
+                        .ToList();
+
+                var invocationData = JobHelper.FromJson<InvocationData>(job.InvocationData);
+                var invocationDictionary = new Dictionary<string, string>
+                {
+                    { "Type", invocationData.Type },
+                    { "Method", invocationData.Method },
+                    { "ParameterTypes", invocationData.ParameterTypes }
+                };
+
+                return new JobDetailsDto
+                {
+                    Arguments = JobHelper.FromJson<string[]>(job.Arguments),
+                    CreatedAt = job.CreatedAt,
+                    State = job.State,
+                    Method = JobMethod.Deserialize(invocationDictionary),
+                    History = history,
+                    Properties = parameters
+                };
+            }
         }
 
         public long SucceededListCount()
