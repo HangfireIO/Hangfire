@@ -68,5 +68,13 @@ namespace HangFire.SqlServer
                 @"update HangFire.Server set LastHeartbeat = @now where Id = @id",
                 new { now = DateTime.UtcNow, id = serverId });
         }
+
+        public void RemoveTimedOutServers(TimeSpan timeOut)
+        {
+            _connection.Execute(
+                @"delete from HangFire.Server where LastHeartbeat < @timeOutAt",
+                new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) });
+            // TODO: log it
+        }
     }
 }

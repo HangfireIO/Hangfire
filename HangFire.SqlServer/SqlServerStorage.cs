@@ -50,6 +50,7 @@ namespace HangFire.SqlServer
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
             yield return new SchedulePoller(CreateConnection(), _options.PollInterval);
+            yield return new ServerWatchdog(CreateConnection());
         }
     }
 }

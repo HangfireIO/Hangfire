@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Storage;
+using ServiceStack.Logging;
 using ServiceStack.Redis;
 
 namespace HangFire.Redis
 {
     public class RedisStorageConnection : IStorageConnection
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(RedisStorageConnection));
+
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
@@ -93,6 +96,48 @@ namespace HangFire.Redis
                 String.Format("hangfire:server:{0}", serverId),
                 "Heartbeat",
                 JobHelper.ToStringTimestamp(DateTime.UtcNow));
+        }
+
+        public void RemoveTimedOutServers(TimeSpan timeOut)
+        {
+            var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
+            var heartbeats = new Dictionary<string, Tuple<DateTime, DateTime?>>();
+
+            var utcNow = DateTime.UtcNow;
+
+            using (var pipeline = _redis.CreatePipeline())
+            {
+                foreach (var serverName in serverNames)
+                {
+                    var name = serverName;
+
+                    pipeline.QueueCommand(
+                        x => x.GetValuesFromHash(
+                            String.Format("hangfire:server:{0}", name),
+                            "StartedAt", "Heartbeat"),
+                        x => heartbeats.Add(
+                            name,
+                            new Tuple<DateTime, DateTime?>(
+                                JobHelper.FromStringTimestamp(x[0]),
+                                JobHelper.FromNullableStringTimestamp(x[1]))));
+                }
+
+                pipeline.Flush();
+            }
+
+            Logger.DebugFormat("Looking for timed out servers...");
+
+            foreach (var heartbeat in heartbeats)
+            {
+                var maxTime = new DateTime(
+                    Math.Max(heartbeat.Value.Item1.Ticks, (heartbeat.Value.Item2 ?? DateTime.MinValue).Ticks));
+
+                if (utcNow > maxTime.Add(timeOut))
+                {
+                    RemoveServer(_redis, heartbeat.Key);
+                    Logger.InfoFormat("Server '{0}' was removed due to time out.", heartbeat.Key);
+                }
+            }
         }
 
         public static void RemoveFromDequeuedList(

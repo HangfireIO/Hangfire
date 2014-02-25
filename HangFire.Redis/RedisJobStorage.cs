@@ -70,7 +70,7 @@ namespace HangFire.Redis
         {
             yield return new SchedulePoller(CreateConnection(), _options.PollInterval);
             yield return new DequeuedJobsWatcher(_basicManager);
-            yield return new ServerWatchdog(_basicManager);
+            yield return new ServerWatchdog(CreateConnection());
         }
 
         public override string ToString()

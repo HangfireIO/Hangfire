@@ -1,6 +1,7 @@
 ﻿using System;
 using HangFire.Common;
-using HangFire.Redis.Components;
+using HangFire.Redis;
+using HangFire.Server.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
 
@@ -10,11 +11,13 @@ namespace HangFire.Tests
     public class ServerWatchdogSteps : Steps
     {
         private ServerWatchdog _watchdog;
+        private RedisStorageConnection _connection;
 
         [Given(@"a server watchdog")]
         public void GivenAServerWatchdog()
         {
-            _watchdog = new ServerWatchdog(Redis.Storage.BasicManager);
+            _connection = new RedisStorageConnection(Redis.Storage.BasicManager.GetClient());
+            _watchdog = new ServerWatchdog(_connection);
         }
 
         [Given(@"a server that was started (.+)")]
@@ -50,7 +53,7 @@ namespace HangFire.Tests
         [When(@"the watchdog gets the job done")]
         public void WhenTheWatchdogGetsTheJobDone()
         {
-            _watchdog.RemoveTimedOutServers();
+            _connection.RemoveTimedOutServers(TimeSpan.FromMinutes(1));
         }
 
         [Then(@"the server should not be removed")]

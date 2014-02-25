@@ -58,7 +58,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Components\DequeuedJobsWatcher.cs" />
-    <Compile Include="Components\ServerWatchdog.cs" />
     <Compile Include="JobFetcher.cs" />
     <Compile Include="PrefetchJobFetcher.cs" />
     <Compile Include="PrioritizedJobFetcher.cs" />
