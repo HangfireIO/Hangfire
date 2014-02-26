@@ -46,19 +46,20 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(StateApplyingContext context)
+        public class Handler : JobStateHandler
         {
-            context.Transaction.Sets.Add(
-                "failed",
-                context.JobId,
-                JobHelper.ToTimestamp(DateTime.UtcNow));
-        }
+            public override void Apply(
+                StateApplyingContext context, IDictionary<string, string> stateData)
+            {
+                /*context.Transaction.Sets.Add(
+                    "failed",
+                    context.JobId,
+                    JobHelper.ToTimestamp(DateTime.UtcNow));*/
+            }
 
-        public class Descriptor : JobStateDescriptor
-        {
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.Sets.Remove("failed", context.JobId);
+                //context.Transaction.Sets.Remove("failed", context.JobId);
             }
         }
     }

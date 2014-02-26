@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+
 namespace HangFire.Common.States
 {
     public class StateContext

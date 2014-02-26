@@ -23,7 +23,7 @@ namespace HangFire.States
 {
     public class SucceededState : JobState
     {
-        private readonly TimeSpan _jobExpirationTimeout = TimeSpan.FromDays(1);
+        private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
 
         public static readonly string Name = "Succeeded";
 
@@ -42,26 +42,24 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(StateApplyingContext context)
+        public class Handler : JobStateHandler
         {
-            context.Transaction.Jobs.Expire(context.JobId, _jobExpirationTimeout);
+            public override void Apply(
+                StateApplyingContext context, IDictionary<string, string> stateData)
+            {
+                context.Transaction.Jobs.Expire(context.JobId, JobExpirationTimeout);
+                context.Transaction.Values.Increment("stats:succeeded");
 
-            context.Transaction.Lists.AddToLeft("succeeded", context.JobId);
-            context.Transaction.Lists.Trim("succeeded", 0, 99);
+                /*context.Transaction.Lists.AddToLeft("succeeded", context.JobId);
+                context.Transaction.Lists.Trim("succeeded", 0, 99);*/
+            }
 
-            context.Transaction.Values.Increment("stats:succeeded");
-        }
-
-        public class Descriptor : JobStateDescriptor
-        {
             public override void Unapply(StateApplyingContext context)
             {
                 context.Transaction.Values.Decrement("stats:succeeded");
-
-                context.Transaction.Lists.Remove(
-                    "succeeded", context.JobId);
-
                 context.Transaction.Jobs.Persist(context.JobId);
+
+                /*context.Transaction.Lists.Remove("succeeded", context.JobId);*/
             }
         }
     }

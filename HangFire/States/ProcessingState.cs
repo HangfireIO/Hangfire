@@ -44,22 +44,23 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(StateApplyingContext context)
+        public class Handler : JobStateHandler
         {
-            // TODO: Remove Redis-related stuff
-            context.Transaction.Sets.Add(
-                "processing",
-                context.JobId,
-                JobHelper.ToTimestamp(DateTime.UtcNow));
-        }
+            public override void Apply(
+                StateApplyingContext context, IDictionary<string, string> stateData)
+            {
+                // TODO: Remove Redis-related stuff
+                /*context.Transaction.Sets.Add(
+                    "processing",
+                    context.JobId,
+                    JobHelper.ToTimestamp(DateTime.UtcNow));*/
+            }
 
-        public class Descriptor : JobStateDescriptor
-        {
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.Sets.Remove(
+                /*context.Transaction.Sets.Remove(
                     "processing",
-                    context.JobId);
+                    context.JobId);*/
             }
         }
     }

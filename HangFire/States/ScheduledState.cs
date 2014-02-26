@@ -44,20 +44,17 @@ namespace HangFire.States
                 };
         }
 
-        public override void Apply(StateApplyingContext context)
+        public class Handler : JobStateHandler
         {
-            var timestamp = JobHelper.ToTimestamp(EnqueueAt);
+            public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
+            {
+                var timestamp = long.Parse(stateData["EnqueueAt"]);
+                context.Transaction.Sets.Add("schedule", context.JobId, timestamp);
+            }
 
-            context.Transaction.Sets.Add(
-                "schedule", context.JobId, timestamp);
-        }
-
-        public class Descriptor : JobStateDescriptor
-        {
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.Sets.Remove(
-                    "schedule", context.JobId);
+                context.Transaction.Sets.Remove("schedule", context.JobId);
             }
         }
     }

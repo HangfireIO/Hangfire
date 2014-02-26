@@ -46,13 +46,6 @@ namespace HangFire.Common.States
                 };
         }
 
-        public override void Apply(StateApplyingContext context)
-        {
-            var queue = GetQueue(context.JobMethod);
-
-            context.Transaction.Queues.Enqueue(queue, context.JobId);
-        }
-
         public static string GetQueue(JobMethod method)
         {
             if (method == null) throw new ArgumentNullException("method");
@@ -94,6 +87,17 @@ namespace HangFire.Common.States
             {
                 throw new InvalidOperationException(String.Format(
                     "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'", queue));
+            }
+        }
+
+        public class Handler : JobStateHandler
+        {
+            public override void Apply(
+                StateApplyingContext context, IDictionary<string, string> stateData)
+            {
+                var queue = GetQueue(context.JobMethod);
+
+                context.Transaction.Queues.Enqueue(queue, context.JobId);
             }
         }
     }

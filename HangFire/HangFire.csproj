@@ -99,7 +99,6 @@
     <Compile Include="Common\Filters\JobFilterAttribute.cs" />
     <Compile Include="Common\Filters\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\Filters\JobFilterInfo.cs" />
-    <Compile Include="Common\States\IStateHandler.cs" />
     <Compile Include="Server\Components\SchedulePoller.cs" />
     <Compile Include="Server\Components\ServerWatchdog.cs" />
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
@@ -157,7 +156,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />
     <Compile Include="Server\WorkerContext.cs" />
-    <Compile Include="Common\States\JobStateDescriptor.cs" />
+    <Compile Include="Common\States\JobStateHandler.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
     <Compile Include="Common\States\StateApplyingContext.cs" />

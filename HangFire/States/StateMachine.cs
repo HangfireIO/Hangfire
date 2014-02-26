@@ -26,28 +26,28 @@ namespace HangFire.States
 {
     public class StateMachine
     {
-        internal static readonly IDictionary<string, JobStateDescriptor> Descriptors
-            = new Dictionary<string, JobStateDescriptor>();
+        internal static readonly IDictionary<string, JobStateHandler> Handlers
+            = new Dictionary<string, JobStateHandler>();
 
         static StateMachine()
         {
-            RegisterStateDescriptor(FailedState.Name, new FailedState.Descriptor());
-            RegisterStateDescriptor(ProcessingState.Name, new ProcessingState.Descriptor());
-            RegisterStateDescriptor(ScheduledState.Name, new ScheduledState.Descriptor());
-            RegisterStateDescriptor(SucceededState.Name, new SucceededState.Descriptor());
+            RegisterHandler(FailedState.Name, new FailedState.Handler());
+            RegisterHandler(ProcessingState.Name, new ProcessingState.Handler());
+            RegisterHandler(ScheduledState.Name, new ScheduledState.Handler());
+            RegisterHandler(SucceededState.Name, new SucceededState.Handler());
         }
 
-        public static void RegisterStateDescriptor(
-            string stateName, JobStateDescriptor descriptor)
+        public static void RegisterHandler(
+            string stateName, JobStateHandler handler)
         {
-            if (descriptor == null) throw new ArgumentNullException("descriptor");
+            if (handler == null) throw new ArgumentNullException("handler");
             if (String.IsNullOrEmpty(stateName)) throw new ArgumentNullException("stateName");
             
-            Descriptors.Add(stateName, descriptor);
+            Handlers.Add(stateName, handler);
         }
 
         private readonly IStorageConnection _connection;
-        private readonly IDictionary<string, JobStateDescriptor> _stateDescriptors;
+        private readonly IDictionary<string, JobStateHandler> _stateDescriptors;
 
         private readonly Func<JobMethod, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
@@ -55,14 +55,14 @@ namespace HangFire.States
         public StateMachine(IStorageConnection connection)
             : this(
                 connection,
-                Descriptors,
+                Handlers,
                 null)
         {
         }
 
         internal StateMachine(
             IStorageConnection connection,
-            IDictionary<string, JobStateDescriptor> stateDescriptors,
+            IDictionary<string, JobStateHandler> stateDescriptors,
             IEnumerable<object> filters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
@@ -228,9 +228,13 @@ namespace HangFire.States
                 }
             }
 
-            AppendHistory(context.Transaction, context, chosenState, true);
+            if (_stateDescriptors.ContainsKey(chosenState.StateName))
+            {
+                var stateData = chosenState.GetProperties(context.JobMethod);
+                _stateDescriptors[chosenState.StateName].Apply(context, stateData);
+            }
 
-            chosenState.Apply(context);
+            AppendHistory(context.Transaction, context, chosenState, true);
 
             foreach (var filter in stateChangedFilters)
             {
@@ -249,7 +253,7 @@ namespace HangFire.States
         }
 
         private void AppendHistory(
-            IAtomicWriteTransaction transaction, 
+            IAtomicWriteTransaction transaction,
             StateContext context, 
             JobState state, 
             bool appendToJob)
