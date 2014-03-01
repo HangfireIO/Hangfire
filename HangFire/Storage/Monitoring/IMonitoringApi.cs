@@ -3,37 +3,43 @@ using System.Collections.Generic;
 
 namespace HangFire.Storage.Monitoring
 {
+    public class JobList<TDto> : List<KeyValuePair<string, TDto>>
+    {
+        public JobList(IEnumerable<KeyValuePair<string, TDto>> source)
+            : base(source)
+        {
+        }
+    }
+
     public interface IMonitoringApi : IDisposable
     {
+        IList<QueueWithTopEnqueuedJobsDto> Queues();
+        IList<ServerDto> Servers();
+        JobDetailsDto JobDetails(string jobId);
+        StatisticsDto GetStatistics();
+
+        JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage);
+        JobList<DequeuedJobDto> DequeuedJobs(string queue, int from, int perPage);
+
+        JobList<ProcessingJobDto> ProcessingJobs(int from, int count);
+        JobList<ScheduleDto> ScheduledJobs(int from, int count);
+        JobList<SucceededJobDto> SucceededJobs(int from, int count);
+        JobList<FailedJobDto> FailedJobs(int from, int count);
+
         long ScheduledCount();
         long EnqueuedCount(string queue);
         long DequeuedCount(string queue);
         long FailedCount();
         long ProcessingCount();
 
-        IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs(
-            int from, int count);
-
-        IList<KeyValuePair<string, ScheduleDto>> ScheduledJobs(int from, int count);
+        long SucceededListCount();
+        
         IDictionary<DateTime, long> SucceededByDatesCount();
         IDictionary<DateTime, long> FailedByDatesCount();
-        IList<ServerDto> Servers();
-        IList<KeyValuePair<string, FailedJobDto>> FailedJobs(int from, int count);
-        IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs(int from, int count);
-        IList<QueueWithTopEnqueuedJobsDto> Queues();
-
-        IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(
-            string queue, int from, int perPage);
-
-        IList<KeyValuePair<string, DequeuedJobDto>> DequeuedJobs(
-            string queue, int from, int perPage);
-
         IDictionary<DateTime, long> HourlySucceededJobs();
         IDictionary<DateTime, long> HourlyFailedJobs();
+
         bool RetryJob(string jobId);
         bool EnqueueScheduled(string jobId);
-        JobDetailsDto JobDetails(string jobId);
-        long SucceededListCount();
-        StatisticsDto GetStatistics();
     }
 }

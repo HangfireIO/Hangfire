@@ -22,9 +22,21 @@ namespace HangFire.Web
     internal static class Command
     {
         public static readonly Func<string, bool> Retry 
-            = x => JobStorage.Current.Monitoring.RetryJob(x);
+            = x =>
+            {
+                using (var monitoring = JobStorage.Current.CreateMonitoring())
+                {
+                    return monitoring.RetryJob(x);
+                }
+            };
 
         public static readonly Func<string, bool> EnqueueScheduled 
-            = x => JobStorage.Current.Monitoring.EnqueueScheduled(x);
+            = x =>
+            {
+                using (var monitoring = JobStorage.Current.CreateMonitoring())
+                {
+                    return monitoring.EnqueueScheduled(x);
+                }
+            };
     }
 }

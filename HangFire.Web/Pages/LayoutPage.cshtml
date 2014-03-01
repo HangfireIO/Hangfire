@@ -3,6 +3,7 @@
 @using System.Diagnostics
 @using System.Linq
 @using HangFire.Storage
+@using Storage.Monitoring
 @inherits RazorPage
 <!DOCTYPE html>
 
@@ -46,7 +47,13 @@
 
             <div class="container">
                 <div class="col-md-3">
-                    @{ var statistics = JobStorage.Current.Monitoring.GetStatistics(); }
+                    @{
+                        StatisticsDto statistics;
+                        using (var monitor = JobStorage.Current.CreateMonitoring())
+                        {
+                            statistics = monitor.GetStatistics();
+                        }
+                    }
 
                     <div id="stats" class="list-group">
                         <a class="list-group-item @(Request.PathInfo.Equals("/") ? "active" : null)"

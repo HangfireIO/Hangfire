@@ -18,7 +18,7 @@ namespace HangFire.Storage
 
         public static JobStorage Current { get { return _current; } }
 
-        public abstract IMonitoringApi Monitoring { get; }
+        public abstract IMonitoringApi CreateMonitoring();
         
         public abstract IStorageConnection CreateConnection();
         public abstract IStorageConnection CreatePooledConnection();

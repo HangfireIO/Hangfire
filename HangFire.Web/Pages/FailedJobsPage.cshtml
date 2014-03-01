@@ -3,6 +3,7 @@
 @using Common
 @using Pages
 @using HangFire.Storage
+@using Storage.Monitoring
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Failed Jobs" };
@@ -12,13 +13,19 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    var pager = new Pager(from, perPage, JobStorage.Current.Monitoring.FailedCount())
-    {
-        BasePageUrl = Request.LinkTo("/failed")
-    };
+    Pager pager;
+    JobList<FailedJobDto> failedJobs;
 
-    var failedJobs = JobStorage.Current.Monitoring
-        .FailedJobs(pager.FromRecord, pager.RecordsPerPage);
+    using (var monitor = JobStorage.Current.CreateMonitoring())
+    {
+        pager = new Pager(from, perPage, monitor.FailedCount())
+        {
+            BasePageUrl = Request.LinkTo("/failed")
+        };
+
+        failedJobs = monitor
+            .FailedJobs(pager.FromRecord, pager.RecordsPerPage);
+    }
 }
 
 @if (pager.TotalPageCount == 0)

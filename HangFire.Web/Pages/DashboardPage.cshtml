@@ -11,15 +11,19 @@
     IDictionary<DateTime, long> failed = null;
 
     var period = Request.QueryString["period"]?? "day";
-    if ("week".Equals(period, StringComparison.OrdinalIgnoreCase))
+
+    using (var monitor = JobStorage.Current.CreateMonitoring())
     {
-        succeeded = JobStorage.Current.Monitoring.SucceededByDatesCount();
-        failed = JobStorage.Current.Monitoring.FailedByDatesCount();
-    } 
-    else if ("day".Equals(period, StringComparison.OrdinalIgnoreCase))
-    {
-        succeeded = JobStorage.Current.Monitoring.HourlySucceededJobs();
-        failed = JobStorage.Current.Monitoring.HourlyFailedJobs();
+        if ("week".Equals(period, StringComparison.OrdinalIgnoreCase))
+        {
+            succeeded = monitor.SucceededByDatesCount();
+            failed = monitor.FailedByDatesCount();
+        }
+        else if ("day".Equals(period, StringComparison.OrdinalIgnoreCase))
+        {
+            succeeded = monitor.HourlySucceededJobs();
+            failed = monitor.HourlyFailedJobs();
+        }
     }
 }
 

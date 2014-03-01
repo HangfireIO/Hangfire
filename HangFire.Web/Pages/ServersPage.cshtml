@@ -4,13 +4,16 @@
 @using Common
 @using Pages
 @using HangFire.Storage
+@using Storage.Monitoring
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Servers" };
-}
-
-@{
-    var servers = JobStorage.Current.Monitoring.Servers();
+    
+    IList<ServerDto> servers;
+    using (var monitor = JobStorage.Current.CreateMonitoring())
+    {
+        servers = monitor.Servers();    
+    }
 }
 
 @if (servers.Count == 0)

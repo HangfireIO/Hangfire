@@ -5,6 +5,7 @@
 @using Common
 @using Pages
 @using HangFire.Storage
+@using Storage.Monitoring
 @inherits RazorPage
 @{
     Layout = new LayoutPage
@@ -22,13 +23,19 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    var pager = new Pager(from, perPage, JobStorage.Current.Monitoring.EnqueuedCount(Queue))
-    {
-        BasePageUrl = Request.LinkTo("/queues/" + Queue)
-    };
+    Pager pager;
+    JobList<EnqueuedJobDto> enqueuedJobs;
 
-    var enqueuedJobs = JobStorage.Current.Monitoring
-        .EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
+    using (var monitor = JobStorage.Current.CreateMonitoring())
+    {
+        pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
+        {
+            BasePageUrl = Request.LinkTo("/queues/" + Queue)
+        };
+
+        enqueuedJobs = monitor
+            .EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
+    }
 }
 
 @if (pager.TotalPageCount == 0)

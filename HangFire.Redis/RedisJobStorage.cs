@@ -20,8 +20,6 @@ namespace HangFire.Redis
         private readonly IRedisClientsManager _pooledManager;
         private readonly IRedisClientsManager _basicManager;
 
-        private readonly Lazy<IMonitoringApi> _monitoring; 
-
         public RedisJobStorage(string host, int db)
             : this(host, db, new RedisStorageOptions())
         {
@@ -35,17 +33,14 @@ namespace HangFire.Redis
 
             _pooledManager = new PooledRedisClientManager(db, host);
             _basicManager = new BasicRedisClientManager(db, host);
-
-            _monitoring = new Lazy<IMonitoringApi>(
-                () => new RedisMonitoringApi(this, _basicManager.GetClient()));
         }
 
         public IRedisClientsManager BasicManager { get { return _basicManager; } }
         public IRedisClientsManager PooledManager { get { return _pooledManager; } }
 
-        public override IMonitoringApi Monitoring
+        public override IMonitoringApi CreateMonitoring()
         {
-            get { return _monitoring.Value; }
+            return new RedisMonitoringApi(this, _basicManager.GetClient());
         }
 
         public override IStorageConnection CreateConnection()

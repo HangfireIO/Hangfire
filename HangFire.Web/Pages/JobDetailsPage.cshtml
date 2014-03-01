@@ -6,9 +6,14 @@
 @using Common
 @using Pages
 @using HangFire.Storage
+@using Storage.Monitoring
 @inherits RazorPage
 @{
-    var job = JobStorage.Current.Monitoring.JobDetails(JobId.ToString());
+    JobDetailsDto job;
+    using (var monitor = JobStorage.Current.CreateMonitoring())
+    {
+        job = monitor.JobDetails(JobId.ToString());
+    }
 
     string title = null;
 
@@ -20,7 +25,6 @@
     title = title ?? "Job";
 
     Layout = new LayoutPage { Title = title, Subtitle = JobId.ToString() };
-
 }
 
 @if (job == null)

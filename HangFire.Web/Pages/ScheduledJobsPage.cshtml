@@ -2,6 +2,7 @@
 @using Common
 @using Pages
 @using HangFire.Storage
+@using Storage.Monitoring
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Scheduled Jobs" };
@@ -11,12 +12,18 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    var pager = new Pager(from, perPage, JobStorage.Current.Monitoring.ScheduledCount())
-    {
-        BasePageUrl = Request.LinkTo("/scheduled")
-    };
+    Pager pager;
+    JobList<ScheduleDto> scheduledJobs;
 
-    var scheduledJobs = JobStorage.Current.Monitoring.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
+    using (var monitor = JobStorage.Current.CreateMonitoring())
+    {
+        pager = new Pager(from, perPage, monitor.ScheduledCount())
+        {
+            BasePageUrl = Request.LinkTo("/scheduled")
+        };
+
+        scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
+    }
 }
 
 @if (pager.TotalPageCount == 0)

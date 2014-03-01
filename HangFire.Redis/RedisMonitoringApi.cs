@@ -81,7 +81,7 @@ namespace HangFire.Redis
             }
         }
 
-        public IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs(
+        public JobList<ProcessingJobDto> ProcessingJobs(
             int from, int count)
         {
             lock (_redis)
@@ -91,7 +91,7 @@ namespace HangFire.Redis
                     from,
                     from + count - 1);
 
-                return GetJobsWithProperties(_redis,
+                return new JobList<ProcessingJobDto>(GetJobsWithProperties(_redis,
                     jobIds,
                     null,
                     new[] { "StartedAt", "ServerName", "State" },
@@ -102,11 +102,11 @@ namespace HangFire.Redis
                         StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InProcessingState = ProcessingState.Name.Equals(
                             state[2], StringComparison.OrdinalIgnoreCase),
-                    }).OrderBy(x => x.Value.StartedAt).ToList();
+                    }).OrderBy(x => x.Value.StartedAt).ToList());
             }
         }
 
-        public IList<KeyValuePair<string, ScheduleDto>> ScheduledJobs(int from, int count)
+        public JobList<ScheduleDto> ScheduledJobs(int from, int count)
         {
             lock (_redis)
             {
@@ -117,7 +117,7 @@ namespace HangFire.Redis
 
                 if (scheduledJobs.Count == 0)
                 {
-                    return new List<KeyValuePair<string, ScheduleDto>>();
+                    return new JobList<ScheduleDto>(new List<KeyValuePair<string, ScheduleDto>>());
                 }
 
                 var jobs = new Dictionary<string, List<string>>();
@@ -145,7 +145,7 @@ namespace HangFire.Redis
                     pipeline.Flush();
                 }
 
-                return scheduledJobs
+                return new JobList<ScheduleDto>(scheduledJobs
                     .Select(job => new KeyValuePair<string, ScheduleDto>(
                         job.Key,
                         new ScheduleDto
@@ -155,7 +155,7 @@ namespace HangFire.Redis
                             InScheduledState =
                                 ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
                         }))
-                    .ToList();
+                    .ToList());
             }
         }
 
@@ -221,7 +221,7 @@ namespace HangFire.Redis
             }
         }
 
-        public IList<KeyValuePair<string, FailedJobDto>> FailedJobs(int from, int count)
+        public JobList<FailedJobDto> FailedJobs(int from, int count)
         {
             lock (_redis)
             {
@@ -247,7 +247,7 @@ namespace HangFire.Redis
             }
         }
 
-        public IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs(int from, int count)
+        public JobList<SucceededJobDto> SucceededJobs(int from, int count)
         {
             lock (_redis)
             {
@@ -326,7 +326,7 @@ namespace HangFire.Redis
             }
         }
 
-        public IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(
+        public JobList<EnqueuedJobDto> EnqueuedJobs(
             string queue, int from, int perPage)
         {
             lock (_redis)
@@ -350,7 +350,7 @@ namespace HangFire.Redis
             }
         }
 
-        public IList<KeyValuePair<string, DequeuedJobDto>> DequeuedJobs(
+        public JobList<DequeuedJobDto> DequeuedJobs(
             string queue, int from, int perPage)
         {
             lock (_redis)
@@ -509,14 +509,14 @@ namespace HangFire.Redis
             return result;
         }
 
-        private IList<KeyValuePair<string, T>> GetJobsWithProperties<T>(
+        private JobList<T> GetJobsWithProperties<T>(
             IRedisClient redis,
             IList<string> jobIds,
             string[] properties,
             string[] stateProperties,
             Func<JobMethod, List<string>, List<string>, T> selector)
         {
-            if (jobIds.Count == 0) return new List<KeyValuePair<string, T>>();
+            if (jobIds.Count == 0) return new JobList<T>(new List<KeyValuePair<string, T>>());
 
             var jobs = new Dictionary<string, List<string>>(jobIds.Count);
             var states = new Dictionary<string, List<string>>(jobIds.Count);
@@ -546,7 +546,7 @@ namespace HangFire.Redis
                 pipeline.Flush();
             }
 
-            return jobIds
+            return new JobList<T>(jobIds
                 .Select(x => new
                 {
                     JobId = x,
@@ -562,7 +562,7 @@ namespace HangFire.Redis
                     x.Job.TrueForAll(y => y == null) 
                         ? default(T) 
                         : selector(x.Method, x.Job, x.State)))
-                .ToList();
+                .ToList());
         }
 
         public long SucceededListCount()

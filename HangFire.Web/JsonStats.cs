@@ -24,14 +24,17 @@ namespace HangFire.Web
     {
         public override void ProcessRequest()
         {
-            var response = JobStorage.Current.Monitoring.GetStatistics();
-
-            using (JsConfig.With(emitCamelCaseNames: true))
+            using (var monitoring = JobStorage.Current.CreateMonitoring())
             {
-                var serialized = JsonSerializer.SerializeToString(response);
-                Response.ContentType = "application/json";
-                Response.ContentEncoding = Encoding.UTF8;
-                Response.Write(serialized);
+                var response = monitoring.GetStatistics();
+
+                using (JsConfig.With(emitCamelCaseNames: true))
+                {
+                    var serialized = JsonSerializer.SerializeToString(response);
+                    Response.ContentType = "application/json";
+                    Response.ContentEncoding = Encoding.UTF8;
+                    Response.Write(serialized);
+                }
             }
         }
     }

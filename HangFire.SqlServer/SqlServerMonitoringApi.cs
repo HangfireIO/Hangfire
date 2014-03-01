@@ -73,7 +73,7 @@ namespace HangFire.SqlServer
             return GetNumberOfJobsByStateName(ProcessingState.Name);
         }
 
-        public IList<KeyValuePair<string, ProcessingJobDto>> ProcessingJobs(int @from, int count)
+        public JobList<ProcessingJobDto> ProcessingJobs(int @from, int count)
         {
             return GetJobs(
                 from, count,
@@ -86,7 +86,7 @@ namespace HangFire.SqlServer
                 });
         }
 
-        private IList<KeyValuePair<string, TDto>> GetJobs<TDto>(
+        private JobList<TDto> GetJobs<TDto>(
             int from,
             int count,
             string stateName,
@@ -105,7 +105,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
             return DeserializeJobs(jobs, selector);
         }
 
-        private static IList<KeyValuePair<string, TDto>> DeserializeJobs<TDto>(
+        private static JobList<TDto> DeserializeJobs<TDto>(
             ICollection<Job> jobs,
             Func<JobMethod, Dictionary<string, string>, TDto> selector)
         {
@@ -120,7 +120,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
                     job.Id.ToString(), dto));
             }
 
-            return result;
+            return new JobList<TDto>(result);
         }
 
         private static JobMethod DeserializeJobMethod(string invocationData)
@@ -143,7 +143,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
             }
         }
 
-        public IList<KeyValuePair<string, ScheduleDto>> ScheduledJobs(int @from, int count)
+        public JobList<ScheduleDto> ScheduledJobs(int @from, int count)
         {
             return GetJobs(
                 from, count,
@@ -189,7 +189,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
             return result;
         }
 
-        public IList<KeyValuePair<string, FailedJobDto>> FailedJobs(int @from, int count)
+        public JobList<FailedJobDto> FailedJobs(int @from, int count)
         {
             return GetJobs(
                 from,
@@ -205,7 +205,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
                 });
         }
 
-        public IList<KeyValuePair<string, SucceededJobDto>> SucceededJobs(int @from, int count)
+        public JobList<SucceededJobDto> SucceededJobs(int @from, int count)
         {
             return GetJobs(
                 from,
@@ -251,7 +251,7 @@ from HangFire.Queue as q";
             return result;
         }
 
-        public IList<KeyValuePair<string, EnqueuedJobDto>> EnqueuedJobs(string queue, int @from, int perPage)
+        public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int @from, int perPage)
         {
             const string enqueuedJobsSql = @"
 select * from
@@ -274,7 +274,7 @@ where r.row_num between @start and @end";
                 });
         }
 
-        public IList<KeyValuePair<string, DequeuedJobDto>> DequeuedJobs(string queue, int @from, int perPage)
+        public JobList<DequeuedJobDto> DequeuedJobs(string queue, int @from, int perPage)
         {
             const string fetchedJobsSql = @"
 select * from
@@ -304,7 +304,7 @@ where r.row_num between @start and @end";
                     }));
             }
 
-            return result;
+            return new JobList<DequeuedJobDto>(result);
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()

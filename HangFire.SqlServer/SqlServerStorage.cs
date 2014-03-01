@@ -28,10 +28,9 @@ namespace HangFire.SqlServer
             _connectionString = connectionString;
         }
 
-        // TODO: Long-running transaction will be killed
-        public override IMonitoringApi Monitoring
+        public override IMonitoringApi CreateMonitoring()
         {
-            get { return new SqlServerMonitoringApi(new SqlConnection(_connectionString)); }
+            return new SqlServerMonitoringApi(new SqlConnection(_connectionString));
         }
 
         public override IStorageConnection CreateConnection()

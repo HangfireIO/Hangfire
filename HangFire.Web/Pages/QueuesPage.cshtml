@@ -4,10 +4,17 @@
 @using Common
 @using Pages
 @using HangFire.Storage
+@using Storage.Monitoring
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Queues" };
-    var queues = JobStorage.Current.Monitoring.Queues();
+
+    IList<QueueWithTopEnqueuedJobsDto> queues;
+
+    using (var monitor = JobStorage.Current.CreateMonitoring())
+    {
+        queues = monitor.Queues();
+    }
 }
 
 @if (queues.Count == 0)
