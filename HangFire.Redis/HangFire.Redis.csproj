@@ -58,9 +58,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Components\DequeuedJobsWatcher.cs" />
-    <Compile Include="JobFetcher.cs" />
-    <Compile Include="PrefetchJobFetcher.cs" />
-    <Compile Include="PrioritizedJobFetcher.cs" />
+    <Compile Include="RedisJobFetcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisAtomicWriteTransaction.cs" />
     <Compile Include="RedisJobStorage.cs" />

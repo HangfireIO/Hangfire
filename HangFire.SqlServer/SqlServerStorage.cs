@@ -44,11 +44,6 @@ namespace HangFire.SqlServer
             return new SqlStorageConnection(this, new SqlConnection(_connectionString));
         }
 
-        public override IJobFetcher CreateFetcher(IEnumerable<string> queues, int workersCount)
-        {
-            return new SqlServerFetcher(new SqlConnection(_connectionString), queues);
-        }
-
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
             yield return new SchedulePoller(CreateConnection(), _options.PollInterval);

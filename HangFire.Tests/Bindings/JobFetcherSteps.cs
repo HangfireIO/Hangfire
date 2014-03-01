@@ -13,7 +13,7 @@ namespace HangFire.Tests
     [Binding]
     public class JobFetcherSteps : Steps
     {
-        private JobFetcher _fetcher;
+        private RedisJobFetcher _fetcher;
         private QueuedJob _job;
         private IList<string> _queues;
 
@@ -28,8 +28,8 @@ namespace HangFire.Tests
         [Given(@"the fetcher listening the '(.+)' queue")]
         public void GivenTheFetcherListeningTheQueue(string queue)
         {
-            _fetcher = new JobFetcher(
-                Redis.Storage.BasicManager.GetClient(), queue, TimeSpan.FromSeconds(1));
+            _fetcher = new RedisJobFetcher(
+                Redis.Storage.BasicManager.GetClient(),new [] { queue }, TimeSpan.FromSeconds(1));
         }
 
         [Given(@"the following queues:")]

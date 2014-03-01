@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Threading;
 using HangFire.Common;
 using HangFire.Common.States;
@@ -30,7 +31,6 @@ namespace HangFire.Server
 {
     internal class Worker : IDisposable, IStoppable
     {
-        private readonly WorkerManager _manager;
         private readonly WorkerContext _context;
         private readonly StateMachine _stateMachine;
         private readonly IStorageConnection _connection;
@@ -38,22 +38,15 @@ namespace HangFire.Server
         private Thread _thread;
         private readonly ILog _logger;
 
-        private readonly ManualResetEventSlim _jobIsReady = new ManualResetEventSlim(false);
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        private readonly object _crashedLock = new object();
-        private readonly object _jobLock = new object();
-        private bool _crashed;
         private bool _stopSent;
 
-        private QueuedJob _job;
-
-        public Worker(WorkerManager manager, WorkerContext context)
+        public Worker(WorkerContext context)
         {
             _connection = JobStorage.Current.CreateConnection();
             _stateMachine = new StateMachine(_connection);
 
-            _manager = manager;
             _context = context;
 
             _logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", context.WorkerNumber));
@@ -75,34 +68,6 @@ namespace HangFire.Server
             _cts.Cancel();
         }
 
-        internal bool Crashed
-        {
-            get
-            {
-                lock (_crashedLock)
-                {
-                    return _crashed;
-                }
-            }
-            private set
-            {
-                lock (_crashedLock)
-                {
-                    _crashed = value;
-                }
-            }
-        }
-
-        public void Process(QueuedJob job)
-        {
-            lock (_jobLock)
-            {
-                _job = job;
-            }
-
-            _jobIsReady.Set();
-        }
-
         public void Dispose()
         {
             if (!_stopSent)
@@ -117,7 +82,6 @@ namespace HangFire.Server
             }
 
             _cts.Dispose();
-            _jobIsReady.Dispose();
 
             _connection.Dispose();
         }
@@ -129,33 +93,34 @@ namespace HangFire.Server
             {
                 _logger.DebugFormat("Worker #{0} has been started.", _context.WorkerNumber);
 
+                var fetcher = _connection.CreateFetcher(_context.QueueNames);
                 while (true)
                 {
-                    _manager.NotifyReady(this);
-                    _jobIsReady.Wait(_cts.Token);
+                    _cts.Token.ThrowIfCancellationRequested();
 
-                    lock (_jobLock)
-                    {
-                        if (_job == null) return;
+                    JobServer.RetryOnException(
+                        () =>
+                        {
+                            var job = fetcher.DequeueJob(_cts.Token);
 
-                        JobServer.RetryOnException(
-                            () =>
+                            if (job == null)
                             {
-                                PerformJob(_job.Payload);
+                                _cts.Cancel();
+                                return;
+                            }
 
-                                // Checkpoint #4. The job was performed, and it is in the one
-                                // of the explicit states (Succeeded, Scheduled and so on).
-                                // It should not be re-queued, but we still need to remove its
-                                // processing information.
+                            PerformJob(job.Payload);
 
-                                _job.Complete(_connection);
+                            // Checkpoint #4. The job was performed, and it is in the one
+                            // of the explicit states (Succeeded, Scheduled and so on).
+                            // It should not be re-queued, but we still need to remove its
+                            // processing information.
 
-                                // Success point. No things must be done after previous command
-                                // was succeeded.
-                            }, _cts.Token.WaitHandle);
+                            job.Complete(_connection);
 
-                        _jobIsReady.Reset();
-                    }
+                            // Success point. No things must be done after previous command
+                            // was succeeded.
+                        }, _cts.Token.WaitHandle);
                 }
             }
             catch (OperationCanceledException)
@@ -164,10 +129,8 @@ namespace HangFire.Server
             }
             catch (Exception ex)
             {
-                Crashed = true;
                 _logger.Fatal(
-                    String.Format(
-                        "Unexpected exception caught. The worker will be stopped."),
+                    String.Format("Unexpected exception caught. The worker will be stopped."),
                     ex);
             }
         }

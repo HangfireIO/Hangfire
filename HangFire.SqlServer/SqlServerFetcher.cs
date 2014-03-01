@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
+using System.Transactions;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
@@ -22,32 +23,35 @@ namespace HangFire.SqlServer
             _queues = queues;
         }
 
-        public void Dispose()
-        {
-            _connection.Dispose();
-        }
-
         public QueuedJob DequeueJob(CancellationToken cancellationToken)
         {
             Job job = null;
 
             do
             {
-                var jobId = _connection.Query<Guid?>(@"
+                using (var transaction = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted }))
+                {
+                    var jobId = _connection.Query<Guid?>(@"
 update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
 output INSERTED.JobId
 where (FetchedAt is null) or (FetchedAt < DATEADD(minute, -15, GETUTCDATE()))
 and QueueName in @queues",
-                    new { queues = _queues })
-                    .SingleOrDefault();
-
-                if (jobId != null)
-                {
-                    job = _connection.Query<Job>(
-                        @"select * from HangFire.Job where Id = @id",
-                        new { id = jobId })
+                        new { queues = _queues })
                         .SingleOrDefault();
+
+                    if (jobId != null)
+                    {
+                        job = _connection.Query<Job>(
+                            @"select * from HangFire.Job where Id = @id",
+                            new { id = jobId })
+                            .SingleOrDefault();
+                    }
+
+                    transaction.Complete();
                 }
+
                 if (job == null)
                 {
                     if (cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))

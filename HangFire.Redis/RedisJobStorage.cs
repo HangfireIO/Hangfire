@@ -58,17 +58,6 @@ namespace HangFire.Redis
             return new RedisStorageConnection(this, _pooledManager.GetClient());
         }
 
-        public override IJobFetcher CreateFetcher(
-            IEnumerable<string> queues, int workersCount)
-        {
-            return new PrioritizedJobFetcher(
-                this,
-                _basicManager,
-                queues, 
-                workersCount, 
-                _options.JobDequeueTimeOut);
-        }
-
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
             yield return new SchedulePoller(CreateConnection(), _options.PollInterval);

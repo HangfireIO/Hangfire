@@ -23,9 +23,6 @@ namespace HangFire.Storage
         public abstract IStorageConnection CreateConnection();
         public abstract IStorageConnection CreatePooledConnection();
 
-        public abstract IJobFetcher CreateFetcher(
-            IEnumerable<string> queues, int workersCount);
-
         public virtual IEnumerable<IThreadWrappable> GetComponents()
         {
             return Enumerable.Empty<IThreadWrappable>();

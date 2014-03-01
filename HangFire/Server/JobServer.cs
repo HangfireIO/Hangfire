@@ -40,7 +40,7 @@ namespace HangFire.Server
 
         private readonly Thread _serverThread;
 
-        private ThreadWrapper _manager;
+        private WorkerManager _manager;
         private ThreadWrapper _schedulePoller;
         private ThreadWrapper _dequeuedJobsWatcher;
         private ThreadWrapper _serverWatchdog;
@@ -73,6 +73,7 @@ namespace HangFire.Server
 
             _context = new ServerContext(
                 serverName,
+                _queues,
                 new JobPerformer());
 
             _serverThread = new Thread(RunServer)
@@ -93,10 +94,7 @@ namespace HangFire.Server
         {
             var storage = JobStorage.Current;
 
-            _manager = new ThreadWrapper(new WorkerManager(
-                storage.CreateFetcher(_queues, _workerCount),
-                _context,
-                _workerCount));
+            _manager = new WorkerManager(_context, _workerCount);
 
             var components = storage.GetComponents();
             foreach (var component in components)

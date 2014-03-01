@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using HangFire.Server;
 
 namespace HangFire.Storage
 {
     public interface IStorageConnection : IDisposable
     {
         IAtomicWriteTransaction CreateWriteTransaction();
+        IJobFetcher CreateFetcher(IEnumerable<string> queueNames);
 
         IDisposable AcquireJobLock(string jobId);
 

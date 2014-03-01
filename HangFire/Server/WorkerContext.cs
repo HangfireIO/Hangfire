@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+
 namespace HangFire.Server
 {
     public class WorkerContext : ServerContext
@@ -29,5 +31,6 @@ namespace HangFire.Server
             WorkerNumber = workerNumber;
         }
 
-        public int WorkerNumber { get; private set; }    }
+        public int WorkerNumber { get; private set; }
+    }
 }

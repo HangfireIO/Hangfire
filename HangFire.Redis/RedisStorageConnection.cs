@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Common;
+using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
@@ -31,6 +32,11 @@ namespace HangFire.Redis
         public IAtomicWriteTransaction CreateWriteTransaction()
         {
             return new RedisAtomicWriteTransaction(_redis.CreateTransaction());
+        }
+
+        public IJobFetcher CreateFetcher(IEnumerable<string> queueNames)
+        {
+            return new RedisJobFetcher(_redis, queueNames, TimeSpan.FromSeconds(1));
         }
 
         public IDisposable AcquireJobLock(string jobId)

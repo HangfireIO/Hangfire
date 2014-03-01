@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
 using HangFire.Common;
+using HangFire.Server;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
@@ -29,6 +30,11 @@ namespace HangFire.SqlServer
         public IAtomicWriteTransaction CreateWriteTransaction()
         {
             return new SqlWriteTransaction(_connection);
+        }
+
+        public IJobFetcher CreateFetcher(IEnumerable<string> queueNames)
+        {
+            return new SqlServerFetcher(_connection, queueNames);
         }
 
         public IDisposable AcquireJobLock(string jobId)
