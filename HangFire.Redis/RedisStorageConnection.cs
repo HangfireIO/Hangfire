@@ -14,12 +14,13 @@ namespace HangFire.Redis
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
-        public RedisStorageConnection(IRedisClient redis)
+        public RedisStorageConnection(RedisJobStorage storage, IRedisClient redis)
         {
             _redis = redis;
             
             Jobs = new RedisStoredJobs(redis);
             Sets = new RedisStoredSets(redis);
+            Storage = storage;
         }
 
         public void Dispose()
@@ -41,6 +42,7 @@ namespace HangFire.Redis
 
         public IStoredJobs Jobs { get; private set; }
         public IStoredSets Sets { get; private set; }
+        public JobStorage Storage { get; private set; }
 
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
         {

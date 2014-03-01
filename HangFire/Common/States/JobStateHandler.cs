@@ -28,5 +28,7 @@ namespace HangFire.Common.States
         public virtual void Unapply(StateApplyingContext context)
         {
         }
+
+        public abstract string StateName { get; }
     }
 }

@@ -42,7 +42,7 @@ namespace HangFire.Tests
         public void WhenThePollerRuns()
         {
             using (var poller = new SchedulePoller(
-                new RedisStorageConnection(Redis.Storage.BasicManager.GetClient()), 
+                new RedisStorageConnection(Redis.Storage, Redis.Storage.BasicManager.GetClient()), 
                 TimeSpan.FromSeconds(15)))
             {
                 _pollerResult = poller.EnqueueNextScheduledJob();

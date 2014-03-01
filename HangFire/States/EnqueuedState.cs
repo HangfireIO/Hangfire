@@ -99,6 +99,11 @@ namespace HangFire.Common.States
 
                 context.Transaction.Queues.Enqueue(queue, context.JobId);
             }
+
+            public override string StateName
+            {
+                get { return Name; }
+            }
         }
     }
 

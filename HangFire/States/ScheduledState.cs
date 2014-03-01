@@ -56,6 +56,11 @@ namespace HangFire.States
             {
                 context.Transaction.Sets.Remove("schedule", context.JobId);
             }
+
+            public override string StateName
+            {
+                get { return Name; }
+            }
         }
     }
 }

@@ -26,50 +26,34 @@ namespace HangFire.States
 {
     public class StateMachine
     {
-        internal static readonly IDictionary<string, JobStateHandler> Handlers
-            = new Dictionary<string, JobStateHandler>();
-
-        static StateMachine()
-        {
-            RegisterHandler(FailedState.Name, new FailedState.Handler());
-            RegisterHandler(ProcessingState.Name, new ProcessingState.Handler());
-            RegisterHandler(ScheduledState.Name, new ScheduledState.Handler());
-            RegisterHandler(SucceededState.Name, new SucceededState.Handler());
-        }
-
-        public static void RegisterHandler(
-            string stateName, JobStateHandler handler)
-        {
-            if (handler == null) throw new ArgumentNullException("handler");
-            if (String.IsNullOrEmpty(stateName)) throw new ArgumentNullException("stateName");
-            
-            Handlers.Add(stateName, handler);
-        }
+        private readonly IDictionary<string, List<JobStateHandler>> _handlers
+            = new Dictionary<string, List<JobStateHandler>>();
 
         private readonly IStorageConnection _connection;
-        private readonly IDictionary<string, JobStateHandler> _stateDescriptors;
 
         private readonly Func<JobMethod, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
         public StateMachine(IStorageConnection connection)
-            : this(
-                connection,
-                Handlers,
-                null)
+            : this(connection, GlobalStateHandlerCollection.GetHandlers(), null)
         {
         }
 
         internal StateMachine(
             IStorageConnection connection,
-            IDictionary<string, JobStateHandler> stateDescriptors,
+            IEnumerable<JobStateHandler> stateHandlers,
             IEnumerable<object> filters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (stateDescriptors == null) throw new ArgumentNullException("stateDescriptors");
+            if (stateHandlers == null) throw new ArgumentNullException("stateHandlers");
 
             _connection = connection;
-            _stateDescriptors = stateDescriptors;
+
+            var handlers = stateHandlers.Union(connection.Storage.GetStateHandlers());
+            foreach (var handler in handlers)
+            {
+                RegisterHandler(handler);
+            }
             
             if (filters != null)
             {
@@ -217,9 +201,12 @@ namespace HangFire.States
         {
             if (!String.IsNullOrEmpty(oldState))
             {
-                if (_stateDescriptors.ContainsKey(oldState))
+                if (_handlers.ContainsKey(oldState))
                 {
-                    _stateDescriptors[oldState].Unapply(context);
+                    foreach (var handler in _handlers[oldState])
+                    {
+                        handler.Unapply(context);
+                    }
                 }
 
                 foreach (var filter in stateChangedFilters)
@@ -228,10 +215,13 @@ namespace HangFire.States
                 }
             }
 
-            if (_stateDescriptors.ContainsKey(chosenState.StateName))
+            if (_handlers.ContainsKey(chosenState.StateName))
             {
                 var stateData = chosenState.GetProperties(context.JobMethod);
-                _stateDescriptors[chosenState.StateName].Apply(context, stateData);
+                foreach (var handler in _handlers[chosenState.StateName])
+                {
+                    handler.Apply(context, stateData);
+                }
             }
 
             AppendHistory(context.Transaction, context, chosenState, true);
@@ -278,6 +268,19 @@ namespace HangFire.States
         private JobFilterInfo GetFilters(JobMethod method)
         {
             return new JobFilterInfo(_getFiltersThunk(method));
+        }
+
+        private void RegisterHandler(JobStateHandler handler)
+        {
+            if (handler == null) throw new ArgumentNullException("handler");
+            if (String.IsNullOrEmpty(handler.StateName)) throw new ArgumentNullException("stateName");
+
+            if (!_handlers.ContainsKey(handler.StateName))
+            {
+                _handlers.Add(handler.StateName, new List<JobStateHandler>());
+            }
+
+            _handlers[handler.StateName].Add(handler);
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using HangFire.Common.States;
 using HangFire.Server;
 using HangFire.Storage.Monitoring;
 
@@ -24,6 +26,14 @@ namespace HangFire.Storage
         public abstract IJobFetcher CreateFetcher(
             IEnumerable<string> queues, int workersCount);
 
-        public abstract IEnumerable<IThreadWrappable> GetComponents();
+        public virtual IEnumerable<IThreadWrappable> GetComponents()
+        {
+            return Enumerable.Empty<IThreadWrappable>();
+        }
+
+        public virtual IEnumerable<JobStateHandler> GetStateHandlers()
+        {
+            return Enumerable.Empty<JobStateHandler>();
+        }
     }
 }

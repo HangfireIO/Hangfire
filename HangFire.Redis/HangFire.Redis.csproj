@@ -70,6 +70,9 @@
     <Compile Include="RedisStoredJobs.cs" />
     <Compile Include="RedisStoredSets.cs" />
     <Compile Include="RedisStoredValues.cs" />
+    <Compile Include="States\FailedStateHandler.cs" />
+    <Compile Include="States\ProcessingStateHandler.cs" />
+    <Compile Include="States\SucceededStateHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire\HangFire.csproj">

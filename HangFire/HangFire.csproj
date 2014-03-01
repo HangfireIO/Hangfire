@@ -120,6 +120,7 @@
     <Compile Include="Server\IJobFetcher.cs" />
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
+    <Compile Include="States\GlobalStateHandlerCollection.cs" />
     <Compile Include="Storage\IStoredSets.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
     <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />

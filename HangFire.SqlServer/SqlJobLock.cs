@@ -8,6 +8,7 @@ namespace HangFire.SqlServer
     public class SqlJobLock : IDisposable
     {
         private readonly TransactionScope _transaction;
+        private bool _completed;
 
         public SqlJobLock(string jobId, IDbConnection connection)
         {
@@ -22,7 +23,11 @@ namespace HangFire.SqlServer
 
         public void Dispose()
         {
-            _transaction.Complete();
+            if (!_completed)
+            {
+                _completed = true;
+                _transaction.Complete();
+            }
             _transaction.Dispose();
         }
     }

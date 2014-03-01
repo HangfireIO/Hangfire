@@ -13,11 +13,12 @@ namespace HangFire.SqlServer
     {
         private readonly SqlConnection _connection;
 
-        public SqlStorageConnection(SqlConnection connection)
+        public SqlStorageConnection(SqlServerStorage storage, SqlConnection connection)
         {
             _connection = connection;
             Jobs = new SqlStoredJobs(_connection);
             Sets = new SqlStoredSets(_connection);
+            Storage = storage;
         }
 
         public void Dispose()
@@ -37,6 +38,7 @@ namespace HangFire.SqlServer
 
         public IStoredJobs Jobs { get; private set; }
         public IStoredSets Sets { get; private set; }
+        public JobStorage Storage { get; private set; }
 
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
         {

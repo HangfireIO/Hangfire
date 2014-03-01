@@ -30,6 +30,7 @@ namespace HangFire.Redis
             = new DisposableCollection<PrefetchJobFetcher>();
 
         public PrioritizedJobFetcher(
+            RedisJobStorage storage,
             IRedisClientsManager redisClientsManager,
             IEnumerable<string> queues, 
             int prefetchCount,
@@ -38,6 +39,7 @@ namespace HangFire.Redis
             foreach (var queue in queues)
             {
                 _fetchers.Add(new PrefetchJobFetcher(
+                    storage,
                     new JobFetcher(redisClientsManager.GetClient(), queue, fetchTimeout), prefetchCount));
             }
         }

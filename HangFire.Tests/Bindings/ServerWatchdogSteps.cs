@@ -16,7 +16,9 @@ namespace HangFire.Tests
         [Given(@"a server watchdog")]
         public void GivenAServerWatchdog()
         {
-            _connection = new RedisStorageConnection(Redis.Storage.BasicManager.GetClient());
+            _connection = new RedisStorageConnection(
+                Redis.Storage,
+                Redis.Storage.BasicManager.GetClient());
             _watchdog = new ServerWatchdog(_connection);
         }
 

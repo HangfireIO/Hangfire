@@ -49,17 +49,17 @@ namespace HangFire.States
             {
                 context.Transaction.Jobs.Expire(context.JobId, JobExpirationTimeout);
                 context.Transaction.Values.Increment("stats:succeeded");
-
-                /*context.Transaction.Lists.AddToLeft("succeeded", context.JobId);
-                context.Transaction.Lists.Trim("succeeded", 0, 99);*/
             }
 
             public override void Unapply(StateApplyingContext context)
             {
                 context.Transaction.Values.Decrement("stats:succeeded");
                 context.Transaction.Jobs.Persist(context.JobId);
+            }
 
-                /*context.Transaction.Lists.Remove("succeeded", context.JobId);*/
+            public override string StateName
+            {
+                get { return Name; }
             }
         }
     }

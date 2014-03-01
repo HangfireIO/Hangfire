@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using HangFire.Common.States;
 using HangFire.Redis.Components;
+using HangFire.Redis.States;
 using HangFire.Server;
 using HangFire.Server.Components;
 using HangFire.Storage;
@@ -35,7 +37,7 @@ namespace HangFire.Redis
             _basicManager = new BasicRedisClientManager(db, host);
 
             _monitoring = new Lazy<IMonitoringApi>(
-                () => new RedisMonitoringApi(_basicManager.GetClient()));
+                () => new RedisMonitoringApi(this, _basicManager.GetClient()));
         }
 
         public IRedisClientsManager BasicManager { get { return _basicManager; } }
@@ -48,18 +50,19 @@ namespace HangFire.Redis
 
         public override IStorageConnection CreateConnection()
         {
-            return new RedisStorageConnection(_basicManager.GetClient());
+            return new RedisStorageConnection(this, _basicManager.GetClient());
         }
 
         public override IStorageConnection CreatePooledConnection()
         {
-            return new RedisStorageConnection(_pooledManager.GetClient());
+            return new RedisStorageConnection(this, _pooledManager.GetClient());
         }
 
         public override IJobFetcher CreateFetcher(
             IEnumerable<string> queues, int workersCount)
         {
             return new PrioritizedJobFetcher(
+                this,
                 _basicManager,
                 queues, 
                 workersCount, 
@@ -69,16 +72,20 @@ namespace HangFire.Redis
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
             yield return new SchedulePoller(CreateConnection(), _options.PollInterval);
-            yield return new DequeuedJobsWatcher(_basicManager);
+            yield return new DequeuedJobsWatcher(this, _basicManager);
             yield return new ServerWatchdog(CreateConnection());
+        }
+
+        public override IEnumerable<JobStateHandler> GetStateHandlers()
+        {
+            yield return new FailedStateHandler();
+            yield return new ProcessingStateHandler();
+            yield return new SucceededStateHandler();
         }
 
         public override string ToString()
         {
-            return String.Format(
-                "redis://{0}/{1}",
-                _host,
-                _db);
+            return String.Format("redis://{0}/{1}", _host, _db);
         }
     }
 }

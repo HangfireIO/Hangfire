@@ -41,7 +41,7 @@ namespace HangFire.SqlServer
 
         public override IStorageConnection CreatePooledConnection()
         {
-            return new SqlStorageConnection(new SqlConnection(_connectionString));
+            return new SqlStorageConnection(this, new SqlConnection(_connectionString));
         }
 
         public override IJobFetcher CreateFetcher(IEnumerable<string> queues, int workersCount)

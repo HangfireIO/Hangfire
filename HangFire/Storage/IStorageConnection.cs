@@ -11,6 +11,7 @@ namespace HangFire.Storage
 
         IStoredJobs Jobs { get; }
         IStoredSets Sets { get; }
+        JobStorage Storage { get; }
 
         void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues);
         void RemoveServer(string serverId);

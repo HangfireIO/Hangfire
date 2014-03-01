@@ -43,25 +43,5 @@ namespace HangFire.States
                     { "ServerName", ServerName }
                 };
         }
-
-        public class Handler : JobStateHandler
-        {
-            public override void Apply(
-                StateApplyingContext context, IDictionary<string, string> stateData)
-            {
-                // TODO: Remove Redis-related stuff
-                /*context.Transaction.Sets.Add(
-                    "processing",
-                    context.JobId,
-                    JobHelper.ToTimestamp(DateTime.UtcNow));*/
-            }
-
-            public override void Unapply(StateApplyingContext context)
-            {
-                /*context.Transaction.Sets.Remove(
-                    "processing",
-                    context.JobId);*/
-            }
-        }
     }
 }

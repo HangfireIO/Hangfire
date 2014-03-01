@@ -29,6 +29,7 @@ namespace HangFire.Redis
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(PrefetchJobFetcher));
 
+        private readonly RedisJobStorage _storage;
         private readonly JobFetcher _innerFetcher;
         private readonly int _count;
 
@@ -43,8 +44,9 @@ namespace HangFire.Redis
 
         private bool _stopSent;
 
-        public PrefetchJobFetcher(JobFetcher innerFetcher, int count)
+        public PrefetchJobFetcher(RedisJobStorage storage, JobFetcher innerFetcher, int count)
         {
+            _storage = storage;
             _innerFetcher = innerFetcher;
             _count = count;
 
@@ -122,7 +124,8 @@ namespace HangFire.Redis
             try
             {
                 var enqueuedState = new EnqueuedState("Re-queue prefetched job");
-                var stateMachine = new StateMachine(new RedisStorageConnection(_innerFetcher.Redis));
+                var stateMachine = new StateMachine(new RedisStorageConnection(
+                    _storage, _innerFetcher.Redis));
 
                 foreach (var job in _items)
                 {

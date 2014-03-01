@@ -45,22 +45,5 @@ namespace HangFire.States
                     { "ExceptionDetails", Exception.ToString() }
                 };
         }
-
-        public class Handler : JobStateHandler
-        {
-            public override void Apply(
-                StateApplyingContext context, IDictionary<string, string> stateData)
-            {
-                /*context.Transaction.Sets.Add(
-                    "failed",
-                    context.JobId,
-                    JobHelper.ToTimestamp(DateTime.UtcNow));*/
-            }
-
-            public override void Unapply(StateApplyingContext context)
-            {
-                //context.Transaction.Sets.Remove("failed", context.JobId);
-            }
-        }
     }
 }

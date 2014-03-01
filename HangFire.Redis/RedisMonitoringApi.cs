@@ -27,10 +27,12 @@ namespace HangFire.Redis
 {
     internal class RedisMonitoringApi : IMonitoringApi
     {
+        private readonly RedisJobStorage _storage;
         private readonly IRedisClient _redis;
 
-        public RedisMonitoringApi(IRedisClient redis)
+        public RedisMonitoringApi(RedisJobStorage storage, IRedisClient redis)
         {
+            _storage = storage;
             _redis = redis;
         }
 
@@ -395,7 +397,7 @@ namespace HangFire.Redis
             {
                 // TODO: clear retry attempts counter.
 
-                var stateMachine = new StateMachine(new RedisStorageConnection(_redis));
+                var stateMachine = new StateMachine(new RedisStorageConnection(_storage, _redis));
                 var state = new EnqueuedState("The job has been retried by a user.");
 
                 return stateMachine.ChangeState(jobId, state, FailedState.Name);
@@ -406,7 +408,7 @@ namespace HangFire.Redis
         {
             lock (_redis)
             {
-                var stateMachine = new StateMachine(new RedisStorageConnection(_redis));
+                var stateMachine = new StateMachine(new RedisStorageConnection(_storage, _redis));
                 var state = new EnqueuedState("The job has been enqueued by a user.");
 
                 return stateMachine.ChangeState(jobId, state, ScheduledState.Name);
