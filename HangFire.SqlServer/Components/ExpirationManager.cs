@@ -35,7 +35,7 @@ namespace HangFire.SqlServer.Components
             foreach (var table in ProcessedTables)
             {
                 _connection.Execute(
-                    String.Format(@"delete from HangFire.[{0}] where ExpireAt < @now", table),
+                    String.Format(@"delete from HangFire.[{0}] with (tablock) where ExpireAt < @now", table),
                     new { now = DateTime.UtcNow });
             }
         }

@@ -21,8 +21,10 @@ namespace HangFire.SqlServer
         {
             _connection = connection;
             _transaction = new TransactionScope(
-                TransactionScopeOption.Required,
+                TransactionScopeOption.RequiresNew,
                 new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted });
+
+            _connection.EnlistTransaction(Transaction.Current);
         }
 
         public void Dispose()

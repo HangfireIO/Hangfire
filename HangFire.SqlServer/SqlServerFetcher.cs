@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
-using System.Transactions;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
@@ -26,30 +26,31 @@ namespace HangFire.SqlServer
         public QueuedJob DequeueJob(CancellationToken cancellationToken)
         {
             Job job = null;
+            string queueName = null;
 
             do
             {
-                using (var transaction = new TransactionScope(
-                    TransactionScopeOption.Required,
-                    new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted }))
-                {
-                    var jobId = _connection.Query<Guid?>(@"
+                // TODO: (FetchedAt < DATEADD(minute, -15, GETUTCDATE()))
+                var idAndQueue = _connection.Query(@"
+set transaction isolation level read committed
 update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
-output INSERTED.JobId
-where (FetchedAt is null) or (FetchedAt < DATEADD(minute, -15, GETUTCDATE()))
+output INSERTED.JobId, INSERTED.QueueName
+where (FetchedAt is null)
 and QueueName in @queues",
-                        new { queues = _queues })
+                    new { queues = _queues })
+                    .SingleOrDefault();
+
+                if (idAndQueue != null)
+                {
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@id", idAndQueue.JobId, dbType: DbType.Guid);
+
+                    job = _connection.Query<Job>(
+                        @"select Id, InvocationData, Arguments from HangFire.Job where Id = @id",
+                        parameters)
                         .SingleOrDefault();
 
-                    if (jobId != null)
-                    {
-                        job = _connection.Query<Job>(
-                            @"select * from HangFire.Job where Id = @id",
-                            new { id = jobId })
-                            .SingleOrDefault();
-                    }
-
-                    transaction.Complete();
+                    queueName = idAndQueue.QueueName;
                 }
 
                 if (job == null)
@@ -70,8 +71,8 @@ and QueueName in @queues",
             jobDictionary.Add("Arguments", job.Arguments);
 
             return new QueuedJob(new JobPayload(
-                job.Id.ToString(), 
-                "default", 
+                job.Id.ToString(),
+                queueName,
                 jobDictionary));
         }
     }
