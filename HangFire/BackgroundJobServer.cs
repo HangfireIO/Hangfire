@@ -21,6 +21,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using HangFire.Common.States;
 using HangFire.Server;
+using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire
