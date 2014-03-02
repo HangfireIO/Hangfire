@@ -42,6 +42,10 @@ and QueueName in @queues",
 
                 if (idAndQueue != null)
                 {
+                    // Using DynamicParameters with explicit parameter type 
+                    // instead of anonymous object, because of a strange
+                    // behaviour of a query plan builder: execution plan
+                    // was based on index scan instead of index seek.
                     var parameters = new DynamicParameters();
                     parameters.Add("@id", idAndQueue.JobId, dbType: DbType.Guid);
 
@@ -70,10 +74,7 @@ and QueueName in @queues",
             jobDictionary.Add("ParameterTypes", invocationData.ParameterTypes);
             jobDictionary.Add("Arguments", job.Arguments);
 
-            return new QueuedJob(new JobPayload(
-                job.Id.ToString(),
-                queueName,
-                jobDictionary));
+            return new QueuedJob(new JobPayload(job.Id.ToString(), queueName, jobDictionary));
         }
     }
 }
