@@ -40,6 +40,14 @@ namespace HangFire.SqlServer
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
+                // I had the idea to put all the command into a single
+                // SQL statement, but ran into issue of parameter naming.
+                // They should be unique among the whole statement, and 
+                // the only way to do it is to generate queries on the fly. 
+                // But Dapper documentation states, that it has internal 
+                // query cache, that is never flushed. So, query generation 
+                // is a bad idea.
+
                 foreach (var command in _commandList)
                 {
                     _connection.Execute(command.Key, command.Value);

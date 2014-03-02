@@ -8,7 +8,6 @@ using Dapper;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.SqlServer.Entities;
-using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
