@@ -15,12 +15,11 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Threading;
-using HangFire.Storage;
 
 namespace HangFire.Server
 {
     public interface IJobFetcher
     {
-        QueuedJob DequeueJob(CancellationToken cancellationToken);
+        JobPayload DequeueJob(CancellationToken cancellationToken);
     }
 }

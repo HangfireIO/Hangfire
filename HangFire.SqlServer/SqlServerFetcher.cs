@@ -23,7 +23,7 @@ namespace HangFire.SqlServer
             _queues = queues;
         }
 
-        public QueuedJob DequeueJob(CancellationToken cancellationToken)
+        public JobPayload DequeueJob(CancellationToken cancellationToken)
         {
             Job job = null;
             string queueName = null;
@@ -45,7 +45,8 @@ and QueueName in @queues",
                     // Using DynamicParameters with explicit parameter type 
                     // instead of anonymous object, because of a strange
                     // behaviour of a query plan builder: execution plan
-                    // was based on index scan instead of index seek.
+                    // was based on index scan instead of index seek. 
+                    // As a result, this query was the slowest.
                     var parameters = new DynamicParameters();
                     parameters.Add("@id", idAndQueue.JobId, dbType: DbType.Guid);
 
@@ -74,7 +75,7 @@ and QueueName in @queues",
             jobDictionary.Add("ParameterTypes", invocationData.ParameterTypes);
             jobDictionary.Add("Arguments", job.Arguments);
 
-            return new QueuedJob(new JobPayload(job.Id.ToString(), queueName, jobDictionary));
+            return new JobPayload(job.Id.ToString(), queueName, jobDictionary);
         }
     }
 }

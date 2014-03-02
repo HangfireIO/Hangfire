@@ -25,7 +25,7 @@ namespace HangFire.Redis
             _fetchTimeout = fetchTimeout;
         }
 
-        public QueuedJob DequeueJob(CancellationToken cancellationToken)
+        public JobPayload DequeueJob(CancellationToken cancellationToken)
         {
             string jobId;
             string queueName;
@@ -102,7 +102,7 @@ namespace HangFire.Redis
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new QueuedJob(new JobPayload(jobId, queueName, job));
+            return new JobPayload(jobId, queueName, job);
         }
 
         public void Dispose()

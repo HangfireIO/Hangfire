@@ -101,22 +101,22 @@ namespace HangFire.Server
                     JobServer.RetryOnException(
                         () =>
                         {
-                            var job = fetcher.DequeueJob(_cts.Token);
+                            var payload = fetcher.DequeueJob(_cts.Token);
 
-                            if (job == null)
+                            if (payload == null)
                             {
                                 _cts.Cancel();
                                 return;
                             }
 
-                            PerformJob(job.Payload);
+                            PerformJob(payload);
 
                             // Checkpoint #4. The job was performed, and it is in the one
                             // of the explicit states (Succeeded, Scheduled and so on).
                             // It should not be re-queued, but we still need to remove its
                             // processing information.
 
-                            job.Complete(_connection);
+                            _connection.Jobs.Complete(payload);
 
                             // Success point. No things must be done after previous command
                             // was succeeded.

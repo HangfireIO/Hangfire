@@ -174,7 +174,6 @@
     <Compile Include="Storage\IWriteableStoredLists.cs" />
     <Compile Include="Storage\IWriteableStoredSets.cs" />
     <Compile Include="Storage\IWriteableStoredValues.cs" />
-    <Compile Include="Storage\QueuedJob.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec">

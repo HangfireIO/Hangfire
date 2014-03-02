@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using HangFire.Redis;
+using HangFire.Server;
 using HangFire.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
@@ -14,7 +15,7 @@ namespace HangFire.Tests
     public class JobFetcherSteps : Steps
     {
         private RedisJobFetcher _fetcher;
-        private QueuedJob _job;
+        private JobPayload _job;
         private IList<string> _queues;
 
         private Exception _exception;
@@ -79,7 +80,7 @@ namespace HangFire.Tests
         public void ThenTheFetcherReturnsTheJob()
         {
             Assert.IsNotNull(_job);
-            Assert.AreEqual(JobSteps.DefaultJobId, _job.Payload.Id);
+            Assert.AreEqual(JobSteps.DefaultJobId, _job.Id);
             
         }
 
@@ -87,7 +88,7 @@ namespace HangFire.Tests
         [Then(@"the fetcher should return the '(.+)' job")]
         public void ThenTheFetcherReturnsTheJob(string jobId)
         {
-            Assert.AreEqual(jobId, _job.Payload.Id);
+            Assert.AreEqual(jobId, _job.Id);
         }
 
         [Then(@"the fetcher should not return any job")]
