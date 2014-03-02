@@ -217,7 +217,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
 
         class QueueStatusDto
         {
-            public string Name { get; set; }
+            public string QueueName { get; set; }
             public int Enqueued { get; set; }
             public int Fetched { get; set; }
         }
@@ -225,11 +225,11 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
             const string queuesAndStatusSql = @"
-select 
-	[Name],
-	(select count(JobId) from HangFire.JobQueue as a where q.Name = a.QueueName and a.FetchedAt is null) as Enqueued,
-	(select count(JobId) from HangFire.JobQueue as b where q.Name = b.QueueName and b.FetchedAt is not null) as Fetched
-from HangFire.Queue as q";
+select distinct [QueueName],
+	(select count(JobId) from HangFire.JobQueue as a where q.QueueName = a.QueueName and a.FetchedAt is null) as Enqueued,
+	(select count(JobId) from HangFire.JobQueue as b where q.QueueName = b.QueueName and b.FetchedAt is not null) as Fetched
+from HangFire.[JobQueue] as q
+";
 
             var queues = _connection.Query<QueueStatusDto>(queuesAndStatusSql).ToList();
             var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
@@ -238,7 +238,7 @@ from HangFire.Queue as q";
             {
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
-                    Name = queue.Name,
+                    Name = queue.QueueName,
                     Length = queue.Enqueued,
                     Dequeued = queue.Fetched,
                     FirstJobs = new List<KeyValuePair<string, EnqueuedJobDto>>() // TODO: implement
@@ -275,7 +275,7 @@ where r.row_num between @start and @end";
         {
             const string fetchedJobsSql = @"
 select * from
-(select j.*, jq.FetchedAt, jq.CheckedAt, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
+(select j.*, jq.FetchedAt, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
 left join HangFire.Job j on jq.JobId = j.Id
 where jq.QueueName = @queueName and jq.FetchedAt is not null) as r
 where r.row_num between @start and @end";
@@ -296,7 +296,7 @@ where r.row_num between @start and @end";
                         Method = DeserializeJobMethod(job.InvocationData),
                         State = job.State,
                         CreatedAt = job.CreatedAt,
-                        CheckedAt = job.CheckedAt,
+                        CheckedAt = null,
                         FetchedAt = job.FetchedAt
                     }));
             }
@@ -367,7 +367,7 @@ select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
             const string sql = @"
 select [State], count(id) as [Count] From HangFire.Job group by [State]
 select count(Id) from HangFire.Server
-select count(Name) from HangFire.Queue
+select count(distinct QueueName) from HangFire.JobQueue
 select IntValue from HangFire.Value where [Key] = 'stats:succeeded'
 ";
 

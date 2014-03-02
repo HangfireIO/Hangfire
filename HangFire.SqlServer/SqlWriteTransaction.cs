@@ -61,17 +61,6 @@ namespace HangFire.SqlServer
 
         void IWriteableJobQueue.Enqueue(string queue, string jobId)
         {
-            const string createQueueIfNotExistsSql = @"
-begin try
-    insert into HangFire.[Queue] (Name) values (@queueName)
-end try
-begin catch
-end catch";
-
-            _commandList.AddLast(new KeyValuePair<string, object>(
-                createQueueIfNotExistsSql,
-                new { queueName = queue }));
-
             const string enqueueJobSql = @"
 insert into HangFire.JobQueue (JobId, QueueName)
 values (@jobId, @queueName)";

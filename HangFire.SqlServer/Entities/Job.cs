@@ -13,6 +13,5 @@ namespace HangFire.SqlServer.Entities
         public DateTime? ExpireAt { get; set; }
 
         public DateTime? FetchedAt { get; set; }
-        public DateTime? CheckedAt { get; set; }
     }
 }
