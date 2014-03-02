@@ -110,10 +110,5 @@ namespace HangFire.Redis
                 Arguments = arguments
             };
         }
-
-        public void Dispose()
-        {
-            // TODO: remove me
-        }
     }
 }
