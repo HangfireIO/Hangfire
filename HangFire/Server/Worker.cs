@@ -143,7 +143,7 @@ namespace HangFire.Server
             }
 
             var processingState = new ProcessingState("Worker has started processing.", _context.ServerName);
-            if (!_stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name))
+            if (!_stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name, ProcessingState.Name))
             {
                 return;
             }
