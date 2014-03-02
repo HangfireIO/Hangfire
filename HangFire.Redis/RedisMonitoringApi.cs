@@ -20,6 +20,7 @@ using System.Linq;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 using HangFire.Storage.Monitoring;
 using ServiceStack.Redis;
 
@@ -627,20 +628,12 @@ namespace HangFire.Redis
         {
             try
             {
-                var dictionary = new Dictionary<string, string>();
-                dictionary.Add("Type", type);
-
-                if (method != null)
+                return JobMethod.Deserialize(new InvocationData
                 {
-                    dictionary.Add("Method", method);
-                }
-
-                if (parameterTypes != null)
-                {
-                    dictionary.Add("ParameterTypes", parameterTypes);
-                }
-
-                return JobMethod.Deserialize(dictionary);
+                    Type = type,
+                    Method = method,
+                    ParameterTypes = parameterTypes
+                });
             }
             catch (Exception)
             {

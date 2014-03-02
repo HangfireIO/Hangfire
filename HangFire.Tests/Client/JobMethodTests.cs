@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HangFire.Common;
 using HangFire.Common.Filters;
+using HangFire.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace HangFire.Tests.Client
@@ -67,11 +68,11 @@ namespace HangFire.Tests.Client
         {
             var type = typeof(TestJob);
             var methodInfo = type.GetMethod("Perform");
-            var serializedData = new Dictionary<string, string>
+            var serializedData = new InvocationData
             {
-                { "Type", type.AssemblyQualifiedName },
-                { "Method", methodInfo.Name },
-                { "ParameterTypes", JobHelper.ToJson(new Type[0]) }
+                Type = type.AssemblyQualifiedName,
+                Method = methodInfo.Name,
+                ParameterTypes = JobHelper.ToJson(new Type[0])
             };
 
             var method = JobMethod.Deserialize(serializedData);
@@ -92,7 +93,7 @@ namespace HangFire.Tests.Client
         [ExpectedException(typeof(JobLoadException))]
         public void Deserialize_WrapsAnException_WithTheJobLoadException()
         {
-            var serializedData = new Dictionary<string, string>();
+            var serializedData = new InvocationData();
             JobMethod.Deserialize(serializedData);
         }
 
@@ -100,11 +101,11 @@ namespace HangFire.Tests.Client
         [ExpectedException(typeof (JobLoadException))]
         public void Deserialize_ThrowsAnException_WhenTypeCanNotBeFound()
         {
-            var serializedData = new Dictionary<string, string>
+            var serializedData = new InvocationData
             {
-                { "Type", "NonExistingType" },
-                { "Method", "Perform" },
-                { "ParameterTypes", "" }
+                Type = "NonExistingType",
+                Method = "Perform",
+                ParameterTypes = "",
             };
 
             JobMethod.Deserialize(serializedData);
@@ -114,11 +115,11 @@ namespace HangFire.Tests.Client
         [ExpectedException(typeof(JobLoadException))]
         public void Deserialize_ThrowsAnException_WhenMethodCanNotBeFound()
         {
-            var serializedData = new Dictionary<string, string>
+            var serializedData = new InvocationData
             {
-                { "Type", typeof (TestJob).AssemblyQualifiedName },
-                { "Method", "NonExistingMethod" },
-                { "ParameterTypes", JobHelper.ToJson(new Type[0]) }
+                Type = typeof (TestJob).AssemblyQualifiedName,
+                Method = "NonExistingMethod",
+                ParameterTypes = JobHelper.ToJson(new Type[0])
             };
 
             JobMethod.Deserialize(serializedData);
@@ -199,9 +200,9 @@ namespace HangFire.Tests.Client
         [TestMethod]
         public void Deserialization_FromTheOldFormat_CorrectlySerializesBothTypeAndMethod()
         {
-            var serializedData = new Dictionary<string, string>
+            var serializedData = new InvocationData
             {
-                { "Type", typeof (TestJob).AssemblyQualifiedName }
+                Type = typeof (TestJob).AssemblyQualifiedName
             };
 
             var method = JobMethod.Deserialize(serializedData);
@@ -213,14 +214,13 @@ namespace HangFire.Tests.Client
         [TestMethod]
         public void SerializedData_IsNotBeingChanged_DuringTheDeserialization()
         {
-            var serializedData = new Dictionary<string, string>
+            var serializedData = new InvocationData
             {
-                { "Type", typeof (TestJob).AssemblyQualifiedName }
+                Type = typeof (TestJob).AssemblyQualifiedName
             };
 
             JobMethod.Deserialize(serializedData);
-            
-            Assert.AreEqual(1, serializedData.Count);
+            Assert.IsNull(serializedData.Method);
         }
 
         [TestMethod]

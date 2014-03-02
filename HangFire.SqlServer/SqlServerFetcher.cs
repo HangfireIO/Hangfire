@@ -8,6 +8,7 @@ using Dapper;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.SqlServer.Entities;
+using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
@@ -34,7 +35,7 @@ namespace HangFire.SqlServer
 set transaction isolation level read committed
 update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
 output INSERTED.JobId, INSERTED.QueueName
-where (FetchedAt is null)
+where FetchedAt is null
 and QueueName in @queues",
                     new { queues = _queues })
                     .SingleOrDefault();
@@ -67,14 +68,11 @@ and QueueName in @queues",
             } while (job == null);
 
             var invocationData = JobHelper.FromJson<InvocationData>(job.InvocationData);
-            var jobDictionary = new Dictionary<string, string>();
 
-            jobDictionary.Add("Type", invocationData.Type);
-            jobDictionary.Add("Method", invocationData.Method);
-            jobDictionary.Add("ParameterTypes", invocationData.ParameterTypes);
-            jobDictionary.Add("Arguments", job.Arguments);
-
-            return new JobPayload(job.Id.ToString(), queueName, jobDictionary);
+            return new JobPayload(job.Id.ToString(), queueName, invocationData)
+            {
+                Arguments = job.Arguments
+            };
         }
     }
 }

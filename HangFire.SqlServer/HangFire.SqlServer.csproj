@@ -59,7 +59,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components\ExpirationManager.cs" />
-    <Compile Include="Entities\InvocationData.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\Job.cs" />
     <Compile Include="Entities\JobHistory.cs" />

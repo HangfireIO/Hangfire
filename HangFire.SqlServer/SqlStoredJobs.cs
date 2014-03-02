@@ -18,24 +18,21 @@ namespace HangFire.SqlServer
             _connection = connection;
         }
 
-        public Dictionary<string, string> Get(string id)
+        public StateAndInvocationData GetStateAndInvocationData(string id)
         {
             var job = _connection.Query<Job>(
-                @"select * from HangFire.Job where id = @id",
+                @"select InvocationData, State from HangFire.Job where id = @id",
                 new { id = id })
                 .SingleOrDefault();
 
             if (job == null) return null;
 
             var data = JobHelper.FromJson<InvocationData>(job.InvocationData);
-            return new Dictionary<string, string>
+
+            return new StateAndInvocationData
             {
-                { "Type", data.Type },
-                { "Method" , data.Method },
-                { "ParameterTypes", data.ParameterTypes },
-                { "Arguments", job.Arguments },
-                { "State", job.State },
-                { "CreatedAt", JobHelper.ToStringTimestamp(job.CreatedAt) }
+                InvocationData = data,
+                State = job.State,
             };
         }
 

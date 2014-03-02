@@ -8,6 +8,7 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.SqlServer.Entities;
 using HangFire.States;
+using HangFire.Storage;
 using HangFire.Storage.Monitoring;
 
 namespace HangFire.SqlServer
@@ -128,16 +129,10 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
         private static JobMethod DeserializeJobMethod(string invocationData)
         {
             var data = JobHelper.FromJson<InvocationData>(invocationData);
-            var serializedJobMethod = new Dictionary<string, string>
-                {
-                    { "Type", data.Type },
-                    { "Method", data.Method },
-                    { "ParameterTypes", data.ParameterTypes }
-                };
 
             try
             {
-                return JobMethod.Deserialize(serializedJobMethod);
+                return JobMethod.Deserialize(data);
             }
             catch (JobLoadException)
             {
@@ -348,20 +343,12 @@ select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
                         .Select(x => JobHelper.FromJson<Dictionary<string, string>>(x.Data))
                         .ToList();
 
-                var invocationData = JobHelper.FromJson<InvocationData>(job.InvocationData);
-                var invocationDictionary = new Dictionary<string, string>
-                {
-                    { "Type", invocationData.Type },
-                    { "Method", invocationData.Method },
-                    { "ParameterTypes", invocationData.ParameterTypes }
-                };
-
                 return new JobDetailsDto
                 {
                     Arguments = JobHelper.FromJson<string[]>(job.Arguments),
                     CreatedAt = job.CreatedAt,
                     State = job.State,
-                    Method = JobMethod.Deserialize(invocationDictionary),
+                    Method = DeserializeJobMethod(job.InvocationData),
                     History = history,
                     Properties = parameters
                 };

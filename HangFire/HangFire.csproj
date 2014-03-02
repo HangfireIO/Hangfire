@@ -121,6 +121,7 @@
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="States\GlobalStateHandlerCollection.cs" />
+    <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IStoredSets.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
     <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />
@@ -174,6 +175,7 @@
     <Compile Include="Storage\IWriteableStoredLists.cs" />
     <Compile Include="Storage\IWriteableStoredSets.cs" />
     <Compile Include="Storage\IWriteableStoredValues.cs" />
+    <Compile Include="Storage\StateAndInvocationData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HangFire.nuspec">

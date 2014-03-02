@@ -114,15 +114,15 @@ namespace HangFire.States
             {
                 try
                 {
-                    var job = _connection.Jobs.Get(jobId);
+                    var jobData = _connection.Jobs.GetStateAndInvocationData(jobId);
 
-                    if (job == null)
+                    if (jobData == null)
                     {
                         // The job does not exist
                         return false;
                     }
 
-                    var currentState = job["State"];
+                    var currentState = jobData.State;
                     if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
                     {
                         return false;
@@ -130,7 +130,7 @@ namespace HangFire.States
 
                     try
                     {
-                        var jobMethod = JobMethod.Deserialize(job);
+                        var jobMethod = JobMethod.Deserialize(jobData.InvocationData);
                         var filterInfo = GetFilters(jobMethod);
 
                         var context = new StateContext(jobId, jobMethod);

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HangFire.Common.Filters;
+using HangFire.Storage;
 
 namespace HangFire.Common
 {
@@ -126,35 +127,38 @@ namespace HangFire.Common
             };
         }
 
-        public static JobMethod Deserialize(Dictionary<string, string> job)
+        public static JobMethod Deserialize(InvocationData invocationData)
         {
-            if (job == null) throw new ArgumentNullException("job");
+            if (invocationData == null) throw new ArgumentNullException("invocationData");
 
             var oldFormat = false;
 
             // Normalize a job in the old format.
-            if (!job.ContainsKey("Method") || job["Method"] == null)
+            if (invocationData.Method == null)
             {
-                // Avoid to modify the original dictionary.
-                job = new Dictionary<string, string>(job);
-                job["Method"] = "Perform";
-                job["ParameterTypes"] = JobHelper.ToJson(new Type[0]);
+                // We should create a copy. Worker class depends on it.
+                invocationData = new InvocationData
+                {
+                    Type = invocationData.Type,
+                    Method = "Perform",
+                    ParameterTypes = JobHelper.ToJson(new Type[0])
+                };
 
                 oldFormat = true;
             }
 
             try
             {
-                var type = Type.GetType(job["Type"], throwOnError: true, ignoreCase: true);
-                var parameterTypes = JobHelper.FromJson<Type[]>(job["ParameterTypes"]);
-                var method = type.GetMethod(job["Method"], parameterTypes);
+                var type = Type.GetType(invocationData.Type, throwOnError: true, ignoreCase: true);
+                var parameterTypes = JobHelper.FromJson<Type[]>(invocationData.ParameterTypes);
+                var method = type.GetMethod(invocationData.Method, parameterTypes);
 
                 if (method == null)
                 {
                     throw new InvalidOperationException(String.Format(
                         "The type `{0}` does not contain a method with signature `{1}({2})`",
                         type.FullName,
-                        job["Method"],
+                        invocationData.Method,
                         String.Join(", ", parameterTypes.Select(x => x.Name))));
                 }
 

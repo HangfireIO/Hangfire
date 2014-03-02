@@ -71,7 +71,9 @@ namespace HangFire.Redis
             // that is being inspected by the DequeuedJobsWatcher instance.
             // Job's has the implicit 'Dequeued' state.
 
-            Dictionary<string, string> job = null;
+            var invocationData = new InvocationData();
+            string arguments = null;
+            string args = null;
 
             using (var pipeline = _redis.CreatePipeline())
             {
@@ -86,13 +88,13 @@ namespace HangFire.Redis
                     x => x.GetValuesFromHash(
                         String.Format("hangfire:job:{0}", jobId),
                         new[] { "Type", "Args", "Method", "Arguments", "ParameterTypes" }),
-                    x => job = new Dictionary<string, string>
+                    x =>
                     {
-                        { "Type", x[0] },
-                        { "Args", x[1] },
-                        { "Method", x[2] },
-                        { "Arguments", x[3] },
-                        { "ParameterTypes", x[4] }
+                        invocationData.Type = x[0];
+                        invocationData.Method = x[2];
+                        invocationData.ParameterTypes = x[4];
+                        args = x[1];
+                        arguments = x[3];
                     });
 
                 pipeline.Flush();
@@ -102,7 +104,11 @@ namespace HangFire.Redis
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new JobPayload(jobId, queueName, job);
+            return new JobPayload(jobId, queueName, invocationData)
+            {
+                Args = args,
+                Arguments = arguments
+            };
         }
 
         public void Dispose()

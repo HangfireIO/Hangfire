@@ -1,6 +1,6 @@
-﻿namespace HangFire.SqlServer.Entities
+﻿namespace HangFire.Storage
 {
-    class InvocationData
+    public class InvocationData
     {
         public string Type { get; set; }
         public string Method { get; set; }

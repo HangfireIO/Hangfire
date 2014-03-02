@@ -16,12 +16,32 @@ namespace HangFire.Redis
             _redis = redis;
         }
 
-        public Dictionary<string, string> Get(string id)
+        public StateAndInvocationData GetStateAndInvocationData(string id)
         {
-            var job = _redis.GetAllEntriesFromHash(
+            var jobData = _redis.GetAllEntriesFromHash(
                 String.Format("hangfire:job:{0}", id));
 
-            return job.Count != 0 ? job : null;
+            if (jobData.Count == 0) return null;
+
+            var invocationData = new InvocationData();
+            if (jobData.ContainsKey("Type"))
+            {
+                invocationData.Type = jobData["Type"];
+            }
+            if (jobData.ContainsKey("Method"))
+            {
+                invocationData.Method = jobData["Method"];
+            }
+            if (jobData.ContainsKey("ParameterTypes"))
+            {
+                invocationData.ParameterTypes = jobData["ParameterTypes"];
+            }
+
+            return new StateAndInvocationData
+            {
+                InvocationData = invocationData,
+                State = jobData.ContainsKey("State") ? jobData["State"] : null,
+            };
         }
 
         public void SetParameter(string id, string name, string value)
