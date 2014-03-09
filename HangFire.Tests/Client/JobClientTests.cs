@@ -22,6 +22,7 @@ namespace HangFire.Tests.Client
         public void Initialize()
         {
             _connectionMock = new Mock<IStorageConnection>();
+            _connectionMock.Setup(x => x.Storage).Returns(new Mock<JobStorage>().Object);
 
             _creatorMock = new Mock<JobCreator>();
             _client = new JobClient(_connectionMock.Object, _creatorMock.Object);
@@ -66,15 +67,6 @@ namespace HangFire.Tests.Client
         public void CreateJob_ThrowsAnException_WhenStateIsNull()
         {
             _client.CreateJob(_method, new string[0], null);
-        }
-
-        [TestMethod]
-        public void CreateJob_Returns_AnUniqueIdentifier()
-        {
-            var id = _client.CreateJob(_method, new string[0], _stateMock.Object);
-            var guid = Guid.Parse(id);
-
-            Assert.AreNotEqual(Guid.Empty, guid);
         }
 
         [TestMethod]

@@ -111,100 +111,12 @@ namespace HangFire.Tests
         {
             _filters.Add(new TestFilter("buggy", _clientFilterResults, true));
         }
-        
-        [When("I create a job")]
-        [When("I create an argumentless job")]
-        public void WhenICreateAJob()
-        {
-            _stateMock = new Mock<JobState>("SomeReason");
-            _stateMock.Setup(x => x.StateName).Returns("Test");
-            _stateMock.Setup(x => x.GetProperties(It.IsAny<JobMethod>()))
-                .Returns(new Dictionary<string, string>());
-
-            try
-            {
-                _client.CreateJob(
-                    JobSteps.DefaultJobId,
-                    typeof(TestJob),
-                    _stateMock.Object,
-                    _arguments);
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-        }
 
         [When("I create a job with the following arguments:")]
         public void WhenICreateAJobWithTheFollowingArguments(Table table)
         {
             _arguments = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
             When("I create a job");
-        }
-
-        [When("I create a job with an empty id")]
-        public void WhenICreateAJobWithAnEmptyId()
-        {
-            try
-            {
-                _client.CreateJob(null, typeof(TestJob), new Mock<JobState>("1").Object, new Dictionary<string, string>());
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-        }
-
-        [When("I create a job with null type")]
-        public void WhenICreateAJobWithNullType()
-        {
-            try
-            {
-                _client.CreateJob(JobSteps.DefaultJobId, null, new Mock<JobState>("1").Object, new Dictionary<string, string>());
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-        }
-
-        [When("I create a job with an empty state")]
-        public void WhenICreateAJobWithAnEmptyState()
-        {
-            try
-            {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), null, new Dictionary<string, string>());
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-        }
-
-        [When("I create a job with the incorrect type")]
-        public void WhenICreateAJobWithTheIncorrectType()
-        {
-            try
-            {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(JobClientSteps), new Mock<JobState>("1").Object, new Dictionary<string, string>());
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
-        }
-
-        [When("I create a job with a null dictionary as arguments")]
-        public void WhenICreateAJobWithANullDictionaryAsArguments()
-        {
-            try
-            {
-                _client.CreateJob(JobSteps.DefaultJobId, typeof(TestJob), new Mock<JobState>("1").Object, null);
-            }
-            catch (Exception ex)
-            {
-                _exception = ex;
-            }
         }
 
         [Then("the storage should contain the job")]
