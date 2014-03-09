@@ -34,9 +34,9 @@ namespace HangFire.SqlServer
                 var idAndQueue = _connection.Query(@"
 set transaction isolation level read committed
 update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
-output INSERTED.JobId, INSERTED.QueueName
+output INSERTED.JobId, INSERTED.Queue
 where FetchedAt is null
-and QueueName in @queues",
+and Queue in @queues",
                     new { queues = _queues })
                     .SingleOrDefault();
 

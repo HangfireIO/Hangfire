@@ -58,7 +58,7 @@ namespace HangFire.SqlServer
         public void Complete(JobPayload payload)
         {
             // TODO: in some cases it is required to not to delete the job.
-            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and QueueName = @queueName",
+            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
                 new { id = payload.Id, queueName = payload.Queue });
         }
     }

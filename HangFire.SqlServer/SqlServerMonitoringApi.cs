@@ -44,8 +44,8 @@ namespace HangFire.SqlServer
         {
             return _connection.Query<int>(
                 @"select count(JobId) from HangFire.JobQueue " 
-                + @"where QueueName = @queueName and FetchedAt is NULL",
-                new { queueName = queue })
+                + @"where Queue = @queue and FetchedAt is NULL",
+                new { queue = queue })
                 .Single();
         }
 
@@ -53,8 +53,8 @@ namespace HangFire.SqlServer
         {
             return _connection.Query<int>(
                 @"select count(JobId) from HangFire.JobQueue "
-                + @"where QueueName = @queueName and FetchedAt is not NULL",
-                new { queueName = queue })
+                + @"where Queue = @queue and FetchedAt is not NULL",
+                new { queue = queue })
                 .Single();
         }
 
@@ -217,7 +217,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
 
         class QueueStatusDto
         {
-            public string QueueName { get; set; }
+            public string Queue { get; set; }
             public int Enqueued { get; set; }
             public int Fetched { get; set; }
         }
@@ -225,9 +225,9 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
             const string queuesAndStatusSql = @"
-select distinct [QueueName],
-	(select count(JobId) from HangFire.JobQueue as a where q.QueueName = a.QueueName and a.FetchedAt is null) as Enqueued,
-	(select count(JobId) from HangFire.JobQueue as b where q.QueueName = b.QueueName and b.FetchedAt is not null) as Fetched
+select distinct [Queue],
+	(select count(JobId) from HangFire.JobQueue as a where q.Queue = a.Queue and a.FetchedAt is null) as Enqueued,
+	(select count(JobId) from HangFire.JobQueue as b where q.Queue = b.Queue and b.FetchedAt is not null) as Fetched
 from HangFire.[JobQueue] as q
 ";
 
@@ -238,7 +238,7 @@ from HangFire.[JobQueue] as q
             {
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
-                    Name = queue.QueueName,
+                    Name = queue.Queue,
                     Length = queue.Enqueued,
                     Dequeued = queue.Fetched,
                     FirstJobs = new List<KeyValuePair<string, EnqueuedJobDto>>() // TODO: implement
@@ -254,12 +254,12 @@ from HangFire.[JobQueue] as q
 select * from
 (select j.*, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
 left join HangFire.Job j on jq.JobId = j.Id
-where jq.QueueName = @queueName and jq.FetchedAt is null) as r
+where jq.Queue = @queue and jq.FetchedAt is null) as r
 where r.row_num between @start and @end";
 
             var jobs = _connection.Query<Job>(
                 enqueuedJobsSql,
-                new { queueName = queue, start = from + 1, end = @from + perPage })
+                new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList();
 
             return DeserializeJobs(
@@ -277,12 +277,12 @@ where r.row_num between @start and @end";
 select * from
 (select j.*, jq.FetchedAt, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
 left join HangFire.Job j on jq.JobId = j.Id
-where jq.QueueName = @queueName and jq.FetchedAt is not null) as r
+where jq.Queue = @queue and jq.FetchedAt is not null) as r
 where r.row_num between @start and @end";
 
             var jobs = _connection.Query<Job>(
                 fetchedJobsSql,
-                new { queueName = queue, start = from + 1, end = @from + perPage })
+                new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList();
 
             var result = new List<KeyValuePair<string, DequeuedJobDto>>(jobs.Count);
@@ -367,7 +367,7 @@ select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
             const string sql = @"
 select [State], count(id) as [Count] From HangFire.Job group by [State]
 select count(Id) from HangFire.Server
-select count(distinct QueueName) from HangFire.JobQueue
+select count(distinct Queue) from HangFire.JobQueue
 select IntValue from HangFire.Value where [Key] = 'stats:succeeded'
 ";
 

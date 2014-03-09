@@ -54,12 +54,12 @@ namespace HangFire.SqlServer
         void IWriteableJobQueue.Enqueue(string queue, string jobId)
         {
             const string enqueueJobSql = @"
-insert into HangFire.JobQueue (JobId, QueueName)
-values (@jobId, @queueName)";
+insert into HangFire.JobQueue (JobId, Queue)
+values (@jobId, @queue)";
 
             _commandQueue.Enqueue(x => x.Execute(
                 enqueueJobSql,
-                new { jobId = jobId, queueName = queue }));
+                new { jobId = jobId, queue = queue }));
         }
 
         void IWriteableStoredJobs.Expire(string jobId, TimeSpan expireIn)
