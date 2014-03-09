@@ -55,7 +55,10 @@ namespace HangFire.Web
 
         public static IHtmlString JobId(string jobId)
         {
-            return new HtmlString(jobId.Substring(0, 8));
+            Guid guid;
+            return new HtmlString(Guid.TryParse(jobId, out guid)
+                ? jobId.Substring(0, 8) 
+                : jobId);
         }
 
         public static string JobType(JobMethod method)
