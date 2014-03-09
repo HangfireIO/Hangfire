@@ -4,7 +4,6 @@ using System.Data.SqlClient;
 using System.Transactions;
 using Dapper;
 using HangFire.Common;
-using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
@@ -13,9 +12,10 @@ namespace HangFire.SqlServer
         IWriteableJobQueue, IWriteableStoredJobs, IWriteableStoredLists,
         IWriteableStoredSets, IWriteableStoredValues
     {
+        private readonly Queue<Action<SqlConnection>> _commandQueue
+            = new Queue<Action<SqlConnection>>();
+
         private readonly SqlConnection _connection;
-        private readonly LinkedList<KeyValuePair<string, object>> _commandList
-            = new LinkedList<KeyValuePair<string, object>>();
 
         public SqlWriteTransaction(SqlConnection connection)
         {
@@ -40,17 +40,9 @@ namespace HangFire.SqlServer
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
-                // I had the idea to put all the command into a single
-                // SQL statement, but ran into issue of parameter naming.
-                // They should be unique among the whole statement, and 
-                // the only way to do it is to generate queries on the fly. 
-                // But Dapper documentation states, that it has internal 
-                // query cache, that is never flushed. So, query generation 
-                // is a bad idea.
-
-                foreach (var command in _commandList)
+                foreach (var command in _commandQueue)
                 {
-                    _connection.Execute(command.Key, command.Value);
+                    command(_connection);
                 }
 
                 transaction.Complete();
@@ -65,7 +57,7 @@ namespace HangFire.SqlServer
 insert into HangFire.JobQueue (JobId, QueueName)
 values (@jobId, @queueName)";
 
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 enqueueJobSql,
                 new { jobId = jobId, queueName = queue }));
         }
@@ -83,7 +75,7 @@ values (@jobId, @queueName)";
 insert into HangFire.Job (Id, State, InvocationData, Arguments, CreatedAt)
 values (@id, @state, @invocationData, @arguments, @createdAt)";
 
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 createJobSql,
                 new
                 {
@@ -97,28 +89,28 @@ values (@id, @state, @invocationData, @arguments, @createdAt)";
 
         void IWriteableStoredJobs.Expire(string jobId, TimeSpan expireIn)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"update HangFire.Job set ExpireAt = @expireAt where Id = @id",
                 new { expireAt = DateTime.UtcNow.Add(expireIn), id = jobId }));
         }
 
         void IWriteableStoredJobs.Persist(string jobId)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"update HangFire.Job set ExpireAt = NULL where Id = @id",
                 new { id = jobId }));
         }
 
         void IWriteableStoredJobs.SetState(string jobId, string state, Dictionary<string, string> stateProperties)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"update HangFire.Job set State = @name, StateData = @data where Id = @id",
                 new { name = state, data = JobHelper.ToJson(stateProperties), id = jobId }));
         }
 
         void IWriteableStoredJobs.AppendHistory(string jobId, Dictionary<string, string> properties)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"insert into HangFire.JobHistory (JobId, CreatedAt, Data) "
                 + @"values (@jobId, @createdAt, @data)",
                 new { jobId = jobId, createdAt = DateTime.UtcNow, data = JobHelper.ToJson(properties) }));
@@ -126,7 +118,7 @@ values (@id, @state, @invocationData, @arguments, @createdAt)";
 
         void IWriteableStoredLists.AddToLeft(string key, string value)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"insert into HangFire.List ([Key], Value) values (@key, @value)",
                 new { key, value }));
         }
@@ -145,21 +137,21 @@ on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
 when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
 
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 addSql, 
                 new { key, value, score }));
         }
 
         void IWriteableStoredSets.Remove(string key, string value)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"delete from HangFire.[Set] where [Key] = @key and Value = @value",
                 new { key, value }));
         }
 
         void IWriteableStoredLists.Remove(string key, string value)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"delete from HangFire.List where [Key] = @key and Value = @value",
                 new { key, value }));
         }
@@ -171,40 +163,58 @@ with cte as (
 select row_number() over (order by Id desc) as row_num from HangFire.List)
 delete from cte where row_num not between @start and @end";
 
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 trimSql, 
                 new { start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
         }
 
         void IWriteableStoredValues.Increment(string key)
         {
-            const string incrementSql = @"
+            const string insertSql = @"
 begin try 
     insert into HangFire.Value ([Key], IntValue) values (@key, 0)
 end try
 begin catch
-end catch
+end catch";
+            const string updateSql = @"
+update HangFire.Value set IntValue = IntValue + 1 where [Key] = @key";
 
-update HangFire.Value with (xlock) set IntValue = IntValue + 1 where [Key] = @key";
+            _commandQueue.Enqueue(x =>
+            {
+                var affectedRows = x.Execute(updateSql, new { key });
 
-            _commandList.AddLast(new KeyValuePair<string, object>(incrementSql, new { key }));
+                if (affectedRows == 0)
+                {
+                    x.Execute(insertSql + "\n" + updateSql, new { key });
+                }
+            });
         }
 
         void IWriteableStoredValues.Decrement(string key)
         {
-            const string decrementSql = @"
-merge HangFire.Value as Target
-using (VALUES (@key)) as Source ([Key])
-on Target.[Key] = Source.[Key]
-when matched then update set IntValue = IntValue - 1
-when not matched then insert ([Key], IntValue) values (Source.[Key], -1);";
+            const string insertSql = @"
+begin try 
+    insert into HangFire.Value ([Key], IntValue) values (@key, 0)
+end try
+begin catch
+end catch";
+            const string updateSql = @"
+update HangFire.Value set IntValue = IntValue - 1 where [Key] = @key";
 
-            _commandList.AddLast(new KeyValuePair<string, object>(decrementSql, new { key }));
+            _commandQueue.Enqueue(x =>
+            {
+                var affectedRows = x.Execute(updateSql, new { key });
+
+                if (affectedRows == 0)
+                {
+                    x.Execute(insertSql + "\n" + updateSql, new { key });
+                }
+            });
         }
 
         void IWriteableStoredValues.ExpireIn(string key, TimeSpan expireIn)
         {
-            _commandList.AddLast(new KeyValuePair<string, object>(
+            _commandQueue.Enqueue(x => x.Execute(
                 @"update HangFire.Value set ExpireAt = @expireAt where [Key] = @key",
                 new { expireAt = DateTime.UtcNow.Add(expireIn), key = key }));
         }
