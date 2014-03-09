@@ -1,6 +1,8 @@
 HangFire
 =========
 
+[![Build status](https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4)](https://ci.appveyor.com/project/SergeyOdinokov/hangfire)
+
 HangFire helps to perform background jobs inside your ASP.NET application in a simple, efficient and transparent way. It allows you to define, create and process these jobs asynchronously. With this library, you can move your long running tasks out of the request processing pipeline without losing control over them:
 
 - Mass newsletter
@@ -52,13 +54,13 @@ Job is a method invocation that will be performed asynchronously on the HangFire
 The first and default job creation method is based on job queue. Queue contains jobs that will be performed in the FIFO order. To enqueue a job, call the following method.
 
 ```csharp
-BackgroundJob.Enqueue(() => Console.WriteLine("Hello, {0}!", "world"));
+BackgroundJob.Enqueue(() => Console.WriteLine("Hello, world!"));
 ```
 
 You can also tell HangFire to delay the performance of a job:
 
 ```csharp
-BackgroundJob.Schedule(() => Console.WriteLine("Hello, {0}!", "world"), TimeSpan.FromDays(1));
+BackgroundJob.Schedule(() => Console.WriteLine("Hello, world!"), TimeSpan.FromDays(1));
 ```
 
 To learn more about different options of the job creation process, see the [corresponding page](https://github.com/odinserj/HangFire/wiki/Creating-jobs) in the documentation.
