@@ -75,13 +75,6 @@ namespace HangFire.Redis
                 expireIn));
         }
 
-        void IWriteableStoredJobs.Create(string jobId, IDictionary<string, string> parameters)
-        {
-            _transaction.QueueCommand(x => x.SetRangeInHash(
-                String.Format(Prefix + "job:{0}", jobId),
-                parameters));
-        }
-
         void IWriteableStoredJobs.Persist(string jobId)
         {
             _transaction.QueueCommand(x => ((IRedisNativeClient)x).Persist(

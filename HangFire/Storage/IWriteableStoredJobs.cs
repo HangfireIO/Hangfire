@@ -5,8 +5,6 @@ namespace HangFire.Storage
 {
     public interface IWriteableStoredJobs
     {
-        void Create(string jobId, IDictionary<string, string> parameters);
-
         void Expire(string jobId, TimeSpan expireIn);
         void Persist(string jobId);
 

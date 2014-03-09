@@ -62,31 +62,6 @@ values (@jobId, @queueName)";
                 new { jobId = jobId, queueName = queue }));
         }
 
-        void IWriteableStoredJobs.Create(string jobId, IDictionary<string, string> parameters)
-        {
-            var data = new InvocationData
-            {
-                Method = parameters["Method"],
-                ParameterTypes = parameters["ParameterTypes"],
-                Type = parameters["Type"]
-            };
-
-            const string createJobSql = @"
-insert into HangFire.Job (Id, State, InvocationData, Arguments, CreatedAt)
-values (@id, @state, @invocationData, @arguments, @createdAt)";
-
-            _commandQueue.Enqueue(x => x.Execute(
-                createJobSql,
-                new
-                {
-                    id = jobId,
-                    state = "Created",
-                    invocationData = JobHelper.ToJson(data),
-                    arguments = parameters["Arguments"],
-                    createdAt = JobHelper.FromStringTimestamp(parameters["CreatedAt"])
-                }));
-        }
-
         void IWriteableStoredJobs.Expire(string jobId, TimeSpan expireIn)
         {
             _commandQueue.Enqueue(x => x.Execute(

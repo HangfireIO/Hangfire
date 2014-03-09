@@ -6,9 +6,9 @@ namespace HangFire.Web.Pages
     {
         public JobDetailsPage(string jobId)
         {
-            JobId = Guid.Parse(jobId);
+            JobId = jobId;
         }
 
-        public Guid JobId { get; private set; }
+        public string JobId { get; private set; }
     }
 }

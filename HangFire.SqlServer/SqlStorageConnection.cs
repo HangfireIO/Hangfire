@@ -46,6 +46,32 @@ namespace HangFire.SqlServer
         public IStoredSets Sets { get; private set; }
         public JobStorage Storage { get; private set; }
 
+        public string CreateExpiredJob(IDictionary<string, string> parameters, TimeSpan expireIn)
+        {
+            var data = new InvocationData
+            {
+                Method = parameters["Method"],
+                ParameterTypes = parameters["ParameterTypes"],
+                Type = parameters["Type"]
+            };
+
+            const string createJobSql = @"
+insert into HangFire.Job (State, InvocationData, Arguments, CreatedAt, ExpireAt)
+values (@state, @invocationData, @arguments, @createdAt, @expireAt);
+SELECT CAST(SCOPE_IDENTITY() as int)";
+
+            return _connection.Query<int>(
+                createJobSql,
+                new
+                {
+                    state = "Created",
+                    invocationData = JobHelper.ToJson(data),
+                    arguments = parameters["Arguments"],
+                    createdAt = JobHelper.FromStringTimestamp(parameters["CreatedAt"]),
+                    expireAt = DateTime.UtcNow.Add(expireIn)
+                }).Single().ToString();
+        }
+
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
         {
             var data = new ServerData

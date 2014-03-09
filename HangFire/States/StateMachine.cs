@@ -61,24 +61,16 @@ namespace HangFire.States
             }
         }
         
-        public bool CreateInState(
-            string jobId,
+        public string CreateInState(
             JobMethod method,
             IDictionary<string, string> parameters,
             JobState state)
         {
-            if (jobId == null) throw new ArgumentNullException("jobId");
             if (method == null) throw new ArgumentNullException("method");
             if (parameters == null) throw new ArgumentNullException("parameters");
             if (state == null) throw new ArgumentNullException("state");
 
-            using (var transaction = _connection.CreateWriteTransaction())
-            {
-                transaction.Jobs.Create(jobId, parameters);
-                transaction.Jobs.Expire(jobId, TimeSpan.FromHours(1));
-
-                transaction.Commit();
-            }
+            var jobId = _connection.CreateExpiredJob(parameters, TimeSpan.FromHours(1));
 
             var filterInfo = GetFilters(method);
             var context = new StateContext(jobId, method);
@@ -100,8 +92,11 @@ namespace HangFire.States
 
                 transaction.Jobs.Persist(jobId);
 
-                return transaction.Commit();
+                // TODO: check return value
+                transaction.Commit();
             }
+
+            return jobId;
         }
 
         public bool ChangeState(

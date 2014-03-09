@@ -50,6 +50,27 @@ namespace HangFire.Redis
         public IStoredSets Sets { get; private set; }
         public JobStorage Storage { get; private set; }
 
+        public string CreateExpiredJob(IDictionary<string, string> parameters, TimeSpan expireIn)
+        {
+            var jobId = Guid.NewGuid().ToString();
+
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.SetRangeInHash(
+                    String.Format(Prefix + "job:{0}", jobId),
+                    parameters));
+
+                transaction.QueueCommand(x => x.ExpireEntryIn(
+                    String.Format(Prefix + "job:{0}", jobId),
+                    expireIn));
+
+                // TODO: check return value
+                transaction.Commit();
+            }
+
+            return jobId;
+        }
+
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
         {
             using (var transaction = _redis.CreateTransaction())

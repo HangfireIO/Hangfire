@@ -35,27 +35,24 @@ namespace HangFire.Client
         private bool _jobWasCreated;
 
         internal CreateContext(CreateContext context)
-            : this(context.Connection, context.JobId, context.JobMethod, context._job, context.InitialState)
+            : this(context.Connection, context.JobMethod, context._job, context.InitialState)
         {
             Items = context.Items;
             _jobWasCreated = context._jobWasCreated;
         }
 
         internal CreateContext(
-            IStorageConnection connection, 
-            string jobId,
+            IStorageConnection connection,
             JobMethod jobMethod,
             IDictionary<string, string> job,
             JobState initialState)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (jobId == null) throw new ArgumentNullException("jobId");
             if (jobMethod == null) throw new ArgumentNullException("jobMethod");
             if (job == null) throw new ArgumentNullException("job");
             if (initialState == null) throw new ArgumentNullException("initialState");
 
             Connection = connection;
-            JobId = jobId;
             JobMethod = jobMethod;
             InitialState = initialState;
             Items = new Dictionary<string, object>();
@@ -72,8 +69,8 @@ namespace HangFire.Client
         /// or just between different methods.
         /// </summary>
         public IDictionary<string, object> Items { get; private set; }
-
         public string JobId { get; private set; }
+
         public JobMethod JobMethod { get; private set; }
 
         /// <summary>
@@ -129,8 +126,8 @@ namespace HangFire.Client
 
         internal void CreateJob()
         {
+            JobId = _stateMachine.CreateInState(JobMethod, _job, InitialState);
             _jobWasCreated = true;
-            _stateMachine.CreateInState(JobId, JobMethod, _job, InitialState);
         }
     }
 }

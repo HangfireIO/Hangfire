@@ -15,6 +15,8 @@ namespace HangFire.Storage
         IStoredSets Sets { get; }
         JobStorage Storage { get; }
 
+        string CreateExpiredJob(IDictionary<string, string> parameters, TimeSpan expireIn);
+
         void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues);
         void RemoveServer(string serverId);
         void Heartbeat(string serverId);

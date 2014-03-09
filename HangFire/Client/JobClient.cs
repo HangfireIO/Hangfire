@@ -83,16 +83,14 @@ namespace HangFire.Client
 
             ValidateMethodParameters(parameters);
 
-            var id = Guid.NewGuid().ToString();
-
             var job = method.Serialize();
             job["Arguments"] = JobHelper.ToJson(arguments);
             job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
-            var context = new CreateContext(_connection, id, method, job, state);
+            var context = new CreateContext(_connection, method, job, state);
             _jobCreator.CreateJob(context);
 
-            return id;
+            return context.JobId;
         }
 
         /// <summary>
@@ -128,6 +126,8 @@ namespace HangFire.Client
         public void CreateJob(
             string id, Type type, JobState state, IDictionary<string, string> args)
         {
+            throw new NotSupportedException("This method is no longer supported. Use the new API instead.");
+
             if (String.IsNullOrEmpty(id)) throw new ArgumentNullException("id");
             if (type == null) throw new ArgumentNullException("type");
             if (state == null) throw new ArgumentNullException("state");
@@ -148,7 +148,7 @@ namespace HangFire.Client
                 job["Args"] = JobHelper.ToJson(args);
                 job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
 
-                var context = new CreateContext(_connection, id, method, job, state);
+                var context = new CreateContext(_connection, method, job, state);
                 _jobCreator.CreateJob(context);
             }
             catch (Exception ex)

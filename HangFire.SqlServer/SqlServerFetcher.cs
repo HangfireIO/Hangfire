@@ -48,7 +48,7 @@ and QueueName in @queues",
                     // was based on index scan instead of index seek. 
                     // As a result, this query was the slowest.
                     var parameters = new DynamicParameters();
-                    parameters.Add("@id", idAndQueue.JobId, dbType: DbType.Guid);
+                    parameters.Add("@id", idAndQueue.JobId, dbType: DbType.Int32);
 
                     job = _connection.Query<Job>(
                         @"select Id, InvocationData, Arguments from HangFire.Job where Id = @id",
