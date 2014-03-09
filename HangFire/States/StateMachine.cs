@@ -63,6 +63,7 @@ namespace HangFire.States
         
         public string CreateInState(
             JobMethod method,
+            string[] arguments,
             IDictionary<string, string> parameters,
             JobState state)
         {
@@ -70,7 +71,18 @@ namespace HangFire.States
             if (parameters == null) throw new ArgumentNullException("parameters");
             if (state == null) throw new ArgumentNullException("state");
 
-            var jobId = _connection.CreateExpiredJob(parameters, TimeSpan.FromHours(1));
+            var invocationData = new InvocationData
+            {
+                Type = method.Type.AssemblyQualifiedName,
+                Method = method.Method.Name,
+                ParameterTypes = JobHelper.ToJson(method.Method.GetParameters().Select(x => x.ParameterType)),
+            };
+
+            var jobId = _connection.CreateExpiredJob(
+                invocationData, 
+                arguments,
+                parameters,
+                TimeSpan.FromHours(1));
 
             var filterInfo = GetFilters(method);
             var context = new StateContext(jobId, method);

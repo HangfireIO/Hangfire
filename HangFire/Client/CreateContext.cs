@@ -29,13 +29,14 @@ namespace HangFire.Client
     /// </summary>
     public class CreateContext
     {
-        private readonly IDictionary<string, string> _job;
+        private readonly IDictionary<string, string> _parameters
+            = new Dictionary<string, string>();
         private readonly StateMachine _stateMachine;
 
         private bool _jobWasCreated;
 
         internal CreateContext(CreateContext context)
-            : this(context.Connection, context.JobMethod, context._job, context.InitialState)
+            : this(context.Connection, context.JobMethod, context.Arguments, context.InitialState)
         {
             Items = context.Items;
             _jobWasCreated = context._jobWasCreated;
@@ -44,20 +45,20 @@ namespace HangFire.Client
         internal CreateContext(
             IStorageConnection connection,
             JobMethod jobMethod,
-            IDictionary<string, string> job,
+            string[] arguments,
             JobState initialState)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (jobMethod == null) throw new ArgumentNullException("jobMethod");
-            if (job == null) throw new ArgumentNullException("job");
+            if (arguments == null) throw new ArgumentNullException("arguments");
             if (initialState == null) throw new ArgumentNullException("initialState");
 
             Connection = connection;
             JobMethod = jobMethod;
+            Arguments = arguments;
             InitialState = initialState;
             Items = new Dictionary<string, object>();
 
-            _job = job;
             _stateMachine = new StateMachine(connection);
         }
 
@@ -72,6 +73,7 @@ namespace HangFire.Client
         public string JobId { get; private set; }
 
         public JobMethod JobMethod { get; private set; }
+        public string[] Arguments { get; set; }
 
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
@@ -100,7 +102,16 @@ namespace HangFire.Client
                 throw new InvalidOperationException("Could not set parameter for a created job.");
             }
 
-            _job.Add(name, JobHelper.ToJson(value));
+            var serializedValue = JobHelper.ToJson(value);
+
+            if (!_parameters.ContainsKey(name))
+            {
+                _parameters.Add(name, serializedValue);
+            }
+            else
+            {
+                _parameters[name] = serializedValue;
+            }
         }
 
         /// <summary>
@@ -119,14 +130,14 @@ namespace HangFire.Client
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 
-            return _job.ContainsKey(name)
-                ? JobHelper.FromJson<T>(_job[name])
+            return _parameters.ContainsKey(name)
+                ? JobHelper.FromJson<T>(_parameters[name])
                 : default(T);
         }
 
         internal void CreateJob()
         {
-            JobId = _stateMachine.CreateInState(JobMethod, _job, InitialState);
+            JobId = _stateMachine.CreateInState(JobMethod, Arguments, _parameters, InitialState);
             _jobWasCreated = true;
         }
     }

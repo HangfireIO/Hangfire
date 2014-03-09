@@ -51,19 +51,6 @@ namespace HangFire.Tests.Client
         }
 
         [TestMethod]
-        public void Serialize_CorrectlySerializes_AllTheData()
-        {
-            var type = typeof(TestJob);
-            var methodInfo = type.GetMethod("Perform");
-            var method = new JobMethod(type, methodInfo);
-            var serializedData = method.Serialize();
-
-            Assert.AreEqual(type.AssemblyQualifiedName, serializedData["Type"]);
-            Assert.AreEqual(methodInfo.Name, serializedData["Method"]);
-            Assert.AreEqual(JobHelper.ToJson(new Type[0]), serializedData["ParameterTypes"]);
-        }
-
-        [TestMethod]
         public void Deserialize_CorrectlyDeserializes_AllTheData()
         {
             var type = typeof(TestJob);
@@ -163,41 +150,6 @@ namespace HangFire.Tests.Client
         #region Old Client API tests
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void OldCtor_ThrowsAnException_WhenTheTypeIsNull()
-        {
-// ReSharper disable ObjectCreationAsStatement
-            new JobMethod(null);
-// ReSharper restore ObjectCreationAsStatement
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void OldCtor_ThrowsAnException_WhenTheGivenType_IsNotASuccessor_OfTheBackgroundJobClass()
-        {
-            new JobMethod(typeof(JobMethod));
-        }
-
-        [TestMethod]
-        public void OldCtor_SetsTheCorrectValues_ForProperties()
-        {
-            var method = new JobMethod(typeof (TestJob));
-            Assert.AreEqual(typeof(TestJob), method.Type);
-            Assert.IsNull(method.Method);
-            Assert.IsTrue(method.OldFormat);
-        }
-
-        [TestMethod]
-        public void Serialization_OfTheOldFormat_CorrectlySerializesTheType()
-        {
-            var method = new JobMethod(typeof (TestJob));
-            var serializedData = method.Serialize();
-
-            Assert.AreEqual(1, serializedData.Count);
-            Assert.AreEqual(typeof(TestJob).AssemblyQualifiedName, serializedData["Type"]);
-        }
-
-        [TestMethod]
         public void Deserialization_FromTheOldFormat_CorrectlySerializesBothTypeAndMethod()
         {
             var serializedData = new InvocationData
@@ -221,15 +173,6 @@ namespace HangFire.Tests.Client
 
             JobMethod.Deserialize(serializedData);
             Assert.IsNull(serializedData.Method);
-        }
-
-        [TestMethod]
-        public void GetMethodFilterAttributes_ReturnsEmptyCollection_WhenNoMethodIsSpecified()
-        {
-            var method = new JobMethod(typeof(TestJob));
-            var attributes = method.GetMethodFilterAttributes(false).ToArray();
-
-            Assert.AreEqual(0, attributes.Length);
         }
 
         public class TestTypeAttribute : JobFilterAttribute

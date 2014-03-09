@@ -41,28 +41,6 @@ namespace HangFire.Common
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JobMethod"/> class,
-        /// using a given <paramref name="type"/>. Resulting instance would
-        /// correspond to the Old Job Format. This constructor is used only
-        /// for compatibility with the Old Client API.
-        /// TODO: remove this constructor before 1.0
-        /// </summary>
-        /// <param name="type">Successor of the <see cref="BackgroundJob"/> class.</param>
-        [Obsolete("This constructor will be removed before 1.0. Use the new version of the Client API.")]
-        public JobMethod(Type type)
-        {
-            if (type == null) throw new ArgumentNullException("type");
-
-            if (!typeof (BackgroundJob).IsAssignableFrom(type))
-            {
-                throw new ArgumentException("Given type must be a successor of the `HangFire.BackgroundJob` class.", "type");
-            }
-
-            Type = type;
-            OldFormat = true;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobMethod"/> class,
         /// using a given <paramref name="method"/> and specified 
         /// <paramref name="type"/> that contains the method.
         /// </summary>
@@ -108,24 +86,6 @@ namespace HangFire.Common
         /// </summary>
         [Obsolete("This property will be removed before 1.0. Use the new version of the Client API.")]
         public bool OldFormat { get; private set; }
-
-        public Dictionary<string, string> Serialize()
-        {
-            if (OldFormat)
-            {
-                return new Dictionary<string, string>
-                {
-                    { "Type", Type.AssemblyQualifiedName },
-                };
-            }
-
-            return new Dictionary<string, string>
-            {
-                { "Type", Type.AssemblyQualifiedName },
-                { "Method", Method.Name },
-                { "ParameterTypes", JobHelper.ToJson(Method.GetParameters().Select(x => x.ParameterType).ToArray()) },
-            };
-        }
 
         public static JobMethod Deserialize(InvocationData invocationData)
         {

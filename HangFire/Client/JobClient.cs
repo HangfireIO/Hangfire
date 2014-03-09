@@ -83,11 +83,7 @@ namespace HangFire.Client
 
             ValidateMethodParameters(parameters);
 
-            var job = method.Serialize();
-            job["Arguments"] = JobHelper.ToJson(arguments);
-            job["CreatedAt"] = JobHelper.ToStringTimestamp(DateTime.UtcNow);
-
-            var context = new CreateContext(_connection, method, job, state);
+            var context = new CreateContext(_connection, method, arguments, state);
             _jobCreator.CreateJob(context);
 
             return context.JobId;
