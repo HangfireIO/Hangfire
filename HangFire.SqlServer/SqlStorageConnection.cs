@@ -10,7 +10,7 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    public class SqlStorageConnection : IStorageConnection
+    internal class SqlStorageConnection : IStorageConnection
     {
         private readonly SqlConnection _connection;
 

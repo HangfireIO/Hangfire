@@ -7,7 +7,7 @@ using ServiceStack.Logging;
 
 namespace HangFire.SqlServer.Components
 {
-    public class ExpirationManager : IThreadWrappable, IDisposable
+    internal class ExpirationManager : IThreadWrappable, IDisposable
     {
         private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30); // TODO: increase interval
 

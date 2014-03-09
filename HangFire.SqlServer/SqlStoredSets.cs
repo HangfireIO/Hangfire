@@ -5,7 +5,7 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    public class SqlStoredSets : IStoredSets
+    internal class SqlStoredSets : IStoredSets
     {
         private readonly SqlConnection _connection;
 

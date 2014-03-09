@@ -12,7 +12,7 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    public class SqlServerFetcher : IJobFetcher
+    internal class SqlServerFetcher : IJobFetcher
     {
         private readonly SqlConnection _connection;
         private readonly IEnumerable<string> _queues;

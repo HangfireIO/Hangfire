@@ -8,7 +8,7 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    public class SqlWriteTransaction : IAtomicWriteTransaction,
+    internal class SqlWriteTransaction : IAtomicWriteTransaction,
         IWriteableJobQueue, IWriteableStoredJobs, IWriteableStoredLists,
         IWriteableStoredSets, IWriteableStoredValues
     {

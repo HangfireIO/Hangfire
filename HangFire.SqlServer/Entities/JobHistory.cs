@@ -2,7 +2,7 @@
 
 namespace HangFire.SqlServer.Entities
 {
-    public class JobHistory
+    internal class JobHistory
     {
         public int JobId { get; set; }
         public DateTime CreatedAt { get; set; }

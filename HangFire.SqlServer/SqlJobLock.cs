@@ -6,7 +6,7 @@ using Dapper;
 
 namespace HangFire.SqlServer
 {
-    public class SqlJobLock : IDisposable
+    internal class SqlJobLock : IDisposable
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(5);
         private const string LockMode = "Exclusive";

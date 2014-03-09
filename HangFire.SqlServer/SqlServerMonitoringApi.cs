@@ -13,7 +13,7 @@ using HangFire.Storage.Monitoring;
 
 namespace HangFire.SqlServer
 {
-    public class SqlServerMonitoringApi : IMonitoringApi
+    internal class SqlServerMonitoringApi : IMonitoringApi
     {
         private readonly SqlConnection _connection;
         private readonly TransactionScope _transaction;
