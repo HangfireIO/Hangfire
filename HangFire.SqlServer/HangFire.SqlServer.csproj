@@ -58,6 +58,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Components\ExpirationManager.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\Job.cs" />

@@ -12,9 +12,10 @@
     <description>
       HangFire helps to perform background jobs inside your ASP.NET application in a simple, efficient and transparent way. It allows you to define, create and process these jobs asynchronously. With this library, you can move your long running tasks out of the request processing pipeline without losing control over them.
     </description>
-    <copyright>Copyright © 2013 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>AspNet Async Background Fire-And-Forget Jobs Tasks Workers Threading Redis Queue</tags>
-    <releaseNotes>0.6.2
+    <releaseNotes>
+0.6.2
   * Fixed NullReferenceException when trying to create a job using the Old API.
 0.6.1
   Fixes some NuGet package issues.
@@ -24,7 +25,6 @@
 		<dependency id="HangFire.Core" version="$version$" />
     <dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
     <dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
-    <dependency id="ServiceStack.Redis" version="[3.9.69,4.0)" />
     <dependency id="WebActivatorEx" version="[2.0.1,)" />
 	</dependencies>
   </metadata>

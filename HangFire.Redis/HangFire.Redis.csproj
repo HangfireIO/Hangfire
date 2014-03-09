@@ -79,6 +79,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="HangFire.Redis.nuspec" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

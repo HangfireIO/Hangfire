@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <packages>
 	<package name="HangFire" />
+	<package name="HangFire.Redis" />
+	<package name="HangFire.SqlServer" />
 	<package name="HangFire.Web" />
 </packages>
