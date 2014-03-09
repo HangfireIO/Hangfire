@@ -17,7 +17,6 @@
 using System;
 using System.Threading;
 using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.Server;
 using HangFire.States;
 using ServiceStack.Logging;

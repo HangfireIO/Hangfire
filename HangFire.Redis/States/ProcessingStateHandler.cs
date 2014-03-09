@@ -6,7 +6,7 @@ using HangFire.States;
 
 namespace HangFire.Redis.States
 {
-    class ProcessingStateHandler : JobStateHandler
+    internal class ProcessingStateHandler : JobStateHandler
     {
         public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
         {

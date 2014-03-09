@@ -8,7 +8,7 @@ using ServiceStack.Redis;
 
 namespace HangFire.Redis
 {
-    public class RedisStorageConnection : IStorageConnection
+    internal class RedisStorageConnection : IStorageConnection
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(RedisStorageConnection));
 

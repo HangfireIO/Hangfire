@@ -4,7 +4,7 @@ using ServiceStack.Redis;
 
 namespace HangFire.Redis
 {
-    public class RedisStoredSets : IStoredSets
+    internal class RedisStoredSets : IStoredSets
     {
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
