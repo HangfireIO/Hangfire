@@ -101,7 +101,7 @@ WriteLiteral("\r\n");
 
     title = title ?? "Job";
 
-    Layout = new LayoutPage { Title = title, Subtitle = JobId.ToString() };
+    Layout = new LayoutPage { Title = title, Subtitle = HtmlHelper.JobId(JobId.ToString(), false).ToString() };
 
 
             
