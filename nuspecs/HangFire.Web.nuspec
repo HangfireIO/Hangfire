@@ -23,5 +23,7 @@
   <files>
     <file src="Net40\HangFire.Web.dll" target="lib\net40" />
     <file src="Net40\HangFire.Web.xml" target="lib\net40" />
+    <file src="Content\HangFireConfig.cs.pp" target="content\App_Start" />
+    <file src="Content\web.config.transform" target="content" />
   </files>
 </package>

@@ -33,8 +33,4 @@ This release contains new client API, based on expressions. Please, see https://
       <dependency id="HangFire.Web" version="__HANGFIRE_PACKAGE_VERSION__" />
     </dependencies>
   </metadata>
-  <files>
-    <file src="Content\HangFireConfig.cs.pp" target="content\App_Start" />
-    <file src="Content\web.config.transform" target="content" />
-  </files>
 </package>
