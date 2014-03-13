@@ -22,7 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\HangFire.Web.xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\HangFire.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -186,7 +186,6 @@
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="HangFire.Web.nuspec" />
     <None Include="packages.config" />
     <None Include="package\content\HangFireConfig.cs.pp" />
     <None Include="package\content\web.config.transform" />
@@ -276,6 +275,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Content\js\moment.min.js" />
   </ItemGroup>
+  <Import Project="..\Common\HangFire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

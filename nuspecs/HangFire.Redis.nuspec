@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0"?>
 <package >
   <metadata>
-    <id>HangFire.SqlServer</id>
-    <version>$version$</version>
-    <title>HangFire.SqlServer</title>
+    <id>HangFire.Redis</id>
+    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <title>HangFire.Redis</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
@@ -11,11 +11,11 @@
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
     <description>$description$</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
-    <tags>SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
+    <tags>Redis Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
 	<dependencies>
 		<dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
 		<dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
-    <dependency id="Dapper" version="1.13" />
+		<dependency id="ServiceStack.Redis" version="[3.9.69,4.0)" />
 	</dependencies>
   </metadata>
 </package>

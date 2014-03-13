@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask TaskName="RegexTransform" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+          <Items ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+        </ParameterGroup>
+        <Task>
+          <Using Namespace="System.IO" />
+          <Using Namespace="System.Text.RegularExpressions" />
+          <Using Namespace="Microsoft.Build.Framework" />
+          <Code Type="Fragment" Language="cs">
+          <![CDATA[
+            foreach(ITaskItem item in Items) {
+              string fileName = item.GetMetadata("FullPath");
+              string find = item.GetMetadata("Find");
+              string replaceWith = item.GetMetadata("ReplaceWith");
+              
+              if(!File.Exists(fileName)) {
+                Log.LogError(null, null, null, null, 0, 0, 0, 0, String.Format("Could not find version file: {0}", fileName), new object[0]);
+              }
+              string content = File.ReadAllText(fileName);
+              File.WriteAllText(
+                fileName,
+                Regex.Replace(
+                  content,
+                  find,
+                  replaceWith
+                )
+              );
+            }
+          ]]></Code>
+        </Task>
+    </UsingTask>
+</Project>

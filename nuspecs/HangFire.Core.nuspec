@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>HangFire.Core</id>
-    <version>$version$</version>
+    <version>__HANGFIRE_PACKAGE_VERSION__</version>
     <title>HangFire.Core</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>

@@ -28,8 +28,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{766BE831
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF-8918-44F1-9285-9756EDAECA5D}"
 	ProjectSection(SolutionItems) = preProject
+		build\Build.proj = build\Build.proj
+		build\Build.tasks = build\Build.tasks
+		build\HangFire.Projects.Properties.proj = build\HangFire.Projects.Properties.proj
 		src\Common\HangFire.ruleset = src\Common\HangFire.ruleset
+		src\Common\HangFire.targets = src\Common\HangFire.targets
+		build\HangFire.versions.targets = build\HangFire.versions.targets
 		src\Common\SharedAssemblyInfo.cs = src\Common\SharedAssemblyInfo.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E687025-A525-4534-8869-CB685C7B11C4}"
+	ProjectSection(SolutionItems) = preProject
+		nuspecs\HangFire.Core.nuspec = nuspecs\HangFire.Core.nuspec
+		nuspecs\HangFire.Redis.nuspec = nuspecs\HangFire.Redis.nuspec
+		nuspecs\HangFire.SqlServer.nuspec = nuspecs\HangFire.SqlServer.nuspec
+		nuspecs\HangFire.Web.nuspec = nuspecs\HangFire.Web.nuspec
 	EndProjectSection
 EndProject
 Global
