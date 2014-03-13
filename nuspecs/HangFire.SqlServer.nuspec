@@ -23,5 +23,6 @@
   <files>
     <file src="Net40\HangFire.SqlServer.dll" target="lib\net40" />
     <file src="Net40\HangFire.SqlServer.xml" target="lib\net40" />
+    <file src="Content\Install.sql" target="tools\install.sql" />
   </files>
 </package>

@@ -35,4 +35,5 @@ This release contains new client API, based on expressions. Please, see https://
       <dependency id="HangFire.Web" version="__HANGFIRE_PACKAGE_VERSION__" />
     </dependencies>
   </metadata>
+  <files></files>
 </package>
