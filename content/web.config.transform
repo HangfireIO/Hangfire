@@ -1,9 +1,10 @@
 ﻿<configuration>
-  <system.web>
+  <!-- If you use IIS 6.0 or earlier, uncomment the following section: -->
+  <!--system.web>
     <httpHandlers>
       <add verb="*" path="hangfire.axd" type="HangFire.Web.HangFirePageFactory, HangFire.Web" />
     </httpHandlers>
-  </system.web>
+  </system.web-->
   <system.webServer>
     <handlers>
       <add name="HangFire" path="hangfire.axd" verb="*" type="HangFire.Web.HangFirePageFactory, HangFire.Web" />
