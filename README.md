@@ -21,7 +21,7 @@ Installation
 
 To install HangFire into your **ASP.NET application** with **SQL Server** storage, type the following command into the Package Manager Console window:
 
-<pre style="background-color: #202020;border: 4px solid silver;border-radius: 3px;color: #E2E2E2;display: block;padding: 10px;">PM> Install-Package HangFire</pre>
+<pre style="background-color: #202020;border: 4px solid silver;border-radius: 3px;color: #E2E2E2;display: block;padding: 10px;">PM> Install-Package HangFire -Pre</pre>
 
 Configuration
 --------------
