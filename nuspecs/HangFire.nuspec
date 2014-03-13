@@ -14,7 +14,12 @@
     </description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
-    <releaseNotes>
+    <releaseNotes>https://github.com/odinserj/HangFire/releases
+0.7
+* SQL Server job storage implementation.
+* Changed NuGet package structure.
+* Improved job fetching implementation.
+* Removed obsolete `Perform` class.
 0.6.2
 * Fixed NullReferenceException when trying to create a job using the Old API.
 0.6.1

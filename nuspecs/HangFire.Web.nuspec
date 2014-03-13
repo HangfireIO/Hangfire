@@ -14,6 +14,7 @@
     </description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>AspNet Async Background Fire-And-Forget Jobs Tasks Workers Threading Redis Queue</tags>
+    <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
     <dependencies>
       <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
       <dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />

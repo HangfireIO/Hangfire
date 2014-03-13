@@ -12,6 +12,7 @@
     <description>Core classes of HangFire that are independent of any framework.</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
+    <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
     <dependencies>
       <dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
       <dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
