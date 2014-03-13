@@ -40,7 +40,7 @@ During the installation of the HangFire package, the `App_Start\HangFireConfig.c
 
 If you see a page like this, then the configuration step is finished. Otherwise, please refer to the [Troubleshooting page](https://github.com/odinserj/HangFire/wiki/Installation) in the documentation.
 
-![HangFire Dashboard](https://github.com/odinserj/hangfire/raw/master/Examples/dashboard_min.png)
+![HangFire Dashboard](https://github.com/odinserj/hangfire/raw/master/content/dashboard_min.png)
 
 Usage
 ------

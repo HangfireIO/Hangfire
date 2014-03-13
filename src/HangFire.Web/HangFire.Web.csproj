@@ -62,7 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs">
+    <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Command.cs" />
@@ -232,9 +232,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HangFire\HangFire.csproj">
+    <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
-      <Name>HangFire</Name>
+      <Name>HangFire.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

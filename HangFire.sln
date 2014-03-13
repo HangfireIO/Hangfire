@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire", "HangFire\HangFire.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Core", "src\HangFire.Core\HangFire.Core.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Web", "HangFire.Web\HangFire.Web.csproj", "{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Web", "src\HangFire.Web\HangFire.Web.csproj", "{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSample", "MvcSample\MvcSample.csproj", "{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSample", "samples\MvcSample\MvcSample.csproj", "{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5D10161C-05D9-4976-8D45-A0379E4D07BF}"
 	ProjectSection(SolutionItems) = preProject
@@ -18,18 +16,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5D1016
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DBFF23B2-70A7-4FE5-AB2D-3753A57E7AFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Tests", "tests\HangFire.Tests\HangFire.Tests.csproj", "{EA0966B1-F2C9-4C65-834D-962FD78268F7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{119DA7FA-B94C-4B63-AEC9-428EF834E0D8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Redis", "src\HangFire.Redis\HangFire.Redis.csproj", "{8F46F57B-3247-4AA7-B330-57AC088547EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer", "src\HangFire.SqlServer\HangFire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{766BE831-F758-46BC-AFD3-BBEEFE0F686F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF-8918-44F1-9285-9756EDAECA5D}"
 	ProjectSection(SolutionItems) = preProject
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		src\Common\HangFire.ruleset = src\Common\HangFire.ruleset
+		src\Common\SharedAssemblyInfo.cs = src\Common\SharedAssemblyInfo.cs
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Tests", "HangFire.Tests\HangFire.Tests.csproj", "{EA0966B1-F2C9-4C65-834D-962FD78268F7}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{119DA7FA-B94C-4B63-AEC9-428EF834E0D8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Redis", "HangFire.Redis\HangFire.Redis.csproj", "{8F46F57B-3247-4AA7-B330-57AC088547EB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer", "HangFire.SqlServer\HangFire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,5 +73,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{C02BB718-2AE4-434C-8668-C894FF663FCE} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
+		{EA0966B1-F2C9-4C65-834D-962FD78268F7} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 	EndGlobalSection
 EndGlobal

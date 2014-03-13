@@ -58,7 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\SharedAssemblyInfo.cs">
+    <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Common\CachedExpressionCompiler.cs" />
@@ -177,7 +177,7 @@
     <Compile Include="Storage\StateAndInvocationData.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HangFire.nuspec">
+    <None Include="HangFire.Core.nuspec">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
