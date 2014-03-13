@@ -40,7 +40,7 @@ namespace $rootnamespace$
             // application will never loose them.
             
             _server = new AspNetBackgroundJobServer();
-            //_server.Start();
+            _server.Start();
         }
 
         public static void Stop()
