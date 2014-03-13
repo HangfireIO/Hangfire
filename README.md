@@ -1,7 +1,7 @@
 HangFire
 =========
 
-[![Build status](https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4)](https://ci.appveyor.com/project/SergeyOdinokov/hangfire)
+[![Build status](https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4)](https://ci.appveyor.com/project/odinserj/hangfire)
 
 HangFire helps to perform background jobs inside your ASP.NET application in a simple, efficient and transparent way. It allows you to define, create and process these jobs asynchronously. With this library, you can move your long running tasks out of the request processing pipeline without losing control over them:
 
