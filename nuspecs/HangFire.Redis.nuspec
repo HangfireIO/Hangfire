@@ -9,13 +9,18 @@
     <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
-    <description>$description$</description>
+    <description>Redis job storage implementation.</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>Redis Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
-	<dependencies>
-		<dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
-		<dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
-		<dependency id="ServiceStack.Redis" version="[3.9.69,4.0)" />
-	</dependencies>
+    <dependencies>
+      <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
+      <dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
+      <dependency id="ServiceStack.Redis" version="[3.9.69,4.0)" />
+    </dependencies>
   </metadata>
+  <files>
+    <file src="Net40\HangFire.Redis.dll" target="lib\net40" />
+    <file src="Net40\HangFire.Redis.xml" target="lib\net40" />
+  </files>
 </package>

@@ -15,6 +15,7 @@
     <NuspecsSource>$(ProjectRoot)\nuspecs</NuspecsSource>
     <NuspecsDestination>$(ArtifactsDir)\nuspecs</NuspecsDestination>
     <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
+    <ContentPath>$(ProjectRoot)\Content</ContentPath>
     <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
     <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
@@ -53,7 +54,7 @@
       <Find>AssemblyVersion\("\d+\.\d+\.\d+"\)</Find>
       <ReplaceWith>AssemblyVersion("$(AssemblyVersion)")</ReplaceWith>
     </RegexTransform>
-    <RegexTransform Include="$(ProjectRoot)\src\Common\CommonVersionInfo.cs">
+    <RegexTransform Include="$(ProjectRoot)\src\Common\SharedAssemblyInfo.cs">
       <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+(-\w+\d*(-\d+)?)?"\)</Find>
       <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
     </RegexTransform>
@@ -61,6 +62,9 @@
 
   <Target Name="UpdateVersion">
     <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+  
+  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunUnitTests; BuildPackages">
   </Target>
 
   <Target Name="Go" DependsOnTargets="Build; CopyArtifacts; RunTests;">
@@ -121,7 +125,9 @@
         <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
       <!-- Copy combined/minified JS, sql scripts and READMEs to artifacts/{Configuration}/package-src/Content/ -->
-      <Artifacts Include="$(ProjectRoot)\src\HangFire.SqlServer\Install.sql">
+      <Artifacts Include="$(ProjectRoot)\src\HangFire.SqlServer\Install.sql;
+                          $(ContentPath)\HangFireConfig.cs.pp;
+                          $(ContentPath)\web.config.transform">
         <Destination>$(PackageSrcDir)\Content</Destination>
       </Artifacts>
       <!-- Copy samples to artifacts/{Configuration}/samples while keeping directory structure -->

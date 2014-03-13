@@ -187,8 +187,6 @@
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.woff" />
     <None Include="packages.config" />
-    <None Include="package\content\HangFireConfig.cs.pp" />
-    <None Include="package\content\web.config.transform" />
     <None Include="Pages\QueuesPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>

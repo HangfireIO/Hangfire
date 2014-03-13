@@ -9,12 +9,16 @@
     <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
-    <description>$description$</description>
+    <description>Core classes of HangFire that are independent of any framework.</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
-	<dependencies>
-		<dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
-		<dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
-	</dependencies>
+    <dependencies>
+      <dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
+      <dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
+    </dependencies>
   </metadata>
+  <files>
+    <file src="Net40\HangFire.Core.dll" target="lib\net40" />
+    <file src="Net40\HangFire.Core.xml" target="lib\net40" />
+  </files>
 </package>
