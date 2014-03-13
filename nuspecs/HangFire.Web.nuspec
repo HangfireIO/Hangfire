@@ -9,9 +9,7 @@
     <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
-    <description>
-      HangFire helps to perform background jobs inside your ASP.NET application in a simple, efficient and transparent way. It allows you to define, create and process these jobs asynchronously. With this library, you can move your long running tasks out of the request processing pipeline without losing control over them.
-    </description>
+    <description>HangFire Monitor and ASP.NET-related components for HangFire.</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>AspNet Async Background Fire-And-Forget Jobs Tasks Workers Threading Redis Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>

@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
-    <description>SQL Server job storage for HangFire</description>
+    <description>SQL Server job storage implementation for HangFire</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
