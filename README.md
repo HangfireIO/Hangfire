@@ -86,7 +86,7 @@ If you have installation issues, problems or questions, just let me know. Open a
 License
 --------
 
-Copyright © 2013 Sergey Odinokov.
+Copyright © 2013-2014 Sergey Odinokov.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
