@@ -24,7 +24,7 @@ namespace HangFire.Tests
             LogManager.LogFactory = new ConsoleLogFactory();
 
             Storage = new RedisJobStorage(RedisHost, RedisDb);
-            JobStorage.SetCurrent(Storage);
+            JobStorage.Current = Storage;
 
             Client = Storage.BasicManager.GetClient();
             Client.FlushDb();

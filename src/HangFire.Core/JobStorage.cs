@@ -3,20 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using HangFire.Common.States;
 using HangFire.Server;
+using HangFire.Storage;
 using HangFire.Storage.Monitoring;
 
-namespace HangFire.Storage
+namespace HangFire
 {
     public abstract class JobStorage
     {
+        private static readonly object LockObject = new object();
         private static JobStorage _current;
 
-        public static void SetCurrent(JobStorage storage)
+        public static JobStorage Current
         {
-            _current = storage;
-        }
+            get
+            {
+                lock (LockObject)
+                {
+                    if (_current == null)
+                    {
+                        throw new InvalidOperationException();
+                    }
 
-        public static JobStorage Current { get { return _current; } }
+                    return _current;
+                }
+            }
+            set
+            {
+                lock (LockObject)
+                {
+                    if (value == null)
+                    {
+                        throw new ArgumentNullException("value");
+                    }
+
+                    _current = value;
+                }
+            }
+        }
 
         public abstract IMonitoringApi CreateMonitoring();
         

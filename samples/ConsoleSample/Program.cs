@@ -17,7 +17,7 @@ namespace ConsoleSample
             LogManager.LogFactory = new ConsoleLogFactory();
 
             //JobStorage.SetCurrent(new RedisJobStorage("localhost:6379", 3));
-            JobStorage.SetCurrent(new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;"));
+            JobStorage.Current = new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;");
 
             GlobalJobFilters.Filters.Add(new HistoryStatisticsAttribute(), 20);
             GlobalJobFilters.Filters.Add(new RetryAttribute());

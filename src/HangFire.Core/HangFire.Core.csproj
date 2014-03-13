@@ -136,7 +136,7 @@
     <Compile Include="Server\Performing\IJobPerformStrategy.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
-    <Compile Include="Storage\JobStorage.cs" />
+    <Compile Include="JobStorage.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
