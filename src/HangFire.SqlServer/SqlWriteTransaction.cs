@@ -152,7 +152,7 @@ end try
 begin catch
 end catch";
             const string updateSql = @"
-update HangFire.Value set IntValue = IntValue + 1 where [Key] = @key";
+update HangFire.Value with (xlock) set IntValue = IntValue + 1 where [Key] = @key";
 
             _commandQueue.Enqueue(x =>
             {
@@ -174,7 +174,7 @@ end try
 begin catch
 end catch";
             const string updateSql = @"
-update HangFire.Value set IntValue = IntValue - 1 where [Key] = @key";
+update HangFire.Value with (xlock) set IntValue = IntValue - 1 where [Key] = @key";
 
             _commandQueue.Enqueue(x =>
             {
