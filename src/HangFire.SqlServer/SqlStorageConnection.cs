@@ -97,7 +97,8 @@ values (@jobId, @name, @value)";
             var data = new ServerData
             {
                 WorkerCount = workerCount,
-                Queues = queues.ToArray()
+                Queues = queues.ToArray(),
+                StartedAt = DateTime.UtcNow,
             };
 
             _connection.Execute(

@@ -178,7 +178,7 @@ from HangFire.Job where State = @stateName) as j where j.row_num between @start 
                     Name = server.Id,
                     Heartbeat = server.LastHeartbeat,
                     Queues = data.Queues,
-                    StartedAt = DateTime.MinValue,
+                    StartedAt = data.StartedAt.HasValue ? data.StartedAt.Value : DateTime.MinValue,
                     WorkersCount = data.WorkerCount
                 });
             }
