@@ -14,6 +14,8 @@ namespace HangFire.SqlServer
 {
     internal class SqlServerFetcher : IJobFetcher
     {
+        private static readonly TimeSpan JobTimeOut = TimeSpan.FromMinutes(30);
+
         private readonly SqlConnection _connection;
         private readonly IEnumerable<string> _queues;
 
@@ -28,16 +30,27 @@ namespace HangFire.SqlServer
             Job job = null;
             string queueName = null;
 
-            do
-            {
-                // TODO: (FetchedAt < DATEADD(minute, -15, GETUTCDATE()))
-                var idAndQueue = _connection.Query(@"
+            const string fetchJobSql = @"
 set transaction isolation level read committed
 update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
 output INSERTED.JobId, INSERTED.Queue
 where FetchedAt is null
-and Queue in @queues",
-                    new { queues = _queues })
+and Queue in @queues";
+
+            const string fetchTimedOutJobSql = @"
+update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
+output INSERTED.JobId, INSERTED.Queue
+where FetchedAt < DATEADD(second, @timeout, GETUTCDATE())
+and Queue in @queues";
+
+            var fetchQueries = new[] { fetchJobSql, fetchTimedOutJobSql };
+            var currentQueryIndex = 0;
+
+            do
+            {
+                var idAndQueue = _connection.Query(
+                    fetchQueries[currentQueryIndex],
+                    new { queues = _queues, timeout = JobTimeOut.Negate().TotalSeconds })
                     .SingleOrDefault();
 
                 if (idAndQueue != null)
@@ -58,13 +71,15 @@ and Queue in @queues",
                     queueName = idAndQueue.Queue;
                 }
 
-                if (job == null)
+                if (job == null && currentQueryIndex == fetchQueries.Length - 1)
                 {
                     if (cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
                     {
                         return null;
                     }
                 }
+
+                currentQueryIndex = (currentQueryIndex + 1) % fetchQueries.Length;
             } while (job == null);
 
             var invocationData = JobHelper.FromJson<InvocationData>(job.InvocationData);
