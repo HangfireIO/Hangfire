@@ -27,12 +27,10 @@ namespace HangFire.Redis
 {
     internal class RedisMonitoringApi : IMonitoringApi
     {
-        private readonly RedisStorage _storage;
         private readonly IRedisClient _redis;
 
-        public RedisMonitoringApi(RedisStorage storage, IRedisClient redis)
+        public RedisMonitoringApi(IRedisClient redis)
         {
-            _storage = storage;
             _redis = redis;
         }
 
@@ -43,302 +41,229 @@ namespace HangFire.Redis
 
         public long ScheduledCount()
         {
-            lock (_redis)
-            {
-                return _redis.GetSortedSetCount("hangfire:schedule");
-            }
+            return _redis.GetSortedSetCount("hangfire:schedule");
         }
 
         public long EnqueuedCount(string queue)
         {
-            lock (_redis)
-            {
-                return _redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
-            }
+            return _redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
         }
 
         public long DequeuedCount(string queue)
         {
-            lock (_redis)
-            {
-                return _redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
-            }
+            return _redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
         }
 
         public long FailedCount()
         {
-            lock (_redis)
-            {
-                return _redis.GetSortedSetCount("hangfire:failed");
-            }
+            return _redis.GetSortedSetCount("hangfire:failed");
         }
 
         public long ProcessingCount()
         {
-            lock (_redis)
-            {
-                return _redis.GetSortedSetCount("hangfire:processing");
-            }
+            return _redis.GetSortedSetCount("hangfire:processing");
         }
 
         public JobList<ProcessingJobDto> ProcessingJobs(
             int from, int count)
         {
-            lock (_redis)
-            {
-                var jobIds = _redis.GetRangeFromSortedSet(
-                    "hangfire:processing",
-                    from,
-                    from + count - 1);
+            var jobIds = _redis.GetRangeFromSortedSet(
+                "hangfire:processing",
+                from,
+                from + count - 1);
 
-                return new JobList<ProcessingJobDto>(GetJobsWithProperties(_redis,
-                    jobIds,
-                    null,
-                    new[] { "StartedAt", "ServerName", "State" },
-                    (method, job, state) => new ProcessingJobDto
-                    {
-                        ServerName = state[1],
-                        Method = method,
-                        StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                        InProcessingState = ProcessingState.Name.Equals(
-                            state[2], StringComparison.OrdinalIgnoreCase),
-                    }).OrderBy(x => x.Value.StartedAt).ToList());
-            }
+            return new JobList<ProcessingJobDto>(GetJobsWithProperties(_redis,
+                jobIds,
+                null,
+                new[] { "StartedAt", "ServerName", "State" },
+                (method, job, state) => new ProcessingJobDto
+                {
+                    ServerName = state[1],
+                    Method = method,
+                    StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                    InProcessingState = ProcessingState.Name.Equals(
+                        state[2], StringComparison.OrdinalIgnoreCase),
+                }).OrderBy(x => x.Value.StartedAt).ToList());
         }
 
         public JobList<ScheduleDto> ScheduledJobs(int from, int count)
         {
-            lock (_redis)
+            var scheduledJobs = _redis.GetRangeWithScoresFromSortedSet(
+                "hangfire:schedule",
+                from,
+                from + count - 1);
+
+            if (scheduledJobs.Count == 0)
             {
-                var scheduledJobs = _redis.GetRangeWithScoresFromSortedSet(
-                    "hangfire:schedule",
-                    from,
-                    from + count - 1);
-
-                if (scheduledJobs.Count == 0)
-                {
-                    return new JobList<ScheduleDto>(new List<KeyValuePair<string, ScheduleDto>>());
-                }
-
-                var jobs = new Dictionary<string, List<string>>();
-                var states = new Dictionary<string, string>();
-
-                using (var pipeline = _redis.CreatePipeline())
-                {
-                    foreach (var scheduledJob in scheduledJobs)
-                    {
-                        var job = scheduledJob;
-
-                        pipeline.QueueCommand(
-                            x => x.GetValuesFromHash(
-                                String.Format("hangfire:job:{0}", job.Key),
-                                new[] { "Type", "Method", "ParameterTypes" }),
-                            x => jobs.Add(job.Key, x));
-
-                        pipeline.QueueCommand(
-                            x => x.GetValueFromHash(
-                                String.Format("hangfire:job:{0}:state", job.Key),
-                                "State"),
-                            x => states.Add(job.Key, x));
-                    }
-
-                    pipeline.Flush();
-                }
-
-                return new JobList<ScheduleDto>(scheduledJobs
-                    .Select(job => new KeyValuePair<string, ScheduleDto>(
-                        job.Key,
-                        new ScheduleDto
-                        {
-                            ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
-                            Method = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
-                            InScheduledState =
-                                ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
-                        }))
-                    .ToList());
+                return new JobList<ScheduleDto>(new List<KeyValuePair<string, ScheduleDto>>());
             }
+
+            var jobs = new Dictionary<string, List<string>>();
+            var states = new Dictionary<string, string>();
+
+            using (var pipeline = _redis.CreatePipeline())
+            {
+                foreach (var scheduledJob in scheduledJobs)
+                {
+                    var job = scheduledJob;
+
+                    pipeline.QueueCommand(
+                        x => x.GetValuesFromHash(
+                            String.Format("hangfire:job:{0}", job.Key),
+                            new[] { "Type", "Method", "ParameterTypes" }),
+                        x => jobs.Add(job.Key, x));
+
+                    pipeline.QueueCommand(
+                        x => x.GetValueFromHash(
+                            String.Format("hangfire:job:{0}:state", job.Key),
+                            "State"),
+                        x => states.Add(job.Key, x));
+                }
+
+                pipeline.Flush();
+            }
+
+            return new JobList<ScheduleDto>(scheduledJobs
+                .Select(job => new KeyValuePair<string, ScheduleDto>(
+                    job.Key,
+                    new ScheduleDto
+                    {
+                        ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
+                        Method = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
+                        InScheduledState =
+                            ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
+                    }))
+                .ToList());
         }
 
         public IDictionary<DateTime, long> SucceededByDatesCount()
         {
-            lock (_redis)
-            {
-                return GetTimelineStats(_redis, "succeeded");
-            }
+            return GetTimelineStats(_redis, "succeeded");
         }
 
         public IDictionary<DateTime, long> FailedByDatesCount()
         {
-            lock (_redis)
-            {
-                return GetTimelineStats(_redis, "failed");
-            }
+            return GetTimelineStats(_redis, "failed");
         }
 
         public IList<ServerDto> Servers()
         {
-            lock (_redis)
+            var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
+
+            if (serverNames.Count == 0)
             {
-                var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
-
-                if (serverNames.Count == 0)
-                {
-                    return new List<ServerDto>();
-                }
-
-                var servers = new Dictionary<string, List<string>>();
-                var queues = new Dictionary<string, List<string>>();
-
-                using (var pipeline = _redis.CreatePipeline())
-                {
-                    foreach (var serverName in serverNames)
-                    {
-                        var name = serverName;
-
-                        pipeline.QueueCommand(
-                            x => x.GetValuesFromHash(
-                                String.Format("hangfire:server:{0}", name),
-                                "WorkerCount", "StartedAt", "Heartbeat"),
-                            x => servers.Add(name, x));
-
-                        pipeline.QueueCommand(
-                            x => x.GetAllItemsFromList(
-                                String.Format("hangfire:server:{0}:queues", name)),
-                            x => queues.Add(name, x));
-                    }
-
-                    pipeline.Flush();
-                }
-
-                return serverNames.Select(x => new ServerDto
-                {
-                    Name = x,
-                    WorkersCount = int.Parse(servers[x][0]),
-                    Queues = queues[x],
-                    StartedAt = JobHelper.FromStringTimestamp(servers[x][1]),
-                    Heartbeat = JobHelper.FromNullableStringTimestamp(servers[x][2])
-                }).ToList();
+                return new List<ServerDto>();
             }
+
+            var servers = new Dictionary<string, List<string>>();
+            var queues = new Dictionary<string, List<string>>();
+
+            using (var pipeline = _redis.CreatePipeline())
+            {
+                foreach (var serverName in serverNames)
+                {
+                    var name = serverName;
+
+                    pipeline.QueueCommand(
+                        x => x.GetValuesFromHash(
+                            String.Format("hangfire:server:{0}", name),
+                            "WorkerCount", "StartedAt", "Heartbeat"),
+                        x => servers.Add(name, x));
+
+                    pipeline.QueueCommand(
+                        x => x.GetAllItemsFromList(
+                            String.Format("hangfire:server:{0}:queues", name)),
+                        x => queues.Add(name, x));
+                }
+
+                pipeline.Flush();
+            }
+
+            return serverNames.Select(x => new ServerDto
+            {
+                Name = x,
+                WorkersCount = int.Parse(servers[x][0]),
+                Queues = queues[x],
+                StartedAt = JobHelper.FromStringTimestamp(servers[x][1]),
+                Heartbeat = JobHelper.FromNullableStringTimestamp(servers[x][2])
+            }).ToList();
         }
 
         public JobList<FailedJobDto> FailedJobs(int from, int count)
         {
-            lock (_redis)
-            {
-                var failedJobIds = _redis.GetRangeFromSortedSetDesc(
-                    "hangfire:failed",
-                    from,
-                    from + count - 1);
+            var failedJobIds = _redis.GetRangeFromSortedSetDesc(
+                "hangfire:failed",
+                from,
+                from + count - 1);
 
-                return GetJobsWithProperties(
-                    _redis,
-                    failedJobIds,
-                    null,
-                    new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State" },
-                    (method, job, state) => new FailedJobDto
-                    {
-                        Method = method,
-                        FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                        ExceptionType = state[1],
-                        ExceptionMessage = state[2],
-                        ExceptionDetails = state[3],
-                        InFailedState = FailedState.Name.Equals(state[4], StringComparison.OrdinalIgnoreCase)
-                    });
-            }
+            return GetJobsWithProperties(
+                _redis,
+                failedJobIds,
+                null,
+                new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State" },
+                (method, job, state) => new FailedJobDto
+                {
+                    Method = method,
+                    FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                    ExceptionType = state[1],
+                    ExceptionMessage = state[2],
+                    ExceptionDetails = state[3],
+                    InFailedState = FailedState.Name.Equals(state[4], StringComparison.OrdinalIgnoreCase)
+                });
         }
 
         public JobList<SucceededJobDto> SucceededJobs(int from, int count)
         {
-            lock (_redis)
-            {
-                var succeededJobIds = _redis.GetRangeFromList(
-                    "hangfire:succeeded",
-                    from,
-                    from + count - 1);
+            var succeededJobIds = _redis.GetRangeFromList(
+                "hangfire:succeeded",
+                from,
+                from + count - 1);
 
-                return GetJobsWithProperties(
-                    _redis,
-                    succeededJobIds,
-                    null,
-                    new[] { "SucceededAt", "State" },
-                    (method, job, state) => new SucceededJobDto
-                    {
-                        Method = method,
-                        SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                        InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
-                    });
-            }
+            return GetJobsWithProperties(
+                _redis,
+                succeededJobIds,
+                null,
+                new[] { "SucceededAt", "State" },
+                (method, job, state) => new SucceededJobDto
+                {
+                    Method = method,
+                    SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                    InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                });
         }
 
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            lock (_redis)
+            var queues = _redis.GetAllItemsFromSet("hangfire:queues");
+            var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
+
+            foreach (var queue in queues)
             {
-                var queues = _redis.GetAllItemsFromSet("hangfire:queues");
-                var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
+                IList<string> firstJobIds = null;
+                long length = 0;
+                long dequeued = 0;
 
-                foreach (var queue in queues)
+                using (var pipeline = _redis.CreatePipeline())
                 {
-                    IList<string> firstJobIds = null;
-                    long length = 0;
-                    long dequeued = 0;
+                    pipeline.QueueCommand(
+                        x => x.GetRangeFromList(
+                            String.Format("hangfire:queue:{0}", queue), -5, -1),
+                        x => firstJobIds = x);
 
-                    using (var pipeline = _redis.CreatePipeline())
-                    {
-                        pipeline.QueueCommand(
-                            x => x.GetRangeFromList(
-                                String.Format("hangfire:queue:{0}", queue), -5, -1),
-                            x => firstJobIds = x);
+                    pipeline.QueueCommand(
+                        x => x.GetListCount(String.Format("hangfire:queue:{0}", queue)),
+                        x => length = x);
 
-                        pipeline.QueueCommand(
-                            x => x.GetListCount(String.Format("hangfire:queue:{0}", queue)),
-                            x => length = x);
+                    pipeline.QueueCommand(
+                        x => x.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue)),
+                        x => dequeued = x);
 
-                        pipeline.QueueCommand(
-                            x => x.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue)),
-                            x => dequeued = x);
-
-                        pipeline.Flush();
-                    }
-
-                    var jobs = GetJobsWithProperties(
-                        _redis,
-                        firstJobIds,
-                        null,
-                        new[] { "EnqueuedAt", "State" },
-                        (method, job, state) => new EnqueuedJobDto
-                        {
-                            Method = method,
-                            EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                            InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
-                        });
-
-                    result.Add(new QueueWithTopEnqueuedJobsDto
-                    {
-                        Name = queue,
-                        FirstJobs = jobs,
-                        Length = length,
-                        Dequeued = dequeued
-                    });
+                    pipeline.Flush();
                 }
 
-                return result;
-            }
-        }
-
-        public JobList<EnqueuedJobDto> EnqueuedJobs(
-            string queue, int from, int perPage)
-        {
-            lock (_redis)
-            {
-                var jobIds = _redis.GetRangeFromList(
-                    String.Format("hangfire:queue:{0}", queue),
-                    from,
-                    from + perPage - 1);
-
-                return GetJobsWithProperties(
+                var jobs = GetJobsWithProperties(
                     _redis,
-                    jobIds,
+                    firstJobIds,
                     null,
                     new[] { "EnqueuedAt", "State" },
                     (method, job, state) => new EnqueuedJobDto
@@ -347,81 +272,103 @@ namespace HangFire.Redis
                         EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
+
+                result.Add(new QueueWithTopEnqueuedJobsDto
+                {
+                    Name = queue,
+                    FirstJobs = jobs,
+                    Length = length,
+                    Dequeued = dequeued
+                });
             }
+
+            return result;
+        }
+
+        public JobList<EnqueuedJobDto> EnqueuedJobs(
+            string queue, int from, int perPage)
+        {
+            var jobIds = _redis.GetRangeFromList(
+                String.Format("hangfire:queue:{0}", queue),
+                from,
+                from + perPage - 1);
+
+            return GetJobsWithProperties(
+                _redis,
+                jobIds,
+                null,
+                new[] { "EnqueuedAt", "State" },
+                (method, job, state) => new EnqueuedJobDto
+                {
+                    Method = method,
+                    EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                    InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                });
         }
 
         public JobList<DequeuedJobDto> DequeuedJobs(
             string queue, int from, int perPage)
         {
-            lock (_redis)
-            {
-                var jobIds = _redis.GetRangeFromList(
-                    String.Format("hangfire:queue:{0}:dequeued", queue),
-                    from, from + perPage - 1);
+            var jobIds = _redis.GetRangeFromList(
+                String.Format("hangfire:queue:{0}:dequeued", queue),
+                from, from + perPage - 1);
 
-                return GetJobsWithProperties(
-                    _redis,
-                    jobIds,
-                    new[] { "State", "CreatedAt", "Fetched", "Checked" },
-                    null,
-                    (method, job, state) => new DequeuedJobDto
-                    {
-                        Method = method,
-                        State = job[0],
-                        CreatedAt = JobHelper.FromNullableStringTimestamp(job[1]),
-                        FetchedAt = JobHelper.FromNullableStringTimestamp(job[2]),
-                        CheckedAt = JobHelper.FromNullableStringTimestamp(job[3])
-                    });
-            }
+            return GetJobsWithProperties(
+                _redis,
+                jobIds,
+                new[] { "State", "CreatedAt", "Fetched", "Checked" },
+                null,
+                (method, job, state) => new DequeuedJobDto
+                {
+                    Method = method,
+                    State = job[0],
+                    CreatedAt = JobHelper.FromNullableStringTimestamp(job[1]),
+                    FetchedAt = JobHelper.FromNullableStringTimestamp(job[2]),
+                    CheckedAt = JobHelper.FromNullableStringTimestamp(job[3])
+                });
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
         {
-            lock (_redis)
-            {
-                return GetHourlyTimelineStats(_redis, "succeeded");
-            }
+            return GetHourlyTimelineStats(_redis, "succeeded");
         }
 
         public IDictionary<DateTime, long> HourlyFailedJobs()
         {
-            lock (_redis)
-            {
-                return GetHourlyTimelineStats(_redis, "failed");
-            }
+            return GetHourlyTimelineStats(_redis, "failed");
         }
 
         public JobDetailsDto JobDetails(string jobId)
         {
-            lock (_redis)
+            var job = _redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
+            if (job.Count == 0) return null;
+
+            var hiddenProperties = new[]
+            { "Type", "Method", "ParameterTypes", "Arguments", "Args", "State", "CreatedAt" };
+
+            var historyList = _redis.GetAllItemsFromList(
+                String.Format("hangfire:job:{0}:history", jobId));
+
+            var history = historyList
+                .Select(JobHelper.FromJson<Dictionary<string, string>>)
+                .ToList();
+
+            // For compatibility
+            if (!job.ContainsKey("Method")) job.Add("Method", null);
+            if (!job.ContainsKey("ParameterTypes")) job.Add("ParameterTypes", null);
+
+            return new JobDetailsDto
             {
-                var job = _redis.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", jobId));
-                if (job.Count == 0) return null;
-
-                var hiddenProperties = new[] { "Type", "Method", "ParameterTypes", "Arguments", "Args", "State", "CreatedAt" };
-
-                var historyList = _redis.GetAllItemsFromList(
-                    String.Format("hangfire:job:{0}:history", jobId));
-
-                var history = historyList
-                    .Select(JobHelper.FromJson<Dictionary<string, string>>)
-                    .ToList();
-
-                // For compatibility
-                if (!job.ContainsKey("Method")) job.Add("Method", null);
-                if (!job.ContainsKey("ParameterTypes")) job.Add("ParameterTypes", null);
-
-                return new JobDetailsDto
-                {
-                    Method = TryToGetMethod(job["Type"], job["Method"], job["ParameterTypes"]),
-                    Arguments = job.ContainsKey("Arguments") ? JobHelper.FromJson<string[]>(job["Arguments"]) : null,
-                    OldFormatArguments = job.ContainsKey("Args") ? JobHelper.FromJson<Dictionary<string, string>>(job["Args"]) : null,
-                    State = job.ContainsKey("State") ? job["State"] : null,
-                    CreatedAt = job.ContainsKey("CreatedAt") ? JobHelper.FromStringTimestamp(job["CreatedAt"]) : (DateTime?)null,
-                    Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
-                    History = history
-                };
-            }
+                Method = TryToGetMethod(job["Type"], job["Method"], job["ParameterTypes"]),
+                Arguments = job.ContainsKey("Arguments") ? JobHelper.FromJson<string[]>(job["Arguments"]) : null,
+                OldFormatArguments =
+                    job.ContainsKey("Args") ? JobHelper.FromJson<Dictionary<string, string>>(job["Args"]) : null,
+                State = job.ContainsKey("State") ? job["State"] : null,
+                CreatedAt =
+                    job.ContainsKey("CreatedAt") ? JobHelper.FromStringTimestamp(job["CreatedAt"]) : (DateTime?) null,
+                Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
+                History = history
+            };
         }
 
         private Dictionary<DateTime, long> GetHourlyTimelineStats(
@@ -543,59 +490,53 @@ namespace HangFire.Redis
 
         public long SucceededListCount()
         {
-            lock (_redis)
-            {
-                return _redis.GetListCount("hangfire:succeeded");
-            }
+            return _redis.GetListCount("hangfire:succeeded");
         }
 
         public StatisticsDto GetStatistics()
         {
-            lock (_redis)
+            var stats = new StatisticsDto();
+
+            var queues = _redis.GetAllItemsFromSet("hangfire:queues");
+
+            using (var pipeline = _redis.CreatePipeline())
             {
-                var stats = new StatisticsDto();
+                pipeline.QueueCommand(
+                    x => x.GetSetCount("hangfire:servers"),
+                    x => stats.Servers = x);
 
-                var queues = _redis.GetAllItemsFromSet("hangfire:queues");
+                pipeline.QueueCommand(
+                    x => x.GetSetCount("hangfire:queues"),
+                    x => stats.Queues = x);
 
-                using (var pipeline = _redis.CreatePipeline())
+                pipeline.QueueCommand(
+                    x => x.GetSortedSetCount("hangfire:schedule"),
+                    x => stats.Scheduled = x);
+
+                pipeline.QueueCommand(
+                    x => x.GetSortedSetCount("hangfire:processing"),
+                    x => stats.Processing = x);
+
+                pipeline.QueueCommand(
+                    x => x.GetValue("hangfire:stats:succeeded"),
+                    x => stats.Succeeded = long.Parse(x ?? "0"));
+
+                pipeline.QueueCommand(
+                    x => x.GetSortedSetCount("hangfire:failed"),
+                    x => stats.Failed = x);
+
+                foreach (var queue in queues)
                 {
+                    var queueName = queue;
                     pipeline.QueueCommand(
-                        x => x.GetSetCount("hangfire:servers"),
-                        x => stats.Servers = x);
-
-                    pipeline.QueueCommand(
-                        x => x.GetSetCount("hangfire:queues"),
-                        x => stats.Queues = x);
-
-                    pipeline.QueueCommand(
-                        x => x.GetSortedSetCount("hangfire:schedule"),
-                        x => stats.Scheduled = x);
-
-                    pipeline.QueueCommand(
-                        x => x.GetSortedSetCount("hangfire:processing"),
-                        x => stats.Processing = x);
-
-                    pipeline.QueueCommand(
-                        x => x.GetValue("hangfire:stats:succeeded"),
-                        x => stats.Succeeded = long.Parse(x ?? "0"));
-
-                    pipeline.QueueCommand(
-                        x => x.GetSortedSetCount("hangfire:failed"),
-                        x => stats.Failed = x);
-
-                    foreach (var queue in queues)
-                    {
-                        var queueName = queue;
-                        pipeline.QueueCommand(
-                            x => x.GetListCount(String.Format("hangfire:queue:{0}", queueName)),
-                            x => stats.Enqueued += x);
-                    }
-
-                    pipeline.Flush();
+                        x => x.GetListCount(String.Format("hangfire:queue:{0}", queueName)),
+                        x => stats.Enqueued += x);
                 }
 
-                return stats;
+                pipeline.Flush();
             }
+
+            return stats;
         }
 
         private static JobMethod TryToGetMethod(

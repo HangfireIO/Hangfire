@@ -44,7 +44,7 @@ namespace HangFire.Redis
 
         public override IMonitoringApi CreateMonitoring()
         {
-            return new RedisMonitoringApi(this, _pooledManager.GetClient());
+            return new RedisMonitoringApi(_pooledManager.GetClient());
         }
 
         public override IStorageConnection GetConnection()
