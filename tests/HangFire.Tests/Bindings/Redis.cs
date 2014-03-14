@@ -26,7 +26,7 @@ namespace HangFire.Tests
             Storage = new RedisStorage(RedisHost, RedisDb);
             JobStorage.Current = Storage;
 
-            Client = Storage.BasicManager.GetClient();
+            Client = Storage.PooledManager.GetClient();
             Client.FlushDb();
         }
 

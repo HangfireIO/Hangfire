@@ -99,7 +99,7 @@ namespace HangFire.Tests
                 new [] { QueueSteps.DefaultQueue },
                 new JobPerformer(_filters));
 
-            using (var manager = new WorkerManager(context, 1))
+            using (var manager = new WorkerManager(Redis.Storage, context, 1))
             {
                 //manager.ProcessNextJob(new CancellationTokenSource().Token);
                 Assert.Inconclusive();

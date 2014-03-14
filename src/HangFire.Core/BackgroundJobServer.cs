@@ -19,10 +19,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using HangFire.Common.States;
 using HangFire.Server;
 using HangFire.States;
-using HangFire.Storage;
 
 namespace HangFire
 {
@@ -32,7 +30,6 @@ namespace HangFire
         private IEnumerable<string> _queues;
         private int _workerCount;
         private string _machineName;
-        private TimeSpan _pollInterval;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/>.
@@ -45,7 +42,6 @@ namespace HangFire
         public BackgroundJobServer(int workerCount, params string[] queues)
         {
             MachineName = Environment.MachineName;
-            PollInterval = TimeSpan.FromSeconds(15);
 
             WorkerCount = workerCount;
             Queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
@@ -98,23 +94,6 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Gets or sets the poll interval for scheduled jobs.
-        /// </summary>
-        public TimeSpan PollInterval
-        {
-            get { return _pollInterval; }
-            set
-            {
-                if (value != value.Duration())
-                {
-                    throw new ArgumentException("The poll interval value must be positive.");    
-                }
-
-                _pollInterval = value;
-            }
-        }
-
-        /// <summary>
         /// Starts the server and all its workers.
         /// </summary>
         public virtual void Start()
@@ -126,9 +105,7 @@ namespace HangFire
 
             var serverName = String.Format("{0}:{1}", MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
-            _server = new JobServer(
-                JobStorage.Current.CreateConnection(),
-                serverName, WorkerCount, Queues, PollInterval, TimeSpan.FromSeconds(5));
+            _server = new JobServer(JobStorage.Current, serverName, WorkerCount, Queues);
         }
 
         /// <summary>

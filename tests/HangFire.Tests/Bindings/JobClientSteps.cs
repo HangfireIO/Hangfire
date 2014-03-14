@@ -33,7 +33,7 @@ namespace HangFire.Tests
             _client = new JobClient(
                 new RedisStorageConnection(
                     Redis.Storage,
-                    Redis.Storage.BasicManager.GetClient()),
+                    Redis.Storage.PooledManager.GetClient()),
                 new JobCreator(_filters));
         }
 

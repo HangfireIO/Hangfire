@@ -16,29 +16,32 @@
 
 using System;
 using System.Threading;
-using HangFire.Storage;
 using ServiceStack.Logging;
 
 namespace HangFire.Server.Components
 {
-    public class ServerWatchdog : IThreadWrappable, IDisposable
+    public class ServerWatchdog : IThreadWrappable
     {
-        private readonly IStorageConnection _connection;
         private static readonly TimeSpan ServerTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30); // TODO: increase interval
 
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerWatchdog));
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
+
+        private readonly JobStorage _storage;
         
-        public ServerWatchdog(IStorageConnection connection)
+        public ServerWatchdog(JobStorage storage)
         {
-            _connection = connection;
+            _storage = storage;
         }
 
-        public void Dispose()
+        public void RemoveTimedOutServers(TimeSpan timeout)
         {
-            _connection.Dispose();
+            using (var connection = _storage.GetConnection())
+            {
+                connection.RemoveTimedOutServers(timeout);
+            }
         }
 
         void IThreadWrappable.Work()
@@ -50,7 +53,7 @@ namespace HangFire.Server.Components
                 while (true)
                 {
                     JobServer.RetryOnException(
-                        () => _connection.RemoveTimedOutServers(ServerTimeout), 
+                        () => RemoveTimedOutServers(ServerTimeout), 
                         _stopped);
 
                     if (_stopped.WaitOne(CheckInterval))

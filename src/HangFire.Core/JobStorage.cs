@@ -43,8 +43,7 @@ namespace HangFire
 
         public abstract IMonitoringApi CreateMonitoring();
         
-        public abstract IStorageConnection CreateConnection();
-        public abstract IStorageConnection CreatePooledConnection();
+        public abstract IStorageConnection GetConnection();
 
         public virtual IEnumerable<IThreadWrappable> GetComponents()
         {

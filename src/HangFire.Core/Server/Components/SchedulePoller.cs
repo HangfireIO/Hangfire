@@ -18,52 +18,48 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.States;
-using HangFire.Storage;
 using ServiceStack.Logging;
 
 namespace HangFire.Server.Components
 {
-    public class SchedulePoller : IThreadWrappable, IDisposable
+    public class SchedulePoller : IThreadWrappable
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(SchedulePoller));
 
-        private readonly IStorageConnection _connection;
+        private readonly JobStorage _storage;
         private readonly TimeSpan _pollInterval;
-        private readonly StateMachine _stateMachine;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
-        public SchedulePoller(IStorageConnection connection, TimeSpan pollInterval)
+        public SchedulePoller(JobStorage storage, TimeSpan pollInterval)
         {
-            _connection = connection;
-            _stateMachine = new StateMachine(_connection);
+            _storage = storage;
             _pollInterval = pollInterval;
         }
 
         public bool EnqueueNextScheduledJob()
         {
-            var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
-
-            // TODO: it is very slow. Add batching.
-            var jobId = _connection.Sets
-                .GetFirstByLowestScore("schedule", 0, timestamp);
-
-            if (String.IsNullOrEmpty(jobId))
+            using (var connection = _storage.GetConnection())
             {
-                return false;
+                var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
+
+                // TODO: it is very slow. Add batching.
+                var jobId = connection.Sets
+                    .GetFirstByLowestScore("schedule", 0, timestamp);
+
+                if (String.IsNullOrEmpty(jobId))
+                {
+                    return false;
+                }
+
+                var stateMachine = new StateMachine(connection);
+                var enqueuedState = new EnqueuedState("Enqueued by the schedule poller");
+
+                stateMachine.ChangeState(jobId, enqueuedState, ScheduledState.Name);
+
+                return true;
             }
-
-            var enqueuedState = new EnqueuedState("Enqueued by the schedule poller");
-            _stateMachine.ChangeState(jobId, enqueuedState, ScheduledState.Name);
-
-            return true;
-        }
-
-        public void Dispose()
-        {
-            _connection.Dispose();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]

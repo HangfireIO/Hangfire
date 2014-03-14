@@ -83,12 +83,10 @@ namespace HangFire.Tests
         private void CreateServer(string name, int workers, IEnumerable<string> queues)
         {
             _server = new JobServer(
-                Redis.Storage.CreateConnection(),
+                Redis.Storage,
                 name,
                 workers,
-                queues,
-                TimeSpan.FromSeconds(1),
-                TimeSpan.FromSeconds(1));
+                queues);
         }
 
         [When(@"the '(\w+)' server shuts down")]

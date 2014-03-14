@@ -67,24 +67,19 @@ namespace HangFire.SqlServer
             return new SqlServerMonitoringApi(CreateAndOpenConnection());
         }
 
-        public override IStorageConnection CreateConnection()
-        {
-            return CreatePooledConnection();
-        }
-
-        public override IStorageConnection CreatePooledConnection()
+        public override IStorageConnection GetConnection()
         {
             return new SqlStorageConnection(this, CreateAndOpenConnection());
         }
 
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
-            yield return new SchedulePoller(CreateConnection(), _options.PollInterval);
-            yield return new ServerWatchdog(CreateConnection());
-            yield return new ExpirationManager(CreateAndOpenConnection());
+            yield return new SchedulePoller(this, _options.PollInterval);
+            yield return new ServerWatchdog(this);
+            yield return new ExpirationManager(this);
         }
 
-        private SqlConnection CreateAndOpenConnection()
+        internal SqlConnection CreateAndOpenConnection()
         {
             var connection = new SqlConnection(_connectionString);
             connection.Open();

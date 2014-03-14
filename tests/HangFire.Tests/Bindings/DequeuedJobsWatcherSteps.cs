@@ -41,12 +41,8 @@ namespace HangFire.Tests
         [When(@"the watcher runs")]
         public void WhenTimedOutJobsHandlerRuns()
         {
-            using (var watcher = new DequeuedJobsWatcher(
-                Redis.Storage,
-                Redis.Storage.BasicManager))
-            {
-                watcher.FindAndRequeueTimedOutJobs();
-            }
+            var watcher = new DequeuedJobsWatcher(Redis.Storage);
+            watcher.FindAndRequeueTimedOutJobs();
         }
         
         [Then(@"it should mark the job as 'checked'")]

@@ -11,15 +11,11 @@ namespace HangFire.Tests
     public class ServerWatchdogSteps : Steps
     {
         private ServerWatchdog _watchdog;
-        private RedisStorageConnection _connection;
 
         [Given(@"a server watchdog")]
         public void GivenAServerWatchdog()
         {
-            _connection = new RedisStorageConnection(
-                Redis.Storage,
-                Redis.Storage.BasicManager.GetClient());
-            _watchdog = new ServerWatchdog(_connection);
+            _watchdog = new ServerWatchdog(Redis.Storage);
         }
 
         [Given(@"a server that was started (.+)")]
@@ -55,7 +51,7 @@ namespace HangFire.Tests
         [When(@"the watchdog gets the job done")]
         public void WhenTheWatchdogGetsTheJobDone()
         {
-            _connection.RemoveTimedOutServers(TimeSpan.FromMinutes(1));
+            _watchdog.RemoveTimedOutServers(TimeSpan.FromMinutes(1));
         }
 
         [Then(@"the server should not be removed")]

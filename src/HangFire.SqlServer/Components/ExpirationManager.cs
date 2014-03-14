@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Threading;
 using Dapper;
 using HangFire.Server;
@@ -7,11 +6,9 @@ using ServiceStack.Logging;
 
 namespace HangFire.SqlServer.Components
 {
-    internal class ExpirationManager : IThreadWrappable, IDisposable
+    internal class ExpirationManager : IThreadWrappable
     {
         private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30); // TODO: increase interval
-
-        private readonly SqlConnection _connection;
 
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ExpirationManager));
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
@@ -25,24 +22,24 @@ namespace HangFire.SqlServer.Components
             "Value"
         };
 
-        public ExpirationManager(SqlConnection connection)
+        private readonly SqlServerStorage _storage;
+
+        public ExpirationManager(SqlServerStorage storage)
         {
-            _connection = connection;
+            _storage = storage;
         }
 
         public void RemoveExpiredRecords()
         {
-            foreach (var table in ProcessedTables)
+            using (var connection = _storage.CreateAndOpenConnection())
             {
-                _connection.Execute(
-                    String.Format(@"delete from HangFire.[{0}] with (tablock) where ExpireAt < @now", table),
-                    new { now = DateTime.UtcNow });
+                foreach (var table in ProcessedTables)
+                {
+                    connection.Execute(
+                        String.Format(@"delete from HangFire.[{0}] with (tablock) where ExpireAt < @now", table),
+                        new { now = DateTime.UtcNow });
+                }
             }
-        }
-
-        public void Dispose()
-        {
-            _connection.Dispose();
         }
 
         void IThreadWrappable.Work()

@@ -31,9 +31,8 @@ namespace HangFire.Server
 {
     internal class Worker : IDisposable, IStoppable
     {
+        private readonly JobStorage _storage;
         private readonly WorkerContext _context;
-        private readonly StateMachine _stateMachine;
-        private readonly IStorageConnection _connection;
 
         private Thread _thread;
         private readonly ILog _logger;
@@ -42,11 +41,9 @@ namespace HangFire.Server
 
         private bool _stopSent;
 
-        public Worker(WorkerContext context)
+        public Worker(JobStorage storage, WorkerContext context)
         {
-            _connection = JobStorage.Current.CreateConnection();
-            _stateMachine = new StateMachine(_connection);
-
+            _storage = storage;
             _context = context;
 
             _logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", context.WorkerNumber));
@@ -82,8 +79,6 @@ namespace HangFire.Server
             }
 
             _cts.Dispose();
-
-            _connection.Dispose();
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
@@ -93,7 +88,6 @@ namespace HangFire.Server
             {
                 _logger.DebugFormat("Worker #{0} has been started.", _context.WorkerNumber);
 
-                var fetcher = _connection.CreateFetcher(_context.QueueNames);
                 while (true)
                 {
                     _cts.Token.ThrowIfCancellationRequested();
@@ -101,25 +95,29 @@ namespace HangFire.Server
                     JobServer.RetryOnException(
                         () =>
                         {
-                            var payload = fetcher.DequeueJob(_cts.Token);
-
-                            if (payload == null)
+                            using (var connection = _storage.GetConnection())
                             {
-                                _cts.Cancel();
-                                return;
+                                var fetcher = connection.CreateFetcher(_context.QueueNames);
+                                var payload = fetcher.DequeueJob(_cts.Token);
+
+                                if (payload == null)
+                                {
+                                    _cts.Cancel();
+                                    return;
+                                }
+
+                                PerformJob(connection, payload);
+
+                                // Checkpoint #4. The job was performed, and it is in the one
+                                // of the explicit states (Succeeded, Scheduled and so on).
+                                // It should not be re-queued, but we still need to remove its
+                                // processing information.
+
+                                connection.Jobs.Complete(payload);
+
+                                // Success point. No things must be done after previous command
+                                // was succeeded.
                             }
-
-                            PerformJob(payload);
-
-                            // Checkpoint #4. The job was performed, and it is in the one
-                            // of the explicit states (Succeeded, Scheduled and so on).
-                            // It should not be re-queued, but we still need to remove its
-                            // processing information.
-
-                            _connection.Jobs.Complete(payload);
-
-                            // Success point. No things must be done after previous command
-                            // was succeeded.
                         }, _cts.Token.WaitHandle);
                 }
             }
@@ -135,15 +133,17 @@ namespace HangFire.Server
             }
         }
 
-        private void PerformJob(JobPayload payload)
+        private void PerformJob(IStorageConnection connection, JobPayload payload)
         {
             if (payload == null)
             {
                 return;
             }
 
+            var stateMachine = new StateMachine(connection);
+
             var processingState = new ProcessingState("Worker has started processing.", _context.ServerName);
-            if (!_stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name, ProcessingState.Name))
+            if (!stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name, ProcessingState.Name))
             {
                 return;
             }
@@ -178,7 +178,7 @@ namespace HangFire.Server
                         jobMethod, arguments);
                 }
 
-                var performContext = new PerformContext(_context, _connection, payload.Id, jobMethod);
+                var performContext = new PerformContext(_context, connection, payload.Id, jobMethod);
                 _context.Performer.PerformJob(performContext, performStrategy);
 
                 state = new SucceededState("The job has been completed successfully.");
@@ -188,7 +188,7 @@ namespace HangFire.Server
                 state = new FailedState("The job has been failed.", ex);
             }
 
-            _stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
+            stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
         }
     }
 }

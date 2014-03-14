@@ -18,7 +18,6 @@ namespace HangFire.Redis
 
         private readonly RedisStorageOptions _options;
         private readonly IRedisClientsManager _pooledManager;
-        private readonly IRedisClientsManager _basicManager;
 
         public RedisStorage(string host, int db)
             : this(host, db, new RedisStorageOptions())
@@ -31,33 +30,33 @@ namespace HangFire.Redis
             _db = db;
             _options = options;
 
-            _pooledManager = new PooledRedisClientManager(db, host);
-            _basicManager = new BasicRedisClientManager(db, host);
+            _pooledManager = new PooledRedisClientManager(
+                new []{ host },
+                new string[0],
+                new RedisClientManagerConfig
+                {
+                    DefaultDb = db,
+                    MaxWritePoolSize = _options.ConnectionPoolSize
+                });
         }
 
-        public IRedisClientsManager BasicManager { get { return _basicManager; } }
         public IRedisClientsManager PooledManager { get { return _pooledManager; } }
 
         public override IMonitoringApi CreateMonitoring()
         {
-            return new RedisMonitoringApi(this, _basicManager.GetClient());
+            return new RedisMonitoringApi(this, _pooledManager.GetClient());
         }
 
-        public override IStorageConnection CreateConnection()
-        {
-            return new RedisStorageConnection(this, _basicManager.GetClient());
-        }
-
-        public override IStorageConnection CreatePooledConnection()
+        public override IStorageConnection GetConnection()
         {
             return new RedisStorageConnection(this, _pooledManager.GetClient());
         }
 
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
-            yield return new SchedulePoller(CreateConnection(), _options.PollInterval);
-            yield return new DequeuedJobsWatcher(this, _basicManager);
-            yield return new ServerWatchdog(CreateConnection());
+            yield return new SchedulePoller(this, _options.PollInterval);
+            yield return new DequeuedJobsWatcher(this);
+            yield return new ServerWatchdog(this);
         }
 
         public override IEnumerable<JobStateHandler> GetStateHandlers()

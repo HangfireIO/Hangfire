@@ -35,41 +35,27 @@ namespace HangFire.Server
         private readonly ServerContext _context;
         private readonly int _workerCount;
         private readonly IEnumerable<string> _queues;
-        private readonly TimeSpan _pollInterval;
-        private readonly TimeSpan _fetchTimeout;
 
         private readonly Thread _serverThread;
 
         private WorkerManager _manager;
-        private ThreadWrapper _schedulePoller;
-        private ThreadWrapper _dequeuedJobsWatcher;
-        private ThreadWrapper _serverWatchdog;
-        private IList<ThreadWrapper> _components = new List<ThreadWrapper>(); 
+        private readonly IList<ThreadWrapper> _components = new List<ThreadWrapper>(); 
 
-        private readonly IStorageConnection _connection;
+        private readonly JobStorage _storage;
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         public JobServer(
-            IStorageConnection connection,
+            JobStorage storage,
             string serverName,
             int workerCount,
-            IEnumerable<string> queues,
-            TimeSpan pollInterval,
-            TimeSpan fetchTimeout)
+            IEnumerable<string> queues)
         {
-            _connection = connection;
+            _storage = storage;
             _workerCount = workerCount;
             _queues = queues;
-            _pollInterval = pollInterval;
-            _fetchTimeout = fetchTimeout;
 
             if (queues == null) throw new ArgumentNullException("queues");
-
-            if (pollInterval != pollInterval.Duration())
-            {
-                throw new ArgumentOutOfRangeException("pollInterval", "Poll interval value must be positive.");
-            }
 
             _context = new ServerContext(
                 serverName,
@@ -94,7 +80,7 @@ namespace HangFire.Server
         {
             var storage = JobStorage.Current;
 
-            _manager = new WorkerManager(_context, _workerCount);
+            _manager = new WorkerManager(_storage, _context, _workerCount);
 
             var components = storage.GetComponents();
             foreach (var component in components)
@@ -120,7 +106,10 @@ namespace HangFire.Server
             {
                 Logger.Info("Starting HangFire Server...");
 
-                _connection.AnnounceServer(_context.ServerName, _workerCount, _queues);
+                using (var connection = _storage.GetConnection())
+                {
+                    connection.AnnounceServer(_context.ServerName, _workerCount, _queues);
+                }
                 StartServer();
 
                 Logger.Info("HangFire Server has been started.");
@@ -128,7 +117,13 @@ namespace HangFire.Server
                 while (true)
                 {
                     RetryOnException(
-                        () => _connection.Heartbeat(_context.ServerName), 
+                        () =>
+                        {
+                            using (var connection = _storage.GetConnection())
+                            {
+                                connection.Heartbeat(_context.ServerName);
+                            }
+                        }, 
                         _stopped);
 
                     if (_stopped.WaitOne(HeartbeatInterval))
@@ -140,7 +135,11 @@ namespace HangFire.Server
                 Logger.Info("Stopping HangFire Server...");
 
                 StopServer();
-                _connection.RemoveServer(_context.ServerName);
+
+                using (var connection = _storage.GetConnection())
+                {
+                    connection.RemoveServer(_context.ServerName);
+                }
 
                 Logger.Info("HangFire Server has been stopped.");
             }

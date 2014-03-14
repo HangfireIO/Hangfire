@@ -36,7 +36,7 @@ namespace HangFire
         public abstract void Perform();
 
         private static Func<IJobClient> _clientFactory =
-            () => new JobClient(JobStorage.Current.CreatePooledConnection());
+            () => new JobClient(JobStorage.Current.GetConnection());
         private static readonly object ClientFactoryLock = new object();
 
         public static Func<IJobClient> ClientFactory

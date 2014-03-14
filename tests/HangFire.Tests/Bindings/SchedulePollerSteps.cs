@@ -41,12 +41,8 @@ namespace HangFire.Tests
         [When(@"the poller runs")]
         public void WhenThePollerRuns()
         {
-            using (var poller = new SchedulePoller(
-                new RedisStorageConnection(Redis.Storage, Redis.Storage.BasicManager.GetClient()), 
-                TimeSpan.FromSeconds(15)))
-            {
-                _pollerResult = poller.EnqueueNextScheduledJob();
-            }
+            var poller = new SchedulePoller(Redis.Storage, TimeSpan.FromSeconds(15));
+            _pollerResult = poller.EnqueueNextScheduledJob();
         }
 
         [Then(@"the schedule should not contain it anymore")]

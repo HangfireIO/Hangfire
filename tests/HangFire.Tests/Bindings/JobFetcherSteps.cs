@@ -30,7 +30,7 @@ namespace HangFire.Tests
         public void GivenTheFetcherListeningTheQueue(string queue)
         {
             _fetcher = new RedisJobFetcher(
-                Redis.Storage.BasicManager.GetClient(),new [] { queue }, TimeSpan.FromSeconds(1));
+                Redis.Storage.PooledManager.GetClient(),new [] { queue }, TimeSpan.FromSeconds(1));
         }
 
         [Given(@"the following queues:")]

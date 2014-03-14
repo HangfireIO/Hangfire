@@ -28,7 +28,7 @@ namespace HangFire.Server
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         
-        public WorkerManager(ServerContext context, int workerCount)
+        public WorkerManager(JobStorage storage, ServerContext context, int workerCount)
         {
             _workers = new DisposableCollection<Worker>();
 
@@ -36,7 +36,7 @@ namespace HangFire.Server
             {
                 var workerContext = new WorkerContext(context, i);
 
-                var worker = new Worker(workerContext);
+                var worker = new Worker(storage, workerContext);
                 worker.Start();
 
                 _workers.Add(worker);
