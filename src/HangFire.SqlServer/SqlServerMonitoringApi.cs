@@ -241,7 +241,7 @@ from HangFire.[JobQueue] as q
                     Name = queue.Queue,
                     Length = queue.Enqueued,
                     Dequeued = queue.Fetched,
-                    FirstJobs = new List<KeyValuePair<string, EnqueuedJobDto>>() // TODO: implement
+                    FirstJobs = EnqueuedJobs(queue.Queue, 0, 5)
                 });
             }
 
