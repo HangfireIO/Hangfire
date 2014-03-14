@@ -38,7 +38,7 @@ namespace HangFire.Redis.Components
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
-        public DequeuedJobsWatcher(RedisJobStorage storage, IRedisClientsManager redisManager)
+        public DequeuedJobsWatcher(RedisStorage storage, IRedisClientsManager redisManager)
         {
             _redis = redisManager.GetClient();
             _stateMachine = new StateMachine(new RedisStorageConnection(storage, _redis));

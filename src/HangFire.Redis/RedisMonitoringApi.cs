@@ -28,10 +28,10 @@ namespace HangFire.Redis
 {
     internal class RedisMonitoringApi : IMonitoringApi
     {
-        private readonly RedisJobStorage _storage;
+        private readonly RedisStorage _storage;
         private readonly IRedisClient _redis;
 
-        public RedisMonitoringApi(RedisJobStorage storage, IRedisClient redis)
+        public RedisMonitoringApi(RedisStorage storage, IRedisClient redis)
         {
             _storage = storage;
             _redis = redis;

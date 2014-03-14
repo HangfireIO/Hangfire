@@ -15,7 +15,7 @@ namespace HangFire.Redis
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
-        public RedisStorageConnection(RedisJobStorage storage, IRedisClient redis)
+        public RedisStorageConnection(RedisStorage storage, IRedisClient redis)
         {
             _redis = redis;
             

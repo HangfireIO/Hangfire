@@ -11,7 +11,7 @@ using ServiceStack.Redis;
 
 namespace HangFire.Redis
 {
-    public class RedisJobStorage : JobStorage
+    public class RedisStorage : JobStorage
     {
         private readonly string _host;
         private readonly int _db;
@@ -20,12 +20,12 @@ namespace HangFire.Redis
         private readonly IRedisClientsManager _pooledManager;
         private readonly IRedisClientsManager _basicManager;
 
-        public RedisJobStorage(string host, int db)
+        public RedisStorage(string host, int db)
             : this(host, db, new RedisStorageOptions())
         {
         }
 
-        public RedisJobStorage(string host, int db, RedisStorageOptions options)
+        public RedisStorage(string host, int db, RedisStorageOptions options)
         {
             _host = host;
             _db = db;

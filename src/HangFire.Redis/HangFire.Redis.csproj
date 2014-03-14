@@ -63,7 +63,7 @@
     <Compile Include="RedisJobFetcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisAtomicWriteTransaction.cs" />
-    <Compile Include="RedisJobStorage.cs" />
+    <Compile Include="RedisStorage.cs" />
     <Compile Include="RedisMonitoringApi.cs" />
     <Compile Include="RedisStorageConnection.cs" />
     <Compile Include="RedisStorageOptions.cs" />

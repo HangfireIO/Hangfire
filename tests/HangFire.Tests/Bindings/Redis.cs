@@ -15,7 +15,7 @@ namespace HangFire.Tests
         private const string RedisHost = "localhost:6379";
 
         public static IRedisClient Client;
-        public static RedisJobStorage Storage;
+        public static RedisStorage Storage;
 
         [BeforeScenario("redis")]
         public static void BeforeRedisScenario()
@@ -23,7 +23,7 @@ namespace HangFire.Tests
             GlobalLock.Acquire();
             LogManager.LogFactory = new ConsoleLogFactory();
 
-            Storage = new RedisJobStorage(RedisHost, RedisDb);
+            Storage = new RedisStorage(RedisHost, RedisDb);
             JobStorage.Current = Storage;
 
             Client = Storage.BasicManager.GetClient();

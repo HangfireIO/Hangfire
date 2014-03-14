@@ -33,7 +33,7 @@ namespace $rootnamespace$
             // Install-Package HangFire.Redis
             //
             // Then, uncomment the line below and set up your connection.
-            // JobStorage.Current = new RedisJobStorage("localhost:6379", 3);
+            // JobStorage.Current = new RedisStorage("localhost:6379", 3);
             
             // HangFire Server processes jobs while your application is being
             // performed. They are performed in a reliable way and your ASP.NET 
