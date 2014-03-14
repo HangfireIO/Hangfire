@@ -8,7 +8,7 @@ namespace HangFire.SqlServer.Components
 {
     internal class ExpirationManager : IThreadWrappable
     {
-        private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30); // TODO: increase interval
+        private static readonly TimeSpan CheckInterval = TimeSpan.FromHours(1);
 
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ExpirationManager));
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
