@@ -122,6 +122,7 @@
     <Compile Include="States\GlobalStateHandlerCollection.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IStoredSets.cs" />
+    <Compile Include="Storage\IWriteableStoredCounters.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
     <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />

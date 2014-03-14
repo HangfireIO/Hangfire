@@ -9,6 +9,7 @@ namespace HangFire.Storage
         IWriteableStoredLists Lists { get; }
         IWriteableJobQueue Queues { get; }
         IWriteableStoredJobs Jobs { get; }
+        IWriteableStoredCounters Counters { get; }
 
         bool Commit();
     }

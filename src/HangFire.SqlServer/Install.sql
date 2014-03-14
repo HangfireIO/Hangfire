@@ -1,5 +1,5 @@
 ﻿DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 1;
+SET @TARGET_SCHEMA_VERSION = 2;
 
 PRINT 'Installing HangFire SQL objects...';
 
@@ -213,12 +213,34 @@ BEGIN
             [Key] ASC
         );
         PRINT 'Created index [UX_Value_Key]';
+
+		SET @CURRENT_SCHEMA_VERSION = 1;
     END
 
-    IF @CURRENT_SCHEMA_VERSION IS NULL
-        INSERT INTO [HangFire].[Schema] ([Version]) VALUES (@TARGET_SCHEMA_VERSION)
-    ELSE
-        UPDATE [HangFire].[Schema] SET [Version] = @TARGET_SCHEMA_VERSION
+	IF @CURRENT_SCHEMA_VERSION = 1
+	BEGIN
+		PRINT 'Installing schema version 1';
+
+		CREATE TABLE [HangFire].[Counter](
+			[Id] [int] IDENTITY(1,1) NOT NULL,
+			[Key] [nvarchar](100) NOT NULL,
+			[Value] [tinyint] NOT NULL,
+			[ExpireAt] [datetime] NULL,
+
+			CONSTRAINT [PK_Counter] PRIMARY KEY CLUSTERED ([Id] ASC)
+		);
+		PRINT 'Created table [HangFire].[Counter]';
+
+		CREATE NONCLUSTERED INDEX [IX_Counter_Key] ON [HangFire].[Counter] ([Key] ASC)
+		INCLUDE ([Value]);
+		PRINT 'Created index [IX_Counter_Key]';
+
+		SET @CURRENT_SCHEMA_VERSION = 2;
+	END
+
+	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
+	IF @@ROWCOUNT = 0 
+		INSERT INTO [HangFire].[Schema] ([Version]) VALUES (@CURRENT_SCHEMA_VERSION)        
 
     PRINT CHAR(13) + 'HangFire database schema installed';
 

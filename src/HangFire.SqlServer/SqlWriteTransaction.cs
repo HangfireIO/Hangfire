@@ -10,7 +10,7 @@ namespace HangFire.SqlServer
 {
     internal class SqlWriteTransaction : IAtomicWriteTransaction,
         IWriteableJobQueue, IWriteableStoredJobs, IWriteableStoredLists,
-        IWriteableStoredSets, IWriteableStoredValues
+        IWriteableStoredSets, IWriteableStoredValues, IWriteableStoredCounters
     {
         private readonly Queue<Action<SqlConnection>> _commandQueue
             = new Queue<Action<SqlConnection>>();
@@ -31,6 +31,7 @@ namespace HangFire.SqlServer
         public IWriteableStoredLists Lists { get { return this; } }
         public IWriteableJobQueue Queues { get { return this; } }
         public IWriteableStoredJobs Jobs { get { return this; } }
+        public IWriteableStoredCounters Counters {get { return this; }}
 
         public bool Commit()
         {
@@ -165,6 +166,34 @@ update HangFire.Value with (xlock) set IntValue = IntValue + 1 where [Key] = @ke
             });
         }
 
+        void IWriteableStoredCounters.Increment(string key, TimeSpan expireIn)
+        {
+            _commandQueue.Enqueue(x => x.Execute(
+                @"insert into HangFire.Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                new { key, value = +1, expireAt = DateTime.UtcNow.Add(expireIn) }));
+        }
+
+        void IWriteableStoredCounters.Decrement(string key)
+        {
+            _commandQueue.Enqueue(x => x.Execute(
+                @"insert into HangFire.Counter ([Key], [Value]) values (@key, @value)",
+                new { key, value = -1 }));
+        }
+
+        void IWriteableStoredCounters.Decrement(string key, TimeSpan expireIn)
+        {
+            _commandQueue.Enqueue(x => x.Execute(
+                @"insert into HangFire.Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
+                new { key, value = -1, expireAt = DateTime.UtcNow.Add(expireIn) }));
+        }
+
+        void IWriteableStoredCounters.Increment(string key)
+        {
+            _commandQueue.Enqueue(x => x.Execute(
+                @"insert into HangFire.Counter ([Key], [Value]) values (@key, @value)",
+                new { key, value = +1 }));
+        }
+
         void IWriteableStoredValues.Decrement(string key)
         {
             const string insertSql = @"
@@ -190,7 +219,7 @@ update HangFire.Value with (xlock) set IntValue = IntValue - 1 where [Key] = @ke
         void IWriteableStoredValues.ExpireIn(string key, TimeSpan expireIn)
         {
             _commandQueue.Enqueue(x => x.Execute(
-                @"update HangFire.Value set ExpireAt = @expireAt where [Key] = @key",
+                @"update HangFire.Value with (xlock) set ExpireAt = @expireAt where [Key] = @key",
                 new { expireAt = DateTime.UtcNow.Add(expireIn), key = key }));
         }
     }

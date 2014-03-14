@@ -34,35 +34,31 @@ namespace HangFire.Filters
             {
                 if (context.CandidateState.StateName == SucceededState.Name)
                 {
-                    var monthlySucceededKey = String.Format(
-                        "stats:succeeded:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd"));
+                    transaction.Counters.Increment(
+                        String.Format(
+                            "stats:succeeded:{0}",
+                            DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                        DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
-                    transaction.Values.Increment(monthlySucceededKey);
-                    transaction.Values.ExpireIn(monthlySucceededKey, DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
-
-                    var hourlySucceededKey = String.Format(
-                        "stats:succeeded:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-
-                    transaction.Values.Increment(hourlySucceededKey);
-                    transaction.Values.ExpireIn(hourlySucceededKey, TimeSpan.FromDays(1));
+                    transaction.Counters.Increment(
+                        String.Format(
+                            "stats:succeeded:{0}",
+                            DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
+                        TimeSpan.FromDays(1));
                 }
                 else if (context.CandidateState.StateName == FailedState.Name)
                 {
-                    var monthlyFailedKey = String.Format(
-                        "stats:failed:{0}", 
-                        DateTime.UtcNow.ToString("yyyy-MM-dd"));
+                    transaction.Counters.Increment(
+                        String.Format(
+                            "stats:failed:{0}", 
+                            DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                        DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
-                    transaction.Values.Increment(monthlyFailedKey);
-                    transaction.Values.ExpireIn(monthlyFailedKey, DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
-
-                    var hourlyFailedKey = String.Format(
-                        "stats:failed:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
-
-                    transaction.Values.Increment(hourlyFailedKey);
-                    transaction.Values.ExpireIn(hourlyFailedKey, TimeSpan.FromDays(1));
+                    transaction.Counters.Increment(
+                        String.Format(
+                            "stats:failed:{0}",
+                            DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
+                        TimeSpan.FromDays(1));
                 }
 
                 transaction.Commit();

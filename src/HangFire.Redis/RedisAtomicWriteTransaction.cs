@@ -18,6 +18,7 @@ namespace HangFire.Redis
             Lists = storage;
             Queues = storage;
             Jobs = storage;
+            Counters = storage;
         }
 
         public IWriteableStoredValues Values { get; private set; }
@@ -25,6 +26,7 @@ namespace HangFire.Redis
         public IWriteableStoredLists Lists { get; private set; }
         public IWriteableJobQueue Queues { get; private set; }
         public IWriteableStoredJobs Jobs { get; private set; }
+        public IWriteableStoredCounters Counters { get; private set; }
 
         public bool Commit()
         {

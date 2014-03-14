@@ -16,7 +16,7 @@ namespace HangFire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
-        private const int RequiredSchemaVersion = 1;
+        private const int RequiredSchemaVersion = 2;
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(SqlServerStorage));
 
@@ -52,7 +52,7 @@ namespace HangFire.SqlServer
             }
 
             var script = GetStringResource(GetType().Assembly, "HangFire.SqlServer.Install.sql");
-            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 1;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
+            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 2;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
 
             using (var connection = CreateAndOpenConnection())
             {

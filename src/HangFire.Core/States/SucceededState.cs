@@ -48,12 +48,12 @@ namespace HangFire.States
                 StateApplyingContext context, IDictionary<string, string> stateData)
             {
                 context.Transaction.Jobs.Expire(context.JobId, JobExpirationTimeout);
-                context.Transaction.Values.Increment("stats:succeeded");
+                context.Transaction.Counters.Increment("stats:succeeded");
             }
 
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.Values.Decrement("stats:succeeded");
+                context.Transaction.Counters.Decrement("stats:succeeded");
                 context.Transaction.Jobs.Persist(context.JobId);
             }
 

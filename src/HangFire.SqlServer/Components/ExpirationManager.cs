@@ -19,7 +19,8 @@ namespace HangFire.SqlServer.Components
             "Hash",
             "List",
             "Set",
-            "Value"
+            "Value",
+            "Counter",
         };
 
         private readonly SqlServerStorage _storage;
@@ -36,7 +37,9 @@ namespace HangFire.SqlServer.Components
                 foreach (var table in ProcessedTables)
                 {
                     connection.Execute(
-                        String.Format(@"delete from HangFire.[{0}] with (tablock) where ExpireAt < @now", table),
+                        String.Format(@"
+set transaction isolation level read committed;
+delete from HangFire.[{0}] with (tablock) where ExpireAt < @now;", table),
                         new { now = DateTime.UtcNow });
                 }
             }

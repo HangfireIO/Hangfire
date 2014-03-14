@@ -8,7 +8,7 @@ namespace HangFire.Redis
 {
     internal class RedisStoredValues : 
         IWriteableStoredSets, IWriteableStoredValues, IWriteableJobQueue,
-        IWriteableStoredJobs, IWriteableStoredLists
+        IWriteableStoredJobs, IWriteableStoredLists, IWriteableStoredCounters
     {
         private const string Prefix = "hangfire:";
         private readonly IRedisTransaction _transaction;
@@ -40,6 +40,28 @@ namespace HangFire.Redis
         {
             _transaction.QueueCommand(x => x.IncrementValue(
                 Prefix + key));
+        }
+
+        void IWriteableStoredCounters.Increment(string key, TimeSpan expireIn)
+        {
+            _transaction.QueueCommand(x => x.IncrementValue(Prefix + key));
+            _transaction.QueueCommand(x => x.ExpireEntryIn(Prefix + key, expireIn));
+        }
+
+        void IWriteableStoredCounters.Decrement(string key)
+        {
+            _transaction.QueueCommand(x => x.DecrementValue(Prefix + key));
+        }
+
+        void IWriteableStoredCounters.Decrement(string key, TimeSpan expireIn)
+        {
+            _transaction.QueueCommand(x => x.DecrementValue(Prefix + key));
+            _transaction.QueueCommand(x => x.ExpireEntryIn(Prefix + key, expireIn));
+        }
+
+        void IWriteableStoredCounters.Increment(string key)
+        {
+            _transaction.QueueCommand(x => x.IncrementValue(Prefix + key));
         }
 
         void IWriteableStoredValues.Decrement(string key)

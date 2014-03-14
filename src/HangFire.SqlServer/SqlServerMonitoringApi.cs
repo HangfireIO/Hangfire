@@ -357,7 +357,7 @@ select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
 select [State], count(id) as [Count] From HangFire.Job group by [State]
 select count(Id) from HangFire.Server
 select count(distinct Queue) from HangFire.JobQueue
-select IntValue from HangFire.Value where [Key] = 'stats:succeeded'
+select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded'
 ";
 
             using (var multi = _connection.QueryMultiple(sql))
@@ -374,7 +374,7 @@ select IntValue from HangFire.Value where [Key] = 'stats:succeeded'
                 stats.Servers = multi.Read<int>().Single();
                 stats.Queues = multi.Read<int>().Single();
 
-                stats.Succeeded = multi.Read<int>().SingleOrDefault();
+                stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
             }
 
             return stats;
@@ -391,8 +391,14 @@ select IntValue from HangFire.Value where [Key] = 'stats:succeeded'
             }
 
             var keys = dates.Select(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH"))).ToList();
+
+            const string sqlQuery = @"
+select [Key], count([Value]) from [HangFire].[Counter]
+group by [Key]
+having [Key] in @keys";
+
             var valuesMap = _connection.Query(
-                @"select [Key], IntValue from HangFire.Value where [Key] in @keys",
+                sqlQuery,
                 new { keys = keys })
                 .ToDictionary(x => (string)x.Key, x => (long)x.IntValue);
 
@@ -426,8 +432,13 @@ select IntValue from HangFire.Value where [Key] = 'stats:succeeded'
             var stringDates = dates.Select(x => x.ToString("yyyy-MM-dd")).ToList();
             var keys = stringDates.Select(x => String.Format("stats:{0}:{1}", type, x)).ToList();
 
+            const string sqlQuery = @"
+select [Key], count([Value]) from [HangFire].[Counter]
+group by [Key]
+having [Key] in @keys";
+
             var valuesMap = _connection.Query(
-                @"select [Key], IntValue from HangFire.Value where [Key] in @keys",
+                sqlQuery,
                 new { keys = keys })
                 .ToDictionary(x => (string)x.Key, x => (long)x.IntValue);
 
