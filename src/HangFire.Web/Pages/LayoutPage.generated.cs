@@ -134,7 +134,7 @@ WriteLiteral(@""">HangFire Monitor</a>
             #line 50 "..\..\Pages\LayoutPage.cshtml"
                       
                         StatisticsDto statistics;
-                        using (var monitor = JobStorage.Current.CreateMonitoring())
+                        using (var monitor = JobStorage.Current.GetMonitoringApi())
                         {
                             statistics = monitor.GetStatistics();
                         }

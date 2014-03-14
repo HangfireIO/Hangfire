@@ -42,7 +42,7 @@ namespace HangFire.Redis
 
         public IRedisClientsManager PooledManager { get { return _pooledManager; } }
 
-        public override IMonitoringApi CreateMonitoring()
+        public override IMonitoringApi GetMonitoringApi()
         {
             return new RedisMonitoringApi(_pooledManager.GetClient());
         }

@@ -98,7 +98,7 @@ WriteLiteral("\r\n");
     Pager pager;
     JobList<DequeuedJobDto> dequeuedJobs;
     
-    using (var monitor = JobStorage.Current.CreateMonitoring())
+    using (var monitor = JobStorage.Current.GetMonitoringApi())
     {
         pager = new Pager(from, perPage, monitor.DequeuedCount(Queue))
         {

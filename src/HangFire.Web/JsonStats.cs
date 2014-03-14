@@ -24,7 +24,7 @@ namespace HangFire.Web
     {
         public override void ProcessRequest()
         {
-            using (var monitoring = JobStorage.Current.CreateMonitoring())
+            using (var monitoring = JobStorage.Current.GetMonitoringApi())
             {
                 var response = monitoring.GetStatistics();
 

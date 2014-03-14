@@ -75,7 +75,7 @@ WriteLiteral("\r\n");
     Layout = new LayoutPage { Title = "Servers" };
     
     IList<ServerDto> servers;
-    using (var monitor = JobStorage.Current.CreateMonitoring())
+    using (var monitor = JobStorage.Current.GetMonitoringApi())
     {
         servers = monitor.Servers();    
     }

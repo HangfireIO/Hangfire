@@ -49,7 +49,7 @@
                 <div class="col-md-3">
                     @{
                         StatisticsDto statistics;
-                        using (var monitor = JobStorage.Current.CreateMonitoring())
+                        using (var monitor = JobStorage.Current.GetMonitoringApi())
                         {
                             statistics = monitor.GetStatistics();
                         }

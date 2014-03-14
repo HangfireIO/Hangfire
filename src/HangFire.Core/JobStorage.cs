@@ -41,7 +41,7 @@ namespace HangFire
             }
         }
 
-        public abstract IMonitoringApi CreateMonitoring();
+        public abstract IMonitoringApi GetMonitoringApi();
         
         public abstract IStorageConnection GetConnection();
 

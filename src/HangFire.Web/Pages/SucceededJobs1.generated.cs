@@ -84,7 +84,7 @@ WriteLiteral("\r\n");
     Pager pager;
     JobList<SucceededJobDto> succeededJobs;
 
-    using (var monitor = JobStorage.Current.CreateMonitoring())
+    using (var monitor = JobStorage.Current.GetMonitoringApi())
     {
         pager = new Pager(from, perPage, monitor.SucceededListCount())
         {

@@ -76,7 +76,7 @@ WriteLiteral("\r\n");
 
     IList<QueueWithTopEnqueuedJobsDto> queues;
 
-    using (var monitor = JobStorage.Current.CreateMonitoring())
+    using (var monitor = JobStorage.Current.GetMonitoringApi())
     {
         queues = monitor.Queues();
     }

@@ -62,7 +62,7 @@ namespace HangFire.SqlServer
             Log.Debug("HangFire SQL objects installed.");
         }
 
-        public override IMonitoringApi CreateMonitoring()
+        public override IMonitoringApi GetMonitoringApi()
         {
             return new SqlServerMonitoringApi(CreateAndOpenConnection());
         }
