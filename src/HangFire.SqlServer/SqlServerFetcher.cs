@@ -55,7 +55,7 @@ and Queue in @queues",
                         parameters)
                         .SingleOrDefault();
 
-                    queueName = idAndQueue.QueueName;
+                    queueName = idAndQueue.Queue;
                 }
 
                 if (job == null)
