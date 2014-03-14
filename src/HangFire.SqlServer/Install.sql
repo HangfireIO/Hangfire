@@ -24,7 +24,7 @@ IF NOT EXISTS(SELECT [object_id] FROM [sys].[tables]
 BEGIN
     CREATE TABLE [HangFire].[Schema](
         [Version] [int] NOT NULL,
-        CONSTRAINT [PK_Schema] PRIMARY KEY CLUSTERED ([Version] ASC)
+        CONSTRAINT [PK_HangFire_Schema] PRIMARY KEY CLUSTERED ([Version] ASC)
     );
     PRINT 'Created table [HangFire].[Schema]';
 END
@@ -59,7 +59,7 @@ BEGIN
             [CreatedAt] [datetime] NOT NULL,
             [ExpireAt] [datetime] NULL,
 
-            CONSTRAINT [PK_Job] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_Job] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[Job]';
         
@@ -71,18 +71,18 @@ BEGIN
             [CreatedAt] datetime2(7) NOT NULL,
             [Data] [nvarchar](max) NULL,
             
-            CONSTRAINT [PK_JobHistory] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_JobHistory] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[JobHistory]';
 
-        ALTER TABLE [HangFire].[JobHistory] ADD CONSTRAINT [FK_JobHistory_Job] FOREIGN KEY([JobId])
+        ALTER TABLE [HangFire].[JobHistory] ADD CONSTRAINT [FK_HangFire_JobHistory_Job] FOREIGN KEY([JobId])
             REFERENCES [HangFire].[Job] ([Id])
             ON UPDATE CASCADE
             ON DELETE CASCADE;
-        PRINT 'Created constraint [FK_JobHistory_Job]';
+        PRINT 'Created constraint [FK_HangFire_JobHistory_Job]';
         
-        CREATE NONCLUSTERED INDEX [IX_JobHistory_JobId] ON [HangFire].[JobHistory] ([JobId] ASC);
-        PRINT 'Created index [IX_JobHistory_JobId]';
+        CREATE NONCLUSTERED INDEX [IX_HangFire_JobHistory_JobId] ON [HangFire].[JobHistory] ([JobId] ASC);
+        PRINT 'Created index [IX_HangFire_JobHistory_JobId]';
         
         -- Job parameters table
         
@@ -92,21 +92,21 @@ BEGIN
             [Name] [nvarchar](100) NOT NULL,
             [Value] [nvarchar](max) NULL,
             
-            CONSTRAINT [PK_JobParameter] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[JobParameter]';
 
-        ALTER TABLE [HangFire].[JobParameter] ADD CONSTRAINT [FK_JobParameter_Job] FOREIGN KEY([JobId])
+        ALTER TABLE [HangFire].[JobParameter] ADD CONSTRAINT [FK_HangFire_JobParameter_Job] FOREIGN KEY([JobId])
             REFERENCES [HangFire].[Job] ([Id])
             ON UPDATE CASCADE
             ON DELETE CASCADE;
-        PRINT 'Created constraint [FK_JobParameter_Job]';
+        PRINT 'Created constraint [FK_HangFire_JobParameter_Job]';
         
-        CREATE NONCLUSTERED INDEX [IX_JobParameter_JobIdAndName] ON [HangFire].[JobParameter] (
+        CREATE NONCLUSTERED INDEX [IX_HangFire_JobParameter_JobIdAndName] ON [HangFire].[JobParameter] (
             [JobId] ASC,
             [Name] ASC
         );
-        PRINT 'Created index [IX_JobParameter_JobIdAndName]';
+        PRINT 'Created index [IX_HangFire_JobParameter_JobIdAndName]';
         
         -- Job queue table
         
@@ -116,21 +116,21 @@ BEGIN
             [Queue] [nvarchar](100) NOT NULL,
             [FetchedAt] [datetime] NULL,
             
-            CONSTRAINT [PK_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[JobQueue]';
         
-        CREATE NONCLUSTERED INDEX [IX_JobQueue_JobIdAndQueue] ON [HangFire].[JobQueue] (
+        CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_JobIdAndQueue] ON [HangFire].[JobQueue] (
             [JobId] ASC,
             [Queue] ASC
         );
-        PRINT 'Created index [IX_JobQueue_JobIdAndQueue]';
+        PRINT 'Created index [IX_HangFire_JobQueue_JobIdAndQueue]';
         
-        CREATE NONCLUSTERED INDEX [IX_JobQueue_QueueAndFetchedAt] ON [HangFire].[JobQueue] (
+        CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [HangFire].[JobQueue] (
             [Queue] ASC,
             [FetchedAt] ASC
         );
-        PRINT 'Created index [IX_JobQueue_QueueAndFetchedAt]';
+        PRINT 'Created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
         
         -- Servers table
         
@@ -139,7 +139,7 @@ BEGIN
             [Data] [nvarchar](max) NULL,
             [LastHeartbeat] [datetime] NULL,
             
-            CONSTRAINT [PK_Server] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_Server] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[Server]';
         
@@ -153,15 +153,15 @@ BEGIN
             [IntValue] [int] NULL,
             [ExpireAt] [datetime] NULL,
             
-            CONSTRAINT [PK_Hash] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[Hash]';
         
-        CREATE UNIQUE NONCLUSTERED INDEX [UX_Hash_KeyAndName] ON [HangFire].[Hash] (
+        CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_KeyAndName] ON [HangFire].[Hash] (
             [Key] ASC,
             [Name] ASC
         );
-        PRINT 'Created index [UX_Hash_KeyAndName]';
+        PRINT 'Created index [UX_HangFire_Hash_KeyAndName]';
         
         CREATE TABLE [HangFire].[List](
             [Id] [int] IDENTITY(1,1) NOT NULL,
@@ -169,7 +169,7 @@ BEGIN
             [Value] [nvarchar](max) NULL,
             [ExpireAt] [datetime] NULL,
             
-            CONSTRAINT [PK_List] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_List] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[List]';
         
@@ -180,15 +180,15 @@ BEGIN
             [Value] [nvarchar](256) NOT NULL,
             [ExpireAt] [datetime] NULL,
             
-            CONSTRAINT [PK_Set] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_Set] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[Set]';
         
-        CREATE UNIQUE NONCLUSTERED INDEX [UX_Set_KeyAndValue] ON [HangFire].[Set] (
+        CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Set_KeyAndValue] ON [HangFire].[Set] (
             [Key] ASC,
             [Value] ASC
         );
-        PRINT 'Created index [UX_Set_KeyAndValue]';
+        PRINT 'Created index [UX_HangFire_Set_KeyAndValue]';
         
         CREATE TABLE [HangFire].[Value](
             [Id] [int] IDENTITY(1,1) NOT NULL,
@@ -197,16 +197,16 @@ BEGIN
             [IntValue] [int] NULL,
             [ExpireAt] [datetime] NULL,
             
-            CONSTRAINT [PK_Value] PRIMARY KEY CLUSTERED (
+            CONSTRAINT [PK_HangFire_Value] PRIMARY KEY CLUSTERED (
                 [Id] ASC
             )
         );
         PRINT 'Created table [HangFire].[Value]';
         
-        CREATE UNIQUE NONCLUSTERED INDEX [UX_Value_Key] ON [HangFire].[Value] (
+        CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Value_Key] ON [HangFire].[Value] (
             [Key] ASC
         );
-        PRINT 'Created index [UX_Value_Key]';
+        PRINT 'Created index [UX_HangFire_Value_Key]';
 
 		SET @CURRENT_SCHEMA_VERSION = 1;
     END
@@ -221,13 +221,13 @@ BEGIN
 			[Value] [tinyint] NOT NULL,
 			[ExpireAt] [datetime] NULL,
 
-			CONSTRAINT [PK_Counter] PRIMARY KEY CLUSTERED ([Id] ASC)
+			CONSTRAINT [PK_HangFire_Counter] PRIMARY KEY CLUSTERED ([Id] ASC)
 		);
 		PRINT 'Created table [HangFire].[Counter]';
 
-		CREATE NONCLUSTERED INDEX [IX_Counter_Key] ON [HangFire].[Counter] ([Key] ASC)
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Counter_Key] ON [HangFire].[Counter] ([Key] ASC)
 		INCLUDE ([Value]);
-		PRINT 'Created index [IX_Counter_Key]';
+		PRINT 'Created index [IX_HangFire_Counter_Key]';
 
 		SET @CURRENT_SCHEMA_VERSION = 2;
 	END
