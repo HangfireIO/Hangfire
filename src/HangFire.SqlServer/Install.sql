@@ -68,7 +68,7 @@ BEGIN
         CREATE TABLE [HangFire].[JobHistory](
             [Id] [int] IDENTITY(1,1) NOT NULL,
             [JobId] [int] NOT NULL,
-            [CreatedAt] [datetime] NOT NULL,
+            [CreatedAt] datetime2(7) NOT NULL,
             [Data] [nvarchar](max) NULL,
             
             CONSTRAINT [PK_JobHistory] PRIMARY KEY CLUSTERED ([Id] ASC)
