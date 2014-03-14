@@ -9,6 +9,5 @@ namespace HangFire.Storage.Monitoring
         public string State { get; set; }
         public DateTime? CreatedAt { get; set; }
         public DateTime? FetchedAt { get; set; }
-        public DateTime? CheckedAt { get; set; }
     }
 }

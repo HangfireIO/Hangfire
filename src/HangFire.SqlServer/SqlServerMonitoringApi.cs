@@ -296,7 +296,6 @@ where r.row_num between @start and @end";
                         Method = DeserializeJobMethod(job.InvocationData),
                         State = job.State,
                         CreatedAt = job.CreatedAt,
-                        CheckedAt = null,
                         FetchedAt = job.FetchedAt
                     }));
             }

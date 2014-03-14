@@ -58,7 +58,6 @@ else
                 <th>Job type</th>
                 <th>Created</th>
                 <th>Fetched</th>
-                <th>Checked</th>
             </tr>
         </thead>
         <tbody>
@@ -86,14 +85,6 @@ else
                         {
                             <span data-moment="@JobHelper.ToStringTimestamp(job.Value.FetchedAt.Value)">
                                 @job.Value.FetchedAt
-                            </span>
-                        }
-                    </td>
-                    <td>
-                        @if (job.Value.CheckedAt.HasValue)
-                        {
-                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.CheckedAt.Value)">
-                                @job.Value.CheckedAt
                             </span>
                         }
                     </td>
