@@ -22,7 +22,9 @@
 * SQL Server job storage implementation.
 * Improved job fetching implementation.
 * Removed obsolete `Perform` class.
-* Fixed empty MVC 5 project Internal Server Error.
+* Fixed: empty MVC 5 project Internal Server Error.
+* Fixed: Some history statistic counters do not expire.
+* Fixed: Use `StatisticsHistoryFilter` by default.
 0.6.2
 * Fixed NullReferenceException when trying to create a job using the Old API.
 0.6.1
