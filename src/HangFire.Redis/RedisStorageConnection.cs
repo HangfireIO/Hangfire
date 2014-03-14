@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.Storage;
-using ServiceStack.Logging;
 using ServiceStack.Redis;
 
 namespace HangFire.Redis
 {
     internal class RedisStorageConnection : IStorageConnection
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(RedisStorageConnection));
-
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
@@ -137,7 +134,7 @@ namespace HangFire.Redis
                 JobHelper.ToStringTimestamp(DateTime.UtcNow));
         }
 
-        public void RemoveTimedOutServers(TimeSpan timeOut)
+        public int RemoveTimedOutServers(TimeSpan timeOut)
         {
             var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
             var heartbeats = new Dictionary<string, Tuple<DateTime, DateTime?>>();
@@ -164,8 +161,7 @@ namespace HangFire.Redis
                 pipeline.Flush();
             }
 
-            Logger.DebugFormat("Looking for timed out servers...");
-
+            var removedServerCount = 0;
             foreach (var heartbeat in heartbeats)
             {
                 var maxTime = new DateTime(
@@ -174,9 +170,11 @@ namespace HangFire.Redis
                 if (utcNow > maxTime.Add(timeOut))
                 {
                     RemoveServer(_redis, heartbeat.Key);
-                    Logger.InfoFormat("Server '{0}' was removed due to time out.", heartbeat.Key);
+                    removedServerCount++;
                 }
             }
+
+            return removedServerCount;
         }
 
         public static void RemoveFromDequeuedList(

@@ -40,7 +40,11 @@ namespace HangFire.Server.Components
         {
             using (var connection = _storage.GetConnection())
             {
-                connection.RemoveTimedOutServers(timeout);
+                var serversRemoved = connection.RemoveTimedOutServers(timeout);
+                if (serversRemoved != 0)
+                {
+                    Logger.Info(String.Format("{0} servers were removed due to timeout", serversRemoved));
+                }
             }
         }
 

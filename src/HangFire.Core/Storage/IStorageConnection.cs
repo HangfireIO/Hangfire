@@ -24,6 +24,6 @@ namespace HangFire.Storage
         void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues);
         void RemoveServer(string serverId);
         void Heartbeat(string serverId);
-        void RemoveTimedOutServers(TimeSpan timeOut);
+        int RemoveTimedOutServers(TimeSpan timeOut);
     }
 }
