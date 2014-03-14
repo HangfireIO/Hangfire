@@ -23,7 +23,7 @@ namespace HangFire.Server.Components
     public class ServerWatchdog : IThreadWrappable
     {
         private static readonly TimeSpan ServerTimeout = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30); // TODO: increase interval
+        private static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(5); 
 
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerWatchdog));
 
