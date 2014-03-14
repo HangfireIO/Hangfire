@@ -393,14 +393,14 @@ select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded'
             var keys = dates.Select(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH"))).ToList();
 
             const string sqlQuery = @"
-select [Key], count([Value]) from [HangFire].[Counter]
+select [Key], count([Value]) as Count from [HangFire].[Counter]
 group by [Key]
 having [Key] in @keys";
 
             var valuesMap = _connection.Query(
                 sqlQuery,
                 new { keys = keys })
-                .ToDictionary(x => (string)x.Key, x => (long)x.IntValue);
+                .ToDictionary(x => (string)x.Key, x => (long)x.Count);
 
             foreach (var key in keys)
             {
@@ -433,14 +433,14 @@ having [Key] in @keys";
             var keys = stringDates.Select(x => String.Format("stats:{0}:{1}", type, x)).ToList();
 
             const string sqlQuery = @"
-select [Key], count([Value]) from [HangFire].[Counter]
+select [Key], count([Value]) as Count from [HangFire].[Counter]
 group by [Key]
 having [Key] in @keys";
 
             var valuesMap = _connection.Query(
                 sqlQuery,
                 new { keys = keys })
-                .ToDictionary(x => (string)x.Key, x => (long)x.IntValue);
+                .ToDictionary(x => (string)x.Key, x => (long)x.Count);
 
             foreach (var key in keys)
             {
