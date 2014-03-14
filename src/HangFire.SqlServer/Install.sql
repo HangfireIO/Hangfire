@@ -119,12 +119,6 @@ BEGIN
             CONSTRAINT [PK_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[JobQueue]';
-
-        ALTER TABLE [HangFire].[JobQueue] ADD CONSTRAINT [FK_JobQueue_Job] FOREIGN KEY([JobId])
-            REFERENCES [HangFire].[Job] ([Id])
-            ON UPDATE CASCADE
-            ON DELETE CASCADE;
-        PRINT 'Created constraint [FK_JobQueue_Job]';
         
         CREATE NONCLUSTERED INDEX [IX_JobQueue_JobIdAndQueue] ON [HangFire].[JobQueue] (
             [JobId] ASC,
@@ -219,7 +213,7 @@ BEGIN
 
 	IF @CURRENT_SCHEMA_VERSION = 1
 	BEGIN
-		PRINT 'Installing schema version 1';
+		PRINT 'Installing schema version 2';
 
 		CREATE TABLE [HangFire].[Counter](
 			[Id] [int] IDENTITY(1,1) NOT NULL,
