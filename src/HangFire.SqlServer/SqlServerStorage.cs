@@ -69,7 +69,7 @@ namespace HangFire.SqlServer
 
         public override IStorageConnection GetConnection()
         {
-            return new SqlStorageConnection(this, CreateAndOpenConnection());
+            return new SqlServerConnection(this, CreateAndOpenConnection());
         }
 
         public override IEnumerable<IThreadWrappable> GetComponents()

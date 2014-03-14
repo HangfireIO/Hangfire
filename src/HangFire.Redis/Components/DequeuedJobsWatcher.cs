@@ -134,12 +134,12 @@ namespace HangFire.Redis.Components
             {
                 if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
-                    var stateMachine = new StateMachine(new RedisStorageConnection(_storage, redis));
+                    var stateMachine = new StateMachine(new RedisConnection(_storage, redis));
                     var state = new EnqueuedState("Requeued due to time out");
 
                     stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
 
-                    RedisStorageConnection.RemoveFromDequeuedList(redis, queue, jobId);
+                    RedisConnection.RemoveFromDequeuedList(redis, queue, jobId);
 
                     return true;
                 }

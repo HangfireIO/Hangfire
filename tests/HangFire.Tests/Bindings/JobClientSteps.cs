@@ -31,7 +31,7 @@ namespace HangFire.Tests
         public void GivenAClient()
         {
             _client = new JobClient(
-                new RedisStorageConnection(
+                new RedisConnection(
                     Redis.Storage,
                     Redis.Storage.PooledManager.GetClient()),
                 new JobCreator(_filters));

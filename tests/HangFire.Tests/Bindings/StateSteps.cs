@@ -166,7 +166,7 @@ namespace HangFire.Tests.States
         public void WhenIApplyTheState()
         {
             var stateMachine = new StateMachine(
-                new RedisStorageConnection(Redis.Storage, Redis.Client), _handlers, _filters);
+                new RedisConnection(Redis.Storage, Redis.Client), _handlers, _filters);
             stateMachine.ChangeState(JobSteps.DefaultJobId, _state);
         }
 
@@ -183,7 +183,7 @@ namespace HangFire.Tests.States
         public void WhenIChangeTheStateOfTheJobToThe(string jobId, string state)
         {
             var stateMachine = new StateMachine(
-                new RedisStorageConnection(Redis.Storage, Redis.Client), _handlers, _filters);
+                new RedisConnection(Redis.Storage, Redis.Client), _handlers, _filters);
             stateMachine.ChangeState(jobId, _stateMocks[state].Object);
         }
 
@@ -192,7 +192,7 @@ namespace HangFire.Tests.States
             string state, string allowedState)
         {
             var stateMachine = new StateMachine(
-                new RedisStorageConnection(Redis.Storage, Redis.Client), _handlers, _filters);
+                new RedisConnection(Redis.Storage, Redis.Client), _handlers, _filters);
             stateMachine.ChangeState(JobSteps.DefaultJobId, _stateMocks[state].Object, allowedState);
         }
 

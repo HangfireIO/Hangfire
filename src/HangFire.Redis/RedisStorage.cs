@@ -51,7 +51,7 @@ namespace HangFire.Redis
 
         public override IStorageConnection GetConnection()
         {
-            return new RedisStorageConnection(this, _pooledManager.GetClient());
+            return new RedisConnection(this, _pooledManager.GetClient());
         }
 
         public override IEnumerable<IThreadWrappable> GetComponents()

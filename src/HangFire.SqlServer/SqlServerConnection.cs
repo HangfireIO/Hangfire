@@ -11,11 +11,11 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    internal class SqlStorageConnection : IStorageConnection
+    internal class SqlServerConnection : IStorageConnection
     {
         private readonly SqlConnection _connection;
 
-        public SqlStorageConnection(SqlServerStorage storage, SqlConnection connection)
+        public SqlServerConnection(SqlServerStorage storage, SqlConnection connection)
         {
             _connection = connection;
             Jobs = new SqlServerJob(_connection);

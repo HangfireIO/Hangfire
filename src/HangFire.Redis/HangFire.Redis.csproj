@@ -69,7 +69,7 @@
     <Compile Include="RedisWriteOnlyTransaction.cs" />
     <Compile Include="RedisStorage.cs" />
     <Compile Include="RedisMonitoringApi.cs" />
-    <Compile Include="RedisStorageConnection.cs" />
+    <Compile Include="RedisConnection.cs" />
     <Compile Include="RedisStorageOptions.cs" />
     <Compile Include="DataTypes\RedisJob.cs" />
     <Compile Include="DataTypes\RedisSet.cs" />

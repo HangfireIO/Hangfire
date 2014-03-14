@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Transactions;
+using HangFire.SqlServer.DataTypes;
 using HangFire.Storage;
 
-namespace HangFire.SqlServer.DataTypes
+namespace HangFire.SqlServer
 {
     internal class SqlServerWriteOnlyTransaction : IWriteOnlyTransaction
     {

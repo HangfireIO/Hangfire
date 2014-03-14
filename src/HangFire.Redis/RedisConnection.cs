@@ -8,12 +8,12 @@ using ServiceStack.Redis;
 
 namespace HangFire.Redis
 {
-    internal class RedisStorageConnection : IStorageConnection
+    internal class RedisConnection : IStorageConnection
     {
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
-        public RedisStorageConnection(RedisStorage storage, IRedisClient redis)
+        public RedisConnection(RedisStorage storage, IRedisClient redis)
         {
             _redis = redis;
             

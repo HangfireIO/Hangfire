@@ -60,7 +60,7 @@ namespace HangFire.Redis.DataTypes
 
         public void Complete(JobPayload payload)
         {
-            RedisStorageConnection.RemoveFromDequeuedList(_redis, payload.Queue, payload.Id);
+            RedisConnection.RemoveFromDequeuedList(_redis, payload.Queue, payload.Id);
         }
     }
 }

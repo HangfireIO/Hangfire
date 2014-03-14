@@ -82,10 +82,10 @@
     <Compile Include="DataTypes\SqlServerWriteOnlyQueue.cs" />
     <Compile Include="DataTypes\SqlServerWriteOnlySet.cs" />
     <Compile Include="DataTypes\SqlServerWriteOnlyValue.cs" />
-    <Compile Include="SqlStorageConnection.cs" />
+    <Compile Include="SqlServerConnection.cs" />
     <Compile Include="DataTypes\SqlServerJob.cs" />
     <Compile Include="DataTypes\SqlServerSet.cs" />
-    <Compile Include="DataTypes\SqlServerWriteOnlyTransaction.cs" />
+    <Compile Include="SqlServerWriteOnlyTransaction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
