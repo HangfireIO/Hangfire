@@ -15,6 +15,8 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
+using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire.Web
@@ -22,20 +24,28 @@ namespace HangFire.Web
     internal static class Command
     {
         public static readonly Func<string, bool> Retry 
-            = x =>
+            = jobId =>
             {
-                using (var monitoring = JobStorage.Current.CreateMonitoring())
+                using (var connection = JobStorage.Current.GetConnection())
                 {
-                    return monitoring.RetryJob(x);
+                    // TODO: clear retry attempts counter.
+
+                    var stateMachine = new StateMachine(connection);
+                    var state = new EnqueuedState("The job has been retried by a user.");
+
+                    return stateMachine.ChangeState(jobId, state, FailedState.Name);
                 }
             };
 
         public static readonly Func<string, bool> EnqueueScheduled 
-            = x =>
+            = jobId =>
             {
-                using (var monitoring = JobStorage.Current.CreateMonitoring())
+                using (var connection = JobStorage.Current.GetConnection())
                 {
-                    return monitoring.EnqueueScheduled(x);
+                    var stateMachine = new StateMachine(connection);
+                    var state = new EnqueuedState("The job has been enqueued by a user.");
+
+                    return stateMachine.ChangeState(jobId, state, ScheduledState.Name);
                 }
             };
     }

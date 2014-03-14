@@ -314,16 +314,6 @@ where r.row_num between @start and @end";
             return GetHourlyTimelineStats("failed");
         }
 
-        public bool RetryJob(string jobId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool EnqueueScheduled(string jobId)
-        {
-            throw new NotImplementedException();
-        }
-
         public JobDetailsDto JobDetails(string jobId)
         {
             const string sql = @"

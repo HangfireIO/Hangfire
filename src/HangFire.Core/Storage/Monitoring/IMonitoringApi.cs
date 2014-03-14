@@ -38,8 +38,5 @@ namespace HangFire.Storage.Monitoring
         IDictionary<DateTime, long> FailedByDatesCount();
         IDictionary<DateTime, long> HourlySucceededJobs();
         IDictionary<DateTime, long> HourlyFailedJobs();
-
-        bool RetryJob(string jobId);
-        bool EnqueueScheduled(string jobId);
     }
 }

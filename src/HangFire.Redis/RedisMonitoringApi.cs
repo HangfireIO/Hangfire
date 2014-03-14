@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
 using HangFire.Storage.Monitoring;
@@ -389,30 +388,6 @@ namespace HangFire.Redis
             lock (_redis)
             {
                 return GetHourlyTimelineStats(_redis, "failed");
-            }
-        }
-
-        public bool RetryJob(string jobId)
-        {
-            lock (_redis)
-            {
-                // TODO: clear retry attempts counter.
-
-                var stateMachine = new StateMachine(new RedisStorageConnection(_storage, _redis));
-                var state = new EnqueuedState("The job has been retried by a user.");
-
-                return stateMachine.ChangeState(jobId, state, FailedState.Name);
-            }
-        }
-
-        public bool EnqueueScheduled(string jobId)
-        {
-            lock (_redis)
-            {
-                var stateMachine = new StateMachine(new RedisStorageConnection(_storage, _redis));
-                var state = new EnqueuedState("The job has been enqueued by a user.");
-
-                return stateMachine.ChangeState(jobId, state, ScheduledState.Name);
             }
         }
 
