@@ -62,9 +62,10 @@ namespace HangFire.Filters
 
                 // If attempt number is less than max attempts, we should
                 // schedule the job to run again later.
-                context.CandidateState = new ScheduledState(
-                    String.Format("Retry attempt {0} of {1}.", retryCount, Attempts), 
-                    delay);
+                context.CandidateState = new ScheduledState(delay)
+                {
+                    Reason = String.Format("Retry attempt {0} of {1}", retryCount + 1, Attempts)
+                };
             }
         }
 

@@ -135,7 +135,9 @@ namespace HangFire.Redis.Components
                 if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
                     var stateMachine = new StateMachine(new RedisConnection(_storage, redis));
-                    var state = new EnqueuedState("Requeued due to time out");
+                    var state = new EnqueuedState{
+                        Reason = "Re-queued due to time out"
+                    };
 
                     stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
 

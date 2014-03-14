@@ -42,38 +42,50 @@ namespace HangFire.Tests.States
         [Given(@"the Succeeded state")]
         public void GivenTheSucceededState()
         {
-            _state = new SucceededState("Some reason");
+            _state = new SucceededState { Reason = "SomeReason" };
         }
 
         [Given(@"the Failed state")]
         public void GivenTheFailedState()
         {
             _failedException = new InvalidOperationException("Hello");
-            _state = new FailedState("SomeReason", _failedException);
+            _state = new FailedState(_failedException)
+            {
+                Reason = "SomeReason"
+            };
         }
 
         [Given(@"the Processing state")]
         public void GivenTheProcessingState()
         {
-            _state = new ProcessingState("SomeReason", "TestServer");
+            _state = new ProcessingState("TestServer")
+            {
+                Reason = "SomeReason"
+            };
         }
 
         [Given(@"the Scheduled state with the date set to tomorrow")]
         public void GivenTheScheduledStateWithTheDateSetToTomorrow()
         {
-            _state = new ScheduledState("SomeReason", DateTime.UtcNow.AddDays(1));
+            _state = new ScheduledState(DateTime.UtcNow.AddDays(1))
+            {
+                Reason = "SomeReason"
+            };
         }
 
         [Given(@"the Enqueued state")]
         public void GivenTheEnqueuedState()
         {
-            _state = new EnqueuedState("SomeReason");
+            _state = new EnqueuedState
+            {
+                Reason = "SomeReason"
+            };
         }
 
         [Given(@"a '(.+)' state")]
         public void GivenAState(string state)
         {
-            var mock = new Mock<JobState>("SomeReason");
+            var mock = new Mock<JobState>();
             mock.Setup(x => x.StateName).Returns(state);
             mock.Setup(x => x.GetProperties(It.IsAny<JobMethod>()))
                 .Returns(new Dictionary<string, string>());

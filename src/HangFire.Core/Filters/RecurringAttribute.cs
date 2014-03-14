@@ -34,9 +34,11 @@ namespace HangFire.Filters
         {
             if (context.CandidateState.StateName == SucceededState.Name)
             {
-                context.CandidateState = new ScheduledState(
-                    "Scheduled as a recurring job",
-                    DateTime.UtcNow.AddSeconds(RepeatInterval));
+                var scheduleAt = DateTime.UtcNow.AddSeconds(RepeatInterval);
+                context.CandidateState = new ScheduledState(scheduleAt)
+                {
+                    Reason = "Scheduled as a recurring job"
+                };
             }
         }
     }

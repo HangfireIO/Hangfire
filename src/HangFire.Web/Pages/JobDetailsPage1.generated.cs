@@ -360,7 +360,7 @@ WriteLiteral("\r\n\r\n");
 
             
             #line 89 "..\..\Pages\JobDetailsPage.cshtml"
-                         if (!String.IsNullOrEmpty(entry["Reason"]))
+                         if (entry.ContainsKey("Reason"))
                         {
 
             

@@ -25,14 +25,12 @@ namespace HangFire.States
     {
         public static readonly string Name = "Processing";
 
-        public ProcessingState(string reason, string serverName) 
-            : base(reason)
+        public ProcessingState(string serverName)
         {
             ServerName = serverName;
         }
 
         public string ServerName { get; private set; }
-
         public override string StateName { get { return Name; } }
 
         public override IDictionary<string, string> GetProperties(JobMethod data)

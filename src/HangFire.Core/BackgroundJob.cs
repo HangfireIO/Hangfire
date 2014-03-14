@@ -208,7 +208,7 @@ namespace HangFire
 
         private static JobState CreateEnqueuedState()
         {
-            return new EnqueuedState("Enqueued by the Сlient");
+            return new EnqueuedState();
         }
 
         private static JobState CreateScheduledState(TimeSpan delay)
@@ -218,7 +218,7 @@ namespace HangFire
 
         private static JobState CreateScheduledState(DateTime utcDateTime)
         {
-            return new ScheduledState("Scheduled by the Client", utcDateTime);
+            return new ScheduledState(utcDateTime);
         }
 
         private static string CreateInternal(Type type, MethodCallExpression callExpression, JobState state)

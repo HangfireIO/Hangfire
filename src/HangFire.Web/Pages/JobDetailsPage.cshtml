@@ -10,7 +10,7 @@
 @inherits RazorPage
 @{
     JobDetailsDto job;
-    using (var monitor = JobStorage.Current.CreateMonitoring())
+    using (var monitor = JobStorage.Current.GetMonitoringApi())
     {
         job = monitor.JobDetails(JobId.ToString());
     }
@@ -86,7 +86,7 @@ else
                     <h4 class="job-history-title">
                         @entry["State"]
 
-                        @if (!String.IsNullOrEmpty(entry["Reason"]))
+                        @if (entry.ContainsKey("Reason"))
                         {
                             <small>@entry["Reason"]</small>
                         }

@@ -156,11 +156,12 @@ namespace HangFire.States
 
                         var changingContext = new StateChangingContext(
                             new StateContext(jobId, null),
-                            new FailedState(
-                                String.Format(
+                            new FailedState(ex)
+                            {
+                                Reason = String.Format(
                                     "Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.",
-                                    state.StateName, jobId),
-                                ex),
+                                    state.StateName, jobId)
+                            },
                             currentState,
                             _connection);
 

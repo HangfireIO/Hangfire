@@ -20,12 +20,7 @@ namespace HangFire.Common.States
 {
     public abstract class JobState
     {
-        protected JobState(string reason)
-        {
-            Reason = reason;
-        }
-
-        public string Reason { get; private set; }
+        public string Reason { get; set; }
 
         public abstract string StateName { get; }
 

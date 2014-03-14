@@ -27,11 +27,6 @@ namespace HangFire.States
 
         public static readonly string Name = "Succeeded";
 
-        public SucceededState(string reason)
-            : base(reason)
-        {
-        }
-
         public override string StateName { get { return Name; } }
 
         public override IDictionary<string, string> GetProperties(JobMethod data)

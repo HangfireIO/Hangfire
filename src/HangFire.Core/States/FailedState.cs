@@ -25,14 +25,14 @@ namespace HangFire.States
     {
         public static readonly string Name = "Failed";
 
-        public FailedState(string reason, Exception exception) 
-            : base(reason)
+        public FailedState(Exception exception)
         {
+            if (exception == null) throw new ArgumentNullException("exception");
+
             Exception = exception;
         }
 
         public Exception Exception { get; private set; }
-
         public override string StateName { get { return Name; } }
 
         public override IDictionary<string, string> GetProperties(JobMethod data)

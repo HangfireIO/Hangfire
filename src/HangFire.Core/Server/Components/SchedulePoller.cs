@@ -54,7 +54,10 @@ namespace HangFire.Server.Components
                 }
 
                 var stateMachine = new StateMachine(connection);
-                var enqueuedState = new EnqueuedState("Enqueued by the schedule poller");
+                var enqueuedState = new EnqueuedState
+                {
+                    Reason = "Enqueued as a scheduled job"
+                };
 
                 stateMachine.ChangeState(jobId, enqueuedState, ScheduledState.Name);
 

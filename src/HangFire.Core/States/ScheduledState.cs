@@ -25,14 +25,12 @@ namespace HangFire.States
     {
         public static readonly string Name = "Scheduled";
 
-        public ScheduledState(string reason, DateTime enqueueAt)
-            : base(reason)
+        public ScheduledState(DateTime enqueueAt)
         {
             EnqueueAt = enqueueAt;
         }
 
         public DateTime EnqueueAt { get; private set; }
-
         public override string StateName { get { return Name; } }
 
         public override IDictionary<string, string> GetProperties(JobMethod data)

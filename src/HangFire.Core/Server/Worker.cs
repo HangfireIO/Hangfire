@@ -142,7 +142,7 @@ namespace HangFire.Server
 
             var stateMachine = new StateMachine(connection);
 
-            var processingState = new ProcessingState("Worker has started processing.", _context.ServerName);
+            var processingState = new ProcessingState(_context.ServerName);
             if (!stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name, ProcessingState.Name))
             {
                 return;
@@ -181,11 +181,14 @@ namespace HangFire.Server
                 var performContext = new PerformContext(_context, connection, payload.Id, jobMethod);
                 _context.Performer.PerformJob(performContext, performStrategy);
 
-                state = new SucceededState("The job has been completed successfully.");
+                state = new SucceededState();
             }
             catch (Exception ex)
             {
-                state = new FailedState("The job has been failed.", ex);
+                state = new FailedState(ex)
+                {
+                    Reason = "An exception occured during performance of the job"
+                };
             }
 
             stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
