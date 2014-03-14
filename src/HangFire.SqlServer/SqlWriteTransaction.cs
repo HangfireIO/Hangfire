@@ -37,7 +37,7 @@ namespace HangFire.SqlServer
         {
             using (var transaction = new TransactionScope(
                 TransactionScopeOption.RequiresNew,
-                new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted }))
+                new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
@@ -153,7 +153,7 @@ end try
 begin catch
 end catch";
             const string updateSql = @"
-update HangFire.Value with (xlock) set IntValue = IntValue + 1 where [Key] = @key";
+update HangFire.Value set IntValue = IntValue + 1 where [Key] = @key";
 
             _commandQueue.Enqueue(x =>
             {
@@ -203,7 +203,7 @@ end try
 begin catch
 end catch";
             const string updateSql = @"
-update HangFire.Value with (xlock) set IntValue = IntValue - 1 where [Key] = @key";
+update HangFire.Value set IntValue = IntValue - 1 where [Key] = @key";
 
             _commandQueue.Enqueue(x =>
             {
@@ -219,7 +219,7 @@ update HangFire.Value with (xlock) set IntValue = IntValue - 1 where [Key] = @ke
         void IWriteableStoredValues.ExpireIn(string key, TimeSpan expireIn)
         {
             _commandQueue.Enqueue(x => x.Execute(
-                @"update HangFire.Value with (xlock) set ExpireAt = @expireAt where [Key] = @key",
+                @"update HangFire.Value set ExpireAt = @expireAt where [Key] = @key",
                 new { expireAt = DateTime.UtcNow.Add(expireIn), key = key }));
         }
     }
