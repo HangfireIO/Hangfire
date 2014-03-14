@@ -27,7 +27,7 @@ namespace HangFire.Tests
             _jobClientMock = new Mock<IJobClient>();
             BackgroundJob.ClientFactory = () => _jobClientMock.Object;
 
-            _stateMock = new Mock<JobState>("");
+            _stateMock = new Mock<JobState>();
         }
 
         [TestCleanup]

@@ -26,7 +26,7 @@ namespace HangFire.Tests.Client
 
             _creatorMock = new Mock<JobCreator>();
             _client = new JobClient(_connectionMock.Object, _creatorMock.Object);
-            _stateMock = new Mock<JobState>("SomeReason");
+            _stateMock = new Mock<JobState>();
             _method = new JobMethod(typeof(JobClientTests), typeof(JobClientTests).GetMethod("Method"));
         }
 

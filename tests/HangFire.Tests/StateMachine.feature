@@ -35,7 +35,6 @@ Scenario: The job history should be appended
           | Name      | Value              |
           | CreatedAt | <UtcNow timestamp> |
           | State     | Test               |
-          | Reason    | SomeReason         |
 
 Scenario: the job history record and the state entry should contain the state properties
     Given a 'Test' state with the following properties:
