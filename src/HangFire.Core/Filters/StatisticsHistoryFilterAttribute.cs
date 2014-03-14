@@ -21,9 +21,9 @@ using HangFire.States;
 
 namespace HangFire.Filters
 {
-    public class HistoryStatisticsAttribute : JobFilterAttribute, IStateChangingFilter
+    public class StatisticsHistoryFilterAttribute : JobFilterAttribute, IStateChangingFilter
     {
-        public HistoryStatisticsAttribute()
+        public StatisticsHistoryFilterAttribute()
         {
             Order = 30;
         }
@@ -34,11 +34,12 @@ namespace HangFire.Filters
             {
                 if (context.CandidateState.StateName == SucceededState.Name)
                 {
-                    transaction.Values.Increment(
-                        String.Format("stats:succeeded:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
-                    // TODO: set expiration date.
+                    var monthlySucceededKey = String.Format(
+                        "stats:succeeded:{0}",
+                        DateTime.UtcNow.ToString("yyyy-MM-dd"));
 
-                    // TODO: yyyy-MM-ddTHH-mm key
+                    transaction.Values.Increment(monthlySucceededKey);
+                    transaction.Values.ExpireIn(monthlySucceededKey, DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                     var hourlySucceededKey = String.Format(
                         "stats:succeeded:{0}",
@@ -49,20 +50,17 @@ namespace HangFire.Filters
                 }
                 else if (context.CandidateState.StateName == FailedState.Name)
                 {
-                    transaction.Values.Increment(
-                        String.Format("stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
-                    // TODO: set expiration date
+                    var monthlyFailedKey = String.Format(
+                        "stats:failed:{0}", 
+                        DateTime.UtcNow.ToString("yyyy-MM-dd"));
 
-                    transaction.Values.Increment(
-                        String.Format("stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-dd")));
-
-                    transaction.Values.Increment(
-                        String.Format("stats:failed:{0}", DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm")));
-                    // TODO: set expiration date
+                    transaction.Values.Increment(monthlyFailedKey);
+                    transaction.Values.ExpireIn(monthlyFailedKey, DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                     var hourlyFailedKey = String.Format(
                         "stats:failed:{0}",
                         DateTime.UtcNow.ToString("yyyy-MM-dd-HH"));
+
                     transaction.Values.Increment(hourlyFailedKey);
                     transaction.Values.ExpireIn(hourlyFailedKey, TimeSpan.FromDays(1));
                 }
