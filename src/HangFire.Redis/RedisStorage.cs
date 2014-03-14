@@ -19,7 +19,7 @@ namespace HangFire.Redis
         private readonly int _db;
 
         private readonly RedisStorageOptions _options;
-        private readonly IRedisClientsManager _pooledManager;
+        private readonly PooledRedisClientManager _pooledManager;
 
         public RedisStorage(string host, int db)
             : this(host, db, new RedisStorageOptions())
@@ -42,7 +42,7 @@ namespace HangFire.Redis
                 });
         }
 
-        public IRedisClientsManager PooledManager { get { return _pooledManager; } }
+        public PooledRedisClientManager PooledManager { get { return _pooledManager; } }
 
         public override IMonitoringApi GetMonitoringApi()
         {

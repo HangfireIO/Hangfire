@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using HangFire.Common;
 using HangFire.Redis.DataTypes;
 using HangFire.Server;
@@ -10,7 +11,6 @@ namespace HangFire.Redis
 {
     internal class RedisConnection : IStorageConnection
     {
-        private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
         public RedisConnection(RedisStorage storage, IRedisClient redis)
@@ -40,7 +40,7 @@ namespace HangFire.Redis
         public IDisposable AcquireJobLock(string jobId)
         {
             return _redis.AcquireLock(
-                Prefix + String.Format("job:{0}:state-lock", jobId),
+                RedisStorage.Prefix + String.Format("job:{0}:state-lock", jobId),
                 TimeSpan.FromMinutes(1));
         }
 
@@ -65,11 +65,11 @@ namespace HangFire.Redis
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format(Prefix + "job:{0}", jobId),
+                    String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                     parameters));
 
                 transaction.QueueCommand(x => x.ExpireEntryIn(
-                    String.Format(Prefix + "job:{0}", jobId),
+                    String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                     expireIn));
 
                 // TODO: check return value
@@ -84,13 +84,13 @@ namespace HangFire.Redis
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.AddItemToSet(
-                    "hangfire:servers", serverId));
+                    RedisStorage.Prefix + "servers", serverId));
 
                 transaction.QueueCommand(x => x.SetRangeInHash(
-                    String.Format("hangfire:server:{0}", serverId),
+                    String.Format(RedisStorage.Prefix + "server:{0}", serverId),
                     new Dictionary<string, string>
                         {
-                            { "WorkerCount", workerCount.ToString() },
+                            { "WorkerCount", workerCount.ToString(CultureInfo.InvariantCulture) },
                             { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
                         }));
 
@@ -98,7 +98,7 @@ namespace HangFire.Redis
                 {
                     var queue1 = queue;
                     transaction.QueueCommand(x => x.AddItemToList(
-                        String.Format("hangfire:server:{0}:queues", serverId),
+                        String.Format(RedisStorage.Prefix + "server:{0}:queues", serverId),
                         queue1));
                 }
 
@@ -116,12 +116,12 @@ namespace HangFire.Redis
             using (var transaction = redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromSet(
-                    "hangfire:servers",
+                    RedisStorage.Prefix + "servers",
                     serverId));
 
                 transaction.QueueCommand(x => x.RemoveEntry(
-                    String.Format("hangfire:server:{0}", serverId),
-                    String.Format("hangfire:server:{0}:queues", serverId)));
+                    String.Format(RedisStorage.Prefix + "server:{0}", serverId),
+                    String.Format(RedisStorage.Prefix + "server:{0}:queues", serverId)));
 
                 transaction.Commit();
             }
@@ -130,14 +130,14 @@ namespace HangFire.Redis
         public void Heartbeat(string serverId)
         {
             _redis.SetEntryInHash(
-                String.Format("hangfire:server:{0}", serverId),
+                String.Format(RedisStorage.Prefix + "server:{0}", serverId),
                 "Heartbeat",
                 JobHelper.ToStringTimestamp(DateTime.UtcNow));
         }
 
         public int RemoveTimedOutServers(TimeSpan timeOut)
         {
-            var serverNames = _redis.GetAllItemsFromSet("hangfire:servers");
+            var serverNames = _redis.GetAllItemsFromSet(RedisStorage.Prefix + "servers");
             var heartbeats = new Dictionary<string, Tuple<DateTime, DateTime?>>();
 
             var utcNow = DateTime.UtcNow;
@@ -150,7 +150,7 @@ namespace HangFire.Redis
 
                     pipeline.QueueCommand(
                         x => x.GetValuesFromHash(
-                            String.Format("hangfire:server:{0}", name),
+                            String.Format(RedisStorage.Prefix + "server:{0}", name),
                             "StartedAt", "Heartbeat"),
                         x => heartbeats.Add(
                             name,
@@ -186,15 +186,15 @@ namespace HangFire.Redis
             using (var transaction = redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format("hangfire:queue:{0}:dequeued", queue),
+                    String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", queue),
                     jobId,
                     -1));
 
                 transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format("hangfire:job:{0}", jobId),
+                    String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                     "Fetched"));
                 transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format("hangfire:job:{0}", jobId),
+                    String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                     "Checked"));
 
                 transaction.Commit();
