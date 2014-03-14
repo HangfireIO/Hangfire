@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -32,14 +32,14 @@ namespace HangFire.Tests
         [Then(@"Activator should return an instance of the '(\w+)' type")]
         public void ThenActivatorShouldReturnAnInstanceOfTheType(string type)
         {
-            Assert.AreEqual(type, _jobInstance.GetType().Name);
+            Assert.Equal(type, _jobInstance.GetType().Name);
         }
 
         [Then(@"Activator throws a '(.+)'")]
         public void ThenActivatorThrowsAnException(string exceptionType)
         {
-            Assert.IsNotNull(_exception);
-            Assert.IsInstanceOfType(_exception, Type.GetType(exceptionType, true));
+            Assert.NotNull(_exception);
+            Assert.Equal(_exception.GetType(), Type.GetType(exceptionType, true));
         }
     }
 }

@@ -4,7 +4,7 @@ using HangFire.Client.Filters;
 using HangFire.Filters;
 using HangFire.Server;
 using HangFire.Server.Filters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -41,8 +41,8 @@ namespace HangFire.Tests
 
         public void OnCreating(CreatingContext filterContext)
         {
-            Assert.IsNotNull(filterContext);
-            Assert.IsNotNull(filterContext.Items);
+            Assert.NotNull(filterContext);
+            Assert.NotNull(filterContext.Items);
 
             if (_cancelsTheCreation)
             {
@@ -63,7 +63,7 @@ namespace HangFire.Tests
             {
                 foreach (var parameter in _readParameters)
                 {
-                    Assert.AreEqual(
+                    Assert.Equal(
                         parameter.Value, 
                         filterContext.GetJobParameter<string>(parameter.Key));
                 }
@@ -77,8 +77,8 @@ namespace HangFire.Tests
 
         public void OnCreated(CreatedContext filterContext)
         {
-            Assert.IsNotNull(filterContext);
-            Assert.IsNotNull(filterContext.Items);
+            Assert.NotNull(filterContext);
+            Assert.NotNull(filterContext.Items);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnCreated") 
                 + (filterContext.Canceled ? " (with the canceled flag set)" : null));
@@ -95,7 +95,7 @@ namespace HangFire.Tests
             {
                 foreach (var parameter in _readParameters)
                 {
-                    Assert.AreEqual(
+                    Assert.Equal(
                         parameter.Value,
                         filterContext.GetJobParameter<string>(parameter.Key));
                 }
@@ -109,7 +109,7 @@ namespace HangFire.Tests
 
         public void OnPerforming(PerformingContext filterContext)
         {
-            Assert.IsNotNull(filterContext);
+            Assert.NotNull(filterContext);
 
             if (_cancelsTheCreation)
             {
@@ -130,7 +130,7 @@ namespace HangFire.Tests
             {
                 foreach (var parameter in _readParameters)
                 {
-                    Assert.AreEqual(
+                    Assert.Equal(
                         parameter.Value,
                         filterContext.GetJobParameter<string>(parameter.Key));
                 }
@@ -144,7 +144,7 @@ namespace HangFire.Tests
 
         public void OnPerformed(PerformedContext filterContext)
         {
-            Assert.IsNotNull(filterContext);
+            Assert.NotNull(filterContext);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnPerformed")
                 + (filterContext.Canceled ? " (with the canceled flag set)" : null));

@@ -6,10 +6,10 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Redis;
 using HangFire.States;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ServiceStack.Redis;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -122,13 +122,13 @@ namespace HangFire.Tests
         [Then("the storage should contain the job")]
         public void ThenTheStorageContainsIt()
         {
-            Assert.IsTrue(Redis.Client.ContainsKey("hangfire:job:" + JobSteps.DefaultJobId));
+            Assert.True(Redis.Client.ContainsKey("hangfire:job:" + JobSteps.DefaultJobId));
         }
 
         [Then("the storage should not contain the job")]
         public void ThenTheStorageDoesNotContainTheJob()
         {
-            Assert.IsFalse(Redis.Client.ContainsKey("hangfire:job:" + JobSteps.DefaultJobId));
+            Assert.False(Redis.Client.ContainsKey("hangfire:job:" + JobSteps.DefaultJobId));
         }
 
         [Then("it should have the following parameters:")]
@@ -146,73 +146,72 @@ namespace HangFire.Tests
                 "Args");
             var args = JobHelper.FromJson<Dictionary<string, string>>(argsJson);
 
-            Assert.AreEqual(_arguments.Count, args.Count);
+            Assert.Equal(_arguments.Count, args.Count);
             foreach (var pair in _arguments)
             {
-                Assert.IsTrue(args.ContainsKey(pair.Key));
-                Assert.AreEqual(_arguments[pair.Key], pair.Value);
+                Assert.True(args.ContainsKey(pair.Key));
+                Assert.Equal(_arguments[pair.Key], pair.Value);
             }
         }
 
-        [Then("the given state should be applied to it")]
+        /*[Then("the given state should be applied to it")]
         public void ThenTheGivenStateWasAppliedToIt()
         {
-            /*_stateMock.Verify(
+            _stateMock.Verify(
                 x => x.Apply(It.Is<StateApplyingContext>(y => y.JobId == JobSteps.DefaultJobId)),
-                Times.Once);*/
-            Assert.Inconclusive("Re-write this test for the corresponding handler");
-        }
+                Times.Once);
+        }*/
 
         [Then("a '(.+)' should be thrown by the client")]
         public void ThenAnExceptionIsThrown(string exceptionType)
         {
-            Assert.IsNotNull(_exception);
-            Assert.IsInstanceOfType(_exception, Type.GetType(exceptionType, true));
+            Assert.NotNull(_exception);
+            Assert.Equal(_exception.GetType(), Type.GetType(exceptionType, true));
         }
 
         [Then("the CreateJobFailedException should be thrown by the client")]
         public void ThenTheCreateJobFailedExceptionWasThrown()
         {
-            Assert.IsNotNull(_exception);
-            Assert.IsInstanceOfType(_exception, typeof(CreateJobFailedException));
+            Assert.NotNull(_exception);
+            Assert.Equal(_exception.GetType(), typeof(CreateJobFailedException));
         }
 
         [Then("only the following client filter methods should be executed:")]
         [Then("the client filter methods should be executed in the following order:")]
         public void ThenTheClientFilterMethodsWereExecuted(Table table)
         {
-            Assert.AreEqual(table.RowCount, _clientFilterResults.Count);
+            Assert.Equal(table.RowCount, _clientFilterResults.Count);
 
             for (var i = 0; i < table.RowCount; i++)
             {
                 var method = table.Rows[i]["Method"];
-                Assert.AreEqual(method, _clientFilterResults[i]);
+                Assert.Equal(method, _clientFilterResults[i]);
             }
         }
 
         [Then("the client exception filter should be executed")]
         public void ThenTheClientFilterWasExecuted()
         {
-            Assert.AreNotEqual(0, _exceptionFilterResults.Count);
+            Assert.NotEqual(0, _exceptionFilterResults.Count);
         }
 
         [Then("the following client exception filters should be executed:")]
         [Then("the client exception filters should be executed in the following order:")]
         public void ThenTheClientExceptionFiltersWereExecuted(Table table)
         {
-            Assert.AreEqual(table.RowCount, _exceptionFilterResults.Count);
+            Assert.Equal(table.RowCount, _exceptionFilterResults.Count);
 
             for (var i = 0; i < table.RowCount; i++)
             {
                 var filter = table.Rows[i]["Filter"];
-                Assert.AreEqual(filter, _exceptionFilterResults[i]);
+                Assert.Equal(filter, _exceptionFilterResults[i]);
             }
         }
 
         [Then("an exception should not be thrown by the client")]
         public void ThenNoExceptionWereThrown()
         {
-            Assert.IsNull(_exception);
+            Assert.Null(_exception);
         }
 
         [Then(@"it should have all of the above parameters encoded as JSON string")]
@@ -221,8 +220,8 @@ namespace HangFire.Tests
             var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", JobSteps.DefaultJobId));
             foreach (var parameter in _parameters)
             {
-                Assert.IsTrue(job.ContainsKey(parameter.Key));
-                Assert.AreEqual(parameter.Value, JobHelper.FromJson<string>(job[parameter.Key]));
+                Assert.True(job.ContainsKey(parameter.Key));
+                Assert.Equal(parameter.Value, JobHelper.FromJson<string>(job[parameter.Key]));
             }
         }
 

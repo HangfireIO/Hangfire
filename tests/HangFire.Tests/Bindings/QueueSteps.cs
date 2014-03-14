@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -76,7 +76,7 @@ namespace HangFire.Tests
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}", queue));
 
-            CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
+            Assert.Contains(JobSteps.DefaultJobId, jobIds);
         }
 
         [Then(@"the queue should not contain the job anymore")]
@@ -92,7 +92,7 @@ namespace HangFire.Tests
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}", queue));
 
-            CollectionAssert.DoesNotContain(jobIds, JobSteps.DefaultJobId);
+            Assert.DoesNotContain(JobSteps.DefaultJobId, jobIds);
         }
 
         [Then(@"the '(.+)' queue should be empty")]
@@ -100,7 +100,8 @@ namespace HangFire.Tests
         {
             var length = Redis.Client.GetListCount(
                 String.Format("hangfire:queue:{0}", queue));
-            Assert.AreEqual(0, length);
+
+            Assert.Equal(0, length);
         }
 
         [Then(@"the '(.+)' queue length should be (\d+)")]
@@ -108,7 +109,8 @@ namespace HangFire.Tests
         {
             var actualLength = Redis.Client.GetListCount(
                 String.Format("hangfire:queue:{0}", queue));
-            Assert.AreEqual(length, actualLength);
+
+            Assert.Equal(length, actualLength);
         }
     }
 }

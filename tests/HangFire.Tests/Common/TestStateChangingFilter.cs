@@ -2,7 +2,7 @@
 using HangFire.Common.States;
 using HangFire.Filters;
 using HangFire.States;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -21,7 +21,7 @@ namespace HangFire.Tests
 
         public void OnStateChanging(StateChangingContext context)
         {
-            Assert.IsNotNull(context);
+            Assert.NotNull(context);
 
             _results.Add(_name);
 

@@ -3,23 +3,21 @@ using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Storage;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ServiceStack.Redis;
+using Xunit;
 
 namespace HangFire.Tests.Client
 {
-    [TestClass]
     public class JobClientTests
     {
-        private JobClient _client;
-        private Mock<IStorageConnection> _connectionMock;
-        private Mock<JobCreator> _creatorMock;
-        private Mock<JobState> _stateMock;
-        private JobMethod _method;
+        private readonly JobClient _client;
+        private readonly Mock<IStorageConnection> _connectionMock;
+        private readonly Mock<JobCreator> _creatorMock;
+        private readonly Mock<JobState> _stateMock;
+        private readonly JobMethod _method;
 
-        [TestInitialize]
-        public void Initialize()
+        public JobClientTests()
         {
             _connectionMock = new Mock<IStorageConnection>();
             _connectionMock.Setup(x => x.Storage).Returns(new Mock<JobStorage>().Object);
@@ -30,46 +28,42 @@ namespace HangFire.Tests.Client
             _method = new JobMethod(typeof(JobClientTests), typeof(JobClientTests).GetMethod("Method"));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void Ctor_ThrowsAnException_WhenClientManagerIsNull()
         {
-// ReSharper disable ObjectCreationAsStatement
-            new JobClient(null, _creatorMock.Object);
-// ReSharper restore ObjectCreationAsStatement
+            Assert.Throws<ArgumentNullException>(
+                () => new JobClient(null, _creatorMock.Object));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [Fact]
         public void Ctor_ThrowsAnException_WhenJobCreatorIsNull()
         {
-// ReSharper disable ObjectCreationAsStatement
-            new JobClient(_connectionMock.Object, null);
-// ReSharper restore ObjectCreationAsStatement
+            Assert.Throws<ArgumentNullException>(
+                () => new JobClient(_connectionMock.Object, null));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void CreateJob_ThrowsAnException_WhenJobMethodIsNull()
         {
-            _client.CreateJob(null, new string[0], _stateMock.Object);
+            Assert.Throws<ArgumentNullException>(
+                () => _client.CreateJob(null, new string[0], _stateMock.Object));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void CreateJob_ThrowsAnException_WhenArgumentsIsNull()
         {
-            _client.CreateJob(_method, null, _stateMock.Object);
+            Assert.Throws<ArgumentNullException>(
+                () => _client.CreateJob(_method, null, _stateMock.Object));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void CreateJob_ThrowsAnException_WhenStateIsNull()
         {
-            _client.CreateJob(_method, new string[0], null);
+            Assert.Throws<ArgumentNullException>(
+                () => _client.CreateJob(_method, new string[0], null));
         }
 
-        [TestMethod]
+        [Fact]
         public void CreateJob_CallsCreate_WithCorrectContext()
         {
             _client.CreateJob(_method, new[] { "hello", "3" }, _stateMock.Object);

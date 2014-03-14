@@ -4,8 +4,8 @@ using HangFire.Redis;
 using HangFire.Redis.Components;
 using HangFire.Server;
 using HangFire.Server.Components;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -48,7 +48,7 @@ namespace HangFire.Tests
         [Then(@"the schedule should not contain it anymore")]
         public void ThenTheScheduleDoesNotContainItAnymore()
         {
-            Assert.IsFalse(Redis.Client.SortedSetContainsItem(
+            Assert.False(Redis.Client.SortedSetContainsItem(
                 "hangfire:schedule",
                 JobSteps.DefaultJobId));
         }
@@ -56,7 +56,7 @@ namespace HangFire.Tests
         [Then(@"the schedule should contain the job")]
         public void ThenTheScheduleContainsTheJob()
         {
-            Assert.IsTrue(Redis.Client.SortedSetContainsItem(
+            Assert.True(Redis.Client.SortedSetContainsItem(
                 "hangfire:schedule",
                 JobSteps.DefaultJobId));
         }
@@ -64,7 +64,7 @@ namespace HangFire.Tests
         [Then(@"schedule poller should return '(.+)'")]
         public void ThenTheSchedulePollerReturns(bool result)
         {
-            Assert.AreEqual(result, _pollerResult);
+            Assert.Equal(result, _pollerResult);
         }
     }
 }

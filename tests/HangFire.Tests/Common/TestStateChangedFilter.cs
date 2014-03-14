@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using HangFire.Common.States;
 using HangFire.Filters;
 using HangFire.States;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -20,14 +20,14 @@ namespace HangFire.Tests
 
         public void OnStateApplied(StateApplyingContext context)
         {
-            Assert.IsNotNull(context);
+            Assert.NotNull(context);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateApplied"));
         }
 
         public void OnStateUnapplied(StateApplyingContext context)
         {
-            Assert.IsNotNull(context);
+            Assert.NotNull(context);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateUnapplied"));
         }

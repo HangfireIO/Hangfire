@@ -2,8 +2,8 @@
 using HangFire.Common;
 using HangFire.Redis.Components;
 using HangFire.Server;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -52,10 +52,10 @@ namespace HangFire.Tests
                 String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
                 "Checked");
 
-            Assert.IsNotNull(checkedTimestamp);
+            Assert.NotNull(checkedTimestamp);
             var date = JobHelper.FromStringTimestamp(checkedTimestamp);
 
-            Assert.IsTrue(date > DateTime.UtcNow.AddMinutes(-1));
+            Assert.True(date > DateTime.UtcNow.AddMinutes(-1));
         }
 
         [Then(@"the job should have the 'checked' flag set")]
@@ -65,7 +65,7 @@ namespace HangFire.Tests
                 String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
                 "Checked");
 
-            Assert.IsNotNull(checkedTimestamp);
+            Assert.NotNull(checkedTimestamp);
         }
 
         [Then(@"the job should not have the 'checked' flag set")]
@@ -75,7 +75,7 @@ namespace HangFire.Tests
                 String.Format("hangfire:job:{0}", JobSteps.DefaultJobId),
                 "Checked");
 
-            Assert.IsNull(checkedTimestamp);
+            Assert.Null(checkedTimestamp);
         }
 
         [Then(@"the job should have the 'fetched' flag set")]
@@ -84,7 +84,7 @@ namespace HangFire.Tests
             var fetchedTimestamp = Redis.Client.GetValueFromHash(
                 String.Format("hangfire:job:{0}", JobSteps.DefaultJobId), "Fetched");
 
-            Assert.IsNotNull(fetchedTimestamp);
+            Assert.NotNull(fetchedTimestamp);
         }
 
         [Then(@"the job should not have the 'fetched' flag set")]
@@ -93,7 +93,7 @@ namespace HangFire.Tests
             var fetchedTimestamp = Redis.Client.GetValueFromHash(
                 String.Format("hangfire:job:{0}", JobSteps.DefaultJobId), "Fetched");
 
-            Assert.IsNull(fetchedTimestamp);
+            Assert.Null(fetchedTimestamp);
         }
     }
 }

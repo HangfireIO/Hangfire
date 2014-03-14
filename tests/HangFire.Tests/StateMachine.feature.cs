@@ -18,8 +18,7 @@ namespace HangFire.Tests
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "1.9.0.77")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [Microsoft.VisualStudio.TestTools.UnitTesting.TestClassAttribute()]
-    public partial class StateMachineFeature
+    public partial class StateMachineFeature : Xunit.IUseFixture<StateMachineFeature.FixtureData>, System.IDisposable
     {
         
         private static TechTalk.SpecFlow.ITestRunner testRunner;
@@ -27,8 +26,12 @@ namespace HangFire.Tests
 #line 1 "StateMachine.feature"
 #line hidden
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.ClassInitializeAttribute()]
-        public static void FeatureSetup(Microsoft.VisualStudio.TestTools.UnitTesting.TestContext testContext)
+        public StateMachineFeature()
+        {
+            this.TestInitialize();
+        }
+        
+        public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "State machine", "", ProgrammingLanguage.CSharp, new string[] {
@@ -36,24 +39,16 @@ namespace HangFire.Tests
             testRunner.OnFeatureStart(featureInfo);
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.ClassCleanupAttribute()]
         public static void FeatureTearDown()
         {
             testRunner.OnFeatureEnd();
             testRunner = null;
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestInitializeAttribute()]
         public virtual void TestInitialize()
         {
-            if (((TechTalk.SpecFlow.FeatureContext.Current != null) 
-                        && (TechTalk.SpecFlow.FeatureContext.Current.FeatureInfo.Title != "State machine")))
-            {
-                HangFire.Tests.StateMachineFeature.FeatureSetup(null);
-            }
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanupAttribute()]
         public virtual void ScenarioTearDown()
         {
             testRunner.OnScenarioEnd();
@@ -69,10 +64,18 @@ namespace HangFire.Tests
             testRunner.CollectScenarioErrors();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The state of the job should be changed")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        public virtual void SetFixture(StateMachineFeature.FixtureData fixtureData)
+        {
+        }
+        
+        void System.IDisposable.Dispose()
+        {
+            this.ScenarioTearDown();
+        }
+        
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "The state of the job should be changed")]
         public virtual void TheStateOfTheJobShouldBeChanged()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The state of the job should be changed", ((string[])(null)));
@@ -90,10 +93,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The new state should be applied")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "The new state should be applied")]
         public virtual void TheNewStateShouldBeApplied()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The new state should be applied", ((string[])(null)));
@@ -111,10 +113,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("An old state should be unapplied")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "An old state should be unapplied")]
         public virtual void AnOldStateShouldBeUnapplied()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("An old state should be unapplied", ((string[])(null)));
@@ -132,10 +133,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The state entry should contain the state name")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "The state entry should contain the state name")]
         public virtual void TheStateEntryShouldContainTheStateName()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The state entry should contain the state name", ((string[])(null)));
@@ -160,10 +160,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The job history should be appended")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "The job history should be appended")]
         public virtual void TheJobHistoryShouldBeAppended()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The job history should be appended", ((string[])(null)));
@@ -191,10 +190,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the job history record and the state entry should contain the state properties")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "the job history record and the state entry should contain the state properties")]
         public virtual void TheJobHistoryRecordAndTheStateEntryShouldContainTheStateProperties()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the job history record and the state entry should contain the state properties", ((string[])(null)));
@@ -224,10 +222,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the state should be changed to the Failed state when it could not find its type")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "the state should be changed to the Failed state when it could not find its type")]
         public virtual void TheStateShouldBeChangedToTheFailedStateWhenItCouldNotFindItsType()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the state should be changed to the Failed state when it could not find its type", ((string[])(null)));
@@ -245,11 +242,10 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("the state should not be changed if allowed current states array does not contain " +
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "the state should not be changed if allowed current states array does not contain " +
             "the current state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void TheStateShouldNotBeChangedIfAllowedCurrentStatesArrayDoesNotContainTheCurrentState()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("the state should not be changed if allowed current states array does not contain " +
@@ -273,10 +269,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State changing filters should be executed in the order they were defined")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "State changing filters should be executed in the order they were defined")]
         public virtual void StateChangingFiltersShouldBeExecutedInTheOrderTheyWereDefined()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State changing filters should be executed in the order they were defined", ((string[])(null)));
@@ -305,10 +300,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The state changing filters should be able to modify the state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "The state changing filters should be able to modify the state")]
         public virtual void TheStateChangingFiltersShouldBeAbleToModifyTheState()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The state changing filters should be able to modify the state", ((string[])(null)));
@@ -341,10 +335,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The job history should contain every changed state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "The job history should contain every changed state")]
         public virtual void TheJobHistoryShouldContainEveryChangedState()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The job history should contain every changed state", ((string[])(null)));
@@ -375,10 +368,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("The state of the unexisting job should not be changed")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "The state of the unexisting job should not be changed")]
         public virtual void TheStateOfTheUnexistingJobShouldNotBeChanged()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("The state of the unexisting job should not be changed", ((string[])(null)));
@@ -394,10 +386,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Changing filters are should not be executed for unexisting job")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "Changing filters are should not be executed for unexisting job")]
         public virtual void ChangingFiltersAreShouldNotBeExecutedForUnexistingJob()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Changing filters are should not be executed for unexisting job", ((string[])(null)));
@@ -415,11 +406,10 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("Changing filters should not be executed if the transition is not allowed for the " +
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "Changing filters should not be executed if the transition is not allowed for the " +
             "current state")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
         public virtual void ChangingFiltersShouldNotBeExecutedIfTheTransitionIsNotAllowedForTheCurrentState()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Changing filters should not be executed if the transition is not allowed for the " +
@@ -441,10 +431,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("State applied filters should be executed in the order they were defined")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "State applied filters should be executed in the order they were defined")]
         public virtual void StateAppliedFiltersShouldBeExecutedInTheOrderTheyWereDefined()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State applied filters should be executed in the order they were defined", ((string[])(null)));
@@ -477,10 +466,9 @@ this.ScenarioSetup(scenarioInfo);
             this.ScenarioCleanup();
         }
         
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethodAttribute()]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.DescriptionAttribute("OnStateUnapplied method should not be called when the state is empty")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestPropertyAttribute("FeatureTitle", "State machine")]
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategoryAttribute("redis")]
+        [Xunit.FactAttribute()]
+        [Xunit.TraitAttribute("FeatureTitle", "State machine")]
+        [Xunit.TraitAttribute("Description", "OnStateUnapplied method should not be called when the state is empty")]
         public virtual void OnStateUnappliedMethodShouldNotBeCalledWhenTheStateIsEmpty()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("OnStateUnapplied method should not be called when the state is empty", ((string[])(null)));
@@ -503,6 +491,22 @@ this.ScenarioSetup(scenarioInfo);
      testRunner.Then("state applied filter methods should be executed in the following order:", ((string)(null)), table8, "Then ");
 #line hidden
             this.ScenarioCleanup();
+        }
+        
+        [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "1.9.0.77")]
+        [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+        public class FixtureData : System.IDisposable
+        {
+            
+            public FixtureData()
+            {
+                StateMachineFeature.FeatureSetup();
+            }
+            
+            void System.IDisposable.Dispose()
+            {
+                StateMachineFeature.FeatureTearDown();
+            }
         }
     }
 }

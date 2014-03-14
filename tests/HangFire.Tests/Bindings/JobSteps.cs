@@ -4,8 +4,8 @@ using System.Linq;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -108,7 +108,7 @@ namespace HangFire.Tests
                 String.Format("hangfire:job:{0}", DefaultJobId),
                 "State");
 
-            Assert.AreEqual(state, jobState);
+            Assert.Equal(state, jobState);
         }
     }
 }

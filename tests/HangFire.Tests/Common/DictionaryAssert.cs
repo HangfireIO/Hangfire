@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using HangFire.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -15,34 +15,34 @@ namespace HangFire.Tests
                 var name = row["Name"];
                 var value = row["Value"];
 
-                Assert.IsTrue(actual.ContainsKey(name));
+                Assert.True(actual.ContainsKey(name));
                 if (value == "<UtcNow timestamp>")
                 {
                     var timestamp = JobHelper.FromStringTimestamp(actual[name]);
 
-                    Assert.IsTrue(
+                    Assert.True(
                         (timestamp > DateTime.UtcNow.AddSeconds(-1))
                         && (timestamp < DateTime.UtcNow.AddSeconds(1)));
                 }
                 else if (value == "<Tomorrow timestamp>")
                 {
                     var timestamp = JobHelper.FromStringTimestamp(actual[name]);
-                    Assert.IsTrue(
+                    Assert.True(
                         timestamp >= DateTime.UtcNow.Date.AddDays(1)
                         && timestamp < DateTime.UtcNow.Date.AddDays(2));
                 }
                 else if (value == "<Non-empty>")
                 {
-                    Assert.IsFalse(String.IsNullOrEmpty(actual[name]));
+                    Assert.False(String.IsNullOrEmpty(actual[name]));
                 }
                 else if (value.StartsWith("<Assembly qualified name of "))
                 {
                     var splitted = value.Split('\'');
-                    Assert.AreEqual(Type.GetType(splitted[1]).AssemblyQualifiedName, actual[name]);
+                    Assert.Equal(Type.GetType(splitted[1]).AssemblyQualifiedName, actual[name]);
                 }
                 else
                 {
-                    Assert.AreEqual(value, actual[name]);
+                    Assert.Equal(value, actual[name]);
                 }
             }
         }

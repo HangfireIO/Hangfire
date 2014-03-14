@@ -3,23 +3,22 @@ using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Xunit;
+using Xunit.Sdk;
 
 namespace HangFire.Tests
 {
-    [TestClass]
-    public class ClientApiTests
+    public class ClientApiTests : IDisposable
     {
-        private Mock<JobState> _stateMock;
+        private readonly Mock<JobState> _stateMock;
 
-        private Func<IJobClient> _oldClientFactory;
-        private Mock<IJobClient> _jobClientMock;
+        private readonly Func<IJobClient> _oldClientFactory;
+        private readonly Mock<IJobClient> _jobClientMock;
 
         #region Tests initialization & clean up logic
 
-        [TestInitialize]
-        public void SetUp()
+        public ClientApiTests()
         {
             GlobalLock.Acquire();
             _oldClientFactory = BackgroundJob.ClientFactory;
@@ -30,8 +29,7 @@ namespace HangFire.Tests
             _stateMock = new Mock<JobState>();
         }
 
-        [TestCleanup]
-        public void TearDown()
+        public void Dispose()
         {
             try
             {
@@ -45,7 +43,7 @@ namespace HangFire.Tests
 
         #endregion
 
-        [TestMethod]
+        [Fact]
         public void Create_InstanceExpression_ReturnIdentifierReturnedByClient()
         {
             _jobClientMock
@@ -57,10 +55,10 @@ namespace HangFire.Tests
 
             var id = BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
 
-            Assert.AreEqual("id", id);
+            Assert.Equal("id", id);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_StaticExpression_ReturnsIdentifierFromReturnedByClient()
         {
             _jobClientMock
@@ -72,10 +70,10 @@ namespace HangFire.Tests
 
             var id = BackgroundJob.Create(() => TestService.StaticMethod(), _stateMock.Object);
 
-            Assert.AreEqual("id", id);
+            Assert.Equal("id", id);
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_PassesState_ToClient()
         {
             BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
@@ -86,7 +84,7 @@ namespace HangFire.Tests
                 It.Is<JobState>(x => x == _stateMock.Object)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_StaticExpression_CorrectlyDeterminesTypeAndMethod()
         {
             BackgroundJob.Create(() => TestService.StaticMethod(), _stateMock.Object);
@@ -97,7 +95,7 @@ namespace HangFire.Tests
                 It.IsAny<JobState>()));
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_InstanceExpression_CorrectlyDeterminesTypeAndMethod()
         {
             BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
@@ -108,7 +106,7 @@ namespace HangFire.Tests
                 It.IsAny<JobState>()));
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_InstanceExpression_WithInterface_CorrectlyDeterminesTypeAndMethod()
         {
             BackgroundJob.Create<IService>(x => x.Method(), _stateMock.Object);
@@ -119,7 +117,7 @@ namespace HangFire.Tests
                 It.IsAny<JobState>()));
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_InstanceExpression_PassesSpecifiedTypeToClient_NotTheDeclaringOne()
         {
             BackgroundJob.Create<DerivedTestService>(x => x.InstanceMethod(), _stateMock.Object);
@@ -130,7 +128,7 @@ namespace HangFire.Tests
                 It.IsAny<JobState>()));
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_StaticExpression_PassesDeclaringType_ToClient()
         {
             BackgroundJob.Enqueue(() => DerivedTestService.StaticMethod());
@@ -141,7 +139,7 @@ namespace HangFire.Tests
                 It.IsAny<JobState>()));
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_InstanceExpression_PassesParameterValuesAndTheirTypes_ToClient()
         {
             BackgroundJob.Create<TestService>(x => x.InstanceMethod("Hello"), _stateMock.Object);
@@ -152,7 +150,7 @@ namespace HangFire.Tests
                 It.IsAny<JobState>()));
         }
 
-        [TestMethod]
+        [Fact]
         public void Create_StaticExpression_PassesParameterValuesAndTheirTypes_ToClient()
         {
             BackgroundJob.Create(() => TestService.StaticMethod(34), _stateMock.Object);
@@ -163,27 +161,25 @@ namespace HangFire.Tests
                 It.IsAny<JobState>()));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void Create_PassingParametersByReference_IsNotAllowed()
         {
             int a = 10;
-            BackgroundJob.Create<DerivedTestService>(x => x.InstanceMethod(ref a), _stateMock.Object);
 
-            Assert.Inconclusive("Move to JobClient tests");
+            Assert.Throws<ArgumentException>(
+                () => BackgroundJob.Create<DerivedTestService>(x => x.InstanceMethod(ref a), _stateMock.Object));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void Create_PassingOutputParameters_IsNotAllowed()
         {
             int a;
-            BackgroundJob.Enqueue<DerivedTestService>(x => x.OutMethod(out a));
 
-            Assert.Inconclusive("Move to JobClient tests");
+            Assert.Throws<ArgumentException>(
+                () => BackgroundJob.Enqueue<DerivedTestService>(x => x.OutMethod(out a)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Enqueue_InstanceExpression_PassesEnqueuedState_ToClient()
         {
             BackgroundJob.Enqueue<TestService>(x => x.InstanceMethod());
@@ -194,7 +190,7 @@ namespace HangFire.Tests
                 It.Is<JobState>(x => x is EnqueuedState)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Enqueue_StaticExpression_PassesEnqueuedState_ToClient()
         {
             BackgroundJob.Enqueue(() => TestService.StaticMethod());
@@ -205,7 +201,7 @@ namespace HangFire.Tests
                 It.Is<JobState>(x => x is EnqueuedState)));
         }
 
-        [TestMethod]
+        [Fact]
         public void Schedule_InstanceExpression_PassesCorrectScheduledState_ToClient()
         {
             BackgroundJob.Schedule<TestService>(x => x.InstanceMethod(), TimeSpan.FromHours(5));
@@ -220,7 +216,7 @@ namespace HangFire.Tests
                     && ((ScheduledState)y).EnqueueAt < DateTime.UtcNow.AddHours(6))));
         }
 
-        [TestMethod]
+        [Fact]
         public void Schedule_StaticExpression_PassesCorrectScheduledState_ToClient()
         {
             BackgroundJob.Schedule(() => TestService.StaticMethod(), TimeSpan.FromHours(5));
@@ -235,11 +231,11 @@ namespace HangFire.Tests
                     && ((ScheduledState)y).EnqueueAt < DateTime.UtcNow.AddHours(6))));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void ClientFactory_Set_ExceptionIsThrownWhenTheValueIsNull()
         {
-            BackgroundJob.ClientFactory = null;
+            Assert.Throws<ArgumentNullException>(
+                () => BackgroundJob.ClientFactory = null);
         }
 
         public class TestService

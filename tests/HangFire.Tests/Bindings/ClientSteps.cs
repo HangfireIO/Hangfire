@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using HangFire.Client;
 using HangFire.Common;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -27,11 +27,11 @@ namespace HangFire.Tests
         public void ThenTheArgumentlessJobShouldBeCreated(string type)
         {
             var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", _jobId));
-            Assert.AreNotEqual(0, job.Count);
-            Assert.IsTrue(job["Type"].Contains(type));
+            Assert.NotEqual(0, job.Count);
+            Assert.True(job["Type"].Contains(type));
 
             var args = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]);
-            Assert.AreEqual(0, args.Count);
+            Assert.Equal(0, args.Count);
         }
 
         [Then(@"it should be enqueued to the default queue")]
@@ -46,41 +46,41 @@ namespace HangFire.Tests
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}", name));
 
-            Assert.AreEqual(1, jobIds.Count);
-            Assert.AreEqual(_jobId, jobIds[0]);
+            Assert.Equal(1, jobIds.Count);
+            Assert.Equal(_jobId, jobIds[0]);
         }
 
         [Then(@"it should be scheduled for tomorrow")]
         public void ThenItShouldBeScheduledForTomorrow()
         {
-            Assert.IsTrue(Redis.Client.SortedSetContainsItem("hangfire:schedule", _jobId));
+            Assert.True(Redis.Client.SortedSetContainsItem("hangfire:schedule", _jobId));
             var score = Redis.Client.GetItemScoreInSortedSet("hangfire:schedule", _jobId);
             var timestamp = JobHelper.FromTimestamp((long) score);
 
-            Assert.IsTrue(DateTime.UtcNow.Date.AddDays(1) <= timestamp);
-            Assert.IsTrue(timestamp < DateTime.UtcNow.Date.AddDays(2));
+            Assert.True(DateTime.UtcNow.Date.AddDays(1) <= timestamp);
+            Assert.True(timestamp < DateTime.UtcNow.Date.AddDays(2));
         }
 
         [Then(@"a '(.+)' should be thrown")]
         public void AnExceptionShouldBeThrown(string exceptionType)
         {
-            Assert.IsNotNull(_exception);
-            Assert.IsInstanceOfType(_exception, Type.GetType(exceptionType, true));
+            Assert.NotNull(_exception);
+            Assert.Equal(_exception.GetType(), Type.GetType(exceptionType, true));
         }
 
         [Then(@"a CreateJobFailedException should be thrown")]
         public void ACreateJobFailedExceptionShouldBeThrown()
         {
-            Assert.IsNotNull(_exception);
-            Assert.IsInstanceOfType(_exception, typeof(CreateJobFailedException));
+            Assert.NotNull(_exception);
+            Assert.Equal(_exception.GetType(), typeof(CreateJobFailedException));
         }
 
         [Then(@"the '(\w+)' should be created with the following arguments:")]
         public void ThenTheJobShouldBeCreatedWithTheFollowingArguments(string type, Table table)
         {
             var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", _jobId));
-            Assert.AreNotEqual(0, job.Count);
-            Assert.IsTrue(job["Type"].Contains(type));
+            Assert.NotEqual(0, job.Count);
+            Assert.True(job["Type"].Contains(type));
 
             var args = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]);
             DictionaryAssert.ContainsFollowingItems(table, args);

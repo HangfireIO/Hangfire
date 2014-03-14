@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using HangFire.Redis;
 using HangFire.Server;
 using HangFire.Storage;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -79,23 +79,22 @@ namespace HangFire.Tests
         [Then(@"the fetcher should return the payload")]
         public void ThenTheFetcherReturnsTheJob()
         {
-            Assert.IsNotNull(_job);
-            Assert.AreEqual(JobSteps.DefaultJobId, _job.Id);
-            
+            Assert.NotNull(_job);
+            Assert.Equal(JobSteps.DefaultJobId, _job.Id);
         }
 
 
         [Then(@"the fetcher should return the '(.+)' job")]
         public void ThenTheFetcherReturnsTheJob(string jobId)
         {
-            Assert.AreEqual(jobId, _job.Id);
+            Assert.Equal(jobId, _job.Id);
         }
 
         [Then(@"the fetcher should not return any job")]
         public void ThenTheFetcherDoesNotReturnAnyJob()
         {
-            Assert.IsNotNull(_exception);
-            Assert.AreEqual(typeof(OperationCanceledException).Name, _exception.GetType().Name);
+            Assert.NotNull(_exception);
+            Assert.Equal(typeof(OperationCanceledException).Name, _exception.GetType().Name);
         }
 
         [Then(@"all queues should be empty")]

@@ -53,6 +53,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2
 		content\web.config.transform = content\web.config.transform
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Core.Tests", "tests\HangFire.Core.Tests\HangFire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E13C3543-39A3-475C-BB43-2E311E634843}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E13C3543-39A3-475C-BB43-2E311E634843}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E13C3543-39A3-475C-BB43-2E311E634843}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E13C3543-39A3-475C-BB43-2E311E634843}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,5 +101,6 @@ Global
 		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{C02BB718-2AE4-434C-8668-C894FF663FCE} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{EA0966B1-F2C9-4C65-834D-962FD78268F7} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
+		{E13C3543-39A3-475C-BB43-2E311E634843} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 	EndGlobalSection
 EndGlobal

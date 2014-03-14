@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using HangFire.Server;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -103,7 +103,7 @@ namespace HangFire.Tests
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));
 
-            CollectionAssert.Contains(jobIds, JobSteps.DefaultJobId);
+            Assert.Contains(JobSteps.DefaultJobId, jobIds);
         }
 
         [Then(@"it should be removed from the dequeued list")]
@@ -119,21 +119,21 @@ namespace HangFire.Tests
             var jobIds = Redis.Client.GetAllItemsFromList(
                 String.Format("hangfire:queue:{0}:dequeued", QueueSteps.DefaultQueue));
 
-            CollectionAssert.DoesNotContain(jobIds, jobId);
+            Assert.DoesNotContain(jobId, jobIds);
         }
 
         [Then(@"the servers set should contain the '(\w+)' server")]
         public void ThenTheServersSetShouldContainTheServer(string name)
         {
             Thread.Sleep(_serverStartupTimeout);
-            Assert.IsTrue(Redis.Client.SetContainsItem("hangfire:servers", name));
+            Assert.True(Redis.Client.SetContainsItem("hangfire:servers", name));
         }
 
         [Then(@"the servers set should not contain the '(\w+)' server")]
         public void ThenTheServersSetShouldNotContainTheServer(string name)
         {
             Thread.Sleep(_serverStartupTimeout);
-            Assert.IsFalse(Redis.Client.SetContainsItem("hangfire:servers", name));
+            Assert.False(Redis.Client.SetContainsItem("hangfire:servers", name));
         }
 
         [Then(@"the '(\w+)' server's properties should contain the following items:")]
@@ -148,21 +148,21 @@ namespace HangFire.Tests
         {
             var registeredQueues = Redis.Client.GetAllItemsFromList(String.Format("hangfire:server:{0}:queues", name));
 
-            Assert.AreEqual(2, registeredQueues.Count);
-            Assert.AreEqual(queue1, registeredQueues[0]);
-            Assert.AreEqual(queue2, registeredQueues[1]);
+            Assert.Equal(2, registeredQueues.Count);
+            Assert.Equal(queue1, registeredQueues[0]);
+            Assert.Equal(queue2, registeredQueues[1]);
         }
 
         [Then(@"the storage should not contain an entry for the '(\w+)' server properties")]
         public void ThenTheStorageShouldNotContainAnEntryForTheServerProperties(string name)
         {
-            Assert.IsFalse(Redis.Client.ContainsKey(String.Format("hangfire:server:{0}", name)));
+            Assert.False(Redis.Client.ContainsKey(String.Format("hangfire:server:{0}", name)));
         }
 
         [Then(@"the storage should not contain an entry for the '(\w+)' server queues")]
         public void ThenTheStorageShouldNotContainAnEntryForTheServerQueues(string name)
         {
-            Assert.IsFalse(Redis.Client.ContainsKey(String.Format("hangfire:server:{0}:queues", name)));
+            Assert.False(Redis.Client.ContainsKey(String.Format("hangfire:server:{0}:queues", name)));
         }
     }
 }

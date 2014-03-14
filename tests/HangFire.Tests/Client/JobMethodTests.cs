@@ -4,53 +4,46 @@ using System.Linq;
 using HangFire.Common;
 using HangFire.Common.Filters;
 using HangFire.Storage;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace HangFire.Tests.Client
 {
-    [TestClass]
     public class JobMethodTests
     {
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
-// ReSharper disable ObjectCreationAsStatement
-            new JobMethod(null, typeof (TestJob).GetMethod("Perform"));
-// ReSharper restore ObjectCreationAsStatement
+            Assert.Throws<ArgumentNullException>(
+                () => new JobMethod(null, typeof (TestJob).GetMethod("Perform")));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
+        [Fact]
         public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
         {
-// ReSharper disable ObjectCreationAsStatement
-            new JobMethod(typeof (TestJob), null);
-// ReSharper restore ObjectCreationAsStatement
+            Assert.Throws<ArgumentNullException>(
+                () => new JobMethod(typeof (TestJob), null));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeDoesNotContainTheGivenMethod()
         {
-// ReSharper disable ObjectCreationAsStatement
-            new JobMethod(typeof (JobMethod), typeof (TestJob).GetMethod("Perform"));
-// ReSharper restore ObjectCreationAsStatement
+            Assert.Throws<ArgumentException>(
+                () => new JobMethod(typeof (JobMethod), typeof (TestJob).GetMethod("Perform")));
         }
 
-        [TestMethod]
+        [Fact]
         public void Ctor_CorrectlySets_PropertyValues()
         {
             var type = typeof (TestJob);
             var methodInfo = type.GetMethod("Perform");
             var method = new JobMethod(type, methodInfo);
 
-            Assert.AreEqual(type, method.Type);
-            Assert.AreEqual(methodInfo, method.Method);
-            Assert.IsFalse(method.OldFormat);
+            Assert.Equal(type, method.Type);
+            Assert.Equal(methodInfo, method.Method);
+            Assert.False(method.OldFormat);
         }
 
-        [TestMethod]
+        [Fact]
         public void Deserialize_CorrectlyDeserializes_AllTheData()
         {
             var type = typeof(TestJob);
@@ -64,28 +57,28 @@ namespace HangFire.Tests.Client
 
             var method = JobMethod.Deserialize(serializedData);
 
-            Assert.AreEqual(type, method.Type);
-            Assert.AreEqual(methodInfo, method.Method);
-            Assert.IsFalse(method.OldFormat);
+            Assert.Equal(type, method.Type);
+            Assert.Equal(methodInfo, method.Method);
+            Assert.False(method.OldFormat);
         }
 
-        [TestMethod]
-        [ExpectedException(typeof (ArgumentNullException))]
+        [Fact]
         public void Deserialize_ThrowsAnException_WhenSerializedDataIsNull()
         {
-            JobMethod.Deserialize(null);
+            Assert.Throws<ArgumentNullException>(
+                () => JobMethod.Deserialize(null));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(JobLoadException))]
+        [Fact]
         public void Deserialize_WrapsAnException_WithTheJobLoadException()
         {
             var serializedData = new InvocationData();
-            JobMethod.Deserialize(serializedData);
+
+            Assert.Throws<JobLoadException>(
+                () => JobMethod.Deserialize(serializedData));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof (JobLoadException))]
+        [Fact]
         public void Deserialize_ThrowsAnException_WhenTypeCanNotBeFound()
         {
             var serializedData = new InvocationData
@@ -95,11 +88,11 @@ namespace HangFire.Tests.Client
                 ParameterTypes = "",
             };
 
-            JobMethod.Deserialize(serializedData);
+            Assert.Throws<JobLoadException>(
+                () => JobMethod.Deserialize(serializedData));
         }
 
-        [TestMethod]
-        [ExpectedException(typeof(JobLoadException))]
+        [Fact]
         public void Deserialize_ThrowsAnException_WhenMethodCanNotBeFound()
         {
             var serializedData = new InvocationData
@@ -109,35 +102,36 @@ namespace HangFire.Tests.Client
                 ParameterTypes = JobHelper.ToJson(new Type[0])
             };
 
-            JobMethod.Deserialize(serializedData);
+            Assert.Throws<JobLoadException>(
+                () => JobMethod.Deserialize(serializedData));
         }
 
-        [TestMethod]
+        [Fact]
         public void GetTypeFilterAttributes_ReturnsCorrectAttributes()
         {
             var method = GetCorrectMethod();
             var nonCachedAttributes = method.GetTypeFilterAttributes(false).ToArray();
             var cachedAttributes = method.GetTypeFilterAttributes(true).ToArray();
 
-            Assert.AreEqual(1, nonCachedAttributes.Length);
-            Assert.AreEqual(1, cachedAttributes.Length);
+            Assert.Equal(1, nonCachedAttributes.Length);
+            Assert.Equal(1, cachedAttributes.Length);
 
-            Assert.IsInstanceOfType(nonCachedAttributes[0], typeof(TestTypeAttribute));
-            Assert.IsInstanceOfType(cachedAttributes[1], typeof(TestTypeAttribute));
+            Assert.True(nonCachedAttributes[0] is TestTypeAttribute);
+            Assert.True(cachedAttributes[1] is TestTypeAttribute);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetMethodFilterAttributes_ReturnsCorrectAttributes()
         {
             var method = GetCorrectMethod();
             var nonCachedAttributes = method.GetMethodFilterAttributes(false).ToArray();
             var cachedAttributes = method.GetMethodFilterAttributes(true).ToArray();
             
-            Assert.AreEqual(1, nonCachedAttributes.Length);
-            Assert.AreEqual(1, cachedAttributes.Length);
+            Assert.Equal(1, nonCachedAttributes.Length);
+            Assert.Equal(1, cachedAttributes.Length);
 
-            Assert.IsInstanceOfType(nonCachedAttributes[0], typeof(TestMethodAttribute));
-            Assert.IsInstanceOfType(cachedAttributes[0], typeof(TestMethodAttribute));
+            Assert.True(nonCachedAttributes[0] is TestMethodAttribute);
+            Assert.True(cachedAttributes[0] is TestMethodAttribute);
         }
 
         private static JobMethod GetCorrectMethod()
@@ -149,7 +143,7 @@ namespace HangFire.Tests.Client
 
         #region Old Client API tests
 
-        [TestMethod]
+        [Fact]
         public void Deserialization_FromTheOldFormat_CorrectlySerializesBothTypeAndMethod()
         {
             var serializedData = new InvocationData
@@ -158,12 +152,12 @@ namespace HangFire.Tests.Client
             };
 
             var method = JobMethod.Deserialize(serializedData);
-            Assert.AreEqual(typeof(TestJob), method.Type);
-            Assert.AreEqual(typeof(TestJob).GetMethod("Perform"), method.Method);
-            Assert.IsTrue(method.OldFormat);
+            Assert.Equal(typeof(TestJob), method.Type);
+            Assert.Equal(typeof(TestJob).GetMethod("Perform"), method.Method);
+            Assert.True(method.OldFormat);
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializedData_IsNotBeingChanged_DuringTheDeserialization()
         {
             var serializedData = new InvocationData
@@ -172,7 +166,7 @@ namespace HangFire.Tests.Client
             };
 
             JobMethod.Deserialize(serializedData);
-            Assert.IsNull(serializedData.Method);
+            Assert.Null(serializedData.Method);
         }
 
         public class TestTypeAttribute : JobFilterAttribute

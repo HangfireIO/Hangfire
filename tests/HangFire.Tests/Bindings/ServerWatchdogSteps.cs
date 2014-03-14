@@ -2,8 +2,8 @@
 using HangFire.Common;
 using HangFire.Redis;
 using HangFire.Server.Components;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -63,8 +63,8 @@ namespace HangFire.Tests
         [Then(@"the server '(\w+)' should not be removed")]
         public void ThenTheServerShouldNotBeRemoved(string name)
         {
-            Assert.IsTrue(Redis.Client.SetContainsItem("hangfire:servers", name));
-            Assert.IsTrue(
+            Assert.True(Redis.Client.SetContainsItem("hangfire:servers", name));
+            Assert.True(
                 Redis.Client.ContainsKey(String.Format("hangfire:server:{0}", name)));
         }
 
@@ -77,8 +77,8 @@ namespace HangFire.Tests
         [Then(@"the server '(\w+)' should be removed")]
         public void ThenTheServerShouldBeRemoved(string name)
         {
-            Assert.IsFalse(Redis.Client.SetContainsItem("hangfire:servers", name));
-            Assert.IsFalse(
+            Assert.False(Redis.Client.SetContainsItem("hangfire:servers", name));
+            Assert.False(
                 Redis.Client.ContainsKey(String.Format("hangfire:server:{0}", name)));
         }
     }

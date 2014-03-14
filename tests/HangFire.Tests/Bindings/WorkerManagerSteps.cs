@@ -6,8 +6,8 @@ using HangFire.Common;
 using HangFire.Redis;
 using HangFire.Server;
 using HangFire.Server.Performing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -91,7 +91,7 @@ namespace HangFire.Tests
             _filters.Add(new TestExceptionFilter(name, _exceptionResults, true));
         }
 
-        [When(@"the manager processes the next job")]
+        /*[When(@"the manager processes the next job")]
         public void WhenTheWorkerPerformsTheJob()
         {
             var context = new ServerContext(
@@ -102,20 +102,19 @@ namespace HangFire.Tests
             using (var manager = new WorkerManager(Redis.Storage, context, 1))
             {
                 //manager.ProcessNextJob(new CancellationTokenSource().Token);
-                Assert.Inconclusive();
             }
-        }
+        }*/
 
         [Then(@"the job should be performed")]
         public void ThenTheJobShouldBePerformed()
         {
-            Assert.IsTrue(TestJob.Performed);
+            Assert.True(TestJob.Performed);
         }
 
         [Then(@"the job should not be performed")]
         public void ThenTheJobShouldNotBePerformed()
         {
-            Assert.IsFalse(TestJob.Performed);
+            Assert.False(TestJob.Performed);
         }
 
         [Then(@"there should be no performing actions")]
@@ -126,51 +125,51 @@ namespace HangFire.Tests
         [Then(@"the job should be disposed")]
         public void ThenTheJobShouldBeDisposed()
         {
-            Assert.IsTrue(TestJob.Disposed);
+            Assert.True(TestJob.Disposed);
         }
 
         [Then(@"only the following server filter methods should be executed:")]
         [Then(@"the server filter methods should be executed in the following order:")]
         public void ThenTheServerFilterMethodsShouldBeExecutedInTheFollowingOrder(Table table)
         {
-            Assert.AreEqual(table.RowCount, _serverResults.Count);
+            Assert.Equal(table.RowCount, _serverResults.Count);
 
             for (var i = 0; i < table.RowCount; i++)
             {
                 var method = table.Rows[i]["Method"];
-                Assert.AreEqual(method, _serverResults[i]);
+                Assert.Equal(method, _serverResults[i]);
             }
         }
 
         [Then("the server exception filter should be executed")]
         public void ThenTheClientFilterWasExecuted()
         {
-            Assert.AreNotEqual(0, _exceptionResults.Count);
+            Assert.NotEqual(0, _exceptionResults.Count);
         }
 
         [Then("the following server exception filters should be executed:")]
         [Then("the server exception filters should be executed in the following order:")]
         public void ThenTheClientExceptionFiltersWereExecuted(Table table)
         {
-            Assert.AreEqual(table.RowCount, _exceptionResults.Count);
+            Assert.Equal(table.RowCount, _exceptionResults.Count);
 
             for (var i = 0; i < table.RowCount; i++)
             {
                 var filter = table.Rows[i]["Filter"];
-                Assert.AreEqual(filter, _exceptionResults[i]);
+                Assert.Equal(filter, _exceptionResults[i]);
             }
         }
 
         [Then(@"the last ArticleId should be equal to (\d+)")]
         public void ThenTheLastArticleIdShouldBeEqualTo(int value)
         {
-            Assert.AreEqual(value, CustomJob.LastArticleId);
+            Assert.Equal(value, CustomJob.LastArticleId);
         }
 
         [Then(@"the last Author should be equal to '(.+)'")]
         public void ThenTheLastAuthorShouldBeEqualTo(string value)
         {
-            Assert.AreEqual(value, CustomJob.LastAuthor);
+            Assert.Equal(value, CustomJob.LastAuthor);
         }
 
         [Then(@"the '(\w+)' server filter got the actual values of the parameters")]
@@ -185,8 +184,8 @@ namespace HangFire.Tests
             var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", JobSteps.DefaultJobId));
             foreach (var parameter in _parameters)
             {
-                Assert.IsTrue(job.ContainsKey(parameter.Key));
-                Assert.AreEqual(parameter.Value, JobHelper.FromJson<string>(job[parameter.Key]));
+                Assert.True(job.ContainsKey(parameter.Key));
+                Assert.Equal(parameter.Value, JobHelper.FromJson<string>(job[parameter.Key]));
             }
         }
     }

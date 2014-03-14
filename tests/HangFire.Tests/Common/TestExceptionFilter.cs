@@ -4,7 +4,7 @@ using HangFire.Client.Filters;
 using HangFire.Filters;
 using HangFire.Server;
 using HangFire.Server.Filters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
 namespace HangFire.Tests
 {
@@ -24,7 +24,7 @@ namespace HangFire.Tests
 
         public void OnClientException(ClientExceptionContext filterContext)
         {
-            Assert.IsNotNull(filterContext);
+            Assert.NotNull(filterContext);
 
             _results.Add(_name);
 
@@ -36,7 +36,7 @@ namespace HangFire.Tests
 
         public void OnServerException(ServerExceptionContext filterContext)
         {
-            Assert.IsNotNull(filterContext);
+            Assert.NotNull(filterContext);
 
             _results.Add(_name);
 

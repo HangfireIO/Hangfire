@@ -8,10 +8,10 @@ using HangFire.Redis;
 using HangFire.Redis.DataTypes;
 using HangFire.States;
 using HangFire.Storage;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ServiceStack.Common.Extensions;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace HangFire.Tests.States
 {
@@ -103,7 +103,7 @@ namespace HangFire.Tests.States
                 .Returns(_stateProperties);
         }
 
-        [Given(@"a job in the 'Old' state with registered descriptor")]
+        /*[Given(@"a job in the 'Old' state with registered descriptor")]
         public void GivenAJobInTheStateWithRegisteredDescriptor()
         {
             Given("a job");
@@ -111,8 +111,7 @@ namespace HangFire.Tests.States
 
             _oldStateDescriptorMock = new Mock<JobStateHandler>();
             //_handlers.Add("Old", _oldStateDescriptorMock.Object);
-            Assert.Inconclusive("Rewrite");
-        }
+        }*/
 
         [Given(@"a state changing filter '([a-zA-Z]+)'")]
         public void GivenAStateChangingFilter(string name)
@@ -135,7 +134,7 @@ namespace HangFire.Tests.States
             _filters.Add(new TestStateChangedFilter(name, _stateAppliedResults));
         }
 
-        [When(@"I apply it")]
+        /*[When(@"I apply it")]
         public void WhenIApplyIt()
         {
             using (var transaction = 
@@ -146,19 +145,18 @@ namespace HangFire.Tests.States
                     transaction);
 
                 //_state.Apply(context);
-                Assert.Inconclusive("Re-write this test for the corresponding handler");
 
                 transaction.Commit();
             }
-        }
+        }*/
 
-        [When(@"after I unapply it")]
+        /*[When(@"after I unapply it")]
         public void WhenAfterIUnapplyIt()
         {
             using (var transaction =
                 new RedisWriteOnlyTransaction(Redis.Client.CreateTransaction()))
             {
-                /*if (StateMachine.Handlers.ContainsKey(_state.StateName))
+                if (StateMachine.Handlers.ContainsKey(_state.StateName))
                 {
                     var context = new StateApplyingContext(
                         new StateContext(JobSteps.DefaultJobId, _defaultData),
@@ -166,13 +164,11 @@ namespace HangFire.Tests.States
 
                     StateMachine.Handlers[_state.StateName]
                         .Unapply(context);
-                }*/
-
-                Assert.Inconclusive("Rewrite it.");
+                }
 
                 transaction.Commit();
             }
-        }
+        }*/
 
         [When(@"I change the state of the job")]
         public void WhenIApplyTheState()
@@ -211,7 +207,7 @@ namespace HangFire.Tests.States
         [Then(@"the state name should be equal to '(.+)'")]
         public void ThenTheStateNameIsEqualTo(string name)
         {
-            Assert.AreEqual(name, _state.StateName);
+            Assert.Equal(name, _state.StateName);
         }
 
         [Then(@"it should expire the job")]
@@ -227,16 +223,17 @@ namespace HangFire.Tests.States
             keys.ForEach(x =>
                 {
                     var ttl = Redis.Client.GetTimeToLive(x);
-                    Assert.IsTrue(
+                    Assert.True(
                         ttl.TotalSeconds > 0,
-                        "TTL for the '{0}' key is '{1}'", x, ttl);
+                        String.Format(
+                        "TTL for the '{0}' key is '{1}'", x, ttl));
                 });
         }
 
         [Then(@"it should (increase|decrease) the succeeded counter")]
         public void ThenItShouldIncreaseTheSucceededCounter(string changeType)
         {
-            Assert.AreEqual(
+            Assert.Equal(
                 changeType == "increase" ? "1" : "0",
                 Redis.Client.GetValue(String.Format("hangfire:stats:succeeded")));
         }
@@ -244,8 +241,8 @@ namespace HangFire.Tests.States
         [Then(@"the job should be added to the succeeded list")]
         public void ThenItShouldBeAddedToTheSucceededList()
         {
-            Assert.AreEqual(1, Redis.Client.GetListCount("hangfire:succeeded"));
-            Assert.AreEqual(JobSteps.DefaultJobId, Redis.Client.PopItemFromList(
+            Assert.Equal(1, Redis.Client.GetListCount("hangfire:succeeded"));
+            Assert.Equal(JobSteps.DefaultJobId, Redis.Client.PopItemFromList(
                 "hangfire:succeeded"));
         }
 
@@ -262,16 +259,16 @@ namespace HangFire.Tests.States
             keys.ForEach(x =>
             {
                 var ttl = Redis.Client.GetTimeToLive(x);
-                Assert.IsTrue(
+                Assert.True(
                     ttl.Seconds == -1,
-                    "TTL for the '{0}' key is '{1}'", x, ttl);
+                    String.Format("TTL for the '{0}' key is '{1}'", x, ttl));
             });
         }
 
         [Then(@"the job should be removed from the succeeded list")]
         public void ThenTheJobShouldBeRemovedFromTheSucceededList()
         {
-            Assert.AreEqual(0, Redis.Client.GetListCount("hangfire:succeeded"));
+            Assert.Equal(0, Redis.Client.GetListCount("hangfire:succeeded"));
         }
 
         [Then(@"properties table should contain the following items:")]
@@ -285,26 +282,26 @@ namespace HangFire.Tests.States
         [Then(@"the job should be added to the failed set")]
         public void ThenTheJobShouldBeAddedToTheFailedSet()
         {
-            Assert.AreEqual(1, Redis.Client.GetSortedSetCount("hangfire:failed"));
-            Assert.IsTrue(Redis.Client.SortedSetContainsItem("hangfire:failed", JobSteps.DefaultJobId));
+            Assert.Equal(1, Redis.Client.GetSortedSetCount("hangfire:failed"));
+            Assert.True(Redis.Client.SortedSetContainsItem("hangfire:failed", JobSteps.DefaultJobId));
         }
 
         [Then(@"the job should be removed from the failed set")]
         public void ThenTheJobShouldBeRemovedFromTheFailedSet()
         {
-            Assert.AreEqual(0, Redis.Client.GetSortedSetCount("hangfire:failed"));
+            Assert.Equal(0, Redis.Client.GetSortedSetCount("hangfire:failed"));
         }
 
         [Then(@"the processing set should contain the job")]
         public void ThenTheProcessingSetContainsTheJob()
         {
-            Assert.IsTrue(Redis.Client.SortedSetContainsItem("hangfire:processing", JobSteps.DefaultJobId));
+            Assert.True(Redis.Client.SortedSetContainsItem("hangfire:processing", JobSteps.DefaultJobId));
         }
 
         [Then(@"the processing set should not contain the job")]
         public void ThenTheProcessingSetDoesNotContainTheJob()
         {
-            Assert.IsFalse(Redis.Client.SortedSetContainsItem("hangfire:processing", JobSteps.DefaultJobId));
+            Assert.False(Redis.Client.SortedSetContainsItem("hangfire:processing", JobSteps.DefaultJobId));
         }
 
         [Then(@"processing timestamp should be set to UtcNow")]
@@ -313,38 +310,38 @@ namespace HangFire.Tests.States
             var score = Redis.Client.GetItemScoreInSortedSet("hangfire:processing", JobSteps.DefaultJobId);
             var timestamp = JobHelper.FromTimestamp((long)score);
 
-            Assert.IsTrue(timestamp > DateTime.UtcNow.AddSeconds(-1));
-            Assert.IsTrue(timestamp < DateTime.UtcNow.AddSeconds(1));
+            Assert.True(timestamp > DateTime.UtcNow.AddSeconds(-1));
+            Assert.True(timestamp < DateTime.UtcNow.AddSeconds(1));
         }
 
         [Then(@"the schedule should contain the job that will be enqueued tomorrow")]
         public void ThenTheScheduleContainsTheJobThatWillBeEnqueuedTomorrow()
         {
-            Assert.IsTrue(Redis.Client.SortedSetContainsItem("hangfire:schedule", JobSteps.DefaultJobId));
+            Assert.True(Redis.Client.SortedSetContainsItem("hangfire:schedule", JobSteps.DefaultJobId));
             var score = Redis.Client.GetItemScoreInSortedSet("hangfire:schedule", JobSteps.DefaultJobId);
             var timestamp = JobHelper.FromTimestamp((long) score);
 
-            Assert.IsTrue(timestamp >= DateTime.UtcNow.Date.AddDays(1));
-            Assert.IsTrue(timestamp < DateTime.UtcNow.Date.AddDays(2));
+            Assert.True(timestamp >= DateTime.UtcNow.Date.AddDays(1));
+            Assert.True(timestamp < DateTime.UtcNow.Date.AddDays(2));
         }
 
         [Then(@"the schedule should not contain the job")]
         public void ThenTheScheduleDoesNotContainTheJob()
         {
-            Assert.IsFalse(Redis.Client.SortedSetContainsItem("hangfire:schedule", JobSteps.DefaultJobId));
+            Assert.False(Redis.Client.SortedSetContainsItem("hangfire:schedule", JobSteps.DefaultJobId));
         }
 
         [Then(@"the '(.+)' queue should be added to the queues set")]
         public void ThenTheQueueWasAddedToTheQueuesSet(string queue)
         {
-            Assert.IsTrue(Redis.Client.SetContainsItem("hangfire:queues", queue));
+            Assert.True(Redis.Client.SetContainsItem("hangfire:queues", queue));
         }
 
         [Then(@"the job state should be changed to '(.+)'")]
         public void ThenTheJobStateIsChangedTo(string state)
         {
             var job = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:job:{0}", JobSteps.DefaultJobId));
-            Assert.AreEqual(state, job["State"]);
+            Assert.Equal(state, job["State"]);
         }
 
         [Then(@"the job's state entry should contain the following items:")]
@@ -360,31 +357,31 @@ namespace HangFire.Tests.States
         {
             var entry = Redis.Client.RemoveStartFromList(
                 String.Format("hangfire:job:{0}:history", JobSteps.DefaultJobId));
-            Assert.IsNotNull(entry);
+            Assert.NotNull(entry);
 
             var history = JobHelper.FromJson<Dictionary<string, string>>(entry);
-            Assert.IsNotNull(history, entry);
+            Assert.NotNull(history);
             
             DictionaryAssert.ContainsFollowingItems(table, history);
         }
 
-        [Then(@"the '(\w+)' state should be applied to the job")]
+        /*[Then(@"the '(\w+)' state should be applied to the job")]
         public void ThenApplyMethodHasCalled(string state)
         {
-            /*_stateMocks[state].Verify(
+            _stateMocks[state].Verify(
                 x => x.Apply(It.Is<StateApplyingContext>(y => y.JobId == JobSteps.DefaultJobId)), 
-                Times.Once);*/
-            Assert.Inconclusive("Re-write this test for the corresponding handler");
-        }
+                Times.Once);
+            Assert.True(false, "Re-write this test for the corresponding handler");
+        }*/
 
-        [Then(@"the '(\w+)' state should not be applied to the job")]
+        /*[Then(@"the '(\w+)' state should not be applied to the job")]
         public void ThenTheStateWasNotAppliedToTheJob(string state)
         {
-            /*_stateMocks[state].Verify(
+            _stateMocks[state].Verify(
                 x => x.Apply(It.IsAny<StateApplyingContext>()),
-                Times.Never);*/
-            Assert.Inconclusive("Re-write this test for the corresponding handler");
-        }
+                Times.Never);
+            Assert.True(false, "Re-write this test for the corresponding handler");
+        }*/
 
         [Then(@"the old state should be unapplied")]
         public void ThenTheOldStateWasUnapplied()
@@ -406,15 +403,15 @@ namespace HangFire.Tests.States
         {
             var entry = Redis.Client.RemoveStartFromList(
                 String.Format("hangfire:job:{0}:history", JobSteps.DefaultJobId));
-            Assert.IsNotNull(entry);
+            Assert.NotNull(entry);
 
             var history = JobHelper.FromJson<Dictionary<string, string>>(entry);
-            Assert.IsNotNull(history, entry);
+            Assert.NotNull(history);
 
             foreach (var property in _stateProperties)
             {
-                Assert.IsTrue(history.ContainsKey(property.Key));
-                Assert.AreEqual(property.Value, history[property.Key]);
+                Assert.True(history.ContainsKey(property.Key));
+                Assert.Equal(property.Value, history[property.Key]);
             }
         }
 
@@ -426,26 +423,26 @@ namespace HangFire.Tests.States
 
             foreach (var property in _stateProperties)
             {
-                Assert.IsTrue(stateEntry.ContainsKey(property.Key));
-                Assert.AreEqual(property.Value, stateEntry[property.Key]);
+                Assert.True(stateEntry.ContainsKey(property.Key));
+                Assert.Equal(property.Value, stateEntry[property.Key]);
             }
         }
 
         [Then(@"changing filters should be executed in the following order:")]
         public void ThenChangingFiltersWereExecutedInTheFollowingOrder(Table table)
         {
-            Assert.AreEqual(table.RowCount, _stateChangingResults.Count);
+            Assert.Equal(table.RowCount, _stateChangingResults.Count);
 
             for (var i = 0; i < table.RowCount; i++)
             {
-                Assert.AreEqual(table.Rows[i]["Filter"], _stateChangingResults[i]);
+                Assert.Equal(table.Rows[i]["Filter"], _stateChangingResults[i]);
             }
         }
 
         [Then(@"changing filters should not be executed")]
         public void ThenChangingFiltersWereNotExecuted()
         {
-            Assert.AreEqual(0, _stateChangingResults.Count);
+            Assert.Equal(0, _stateChangingResults.Count);
         }
 
         [Then(@"the history for the following states should be added:")]
@@ -457,18 +454,18 @@ namespace HangFire.Tests.States
 
             for (var i = 0; i < table.RowCount; i++)
             {
-                Assert.AreEqual(table.Rows[i]["State"], history[i]["State"]);
+                Assert.Equal(table.Rows[i]["State"], history[i]["State"]);
             }
         }
 
         [Then(@"state applied filter methods should be executed in the following order:")]
         public void ThenStateAppliedFilterMethodsWereExecutedInTheFollowingOrder(Table table)
         {
-            Assert.AreEqual(table.RowCount, _stateAppliedResults.Count);
+            Assert.Equal(table.RowCount, _stateAppliedResults.Count);
             
             for (var i = 0; i < table.RowCount; i++)
             {
-                Assert.AreEqual(table.Rows[i]["Method"], _stateAppliedResults[i]);
+                Assert.Equal(table.Rows[i]["Method"], _stateAppliedResults[i]);
             }
         }
     }
