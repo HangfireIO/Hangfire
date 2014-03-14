@@ -5,6 +5,7 @@ using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Redis;
+using HangFire.Redis.DataTypes;
 using HangFire.States;
 using HangFire.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -126,7 +127,7 @@ namespace HangFire.Tests.States
         public void WhenIApplyIt()
         {
             using (var transaction = 
-                new RedisAtomicWriteTransaction(Redis.Client.CreateTransaction()))
+                new RedisWriteOnlyTransaction(Redis.Client.CreateTransaction()))
             {
                 var context = new StateApplyingContext(
                     new StateContext(JobSteps.DefaultJobId, _defaultData),
@@ -143,7 +144,7 @@ namespace HangFire.Tests.States
         public void WhenAfterIUnapplyIt()
         {
             using (var transaction =
-                new RedisAtomicWriteTransaction(Redis.Client.CreateTransaction()))
+                new RedisWriteOnlyTransaction(Redis.Client.CreateTransaction()))
             {
                 /*if (StateMachine.Handlers.ContainsKey(_state.StateName))
                 {

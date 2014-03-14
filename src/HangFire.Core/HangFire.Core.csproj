@@ -121,13 +121,14 @@
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="States\GlobalStateHandlerCollection.cs" />
     <Compile Include="Storage\InvocationData.cs" />
-    <Compile Include="Storage\IStoredSets.cs" />
-    <Compile Include="Storage\IWriteableStoredCounters.cs" />
+    <Compile Include="Storage\IPersistentSet.cs" />
+    <Compile Include="Storage\IWriteOnlyPersistentCounter.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
     <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FailedJobDto.cs" />
     <Compile Include="Storage\Monitoring\JobDetailsDto.cs" />
+    <Compile Include="Storage\Monitoring\JobList.cs" />
     <Compile Include="Storage\Monitoring\ProcessingJobDto.cs" />
     <Compile Include="Storage\Monitoring\QueueWithTopEnqueuedJobsDto.cs" />
     <Compile Include="Storage\Monitoring\ScheduleDto.cs" />
@@ -167,14 +168,14 @@
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="Filters\StatisticsHistoryFilterAttribute.cs" />
-    <Compile Include="Storage\IAtomicWriteTransaction.cs" />
+    <Compile Include="Storage\IWriteOnlyTransaction.cs" />
     <Compile Include="Storage\IStorageConnection.cs" />
-    <Compile Include="Storage\IStoredJobs.cs" />
-    <Compile Include="Storage\IWriteableJobQueue.cs" />
-    <Compile Include="Storage\IWriteableStoredJobs.cs" />
-    <Compile Include="Storage\IWriteableStoredLists.cs" />
-    <Compile Include="Storage\IWriteableStoredSets.cs" />
-    <Compile Include="Storage\IWriteableStoredValues.cs" />
+    <Compile Include="Storage\IPersistentJob.cs" />
+    <Compile Include="Storage\IWriteOnlyPersistentQueue.cs" />
+    <Compile Include="Storage\IWriteOnlyPersistentJob.cs" />
+    <Compile Include="Storage\IWriteOnlyPersistentList.cs" />
+    <Compile Include="Storage\IWriteOnlyPersistentSet.cs" />
+    <Compile Include="Storage\IWriteOnlyPersistentValue.cs" />
     <Compile Include="Storage\StateAndInvocationData.cs" />
   </ItemGroup>
   <ItemGroup>

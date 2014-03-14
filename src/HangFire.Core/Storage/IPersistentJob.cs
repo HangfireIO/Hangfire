@@ -2,7 +2,7 @@ using HangFire.Server;
 
 namespace HangFire.Storage
 {
-    public interface IStoredJobs
+    public interface IPersistentJob
     {
         StateAndInvocationData GetStateAndInvocationData(string id);
         void SetParameter(string id, string name, string value);

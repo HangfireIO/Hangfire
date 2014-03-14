@@ -3,13 +3,13 @@ using System.Linq;
 using Dapper;
 using HangFire.Storage;
 
-namespace HangFire.SqlServer
+namespace HangFire.SqlServer.DataTypes
 {
-    internal class SqlStoredSets : IStoredSets
+    internal class SqlServerSet : IPersistentSet
     {
         private readonly SqlConnection _connection;
 
-        public SqlStoredSets(SqlConnection connection)
+        public SqlServerSet(SqlConnection connection)
         {
             _connection = connection;
         }

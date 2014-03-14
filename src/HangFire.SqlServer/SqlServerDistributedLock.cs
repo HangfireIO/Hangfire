@@ -6,7 +6,7 @@ using Dapper;
 
 namespace HangFire.SqlServer
 {
-    internal class SqlJobLock : IDisposable
+    internal class SqlServerDistributedLock : IDisposable
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(5);
         private const string LockMode = "Exclusive";
@@ -26,10 +26,13 @@ namespace HangFire.SqlServer
 
         private bool _completed;
 
-        public SqlJobLock(string jobId, SqlConnection connection)
+        public SqlServerDistributedLock(string resource, SqlConnection connection)
         {
+            if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
+            if (connection == null) throw new ArgumentNullException("connection");
+
+            _resource = resource;
             _connection = connection;
-            _resource = String.Format("HangFire:Job:{0}", jobId);
 
             var parameters = new DynamicParameters();
             parameters.Add("@Resource", _resource);
@@ -47,7 +50,7 @@ namespace HangFire.SqlServer
 
             if (lockResult < 0)
             {
-                throw new SqlServerApplicationLockException(
+                throw new SqlServerDistributedLockException(
                     String.Format(
                     "Could not place a lock on the resource '{0}': {1}.",
                     _resource,
@@ -77,7 +80,7 @@ namespace HangFire.SqlServer
 
             if (releaseResult < 0)
             {
-                throw new SqlServerApplicationLockException(
+                throw new SqlServerDistributedLockException(
                     String.Format(
                         "Could not release a lock on the resource '{0}': Server returned the '{1}' error.", 
                         _resource,

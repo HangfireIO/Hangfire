@@ -2,7 +2,7 @@
 
 namespace HangFire.Storage
 {
-    public interface IWriteableStoredCounters
+    public interface IWriteOnlyPersistentCounter
     {
         void Increment(string key);
         void Increment(string key, TimeSpan expireIn);

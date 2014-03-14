@@ -2,7 +2,7 @@
 
 namespace HangFire.Storage
 {
-    public interface IWriteableStoredValues
+    public interface IWriteOnlyPersistentValue
     {
         void Increment(string key);
         void Decrement(string key);

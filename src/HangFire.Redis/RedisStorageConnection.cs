@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Common;
+using HangFire.Redis.DataTypes;
 using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Redis;
@@ -16,8 +17,8 @@ namespace HangFire.Redis
         {
             _redis = redis;
             
-            Jobs = new RedisStoredJobs(redis);
-            Sets = new RedisStoredSets(redis);
+            Jobs = new RedisJob(redis);
+            Sets = new RedisSet(redis);
             Storage = storage;
         }
 
@@ -26,9 +27,9 @@ namespace HangFire.Redis
             _redis.Dispose();
         }
 
-        public IAtomicWriteTransaction CreateWriteTransaction()
+        public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new RedisAtomicWriteTransaction(_redis.CreateTransaction());
+            return new RedisWriteOnlyTransaction(_redis.CreateTransaction());
         }
 
         public IJobFetcher CreateFetcher(IEnumerable<string> queueNames)
@@ -43,8 +44,8 @@ namespace HangFire.Redis
                 TimeSpan.FromMinutes(1));
         }
 
-        public IStoredJobs Jobs { get; private set; }
-        public IStoredSets Sets { get; private set; }
+        public IPersistentJob Jobs { get; private set; }
+        public IPersistentSet Sets { get; private set; }
         public JobStorage Storage { get; private set; }
 
         public string CreateExpiredJob(

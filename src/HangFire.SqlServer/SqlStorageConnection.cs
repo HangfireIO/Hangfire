@@ -5,6 +5,7 @@ using System.Linq;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
+using HangFire.SqlServer.DataTypes;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
@@ -17,8 +18,8 @@ namespace HangFire.SqlServer
         public SqlStorageConnection(SqlServerStorage storage, SqlConnection connection)
         {
             _connection = connection;
-            Jobs = new SqlStoredJobs(_connection);
-            Sets = new SqlStoredSets(_connection);
+            Jobs = new SqlServerJob(_connection);
+            Sets = new SqlServerSet(_connection);
             Storage = storage;
         }
 
@@ -27,9 +28,9 @@ namespace HangFire.SqlServer
             _connection.Dispose();
         }
 
-        public IAtomicWriteTransaction CreateWriteTransaction()
+        public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlWriteTransaction(_connection);
+            return new SqlServerWriteOnlyTransaction(_connection);
         }
 
         public IJobFetcher CreateFetcher(IEnumerable<string> queueNames)
@@ -39,11 +40,13 @@ namespace HangFire.SqlServer
 
         public IDisposable AcquireJobLock(string jobId)
         {
-            return new SqlJobLock(jobId, _connection);
+            return new SqlServerDistributedLock(
+                String.Format("HangFire:Job:{0}", jobId), 
+                _connection);
         }
 
-        public IStoredJobs Jobs { get; private set; }
-        public IStoredSets Sets { get; private set; }
+        public IPersistentJob Jobs { get; private set; }
+        public IPersistentSet Sets { get; private set; }
         public JobStorage Storage { get; private set; }
 
         public string CreateExpiredJob(

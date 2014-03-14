@@ -13,6 +13,8 @@ namespace HangFire.Redis
 {
     public class RedisStorage : JobStorage
     {
+        internal static readonly string Prefix = "hangfire:";
+
         private readonly string _host;
         private readonly int _db;
 

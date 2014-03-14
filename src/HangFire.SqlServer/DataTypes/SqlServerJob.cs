@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
@@ -7,13 +6,13 @@ using HangFire.Server;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
-namespace HangFire.SqlServer
+namespace HangFire.SqlServer.DataTypes
 {
-    internal class SqlStoredJobs : IStoredJobs
+    internal class SqlServerJob : IPersistentJob
     {
         private readonly SqlConnection _connection;
 
-        public SqlStoredJobs(SqlConnection connection)
+        public SqlServerJob(SqlConnection connection)
         {
             _connection = connection;
         }

@@ -6,13 +6,13 @@ namespace HangFire.Storage
 {
     public interface IStorageConnection : IDisposable
     {
-        IAtomicWriteTransaction CreateWriteTransaction();
+        IWriteOnlyTransaction CreateWriteTransaction();
         IJobFetcher CreateFetcher(IEnumerable<string> queueNames);
 
         IDisposable AcquireJobLock(string jobId);
 
-        IStoredJobs Jobs { get; }
-        IStoredSets Sets { get; }
+        IPersistentJob Jobs { get; }
+        IPersistentSet Sets { get; }
         JobStorage Storage { get; }
 
         string CreateExpiredJob(

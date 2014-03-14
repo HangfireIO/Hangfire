@@ -1,6 +1,6 @@
 namespace HangFire.Storage
 {
-    public interface IWriteableStoredLists
+    public interface IWriteOnlyPersistentList
     {
         void AddToLeft(string key, string value);
         void Remove(string key, string value);

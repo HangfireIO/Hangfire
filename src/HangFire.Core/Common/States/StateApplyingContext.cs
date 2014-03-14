@@ -22,7 +22,7 @@ namespace HangFire.Common.States
     public class StateApplyingContext : StateContext
     {
         internal StateApplyingContext(
-            StateContext context, IAtomicWriteTransaction transaction)
+            StateContext context, IWriteOnlyTransaction transaction)
             : base(context)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
@@ -30,6 +30,6 @@ namespace HangFire.Common.States
             Transaction = transaction;
         }
 
-        public IAtomicWriteTransaction Transaction { get; private set; }
+        public IWriteOnlyTransaction Transaction { get; private set; }
     }
 }

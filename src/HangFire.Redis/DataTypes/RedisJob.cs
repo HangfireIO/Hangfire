@@ -1,17 +1,16 @@
 using System;
-using System.Collections.Generic;
 using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Redis;
 
-namespace HangFire.Redis
+namespace HangFire.Redis.DataTypes
 {
-    internal class RedisStoredJobs : IStoredJobs
+    internal class RedisJob : IPersistentJob
     {
         private const string Prefix = "hangfire:";
         private readonly IRedisClient _redis;
 
-        public RedisStoredJobs(IRedisClient redis)
+        public RedisJob(IRedisClient redis)
         {
             _redis = redis;
         }

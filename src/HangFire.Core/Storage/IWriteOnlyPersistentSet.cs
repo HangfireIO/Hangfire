@@ -1,6 +1,6 @@
 namespace HangFire.Storage
 {
-    public interface IWriteableStoredSets
+    public interface IWriteOnlyPersistentSet
     {
         void Add(string key, string value);
         void Add(string key, string value, double score);

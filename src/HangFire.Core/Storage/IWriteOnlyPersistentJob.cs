@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HangFire.Storage
 {
-    public interface IWriteableStoredJobs
+    public interface IWriteOnlyPersistentJob
     {
         void Expire(string jobId, TimeSpan expireIn);
         void Persist(string jobId);

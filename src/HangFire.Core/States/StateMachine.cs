@@ -257,7 +257,7 @@ namespace HangFire.States
         }
 
         private void AppendHistory(
-            IAtomicWriteTransaction transaction,
+            IWriteOnlyTransaction transaction,
             StateContext context, 
             JobState state, 
             bool appendToJob)
