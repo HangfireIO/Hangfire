@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using HangFire.Core.Tests;
 using HangFire.Server;
 using TechTalk.SpecFlow;
 using Xunit;
@@ -140,7 +141,7 @@ namespace HangFire.Tests
         public void ThenTheServersPropertiesShouldContainTheFollowingItems(string name, Table table)
         {
             var properties = Redis.Client.GetAllEntriesFromHash(String.Format("hangfire:server:{0}", name));
-            DictionaryAssert.ContainsFollowingItems(table, properties);
+            TableAssert.ContainsFollowingItems(table, properties);
         }
 
         [Then(@"the '(\w+)' server's queues list should contain queues (\w+), (\w+)")]

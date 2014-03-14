@@ -19,6 +19,8 @@
     <NuGetToolsPath>$(ProjectRoot)\.nuget</NuGetToolsPath>
     <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
+    <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
+    <XunitPath>$(ToolsPath)xunit\</XunitPath>
   </PropertyGroup>
 
   <Import Project="$(MSBuildProjectDirectory)\HangFire.versions.targets" />
@@ -46,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.Tests\HangFire.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.Core.Tests\HangFire.Core.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
   <ItemGroup>
@@ -63,6 +65,9 @@
   <Target Name="UpdateVersion">
     <RegexTransform Items="@(RegexTransform)" />
   </Target>
+
+  <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
+             TaskName="Xunit.Runner.MSBuild.xunit" />
   
   <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunUnitTests; BuildPackages">
   </Target>
@@ -88,6 +93,9 @@
   </Target>
 
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
+    <xunit Assembly="$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll"
+           Xml="$(TestResultsPath)\HangFire.Core.Tests.XunitResults.xml"
+           Verbose="true" />
   </Target>
 
   <Target Name="RunFunctionalTests" DependsOnTargets="BuildNetFunctionalTests">

@@ -275,6 +275,10 @@
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
       <Name>HangFire.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\HangFire.Core.Tests\HangFire.Core.Tests.csproj">
+      <Project>{e13c3543-39a3-475c-bb43-2e311e634843}</Project>
+      <Name>HangFire.Core.Tests</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

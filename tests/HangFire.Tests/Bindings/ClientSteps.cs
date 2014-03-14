@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using HangFire.Client;
 using HangFire.Common;
+using HangFire.Core.Tests;
 using TechTalk.SpecFlow;
 using Xunit;
 
@@ -83,7 +84,7 @@ namespace HangFire.Tests
             Assert.True(job["Type"].Contains(type));
 
             var args = JobHelper.FromJson<Dictionary<string, string>>(job["Args"]);
-            DictionaryAssert.ContainsFollowingItems(table, args);
+            TableAssert.ContainsFollowingItems(table, args);
         }
 
         [Then(@"the argumentless '(\w+)' should be added to the default queue")]

@@ -4,6 +4,7 @@ using System.Linq;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.Core.Tests;
 using HangFire.Redis;
 using HangFire.States;
 using Moq;
@@ -135,7 +136,7 @@ namespace HangFire.Tests
         public void ThenItHasTheFollowingParameters(Table table)
         {
             var job = Redis.Client.GetAllEntriesFromHash("hangfire:job:" + JobSteps.DefaultJobId);
-            DictionaryAssert.ContainsFollowingItems(table, job);
+            TableAssert.ContainsFollowingItems(table, job);
         }
 
         [Then("the job should contain all of the above arguments in the JSON format")]

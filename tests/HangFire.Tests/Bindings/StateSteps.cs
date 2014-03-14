@@ -4,6 +4,7 @@ using System.Linq;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.Core.Tests;
 using HangFire.Redis;
 using HangFire.Redis.DataTypes;
 using HangFire.States;
@@ -274,7 +275,7 @@ namespace HangFire.Tests.States
         [Then(@"properties table should contain the following items:")]
         public void ThenPropertiesTableContainsTheFollowingItems(Table table)
         {
-            DictionaryAssert.ContainsFollowingItems(
+            TableAssert.ContainsFollowingItems(
                 table,
                 _state.GetProperties(_defaultData));
         }
@@ -349,7 +350,7 @@ namespace HangFire.Tests.States
         {
             var stateEntry = Redis.Client.GetAllEntriesFromHash(
                 String.Format("hangfire:job:{0}:state", JobSteps.DefaultJobId));
-            DictionaryAssert.ContainsFollowingItems(table, stateEntry);
+            TableAssert.ContainsFollowingItems(table, stateEntry);
         }
 
         [Then(@"the last history entry should contain the following items:")]
@@ -362,7 +363,7 @@ namespace HangFire.Tests.States
             var history = JobHelper.FromJson<Dictionary<string, string>>(entry);
             Assert.NotNull(history);
             
-            DictionaryAssert.ContainsFollowingItems(table, history);
+            TableAssert.ContainsFollowingItems(table, history);
         }
 
         /*[Then(@"the '(\w+)' state should be applied to the job")]
