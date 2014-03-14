@@ -1,4 +1,5 @@
 ﻿using HangFire;
+using HangFire.Redis;
 using HangFire.SqlServer;
 using HangFire.Web;
 
@@ -33,7 +34,7 @@ namespace MvcSample
             // Install-Package HangFire.Redis
             //
             // Then, uncomment the line below and set up your connection.
-            // JobStorage.Current = new RedisStorage("localhost:6379", 3));
+            // JobStorage.Current = new RedisStorage("localhost:6379", 3);
             
             // HangFire Server processes jobs while your application is being
             // performed. They are performed in a reliable way and your ASP.NET 
