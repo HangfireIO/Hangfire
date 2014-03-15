@@ -46,7 +46,7 @@ namespace HangFire.States
         {
             public override void Apply(StateApplyingContext context)
             {
-                var stateData = context.ApplyingState.GetData(context.JobMethod);
+                var stateData = context.NewState.GetData(context.JobMethod);
                 var timestamp = long.Parse(stateData["EnqueueAt"]);
 
                 context.Transaction.AddToSet("schedule", context.JobId, timestamp);

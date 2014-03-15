@@ -95,13 +95,11 @@ namespace HangFire.States
                 var changedContext = new StateApplyingContext(
                     context,
                     transaction,
+                    "Created",
                     changingContext.CandidateState);
 
-                ApplyState(
-                    changedContext, 
-                    null,
-                    filterInfo.StateChangedFilters);
-
+                changedContext.ApplyState(_handlers, filterInfo.StateChangedFilters);
+                
                 transaction.PersistJob(jobId);
 
                 // TODO: check return value
@@ -119,60 +117,53 @@ namespace HangFire.States
 
             using (_connection.AcquireJobLock(jobId))
             {
+                var jobData = _connection.GetJobStateAndInvocationData(jobId);
+
+                if (jobData == null)
+                {
+                    // The job does not exist
+                    return false;
+                }
+
+                var currentState = jobData.State;
+                if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
+                {
+                    return false;
+                }
+
                 try
                 {
-                    var jobData = _connection.GetJobStateAndInvocationData(jobId);
+                    var jobMethod = JobMethod.Deserialize(jobData.InvocationData);
+                    var filterInfo = GetFilters(jobMethod);
 
-                    if (jobData == null)
-                    {
-                        // The job does not exist
-                        return false;
-                    }
+                    var context = new StateContext(jobId, jobMethod);
+                    var changingContext = new StateChangingContext(context, state, currentState, _connection);
 
-                    var currentState = jobData.State;
-                    if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
-                    {
-                        return false;
-                    }
+                    InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
 
-                    try
-                    {
-                        var jobMethod = JobMethod.Deserialize(jobData.InvocationData);
-                        var filterInfo = GetFilters(jobMethod);
-
-                        var context = new StateContext(jobId, jobMethod);
-                        var changingContext = new StateChangingContext(context, state, currentState, _connection);
-
-                        InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
-
-                        return ApplyState(changingContext, filterInfo.StateChangedFilters);
-                    }
-                    catch (JobLoadException ex)
-                    {
-                        // If the job type could not be loaded, we are unable to
-                        // load corresponding filters, unable to process the job
-                        // and sometimes unable to change its state (the enqueued
-                        // state depends on the type of a job).
-
-                        var changingContext = new StateChangingContext(
-                            new StateContext(jobId, null),
-                            new FailedState(ex)
-                            {
-                                Reason = String.Format(
-                                    "Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.",
-                                    state.StateName, jobId)
-                            },
-                            currentState,
-                            _connection);
-
-                        return ApplyState(
-                            changingContext,
-                            Enumerable.Empty<IStateChangedFilter>());
-                    }
+                    return ApplyState(changingContext, filterInfo.StateChangedFilters);
                 }
-                catch (Exception ex)
+                catch (JobLoadException ex)
                 {
-                    throw;
+                    // If the job type could not be loaded, we are unable to
+                    // load corresponding filters, unable to process the job
+                    // and sometimes unable to change its state (the enqueued
+                    // state depends on the type of a job).
+
+                    var changingContext = new StateChangingContext(
+                        new StateContext(jobId, null),
+                        new FailedState(ex)
+                        {
+                            Reason = String.Format(
+                                "Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.",
+                                state.StateName, jobId)
+                        },
+                        currentState,
+                        _connection);
+
+                    return ApplyState(
+                        changingContext,
+                        Enumerable.Empty<IStateChangedFilter>());
                 }
             }
         }
@@ -205,58 +196,18 @@ namespace HangFire.States
                 var changedContext = new StateApplyingContext(
                     context,
                     transaction,
+                    context.CurrentState,
                     context.CandidateState);
 
-                ApplyState(changedContext, context.CurrentState, stateChangedFilters);
+                changedContext.ApplyState(_handlers, stateChangedFilters);
 
                 return transaction.Commit();
-            }
-        }
-
-        private void ApplyState(
-            StateApplyingContext context,
-            string oldState,
-            IEnumerable<IStateChangedFilter> stateChangedFilters)
-        {
-            if (!String.IsNullOrEmpty(oldState))
-            {
-                foreach (var handler in GetHandlers(oldState))
-                {
-                    handler.Unapply(context);
-                }
-                
-                foreach (var filter in stateChangedFilters)
-                {
-                    filter.OnStateUnapplied(context);
-                }
-            }
-
-            context.Transaction.SetJobState(context.JobId, context.ApplyingState, context.JobMethod);
-
-            foreach (var handler in GetHandlers(context.ApplyingState.StateName))
-            {
-                handler.Apply(context);
-            }
-
-            foreach (var filter in stateChangedFilters)
-            {
-                filter.OnStateApplied(context);
             }
         }
 
         private JobFilterInfo GetFilters(JobMethod method)
         {
             return new JobFilterInfo(_getFiltersThunk(method));
-        }
-
-        private IEnumerable<JobStateHandler> GetHandlers(string stateName)
-        {
-            if (_handlers.ContainsKey(stateName))
-            {
-                return _handlers[stateName];
-            }
-
-            return Enumerable.Empty<JobStateHandler>();
         }
 
         private void RegisterHandler(JobStateHandler handler)
