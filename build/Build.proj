@@ -69,7 +69,7 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
   
-  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunUnitTests; BuildPackages">
+  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunAppVeyorTests; BuildPackages">
   </Target>
 
   <Target Name="Go" DependsOnTargets="Build; CopyArtifacts; RunTests;">
@@ -102,6 +102,11 @@
   </Target>
 
   <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
+  </Target>
+
+  <Target Name="RunAppVeyorTests" DependsOnTargets="BuildNetUnitTests">
+    <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HaangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
+          LogStandardErrorAsError="true"></Exec>
   </Target>
 
   <Target Name="CreateOutputDirs">
