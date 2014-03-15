@@ -28,7 +28,7 @@ namespace HangFire.States
 
         public override string StateName { get { return Name; } }
 
-        public override IDictionary<string, string> GetProperties(JobMethod data)
+        public override IDictionary<string, string> GetData(JobMethod data)
         {
             return new Dictionary<string, string>
                 {

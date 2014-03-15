@@ -64,7 +64,7 @@ namespace HangFire.Redis
             _transaction.QueueCommand(x => x.RemoveEntry(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId)));
 
-            var stateData = state.GetProperties(method);
+            var stateData = state.GetData(method);
 
             // Redis does not provide repeatable read functionality,
             // so job state might be changed between reads of the job
@@ -82,7 +82,7 @@ namespace HangFire.Redis
 
         public void AppendJobHistory(string jobId, JobState state, JobMethod method)
         {
-            var stateData = state.GetProperties(method);
+            var stateData = state.GetData(method);
 
             // We are storing some more information in the same key,
             // let's add it.

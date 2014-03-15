@@ -87,7 +87,7 @@ namespace HangFire.Tests.States
         {
             var mock = new Mock<JobState>();
             mock.Setup(x => x.StateName).Returns(state);
-            mock.Setup(x => x.GetProperties(It.IsAny<JobMethod>()))
+            mock.Setup(x => x.GetData(It.IsAny<JobMethod>()))
                 .Returns(new Dictionary<string, string>());
 
             _stateMocks.Add(state, mock);
@@ -99,7 +99,7 @@ namespace HangFire.Tests.States
             Given(String.Format("a '{0}' state", state));
 
             _stateProperties = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
-            _stateMocks[state].Setup(x => x.GetProperties(It.IsAny<JobMethod>()))
+            _stateMocks[state].Setup(x => x.GetData(It.IsAny<JobMethod>()))
                 .Returns(_stateProperties);
         }
 
@@ -276,7 +276,7 @@ namespace HangFire.Tests.States
         {
             TableAssert.ContainsFollowingItems(
                 table,
-                _state.GetProperties(_defaultData));
+                _state.GetData(_defaultData));
         }
 
         [Then(@"the job should be added to the failed set")]

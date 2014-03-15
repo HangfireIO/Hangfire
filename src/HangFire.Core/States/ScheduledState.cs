@@ -33,7 +33,7 @@ namespace HangFire.States
         public DateTime EnqueueAt { get; private set; }
         public override string StateName { get { return Name; } }
 
-        public override IDictionary<string, string> GetProperties(JobMethod data)
+        public override IDictionary<string, string> GetData(JobMethod data)
         {
             return new Dictionary<string, string>
                 {
@@ -46,7 +46,7 @@ namespace HangFire.States
         {
             public override void Apply(StateApplyingContext context)
             {
-                var stateData = context.ApplyingState.GetProperties(context.JobMethod);
+                var stateData = context.ApplyingState.GetData(context.JobMethod);
                 var timestamp = long.Parse(stateData["EnqueueAt"]);
 
                 context.Transaction.AddToSet("schedule", context.JobId, timestamp);

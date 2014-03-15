@@ -62,7 +62,7 @@ namespace HangFire.SqlServer
 
         public void SetJobState(string jobId, JobState state, JobMethod method)
         {
-            var stateData = state.GetProperties(method);
+            var stateData = state.GetData(method);
             QueueCommand(x => x.Execute(
                 @"update HangFire.Job set State = @name, StateData = @data where Id = @id",
                 new { name = state.StateName, data = JobHelper.ToJson(stateData), id = jobId }));
@@ -72,7 +72,7 @@ namespace HangFire.SqlServer
 
         public void AppendJobHistory(string jobId, JobState state, JobMethod method)
         {
-            var stateData = state.GetProperties(method);
+            var stateData = state.GetData(method);
 
             QueueCommand(x => x.Execute(
                 @"insert into HangFire.JobHistory (JobId, StateName, Reason, CreatedAt, Data) "

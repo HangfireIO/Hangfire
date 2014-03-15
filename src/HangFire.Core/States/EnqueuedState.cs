@@ -30,10 +30,10 @@ namespace HangFire.States
 
         public override string StateName { get { return Name; } }
 
-        public override IDictionary<string, string> GetProperties(JobMethod data)
+        public override IDictionary<string, string> GetData(JobMethod data)
         {
             var queue = GetQueue(data);
-
+            
             return new Dictionary<string, string>
                 {
                     { "EnqueuedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },

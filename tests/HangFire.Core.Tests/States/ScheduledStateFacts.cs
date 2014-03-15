@@ -18,7 +18,7 @@ namespace HangFire.Core.Tests.States
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new ScheduledState(DateTime.UtcNow.AddDays(1));
-            var data = state.GetProperties(null);
+            var data = state.GetData(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>

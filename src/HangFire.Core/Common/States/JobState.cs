@@ -24,7 +24,7 @@ namespace HangFire.Common.States
 
         public abstract string StateName { get; }
 
-        public virtual IDictionary<string, string> GetProperties(JobMethod data)
+        public virtual IDictionary<string, string> GetData(JobMethod data)
         {
             return new Dictionary<string, string>();
         }

@@ -25,7 +25,7 @@ namespace HangFire.Core.Tests.States
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new FailedState(new Exception("Message"));
-            var data = state.GetProperties(null);
+            var data = state.GetData(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
