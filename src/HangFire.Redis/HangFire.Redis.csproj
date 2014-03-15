@@ -62,10 +62,6 @@
     <Compile Include="Components\DequeuedJobsWatcher.cs" />
     <Compile Include="RedisJobFetcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DataTypes\RedisWriteOnlyJob.cs" />
-    <Compile Include="DataTypes\RedisWriteOnlyList.cs" />
-    <Compile Include="DataTypes\RedisWriteOnlyQueue.cs" />
-    <Compile Include="DataTypes\RedisWriteOnlySet.cs" />
     <Compile Include="RedisWriteOnlyTransaction.cs" />
     <Compile Include="RedisStorage.cs" />
     <Compile Include="RedisMonitoringApi.cs" />
@@ -73,8 +69,6 @@
     <Compile Include="RedisStorageOptions.cs" />
     <Compile Include="DataTypes\RedisJob.cs" />
     <Compile Include="DataTypes\RedisSet.cs" />
-    <Compile Include="DataTypes\RedisWriteOnlyCounter.cs" />
-    <Compile Include="DataTypes\RedisWriteOnlyValue.cs" />
     <Compile Include="States\FailedStateHandler.cs" />
     <Compile Include="States\ProcessingStateHandler.cs" />
     <Compile Include="States\SucceededStateHandler.cs" />

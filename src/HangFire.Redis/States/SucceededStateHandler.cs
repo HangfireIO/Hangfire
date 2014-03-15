@@ -8,13 +8,13 @@ namespace HangFire.Redis.States
     {
         public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
         {
-            context.Transaction.Lists.AddToLeft("succeeded", context.JobId);
-            context.Transaction.Lists.Trim("succeeded", 0, 99);
+            context.Transaction.InsertToList("succeeded", context.JobId);
+            context.Transaction.TrimList("succeeded", 0, 99);
         }
 
         public override void Unapply(StateApplyingContext context)
         {
-            context.Transaction.Lists.Remove("succeeded", context.JobId);
+            context.Transaction.RemoveFromList("succeeded", context.JobId);
         }
 
         public override string StateName

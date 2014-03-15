@@ -92,7 +92,7 @@ namespace HangFire.States
             {
                 var queue = GetQueue(context.JobMethod);
 
-                context.Transaction.Queues.Enqueue(queue, context.JobId);
+                context.Transaction.AddToQueue(queue, context.JobId);
             }
 
             public override string StateName

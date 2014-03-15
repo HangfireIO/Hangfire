@@ -47,12 +47,12 @@ namespace HangFire.States
             public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
             {
                 var timestamp = long.Parse(stateData["EnqueueAt"]);
-                context.Transaction.Sets.Add("schedule", context.JobId, timestamp);
+                context.Transaction.AddToSet("schedule", context.JobId, timestamp);
             }
 
             public override void Unapply(StateApplyingContext context)
             {
-                context.Transaction.Sets.Remove("schedule", context.JobId);
+                context.Transaction.RemoveFromSet("schedule", context.JobId);
             }
 
             public override string StateName

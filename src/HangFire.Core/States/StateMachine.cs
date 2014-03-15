@@ -102,7 +102,7 @@ namespace HangFire.States
                     changingContext.CandidateState,
                     filterInfo.StateChangedFilters);
 
-                transaction.Jobs.Persist(jobId);
+                transaction.PersistJob(jobId);
 
                 // TODO: check return value
                 transaction.Commit();
@@ -271,13 +271,13 @@ namespace HangFire.States
             
             if (appendToJob)
             {
-                transaction.Jobs.SetState(context.JobId, state.StateName, properties);
+                transaction.SetJobState(context.JobId, state.StateName, properties);
             }
 
             properties.Add("Reason", state.Reason);
             properties.Add("CreatedAt", JobHelper.ToStringTimestamp(now));
 
-            transaction.Jobs.AppendHistory(context.JobId, properties);
+            transaction.AppendJobHistory(context.JobId, properties);
         }
 
         private JobFilterInfo GetFilters(JobMethod method)

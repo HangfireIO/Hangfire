@@ -76,12 +76,6 @@
     <Compile Include="SqlServerMonitoringApi.cs" />
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
-    <Compile Include="DataTypes\SqlServerWriteOnlyCounter.cs" />
-    <Compile Include="DataTypes\SqlServerWriteOnlyJob.cs" />
-    <Compile Include="DataTypes\SqlServerWriteOnlyList.cs" />
-    <Compile Include="DataTypes\SqlServerWriteOnlyQueue.cs" />
-    <Compile Include="DataTypes\SqlServerWriteOnlySet.cs" />
-    <Compile Include="DataTypes\SqlServerWriteOnlyValue.cs" />
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="DataTypes\SqlServerJob.cs" />
     <Compile Include="DataTypes\SqlServerSet.cs" />

@@ -10,7 +10,7 @@ namespace HangFire.Redis.States
     {
         public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
         {
-            context.Transaction.Sets.Add(
+            context.Transaction.AddToSet(
                 "processing",
                 context.JobId,
                 JobHelper.ToTimestamp(DateTime.UtcNow));
@@ -18,7 +18,7 @@ namespace HangFire.Redis.States
 
         public override void Unapply(StateApplyingContext context)
         {
-            context.Transaction.Sets.Remove("processing", context.JobId);
+            context.Transaction.RemoveFromSet("processing", context.JobId);
         }
 
         public override string StateName

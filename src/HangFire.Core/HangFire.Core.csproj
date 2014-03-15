@@ -122,7 +122,6 @@
     <Compile Include="States\GlobalStateHandlerCollection.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IPersistentSet.cs" />
-    <Compile Include="Storage\IWriteOnlyPersistentCounter.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
     <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
@@ -171,11 +170,6 @@
     <Compile Include="Storage\IWriteOnlyTransaction.cs" />
     <Compile Include="Storage\IStorageConnection.cs" />
     <Compile Include="Storage\IPersistentJob.cs" />
-    <Compile Include="Storage\IWriteOnlyPersistentQueue.cs" />
-    <Compile Include="Storage\IWriteOnlyPersistentJob.cs" />
-    <Compile Include="Storage\IWriteOnlyPersistentList.cs" />
-    <Compile Include="Storage\IWriteOnlyPersistentSet.cs" />
-    <Compile Include="Storage\IWriteOnlyPersistentValue.cs" />
     <Compile Include="Storage\StateAndInvocationData.cs" />
   </ItemGroup>
   <ItemGroup>

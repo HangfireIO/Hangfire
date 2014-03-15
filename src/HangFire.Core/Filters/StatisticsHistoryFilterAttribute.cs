@@ -34,13 +34,13 @@ namespace HangFire.Filters
             {
                 if (context.CandidateState.StateName == SucceededState.Name)
                 {
-                    transaction.Counters.Increment(
+                    transaction.IncrementCounter(
                         String.Format(
                             "stats:succeeded:{0}",
                             DateTime.UtcNow.ToString("yyyy-MM-dd")),
                         DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
-                    transaction.Counters.Increment(
+                    transaction.IncrementCounter(
                         String.Format(
                             "stats:succeeded:{0}",
                             DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
@@ -48,13 +48,13 @@ namespace HangFire.Filters
                 }
                 else if (context.CandidateState.StateName == FailedState.Name)
                 {
-                    transaction.Counters.Increment(
+                    transaction.IncrementCounter(
                         String.Format(
                             "stats:failed:{0}", 
                             DateTime.UtcNow.ToString("yyyy-MM-dd")),
                         DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
-                    transaction.Counters.Increment(
+                    transaction.IncrementCounter(
                         String.Format(
                             "stats:failed:{0}",
                             DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
