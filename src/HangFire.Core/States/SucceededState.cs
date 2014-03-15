@@ -24,7 +24,6 @@ namespace HangFire.States
     public class SucceededState : JobState
     {
         private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
-
         public static readonly string Name = "Succeeded";
 
         public override string StateName { get { return Name; } }

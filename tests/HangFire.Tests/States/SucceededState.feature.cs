@@ -85,56 +85,17 @@ namespace HangFire.Tests.States
         
         [Xunit.FactAttribute()]
         [Xunit.TraitAttribute("FeatureTitle", "Succeeded state")]
-        [Xunit.TraitAttribute("Description", "State name should be \'Succeeded\'")]
-        public virtual void StateNameShouldBeSucceeded()
+        [Xunit.TraitAttribute("Description", "After applying it should expire the job data")]
+        public virtual void AfterApplyingItShouldExpireTheJobData()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name should be \'Succeeded\'", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying it should expire the job data", ((string[])(null)));
 #line 8
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 9
-     testRunner.Then("the state name should be equal to \'Succeeded\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.FactAttribute()]
-        [Xunit.TraitAttribute("FeatureTitle", "Succeeded state")]
-        [Xunit.TraitAttribute("Description", "It should have the correct properties set")]
-        public virtual void ItShouldHaveTheCorrectPropertiesSet()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It should have the correct properties set", ((string[])(null)));
-#line 11
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line hidden
-            TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
-                        "Name",
-                        "Value"});
-            table1.AddRow(new string[] {
-                        "SucceededAt",
-                        "<UtcNow timestamp>"});
-#line 12
-     testRunner.Then("properties table should contain the following items:", ((string)(null)), table1, "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.FactAttribute()]
-        [Xunit.TraitAttribute("FeatureTitle", "Succeeded state")]
-        [Xunit.TraitAttribute("Description", "After applying it should expire the job data")]
-        public virtual void AfterApplyingItShouldExpireTheJobData()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying it should expire the job data", ((string[])(null)));
-#line 16
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 17
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 18
+#line 10
      testRunner.Then("it should expire the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -146,13 +107,13 @@ this.FeatureBackground();
         public virtual void AfterApplyingItShouldChangeTheStats()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying it should change the stats", ((string[])(null)));
-#line 20
+#line 12
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 21
+#line 13
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 22
+#line 14
      testRunner.Then("it should increase the succeeded counter", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -164,13 +125,13 @@ this.FeatureBackground();
         public virtual void AfterApplyingItShouldAddTheJobToTheSucceededList()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying it should add the job to the succeeded list", ((string[])(null)));
-#line 24
+#line 16
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 25
+#line 17
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 26
+#line 18
      testRunner.Then("the job should be added to the succeeded list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -182,15 +143,15 @@ this.FeatureBackground();
         public virtual void AfterUnapplyingItShouldPersistTheJobData()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After unapplying it should persist the job data", ((string[])(null)));
-#line 28
+#line 20
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 29
+#line 21
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 30
+#line 22
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 31
+#line 23
      testRunner.Then("it should persist the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -202,15 +163,15 @@ this.FeatureBackground();
         public virtual void AfterUnapplyingItShouldChangeTheStats()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After unapplying it should change the stats", ((string[])(null)));
-#line 33
+#line 25
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 34
+#line 26
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 35
+#line 27
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 36
+#line 28
      testRunner.Then("it should decrease the succeeded counter", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -222,15 +183,15 @@ this.FeatureBackground();
         public virtual void AfterUnapplyingItShouldRemoveTheJobFromTheSucceededList()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After unapplying it should remove the job from the succeeded list", ((string[])(null)));
-#line 38
+#line 30
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 39
+#line 31
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 40
+#line 32
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 41
+#line 33
      testRunner.Then("the job should be removed from the succeeded list", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

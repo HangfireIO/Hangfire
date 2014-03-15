@@ -5,9 +5,6 @@ Background:
     Given a job
       And the Enqueued state
 
-Scenario: State name should be 'Enqueued'
-     Then the state name should be equal to 'Enqueued'
-
 Scenario: It should have the correct properties set
      Then properties table should contain the following items:
           | Name       | Value              |

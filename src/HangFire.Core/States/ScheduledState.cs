@@ -24,7 +24,7 @@ namespace HangFire.States
     public class ScheduledState : JobState
     {
         public static readonly string Name = "Scheduled";
-
+        
         public ScheduledState(DateTime enqueueAt)
         {
             EnqueueAt = enqueueAt;

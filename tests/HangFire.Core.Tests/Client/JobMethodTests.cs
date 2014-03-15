@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using HangFire.Common;
 using HangFire.Common.Filters;
 using HangFire.Storage;
 using Xunit;
 
-namespace HangFire.Tests.Client
+namespace HangFire.Core.Tests.Client
 {
     public class JobMethodTests
     {
@@ -177,10 +176,10 @@ namespace HangFire.Tests.Client
         {
         }
 
-        [TestTypeAttribute]
+        [TestType]
         public class TestJob : BackgroundJob
         {
-            [TestMethodAttribute]
+            [TestMethod]
             public override void Perform()
             {
             }

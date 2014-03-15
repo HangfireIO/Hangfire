@@ -5,14 +5,6 @@ Background:
     Given a job
     Given the Succeeded state
 
-Scenario: State name should be 'Succeeded'
-     Then the state name should be equal to 'Succeeded'
-
-Scenario: It should have the correct properties set
-     Then properties table should contain the following items:
-          | Name        | Value              |
-          | SucceededAt | <UtcNow timestamp> |
-
 Scenario: After applying it should expire the job data
      When I apply it
      Then it should expire the job

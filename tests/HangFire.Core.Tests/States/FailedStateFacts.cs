@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using FluentAssertions;
 using HangFire.States;
 using Xunit;
 
@@ -16,27 +15,17 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void Ctor_SetsAllProperties()
-        {
-            var exception = new Exception();
-            var state = new FailedState(exception);
-
-            state.Exception.Should().BeSameAs(exception);
-        }
-
-        [Fact]
         public void StateName_IsCorrect()
         {
             var state = new FailedState(new Exception());
-
-            state.StateName.Should().Be(FailedState.Name);
+            Assert.Equal(FailedState.Name, state.StateName);
         }
 
         [Fact]
-        public void GetProperties_ReturnsCorrectProperties()
+        public void GetStateData_ReturnsCorrectData()
         {
             var state = new FailedState(new Exception("Message"));
-            var properties = state.GetProperties(null);
+            var data = state.GetProperties(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
@@ -46,7 +35,7 @@ namespace HangFire.Core.Tests.States
                     { "ExceptionMessage", "Message" },
                     { "ExceptionDetails", "<Non-empty>" }
                 }, 
-                properties);
+                data);
         }
     }
 }

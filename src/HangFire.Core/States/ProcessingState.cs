@@ -24,13 +24,14 @@ namespace HangFire.States
     public class ProcessingState : JobState
     {
         public static readonly string Name = "Processing";
+        private readonly string _serverName;
 
         public ProcessingState(string serverName)
         {
-            ServerName = serverName;
+            if (String.IsNullOrWhiteSpace(serverName)) {throw new ArgumentNullException("serverName");}
+            _serverName = serverName;
         }
 
-        public string ServerName { get; private set; }
         public override string StateName { get { return Name; } }
 
         public override IDictionary<string, string> GetProperties(JobMethod data)
@@ -38,7 +39,7 @@ namespace HangFire.States
             return new Dictionary<string, string>
                 {
                     { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                    { "ServerName", ServerName }
+                    { "ServerName", _serverName }
                 };
         }
     }

@@ -91,8 +91,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>JobClient.feature</DependentUpon>
     </Compile>
-    <Compile Include="Client\JobClientTests.cs" />
-    <Compile Include="Client\JobMethodTests.cs" />
     <Compile Include="Common\BrokenJob.cs" />
     <Compile Include="Common\CriticalQueueJob.cs" />
     <Compile Include="Common\CustomConstructorJob.cs" />

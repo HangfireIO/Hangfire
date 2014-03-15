@@ -85,61 +85,19 @@ namespace HangFire.Tests.States
         
         [Xunit.FactAttribute()]
         [Xunit.TraitAttribute("FeatureTitle", "Processing state")]
-        [Xunit.TraitAttribute("Description", "State name should be \'Processing\'")]
-        public virtual void StateNameShouldBeProcessing()
+        [Xunit.TraitAttribute("Description", "After applying, it should add the job to the processing set")]
+        public virtual void AfterApplyingItShouldAddTheJobToTheProcessingSet()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name should be \'Processing\'", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying, it should add the job to the processing set", ((string[])(null)));
 #line 8
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 9
-     testRunner.Then("the state name should be equal to \'Processing\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.FactAttribute()]
-        [Xunit.TraitAttribute("FeatureTitle", "Processing state")]
-        [Xunit.TraitAttribute("Description", "It should have the correct properties set")]
-        public virtual void ItShouldHaveTheCorrectPropertiesSet()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It should have the correct properties set", ((string[])(null)));
-#line 11
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line hidden
-            TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
-                        "Name",
-                        "Value"});
-            table1.AddRow(new string[] {
-                        "StartedAt",
-                        "<UtcNow timestamp>"});
-            table1.AddRow(new string[] {
-                        "ServerName",
-                        "TestServer"});
-#line 12
-     testRunner.Then("properties table should contain the following items:", ((string)(null)), table1, "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.FactAttribute()]
-        [Xunit.TraitAttribute("FeatureTitle", "Processing state")]
-        [Xunit.TraitAttribute("Description", "After applying, it should add the job to the processing set")]
-        public virtual void AfterApplyingItShouldAddTheJobToTheProcessingSet()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying, it should add the job to the processing set", ((string[])(null)));
-#line 17
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 18
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 19
+#line 10
      testRunner.Then("the processing set should contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line 20
+#line 11
       testRunner.And("processing timestamp should be set to UtcNow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             this.ScenarioCleanup();
@@ -151,15 +109,15 @@ this.FeatureBackground();
         public virtual void AfterUnapplyingItShouldRemoveTheJobFromTheProcessingSet()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After unapplying, it should remove the job from the processing set", ((string[])(null)));
-#line 22
+#line 13
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 23
+#line 14
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 24
+#line 15
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 25
+#line 16
      testRunner.Then("the processing set should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();

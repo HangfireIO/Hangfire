@@ -4,10 +4,9 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Storage;
 using Moq;
-using ServiceStack.Redis;
 using Xunit;
 
-namespace HangFire.Tests.Client
+namespace HangFire.Core.Tests.Client
 {
     public class JobClientTests
     {

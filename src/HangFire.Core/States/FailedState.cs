@@ -24,15 +24,14 @@ namespace HangFire.States
     public class FailedState : JobState
     {
         public static readonly string Name = "Failed";
+        private readonly Exception _exception;
 
         public FailedState(Exception exception)
         {
             if (exception == null) throw new ArgumentNullException("exception");
-
-            Exception = exception;
+            _exception = exception;
         }
 
-        public Exception Exception { get; private set; }
         public override string StateName { get { return Name; } }
 
         public override IDictionary<string, string> GetProperties(JobMethod data)
@@ -40,9 +39,9 @@ namespace HangFire.States
             return new Dictionary<string, string>
                 {
                     { "FailedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                    { "ExceptionType", Exception.GetType().FullName },
-                    { "ExceptionMessage", Exception.Message },
-                    { "ExceptionDetails", Exception.ToString() }
+                    { "ExceptionType", _exception.GetType().FullName },
+                    { "ExceptionMessage", _exception.Message },
+                    { "ExceptionDetails", _exception.ToString() }
                 };
         }
     }

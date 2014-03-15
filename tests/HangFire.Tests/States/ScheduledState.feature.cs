@@ -85,59 +85,17 @@ namespace HangFire.Tests.States
         
         [Xunit.FactAttribute()]
         [Xunit.TraitAttribute("FeatureTitle", "Scheduled state")]
-        [Xunit.TraitAttribute("Description", "State name should be \'Scheduled\'")]
-        public virtual void StateNameShouldBeScheduled()
+        [Xunit.TraitAttribute("Description", "After applying, it should add the job to the schedule at tomorrow")]
+        public virtual void AfterApplyingItShouldAddTheJobToTheScheduleAtTomorrow()
         {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("State name should be \'Scheduled\'", ((string[])(null)));
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying, it should add the job to the schedule at tomorrow", ((string[])(null)));
 #line 8
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
 #line 9
-     testRunner.Then("the state name should be equal to \'Scheduled\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.FactAttribute()]
-        [Xunit.TraitAttribute("FeatureTitle", "Scheduled state")]
-        [Xunit.TraitAttribute("Description", "It should have the correct properties set")]
-        public virtual void ItShouldHaveTheCorrectPropertiesSet()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("It should have the correct properties set", ((string[])(null)));
-#line 11
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line hidden
-            TechTalk.SpecFlow.Table table1 = new TechTalk.SpecFlow.Table(new string[] {
-                        "Name",
-                        "Value"});
-            table1.AddRow(new string[] {
-                        "ScheduledAt",
-                        "<UtcNow timestamp>"});
-            table1.AddRow(new string[] {
-                        "EnqueueAt",
-                        "<Tomorrow timestamp>"});
-#line 12
-     testRunner.Then("properties table should contain the following items:", ((string)(null)), table1, "Then ");
-#line hidden
-            this.ScenarioCleanup();
-        }
-        
-        [Xunit.FactAttribute()]
-        [Xunit.TraitAttribute("FeatureTitle", "Scheduled state")]
-        [Xunit.TraitAttribute("Description", "After applying, it should add the job to the schedule at tomorrow")]
-        public virtual void AfterApplyingItShouldAddTheJobToTheScheduleAtTomorrow()
-        {
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After applying, it should add the job to the schedule at tomorrow", ((string[])(null)));
-#line 17
-this.ScenarioSetup(scenarioInfo);
-#line 4
-this.FeatureBackground();
-#line 18
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 19
+#line 10
      testRunner.Then("the schedule should contain the job that will be enqueued tomorrow", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
@@ -149,15 +107,15 @@ this.FeatureBackground();
         public virtual void AfterUnapplyingItShouldRemoveTheJobFromTheSchedule()
         {
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("After unapplying, it should remove the job from the schedule", ((string[])(null)));
-#line 21
+#line 12
 this.ScenarioSetup(scenarioInfo);
 #line 4
 this.FeatureBackground();
-#line 22
+#line 13
      testRunner.When("I apply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
-#line 23
+#line 14
       testRunner.And("after I unapply it", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
-#line 24
+#line 15
      testRunner.Then("the schedule should not contain the job", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             this.ScenarioCleanup();
