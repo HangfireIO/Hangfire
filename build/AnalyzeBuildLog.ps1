@@ -12,6 +12,8 @@ try {
             $projectFile = $matches.ProjectName + "." + $matches.ProjectExt
             $category = $matches.Severity.substring(0,1).toupper() + $matches.Severity.substring(1).tolower()
             
+            $matches
+            
             appveyor AddCompilationMessage `
               -Message $matches.Message `
               -Details $matches.Message `
