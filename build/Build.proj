@@ -105,7 +105,7 @@
   </Target>
 
   <Target Name="RunAppVeyorTests" DependsOnTargets="BuildNetUnitTests">
-    <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HaangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
+    <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true"></Exec>
   </Target>
 
