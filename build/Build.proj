@@ -69,7 +69,7 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
   
-  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunAppVeyorTests; BuildPackages; AnalyzeBuildLog">
+  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunAppVeyorTests; BuildPackages">
   </Target>
 
   <Target Name="Go" DependsOnTargets="Build; CopyArtifacts; RunTests;">
@@ -107,10 +107,6 @@
   <Target Name="RunAppVeyorTests" DependsOnTargets="BuildNetUnitTests">
     <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true"></Exec>
-  </Target>
-
-  <Target Name="AnalyzeBuildLog">
-    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(MSBuildProjectDirectory)\AnalyzeBuildLog.ps1 -logFile "$(ProjectRoot)\msbuild.log"' ContinueOnError="true" />
   </Target>
 
   <Target Name="CreateOutputDirs">
