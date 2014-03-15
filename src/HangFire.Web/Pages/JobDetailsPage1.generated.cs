@@ -289,14 +289,14 @@ WriteLiteral("        <h3>History</h3>\r\n");
         var index = 0;
         foreach (var entry in job.History)
         {
-            var background = JobHistoryRenderer.BackgroundStateColors.ContainsKey(entry["State"])
-               ? JobHistoryRenderer.BackgroundStateColors[entry["State"]]
+            var background = JobHistoryRenderer.BackgroundStateColors.ContainsKey(entry.StateName)
+               ? JobHistoryRenderer.BackgroundStateColors[entry.StateName]
                : null;
 
             if (index == 0)
             {
-                background = JobHistoryRenderer.ForegroundStateColors.ContainsKey(entry["State"])
-                    ? JobHistoryRenderer.ForegroundStateColors[entry["State"]]
+                background = JobHistoryRenderer.ForegroundStateColors.ContainsKey(entry.StateName)
+                    ? JobHistoryRenderer.ForegroundStateColors[entry.StateName]
                     : null;
             }
 
@@ -329,7 +329,7 @@ WriteLiteral("\">\r\n                    <span class=\"pull-right\" data-moment=
 
             
             #line 85 "..\..\Pages\JobDetailsPage.cshtml"
-                                                     Write(entry["CreatedAt"]);
+                                                     Write(JobHelper.ToStringTimestamp(entry.CreatedAt));
 
             
             #line default
@@ -339,7 +339,7 @@ WriteLiteral("\">");
 
             
             #line 85 "..\..\Pages\JobDetailsPage.cshtml"
-                                                                          Write(JobHelper.FromStringTimestamp(entry["CreatedAt"]));
+                                                                                                    Write(entry.CreatedAt);
 
             
             #line default
@@ -350,7 +350,7 @@ WriteLiteral("</span>\r\n                    <h4 class=\"job-history-title\">\r\
 
             
             #line 87 "..\..\Pages\JobDetailsPage.cshtml"
-                   Write(entry["State"]);
+                   Write(entry.StateName);
 
             
             #line default
@@ -360,7 +360,7 @@ WriteLiteral("\r\n\r\n");
 
             
             #line 89 "..\..\Pages\JobDetailsPage.cshtml"
-                         if (entry.ContainsKey("Reason"))
+                         if (!String.IsNullOrWhiteSpace(entry.Reason))
                         {
 
             
@@ -371,7 +371,7 @@ WriteLiteral("                            <small>");
 
             
             #line 91 "..\..\Pages\JobDetailsPage.cshtml"
-                              Write(entry["Reason"]);
+                              Write(entry.Reason);
 
             
             #line default
@@ -391,9 +391,9 @@ WriteLiteral("                    </h4>\r\n                </div>\r\n\r\n");
 
             
             #line 96 "..\..\Pages\JobDetailsPage.cshtml"
-                 if (JobHistoryRenderer.Exists(entry["State"]))
+                 if (JobHistoryRenderer.Exists(entry.StateName))
                 {
-                    var rendered = JobHistoryRenderer.Render(entry["State"], entry);
+                    var rendered = JobHistoryRenderer.Render(entry.StateName, entry.Data);
                     if (rendered != null)
                     {
 
@@ -430,7 +430,7 @@ WriteLiteral("                    <div class=\"job-history-body\">\r\n          
 
             
             #line 110 "..\..\Pages\JobDetailsPage.cshtml"
-                             foreach (var item in entry.Where(x => x.Key != "State" && x.Key != "Date" && x.Key != "Reason"))
+                             foreach (var item in entry.Data)
                             {
 
             

@@ -131,6 +131,7 @@
     <Compile Include="Storage\Monitoring\QueueWithTopEnqueuedJobsDto.cs" />
     <Compile Include="Storage\Monitoring\ScheduleDto.cs" />
     <Compile Include="Storage\Monitoring\ServerDto.cs" />
+    <Compile Include="Storage\Monitoring\StateHistoryDto.cs" />
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
     <Compile Include="Server\Performing\IJobPerformStrategy.cs" />

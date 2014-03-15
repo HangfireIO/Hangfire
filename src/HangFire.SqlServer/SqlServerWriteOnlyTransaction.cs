@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Transactions;
 using Dapper;
 using HangFire.Common;
+using HangFire.Common.States;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
@@ -59,19 +60,31 @@ namespace HangFire.SqlServer
                 new { id = jobId }));
         }
 
-        public void SetJobState(string jobId, string state, IDictionary<string, string> stateProperties)
+        public void SetJobState(string jobId, JobState state, JobMethod method)
         {
+            var stateData = state.GetProperties(method);
             QueueCommand(x => x.Execute(
                 @"update HangFire.Job set State = @name, StateData = @data where Id = @id",
-                new { name = state, data = JobHelper.ToJson(stateProperties), id = jobId }));
+                new { name = state.StateName, data = JobHelper.ToJson(stateData), id = jobId }));
+
+            AppendJobHistory(jobId, state, method);
         }
 
-        public void AppendJobHistory(string jobId, IDictionary<string, string> properties)
+        public void AppendJobHistory(string jobId, JobState state, JobMethod method)
         {
+            var stateData = state.GetProperties(method);
+
             QueueCommand(x => x.Execute(
-                @"insert into HangFire.JobHistory (JobId, CreatedAt, Data) "
-                + @"values (@jobId, @createdAt, @data)",
-                new { jobId = jobId, createdAt = DateTime.UtcNow, data = JobHelper.ToJson(properties) }));
+                @"insert into HangFire.JobHistory (JobId, StateName, Reason, CreatedAt, Data) "
+                + @"values (@jobId, @stateName, @reason, @createdAt, @data)",
+                new
+                {
+                    jobId = jobId, 
+                    stateName = state.StateName,
+                    reason = state.Reason,
+                    createdAt = DateTime.UtcNow, 
+                    data = JobHelper.ToJson(stateData)
+                }));
         }
 
         public void AddToQueue(string queue, string jobId)

@@ -352,6 +352,28 @@ namespace HangFire.Redis
                 .Select(JobHelper.FromJson<Dictionary<string, string>>)
                 .ToList();
 
+            var stateHistory = new List<StateHistoryDto>(history.Count);
+            foreach (var entry in history)
+            {
+                var dto = new StateHistoryDto
+                {
+                    StateName = entry["State"],
+                    Reason = entry.ContainsKey("Reason") ? entry["Reason"] : null,
+                    CreatedAt = JobHelper.FromStringTimestamp(entry["CreatedAt"]),
+                };
+
+                // Each history item contains all of the information,
+                // but other code should not know this. We'll remove
+                // unwanted keys.
+                var stateData = new Dictionary<string, string>(entry);
+                stateData.Remove("State");
+                stateData.Remove("Reason");
+                stateData.Remove("CreatedAt");
+
+                dto.Data = stateData;
+                stateHistory.Add(dto);
+            }
+
             // For compatibility
             if (!job.ContainsKey("Method")) job.Add("Method", null);
             if (!job.ContainsKey("ParameterTypes")) job.Add("ParameterTypes", null);
@@ -366,7 +388,7 @@ namespace HangFire.Redis
                 CreatedAt =
                     job.ContainsKey("CreatedAt") ? JobHelper.FromStringTimestamp(job["CreatedAt"]) : (DateTime?) null,
                 Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
-                History = history
+                History = stateHistory
             };
         }
 

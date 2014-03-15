@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using HangFire.Common;
+using HangFire.Common.States;
 using HangFire.Storage;
 using ServiceStack.Redis;
 
@@ -53,27 +54,46 @@ namespace HangFire.Redis
         }
 
         public void SetJobState(
-            string jobId, string state, IDictionary<string, string> stateProperties)
+            string jobId, JobState state, JobMethod method)
         {
             _transaction.QueueCommand(x => x.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                 "State",
-                state));
+                state.StateName));
 
             _transaction.QueueCommand(x => x.RemoveEntry(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId)));
 
+            var stateData = state.GetProperties(method);
+
+            // Redis does not provide repeatable read functionality,
+            // so job state might be changed between reads of the job
+            // state itself and a data of the state. In monitoring API
+            // we don't show state data when data.State !== job.State.
+            var storedData = new Dictionary<string, string>(stateData);
+            storedData.Add("State", state.StateName);
+
             _transaction.QueueCommand(x => x.SetRangeInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId),
-                stateProperties));
+                storedData));
+
+            AppendJobHistory(jobId, state, method);
         }
 
-        public void AppendJobHistory(
-            string jobId, IDictionary<string, string> properties)
+        public void AppendJobHistory(string jobId, JobState state, JobMethod method)
         {
+            var stateData = state.GetProperties(method);
+
+            // We are storing some more information in the same key,
+            // let's add it.
+            var storedData = new Dictionary<string, string>(stateData);
+            storedData.Add("State", state.StateName);
+            storedData.Add("Reason", state.Reason);
+            storedData.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
+
             _transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format(RedisStorage.Prefix + "job:{0}:history", jobId),
-                JobHelper.ToJson(properties)));
+                JobHelper.ToJson(storedData)));
         }
 
         public void AddToQueue(string queue, string jobId)

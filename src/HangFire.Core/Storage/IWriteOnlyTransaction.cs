@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using HangFire.Common;
+using HangFire.Common.States;
 
 namespace HangFire.Storage
 {
@@ -8,8 +10,8 @@ namespace HangFire.Storage
         // Job operations
         void ExpireJob(string jobId, TimeSpan expireIn);
         void PersistJob(string jobId);
-        void SetJobState(string jobId, string state, IDictionary<string, string> stateProperties);
-        void AppendJobHistory(string jobId, IDictionary<string, string> properties);
+        void SetJobState(string jobId, JobState state, JobMethod method);
+        void AppendJobHistory(string jobId, JobState state, JobMethod method);
 
         // Queue operations
         void AddToQueue(string queue, string jobId);

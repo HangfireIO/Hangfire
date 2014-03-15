@@ -329,7 +329,13 @@ select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
                 var history =
                     multi.Read<JobHistory>()
                         .ToList()
-                        .Select(x => JobHelper.FromJson<Dictionary<string, string>>(x.Data))
+                        .Select(x => new StateHistoryDto
+                         {
+                             StateName = x.StateName,
+                             CreatedAt = x.CreatedAt,
+                             Reason = x.Reason,
+                             Data = JobHelper.FromJson<Dictionary<string, string>>(x.Data)
+                         })
                         .ToList();
 
                 return new JobDetailsDto

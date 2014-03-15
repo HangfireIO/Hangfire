@@ -52,7 +52,7 @@ BEGIN
         -- Create job tables
         CREATE TABLE [HangFire].[Job](
             [Id] [int] IDENTITY(1,1) NOT NULL,
-            [State] [nvarchar](50) NOT NULL,
+            [State] [nvarchar](20) NOT NULL,
             [InvocationData] [nvarchar](max) NOT NULL,
             [Arguments] [nvarchar](max) NOT NULL,
             [StateData] [nvarchar](max) NULL,
@@ -68,6 +68,8 @@ BEGIN
         CREATE TABLE [HangFire].[JobHistory](
             [Id] [int] IDENTITY(1,1) NOT NULL,
             [JobId] [int] NOT NULL,
+			[StateName] nvarchar(20) NOT NULL,
+			[Reason] nvarchar(100) NULL,
             [CreatedAt] datetime2(7) NOT NULL,
             [Data] [nvarchar](max) NULL,
             

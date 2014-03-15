@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 
-namespace HangFire.SqlServer.Entities
+namespace HangFire.Storage.Monitoring
 {
-    internal class JobHistory
+    public class StateHistoryDto
     {
-        public int JobId { get; set; }
         public string StateName { get; set; }
         public string Reason { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string Data { get; set; }
+        public IDictionary<string, string> Data { get; set; } 
     }
 }

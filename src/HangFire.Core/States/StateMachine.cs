@@ -187,7 +187,11 @@ namespace HangFire.States
 
                 if (oldState != context.CandidateState)
                 {
-                    AppendHistory(context, oldState, false);
+                    using (var transaction = _connection.CreateWriteTransaction())
+                    {
+                        transaction.AppendJobHistory(context.JobId, oldState, context.JobMethod);
+                        transaction.Commit();
+                    }
                 }
             }
         }
@@ -239,45 +243,12 @@ namespace HangFire.States
                 }
             }
 
-            AppendHistory(context.Transaction, context, chosenState, true);
+            context.Transaction.SetJobState(context.JobId, chosenState, context.JobMethod);
 
             foreach (var filter in stateChangedFilters)
             {
                 filter.OnStateApplied(context);
             }
-        }
-
-        private void AppendHistory(
-            StateContext context, JobState state, bool appendToJob)
-        {
-            using (var transaction = _connection.CreateWriteTransaction())
-            {
-                AppendHistory(transaction, context, state, appendToJob);
-                transaction.Commit();
-            }
-        }
-
-        private void AppendHistory(
-            IWriteOnlyTransaction transaction,
-            StateContext context, 
-            JobState state, 
-            bool appendToJob)
-        {
-            var properties = new Dictionary<string, string>(
-                state.GetProperties(context.JobMethod));
-            var now = DateTime.UtcNow;
-
-            properties.Add("State", state.StateName);
-            
-            if (appendToJob)
-            {
-                transaction.SetJobState(context.JobId, state.StateName, properties);
-            }
-
-            properties.Add("Reason", state.Reason);
-            properties.Add("CreatedAt", JobHelper.ToStringTimestamp(now));
-
-            transaction.AppendJobHistory(context.JobId, properties);
         }
 
         private JobFilterInfo GetFilters(JobMethod method)
