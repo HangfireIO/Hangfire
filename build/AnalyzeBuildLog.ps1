@@ -9,8 +9,7 @@ try {
         if ($line -match '^[\s]*(?<FileName>.+)\((?<Line>[\d]+),(?<Column>[\d]+)\): (?<Severity>.+) (?<Code>[A-Z0-9]+): (?<Message>.*) \[(?<ProjectDir>.+)\\(?<ProjectName>.+)\.(?<ProjectExt>.+)\]$') {
             $projectFile = $matches.ProjectName + "." + $matches.ProjectExt
             
-            Add-AppveyorCompilationMessage `
-              -Message $matches.Message `
+            appveyor AddCompilationMessage $matches.Message `
               -Category $matches.Severity `
               -FileName $matches.FileName `
               -Line $matches.Line `
