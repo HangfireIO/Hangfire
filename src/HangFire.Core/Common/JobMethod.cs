@@ -58,8 +58,10 @@ namespace HangFire.Common
 
             if (!method.DeclaringType.IsAssignableFrom(type))
             {
-                throw new ArgumentException(
-                    "The type `{0}` must be derived from the `{1}` type.", "type");
+                throw new ArgumentException(String.Format(
+                    "The type `{0}` must be derived from the `{1}` type.", 
+                    method.DeclaringType, 
+                    type));
             }
 
             Type = type;

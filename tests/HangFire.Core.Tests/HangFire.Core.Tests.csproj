@@ -55,6 +55,7 @@
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\SucceededStateFacts.cs" />
+    <Compile Include="States\SucceededStateHandlerFacts.cs" />
     <Compile Include="Utils\DictionaryAssert.cs" />
   </ItemGroup>
   <ItemGroup>
