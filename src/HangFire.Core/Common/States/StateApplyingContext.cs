@@ -22,14 +22,19 @@ namespace HangFire.Common.States
     public class StateApplyingContext : StateContext
     {
         internal StateApplyingContext(
-            StateContext context, IWriteOnlyTransaction transaction)
+            StateContext context, 
+            IWriteOnlyTransaction transaction,
+            JobState state)
             : base(context)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
+            if (state == null) throw new ArgumentNullException("state");
 
             Transaction = transaction;
+            ApplyingState = state;
         }
 
         public IWriteOnlyTransaction Transaction { get; private set; }
+        public JobState ApplyingState { get; private set; }
     }
 }

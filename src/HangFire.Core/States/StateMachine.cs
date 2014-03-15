@@ -94,12 +94,12 @@ namespace HangFire.States
             {
                 var changedContext = new StateApplyingContext(
                     context,
-                    transaction);
+                    transaction,
+                    changingContext.CandidateState);
 
                 ApplyState(
                     changedContext, 
                     null,
-                    changingContext.CandidateState,
                     filterInfo.StateChangedFilters);
 
                 transaction.PersistJob(jobId);
@@ -204,9 +204,10 @@ namespace HangFire.States
             {
                 var changedContext = new StateApplyingContext(
                     context,
-                    transaction);
+                    transaction,
+                    context.CandidateState);
 
-                ApplyState(changedContext, context.CurrentState, context.CandidateState, stateChangedFilters);
+                ApplyState(changedContext, context.CurrentState, stateChangedFilters);
 
                 return transaction.Commit();
             }
@@ -215,35 +216,27 @@ namespace HangFire.States
         private void ApplyState(
             StateApplyingContext context,
             string oldState,
-            JobState chosenState,
             IEnumerable<IStateChangedFilter> stateChangedFilters)
         {
             if (!String.IsNullOrEmpty(oldState))
             {
-                if (_handlers.ContainsKey(oldState))
+                foreach (var handler in GetHandlers(oldState))
                 {
-                    foreach (var handler in _handlers[oldState])
-                    {
-                        handler.Unapply(context);
-                    }
+                    handler.Unapply(context);
                 }
-
+                
                 foreach (var filter in stateChangedFilters)
                 {
                     filter.OnStateUnapplied(context);
                 }
             }
 
-            if (_handlers.ContainsKey(chosenState.StateName))
-            {
-                var stateData = chosenState.GetProperties(context.JobMethod);
-                foreach (var handler in _handlers[chosenState.StateName])
-                {
-                    handler.Apply(context, stateData);
-                }
-            }
+            context.Transaction.SetJobState(context.JobId, context.ApplyingState, context.JobMethod);
 
-            context.Transaction.SetJobState(context.JobId, chosenState, context.JobMethod);
+            foreach (var handler in GetHandlers(context.ApplyingState.StateName))
+            {
+                handler.Apply(context);
+            }
 
             foreach (var filter in stateChangedFilters)
             {
@@ -254,6 +247,16 @@ namespace HangFire.States
         private JobFilterInfo GetFilters(JobMethod method)
         {
             return new JobFilterInfo(_getFiltersThunk(method));
+        }
+
+        private IEnumerable<JobStateHandler> GetHandlers(string stateName)
+        {
+            if (_handlers.ContainsKey(stateName))
+            {
+                return _handlers[stateName];
+            }
+
+            return Enumerable.Empty<JobStateHandler>();
         }
 
         private void RegisterHandler(JobStateHandler handler)

@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using HangFire.Common.States;
+﻿using HangFire.Common.States;
 using HangFire.States;
 
 namespace HangFire.Redis.States
 {
     internal class SucceededStateHandler : JobStateHandler
     {
-        public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
+        public override void Apply(StateApplyingContext context)
         {
             context.Transaction.InsertToList("succeeded", context.JobId);
             context.Transaction.TrimList("succeeded", 0, 99);

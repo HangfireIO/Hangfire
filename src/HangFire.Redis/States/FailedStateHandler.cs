@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
@@ -8,7 +7,7 @@ namespace HangFire.Redis.States
 {
     internal class FailedStateHandler : JobStateHandler
     {
-        public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
+        public override void Apply(StateApplyingContext context)
         {
             context.Transaction.AddToSet(
                 "failed",

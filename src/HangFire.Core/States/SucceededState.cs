@@ -38,8 +38,7 @@ namespace HangFire.States
 
         public class Handler : JobStateHandler
         {
-            public override void Apply(
-                StateApplyingContext context, IDictionary<string, string> stateData)
+            public override void Apply(StateApplyingContext context)
             {
                 context.Transaction.ExpireJob(context.JobId, JobExpirationTimeout);
                 context.Transaction.IncrementCounter("stats:succeeded");

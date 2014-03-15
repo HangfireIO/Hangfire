@@ -44,9 +44,11 @@ namespace HangFire.States
 
         public class Handler : JobStateHandler
         {
-            public override void Apply(StateApplyingContext context, IDictionary<string, string> stateData)
+            public override void Apply(StateApplyingContext context)
             {
+                var stateData = context.ApplyingState.GetProperties(context.JobMethod);
                 var timestamp = long.Parse(stateData["EnqueueAt"]);
+
                 context.Transaction.AddToSet("schedule", context.JobId, timestamp);
             }
 

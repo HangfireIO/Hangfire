@@ -22,8 +22,9 @@ namespace HangFire.Core.Tests.States
                 .GetMethod("TestMethod");
             var jobMethod = new JobMethod(typeof(SucceededStateHandlerFacts), methodInfo);
             var stateContext = new StateContext(JobId, jobMethod);
+            var stateMock = new Mock<JobState>();
 
-            _context = new StateApplyingContext(stateContext, _transactionMock.Object);
+            _context = new StateApplyingContext(stateContext, _transactionMock.Object, stateMock.Object);
         }
 
         [Fact]
@@ -37,7 +38,7 @@ namespace HangFire.Core.Tests.States
         public void Apply_ShouldSet_JobExpirationDate()
         {
             var handler = new SucceededState.Handler();
-            handler.Apply(_context, null);
+            handler.Apply(_context);
 
             _transactionMock.Verify(x => x.ExpireJob(JobId, It.IsAny<TimeSpan>()));
         }
@@ -46,7 +47,7 @@ namespace HangFire.Core.Tests.States
         public void Apply_ShouldIncrease_SucceededCounter()
         {
             var handler = new SucceededState.Handler();
-            handler.Apply(_context, null);
+            handler.Apply(_context);
 
             _transactionMock.Verify(x => x.IncrementCounter("stats:succeeded"), Times.Once);
         }

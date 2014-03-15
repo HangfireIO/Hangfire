@@ -87,8 +87,7 @@ namespace HangFire.States
 
         public class Handler : JobStateHandler
         {
-            public override void Apply(
-                StateApplyingContext context, IDictionary<string, string> stateData)
+            public override void Apply(StateApplyingContext context)
             {
                 var queue = GetQueue(context.JobMethod);
 

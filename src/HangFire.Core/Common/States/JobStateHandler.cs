@@ -20,8 +20,7 @@ namespace HangFire.Common.States
 {
     public abstract class JobStateHandler
     {
-        public virtual void Apply(
-            StateApplyingContext context, IDictionary<string, string> stateData)
+        public virtual void Apply(StateApplyingContext context)
         {
         }
 
