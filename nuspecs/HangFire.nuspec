@@ -17,7 +17,10 @@
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
-0.7
+
+Dear 0.7-alpha users! Please, drop all HangFire tables before using this release!
+
+0.7-alpha
 * Changed NuGet package structure. See the Upgrading Guide on GitHub!
 * SQL Server job storage implementation.
 * Improved job fetching implementation.
