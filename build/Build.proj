@@ -110,7 +110,7 @@
   </Target>
 
   <Target Name="AnalyzeBuildLog">
-    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(MSBuildProjectDirectory)\AnalyzeBuildLog.ps1 "$(ProjectArtifactsDir)"' ContinueOnError="true" />
+    <Exec Command='powershell -NoProfile -ExecutionPolicy Bypass $(MSBuildProjectDirectory)\AnalyzeBuildLog.ps1 -logFile "$(ProjectRoot)\msbuild.log"' ContinueOnError="true" />
   </Target>
 
   <Target Name="CreateOutputDirs">
