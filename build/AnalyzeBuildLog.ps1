@@ -14,6 +14,7 @@ try {
             
             appveyor AddCompilationMessage `
               -Message $matches.Message `
+              -Details $matches.Message `
               -Category $category `
               -FileName $matches.FileName `
               -Line $matches.Line `
