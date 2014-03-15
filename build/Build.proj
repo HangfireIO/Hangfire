@@ -106,7 +106,10 @@
 
   <Target Name="RunAppVeyorTests" DependsOnTargets="BuildNetUnitTests">
     <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
-          LogStandardErrorAsError="true"></Exec>
+          LogStandardErrorAsError="true">
+		<Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+	</Exec>
+	<Message Importance="normal" Text="xunit.console exited with code $(ErrorCode)"/>
   </Target>
 
   <Target Name="CreateOutputDirs">
