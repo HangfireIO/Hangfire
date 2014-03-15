@@ -116,7 +116,7 @@ namespace HangFire.Core.Tests.Client
             Assert.Equal(1, cachedAttributes.Length);
 
             Assert.True(nonCachedAttributes[0] is TestTypeAttribute);
-            Assert.True(cachedAttributes[1] is TestTypeAttribute);
+            Assert.True(cachedAttributes[0] is TestTypeAttribute);
         }
 
         [Fact]
