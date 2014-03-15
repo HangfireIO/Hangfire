@@ -6,20 +6,25 @@ namespace HangFire.Storage
 {
     public interface IStorageConnection : IDisposable
     {
+        JobStorage Storage { get; }
+
         IWriteOnlyTransaction CreateWriteTransaction();
         IJobFetcher CreateFetcher(IEnumerable<string> queueNames);
-
-        IDisposable AcquireJobLock(string jobId);
-
-        IPersistentJob Jobs { get; }
-        IPersistentSet Sets { get; }
-        JobStorage Storage { get; }
 
         string CreateExpiredJob(
             InvocationData invocationData,
             string[] arguments,
             IDictionary<string, string> parameters,
             TimeSpan expireIn);
+
+        void SetJobParameter(string id, string name, string value);
+        string GetJobParameter(string id, string name);
+
+        IDisposable AcquireJobLock(string jobId);
+        StateAndInvocationData GetJobStateAndInvocationData(string id);
+        void CompleteJob(JobPayload payload);
+
+        string GetFirstByLowestScoreFromSet(string key, long fromScore, long toScore);
 
         void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues);
         void RemoveServer(string serverId);

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using HangFire.Common;
-using HangFire.Redis.DataTypes;
 using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Redis;
@@ -13,14 +13,13 @@ namespace HangFire.Redis
     {
         private readonly IRedisClient _redis;
 
-        public RedisConnection(RedisStorage storage, IRedisClient redis)
+        public RedisConnection(JobStorage storage, IRedisClient redis)
         {
             _redis = redis;
-            
-            Jobs = new RedisJob(redis);
-            Sets = new RedisSet(redis);
             Storage = storage;
         }
+
+        public JobStorage Storage { get; private set; }
 
         public void Dispose()
         {
@@ -43,10 +42,6 @@ namespace HangFire.Redis
                 RedisStorage.Prefix + String.Format("job:{0}:state-lock", jobId),
                 TimeSpan.FromMinutes(1));
         }
-
-        public IPersistentJob Jobs { get; private set; }
-        public IPersistentSet Sets { get; private set; }
-        public JobStorage Storage { get; private set; }
 
         public string CreateExpiredJob(
             InvocationData invocationData,
@@ -77,6 +72,61 @@ namespace HangFire.Redis
             }
 
             return jobId;
+        }
+
+        public StateAndInvocationData GetJobStateAndInvocationData(string id)
+        {
+            var jobData = _redis.GetAllEntriesFromHash(
+                String.Format(RedisStorage.Prefix + "job:{0}", id));
+
+            if (jobData.Count == 0) return null;
+
+            var invocationData = new InvocationData();
+            if (jobData.ContainsKey("Type"))
+            {
+                invocationData.Type = jobData["Type"];
+            }
+            if (jobData.ContainsKey("Method"))
+            {
+                invocationData.Method = jobData["Method"];
+            }
+            if (jobData.ContainsKey("ParameterTypes"))
+            {
+                invocationData.ParameterTypes = jobData["ParameterTypes"];
+            }
+
+            return new StateAndInvocationData
+            {
+                InvocationData = invocationData,
+                State = jobData.ContainsKey("State") ? jobData["State"] : null,
+            };
+        }
+
+        public void SetJobParameter(string id, string name, string value)
+        {
+            _redis.SetEntryInHash(
+                String.Format(RedisStorage.Prefix + "job:{0}", id),
+                name,
+                value);
+        }
+
+        public string GetJobParameter(string id, string name)
+        {
+            return _redis.GetValueFromHash(
+                String.Format(RedisStorage.Prefix + "job:{0}", id),
+                name);
+        }
+
+        public void CompleteJob(JobPayload payload)
+        {
+            RedisConnection.RemoveFromDequeuedList(_redis, payload.Queue, payload.Id);
+        }
+
+        public string GetFirstByLowestScoreFromSet(string key, long fromScore, long toScore)
+        {
+            return _redis.GetRangeFromSortedSetByLowestScore(
+                RedisStorage.Prefix + key, fromScore, toScore, 0, 1)
+                .FirstOrDefault();
         }
 
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)

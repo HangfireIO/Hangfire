@@ -6,7 +6,6 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Core.Tests;
 using HangFire.Redis;
-using HangFire.Redis.DataTypes;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;

@@ -64,12 +64,12 @@ namespace HangFire.Server.Performing
 
         public void SetJobParameter(string name, object value)
         {
-            Connection.Jobs.SetParameter(JobId, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(JobId, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            return JobHelper.FromJson<T>(Connection.Jobs.GetParameter(JobId, name));
+            return JobHelper.FromJson<T>(Connection.GetJobParameter(JobId, name));
         }
     }
 }

@@ -113,7 +113,7 @@ namespace HangFire.Server
                                 // It should not be re-queued, but we still need to remove its
                                 // processing information.
 
-                                connection.Jobs.Complete(payload);
+                                connection.CompleteJob(payload);
 
                                 // Success point. No things must be done after previous command
                                 // was succeeded.

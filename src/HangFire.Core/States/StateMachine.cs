@@ -121,7 +121,7 @@ namespace HangFire.States
             {
                 try
                 {
-                    var jobData = _connection.Jobs.GetStateAndInvocationData(jobId);
+                    var jobData = _connection.GetJobStateAndInvocationData(jobId);
 
                     if (jobData == null)
                     {

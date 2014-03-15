@@ -77,8 +77,6 @@
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
     <Compile Include="SqlServerConnection.cs" />
-    <Compile Include="DataTypes\SqlServerJob.cs" />
-    <Compile Include="DataTypes\SqlServerSet.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />
   </ItemGroup>
   <ItemGroup>

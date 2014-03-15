@@ -57,12 +57,12 @@ namespace HangFire.Common.States
 
         public void SetJobParameter<T>(string name, T value)
         {
-            Connection.Jobs.SetParameter(JobId, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(JobId, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            return JobHelper.FromJson<T>(Connection.Jobs.GetParameter(
+            return JobHelper.FromJson<T>(Connection.GetJobParameter(
                 JobId, name));
         }
     }

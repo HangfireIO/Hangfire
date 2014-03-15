@@ -5,7 +5,6 @@ using System.Linq;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.SqlServer.DataTypes;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
@@ -15,13 +14,13 @@ namespace HangFire.SqlServer
     {
         private readonly SqlConnection _connection;
 
-        public SqlServerConnection(SqlServerStorage storage, SqlConnection connection)
+        public SqlServerConnection(JobStorage storage, SqlConnection connection)
         {
             _connection = connection;
-            Jobs = new SqlServerJob(_connection);
-            Sets = new SqlServerSet(_connection);
             Storage = storage;
         }
+
+        public JobStorage Storage { get; private set; }
 
         public void Dispose()
         {
@@ -44,10 +43,6 @@ namespace HangFire.SqlServer
                 String.Format("HangFire:Job:{0}", jobId), 
                 _connection);
         }
-
-        public IPersistentJob Jobs { get; private set; }
-        public IPersistentSet Sets { get; private set; }
-        public JobStorage Storage { get; private set; }
 
         public string CreateExpiredJob(
             InvocationData invocationData,
@@ -93,6 +88,57 @@ values (@jobId, @name, @value)";
             }
 
             return jobId;
+        }
+
+        public StateAndInvocationData GetJobStateAndInvocationData(string id)
+        {
+            var job = _connection.Query<Job>(
+                @"select InvocationData, State from HangFire.Job where id = @id",
+                new { id = id })
+                .SingleOrDefault();
+
+            if (job == null) return null;
+
+            var data = JobHelper.FromJson<InvocationData>(job.InvocationData);
+
+            return new StateAndInvocationData
+            {
+                InvocationData = data,
+                State = job.State,
+            };
+        }
+
+        public void SetJobParameter(string id, string name, string value)
+        {
+            _connection.Execute(
+                @"merge HangFire.JobParameter as Target "
+                + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
+                + @"on Target.JobId = Source.JobId AND Target.Name = Source.Name "
+                + @"when matched then update set Value = Source.Value "
+                + @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
+                new { jobId = id, name, value });
+        }
+
+        public string GetJobParameter(string id, string name)
+        {
+            return _connection.Query<string>(
+                @"select Value from HangFire.JobParameter where JobId = @id and Name = @name",
+                new { id = id, name = name })
+                .SingleOrDefault();
+        }
+
+        public void CompleteJob(JobPayload payload)
+        {
+            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
+                new { id = payload.Id, queueName = payload.Queue });
+        }
+
+        public string GetFirstByLowestScoreFromSet(string key, long fromScore, long toScore)
+        {
+            return _connection.Query<string>(
+                @"select top 1 Value from HangFire.[Set] where [Key] = @key and Score between @from and @to order by Score",
+                new { key, from = fromScore, to = toScore })
+                .SingleOrDefault();
         }
 
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)

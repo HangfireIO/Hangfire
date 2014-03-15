@@ -45,8 +45,8 @@ namespace HangFire.Server.Components
                 var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
                 // TODO: it is very slow. Add batching.
-                var jobId = connection.Sets
-                    .GetFirstByLowestScore("schedule", 0, timestamp);
+                var jobId = connection
+                    .GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
 
                 if (String.IsNullOrEmpty(jobId))
                 {
