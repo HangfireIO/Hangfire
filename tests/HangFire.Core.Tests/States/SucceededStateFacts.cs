@@ -26,5 +26,12 @@ namespace HangFire.Core.Tests.States
                 },
                 data);
         }
+
+        [Fact]
+        public void ShouldExpireJobOnApply()
+        {
+            var state = new SucceededState();
+            Assert.True(state.ExpireJobOnApply);
+        }
     }
 }

@@ -2,7 +2,7 @@ using System;
 
 namespace HangFire.SqlServer.Entities
 {
-    internal class Job
+    internal class SqlJob
     {
         public int Id { get; set; }
         public string InvocationData { get; set; }

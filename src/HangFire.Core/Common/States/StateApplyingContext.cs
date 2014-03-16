@@ -26,8 +26,7 @@ namespace HangFire.Common.States
         private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
         private readonly IStorageConnection _connection;
 
-        internal StateApplyingContext(
-            StateChangingContext context)
+        internal StateApplyingContext(StateChangingContext context)
             : base(context)
         {
             if (context == null) throw new ArgumentNullException("context");
@@ -38,7 +37,7 @@ namespace HangFire.Common.States
         }
 
         public string OldStateName { get; private set; }
-        public JobState NewState { get; private set; }
+        public State NewState { get; private set; }
 
         internal bool ApplyState(
             IDictionary<string, List<JobStateHandler>> handlers,
@@ -68,7 +67,7 @@ namespace HangFire.Common.States
                     filter.OnStateApplied(this, transaction);
                 }
 
-                if (NewState.ExpireJob)
+                if (NewState.ExpireJobOnApply)
                 {
                     transaction.ExpireJob(JobId, JobExpirationTimeout);
                 }

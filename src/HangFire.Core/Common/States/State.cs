@@ -18,12 +18,12 @@ using System.Collections.Generic;
 
 namespace HangFire.Common.States
 {
-    public abstract class JobState
+    public abstract class State
     {
         public string Reason { get; set; }
 
         public abstract string StateName { get; }
-        public virtual bool ExpireJob { get { return false; } }
+        public virtual bool ExpireJobOnApply { get { return false; } }
 
         public virtual IDictionary<string, string> GetData(JobMethod data)
         {

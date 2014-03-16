@@ -18,7 +18,7 @@ namespace HangFire.Tests
     public class JobClientSteps : Steps
     {
         private JobClient _client;
-        private Mock<JobState> _stateMock;
+        private Mock<State> _stateMock;
         private IDictionary<string, string> _arguments = new Dictionary<string, string>();
         private Exception _exception;
 

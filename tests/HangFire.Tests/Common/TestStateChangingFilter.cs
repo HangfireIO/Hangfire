@@ -10,9 +10,9 @@ namespace HangFire.Tests
     {
         private readonly string _name;
         private readonly IList<string> _results;
-        private readonly JobState _changeState;
+        private readonly State _changeState;
 
-        public TestStateChangingFilter(string name, IList<string> results, JobState changeState = null)
+        public TestStateChangingFilter(string name, IList<string> results, State changeState = null)
         {
             _name = name;
             _results = results;

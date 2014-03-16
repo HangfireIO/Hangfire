@@ -22,6 +22,6 @@ namespace HangFire.Client
 {
     public interface IJobClient : IDisposable
     {
-        string CreateJob(JobMethod method, string[] arguments, JobState state);
+        string CreateJob(Job job, State state);
     }
 }

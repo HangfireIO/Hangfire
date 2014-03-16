@@ -36,7 +36,7 @@ namespace HangFire.Client
         private bool _jobWasCreated;
 
         internal CreateContext(CreateContext context)
-            : this(context.Connection, context.JobMethod, context.Arguments, context.InitialState)
+            : this(context.Connection, context.Job, context.InitialState)
         {
             Items = context.Items;
             _jobWasCreated = context._jobWasCreated;
@@ -44,19 +44,17 @@ namespace HangFire.Client
 
         internal CreateContext(
             IStorageConnection connection,
-            JobMethod jobMethod,
-            string[] arguments,
-            JobState initialState)
+            Job job,
+            State initialState)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (jobMethod == null) throw new ArgumentNullException("jobMethod");
-            if (arguments == null) throw new ArgumentNullException("arguments");
+            if (job == null) throw new ArgumentNullException("job");
             if (initialState == null) throw new ArgumentNullException("initialState");
 
             Connection = connection;
-            JobMethod = jobMethod;
-            Arguments = arguments;
+            Job = job;
             InitialState = initialState;
+
             Items = new Dictionary<string, object>();
 
             _stateMachine = new StateMachine(connection);
@@ -70,10 +68,9 @@ namespace HangFire.Client
         /// or just between different methods.
         /// </summary>
         public IDictionary<string, object> Items { get; private set; }
-        public string JobId { get; private set; }
 
-        public JobMethod JobMethod { get; private set; }
-        public string[] Arguments { get; set; }
+        public string JobId { get; private set; }
+        public Job Job { get; private set; }
 
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
@@ -81,7 +78,7 @@ namespace HangFire.Client
         /// the registered instances of the <see cref="IStateChangingFilter"/>
         /// class are doing their job.
         /// </summary>
-        public JobState InitialState { get; private set; }
+        public State InitialState { get; private set; }
 
         /// <summary>
         /// Sets the job parameter of the specified <paramref name="name"/>
@@ -137,7 +134,7 @@ namespace HangFire.Client
 
         internal void CreateJob()
         {
-            JobId = _stateMachine.CreateInState(JobMethod, Arguments, _parameters, InitialState);
+            JobId = _stateMachine.CreateInState(Job, _parameters, InitialState);
             _jobWasCreated = true;
         }
     }

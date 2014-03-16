@@ -21,7 +21,7 @@ using HangFire.Common.States;
 
 namespace HangFire.States
 {
-    public class ProcessingState : JobState
+    public class ProcessingState : State
     {
         public static readonly string Name = "Processing";
         private readonly string _serverName;

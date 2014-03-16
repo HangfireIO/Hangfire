@@ -54,7 +54,7 @@ namespace HangFire.Redis
         }
 
         public void SetJobState(
-            string jobId, JobState state, JobMethod method)
+            string jobId, State state, JobMethod method)
         {
             _transaction.QueueCommand(x => x.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", jobId),
@@ -80,7 +80,7 @@ namespace HangFire.Redis
             AddJobState(jobId, state, method);
         }
 
-        public void AddJobState(string jobId, JobState state, JobMethod method)
+        public void AddJobState(string jobId, State state, JobMethod method)
         {
             var stateData = state.GetData(method);
 

@@ -21,11 +21,11 @@ namespace HangFire.Common.States
 {
     public class StateChangingContext : StateContext
     {
-        private JobState _candidateState;
+        private State _candidateState;
 
         internal StateChangingContext(
             StateContext context, 
-            JobState candidateState, 
+            State candidateState, 
             string currentState, 
             IStorageConnection connection)
             : base(context)
@@ -38,7 +38,7 @@ namespace HangFire.Common.States
             Connection = connection;
         }
 
-        public JobState CandidateState
+        public State CandidateState
         {
             get { return _candidateState; }
             set

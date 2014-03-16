@@ -13,8 +13,8 @@ namespace HangFire.Core.Tests.Client
         private readonly JobClient _client;
         private readonly Mock<IStorageConnection> _connectionMock;
         private readonly Mock<JobCreator> _creatorMock;
-        private readonly Mock<JobState> _stateMock;
-        private readonly JobMethod _method;
+        private readonly Mock<State> _stateMock;
+        private readonly Job _job;
 
         public JobClientTests()
         {
@@ -23,8 +23,8 @@ namespace HangFire.Core.Tests.Client
 
             _creatorMock = new Mock<JobCreator>();
             _client = new JobClient(_connectionMock.Object, _creatorMock.Object);
-            _stateMock = new Mock<JobState>();
-            _method = new JobMethod(typeof(JobClientTests), typeof(JobClientTests).GetMethod("Method"));
+            _stateMock = new Mock<State>();
+            _job = Job.FromExpression(() => Method());
         }
 
         [Fact]
@@ -42,41 +42,28 @@ namespace HangFire.Core.Tests.Client
         }
 
         [Fact]
-        public void CreateJob_ThrowsAnException_WhenJobMethodIsNull()
+        public void CreateJob_ThrowsAnException_WhenJobIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => _client.CreateJob(null, new string[0], _stateMock.Object));
-        }
-
-        [Fact]
-        public void CreateJob_ThrowsAnException_WhenArgumentsIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(
-                () => _client.CreateJob(_method, null, _stateMock.Object));
+                () => _client.CreateJob(null, _stateMock.Object));
         }
 
         [Fact]
         public void CreateJob_ThrowsAnException_WhenStateIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => _client.CreateJob(_method, new string[0], null));
+                () => _client.CreateJob(_job, null));
         }
 
-        [Fact]
-        public void CreateJob_CallsCreate_WithCorrectContext()
-        {
-            _client.CreateJob(_method, new[] { "hello", "3" }, _stateMock.Object);
-        }
-
-        public void Method()
+        public static void Method()
         {
         }
 
-        public void MethodWithReferenceParameter(ref string a)
+        public static void MethodWithReferenceParameter(ref string a)
         {
         }
 
-        public void MethodWithOutputParameter(out string a)
+        public static void MethodWithOutputParameter(out string a)
         {
             a = "hello";
         }

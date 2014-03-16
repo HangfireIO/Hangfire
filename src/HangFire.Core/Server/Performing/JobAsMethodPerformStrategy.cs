@@ -46,12 +46,12 @@ namespace HangFire.Server.Performing
 
             try
             {
-                if (!_method.Method.IsStatic)
+                if (!_method.MethodInfo.IsStatic)
                 {
                     instance = ActivateJob();
                 }
 
-                var parameters = _method.Method.GetParameters();
+                var parameters = _method.MethodInfo.GetParameters();
                 var deserializedArguments = new List<object>(_arguments.Length);
 
                 for (var i = 0; i < parameters.Length; i++)
@@ -78,7 +78,7 @@ namespace HangFire.Server.Performing
 
                 try
                 {
-                    _method.Method.Invoke(instance, deserializedArguments.ToArray());
+                    _method.MethodInfo.Invoke(instance, deserializedArguments.ToArray());
                 }
                 catch (TargetInvocationException ex)
                 {

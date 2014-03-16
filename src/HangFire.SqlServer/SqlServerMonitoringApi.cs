@@ -95,7 +95,7 @@ select count(Id) from HangFire.Job where StateName = @state";
             int from,
             int count,
             string stateName,
-            Func<Job, JobMethod, Dictionary<string, string>, TDto> selector)
+            Func<SqlJob, JobMethod, Dictionary<string, string>, TDto> selector)
         {
             const string jobsSql = @"
 select * from (
@@ -106,7 +106,7 @@ select * from (
 ) as j where j.row_num between @start and @end
 ";
 
-            var jobs = _connection.Query<Job>(
+            var jobs = _connection.Query<SqlJob>(
                 jobsSql,
                 new { stateName = stateName, start = @from + 1, end = @from + count })
                 .ToList();
@@ -115,8 +115,8 @@ select * from (
         }
 
         private static JobList<TDto> DeserializeJobs<TDto>(
-            ICollection<Job> jobs,
-            Func<Job, JobMethod, Dictionary<string, string>, TDto> selector)
+            ICollection<SqlJob> jobs,
+            Func<SqlJob, JobMethod, Dictionary<string, string>, TDto> selector)
         {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
 
@@ -267,7 +267,7 @@ select * from (
 ) as r
 where r.row_num between @start and @end";
 
-            var jobs = _connection.Query<Job>(
+            var jobs = _connection.Query<SqlJob>(
                 enqueuedJobsSql,
                 new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList();
@@ -292,7 +292,7 @@ select * from (
 ) as r
 where r.row_num between @start and @end";
 
-            var jobs = _connection.Query<Job>(
+            var jobs = _connection.Query<SqlJob>(
                 fetchedJobsSql,
                 new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList();
@@ -334,7 +334,7 @@ select * from HangFire.State where JobId = @id order by Id desc";
 
             using (var multi = _connection.QueryMultiple(sql, new { id = jobId }))
             {
-                var job = multi.Read<Job>().SingleOrDefault();
+                var job = multi.Read<SqlJob>().SingleOrDefault();
                 if (job == null) return null;
 
                 var parameters = multi.Read<JobParameter>().ToDictionary(x => x.Name, x => x.Value);

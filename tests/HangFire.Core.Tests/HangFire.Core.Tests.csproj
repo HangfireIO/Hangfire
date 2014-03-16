@@ -48,12 +48,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\JobClientTests.cs" />
-    <Compile Include="Client\JobMethodTests.cs" />
+    <Compile Include="Common\JobFacts.cs" />
+    <Compile Include="Common\JobMethodTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
+    <Compile Include="States\JobStateFacts.cs" />
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
+    <Compile Include="States\StateApplyingContextFacts.cs" />
+    <Compile Include="States\StateChangingContextFacts.cs" />
+    <Compile Include="States\StateContextFacts.cs" />
     <Compile Include="States\SucceededStateFacts.cs" />
     <Compile Include="States\SucceededStateHandlerFacts.cs" />
     <Compile Include="Utils\DictionaryAssert.cs" />

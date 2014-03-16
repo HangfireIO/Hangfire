@@ -27,7 +27,7 @@ namespace HangFire.SqlServer
 
         public JobPayload DequeueJob(CancellationToken cancellationToken)
         {
-            Job job = null;
+            SqlJob job = null;
             string queueName = null;
 
             const string fetchJobSql = @"
@@ -63,7 +63,7 @@ and Queue in @queues";
                     var parameters = new DynamicParameters();
                     parameters.Add("@id", idAndQueue.JobId, dbType: DbType.Int32);
 
-                    job = _connection.Query<Job>(
+                    job = _connection.Query<SqlJob>(
                         @"select Id, InvocationData, Arguments from HangFire.Job where Id = @id",
                         parameters)
                         .SingleOrDefault();

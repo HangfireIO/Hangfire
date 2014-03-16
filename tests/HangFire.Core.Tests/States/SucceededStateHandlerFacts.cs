@@ -23,7 +23,7 @@ namespace HangFire.Core.Tests.States
             var jobMethod = new JobMethod(typeof(SucceededStateHandlerFacts), methodInfo);
 
             var stateContext = new StateContext(JobId, jobMethod);
-            var stateMock = new Mock<JobState>();
+            var stateMock = new Mock<State>();
             var connectionMock = new Mock<IStorageConnection>();
             var stateChangingContext = new StateChangingContext(
                 stateContext, stateMock.Object, "Old", connectionMock.Object);

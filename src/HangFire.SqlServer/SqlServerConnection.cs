@@ -96,7 +96,7 @@ select InvocationData, StateName
 from HangFire.Job
 where id = @id";
 
-            var job = _connection.Query<Job>(sql, new { id = id })
+            var job = _connection.Query<SqlJob>(sql, new { id = id })
                 .SingleOrDefault();
 
             if (job == null) return null;

@@ -18,14 +18,14 @@ namespace HangFire.Tests.States
     [Binding]
     public class StateSteps : Steps
     {
-        private JobState _state;
+        private State _state;
         private Exception _failedException;
 
         private JobMethod _defaultData 
             = new JobMethod(typeof(TestJob), typeof(TestJob).GetMethod("Perform"));
 
-        private IDictionary<string, Mock<JobState>> _stateMocks
-            = new Dictionary<string, Mock<JobState>>(); 
+        private IDictionary<string, Mock<State>> _stateMocks
+            = new Dictionary<string, Mock<State>>(); 
 
         private Mock<JobStateHandler> _oldStateDescriptorMock;
 
@@ -85,7 +85,7 @@ namespace HangFire.Tests.States
         [Given(@"a '(.+)' state")]
         public void GivenAState(string state)
         {
-            var mock = new Mock<JobState>();
+            var mock = new Mock<State>();
             mock.Setup(x => x.StateName).Returns(state);
             mock.Setup(x => x.GetData(It.IsAny<JobMethod>()))
                 .Returns(new Dictionary<string, string>());

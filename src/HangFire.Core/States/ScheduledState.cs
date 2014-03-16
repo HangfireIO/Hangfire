@@ -22,7 +22,7 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class ScheduledState : JobState
+    public class ScheduledState : State
     {
         public static readonly string Name = "Scheduled";
         

@@ -62,30 +62,29 @@ namespace HangFire.States
         }
         
         public string CreateInState(
-            JobMethod method,
-            string[] arguments,
+            Job job,
             IDictionary<string, string> parameters,
-            JobState state)
+            State state)
         {
-            if (method == null) throw new ArgumentNullException("method");
+            if (job == null) throw new ArgumentNullException("job");
             if (parameters == null) throw new ArgumentNullException("parameters");
             if (state == null) throw new ArgumentNullException("state");
 
             var invocationData = new InvocationData
             {
-                Type = method.Type.AssemblyQualifiedName,
-                Method = method.Method.Name,
-                ParameterTypes = JobHelper.ToJson(method.Method.GetParameters().Select(x => x.ParameterType)),
+                Type = job.MethodData.Type.AssemblyQualifiedName,
+                Method = job.MethodData.MethodInfo.Name,
+                ParameterTypes = JobHelper.ToJson(job.MethodData.MethodInfo.GetParameters().Select(x => x.ParameterType)),
             };
 
             var jobId = _connection.CreateExpiredJob(
                 invocationData, 
-                arguments,
+                job.Arguments.ToArray(),
                 parameters,
                 TimeSpan.FromHours(1));
 
-            var filterInfo = GetFilters(method);
-            var context = new StateContext(jobId, method);
+            var filterInfo = GetFilters(job.MethodData);
+            var context = new StateContext(jobId, job.MethodData);
             var changingContext = new StateChangingContext(context, state, "Created", _connection);
 
             InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
@@ -97,7 +96,7 @@ namespace HangFire.States
         }
 
         public bool ChangeState(
-            string jobId, JobState state, params string[] allowedCurrentStates)
+            string jobId, State state, params string[] allowedCurrentStates)
         {
             if (String.IsNullOrWhiteSpace(jobId)) throw new ArgumentNullException("jobId");
             if (state == null) throw new ArgumentNullException("state");

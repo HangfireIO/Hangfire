@@ -38,7 +38,7 @@ namespace HangFire.Web
             builder.AppendLine();
             builder.AppendLine();
 
-            if (!method.Method.IsStatic)
+            if (!method.MethodInfo.IsStatic)
             {
                 var serviceName = Char.ToLower(method.Type.Name[0]) + method.Type.Name.Substring(1);
 
@@ -87,10 +87,10 @@ namespace HangFire.Web
             }
 
             builder.Append(".");
-            builder.Append(Encode(method.Method.Name));
+            builder.Append(Encode(method.MethodInfo.Name));
             builder.Append("(");
 
-            var parameters = method.Method.GetParameters();
+            var parameters = method.MethodInfo.GetParameters();
             
             if (!method.OldFormat)
             {

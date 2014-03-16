@@ -21,7 +21,7 @@ using HangFire.Common.States;
 
 namespace HangFire.States
 {
-    public class FailedState : JobState
+    public class FailedState : State
     {
         public static readonly string Name = "Failed";
         private readonly Exception _exception;

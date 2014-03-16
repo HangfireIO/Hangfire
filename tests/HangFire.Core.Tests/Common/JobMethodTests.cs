@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using HangFire.Common;
 using HangFire.Common.Filters;
 using HangFire.Storage;
@@ -38,7 +40,7 @@ namespace HangFire.Core.Tests.Client
             var method = new JobMethod(type, methodInfo);
 
             Assert.Equal(type, method.Type);
-            Assert.Equal(methodInfo, method.Method);
+            Assert.Equal(methodInfo, method.MethodInfo);
             Assert.False(method.OldFormat);
         }
 
@@ -57,7 +59,7 @@ namespace HangFire.Core.Tests.Client
             var method = JobMethod.Deserialize(serializedData);
 
             Assert.Equal(type, method.Type);
-            Assert.Equal(methodInfo, method.Method);
+            Assert.Equal(methodInfo, method.MethodInfo);
             Assert.False(method.OldFormat);
         }
 
@@ -103,6 +105,43 @@ namespace HangFire.Core.Tests.Client
 
             Assert.Throws<JobLoadException>(
                 () => JobMethod.Deserialize(serializedData));
+        }
+
+        [Fact]
+        public void FromStaticExpression_ShouldThrowException_WhenNullExpressionProvided()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => JobMethod.FromExpression((Expression<Action>) null));
+
+            Assert.Equal("methodCall", exception.ParamName);
+        }
+
+        [Fact]
+        public void FromStaticExpression_ShouldReturnCorrectResult()
+        {
+            var method = JobMethod.FromExpression(() => Console.WriteLine());
+
+            Assert.Equal(typeof(Console), method.Type);
+            Assert.Equal("WriteLine", method.MethodInfo.Name);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_ShouldThrowException_WhenNullExpressionIsProvided()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => JobMethod.FromExpression<List<int>>(null));
+
+            Assert.Equal("methodCall", exception.ParamName);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_ShouldReturnCorrectResult()
+        {
+// ReSharper disable once ReturnValueOfPureMethodIsNotUsed
+            var method = JobMethod.FromExpression<String>(x => x.Equals("hello"));
+
+            Assert.Equal(typeof(String), method.Type);
+            Assert.Equal("Equals", method.MethodInfo.Name);
         }
 
         [Fact]
@@ -152,7 +191,7 @@ namespace HangFire.Core.Tests.Client
 
             var method = JobMethod.Deserialize(serializedData);
             Assert.Equal(typeof(TestJob), method.Type);
-            Assert.Equal(typeof(TestJob).GetMethod("Perform"), method.Method);
+            Assert.Equal(typeof(TestJob).GetMethod("Perform"), method.MethodInfo);
             Assert.True(method.OldFormat);
         }
 

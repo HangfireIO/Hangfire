@@ -24,7 +24,7 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class EnqueuedState : JobState
+    public class EnqueuedState : State
     {
         public const string DefaultQueue = "default";
         public static readonly string Name = "Enqueued";
@@ -50,7 +50,7 @@ namespace HangFire.States
 
             if (!method.OldFormat)
             {
-                attribute = method.Method
+                attribute = method.MethodInfo
                     .GetCustomAttributes(true)
                     .OfType<QueueAttribute>()
                     .FirstOrDefault();

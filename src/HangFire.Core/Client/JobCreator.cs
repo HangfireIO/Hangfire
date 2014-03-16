@@ -50,7 +50,7 @@ namespace HangFire.Client
 
         public virtual void CreateJob(CreateContext context)
         {
-            var filterInfo = GetFilters(context.JobMethod);
+            var filterInfo = GetFilters(context.Job.MethodData);
 
             try
             {

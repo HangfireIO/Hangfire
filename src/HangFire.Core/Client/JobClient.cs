@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using HangFire.Common;
 using HangFire.Common.States;
@@ -26,7 +25,7 @@ namespace HangFire.Client
 {
     /// <summary>
     /// Provides low-level Client API. Creates jobs based on a 
-    /// given <see cref="JobMethod"/> data in a given <see cref="JobState"/>
+    /// given <see cref="JobMethod"/> data in a given <see cref="State"/>
     /// and puts them into the storage in an atomic way.
     /// </summary>
     internal class JobClient : IJobClient
@@ -58,32 +57,22 @@ namespace HangFire.Client
         }
 
         /// <summary>
-        /// Creates a job with a given <paramref name="method"/>, <paramref name="arguments"/>
-        /// and a <paramref name="state"/>, runs registered client filters and 
-        /// puts it into the storage.
+        /// Creates a given job in a specified state in the storage.
         /// </summary>
         /// 
-        /// <remarks>
-        /// Each argument should be serialized into a string using the 
-        /// <see cref="TypeConverter.ConvertToInvariantString(object)"/> method of
-        /// a corresponding <see cref="TypeConverter"/> instance.
-        /// </remarks>
-        /// 
-        /// <param name="method">Method that will be called during the performance of the job.</param>
-        /// <param name="arguments">Serialized arguments that will be passed to a <paramref name="method"/>.</param>
+        /// <param name="job">Background job that will be created in a storage.</param>
         /// <param name="state">The initial state of the job.</param>
         /// <returns>The unique identifier of the created job.</returns>
-        public string CreateJob(JobMethod method, string[] arguments, JobState state)
+        public string CreateJob(Job job, State state)
         {
-            if (method == null) throw new ArgumentNullException("method");
-            if (arguments == null) throw new ArgumentNullException("arguments");
+            if (job == null) throw new ArgumentNullException("job");
             if (state == null) throw new ArgumentNullException("state");
 
-            var parameters = method.Method.GetParameters();
+            var parameters = job.MethodData.MethodInfo.GetParameters();
 
             ValidateMethodParameters(parameters);
 
-            var context = new CreateContext(_connection, method, arguments, state);
+            var context = new CreateContext(_connection, job, state);
             _jobCreator.CreateJob(context);
 
             return context.JobId;

@@ -22,11 +22,19 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class SucceededState : JobState
+    public class SucceededState : State
     {
         public static readonly string Name = "Succeeded";
 
-        public override string StateName { get { return Name; } }
+        public override string StateName
+        {
+            get { return Name; }
+        }
+
+        public override bool ExpireJobOnApply
+        {
+            get { return true; }
+        }
 
         public override IDictionary<string, string> GetData(JobMethod data)
         {

@@ -15,15 +15,11 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Linq.Expressions;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
-using HangFire.Storage;
 
 namespace HangFire
 {
@@ -79,7 +75,8 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Job creation has failed.</exception>
         public static string Enqueue(Expression<Action> methodCall)
         {
-            return Create(methodCall, CreateEnqueuedState());
+            return CreateInternal(
+                Job.FromExpression(methodCall), CreateEnqueuedState());
         }
 
         /// <summary>
@@ -100,7 +97,8 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Job creation has failed.</exception>
         public static string Enqueue<TJob>(Expression<Action<TJob>> methodCall)
         {
-            return Create(methodCall, CreateEnqueuedState());
+            return CreateInternal(
+                Job.FromExpression(methodCall), CreateEnqueuedState());
         }
 
         /// <summary>
@@ -119,7 +117,8 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Job creation has failed.</exception>
         public static string Schedule(Expression<Action> methodCall, TimeSpan delay)
         {
-            return Create(methodCall, CreateScheduledState(delay));
+            return CreateInternal(
+                Job.FromExpression(methodCall), CreateScheduledState(delay));
         }
 
         /// <summary>
@@ -139,134 +138,31 @@ namespace HangFire
         /// <exception cref="CreateJobFailedException">Job creation has failed.</exception>
         public static string Schedule<TJob>(Expression<Action<TJob>> methodCall, TimeSpan delay)
         {
-            return Create(methodCall, CreateScheduledState(delay));
+            return CreateInternal(
+                Job.FromExpression(methodCall), CreateScheduledState(delay));
         }
 
-        /// <summary>
-        /// Creates a background job based on a specified static method call 
-        /// expression in a given state and places it into the storage.
-        /// </summary>
-        /// 
-        /// <param name="methodCall">Static method call expression that will be marshalled to the Server.</param>
-        /// <param name="state">The state in which the job will be created.</param>
-        /// <returns>Unique identifier of the created job.</returns>
-        /// 
-        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="state"/> is null.</exception>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="methodCall"/> does not contain <see cref="MethodCallExpression"/>.
-        /// </exception>
-        /// <exception cref="CreateJobFailedException">Job creation has failed.</exception>
-        public static string Create(Expression<Action> methodCall, JobState state)
-        {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
-            if (state == null) throw new ArgumentNullException("state");
-
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Должен указывать на метод", "methodCall");
-            }
-
-            // Static methods can not be overrided in the derived classes, 
-            // so we can take the method's declaring type.
-            return CreateInternal(callExpression.Method.DeclaringType, callExpression, state);
-        }
-
-        /// <summary>
-        /// Creates a background job based on a specified instance method call 
-        /// expression in a given state and places it into the storage.
-        /// </summary>
-        /// 
-        /// <typeparam name="TJob">Type whose method will be invoked during job processing.</typeparam>
-        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
-        /// <param name="state">The state in which the job will be created.</param>
-        /// <returns>Unique identifier of the job.</returns>
-        /// 
-        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="state"/> is null.</exception>
-        /// <exception cref="ArgumentException">
-        ///     <paramref name="methodCall"/> does not contain <see cref="MethodCallExpression"/>.
-        /// </exception>
-        /// <exception cref="CreateJobFailedException">Job creation has failed.</exception>
-        public static string Create<TJob>(Expression<Action<TJob>> methodCall, JobState state)
-        {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
-            if (state == null) throw new ArgumentNullException("state");
-
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Должен указывать на метод", "methodCall");
-            }
-
-            // We should use exact type from the type parameter
-            // that was specified by user, rather than declaring 
-            // type of the given method.
-            return CreateInternal(typeof(TJob), callExpression, state);
-        }
-
-        private static JobState CreateEnqueuedState()
+        private static State CreateEnqueuedState()
         {
             return new EnqueuedState();
         }
 
-        private static JobState CreateScheduledState(TimeSpan delay)
+        private static State CreateScheduledState(TimeSpan delay)
         {
             return CreateScheduledState(DateTime.UtcNow.Add(delay));
         }
 
-        private static JobState CreateScheduledState(DateTime utcDateTime)
+        private static State CreateScheduledState(DateTime utcDateTime)
         {
             return new ScheduledState(utcDateTime);
         }
 
-        private static string CreateInternal(Type type, MethodCallExpression callExpression, JobState state)
+        private static string CreateInternal(Job job, State state)
         {
-            var arguments = GetArguments(callExpression);
-
             using (var client = ClientFactory())
             {
-                var data = new JobMethod(type, callExpression.Method);
-                return client.CreateJob(data, arguments, state);
+                return client.CreateJob(job, state);
             }
-        }
-
-        private static string[] GetArguments(MethodCallExpression callExpression)
-        {
-            var arguments = callExpression.Arguments.Select(GetArgumentValue).ToArray();
-
-            var serializedArguments = new List<string>(arguments.Length);
-            foreach (var argument in arguments)
-            {
-                string value = null;
-
-                if (argument != null)
-                {
-                    var converter = TypeDescriptor.GetConverter(argument.GetType());
-                    value = converter.ConvertToInvariantString(argument);
-                }
-
-                // Logic, related to optional parameters and their default values, 
-                // can be skipped, because it is impossible to omit them in 
-                // lambda-expressions (leads to a compile-time error).
-
-                serializedArguments.Add(value);
-            }
-
-            return serializedArguments.ToArray();
-        }
-
-        private static object GetArgumentValue(Expression expression)
-        {
-            var constantExpression = expression as ConstantExpression;
-
-            if (constantExpression != null)
-            {
-                return constantExpression.Value;
-            }
-
-            return CachedExpressionCompiler.Evaluate(expression);
         }
     }
 }

@@ -66,6 +66,7 @@
     <Compile Include="Client\IJobClient.cs" />
     <Compile Include="Client\JobCreator.cs" />
     <Compile Include="Client\CreateContext.cs" />
+    <Compile Include="Common\Job.cs" />
     <Compile Include="Common\JobMethod.cs" />
     <Compile Include="Common\JobLoadException.cs" />
     <Compile Include="Common\ExpressionUtil\BinaryExpressionFingerprint.cs" />
@@ -142,7 +143,7 @@
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
-    <Compile Include="Common\States\JobState.cs" />
+    <Compile Include="Common\States\State.cs" />
     <Compile Include="Client\Filters\IClientFilter.cs" />
     <Compile Include="Common\Filters\IJobFilter.cs" />
     <Compile Include="Server\Filters\IServerFilter.cs" />
