@@ -66,7 +66,7 @@
     <Compile Include="Components\ExpirationManager.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\Job.cs" />
-    <Compile Include="Entities\JobHistory.cs" />
+    <Compile Include="Entities\SqlState.cs" />
     <Compile Include="Entities\Server.cs" />
     <Compile Include="Entities\ServerData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

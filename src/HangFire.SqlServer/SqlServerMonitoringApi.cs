@@ -5,7 +5,6 @@ using System.Linq;
 using System.Transactions;
 using Dapper;
 using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.SqlServer.Entities;
 using HangFire.States;
 using HangFire.Storage;
@@ -65,8 +64,11 @@ namespace HangFire.SqlServer
 
         private long GetNumberOfJobsByStateName(string stateName)
         {
+            const string sqlQuery = @"
+select count(Id) from HangFire.Job where StateName = @state";
+
             return _connection.Query<int>(
-                @"select count(Id) from HangFire.Job where State = @state",
+                sqlQuery,
                 new { state = stateName })
                 .Single();
         }
@@ -96,8 +98,12 @@ namespace HangFire.SqlServer
             Func<JobMethod, Dictionary<string, string>, TDto> selector)
         {
             const string jobsSql = @"
-select * from (select *, row_number() over (order by CreatedAt desc) as row_num
-from HangFire.Job where State = @stateName) as j where j.row_num between @start and @end
+select * from (
+  select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
+  from HangFire.Job j
+  left join HangFire.State s on j.StateId = s.Id
+  where j.StateName = @stateName
+) as j where j.row_num between @start and @end
 ";
 
             var jobs = _connection.Query<Job>(
@@ -251,10 +257,13 @@ from HangFire.[JobQueue] as q
         public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int @from, int perPage)
         {
             const string enqueuedJobsSql = @"
-select * from
-(select j.*, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
-left join HangFire.Job j on jq.JobId = j.Id
-where jq.Queue = @queue and jq.FetchedAt is null) as r
+select * from (
+  select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id) as row_num 
+  from HangFire.JobQueue jq
+  left join HangFire.Job j on jq.JobId = j.Id
+  left join HangFire.State s on s.Id = j.StateId
+  where jq.Queue = @queue and jq.FetchedAt is null
+) as r
 where r.row_num between @start and @end";
 
             var jobs = _connection.Query<Job>(
@@ -274,10 +283,12 @@ where r.row_num between @start and @end";
         public JobList<DequeuedJobDto> DequeuedJobs(string queue, int @from, int perPage)
         {
             const string fetchedJobsSql = @"
-select * from
-(select j.*, jq.FetchedAt, row_number() over (order by j.CreatedAt) as row_num from HangFire.JobQueue jq
-left join HangFire.Job j on jq.JobId = j.Id
-where jq.Queue = @queue and jq.FetchedAt is not null) as r
+select * from (
+  select j.*, jq.FetchedAt, row_number() over (order by j.Id) as row_num 
+  from HangFire.JobQueue jq
+  left join HangFire.Job j on jq.JobId = j.Id
+  where jq.Queue = @queue and jq.FetchedAt is not null
+) as r
 where r.row_num between @start and @end";
 
             var jobs = _connection.Query<Job>(
@@ -294,7 +305,7 @@ where r.row_num between @start and @end";
                     new DequeuedJobDto
                     {
                         Method = DeserializeJobMethod(job.InvocationData),
-                        State = job.State,
+                        State = job.StateName,
                         CreatedAt = job.CreatedAt,
                         FetchedAt = job.FetchedAt
                     }));
@@ -318,7 +329,7 @@ where r.row_num between @start and @end";
             const string sql = @"
 select * from HangFire.Job where Id = @id
 select * from HangFire.JobParameter where JobId = @id
-select * from HangFire.JobHistory where JobId = @id order by Id desc";
+select * from HangFire.State where JobId = @id order by Id desc";
 
             using (var multi = _connection.QueryMultiple(sql, new { id = jobId }))
             {
@@ -327,11 +338,11 @@ select * from HangFire.JobHistory where JobId = @id order by Id desc";
 
                 var parameters = multi.Read<JobParameter>().ToDictionary(x => x.Name, x => x.Value);
                 var history =
-                    multi.Read<JobHistory>()
+                    multi.Read<SqlState>()
                         .ToList()
                         .Select(x => new StateHistoryDto
                          {
-                             StateName = x.StateName,
+                             StateName = x.Name,
                              CreatedAt = x.CreatedAt,
                              Reason = x.Reason,
                              Data = JobHelper.FromJson<Dictionary<string, string>>(x.Data)
@@ -342,7 +353,6 @@ select * from HangFire.JobHistory where JobId = @id order by Id desc";
                 {
                     Arguments = JobHelper.FromJson<string[]>(job.Arguments),
                     CreatedAt = job.CreatedAt,
-                    State = job.State,
                     Method = DeserializeJobMethod(job.InvocationData),
                     History = history,
                     Properties = parameters
@@ -358,12 +368,14 @@ select * from HangFire.JobHistory where JobId = @id order by Id desc";
         public StatisticsDto GetStatistics()
         {
             var stats = new StatisticsDto();
-
+            
             const string sql = @"
-select [State], count(id) as [Count] From HangFire.Job group by [State]
-select count(Id) from HangFire.Server
-select count(distinct Queue) from HangFire.JobQueue
-select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded'
+select StateName as [State], count(id) as [Count] From HangFire.Job 
+group by StateName
+having StateName is not null;
+select count(Id) from HangFire.Server;
+select count(distinct Queue) from HangFire.JobQueue;
+select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
 ";
 
             using (var multi = _connection.QueryMultiple(sql))

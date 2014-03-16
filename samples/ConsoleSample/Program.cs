@@ -23,8 +23,6 @@ namespace ConsoleSample
             
             using (var server = new BackgroundJobServer(25, "critical", "default"))
             {
-                server.Start();
-
                 var count = 1;
 
                 while (true)
@@ -34,6 +32,11 @@ namespace ConsoleSample
                     if (command == null || command.Equals("stop", StringComparison.OrdinalIgnoreCase))
                     {
                         break;
+                    }
+
+                    if (command.Equals("start", StringComparison.OrdinalIgnoreCase))
+                    {
+                        server.Start();
                     }
 
                     if (command.StartsWith("add", StringComparison.OrdinalIgnoreCase))

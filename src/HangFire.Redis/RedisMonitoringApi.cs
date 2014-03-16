@@ -384,7 +384,6 @@ namespace HangFire.Redis
                 Arguments = job.ContainsKey("Arguments") ? JobHelper.FromJson<string[]>(job["Arguments"]) : null,
                 OldFormatArguments =
                     job.ContainsKey("Args") ? JobHelper.FromJson<Dictionary<string, string>>(job["Args"]) : null,
-                State = job.ContainsKey("State") ? job["State"] : null,
                 CreatedAt =
                     job.ContainsKey("CreatedAt") ? JobHelper.FromStringTimestamp(job["CreatedAt"]) : (DateTime?) null,
                 Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),

@@ -51,15 +51,14 @@ namespace HangFire.SqlServer
             TimeSpan expireIn)
         {
             const string createJobSql = @"
-insert into HangFire.Job (State, InvocationData, Arguments, CreatedAt, ExpireAt)
-values (@state, @invocationData, @arguments, @createdAt, @expireAt);
+insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt)
+values (@invocationData, @arguments, @createdAt, @expireAt);
 SELECT CAST(SCOPE_IDENTITY() as int)";
 
             var jobId = _connection.Query<int>(
                 createJobSql,
                 new
                 {
-                    state = "Created",
                     invocationData = JobHelper.ToJson(invocationData),
                     arguments = JobHelper.ToJson(arguments),
                     createdAt = DateTime.UtcNow,
@@ -92,9 +91,12 @@ values (@jobId, @name, @value)";
 
         public StateAndInvocationData GetJobStateAndInvocationData(string id)
         {
-            var job = _connection.Query<Job>(
-                @"select InvocationData, State from HangFire.Job where id = @id",
-                new { id = id })
+            const string sql = @"
+select InvocationData, StateName 
+from HangFire.Job
+where id = @id";
+
+            var job = _connection.Query<Job>(sql, new { id = id })
                 .SingleOrDefault();
 
             if (job == null) return null;
@@ -104,7 +106,7 @@ values (@jobId, @name, @value)";
             return new StateAndInvocationData
             {
                 InvocationData = data,
-                State = job.State,
+                State = job.StateName,
             };
         }
 

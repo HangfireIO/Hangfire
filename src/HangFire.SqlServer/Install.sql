@@ -1,5 +1,5 @@
 ﻿DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 2;
+SET @TARGET_SCHEMA_VERSION = 1;
 
 PRINT 'Installing HangFire SQL objects...';
 
@@ -50,48 +50,51 @@ BEGIN
         PRINT 'Installing schema version 1';
         
         -- Create job tables
-        CREATE TABLE [HangFire].[Job](
+        CREATE TABLE [HangFire].[Job] (
             [Id] [int] IDENTITY(1,1) NOT NULL,
-            [State] [nvarchar](20) NOT NULL,
+			[StateId] [int] NULL,
+			[StateName] [nvarchar](20) NULL, -- To speed-up queries.
             [InvocationData] [nvarchar](max) NOT NULL,
             [Arguments] [nvarchar](max) NOT NULL,
-            [StateData] [nvarchar](max) NULL,
             [CreatedAt] [datetime] NOT NULL,
             [ExpireAt] [datetime] NULL,
 
             CONSTRAINT [PK_HangFire_Job] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
         PRINT 'Created table [HangFire].[Job]';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Job_StateName] ON [HangFire].[Job] ([StateName] ASC);
+		PRINT 'Created index [IX_HangFire_Job_StateName]';
         
         -- Job history table
         
-        CREATE TABLE [HangFire].[JobHistory](
+        CREATE TABLE [HangFire].[State] (
             [Id] [int] IDENTITY(1,1) NOT NULL,
             [JobId] [int] NOT NULL,
-			[StateName] nvarchar(20) NOT NULL,
-			[Reason] nvarchar(100) NULL,
-            [CreatedAt] datetime2(7) NOT NULL,
+			[Name] [nvarchar](20) NOT NULL,
+			[Reason] [nvarchar](100) NULL,
+            [CreatedAt] [datetime] NOT NULL,
             [Data] [nvarchar](max) NULL,
             
-            CONSTRAINT [PK_HangFire_JobHistory] PRIMARY KEY CLUSTERED ([Id] ASC)
+            CONSTRAINT [PK_HangFire_State] PRIMARY KEY CLUSTERED ([Id] ASC)
         );
-        PRINT 'Created table [HangFire].[JobHistory]';
+        PRINT 'Created table [HangFire].[State]';
 
-        ALTER TABLE [HangFire].[JobHistory] ADD CONSTRAINT [FK_HangFire_JobHistory_Job] FOREIGN KEY([JobId])
+        ALTER TABLE [HangFire].[State] ADD CONSTRAINT [FK_HangFire_State_Job] FOREIGN KEY([JobId])
             REFERENCES [HangFire].[Job] ([Id])
             ON UPDATE CASCADE
             ON DELETE CASCADE;
-        PRINT 'Created constraint [FK_HangFire_JobHistory_Job]';
+        PRINT 'Created constraint [FK_HangFire_State_Job]';
         
-        CREATE NONCLUSTERED INDEX [IX_HangFire_JobHistory_JobId] ON [HangFire].[JobHistory] ([JobId] ASC);
-        PRINT 'Created index [IX_HangFire_JobHistory_JobId]';
+        CREATE NONCLUSTERED INDEX [IX_HangFire_State_JobId] ON [HangFire].[State] ([JobId] ASC);
+        PRINT 'Created index [IX_HangFire_State_JobId]';
         
         -- Job parameters table
         
         CREATE TABLE [HangFire].[JobParameter](
             [Id] [int] IDENTITY(1,1) NOT NULL,
             [JobId] [int] NOT NULL,
-            [Name] [nvarchar](100) NOT NULL,
+            [Name] [nvarchar](40) NOT NULL,
             [Value] [nvarchar](max) NULL,
             
             CONSTRAINT [PK_HangFire_JobParameter] PRIMARY KEY CLUSTERED ([Id] ASC)
@@ -115,7 +118,7 @@ BEGIN
         CREATE TABLE [HangFire].[JobQueue](
             [Id] [int] IDENTITY(1,1) NOT NULL,
             [JobId] [int] NOT NULL,
-            [Queue] [nvarchar](100) NOT NULL,
+            [Queue] [nvarchar](20) NOT NULL,
             [FetchedAt] [datetime] NULL,
             
             CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
@@ -150,7 +153,7 @@ BEGIN
         CREATE TABLE [HangFire].[Hash](
             [Id] [int] IDENTITY(1,1) NOT NULL,
             [Key] [nvarchar](100) NOT NULL,
-            [Name] [nvarchar](100) NOT NULL,
+            [Name] [nvarchar](40) NOT NULL,
             [StringValue] [nvarchar](max) NULL,
             [IntValue] [int] NULL,
             [ExpireAt] [datetime] NULL,
@@ -210,13 +213,6 @@ BEGIN
         );
         PRINT 'Created index [UX_HangFire_Value_Key]';
 
-		SET @CURRENT_SCHEMA_VERSION = 1;
-    END
-
-	IF @CURRENT_SCHEMA_VERSION = 1
-	BEGIN
-		PRINT 'Installing schema version 2';
-
 		CREATE TABLE [HangFire].[Counter](
 			[Id] [int] IDENTITY(1,1) NOT NULL,
 			[Key] [nvarchar](100) NOT NULL,
@@ -231,8 +227,17 @@ BEGIN
 		INCLUDE ([Value]);
 		PRINT 'Created index [IX_HangFire_Counter_Key]';
 
+		SET @CURRENT_SCHEMA_VERSION = 1;
+    END
+
+	/*IF @CURRENT_SCHEMA_VERSION = 1
+	BEGIN
+		PRINT 'Installing schema version 2';
+
+		-- Insert migration here
+
 		SET @CURRENT_SCHEMA_VERSION = 2;
-	END
+	END*/
 
 	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
 	IF @@ROWCOUNT = 0 

@@ -16,7 +16,7 @@ namespace HangFire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
-        private const int RequiredSchemaVersion = 2;
+        private const int RequiredSchemaVersion = 1;
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(SqlServerStorage));
 

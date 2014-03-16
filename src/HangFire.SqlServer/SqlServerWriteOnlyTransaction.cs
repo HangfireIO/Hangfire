@@ -63,24 +63,39 @@ namespace HangFire.SqlServer
         public void SetJobState(string jobId, JobState state, JobMethod method)
         {
             var stateData = state.GetData(method);
-            QueueCommand(x => x.Execute(
-                @"update HangFire.Job set State = @name, StateData = @data where Id = @id",
-                new { name = state.StateName, data = JobHelper.ToJson(stateData), id = jobId }));
 
-            AppendJobHistory(jobId, state, method);
+            const string addAndSetStateSql = @"
+insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)
+values (@jobId, @name, @reason, @createdAt, @data);
+update HangFire.Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;";
+
+            QueueCommand(x => x.Execute(
+                addAndSetStateSql,
+                new
+                {
+                    jobId = jobId,
+                    name = state.StateName,
+                    reason = state.Reason,
+                    createdAt = DateTime.UtcNow,
+                    data = JobHelper.ToJson(stateData),
+                    id = jobId
+                }));
         }
 
         public void AppendJobHistory(string jobId, JobState state, JobMethod method)
         {
             var stateData = state.GetData(method);
 
+            const string addStateSql = @"
+insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)
+values (@jobId, @name, @reason, @createdAt, @data)";
+
             QueueCommand(x => x.Execute(
-                @"insert into HangFire.JobHistory (JobId, StateName, Reason, CreatedAt, Data) "
-                + @"values (@jobId, @stateName, @reason, @createdAt, @data)",
+                addStateSql,
                 new
                 {
                     jobId = jobId, 
-                    stateName = state.StateName,
+                    name = state.StateName,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow, 
                     data = JobHelper.ToJson(stateData)
