@@ -318,7 +318,7 @@ where r.row_num between @start and @end";
             const string sql = @"
 select * from HangFire.Job where Id = @id
 select * from HangFire.JobParameter where JobId = @id
-select * from HangFire.JobHistory where JobId = @id order by CreatedAt desc";
+select * from HangFire.JobHistory where JobId = @id order by Id desc";
 
             using (var multi = _connection.QueryMultiple(sql, new { id = jobId }))
             {
