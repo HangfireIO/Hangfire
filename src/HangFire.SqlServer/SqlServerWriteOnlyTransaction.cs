@@ -82,7 +82,7 @@ update HangFire.Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id =
                 }));
         }
 
-        public void AppendJobHistory(string jobId, JobState state, JobMethod method)
+        public void AddJobState(string jobId, JobState state, JobMethod method)
         {
             var stateData = state.GetData(method);
 

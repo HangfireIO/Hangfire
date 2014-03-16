@@ -172,7 +172,7 @@ namespace HangFire.States
                 {
                     using (var transaction = _connection.CreateWriteTransaction())
                     {
-                        transaction.AppendJobHistory(context.JobId, oldState, context.JobMethod);
+                        transaction.AddJobState(context.JobId, oldState, context.JobMethod);
                         transaction.Commit();
                     }
                 }

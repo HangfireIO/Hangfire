@@ -77,10 +77,10 @@ namespace HangFire.Redis
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId),
                 storedData));
 
-            AppendJobHistory(jobId, state, method);
+            AddJobState(jobId, state, method);
         }
 
-        public void AppendJobHistory(string jobId, JobState state, JobMethod method)
+        public void AddJobState(string jobId, JobState state, JobMethod method)
         {
             var stateData = state.GetData(method);
 
