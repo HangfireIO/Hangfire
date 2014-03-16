@@ -220,7 +220,7 @@ WriteLiteral("</span>\r\n                    </td>\r\n                    <td>")
 
             
             #line 74 "..\..\Pages\DequeuedJobsPage.cshtml"
-                   Write(HtmlHelper.DisplayMethod(job.Value.Method));
+                   Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
 
             
             #line default

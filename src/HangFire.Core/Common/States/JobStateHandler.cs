@@ -18,7 +18,7 @@ using HangFire.Storage;
 
 namespace HangFire.Common.States
 {
-    public abstract class JobStateHandler
+    public abstract class StateHandler
     {
         public virtual void Apply(
             StateApplyingContext context, IWriteOnlyTransaction transaction)

@@ -219,7 +219,7 @@ WriteLiteral("                    </td> \r\n                    <td>");
 
             
             #line 70 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                   Write(HtmlHelper.DisplayMethod(job.Value.Method));
+                   Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
 
             
             #line default

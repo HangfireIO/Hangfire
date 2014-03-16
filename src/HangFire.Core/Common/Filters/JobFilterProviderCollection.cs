@@ -65,17 +65,17 @@ namespace HangFire.Common.Filters
         /// <summary>
         /// Returns the collection of filter providers.
         /// </summary>
-        /// <param name="method">Job method, can be null.</param>
+        /// <param name="methodData">Job method, can be null.</param>
         /// <returns>The collection of filter providers.</returns>
-        public IEnumerable<JobFilter> GetFilters(JobMethod method)
+        public IEnumerable<JobFilter> GetFilters(MethodData methodData)
         {
-            if (method == null)
+            if (methodData == null)
             {
                 return Enumerable.Empty<JobFilter>();
             }
 
             IEnumerable<JobFilter> combinedFilters =
-                Items.SelectMany(fp => fp.GetFilters(method))
+                Items.SelectMany(fp => fp.GetFilters(methodData))
                     .OrderBy(filter => filter, _filterComparer);
 
             // Remove duplicates from the back forward

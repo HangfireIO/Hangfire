@@ -21,16 +21,16 @@ namespace HangFire.Tests.States
         private State _state;
         private Exception _failedException;
 
-        private JobMethod _defaultData 
-            = new JobMethod(typeof(TestJob), typeof(TestJob).GetMethod("Perform"));
+        private MethodData _defaultData 
+            = new MethodData(typeof(TestJob), typeof(TestJob).GetMethod("Perform"));
 
         private IDictionary<string, Mock<State>> _stateMocks
             = new Dictionary<string, Mock<State>>(); 
 
-        private Mock<JobStateHandler> _oldStateDescriptorMock;
+        private Mock<StateHandler> _oldStateDescriptorMock;
 
-        private readonly List<JobStateHandler> _handlers
-            = new List<JobStateHandler>();
+        private readonly List<StateHandler> _handlers
+            = new List<StateHandler>();
         private readonly IList<object> _filters 
             = new List<object>();
 
@@ -87,7 +87,7 @@ namespace HangFire.Tests.States
         {
             var mock = new Mock<State>();
             mock.Setup(x => x.StateName).Returns(state);
-            mock.Setup(x => x.GetData(It.IsAny<JobMethod>()))
+            mock.Setup(x => x.GetData(It.IsAny<MethodData>()))
                 .Returns(new Dictionary<string, string>());
 
             _stateMocks.Add(state, mock);
@@ -99,7 +99,7 @@ namespace HangFire.Tests.States
             Given(String.Format("a '{0}' state", state));
 
             _stateProperties = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
-            _stateMocks[state].Setup(x => x.GetData(It.IsAny<JobMethod>()))
+            _stateMocks[state].Setup(x => x.GetData(It.IsAny<MethodData>()))
                 .Returns(_stateProperties);
         }
 

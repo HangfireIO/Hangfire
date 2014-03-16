@@ -10,23 +10,18 @@ namespace HangFire.Core.Tests.States
 {
     public class SucceededStateHandlerFacts
     {
-        private const string JobId = "1";
-
         private readonly StateApplyingContext _context;
         private readonly Mock<IWriteOnlyTransaction> _transactionMock
             = new Mock<IWriteOnlyTransaction>();
 
         public SucceededStateHandlerFacts()
         {
-            var methodInfo = typeof(SucceededStateHandlerFacts)
-                .GetMethod("TestMethod");
-            var jobMethod = new JobMethod(typeof(SucceededStateHandlerFacts), methodInfo);
-
-            var stateContext = new StateContext(JobId, jobMethod);
-            var stateMock = new Mock<State>();
-            var connectionMock = new Mock<IStorageConnection>();
+            var methodData = MethodData.FromExpression(() => Console.WriteLine());
             var stateChangingContext = new StateChangingContext(
-                stateContext, stateMock.Object, "Old", connectionMock.Object);
+                new StateContext("1", methodData), 
+                new Mock<State>().Object, 
+                null, 
+                new Mock<IStorageConnection>().Object);
 
             _context = new StateApplyingContext(stateChangingContext);
         }

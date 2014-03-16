@@ -10,7 +10,7 @@ namespace HangFire.Storage.Monitoring
             InSucceededState = true;
         }
 
-        public JobMethod Method { get; set; }
+        public MethodData MethodData { get; set; }
         public DateTime? SucceededAt { get; set; }
         public bool InSucceededState { get; set; }
     }

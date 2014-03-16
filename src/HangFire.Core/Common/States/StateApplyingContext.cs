@@ -29,8 +29,6 @@ namespace HangFire.Common.States
         internal StateApplyingContext(StateChangingContext context)
             : base(context)
         {
-            if (context == null) throw new ArgumentNullException("context");
-
             _connection = context.Connection;
             OldStateName = context.CurrentState;
             NewState = context.CandidateState;
@@ -40,9 +38,12 @@ namespace HangFire.Common.States
         public State NewState { get; private set; }
 
         internal bool ApplyState(
-            IDictionary<string, List<JobStateHandler>> handlers,
+            IDictionary<string, List<StateHandler>> handlers,
             IEnumerable<IStateChangedFilter> filters)
         {
+            if (handlers == null) throw new ArgumentNullException("handlers");
+            if (filters == null) throw new ArgumentNullException("filters");
+
             using (var transaction = _connection.CreateWriteTransaction())
             {
                 foreach (var handler in GetHandlers(OldStateName, handlers))
@@ -55,7 +56,7 @@ namespace HangFire.Common.States
                     filter.OnStateUnapplied(this, transaction);
                 }
 
-                transaction.SetJobState(JobId, NewState, JobMethod);
+                transaction.SetJobState(JobId, NewState, MethodData);
 
                 foreach (var handler in GetHandlers(NewState.StateName, handlers))
                 {
@@ -80,12 +81,12 @@ namespace HangFire.Common.States
             }
         }
 
-        private static IEnumerable<JobStateHandler> GetHandlers(
-            string stateName, IDictionary<string, List<JobStateHandler>> handlers)
+        private static IEnumerable<StateHandler> GetHandlers(
+            string stateName, IDictionary<string, List<StateHandler>> handlers)
         {
             return handlers.ContainsKey(stateName) 
                 ? handlers[stateName] 
-                : Enumerable.Empty<JobStateHandler>();
+                : Enumerable.Empty<StateHandler>();
         }
     }
 }

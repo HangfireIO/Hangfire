@@ -21,19 +21,19 @@ namespace HangFire.Common.States
     public class StateContext
     {
         internal StateContext(StateContext context)
-            : this(context.JobId, context.JobMethod)
+            : this(context.JobId, context.MethodData)
         {
         }
 
-        internal StateContext(string jobId, JobMethod jobMethod)
+        internal StateContext(string jobId, MethodData methodData)
         {
             if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
             
             JobId = jobId;
-            JobMethod = jobMethod;
+            MethodData = methodData;
         }
 
         public string JobId { get; private set; }
-        public JobMethod JobMethod { get; private set; }
+        public MethodData MethodData { get; private set; }
     }
 }

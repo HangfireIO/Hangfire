@@ -36,7 +36,7 @@ namespace HangFire.States
             get { return true; }
         }
 
-        public override IDictionary<string, string> GetData(JobMethod data)
+        public override IDictionary<string, string> GetData(MethodData data)
         {
             return new Dictionary<string, string>
                 {
@@ -44,7 +44,7 @@ namespace HangFire.States
                 };
         }
 
-        public class Handler : JobStateHandler
+        public class Handler : StateHandler
         {
             public override void Apply(
                 StateApplyingContext context, IWriteOnlyTransaction transaction)

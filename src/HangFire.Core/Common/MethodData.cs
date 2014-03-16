@@ -31,15 +31,15 @@ namespace HangFire.Common
     /// 
     /// <remarks>
     /// Information about method that will be called consist of a 
-    /// <see cref="JobMethod.Type"/> and a <see cref="MethodInfo"/>.
+    /// <see cref="MethodData.Type"/> and a <see cref="MethodInfo"/>.
     /// Although there is the <see cref="System.Reflection.MethodInfo.DeclaringType"/> property,
     /// this class allows you to set a class that contains the given method
     /// explicitly, enabling you to choose not only the base class, but one
     /// of its successors.
     /// </remarks>
-    public class JobMethod
+    public class MethodData
     {
-        internal JobMethod(Type type, MethodInfo method)
+        internal MethodData(Type type, MethodInfo method)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
@@ -82,7 +82,7 @@ namespace HangFire.Common
         [Obsolete("This property will be removed before 1.0. Use the new version of the Client API.")]
         public bool OldFormat { get; private set; }
 
-        public static JobMethod Deserialize(InvocationData invocationData)
+        public static MethodData Deserialize(InvocationData invocationData)
         {
             if (invocationData == null) throw new ArgumentNullException("invocationData");
 
@@ -117,7 +117,7 @@ namespace HangFire.Common
                         String.Join(", ", parameterTypes.Select(x => x.Name))));
                 }
 
-                return new JobMethod(type, method) { OldFormat = oldFormat };
+                return new MethodData(type, method) { OldFormat = oldFormat };
             }
             catch (Exception ex)
             {
@@ -125,7 +125,7 @@ namespace HangFire.Common
             }
         }
 
-        public static JobMethod FromExpression(Expression<Action> methodCall)
+        public static MethodData FromExpression(Expression<Action> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
@@ -137,10 +137,10 @@ namespace HangFire.Common
 
             // Static methods can not be overrided in the derived classes, 
             // so we can take the method's declaring type.
-            return new JobMethod(callExpression.Method.DeclaringType, callExpression.Method);
+            return new MethodData(callExpression.Method.DeclaringType, callExpression.Method);
         }
 
-        public static JobMethod FromExpression<T>(Expression<Action<T>> methodCall)
+        public static MethodData FromExpression<T>(Expression<Action<T>> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
@@ -150,7 +150,7 @@ namespace HangFire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
             }
 
-            return new JobMethod(typeof(T), callExpression.Method);
+            return new MethodData(typeof(T), callExpression.Method);
         }
 
         internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)

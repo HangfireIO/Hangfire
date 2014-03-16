@@ -94,9 +94,9 @@ WriteLiteral("\r\n");
 
     string title = null;
 
-    if (job != null && job.Method != null)
+    if (job != null && job.MethodData != null)
     {
-        title = HtmlHelper.DisplayMethod(job.Method);
+        title = HtmlHelper.DisplayMethod(job.MethodData);
     }
 
     title = title ?? "Job";
@@ -177,7 +177,7 @@ WriteLiteral("\"></span>\r\n                </div>\r\n");
 
             
             #line 45 "..\..\Pages\JobDetailsPage.cshtml"
-             if (job.Method != null)
+             if (job.MethodData != null)
             {
 
             
@@ -188,7 +188,7 @@ WriteLiteral("                <pre><code>");
 
             
             #line 47 "..\..\Pages\JobDetailsPage.cshtml"
-                      Write(JobMethodCallRenderer.Render(job.Method, job.Arguments, job.OldFormatArguments));
+                      Write(JobMethodCallRenderer.Render(job.MethodData, job.Arguments, job.OldFormatArguments));
 
             
             #line default

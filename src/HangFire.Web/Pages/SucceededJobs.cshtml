@@ -69,9 +69,9 @@ else
                     else
                     {
                         <td>
-                            @HtmlHelper.QueueLabel(job.Value.Method.GetQueue())
-                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Method)">
-                                @HtmlHelper.DisplayMethod(job.Value.Method)    
+                            @HtmlHelper.QueueLabel(job.Value.MethodData.GetQueue())
+                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
+                                @HtmlHelper.DisplayMethod(job.Value.MethodData)    
                             </span>
                         </td>
                         <td>

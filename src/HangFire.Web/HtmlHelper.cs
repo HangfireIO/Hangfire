@@ -32,20 +32,20 @@ namespace HangFire.Web
 {
     internal static class HtmlHelper
     {
-        public static string DisplayMethod(JobMethod method)
+        public static string DisplayMethod(MethodData methodData)
         {
-            if (method == null)
+            if (methodData == null)
             {
                 return null;
             }
 
-            var separator = method.MethodInfo.IsStatic ? "." : "::";
-            return String.Format("{0}{1}{2}", method.Type.Name, separator, method.MethodInfo.Name);
+            var separator = methodData.MethodInfo.IsStatic ? "." : "::";
+            return String.Format("{0}{1}{2}", methodData.Type.Name, separator, methodData.MethodInfo.Name);
         }
 
-        public static string DisplayMethodHint(JobMethod method)
+        public static string DisplayMethodHint(MethodData methodData)
         {
-            return method == null ? null : method.Type.FullName;
+            return methodData == null ? null : methodData.Type.FullName;
         }
 
         public static IHtmlString Raw(string value)
@@ -61,14 +61,14 @@ namespace HangFire.Web
                 : "#" + jobId);
         }
 
-        public static string JobType(JobMethod method)
+        public static string JobType(MethodData methodData)
         {
-            if (method == null)
+            if (methodData == null)
             {
                 return "Could not find the target method.";
             }
 
-            return method.Type.FullName;
+            return methodData.Type.FullName;
         }
 
         public static string JobType(string typeName)
@@ -88,9 +88,9 @@ namespace HangFire.Web
             return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
         }
 
-        public static IHtmlString QueueLabel(JobMethod method)
+        public static IHtmlString QueueLabel(MethodData methodData)
         {
-            return QueueLabel(method.GetQueue());
+            return QueueLabel(methodData.GetQueue());
         }
 
         public static IHtmlString QueueLabel(string queue)

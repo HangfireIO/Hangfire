@@ -50,9 +50,9 @@ namespace HangFire
             return Enumerable.Empty<IThreadWrappable>();
         }
 
-        public virtual IEnumerable<JobStateHandler> GetStateHandlers()
+        public virtual IEnumerable<StateHandler> GetStateHandlers()
         {
-            return Enumerable.Empty<JobStateHandler>();
+            return Enumerable.Empty<StateHandler>();
         }
     }
 }

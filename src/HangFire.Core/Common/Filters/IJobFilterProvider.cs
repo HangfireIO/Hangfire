@@ -27,11 +27,11 @@ namespace HangFire.Common.Filters
         /// Returns an enumerator that contains all the <see cref="IJobFilterProvider"/>.
         /// </summary>
         /// 
-        /// <param name="method">Job invocation data.</param>
+        /// <param name="methodData">Job invocation data.</param>
         /// 
         /// <returns>
         /// The enumerator that contains all the <see cref="IJobFilterProvider"/>.
         /// </returns>
-        IEnumerable<JobFilter> GetFilters(JobMethod method);
+        IEnumerable<JobFilter> GetFilters(MethodData methodData);
     }
 }

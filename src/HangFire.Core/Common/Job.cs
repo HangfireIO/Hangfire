@@ -24,7 +24,7 @@ namespace HangFire.Common
         /// 
         /// <param name="methodData">Method that will be called during the performance of the job.</param>
         /// <param name="arguments">Serialized arguments that will be passed to a <paramref name="methodData"/>.</param>
-        public Job(JobMethod methodData, IEnumerable<string> arguments)
+        public Job(MethodData methodData, IEnumerable<string> arguments)
         {
             if (methodData == null) throw new ArgumentNullException("methodData");
 
@@ -35,7 +35,7 @@ namespace HangFire.Common
         /// <summary>
         /// Gets the information about a method that will be performed in background.
         /// </summary>
-        public JobMethod MethodData { get; private set; }
+        public MethodData MethodData { get; private set; }
 
         /// <summary>
         /// Gets arguments collection that will be passed to the method.
@@ -56,7 +56,7 @@ namespace HangFire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
             }
 
-            return new Job(JobMethod.FromExpression(methodCall), GetArguments(callExpression));
+            return new Job(MethodData.FromExpression(methodCall), GetArguments(callExpression));
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace HangFire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
             }
 
-            return new Job(JobMethod.FromExpression(methodCall), GetArguments(callExpression));
+            return new Job(MethodData.FromExpression(methodCall), GetArguments(callExpression));
         }
 
         private static IEnumerable<string> GetArguments(MethodCallExpression callExpression)

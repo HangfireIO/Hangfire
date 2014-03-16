@@ -67,7 +67,7 @@ else
                             <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                         }
                     </td> 
-                    <td>@HtmlHelper.DisplayMethod(job.Value.Method)</td>
+                    <td>@HtmlHelper.DisplayMethod(job.Value.MethodData)</td>
                     <td>
                         @if (job.Value.EnqueuedAt.HasValue)
                         {

@@ -45,14 +45,13 @@ namespace HangFire.Common.States
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value", "Candidate state can not be set to null.");
+                    throw new ArgumentNullException("value", "The CandidateState property can not be set to null.");
                 }
                 _candidateState = value;
             }
         }
 
         public string CurrentState { get; private set; }
-
         public IStorageConnection Connection { get; private set; }
 
         public void SetJobParameter<T>(string name, T value)

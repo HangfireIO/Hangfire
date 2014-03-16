@@ -28,7 +28,7 @@ namespace HangFire.Server.Performing
     public class PerformContext : WorkerContext
     {
         internal PerformContext(PerformContext context)
-            : this(context, context.Connection, context.JobId, context.JobMethod)
+            : this(context, context.Connection, context.JobId, context.MethodData)
         {
             Items = context.Items;
         }
@@ -37,16 +37,16 @@ namespace HangFire.Server.Performing
             WorkerContext workerContext, 
             IStorageConnection connection, 
             string jobId,
-            JobMethod jobMethod)
+            MethodData methodData)
             : base(workerContext)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (jobId == null) throw new ArgumentNullException("jobId");
-            if (jobMethod == null) throw new ArgumentNullException("jobMethod");
+            if (methodData == null) throw new ArgumentNullException("methodData");
 
             Connection = connection;
             JobId = jobId;
-            JobMethod = jobMethod;
+            MethodData = methodData;
             Items = new Dictionary<string, object>();
         }
 
@@ -58,7 +58,7 @@ namespace HangFire.Server.Performing
         public IDictionary<string, object> Items { get; private set; }
 
         public string JobId { get; private set; }
-        public JobMethod JobMethod { get; private set; }
+        public MethodData MethodData { get; private set; }
 
         public IStorageConnection Connection { get; private set; }
 

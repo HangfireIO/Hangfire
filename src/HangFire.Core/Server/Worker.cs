@@ -159,8 +159,8 @@ namespace HangFire.Server
             {
                 IJobPerformStrategy performStrategy;
 
-                var jobMethod = JobMethod.Deserialize(payload.InvocationData);
-                if (jobMethod.OldFormat)
+                var methodData = MethodData.Deserialize(payload.InvocationData);
+                if (methodData.OldFormat)
                 {
                     // For compatibility with the Old Client API.
                     // TODO: remove it in version 1.0
@@ -168,17 +168,17 @@ namespace HangFire.Server
                         payload.Args);
 
                     performStrategy = new JobAsClassPerformStrategy(
-                        jobMethod, arguments);
+                        methodData, arguments);
                 }
                 else
                 {
                     var arguments = JobHelper.FromJson<string[]>(payload.Arguments);
 
                     performStrategy = new JobAsMethodPerformStrategy(
-                        jobMethod, arguments);
+                        methodData, arguments);
                 }
                 
-                var performContext = new PerformContext(_context, connection, payload.Id, jobMethod);
+                var performContext = new PerformContext(_context, connection, payload.Id, methodData);
                 _context.Performer.PerformJob(performContext, performStrategy);
 
                 state = new SucceededState();

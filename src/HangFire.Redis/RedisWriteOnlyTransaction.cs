@@ -54,7 +54,7 @@ namespace HangFire.Redis
         }
 
         public void SetJobState(
-            string jobId, State state, JobMethod method)
+            string jobId, State state, MethodData methodData)
         {
             _transaction.QueueCommand(x => x.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", jobId),
@@ -64,7 +64,7 @@ namespace HangFire.Redis
             _transaction.QueueCommand(x => x.RemoveEntry(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId)));
 
-            var stateData = state.GetData(method);
+            var stateData = state.GetData(methodData);
 
             // Redis does not provide repeatable read functionality,
             // so job state might be changed between reads of the job
@@ -77,12 +77,12 @@ namespace HangFire.Redis
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId),
                 storedData));
 
-            AddJobState(jobId, state, method);
+            AddJobState(jobId, state, methodData);
         }
 
-        public void AddJobState(string jobId, State state, JobMethod method)
+        public void AddJobState(string jobId, State state, MethodData methodData)
         {
-            var stateData = state.GetData(method);
+            var stateData = state.GetData(methodData);
 
             // We are storing some more information in the same key,
             // let's add it.

@@ -291,7 +291,7 @@ WriteLiteral("                                        </td>\r\n                 
 
             
             #line 77 "..\..\Pages\QueuesPage.cshtml"
-                                       Write(HtmlHelper.DisplayMethod(job.Value.Method));
+                                       Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
 
             
             #line default

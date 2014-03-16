@@ -6,8 +6,8 @@ namespace HangFire.States
 {
     public static class GlobalStateHandlerCollection
     {
-        private static readonly List<JobStateHandler> Handlers
-            = new List<JobStateHandler>();
+        private static readonly List<StateHandler> Handlers
+            = new List<StateHandler>();
 
         static GlobalStateHandlerCollection()
         {
@@ -16,13 +16,13 @@ namespace HangFire.States
             RegisterHandler(new EnqueuedState.Handler());
         }
 
-        public static void RegisterHandler(JobStateHandler handler)
+        public static void RegisterHandler(StateHandler handler)
         {
             if (handler == null) throw new ArgumentNullException("handler");
             Handlers.Add(handler);
         }
 
-        public static IEnumerable<JobStateHandler> GetHandlers()
+        public static IEnumerable<StateHandler> GetHandlers()
         {
             return Handlers;
         }

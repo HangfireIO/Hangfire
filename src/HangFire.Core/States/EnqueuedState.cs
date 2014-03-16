@@ -31,7 +31,7 @@ namespace HangFire.States
 
         public override string StateName { get { return Name; } }
 
-        public override IDictionary<string, string> GetData(JobMethod data)
+        public override IDictionary<string, string> GetData(MethodData data)
         {
             var queue = GetQueue(data);
             
@@ -42,15 +42,15 @@ namespace HangFire.States
                 };
         }
 
-        public static string GetQueue(JobMethod method)
+        public static string GetQueue(MethodData methodData)
         {
-            if (method == null) throw new ArgumentNullException("method");
+            if (methodData == null) throw new ArgumentNullException("methodData");
 
             QueueAttribute attribute = null;
 
-            if (!method.OldFormat)
+            if (!methodData.OldFormat)
             {
-                attribute = method.MethodInfo
+                attribute = methodData.MethodInfo
                     .GetCustomAttributes(true)
                     .OfType<QueueAttribute>()
                     .FirstOrDefault();
@@ -58,7 +58,7 @@ namespace HangFire.States
 
             if (attribute == null)
             {
-                attribute = method.Type
+                attribute = methodData.Type
                     .GetCustomAttributes(true)
                     .OfType<QueueAttribute>()
                     .FirstOrDefault();
@@ -86,12 +86,12 @@ namespace HangFire.States
             }
         }
 
-        public class Handler : JobStateHandler
+        public class Handler : StateHandler
         {
             public override void Apply(
                 StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
-                var queue = GetQueue(context.JobMethod);
+                var queue = GetQueue(context.MethodData);
 
                 transaction.AddToQueue(queue, context.JobId);
             }
@@ -105,10 +105,10 @@ namespace HangFire.States
 
     public static class EnqueuedStateExtensions
     {
-        public static string GetQueue(this JobMethod method)
+        public static string GetQueue(this MethodData methodData)
         {
-            if (method == null) return null;
-            return EnqueuedState.GetQueue(method);
+            if (methodData == null) return null;
+            return EnqueuedState.GetQueue(methodData);
         }
     }
 }

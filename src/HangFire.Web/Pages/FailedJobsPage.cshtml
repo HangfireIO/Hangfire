@@ -70,11 +70,11 @@ else
                             </span>
                         }
                     </td>
-                    <td>@HtmlHelper.QueueLabel(job.Value.Method)</td>
+                    <td>@HtmlHelper.QueueLabel(job.Value.MethodData)</td>
                     <td class="@(job.Value.InFailedState ? "expander" : null)">
                         <div>
-                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Method)">
-                                @HtmlHelper.DisplayMethod(job.Value.Method)
+                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
+                                @HtmlHelper.DisplayMethod(job.Value.MethodData)
                             </span>
                         </div>
                         @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))

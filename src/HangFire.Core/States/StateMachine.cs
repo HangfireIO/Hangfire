@@ -26,12 +26,12 @@ namespace HangFire.States
 {
     public class StateMachine
     {
-        private readonly IDictionary<string, List<JobStateHandler>> _handlers
-            = new Dictionary<string, List<JobStateHandler>>();
+        private readonly IDictionary<string, List<StateHandler>> _handlers
+            = new Dictionary<string, List<StateHandler>>();
 
         private readonly IStorageConnection _connection;
 
-        private readonly Func<JobMethod, IEnumerable<JobFilter>> _getFiltersThunk
+        private readonly Func<MethodData, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
         public StateMachine(IStorageConnection connection)
@@ -41,7 +41,7 @@ namespace HangFire.States
 
         internal StateMachine(
             IStorageConnection connection,
-            IEnumerable<JobStateHandler> stateHandlers,
+            IEnumerable<StateHandler> stateHandlers,
             IEnumerable<object> filters)
         {
             if (connection == null) throw new ArgumentNullException("connection");
@@ -116,11 +116,11 @@ namespace HangFire.States
                     return false;
                 }
 
-                JobMethod jobMethod = null;
+                MethodData methodData = null;
 
                 try
                 {
-                    jobMethod = JobMethod.Deserialize(jobData.InvocationData);
+                    methodData = MethodData.Deserialize(jobData.InvocationData);
                 }
                 catch (JobLoadException ex)
                 {
@@ -137,16 +137,16 @@ namespace HangFire.States
                     }; 
                 }
 
-                var context = new StateContext(jobId, jobMethod);
+                var context = new StateContext(jobId, methodData);
                 var stateChangingContext = 
                     new StateChangingContext(context, state, jobData.State, _connection);
 
-                if (jobMethod == null)
+                if (methodData == null)
                 {
                     return ApplyState(stateChangingContext, Enumerable.Empty<IStateChangedFilter>());
                 }
 
-                var filterInfo = GetFilters(jobMethod);
+                var filterInfo = GetFilters(methodData);
                 InvokeStateChangingFilters(stateChangingContext, filterInfo.StateChangingFilters);
 
                 return ApplyState(stateChangingContext, filterInfo.StateChangedFilters);
@@ -171,26 +171,26 @@ namespace HangFire.States
                 {
                     using (var transaction = _connection.CreateWriteTransaction())
                     {
-                        transaction.AddJobState(context.JobId, oldState, context.JobMethod);
+                        transaction.AddJobState(context.JobId, oldState, context.MethodData);
                         transaction.Commit();
                     }
                 }
             }
         }
 
-        private JobFilterInfo GetFilters(JobMethod method)
+        private JobFilterInfo GetFilters(MethodData methodData)
         {
-            return new JobFilterInfo(_getFiltersThunk(method));
+            return new JobFilterInfo(_getFiltersThunk(methodData));
         }
 
-        private void RegisterHandler(JobStateHandler handler)
+        private void RegisterHandler(StateHandler handler)
         {
             if (handler == null) throw new ArgumentNullException("handler");
             if (String.IsNullOrEmpty(handler.StateName)) throw new ArgumentNullException("stateName");
 
             if (!_handlers.ContainsKey(handler.StateName))
             {
-                _handlers.Add(handler.StateName, new List<JobStateHandler>());
+                _handlers.Add(handler.StateName, new List<StateHandler>());
             }
 
             _handlers[handler.StateName].Add(handler);

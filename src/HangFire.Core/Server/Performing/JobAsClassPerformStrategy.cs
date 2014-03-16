@@ -25,17 +25,17 @@ namespace HangFire.Server.Performing
     {
         private readonly JobActivator _activator = JobActivator.Current;
 
-        private readonly JobMethod _method;
+        private readonly MethodData _methodData;
         private readonly Dictionary<string, string> _arguments;
 
         public JobAsClassPerformStrategy(
-            JobMethod method,
+            MethodData methodData,
             Dictionary<string, string> arguments)
         {
-            if (method == null) throw new ArgumentNullException("method");
+            if (methodData == null) throw new ArgumentNullException("methodData");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
-            _method = method;
+            _methodData = methodData;
             _arguments = arguments;
         }
 
@@ -45,12 +45,12 @@ namespace HangFire.Server.Performing
 
             try
             {
-                instance = (BackgroundJob)_activator.ActivateJob(_method.Type);
+                instance = (BackgroundJob)_activator.ActivateJob(_methodData.Type);
 
                 if (instance == null)
                 {
                     throw new InvalidOperationException(
-                        String.Format("JobActivator returned NULL instance of the '{0}' type.", _method.Type));
+                        String.Format("JobActivator returned NULL instance of the '{0}' type.", _methodData.Type));
                 }
 
                 InitializeProperties(instance, _arguments);
@@ -80,7 +80,7 @@ namespace HangFire.Server.Performing
         {
             foreach (var arg in arguments)
             {
-                var propertyInfo = _method.Type.GetProperty(arg.Key);
+                var propertyInfo = _methodData.Type.GetProperty(arg.Key);
                 if (propertyInfo != null)
                 {
                     var converter = TypeDescriptor.GetConverter(propertyInfo.PropertyType);
@@ -96,7 +96,7 @@ namespace HangFire.Server.Performing
                             String.Format(
                                 "Could not set the property '{0}' of the instance of class '{1}'. See the inner exception for details.",
                                 propertyInfo.Name,
-                                _method.Type),
+                                _methodData.Type),
                             ex);
                     }
                 }

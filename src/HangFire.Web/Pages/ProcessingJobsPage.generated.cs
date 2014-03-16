@@ -195,7 +195,7 @@ WriteLiteral("                    </td>\r\n                    <td>\r\n         
 
             
             #line 63 "..\..\Pages\ProcessingJobsPage.cshtml"
-                   Write(HtmlHelper.QueueLabel(job.Value.Method));
+                   Write(HtmlHelper.QueueLabel(job.Value.MethodData));
 
             
             #line default
@@ -205,7 +205,7 @@ WriteLiteral("\r\n                        <span title=\"");
 
             
             #line 64 "..\..\Pages\ProcessingJobsPage.cshtml"
-                                Write(HtmlHelper.DisplayMethodHint(job.Value.Method));
+                                Write(HtmlHelper.DisplayMethodHint(job.Value.MethodData));
 
             
             #line default
@@ -215,7 +215,7 @@ WriteLiteral("\">\r\n                            ");
 
             
             #line 65 "..\..\Pages\ProcessingJobsPage.cshtml"
-                       Write(HtmlHelper.DisplayMethod(job.Value.Method));
+                       Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
 
             
             #line default

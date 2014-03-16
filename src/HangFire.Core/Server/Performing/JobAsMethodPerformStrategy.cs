@@ -26,17 +26,17 @@ namespace HangFire.Server.Performing
     {
         private readonly JobActivator _activator = JobActivator.Current;
 
-        private readonly JobMethod _method;
+        private readonly MethodData _methodData;
         private readonly string[] _arguments;
 
         public JobAsMethodPerformStrategy(
-            JobMethod method,
+            MethodData methodData,
             string[] arguments)
         {
-            if (method == null) throw new ArgumentNullException("method");
+            if (methodData == null) throw new ArgumentNullException("methodData");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
-            _method = method;
+            _methodData = methodData;
             _arguments = arguments;
         }
 
@@ -46,12 +46,12 @@ namespace HangFire.Server.Performing
 
             try
             {
-                if (!_method.MethodInfo.IsStatic)
+                if (!_methodData.MethodInfo.IsStatic)
                 {
                     instance = ActivateJob();
                 }
 
-                var parameters = _method.MethodInfo.GetParameters();
+                var parameters = _methodData.MethodInfo.GetParameters();
                 var deserializedArguments = new List<object>(_arguments.Length);
 
                 for (var i = 0; i < parameters.Length; i++)
@@ -78,7 +78,7 @@ namespace HangFire.Server.Performing
 
                 try
                 {
-                    _method.MethodInfo.Invoke(instance, deserializedArguments.ToArray());
+                    _methodData.MethodInfo.Invoke(instance, deserializedArguments.ToArray());
                 }
                 catch (TargetInvocationException ex)
                 {
@@ -99,12 +99,12 @@ namespace HangFire.Server.Performing
 
         private object ActivateJob()
         {
-            var instance = _activator.ActivateJob(_method.Type);
+            var instance = _activator.ActivateJob(_methodData.Type);
 
             if (instance == null)
             {
                 throw new InvalidOperationException(
-                    String.Format("JobActivator returned NULL instance of the '{0}' type.", _method.Type));
+                    String.Format("JobActivator returned NULL instance of the '{0}' type.", _methodData.Type));
             }
 
             return instance;

@@ -60,9 +60,9 @@ namespace HangFire.SqlServer
                 new { id = jobId }));
         }
 
-        public void SetJobState(string jobId, State state, JobMethod method)
+        public void SetJobState(string jobId, State state, MethodData methodData)
         {
-            var stateData = state.GetData(method);
+            var stateData = state.GetData(methodData);
 
             const string addAndSetStateSql = @"
 insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)
@@ -82,9 +82,9 @@ update HangFire.Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id =
                 }));
         }
 
-        public void AddJobState(string jobId, State state, JobMethod method)
+        public void AddJobState(string jobId, State state, MethodData methodData)
         {
-            var stateData = state.GetData(method);
+            var stateData = state.GetData(methodData);
 
             const string addStateSql = @"
 insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)

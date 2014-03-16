@@ -10,7 +10,7 @@ namespace HangFire.Storage.Monitoring
             InScheduledState = true;
         }
 
-        public JobMethod Method { get; set; }
+        public MethodData MethodData { get; set; }
         public DateTime ScheduledAt { get; set; }
         public bool InScheduledState { get; set; }
     }

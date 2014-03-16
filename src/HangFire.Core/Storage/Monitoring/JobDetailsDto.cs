@@ -6,7 +6,7 @@ namespace HangFire.Storage.Monitoring
 {
     public class JobDetailsDto
     {
-        public JobMethod Method { get; set; }
+        public MethodData MethodData { get; set; }
         public string[] Arguments { get; set; }
         public IDictionary<string, string> OldFormatArguments { get; set; }
         public DateTime? CreatedAt { get; set; }

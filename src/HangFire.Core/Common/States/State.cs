@@ -25,7 +25,7 @@ namespace HangFire.Common.States
         public abstract string StateName { get; }
         public virtual bool ExpireJobOnApply { get { return false; } }
 
-        public virtual IDictionary<string, string> GetData(JobMethod data)
+        public virtual IDictionary<string, string> GetData(MethodData data)
         {
             return new Dictionary<string, string>();
         }

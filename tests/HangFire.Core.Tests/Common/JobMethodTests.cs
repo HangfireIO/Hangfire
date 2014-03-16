@@ -7,29 +7,29 @@ using HangFire.Common.Filters;
 using HangFire.Storage;
 using Xunit;
 
-namespace HangFire.Core.Tests.Client
+namespace HangFire.Core.Tests.Common
 {
-    public class JobMethodTests
+    public class MethodDataFacts
     {
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new JobMethod(null, typeof (TestJob).GetMethod("Perform")));
+                () => new MethodData(null, typeof (TestJob).GetMethod("Perform")));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new JobMethod(typeof (TestJob), null));
+                () => new MethodData(typeof (TestJob), null));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeDoesNotContainTheGivenMethod()
         {
             Assert.Throws<ArgumentException>(
-                () => new JobMethod(typeof (JobMethod), typeof (TestJob).GetMethod("Perform")));
+                () => new MethodData(typeof (MethodData), typeof (TestJob).GetMethod("Perform")));
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace HangFire.Core.Tests.Client
         {
             var type = typeof (TestJob);
             var methodInfo = type.GetMethod("Perform");
-            var method = new JobMethod(type, methodInfo);
+            var method = new MethodData(type, methodInfo);
 
             Assert.Equal(type, method.Type);
             Assert.Equal(methodInfo, method.MethodInfo);
@@ -56,7 +56,7 @@ namespace HangFire.Core.Tests.Client
                 ParameterTypes = JobHelper.ToJson(new Type[0])
             };
 
-            var method = JobMethod.Deserialize(serializedData);
+            var method = MethodData.Deserialize(serializedData);
 
             Assert.Equal(type, method.Type);
             Assert.Equal(methodInfo, method.MethodInfo);
@@ -67,7 +67,7 @@ namespace HangFire.Core.Tests.Client
         public void Deserialize_ThrowsAnException_WhenSerializedDataIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => JobMethod.Deserialize(null));
+                () => MethodData.Deserialize(null));
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace HangFire.Core.Tests.Client
             var serializedData = new InvocationData();
 
             Assert.Throws<JobLoadException>(
-                () => JobMethod.Deserialize(serializedData));
+                () => MethodData.Deserialize(serializedData));
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace HangFire.Core.Tests.Client
             };
 
             Assert.Throws<JobLoadException>(
-                () => JobMethod.Deserialize(serializedData));
+                () => MethodData.Deserialize(serializedData));
         }
 
         [Fact]
@@ -104,14 +104,14 @@ namespace HangFire.Core.Tests.Client
             };
 
             Assert.Throws<JobLoadException>(
-                () => JobMethod.Deserialize(serializedData));
+                () => MethodData.Deserialize(serializedData));
         }
 
         [Fact]
         public void FromStaticExpression_ShouldThrowException_WhenNullExpressionProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => JobMethod.FromExpression((Expression<Action>) null));
+                () => MethodData.FromExpression((Expression<Action>) null));
 
             Assert.Equal("methodCall", exception.ParamName);
         }
@@ -119,7 +119,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void FromStaticExpression_ShouldReturnCorrectResult()
         {
-            var method = JobMethod.FromExpression(() => Console.WriteLine());
+            var method = MethodData.FromExpression(() => Console.WriteLine());
 
             Assert.Equal(typeof(Console), method.Type);
             Assert.Equal("WriteLine", method.MethodInfo.Name);
@@ -129,7 +129,7 @@ namespace HangFire.Core.Tests.Client
         public void FromInstanceExpression_ShouldThrowException_WhenNullExpressionIsProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => JobMethod.FromExpression<List<int>>(null));
+                () => MethodData.FromExpression<List<int>>(null));
 
             Assert.Equal("methodCall", exception.ParamName);
         }
@@ -138,7 +138,7 @@ namespace HangFire.Core.Tests.Client
         public void FromInstanceExpression_ShouldReturnCorrectResult()
         {
 // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-            var method = JobMethod.FromExpression<String>(x => x.Equals("hello"));
+            var method = MethodData.FromExpression<String>(x => x.Equals("hello"));
 
             Assert.Equal(typeof(String), method.Type);
             Assert.Equal("Equals", method.MethodInfo.Name);
@@ -172,11 +172,11 @@ namespace HangFire.Core.Tests.Client
             Assert.True(cachedAttributes[0] is TestMethodAttribute);
         }
 
-        private static JobMethod GetCorrectMethod()
+        private static MethodData GetCorrectMethod()
         {
             var type = typeof(TestJob);
             var methodInfo = type.GetMethod("Perform");
-            return new JobMethod(type, methodInfo);
+            return new MethodData(type, methodInfo);
         }
 
         #region Old Client API tests
@@ -189,7 +189,7 @@ namespace HangFire.Core.Tests.Client
                 Type = typeof (TestJob).AssemblyQualifiedName
             };
 
-            var method = JobMethod.Deserialize(serializedData);
+            var method = MethodData.Deserialize(serializedData);
             Assert.Equal(typeof(TestJob), method.Type);
             Assert.Equal(typeof(TestJob).GetMethod("Perform"), method.MethodInfo);
             Assert.True(method.OldFormat);
@@ -203,7 +203,7 @@ namespace HangFire.Core.Tests.Client
                 Type = typeof (TestJob).AssemblyQualifiedName
             };
 
-            JobMethod.Deserialize(serializedData);
+            MethodData.Deserialize(serializedData);
             Assert.Null(serializedData.Method);
         }
 

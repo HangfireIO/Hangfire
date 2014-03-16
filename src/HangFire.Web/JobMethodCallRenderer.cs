@@ -27,31 +27,31 @@ namespace HangFire.Web
     internal static class JobMethodCallRenderer
     {
         public static IHtmlString Render(
-            JobMethod method, string[] arguments, IDictionary<string, string> oldArguments)
+            MethodData methodData, string[] arguments, IDictionary<string, string> oldArguments)
         {
             var builder = new StringBuilder();
             
             builder.Append(WrapKeyword("using"));
             builder.Append(" ");
-            builder.Append(Encode(method.Type.Namespace));
+            builder.Append(Encode(methodData.Type.Namespace));
             builder.Append(";");
             builder.AppendLine();
             builder.AppendLine();
 
-            if (!method.MethodInfo.IsStatic)
+            if (!methodData.MethodInfo.IsStatic)
             {
-                var serviceName = Char.ToLower(method.Type.Name[0]) + method.Type.Name.Substring(1);
+                var serviceName = Char.ToLower(methodData.Type.Name[0]) + methodData.Type.Name.Substring(1);
 
                 builder.Append(WrapKeyword("var"));
                 builder.AppendFormat(
                     " {0} = {1}.Current.Activate<{2}>();",
                     Encode(serviceName),
                     WrapType("JobActivator"),
-                    WrapType(Encode(method.Type.Name)));
+                    WrapType(Encode(methodData.Type.Name)));
 
                 builder.AppendLine();
 
-                if (method.OldFormat && oldArguments.Count != 0)
+                if (methodData.OldFormat && oldArguments.Count != 0)
                 {
                     foreach (var argument in oldArguments)
                     {
@@ -60,7 +60,7 @@ namespace HangFire.Web
                         builder.Append(Encode(argument.Key));
                         builder.Append(" = ");
 
-                        var propertyInfo = method.Type.GetProperty(argument.Key);
+                        var propertyInfo = methodData.Type.GetProperty(argument.Key);
                         var propertyType = propertyInfo != null ? propertyInfo.PropertyType : null;
 
                         var argumentRenderer = ArgumentRenderer.GetRenderer(propertyType);
@@ -83,16 +83,16 @@ namespace HangFire.Web
             }
             else
             {
-                builder.Append(WrapType(Encode(method.Type.Name)));
+                builder.Append(WrapType(Encode(methodData.Type.Name)));
             }
 
             builder.Append(".");
-            builder.Append(Encode(method.MethodInfo.Name));
+            builder.Append(Encode(methodData.MethodInfo.Name));
             builder.Append("(");
 
-            var parameters = method.MethodInfo.GetParameters();
+            var parameters = methodData.MethodInfo.GetParameters();
             
-            if (!method.OldFormat)
+            if (!methodData.OldFormat)
             {
                 var renderedArguments = new List<string>(parameters.Length);
                 var renderedArgumentsTotalLength = 0;

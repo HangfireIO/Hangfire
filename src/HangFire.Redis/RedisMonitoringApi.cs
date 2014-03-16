@@ -79,7 +79,7 @@ namespace HangFire.Redis
                 (method, job, state) => new ProcessingJobDto
                 {
                     ServerName = state[1],
-                    Method = method,
+                    MethodData = method,
                     StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                     InProcessingState = ProcessingState.Name.Equals(
                         state[2], StringComparison.OrdinalIgnoreCase),
@@ -129,7 +129,7 @@ namespace HangFire.Redis
                     new ScheduleDto
                     {
                         ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
-                        Method = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
+                        MethodData = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
                         InScheduledState =
                             ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
                     }))
@@ -203,7 +203,7 @@ namespace HangFire.Redis
                 new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State", "Reason" },
                 (method, job, state) => new FailedJobDto
                 {
-                    Method = method,
+                    MethodData = method,
                     Reason = state[5],
                     FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                     ExceptionType = state[1],
@@ -227,7 +227,7 @@ namespace HangFire.Redis
                 new[] { "SucceededAt", "State" },
                 (method, job, state) => new SucceededJobDto
                 {
-                    Method = method,
+                    MethodData = method,
                     SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
                     InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                 });
@@ -269,7 +269,7 @@ namespace HangFire.Redis
                     new[] { "EnqueuedAt", "State" },
                     (method, job, state) => new EnqueuedJobDto
                     {
-                        Method = method,
+                        MethodData = method,
                         EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                         InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
@@ -301,7 +301,7 @@ namespace HangFire.Redis
                 new[] { "EnqueuedAt", "State" },
                 (method, job, state) => new EnqueuedJobDto
                 {
-                    Method = method,
+                    MethodData = method,
                     EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                     InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                 });
@@ -321,7 +321,7 @@ namespace HangFire.Redis
                 null,
                 (method, job, state) => new DequeuedJobDto
                 {
-                    Method = method,
+                    MethodData = method,
                     State = job[0],
                     CreatedAt = JobHelper.FromNullableStringTimestamp(job[1]),
                     FetchedAt = JobHelper.FromNullableStringTimestamp(job[2])
@@ -381,7 +381,7 @@ namespace HangFire.Redis
 
             return new JobDetailsDto
             {
-                Method = TryToGetMethod(job["Type"], job["Method"], job["ParameterTypes"]),
+                MethodData = TryToGetMethod(job["Type"], job["Method"], job["ParameterTypes"]),
                 Arguments = job.ContainsKey("Arguments") ? JobHelper.FromJson<string[]>(job["Arguments"]) : null,
                 OldFormatArguments =
                     job.ContainsKey("Args") ? JobHelper.FromJson<Dictionary<string, string>>(job["Args"]) : null,
@@ -458,7 +458,7 @@ namespace HangFire.Redis
             IList<string> jobIds,
             string[] properties,
             string[] stateProperties,
-            Func<JobMethod, List<string>, List<string>, T> selector)
+            Func<MethodData, List<string>, List<string>, T> selector)
         {
             if (jobIds.Count == 0) return new JobList<T>(new List<KeyValuePair<string, T>>());
 
@@ -560,12 +560,12 @@ namespace HangFire.Redis
             return stats;
         }
 
-        private static JobMethod TryToGetMethod(
+        private static MethodData TryToGetMethod(
             string type, string method, string parameterTypes)
         {
             try
             {
-                return JobMethod.Deserialize(new InvocationData
+                return MethodData.Deserialize(new InvocationData
                 {
                     Type = type,
                     Method = method,

@@ -17,9 +17,9 @@
 
     string title = null;
 
-    if (job != null && job.Method != null)
+    if (job != null && job.MethodData != null)
     {
-        title = HtmlHelper.DisplayMethod(job.Method);
+        title = HtmlHelper.DisplayMethod(job.MethodData);
     }
 
     title = title ?? "Job";
@@ -42,9 +42,9 @@ else
                     <span data-moment="@JobHelper.ToStringTimestamp(job.CreatedAt.Value)"></span>
                 </div>
             }
-            @if (job.Method != null)
+            @if (job.MethodData != null)
             {
-                <pre><code>@JobMethodCallRenderer.Render(job.Method, job.Arguments, job.OldFormatArguments)</code></pre>
+                <pre><code>@JobMethodCallRenderer.Render(job.MethodData, job.Arguments, job.OldFormatArguments)</code></pre>
             }
             <div class="clearfix"></div>
         </div>

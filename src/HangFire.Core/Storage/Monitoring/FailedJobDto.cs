@@ -10,7 +10,7 @@ namespace HangFire.Storage.Monitoring
             InFailedState = true;
         }
 
-        public JobMethod Method { get; set; }
+        public MethodData MethodData { get; set; }
         public string Reason { get; set; }
         public DateTime? FailedAt { get; set; }
         public string ExceptionType { get; set; }

@@ -25,7 +25,7 @@ namespace HangFire.Client
 {
     /// <summary>
     /// Provides low-level Client API. Creates jobs based on a 
-    /// given <see cref="JobMethod"/> data in a given <see cref="State"/>
+    /// given <see cref="MethodData"/> data in a given <see cref="State"/>
     /// and puts them into the storage in an atomic way.
     /// </summary>
     internal class JobClient : IJobClient

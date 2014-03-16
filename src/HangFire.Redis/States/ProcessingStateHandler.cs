@@ -6,7 +6,7 @@ using HangFire.Storage;
 
 namespace HangFire.Redis.States
 {
-    internal class ProcessingStateHandler : JobStateHandler
+    internal class ProcessingStateHandler : StateHandler
     {
         public override void Apply(
             StateApplyingContext context, IWriteOnlyTransaction transaction)
