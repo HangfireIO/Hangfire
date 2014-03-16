@@ -39,30 +39,12 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void Apply_ShouldSet_JobExpirationDate()
-        {
-            var handler = new SucceededState.Handler();
-            handler.Apply(_context, _transactionMock.Object);
-
-            _transactionMock.Verify(x => x.ExpireJob(JobId, It.IsAny<TimeSpan>()));
-        }
-
-        [Fact]
         public void Apply_ShouldIncrease_SucceededCounter()
         {
             var handler = new SucceededState.Handler();
             handler.Apply(_context, _transactionMock.Object);
 
             _transactionMock.Verify(x => x.IncrementCounter("stats:succeeded"), Times.Once);
-        }
-
-        [Fact]
-        public void Unapply_ShouldRemoveJobExpirationDate()
-        {
-            var handler = new SucceededState.Handler();
-            handler.Unapply(_context, _transactionMock.Object);
-
-            _transactionMock.Verify(x => x.PersistJob(JobId));
         }
 
         [Fact]
