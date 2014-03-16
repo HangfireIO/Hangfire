@@ -320,7 +320,7 @@ WriteLiteral("                            <div style=\"color: #888;\">\r\n      
 
             
             #line 83 "..\..\Pages\FailedJobsPage.cshtml"
-                           Write(job.Value.ExceptionMessage);
+                           Write(job.Value.Reason);
 
             
             #line default

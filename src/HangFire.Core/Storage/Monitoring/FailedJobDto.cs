@@ -11,6 +11,7 @@ namespace HangFire.Storage.Monitoring
         }
 
         public JobMethod Method { get; set; }
+        public string Reason { get; set; }
         public DateTime? FailedAt { get; set; }
         public string ExceptionType { get; set; }
         public string ExceptionMessage { get; set; }

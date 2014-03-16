@@ -200,10 +200,11 @@ namespace HangFire.Redis
                 _redis,
                 failedJobIds,
                 null,
-                new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State" },
+                new[] { "FailedAt", "ExceptionType", "ExceptionMessage", "ExceptionDetails", "State", "Reason" },
                 (method, job, state) => new FailedJobDto
                 {
                     Method = method,
+                    Reason = state[5],
                     FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                     ExceptionType = state[1],
                     ExceptionMessage = state[2],
