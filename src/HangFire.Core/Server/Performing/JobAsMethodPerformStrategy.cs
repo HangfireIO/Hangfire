@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 using HangFire.Common;
 
 namespace HangFire.Server.Performing
@@ -75,7 +76,16 @@ namespace HangFire.Server.Performing
                     deserializedArguments.Add(value);
                 }
 
-                _method.Method.Invoke(instance, deserializedArguments.ToArray());
+                try
+                {
+                    _method.Method.Invoke(instance, deserializedArguments.ToArray());
+                }
+                catch (TargetInvocationException ex)
+                {
+                    throw new JobPerformanceException(
+                        "An exception occured during performance of the job",
+                        ex.InnerException);
+                }
             }
             finally
             {

@@ -80,7 +80,7 @@ namespace HangFire.Server.Performing
 
             var thunk = filters.Reverse().Aggregate(continuation,
                 (next, filter) => () => InvokePerformFilter(filter, preContext, next));
-
+            
             thunk();
         }
 
@@ -89,7 +89,17 @@ namespace HangFire.Server.Performing
             PerformingContext preContext,
             Func<PerformedContext> continuation)
         {
-            filter.OnPerforming(preContext);
+            try
+            {
+                filter.OnPerforming(preContext);
+            }
+            catch (Exception filterException)
+            {
+                throw new JobPerformanceException(
+                    "An exception occured during execution of one of the filters",
+                    filterException);
+            }
+            
             if (preContext.Canceled)
             {
                 return new PerformedContext(
@@ -107,7 +117,17 @@ namespace HangFire.Server.Performing
                 wasError = true;
                 postContext = new PerformedContext(
                     preContext, false, ex);
-                filter.OnPerformed(postContext);
+
+                try
+                {
+                    filter.OnPerformed(postContext);
+                }
+                catch (Exception filterException)
+                {
+                    throw new JobPerformanceException(
+                        "An exception occured during execution of one of the filters",
+                        filterException);
+                }
 
                 if (!postContext.ExceptionHandled)
                 {

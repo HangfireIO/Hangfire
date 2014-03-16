@@ -104,6 +104,7 @@
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
     <Compile Include="Client\Filters\CreatedContext.cs" />
     <Compile Include="Client\Filters\CreatingContext.cs" />
+    <Compile Include="Server\JobPerformanceException.cs" />
     <Compile Include="Server\Performing\JobAsClassPerformStrategy.cs" />
     <Compile Include="Server\Performing\PerformContext.cs" />
     <Compile Include="Server\Filters\ServerExceptionContext.cs" />

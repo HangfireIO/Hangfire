@@ -54,7 +54,17 @@ namespace HangFire.Server.Performing
                 }
 
                 InitializeProperties(instance, _arguments);
-                instance.Perform();
+
+                try
+                {
+                    instance.Perform();
+                }
+                catch (Exception ex)
+                {
+                    throw new JobPerformanceException(
+                        "An exception occured during performance of the job",
+                        ex);
+                }
             }
             finally
             {

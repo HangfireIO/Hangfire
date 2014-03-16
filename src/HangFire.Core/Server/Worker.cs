@@ -177,17 +177,24 @@ namespace HangFire.Server
                     performStrategy = new JobAsMethodPerformStrategy(
                         jobMethod, arguments);
                 }
-
+                
                 var performContext = new PerformContext(_context, connection, payload.Id, jobMethod);
                 _context.Performer.PerformJob(performContext, performStrategy);
 
                 state = new SucceededState();
             }
+            catch (JobPerformanceException ex)
+            {
+                state = new FailedState(ex.InnerException)
+                {
+                    Reason = ex.Message
+                };
+            }
             catch (Exception ex)
             {
                 state = new FailedState(ex)
                 {
-                    Reason = "An exception occured during performance of the job"
+                    Reason = "Internal HangFire Server exception occured. Please, report it to HangFire developers."
                 };
             }
 
