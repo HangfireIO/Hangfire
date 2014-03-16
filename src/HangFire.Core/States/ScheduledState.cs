@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.Storage;
 
 namespace HangFire.States
 {
@@ -44,17 +45,19 @@ namespace HangFire.States
 
         public class Handler : JobStateHandler
         {
-            public override void Apply(StateApplyingContext context)
+            public override void Apply(
+                StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
                 var stateData = context.NewState.GetData(context.JobMethod);
                 var timestamp = long.Parse(stateData["EnqueueAt"]);
 
-                context.Transaction.AddToSet("schedule", context.JobId, timestamp);
+                transaction.AddToSet("schedule", context.JobId, timestamp);
             }
 
-            public override void Unapply(StateApplyingContext context)
+            public override void Unapply(
+                StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
-                context.Transaction.RemoveFromSet("schedule", context.JobId);
+                transaction.RemoveFromSet("schedule", context.JobId);
             }
 
             public override string StateName

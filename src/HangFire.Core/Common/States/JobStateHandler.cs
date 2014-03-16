@@ -14,17 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
+using HangFire.Storage;
 
 namespace HangFire.Common.States
 {
     public abstract class JobStateHandler
     {
-        public virtual void Apply(StateApplyingContext context)
+        public virtual void Apply(
+            StateApplyingContext context, IWriteOnlyTransaction transaction)
         {
         }
 
-        public virtual void Unapply(StateApplyingContext context)
+        public virtual void Unapply(
+            StateApplyingContext context, IWriteOnlyTransaction transaction)
         {
         }
 

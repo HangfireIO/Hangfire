@@ -23,63 +23,70 @@ namespace HangFire.Common.States
 {
     public class StateApplyingContext : StateContext
     {
+        private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
+        private readonly IStorageConnection _connection;
+
         internal StateApplyingContext(
-            StateContext context, 
-            IWriteOnlyTransaction transaction,
-            string oldStateName,
-            JobState newState)
+            StateChangingContext context)
             : base(context)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (oldStateName == null) throw new ArgumentNullException("oldStateName");
-            if (newState == null) throw new ArgumentNullException("newState");
+            if (context == null) throw new ArgumentNullException("context");
 
-            Transaction = transaction;
-            OldStateName = oldStateName;
-            NewState = newState;
+            _connection = context.Connection;
+            OldStateName = context.CurrentState;
+            NewState = context.CandidateState;
         }
-
-        public IWriteOnlyTransaction Transaction { get; private set; }
 
         public string OldStateName { get; private set; }
         public JobState NewState { get; private set; }
 
-        public void ApplyState(
+        internal bool ApplyState(
             IDictionary<string, List<JobStateHandler>> handlers,
             IEnumerable<IStateChangedFilter> filters)
         {
-            foreach (var handler in GetHandlers(OldStateName, handlers))
+            using (var transaction = _connection.CreateWriteTransaction())
             {
-                handler.Unapply(this);
-            }
+                foreach (var handler in GetHandlers(OldStateName, handlers))
+                {
+                    handler.Unapply(this, transaction);
+                }
 
-            foreach (var filter in filters)
-            {
-                filter.OnStateUnapplied(this);
-            }
+                foreach (var filter in filters)
+                {
+                    filter.OnStateUnapplied(this, transaction);
+                }
 
-            Transaction.SetJobState(JobId, NewState, JobMethod);
+                transaction.SetJobState(JobId, NewState, JobMethod);
 
-            foreach (var handler in GetHandlers(NewState.StateName, handlers))
-            {
-                handler.Apply(this);
-            }
+                foreach (var handler in GetHandlers(NewState.StateName, handlers))
+                {
+                    handler.Apply(this, transaction);
+                }
 
-            foreach (var filter in filters)
-            {
-                filter.OnStateApplied(this);
+                foreach (var filter in filters)
+                {
+                    filter.OnStateApplied(this, transaction);
+                }
+
+                if (NewState.ExpireJob)
+                {
+                    transaction.ExpireJob(JobId, JobExpirationTimeout);
+                }
+                else
+                {
+                    transaction.PersistJob(JobId);
+                }
+
+                return transaction.Commit();
             }
         }
 
-        private IEnumerable<JobStateHandler> GetHandlers(
+        private static IEnumerable<JobStateHandler> GetHandlers(
             string stateName, IDictionary<string, List<JobStateHandler>> handlers)
         {
-            if (handlers.ContainsKey(stateName))
-            {
-                return handlers[stateName];
-            }
-
-            return Enumerable.Empty<JobStateHandler>();
+            return handlers.ContainsKey(stateName) 
+                ? handlers[stateName] 
+                : Enumerable.Empty<JobStateHandler>();
         }
     }
 }

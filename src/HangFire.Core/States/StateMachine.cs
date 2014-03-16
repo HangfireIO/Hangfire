@@ -86,25 +86,12 @@ namespace HangFire.States
 
             var filterInfo = GetFilters(method);
             var context = new StateContext(jobId, method);
-            var changingContext = new StateChangingContext(context, state, null, _connection);
+            var changingContext = new StateChangingContext(context, state, "Created", _connection);
 
             InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
 
-            using (var transaction = _connection.CreateWriteTransaction())
-            {
-                var changedContext = new StateApplyingContext(
-                    context,
-                    transaction,
-                    "Created",
-                    changingContext.CandidateState);
-
-                changedContext.ApplyState(_handlers, filterInfo.StateChangedFilters);
-                
-                transaction.PersistJob(jobId);
-
-                // TODO: check return value
-                transaction.Commit();
-            }
+            // TODO: check return value
+            ApplyState(changingContext, filterInfo.StateChangedFilters);
 
             return jobId;
         }
@@ -125,23 +112,16 @@ namespace HangFire.States
                     return false;
                 }
 
-                var currentState = jobData.State;
-                if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(currentState))
+                if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(jobData.State))
                 {
                     return false;
                 }
 
+                JobMethod jobMethod = null;
+
                 try
                 {
-                    var jobMethod = JobMethod.Deserialize(jobData.InvocationData);
-                    var filterInfo = GetFilters(jobMethod);
-
-                    var context = new StateContext(jobId, jobMethod);
-                    var changingContext = new StateChangingContext(context, state, currentState, _connection);
-
-                    InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
-
-                    return ApplyState(changingContext, filterInfo.StateChangedFilters);
+                    jobMethod = JobMethod.Deserialize(jobData.InvocationData);
                 }
                 catch (JobLoadException ex)
                 {
@@ -150,22 +130,34 @@ namespace HangFire.States
                     // and sometimes unable to change its state (the enqueued
                     // state depends on the type of a job).
 
-                    var changingContext = new StateChangingContext(
-                        new StateContext(jobId, null),
-                        new FailedState(ex)
-                        {
-                            Reason = String.Format(
-                                "Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.",
-                                state.StateName, jobId)
-                        },
-                        currentState,
-                        _connection);
-
-                    return ApplyState(
-                        changingContext,
-                        Enumerable.Empty<IStateChangedFilter>());
+                    state = new FailedState(ex)
+                    {
+                        Reason = String.Format(
+                            "Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.",
+                            state.StateName, jobId)
+                    }; 
                 }
+
+                var context = new StateContext(jobId, jobMethod);
+                var stateChangingContext = 
+                    new StateChangingContext(context, state, jobData.State, _connection);
+
+                if (jobMethod == null)
+                {
+                    return ApplyState(stateChangingContext, Enumerable.Empty<IStateChangedFilter>());
+                }
+
+                var filterInfo = GetFilters(jobMethod);
+                InvokeStateChangingFilters(stateChangingContext, filterInfo.StateChangingFilters);
+
+                return ApplyState(stateChangingContext, filterInfo.StateChangedFilters);
             }
+        }
+
+        private bool ApplyState(StateChangingContext stateChangingContext, IEnumerable<IStateChangedFilter> stateChangedFilters)
+        {
+            var changedContext = new StateApplyingContext(stateChangingContext);
+            return changedContext.ApplyState(_handlers, stateChangedFilters);
         }
 
         private void InvokeStateChangingFilters(
@@ -184,24 +176,6 @@ namespace HangFire.States
                         transaction.Commit();
                     }
                 }
-            }
-        }
-
-        private bool ApplyState(
-            StateChangingContext context,
-            IEnumerable<IStateChangedFilter> stateChangedFilters)
-        {
-            using (var transaction = _connection.CreateWriteTransaction())
-            {
-                var changedContext = new StateApplyingContext(
-                    context,
-                    transaction,
-                    context.CurrentState,
-                    context.CandidateState);
-
-                changedContext.ApplyState(_handlers, stateChangedFilters);
-
-                return transaction.Commit();
             }
         }
 

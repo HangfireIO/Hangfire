@@ -21,10 +21,14 @@ namespace HangFire.Core.Tests.States
             var methodInfo = typeof(SucceededStateHandlerFacts)
                 .GetMethod("TestMethod");
             var jobMethod = new JobMethod(typeof(SucceededStateHandlerFacts), methodInfo);
+
             var stateContext = new StateContext(JobId, jobMethod);
             var stateMock = new Mock<JobState>();
+            var connectionMock = new Mock<IStorageConnection>();
+            var stateChangingContext = new StateChangingContext(
+                stateContext, stateMock.Object, "Old", connectionMock.Object);
 
-            _context = new StateApplyingContext(stateContext, _transactionMock.Object, stateMock.Object);
+            _context = new StateApplyingContext(stateChangingContext);
         }
 
         [Fact]
@@ -38,7 +42,7 @@ namespace HangFire.Core.Tests.States
         public void Apply_ShouldSet_JobExpirationDate()
         {
             var handler = new SucceededState.Handler();
-            handler.Apply(_context);
+            handler.Apply(_context, _transactionMock.Object);
 
             _transactionMock.Verify(x => x.ExpireJob(JobId, It.IsAny<TimeSpan>()));
         }
@@ -47,7 +51,7 @@ namespace HangFire.Core.Tests.States
         public void Apply_ShouldIncrease_SucceededCounter()
         {
             var handler = new SucceededState.Handler();
-            handler.Apply(_context);
+            handler.Apply(_context, _transactionMock.Object);
 
             _transactionMock.Verify(x => x.IncrementCounter("stats:succeeded"), Times.Once);
         }
@@ -56,7 +60,7 @@ namespace HangFire.Core.Tests.States
         public void Unapply_ShouldRemoveJobExpirationDate()
         {
             var handler = new SucceededState.Handler();
-            handler.Unapply(_context);
+            handler.Unapply(_context, _transactionMock.Object);
 
             _transactionMock.Verify(x => x.PersistJob(JobId));
         }
@@ -65,7 +69,7 @@ namespace HangFire.Core.Tests.States
         public void Unapply_ShouldDecrementStatistics()
         {
             var handler = new SucceededState.Handler();
-            handler.Unapply(_context);
+            handler.Unapply(_context, _transactionMock.Object);
 
             _transactionMock.Verify(x => x.DecrementCounter("stats:succeeded"), Times.Once);
         }

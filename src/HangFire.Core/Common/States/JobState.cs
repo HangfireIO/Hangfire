@@ -23,6 +23,7 @@ namespace HangFire.Common.States
         public string Reason { get; set; }
 
         public abstract string StateName { get; }
+        public virtual bool ExpireJob { get { return false; } }
 
         public virtual IDictionary<string, string> GetData(JobMethod data)
         {

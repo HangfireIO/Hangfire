@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
+using HangFire.Storage;
+
 namespace HangFire.Common.States
 {
     /// <summary>
@@ -25,12 +27,14 @@ namespace HangFire.Common.States
         /// Called after the specified state was applied
         /// to the job within the given transaction.
         /// </summary>
-        void OnStateApplied(StateApplyingContext context);
+        void OnStateApplied(
+            StateApplyingContext context, IWriteOnlyTransaction transaction);
 
         /// <summary>
         /// Called when the state with specified state was 
         /// unapplied from the job within the given transaction.
         /// </summary>
-        void OnStateUnapplied(StateApplyingContext context);
+        void OnStateUnapplied(
+            StateApplyingContext context, IWriteOnlyTransaction transaction);
     }
 }

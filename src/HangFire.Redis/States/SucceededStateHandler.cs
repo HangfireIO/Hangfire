@@ -1,19 +1,22 @@
 ﻿using HangFire.Common.States;
 using HangFire.States;
+using HangFire.Storage;
 
 namespace HangFire.Redis.States
 {
     internal class SucceededStateHandler : JobStateHandler
     {
-        public override void Apply(StateApplyingContext context)
+        public override void Apply(
+            StateApplyingContext context, IWriteOnlyTransaction transaction)
         {
-            context.Transaction.InsertToList("succeeded", context.JobId);
-            context.Transaction.TrimList("succeeded", 0, 99);
+            transaction.InsertToList("succeeded", context.JobId);
+            transaction.TrimList("succeeded", 0, 99);
         }
 
-        public override void Unapply(StateApplyingContext context)
+        public override void Unapply(
+            StateApplyingContext context, IWriteOnlyTransaction transaction)
         {
-            context.Transaction.RemoveFromList("succeeded", context.JobId);
+            transaction.RemoveFromList("succeeded", context.JobId);
         }
 
         public override string StateName

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HangFire.Common.States;
 using HangFire.Filters;
 using HangFire.States;
+using HangFire.Storage;
 using Xunit;
 
 namespace HangFire.Tests
@@ -18,16 +19,20 @@ namespace HangFire.Tests
             _results = results;
         }
 
-        public void OnStateApplied(StateApplyingContext context)
+        public void OnStateApplied(
+            StateApplyingContext context, IWriteOnlyTransaction transaction)
         {
             Assert.NotNull(context);
+            Assert.NotNull(transaction);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateApplied"));
         }
 
-        public void OnStateUnapplied(StateApplyingContext context)
+        public void OnStateUnapplied(
+            StateApplyingContext context, IWriteOnlyTransaction transaction)
         {
             Assert.NotNull(context);
+            Assert.NotNull(transaction);
 
             _results.Add(String.Format("{0}::{1}", _name, "OnStateUnapplied"));
         }

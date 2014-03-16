@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.Storage;
 
 namespace HangFire.States
 {
@@ -87,11 +88,12 @@ namespace HangFire.States
 
         public class Handler : JobStateHandler
         {
-            public override void Apply(StateApplyingContext context)
+            public override void Apply(
+                StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
                 var queue = GetQueue(context.JobMethod);
 
-                context.Transaction.AddToQueue(queue, context.JobId);
+                transaction.AddToQueue(queue, context.JobId);
             }
 
             public override string StateName

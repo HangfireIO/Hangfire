@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.Storage;
 
 namespace HangFire.States
 {
     public class SucceededState : JobState
     {
-        private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
         public static readonly string Name = "Succeeded";
 
         public override string StateName { get { return Name; } }
@@ -38,16 +38,16 @@ namespace HangFire.States
 
         public class Handler : JobStateHandler
         {
-            public override void Apply(StateApplyingContext context)
+            public override void Apply(
+                StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
-                context.Transaction.ExpireJob(context.JobId, JobExpirationTimeout);
-                context.Transaction.IncrementCounter("stats:succeeded");
+                transaction.IncrementCounter("stats:succeeded");
             }
 
-            public override void Unapply(StateApplyingContext context)
+            public override void Unapply(
+                StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
-                context.Transaction.DecrementCounter("stats:succeeded");
-                context.Transaction.PersistJob(context.JobId);
+                transaction.DecrementCounter("stats:succeeded");
             }
 
             public override string StateName
