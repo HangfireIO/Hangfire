@@ -15,6 +15,10 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Text.RegularExpressions;
+using HangFire.Common.Filters;
+using HangFire.Common.States;
+using HangFire.States;
 
 namespace HangFire
 {
@@ -44,21 +48,43 @@ namespace HangFire
     /// 
     /// ]]></example>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public sealed class QueueAttribute : Attribute
+    public sealed class QueueAttribute : JobFilterAttribute, IStateChangingFilter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="QueueAttribute"/> class
         /// using the specified queue name.
         /// </summary>
-        /// <param name="name">Queue name.</param>
-        public QueueAttribute(string name)
+        /// <param name="queue">Queue name.</param>
+        public QueueAttribute(string queue)
         {
-            Name = name;
+            if (String.IsNullOrWhiteSpace(queue))
+            {
+                throw new ArgumentNullException("queue");
+            }
+
+            if (!Regex.IsMatch(queue, @"^[a-z0-9_]+$"))
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'", queue),
+                    "queue");
+            }
+
+            Queue = queue;
         }
 
         /// <summary>
         /// Gets the queue name that will be used for background jobs.
         /// </summary>
-        public string Name { get; private set; }
+        public string Queue { get; private set; }
+
+        public void OnStateChanging(StateChangingContext context)
+        {
+            var enqueuedState = context.CandidateState as EnqueuedState;
+            if (enqueuedState != null)
+            {
+                enqueuedState.Queue = Queue;
+            }
+        }
     }
 }

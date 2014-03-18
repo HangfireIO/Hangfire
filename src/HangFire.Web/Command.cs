@@ -36,7 +36,7 @@ namespace HangFire.Web
                         Reason = "The job has been retried by a user"
                     };
 
-                    return stateMachine.ChangeState(jobId, state, FailedState.Name);
+                    return stateMachine.TryToChangeState(jobId, state, new [] { FailedState.StateName });
                 }
             };
 
@@ -50,7 +50,7 @@ namespace HangFire.Web
                         Reason = "Scheduled job has been enqueued by a user"
                     };
 
-                    return stateMachine.ChangeState(jobId, state, ScheduledState.Name);
+                    return stateMachine.TryToChangeState(jobId, state, new [] { ScheduledState.StateName });
                 }
             };
     }

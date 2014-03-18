@@ -23,26 +23,30 @@ namespace HangFire.States
 {
     public class FailedState : State
     {
-        public static readonly string Name = "Failed";
-        private readonly Exception _exception;
+        public static readonly string StateName = "Failed";
 
         public FailedState(Exception exception)
         {
             if (exception == null) throw new ArgumentNullException("exception");
-            _exception = exception;
+
+            FailedAt = DateTime.UtcNow;
+            Exception = exception;
         }
 
-        public override string StateName { get { return Name; } }
+        public DateTime FailedAt { get; set; }
+        public Exception Exception { get; set; }
 
-        public override IDictionary<string, string> GetData(MethodData data)
+        public override string Name { get { return StateName; } }
+
+        public override Dictionary<string, string> Serialize()
         {
             return new Dictionary<string, string>
-                {
-                    { "FailedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                    { "ExceptionType", _exception.GetType().FullName },
-                    { "ExceptionMessage", _exception.Message },
-                    { "ExceptionDetails", _exception.ToString() }
-                };
+            {
+                { "FailedAt", JobHelper.ToStringTimestamp(FailedAt) },
+                { "ExceptionType", Exception.GetType().FullName },
+                { "ExceptionMessage", Exception.Message },
+                { "ExceptionDetails", Exception.ToString() }
+            };
         }
     }
 }

@@ -11,14 +11,13 @@ namespace HangFire.Core.Tests.States
         public void StateName_IsCorrect()
         {
             var state = new ScheduledState(DateTime.UtcNow);
-            Assert.Equal(ScheduledState.Name, state.StateName);
+            Assert.Equal(ScheduledState.StateName, state.Name);
         }
 
         [Fact]
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new ScheduledState(DateTime.UtcNow.AddDays(1));
-            var data = state.GetData(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
@@ -26,7 +25,7 @@ namespace HangFire.Core.Tests.States
                     { "ScheduledAt", "<UtcNow timestamp>" },
                     { "EnqueueAt", "<Tomorrow timestamp>" },
                 },
-                data);
+                state.Serialize());
         }
     }
 }

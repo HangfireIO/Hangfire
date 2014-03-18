@@ -141,9 +141,12 @@ namespace HangFire.Server
             }
 
             var stateMachine = new StateMachine(connection);
-
             var processingState = new ProcessingState(_context.ServerName);
-            if (!stateMachine.ChangeState(payload.Id, processingState, EnqueuedState.Name, ProcessingState.Name))
+
+            if (!stateMachine.TryToChangeState(
+                payload.Id, 
+                processingState, 
+                new [] { EnqueuedState.StateName, ProcessingState.StateName }))
             {
                 return;
             }
@@ -194,11 +197,12 @@ namespace HangFire.Server
             {
                 state = new FailedState(ex)
                 {
-                    Reason = "Internal HangFire Server exception occured. Please, report it to HangFire developers."
+                    Reason = "Internal HangFire Server exception occurred. Please, report it to HangFire developers."
                 };
             }
 
-            stateMachine.ChangeState(payload.Id, state, ProcessingState.Name);
+            // TODO: check return value
+            stateMachine.TryToChangeState(payload.Id, state, new [] { ProcessingState.StateName });
         }
     }
 }

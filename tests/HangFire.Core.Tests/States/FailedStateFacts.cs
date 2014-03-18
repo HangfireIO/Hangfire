@@ -18,14 +18,13 @@ namespace HangFire.Core.Tests.States
         public void StateName_IsCorrect()
         {
             var state = new FailedState(new Exception());
-            Assert.Equal(FailedState.Name, state.StateName);
+            Assert.Equal(FailedState.StateName, state.Name);
         }
 
         [Fact]
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new FailedState(new Exception("Message"));
-            var data = state.GetData(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
@@ -35,7 +34,7 @@ namespace HangFire.Core.Tests.States
                     { "ExceptionMessage", "Message" },
                     { "ExceptionDetails", "<Non-empty>" }
                 }, 
-                data);
+                state.Serialize());
         }
     }
 }

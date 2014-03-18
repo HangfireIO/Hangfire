@@ -53,41 +53,36 @@ namespace HangFire.Redis
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId)));
         }
 
-        public void SetJobState(
-            string jobId, State state, MethodData methodData)
+        public void SetJobState(string jobId, State state)
         {
             _transaction.QueueCommand(x => x.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                 "State",
-                state.StateName));
+                state.Name));
 
             _transaction.QueueCommand(x => x.RemoveEntry(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId)));
-
-            var stateData = state.GetData(methodData);
 
             // Redis does not provide repeatable read functionality,
             // so job state might be changed between reads of the job
             // state itself and a data of the state. In monitoring API
             // we don't show state data when data.State !== job.State.
-            var storedData = new Dictionary<string, string>(stateData);
-            storedData.Add("State", state.StateName);
+            var storedData = new Dictionary<string, string>(state.Serialize());
+            storedData.Add("State", state.Name);
 
             _transaction.QueueCommand(x => x.SetRangeInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId),
                 storedData));
 
-            AddJobState(jobId, state, methodData);
+            AddJobState(jobId, state);
         }
 
-        public void AddJobState(string jobId, State state, MethodData methodData)
+        public void AddJobState(string jobId, State state)
         {
-            var stateData = state.GetData(methodData);
-
             // We are storing some more information in the same key,
             // let's add it.
-            var storedData = new Dictionary<string, string>(stateData);
-            storedData.Add("State", state.StateName);
+            var storedData = new Dictionary<string, string>(state.Serialize());
+            storedData.Add("State", state.Name);
             storedData.Add("Reason", state.Reason);
             storedData.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
 

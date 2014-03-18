@@ -51,17 +51,19 @@ namespace HangFire.Redis
         {
             var jobId = Guid.NewGuid().ToString();
 
-            parameters.Add("Type", invocationData.Type);
-            parameters.Add("Method", invocationData.Method);
-            parameters.Add("ParameterTypes", invocationData.ParameterTypes);
-            parameters.Add("Arguments", JobHelper.ToJson(arguments));
-            parameters.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
+            // Do not modify the original parameters.
+            var storedParameters = new Dictionary<string, string>(parameters);
+            storedParameters.Add("Type", invocationData.Type);
+            storedParameters.Add("Method", invocationData.Method);
+            storedParameters.Add("ParameterTypes", invocationData.ParameterTypes);
+            storedParameters.Add("Arguments", JobHelper.ToJson(arguments));
+            storedParameters.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
 
             using (var transaction = _redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format(RedisStorage.Prefix + "job:{0}", jobId),
-                    parameters));
+                    storedParameters));
 
                 transaction.QueueCommand(x => x.ExpireEntryIn(
                     String.Format(RedisStorage.Prefix + "job:{0}", jobId),
@@ -81,19 +83,27 @@ namespace HangFire.Redis
 
             if (jobData.Count == 0) return null;
 
-            var invocationData = new InvocationData();
+            string type = null;
+            string method = null;
+            string parameterTypes = null;
+
             if (jobData.ContainsKey("Type"))
             {
-                invocationData.Type = jobData["Type"];
+                type = jobData["Type"];
             }
             if (jobData.ContainsKey("Method"))
             {
-                invocationData.Method = jobData["Method"];
+                method = jobData["Method"];
             }
             if (jobData.ContainsKey("ParameterTypes"))
             {
-                invocationData.ParameterTypes = jobData["ParameterTypes"];
+                parameterTypes = jobData["ParameterTypes"];
             }
+
+            var invocationData = new InvocationData(
+                type,
+                method,
+                parameterTypes);
 
             return new StateAndInvocationData
             {

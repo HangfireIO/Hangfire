@@ -32,7 +32,7 @@ namespace HangFire.Filters
 
         public void OnStateChanging(StateChangingContext context)
         {
-            if (context.CandidateState.StateName == SucceededState.Name)
+            if (context.CandidateState.Name == SucceededState.StateName)
             {
                 var scheduleAt = DateTime.UtcNow.AddSeconds(RepeatInterval);
                 context.CandidateState = new ScheduledState(scheduleAt)

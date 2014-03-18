@@ -139,7 +139,10 @@ namespace HangFire.Redis.Components
                         Reason = "Re-queued due to time out"
                     };
 
-                    stateMachine.ChangeState(jobId, state, EnqueuedState.Name, ProcessingState.Name);
+                    stateMachine.TryToChangeState(
+                        jobId, 
+                        state, 
+                        new [] { EnqueuedState.StateName, ProcessingState.StateName });
 
                     RedisConnection.RemoveFromDequeuedList(redis, queue, jobId);
 

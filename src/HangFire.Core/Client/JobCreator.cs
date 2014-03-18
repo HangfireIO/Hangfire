@@ -40,12 +40,10 @@ namespace HangFire.Client
         }
 
         internal JobCreator(IEnumerable<object> filters)
-            : this()
         {
-            if (filters != null)
-            {
-                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
-            }
+            if (filters == null) throw new ArgumentNullException("filters");
+
+            _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
         public virtual void CreateJob(CreateContext context)

@@ -1,9 +1,17 @@
 ﻿namespace HangFire.Storage
 {
-    public class InvocationData
+    public struct InvocationData
     {
-        public string Type { get; set; }
-        public string Method { get; set; }
-        public string ParameterTypes { get; set; }
+        public InvocationData(string type, string method, string parameterTypes)
+            : this()
+        {
+            Type = type;
+            Method = method;
+            ParameterTypes = parameterTypes;
+        }
+
+        public string Type { get; private set; }
+        public string Method { get; private set; }
+        public string ParameterTypes { get; private set; }
     }
 }

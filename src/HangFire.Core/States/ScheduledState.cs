@@ -24,23 +24,26 @@ namespace HangFire.States
 {
     public class ScheduledState : State
     {
-        public static readonly string Name = "Scheduled";
+        public static readonly string StateName = "Scheduled";
         
         public ScheduledState(DateTime enqueueAt)
         {
             EnqueueAt = enqueueAt;
+            ScheduledAt = DateTime.UtcNow;
         }
 
-        public DateTime EnqueueAt { get; private set; }
-        public override string StateName { get { return Name; } }
+        public DateTime EnqueueAt { get; set; }
+        public DateTime ScheduledAt { get; set; }
 
-        public override IDictionary<string, string> GetData(MethodData data)
+        public override string Name { get { return StateName; } }
+
+        public override Dictionary<string, string> Serialize()
         {
             return new Dictionary<string, string>
-                {
-                    { "ScheduledAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                    { "EnqueueAt", JobHelper.ToStringTimestamp(EnqueueAt) }
-                };
+            {
+                { "EnqueueAt", JobHelper.ToStringTimestamp(EnqueueAt) },
+                { "ScheduledAt", JobHelper.ToStringTimestamp(ScheduledAt) }
+            };
         }
 
         public class Handler : StateHandler
@@ -48,9 +51,15 @@ namespace HangFire.States
             public override void Apply(
                 StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
-                var stateData = context.NewState.GetData(context.MethodData);
-                var timestamp = long.Parse(stateData["EnqueueAt"]);
+                var scheduledState = context.NewState as ScheduledState;
+                if (scheduledState == null)
+                {
+                    throw new InvalidOperationException(String.Format(
+                        "`{0}` state handler can be registered only for the Scheduled state.",
+                        typeof(Handler).FullName));
+                }
 
+                var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
                 transaction.AddToSet("schedule", context.JobId, timestamp);
             }
 
@@ -62,7 +71,7 @@ namespace HangFire.States
 
             public override string StateName
             {
-                get { return Name; }
+                get { return ScheduledState.StateName; }
             }
         }
     }

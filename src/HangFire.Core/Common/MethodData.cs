@@ -82,22 +82,25 @@ namespace HangFire.Common
         [Obsolete("This property will be removed before 1.0. Use the new version of the Client API.")]
         public bool OldFormat { get; private set; }
 
+        public InvocationData Serialize()
+        {
+            return new InvocationData(
+                Type.AssemblyQualifiedName,
+                MethodInfo.Name,
+                JobHelper.ToJson(MethodInfo.GetParameters().Select(x => x.ParameterType)));
+        }
+
         public static MethodData Deserialize(InvocationData invocationData)
         {
-            if (invocationData == null) throw new ArgumentNullException("invocationData");
-
             var oldFormat = false;
 
             // Normalize a job in the old format.
             if (invocationData.Method == null)
             {
-                // We should create a copy. Worker class depends on it.
-                invocationData = new InvocationData
-                {
-                    Type = invocationData.Type,
-                    Method = "Perform",
-                    ParameterTypes = JobHelper.ToJson(new Type[0])
-                };
+                invocationData = new InvocationData(
+                    invocationData.Type,
+                    "Perform",
+                    JobHelper.ToJson(new Type[0]));
 
                 oldFormat = true;
             }

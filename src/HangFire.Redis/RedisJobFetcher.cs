@@ -38,8 +38,8 @@ namespace HangFire.Redis
                 queueIndex = (queueIndex + 1) % _queueNames.Count;
                 queueName = _queueNames[queueIndex];
 
-                var queueKey = String.Format("hangfire:queue:{0}", queueName);
-                var fetchedKey = String.Format("hangfire:queue:{0}:dequeued", queueName);
+                var queueKey = RedisStorage.Prefix + String.Format("queue:{0}", queueName);
+                var fetchedKey = RedisStorage.Prefix + String.Format("queue:{0}:dequeued", queueName);
 
                 if (queueIndex == 0)
                 {
@@ -71,14 +71,16 @@ namespace HangFire.Redis
             // that is being inspected by the DequeuedJobsWatcher instance.
             // Job's has the implicit 'Dequeued' state.
 
-            var invocationData = new InvocationData();
+            string type = null;
+            string method = null;
+            string parameterTypes = null;
             string arguments = null;
             string args = null;
 
             using (var pipeline = _redis.CreatePipeline())
             {
                 pipeline.QueueCommand(x => x.SetEntryInHash(
-                    String.Format("hangfire:job:{0}", jobId),
+                    String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                     "Fetched",
                     JobHelper.ToStringTimestamp(DateTime.UtcNow)));
 
@@ -86,13 +88,13 @@ namespace HangFire.Redis
                 // that returns IDictionary, so, let's build it using MGET.
                 pipeline.QueueCommand(
                     x => x.GetValuesFromHash(
-                        String.Format("hangfire:job:{0}", jobId),
+                        RedisStorage.Prefix + String.Format("job:{0}", jobId),
                         new[] { "Type", "Args", "Method", "Arguments", "ParameterTypes" }),
                     x =>
                     {
-                        invocationData.Type = x[0];
-                        invocationData.Method = x[2];
-                        invocationData.ParameterTypes = x[4];
+                        type = x[0];
+                        method = x[2];
+                        parameterTypes = x[4];
                         args = x[1];
                         arguments = x[3];
                     });
@@ -103,6 +105,8 @@ namespace HangFire.Redis
             // Checkpoint #2. The job is in the implicit 'Fetched' state now.
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
+
+            var invocationData = new InvocationData(type, method, parameterTypes);
 
             return new JobPayload(jobId, queueName, invocationData)
             {

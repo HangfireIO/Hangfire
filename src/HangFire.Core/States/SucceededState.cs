@@ -24,11 +24,18 @@ namespace HangFire.States
 {
     public class SucceededState : State
     {
-        public static readonly string Name = "Succeeded";
+        public static readonly string StateName = "Succeeded";
 
-        public override string StateName
+        public SucceededState()
         {
-            get { return Name; }
+            SucceededAt = DateTime.UtcNow;
+        }
+
+        public DateTime SucceededAt { get; set; }
+
+        public override string Name
+        {
+            get { return StateName; }
         }
 
         public override bool ExpireJobOnApply
@@ -36,12 +43,12 @@ namespace HangFire.States
             get { return true; }
         }
 
-        public override IDictionary<string, string> GetData(MethodData data)
+        public override Dictionary<string, string> Serialize()
         {
             return new Dictionary<string, string>
-                {
-                    { "SucceededAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) }
-                };
+            {
+                { "SucceededAt",  JobHelper.ToStringTimestamp(SucceededAt)}
+            };
         }
 
         public class Handler : StateHandler
@@ -60,7 +67,7 @@ namespace HangFire.States
 
             public override string StateName
             {
-                get { return Name; }
+                get { return SucceededState.StateName; }
             }
         }
     }

@@ -16,8 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Storage;
@@ -27,63 +25,26 @@ namespace HangFire.States
     public class EnqueuedState : State
     {
         public const string DefaultQueue = "default";
-        public static readonly string Name = "Enqueued";
+        public static readonly string StateName = "Enqueued";
 
-        public override string StateName { get { return Name; } }
-
-        public override IDictionary<string, string> GetData(MethodData data)
+        public EnqueuedState()
         {
-            var queue = GetQueue(data);
-            
+            EnqueuedAt = DateTime.UtcNow;
+            Queue = DefaultQueue;
+        }
+
+        public string Queue { get; set; }
+        public DateTime EnqueuedAt { get; set; }
+
+        public override string Name { get { return StateName; } }
+
+        public override Dictionary<string, string> Serialize()
+        {
             return new Dictionary<string, string>
-                {
-                    { "EnqueuedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                    { "Queue", queue }
-                };
-        }
-
-        public static string GetQueue(MethodData methodData)
-        {
-            if (methodData == null) throw new ArgumentNullException("methodData");
-
-            QueueAttribute attribute = null;
-
-            if (!methodData.OldFormat)
             {
-                attribute = methodData.MethodInfo
-                    .GetCustomAttributes(true)
-                    .OfType<QueueAttribute>()
-                    .FirstOrDefault();
-            }
-
-            if (attribute == null)
-            {
-                attribute = methodData.Type
-                    .GetCustomAttributes(true)
-                    .OfType<QueueAttribute>()
-                    .FirstOrDefault();
-            }
-
-            var queueName = attribute != null
-                ? !String.IsNullOrEmpty(attribute.Name) ? attribute.Name : DefaultQueue
-                : DefaultQueue;
-            ValidateQueueName(queueName);
-
-            return queueName;
-        }
-
-        public static void ValidateQueueName(string queue)
-        {
-            if (String.IsNullOrWhiteSpace(queue))
-            {
-                throw new ArgumentNullException("queue");
-            }
-
-            if (!Regex.IsMatch(queue, @"^[a-z0-9_]+$"))
-            {
-                throw new InvalidOperationException(String.Format(
-                    "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'", queue));
-            }
+                { "EnqueuedAt", JobHelper.ToStringTimestamp(EnqueuedAt) },
+                { "Queue", Queue }
+            };
         }
 
         public class Handler : StateHandler
@@ -91,14 +52,20 @@ namespace HangFire.States
             public override void Apply(
                 StateApplyingContext context, IWriteOnlyTransaction transaction)
             {
-                var queue = GetQueue(context.MethodData);
+                var enqueuedState = context.NewState as EnqueuedState;
+                if (enqueuedState == null)
+                {
+                    throw new InvalidOperationException(String.Format(
+                        "`{0}` state handler can be registered only for the Enqueued state.",
+                        typeof(Handler).FullName));
+                }
 
-                transaction.AddToQueue(queue, context.JobId);
+                transaction.AddToQueue(enqueuedState.Queue, context.JobId);
             }
 
             public override string StateName
             {
-                get { return Name; }
+                get { return EnqueuedState.StateName; }
             }
         }
     }
@@ -107,8 +74,7 @@ namespace HangFire.States
     {
         public static string GetQueue(this MethodData methodData)
         {
-            if (methodData == null) return null;
-            return EnqueuedState.GetQueue(methodData);
+            return "TODO: change me!";
         }
     }
 }

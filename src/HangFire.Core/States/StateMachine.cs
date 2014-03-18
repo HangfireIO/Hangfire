@@ -26,8 +26,8 @@ namespace HangFire.States
 {
     public class StateMachine
     {
-        private readonly IDictionary<string, List<StateHandler>> _handlers
-            = new Dictionary<string, List<StateHandler>>();
+        private readonly StateHandlerCollection _handlers = 
+            new StateHandlerCollection();
 
         private readonly IStorageConnection _connection;
 
@@ -35,32 +35,31 @@ namespace HangFire.States
             = JobFilterProviders.Providers.GetFilters;
 
         public StateMachine(IStorageConnection connection)
-            : this(connection, GlobalStateHandlerCollection.GetHandlers(), null)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
+
+            _connection = connection;
         }
 
         internal StateMachine(
             IStorageConnection connection,
-            IEnumerable<StateHandler> stateHandlers,
+            IEnumerable<StateHandler> handlers,
             IEnumerable<object> filters)
+            : this(connection)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (stateHandlers == null) throw new ArgumentNullException("stateHandlers");
+            if (handlers == null) throw new ArgumentNullException("handlers");
+            if (filters == null) throw new ArgumentNullException("filters");
 
-            _connection = connection;
-
-            var handlers = stateHandlers.Union(connection.Storage.GetStateHandlers());
+            // TODO: enable handlers
+            /*var handlers = stateHandlers.Union(connection.Storage.GetStateHandlers());
             foreach (var handler in handlers)
             {
                 RegisterHandler(handler);
-            }
-            
-            if (filters != null)
-            {
-                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
-            }
+            }*/
+
+            _getFiltersThunk = md => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
-        
+
         public string CreateInState(
             Job job,
             IDictionary<string, string> parameters,
@@ -70,12 +69,7 @@ namespace HangFire.States
             if (parameters == null) throw new ArgumentNullException("parameters");
             if (state == null) throw new ArgumentNullException("state");
 
-            var invocationData = new InvocationData
-            {
-                Type = job.MethodData.Type.AssemblyQualifiedName,
-                Method = job.MethodData.MethodInfo.Name,
-                ParameterTypes = JobHelper.ToJson(job.MethodData.MethodInfo.GetParameters().Select(x => x.ParameterType)),
-            };
+            var invocationData = job.MethodData.Serialize();
 
             var jobId = _connection.CreateExpiredJob(
                 invocationData, 
@@ -83,35 +77,38 @@ namespace HangFire.States
                 parameters,
                 TimeSpan.FromHours(1));
 
-            var filterInfo = GetFilters(job.MethodData);
-            var context = new StateContext(jobId, job.MethodData);
-            var changingContext = new StateChangingContext(context, state, "Created", _connection);
-
-            InvokeStateChangingFilters(changingContext, filterInfo.StateChangingFilters);
-
             // TODO: check return value
-            ApplyState(changingContext, filterInfo.StateChangedFilters);
+            var context = new StateContext(jobId, job.MethodData);
+            ChangeState(context, state, null);
 
             return jobId;
         }
 
-        public bool ChangeState(
-            string jobId, State state, params string[] allowedCurrentStates)
+        public bool TryToChangeState(
+            string jobId, State toState, string[] fromStates)
         {
-            if (String.IsNullOrWhiteSpace(jobId)) throw new ArgumentNullException("jobId");
-            if (state == null) throw new ArgumentNullException("state");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (toState == null) throw new ArgumentNullException("toState");
+            if (fromStates == null) throw new ArgumentNullException("fromStates");
 
+            // To ensure that job state will be changed only from one of the
+            // specified states, we need to ensure that other users/workers
+            // are not able to change the state of the job during the
+            // execution of this method. To guarantee this behavior, we are
+            // using distributed application locks and rely on fact, that
+            // any state transitions will be made only within a such lock.
             using (_connection.AcquireJobLock(jobId))
             {
                 var jobData = _connection.GetJobStateAndInvocationData(jobId);
 
                 if (jobData == null)
                 {
-                    // The job does not exist
+                    // The job does not exist. This may happen, because not
+                    // all storage backends support foreign keys. 
                     return false;
                 }
 
-                if (allowedCurrentStates.Length > 0 && !allowedCurrentStates.Contains(jobData.State))
+                if (!fromStates.Contains(jobData.State, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
@@ -128,40 +125,57 @@ namespace HangFire.States
                     // load corresponding filters, unable to process the job
                     // and sometimes unable to change its state (the enqueued
                     // state depends on the type of a job).
-
-                    state = new FailedState(ex)
+                    // TODO: transition to the failed state should return false.
+                    toState = new FailedState(ex)
                     {
                         Reason = String.Format(
                             "Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.",
-                            state.StateName, jobId)
+                            toState.Name, jobId)
                     }; 
                 }
 
                 var context = new StateContext(jobId, methodData);
-                var stateChangingContext = 
-                    new StateChangingContext(context, state, jobData.State, _connection);
-
-                if (methodData == null)
-                {
-                    return ApplyState(stateChangingContext, Enumerable.Empty<IStateChangedFilter>());
-                }
-
-                var filterInfo = GetFilters(methodData);
-                InvokeStateChangingFilters(stateChangingContext, filterInfo.StateChangingFilters);
-
-                return ApplyState(stateChangingContext, filterInfo.StateChangedFilters);
+                return ChangeState(context, toState, jobData.State);
             }
         }
 
-        private bool ApplyState(StateChangingContext stateChangingContext, IEnumerable<IStateChangedFilter> stateChangedFilters)
+        internal virtual bool ChangeState(StateContext context, State toState, string oldStateName)
         {
-            var changedContext = new StateApplyingContext(stateChangingContext);
-            return changedContext.ApplyState(_handlers, stateChangedFilters);
+            try
+            {
+                var changingContext = new StateChangingContext(context, toState, oldStateName, _connection);
+                var filterInfo = GetFilters(context.MethodData);
+
+                // TODO: filters may fail
+                var electedState = ElectState(changingContext, filterInfo);
+
+                var changedContext = new StateApplyingContext(
+                    context,
+                    _connection,
+                    electedState,
+                    oldStateName);
+
+                return changedContext.ApplyState(_handlers, filterInfo.StateChangedFilters);
+            }
+            catch (Exception ex) // TODO: catch only filter exceptions
+            {
+                var failedState = new FailedState(ex); // TODO: add reason
+                var changedContext = new StateApplyingContext(
+                    context,
+                    _connection,
+                    failedState,
+                    oldStateName);
+                // TODO: transition to failed state should return false.
+                // We should not use any state changed filters, because
+                // some of the could cause an exception.
+                return changedContext.ApplyState(_handlers, Enumerable.Empty<IStateChangedFilter>());
+            }
         }
 
-        private void InvokeStateChangingFilters(
-            StateChangingContext context, IEnumerable<IStateChangingFilter> filters)
+        internal virtual State ElectState(StateChangingContext context, JobFilterInfo filterInfo)
         {
+            var filters = filterInfo.StateChangingFilters;
+
             foreach (var filter in filters)
             {
                 var oldState = context.CandidateState;
@@ -171,29 +185,18 @@ namespace HangFire.States
                 {
                     using (var transaction = _connection.CreateWriteTransaction())
                     {
-                        transaction.AddJobState(context.JobId, oldState, context.MethodData);
+                        transaction.AddJobState(context.JobId, oldState);
                         transaction.Commit();
                     }
                 }
             }
+
+            return context.CandidateState;
         }
 
         private JobFilterInfo GetFilters(MethodData methodData)
         {
             return new JobFilterInfo(_getFiltersThunk(methodData));
-        }
-
-        private void RegisterHandler(StateHandler handler)
-        {
-            if (handler == null) throw new ArgumentNullException("handler");
-            if (String.IsNullOrEmpty(handler.StateName)) throw new ArgumentNullException("stateName");
-
-            if (!_handlers.ContainsKey(handler.StateName))
-            {
-                _handlers.Add(handler.StateName, new List<StateHandler>());
-            }
-
-            _handlers[handler.StateName].Add(handler);
         }
     }
 }

@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using HangFire.Storage;
 
 namespace HangFire.Common.States
@@ -26,19 +25,23 @@ namespace HangFire.Common.States
         private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
         private readonly IStorageConnection _connection;
 
-        internal StateApplyingContext(StateChangingContext context)
+        internal StateApplyingContext(
+            StateContext context,
+            IStorageConnection connection,
+            State newState,
+            string oldStateName)
             : base(context)
         {
-            _connection = context.Connection;
-            OldStateName = context.CurrentState;
-            NewState = context.CandidateState;
+            _connection = connection;
+            OldStateName = oldStateName;
+            NewState = newState;
         }
 
         public string OldStateName { get; private set; }
         public State NewState { get; private set; }
 
-        internal bool ApplyState(
-            IDictionary<string, List<StateHandler>> handlers,
+        internal virtual bool ApplyState(
+            StateHandlerCollection handlers,
             IEnumerable<IStateChangedFilter> filters)
         {
             if (handlers == null) throw new ArgumentNullException("handlers");
@@ -46,7 +49,7 @@ namespace HangFire.Common.States
 
             using (var transaction = _connection.CreateWriteTransaction())
             {
-                foreach (var handler in GetHandlers(OldStateName, handlers))
+                foreach (var handler in handlers.GetHandlers(OldStateName))
                 {
                     handler.Unapply(this, transaction);
                 }
@@ -56,9 +59,9 @@ namespace HangFire.Common.States
                     filter.OnStateUnapplied(this, transaction);
                 }
 
-                transaction.SetJobState(JobId, NewState, MethodData);
+                transaction.SetJobState(JobId, NewState);
 
-                foreach (var handler in GetHandlers(NewState.StateName, handlers))
+                foreach (var handler in handlers.GetHandlers(NewState.Name))
                 {
                     handler.Apply(this, transaction);
                 }
@@ -79,14 +82,6 @@ namespace HangFire.Common.States
 
                 return transaction.Commit();
             }
-        }
-
-        private static IEnumerable<StateHandler> GetHandlers(
-            string stateName, IDictionary<string, List<StateHandler>> handlers)
-        {
-            return handlers.ContainsKey(stateName) 
-                ? handlers[stateName] 
-                : Enumerable.Empty<StateHandler>();
         }
     }
 }

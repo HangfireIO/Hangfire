@@ -81,7 +81,7 @@ namespace HangFire.Redis
                     ServerName = state[1],
                     MethodData = method,
                     StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                    InProcessingState = ProcessingState.Name.Equals(
+                    InProcessingState = ProcessingState.StateName.Equals(
                         state[2], StringComparison.OrdinalIgnoreCase),
                 }).OrderBy(x => x.Value.StartedAt).ToList());
         }
@@ -131,7 +131,7 @@ namespace HangFire.Redis
                         ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
                         MethodData = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
                         InScheduledState =
-                            ScheduledState.Name.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
+                            ScheduledState.StateName.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
                     }))
                 .ToList());
         }
@@ -209,7 +209,7 @@ namespace HangFire.Redis
                     ExceptionType = state[1],
                     ExceptionMessage = state[2],
                     ExceptionDetails = state[3],
-                    InFailedState = FailedState.Name.Equals(state[4], StringComparison.OrdinalIgnoreCase)
+                    InFailedState = FailedState.StateName.Equals(state[4], StringComparison.OrdinalIgnoreCase)
                 });
         }
 
@@ -229,7 +229,7 @@ namespace HangFire.Redis
                 {
                     MethodData = method,
                     SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                    InSucceededState = SucceededState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                    InSucceededState = SucceededState.StateName.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                 });
         }
 
@@ -271,7 +271,7 @@ namespace HangFire.Redis
                     {
                         MethodData = method,
                         EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                        InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                        InEnqueuedState = EnqueuedState.StateName.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
 
                 result.Add(new QueueWithTopEnqueuedJobsDto
@@ -303,7 +303,7 @@ namespace HangFire.Redis
                 {
                     MethodData = method,
                     EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                    InEnqueuedState = EnqueuedState.Name.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                    InEnqueuedState = EnqueuedState.StateName.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                 });
         }
 
@@ -565,12 +565,10 @@ namespace HangFire.Redis
         {
             try
             {
-                return MethodData.Deserialize(new InvocationData
-                {
-                    Type = type,
-                    Method = method,
-                    ParameterTypes = parameterTypes
-                });
+                return MethodData.Deserialize(new InvocationData(
+                    type,
+                    method,
+                    parameterTypes));
             }
             catch (Exception)
             {

@@ -36,7 +36,7 @@ namespace HangFire.SqlServer
 
         public long ScheduledCount()
         {
-            return GetNumberOfJobsByStateName(ScheduledState.Name);
+            return GetNumberOfJobsByStateName(ScheduledState.StateName);
         }
 
         public long EnqueuedCount(string queue)
@@ -59,7 +59,7 @@ namespace HangFire.SqlServer
 
         public long FailedCount()
         {
-            return GetNumberOfJobsByStateName(FailedState.Name);
+            return GetNumberOfJobsByStateName(FailedState.StateName);
         }
 
         private long GetNumberOfJobsByStateName(string stateName)
@@ -75,14 +75,14 @@ select count(Id) from HangFire.Job where StateName = @state";
 
         public long ProcessingCount()
         {
-            return GetNumberOfJobsByStateName(ProcessingState.Name);
+            return GetNumberOfJobsByStateName(ProcessingState.StateName);
         }
 
         public JobList<ProcessingJobDto> ProcessingJobs(int @from, int count)
         {
             return GetJobs(
                 from, count,
-                ProcessingState.Name,
+                ProcessingState.StateName,
                 (job, method, stateData) => new ProcessingJobDto
                 {
                     MethodData = method,
@@ -150,7 +150,7 @@ select * from (
         {
             return GetJobs(
                 from, count,
-                ScheduledState.Name,
+                ScheduledState.StateName,
                 (job, method, stateData) => new ScheduleDto
                 {
                     MethodData = method,
@@ -197,7 +197,7 @@ select * from (
             return GetJobs(
                 from,
                 count,
-                FailedState.Name,
+                FailedState.StateName,
                 (job, method, stateData) => new FailedJobDto
                 {
                     MethodData = method,
@@ -214,7 +214,7 @@ select * from (
             return GetJobs(
                 from,
                 count,
-                SucceededState.Name,
+                SucceededState.StateName,
                 (job, method, stateData) => new SucceededJobDto
                 {
                     MethodData = method,
@@ -363,7 +363,7 @@ select * from HangFire.State where JobId = @id order by Id desc";
 
         public long SucceededListCount()
         {
-            return GetNumberOfJobsByStateName(SucceededState.Name);
+            return GetNumberOfJobsByStateName(SucceededState.StateName);
         }
 
         public StatisticsDto GetStatistics()
@@ -385,10 +385,10 @@ select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
 
                 Func<string, int> getCountIfExists = name => countByStates.ContainsKey(name) ? countByStates[name] : 0;
 
-                stats.Enqueued = getCountIfExists(EnqueuedState.Name);
-                stats.Failed = getCountIfExists(FailedState.Name);
-                stats.Processing = getCountIfExists(ProcessingState.Name);
-                stats.Scheduled = getCountIfExists(ScheduledState.Name);
+                stats.Enqueued = getCountIfExists(EnqueuedState.StateName);
+                stats.Failed = getCountIfExists(FailedState.StateName);
+                stats.Processing = getCountIfExists(ProcessingState.StateName);
+                stats.Scheduled = getCountIfExists(ScheduledState.StateName);
                 
                 stats.Servers = multi.Read<int>().Single();
                 stats.Queues = multi.Read<int>().Single();

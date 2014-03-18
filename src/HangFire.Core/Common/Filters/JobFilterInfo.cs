@@ -32,7 +32,32 @@ namespace HangFire.Common.Filters
         private readonly List<IStateChangingFilter> _stateChangingFilters = new List<IStateChangingFilter>();
         private readonly List<IStateChangedFilter> _stateChangedFilters = new List<IStateChangedFilter>();
         private readonly List<IClientExceptionFilter> _clientExceptionFilters = new List<IClientExceptionFilter>(); 
-        private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>(); 
+        private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JobFilterInfo"/> class.
+        /// </summary>
+        public JobFilterInfo()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
+        /// </summary>
+        /// <param name="filters">The filters collection.</param>
+        public JobFilterInfo(IEnumerable<JobFilter> filters)
+        {
+            var list = filters.Select(f => f.Instance).ToList();
+
+            _clientFilters.AddRange(list.OfType<IClientFilter>());
+            _serverFilters.AddRange(list.OfType<IServerFilter>());
+
+            _stateChangingFilters.AddRange(list.OfType<IStateChangingFilter>());
+            _stateChangedFilters.AddRange(list.OfType<IStateChangedFilter>());
+
+            _clientExceptionFilters.AddRange(list.OfType<IClientExceptionFilter>());
+            _serverExceptionFilters.AddRange(list.OfType<IServerExceptionFilter>());
+        }
 
         /// <summary>
         /// Gets all the client filters in the application.
@@ -104,31 +129,6 @@ namespace HangFire.Common.Filters
         public IList<IServerExceptionFilter> ServerExceptionFilters
         {
             get { return _serverExceptionFilters; }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobFilterInfo"/> class.
-        /// </summary>
-        public JobFilterInfo()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
-        /// </summary>
-        /// <param name="filters">The filters collection.</param>
-        public JobFilterInfo(IEnumerable<JobFilter> filters)
-        {
-            var list = filters.Select(f => f.Instance).ToList();
-
-            _clientFilters.AddRange(list.OfType<IClientFilter>());
-            _serverFilters.AddRange(list.OfType<IServerFilter>());
-
-            _stateChangingFilters.AddRange(list.OfType<IStateChangingFilter>());
-            _stateChangedFilters.AddRange(list.OfType<IStateChangedFilter>());
-
-            _clientExceptionFilters.AddRange(list.OfType<IClientExceptionFilter>());
-            _serverExceptionFilters.AddRange(list.OfType<IServerExceptionFilter>());
         }
     }
 }

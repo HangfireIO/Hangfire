@@ -17,20 +17,18 @@ namespace HangFire.Core.Tests.States
         public SucceededStateHandlerFacts()
         {
             var methodData = MethodData.FromExpression(() => Console.WriteLine());
-            var stateChangingContext = new StateChangingContext(
-                new StateContext("1", methodData), 
-                new Mock<State>().Object, 
-                null, 
-                new Mock<IStorageConnection>().Object);
-
-            _context = new StateApplyingContext(stateChangingContext);
+            _context = new StateApplyingContext(
+                new StateContext("1", methodData),
+                new Mock<IStorageConnection>().Object,
+                new Mock<State>().Object,
+                null);
         }
 
         [Fact]
         public void ShouldWorkOnlyWithSucceededState()
         {
             var handler = new SucceededState.Handler();
-            Assert.Equal(SucceededState.Name, handler.StateName);
+            Assert.Equal(SucceededState.StateName, handler.StateName);
         }
 
         [Fact]
@@ -49,10 +47,6 @@ namespace HangFire.Core.Tests.States
             handler.Unapply(_context, _transactionMock.Object);
 
             _transactionMock.Verify(x => x.DecrementCounter("stats:succeeded"), Times.Once);
-        }
-
-        public void TestMethod()
-        {
         }
     }
 }

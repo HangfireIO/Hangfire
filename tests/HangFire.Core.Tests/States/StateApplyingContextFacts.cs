@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Storage;
@@ -13,11 +12,10 @@ namespace HangFire.Core.Tests.States
     public class StateApplyingContextFacts
     {
         private const string JobId = "1";
-        private readonly StateChangingContext _stateChangingContext;
         private readonly Mock<State> _newStateMock;
         private readonly MethodData _methodData;
-        private readonly IEnumerable<IStateChangedFilter> _filters;
-        private readonly Dictionary<string, List<StateHandler>> _handlers;
+        private readonly List<IStateChangedFilter> _filters;
+        private readonly StateHandlerCollection _handlers;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private const string OldState = "SomeState";
         private const string NewState = "NewState";
@@ -26,20 +24,12 @@ namespace HangFire.Core.Tests.States
         {
             _methodData = MethodData.FromExpression(() => Console.WriteLine());
             _newStateMock = new Mock<State>();
-            _newStateMock.Setup(x => x.StateName).Returns(NewState);
+            _newStateMock.Setup(x => x.Name).Returns(NewState);
 
-            var connectionMock = new Mock<IStorageConnection>();
             _transaction = new Mock<IWriteOnlyTransaction>();
-            connectionMock.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
-
-            _stateChangingContext = new StateChangingContext(
-                new StateContext(JobId, _methodData), 
-                _newStateMock.Object, 
-                OldState, 
-                connectionMock.Object);
-
-            _filters = Enumerable.Empty<IStateChangedFilter>();
-            _handlers = new Dictionary<string, List<StateHandler>>();
+            
+            _filters = new List<IStateChangedFilter>();
+            _handlers = new StateHandlerCollection();
         }
 
         [Fact]
@@ -74,40 +64,170 @@ namespace HangFire.Core.Tests.States
             Assert.Equal("filters", exception.ParamName);
         }
 
+        [Fact]
+        public void ApplyState_ShouldReturnTransactionCommit()
+        {
+            var context = CreateContext();
+
+            _transaction.Setup(x => x.Commit()).Returns(true);
+            Assert.True(context.ApplyState(_handlers, _filters));
+
+            _transaction.Setup(x => x.Commit()).Returns(false);
+            Assert.False(context.ApplyState(_handlers, _filters));
+        }
+
         [Fact, Sequence]
         public void ApplyState_NewState_ShouldBeCommitted()
         {
+            // Arrange
             _transaction.Setup(x => x.SetJobState(
-                JobId, _newStateMock.Object, _methodData)).InSequence();
+                JobId, _newStateMock.Object)).InSequence();
 
             _transaction.Setup(x => x.Commit()).InSequence();
 
             var context = CreateContext();
+
+            // Act
             context.ApplyState(_handlers, _filters);
+
+            // Assert - Sequence
         }
 
-        /*[Fact, Sequence]
+        [Fact, Sequence]
         public void ApplyState_UnapplyHandlers_ShouldBeCalled_BeforeSettingTheState()
         {
+            // Arrange
             var context = CreateContext();
 
             var handler1 = new Mock<StateHandler>();
             handler1.Setup(x => x.StateName).Returns(OldState);
-
+            
             var handler2 = new Mock<StateHandler>();
             handler2.Setup(x => x.StateName).Returns(OldState);
 
+            _handlers.AddHandler(handler1.Object);
+            _handlers.AddHandler(handler2.Object);
+
             handler1.Setup(x => x.Unapply(context, _transaction.Object)).InSequence();
             handler2.Setup(x => x.Unapply(context, _transaction.Object)).InSequence();
-            _transaction.Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<State>(), It.IsAny<MethodData>()))
+            _transaction.Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<State>()))
                 .InSequence();
 
-            context.ApplyState()
-        }*/
+            // Act
+            context.ApplyState(_handlers, _filters);
+
+            // Assert - Sequence
+        }
+
+        [Fact, Sequence]
+        public void ApplyState_ApplyHandlers_ShouldBeCalled_AfterSettingTheState()
+        {
+            // Arrange
+            var context = CreateContext();
+
+            var handler1 = new Mock<StateHandler>();
+            handler1.Setup(x => x.StateName).Returns(NewState);
+
+            var handler2 = new Mock<StateHandler>();
+            handler2.Setup(x => x.StateName).Returns(NewState);
+
+            _handlers.AddHandler(handler1.Object);
+            _handlers.AddHandler(handler2.Object);
+
+            _transaction
+                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<State>()))
+                .InSequence();
+
+            handler1.Setup(x => x.Apply(context, _transaction.Object)).InSequence();
+            handler2.Setup(x => x.Apply(context, _transaction.Object)).InSequence();
+
+            // Act
+            context.ApplyState(_handlers, _filters);
+
+            // Assert - Sequence
+        }
+
+        [Fact]
+        public void ApplyState_ShouldSetJobExpiration_WhenTheStateSaysToDoSo()
+        {
+            var context = CreateContext();
+            _newStateMock.Setup(x => x.ExpireJobOnApply).Returns(true);
+
+            context.ApplyState(_handlers, _filters);
+
+            _transaction.Verify(x => x.ExpireJob(JobId, It.IsAny<TimeSpan>()));
+        }
+
+        [Fact]
+        public void ApplyState_ShouldPersistTheJob_WhenTheStateSaysToNotToExpireIt()
+        {
+            var context = CreateContext();
+            _newStateMock.Setup(x => x.ExpireJobOnApply).Returns(false);
+
+            context.ApplyState(_handlers, _filters);
+
+            _transaction.Verify(x => x.PersistJob(JobId));
+        }
+
+        [Fact, Sequence]
+        public void ApplyState_StateUnappliedFilters_ShouldBeCalled_BeforeSettingTheState()
+        {
+            // Arrange
+            var context = CreateContext();
+
+            var filter1 = new Mock<IStateChangedFilter>();
+            var filter2 = new Mock<IStateChangedFilter>();
+
+            _filters.Add(filter1.Object);
+            _filters.Add(filter2.Object);
+
+            filter1.Setup(x => x.OnStateUnapplied(context, _transaction.Object))
+                .InSequence();
+            filter2.Setup(x => x.OnStateUnapplied(context, _transaction.Object))
+                .InSequence();
+            _transaction
+                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<State>()))
+                .InSequence();
+
+            // Act
+            context.ApplyState(_handlers, _filters);
+
+            // Assert - Sequence
+        }
+
+        [Fact, Sequence]
+        public void ApplyState_ApplyStateFilters_ShouldBeCalled_AfterSettingTheJobState()
+        {
+            // Arrange
+            var context = CreateContext();
+
+            var filter1 = new Mock<IStateChangedFilter>();
+            var filter2 = new Mock<IStateChangedFilter>();
+
+            _filters.Add(filter1.Object);
+            _filters.Add(filter2.Object);
+
+            filter1.Setup(x => x.OnStateApplied(context, _transaction.Object))
+                .InSequence();
+            filter2.Setup(x => x.OnStateApplied(context, _transaction.Object))
+                .InSequence();
+
+            // Act
+            context.ApplyState(_handlers, _filters);
+
+            // Assert - Sequence
+        }
 
         private StateApplyingContext CreateContext()
         {
-            return new StateApplyingContext(_stateChangingContext);
+            var connectionMock = new Mock<IStorageConnection>();
+            connectionMock.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
+
+            return new StateApplyingContext(
+                new StateContext(JobId, _methodData),
+                connectionMock.Object,
+                _newStateMock.Object,
+                OldState);
         }
     }
 }

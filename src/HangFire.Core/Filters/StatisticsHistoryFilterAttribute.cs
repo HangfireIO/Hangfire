@@ -32,7 +32,7 @@ namespace HangFire.Filters
         {
             using (var transaction = context.Connection.CreateWriteTransaction())
             {
-                if (context.CandidateState.StateName == SucceededState.Name)
+                if (context.CandidateState.Name == SucceededState.StateName)
                 {
                     transaction.IncrementCounter(
                         String.Format(
@@ -46,7 +46,7 @@ namespace HangFire.Filters
                             DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
                         TimeSpan.FromDays(1));
                 }
-                else if (context.CandidateState.StateName == FailedState.Name)
+                else if (context.CandidateState.Name == FailedState.StateName)
                 {
                     transaction.IncrementCounter(
                         String.Format(

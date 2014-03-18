@@ -35,24 +35,24 @@ namespace HangFire.Web
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static JobHistoryRenderer()
         {
-            Register(EnqueuedState.Name, NullRenderer);
-            Register(SucceededState.Name, NullRenderer);
-            Register(FailedState.Name, FailedRenderer);
-            Register(ProcessingState.Name, ProcessingRenderer);
-            Register(EnqueuedState.Name, EnqueuedRenderer);
-            Register(ScheduledState.Name, ScheduledRenderer);
+            Register(EnqueuedState.StateName, NullRenderer);
+            Register(SucceededState.StateName, NullRenderer);
+            Register(FailedState.StateName, FailedRenderer);
+            Register(ProcessingState.StateName, ProcessingRenderer);
+            Register(EnqueuedState.StateName, EnqueuedRenderer);
+            Register(ScheduledState.StateName, ScheduledRenderer);
 
-            BackgroundStateColors.Add(EnqueuedState.Name, "#F5F5F5");
-            BackgroundStateColors.Add(SucceededState.Name, "#EDF7ED");
-            BackgroundStateColors.Add(FailedState.Name, "#FAEBEA");
-            BackgroundStateColors.Add(ProcessingState.Name, "#FCEFDC");
-            BackgroundStateColors.Add(ScheduledState.Name, "#E0F3F8");
+            BackgroundStateColors.Add(EnqueuedState.StateName, "#F5F5F5");
+            BackgroundStateColors.Add(SucceededState.StateName, "#EDF7ED");
+            BackgroundStateColors.Add(FailedState.StateName, "#FAEBEA");
+            BackgroundStateColors.Add(ProcessingState.StateName, "#FCEFDC");
+            BackgroundStateColors.Add(ScheduledState.StateName, "#E0F3F8");
 
-            ForegroundStateColors.Add(EnqueuedState.Name, "#999");
-            ForegroundStateColors.Add(SucceededState.Name, "#5cb85c");
-            ForegroundStateColors.Add(FailedState.Name, "#d9534f");
-            ForegroundStateColors.Add(ProcessingState.Name, "#f0ad4e");
-            ForegroundStateColors.Add(ScheduledState.Name, "#5bc0de");
+            ForegroundStateColors.Add(EnqueuedState.StateName, "#999");
+            ForegroundStateColors.Add(SucceededState.StateName, "#5cb85c");
+            ForegroundStateColors.Add(FailedState.StateName, "#d9534f");
+            ForegroundStateColors.Add(ProcessingState.StateName, "#f0ad4e");
+            ForegroundStateColors.Add(ScheduledState.StateName, "#5bc0de");
         }
 
         public static void Register(string state, Func<IDictionary<string, string>, IHtmlString> renderer)

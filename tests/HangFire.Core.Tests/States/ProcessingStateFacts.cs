@@ -25,14 +25,13 @@ namespace HangFire.Core.Tests.States
         public void StateName_IsCorrect()
         {
             var state = new ProcessingState("Server1");
-            Assert.Equal(ProcessingState.Name, state.StateName);
+            Assert.Equal(ProcessingState.StateName, state.Name);
         }
 
         [Fact]
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new ProcessingState("Server1");
-            var data = state.GetData(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
@@ -40,7 +39,7 @@ namespace HangFire.Core.Tests.States
                     { "StartedAt", "<UtcNow timestamp>" },
                     { "ServerName", "Server1" },
                 },
-                data);
+                state.Serialize());
         }
     }
 }

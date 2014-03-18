@@ -15,6 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using HangFire.Storage;
 
 namespace HangFire.Common.States

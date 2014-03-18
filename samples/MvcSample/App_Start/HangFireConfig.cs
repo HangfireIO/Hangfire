@@ -23,7 +23,7 @@ namespace MvcSample
             // Default implementation uses SQL Server as a storage. You only
             // need to provide connection string to start using HangFire -
             // all database objects will be installed automatically.
-
+            
             JobStorage.Current = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;");
 

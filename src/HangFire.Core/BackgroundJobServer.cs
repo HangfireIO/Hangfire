@@ -52,11 +52,6 @@ namespace HangFire
             get { return _queues; }
             set
             {
-                foreach (var queue in value)
-                {
-                    EnqueuedState.ValidateQueueName(queue);
-                }
-
                 _queues = value;
             }
         }

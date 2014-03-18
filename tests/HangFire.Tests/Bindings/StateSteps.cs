@@ -86,21 +86,9 @@ namespace HangFire.Tests.States
         public void GivenAState(string state)
         {
             var mock = new Mock<State>();
-            mock.Setup(x => x.StateName).Returns(state);
-            mock.Setup(x => x.GetData(It.IsAny<MethodData>()))
-                .Returns(new Dictionary<string, string>());
+            mock.Setup(x => x.Name).Returns(state);
 
             _stateMocks.Add(state, mock);
-        }
-
-        [Given(@"a '(.+)' state with the following properties:")]
-        public void GivenAStateWithTheFollowingProperties(string state, Table table)
-        {
-            Given(String.Format("a '{0}' state", state));
-
-            _stateProperties = table.Rows.ToDictionary(x => x["Name"], x => x["Value"]);
-            _stateMocks[state].Setup(x => x.GetData(It.IsAny<MethodData>()))
-                .Returns(_stateProperties);
         }
 
         /*[Given(@"a job in the 'Old' state with registered descriptor")]
@@ -169,15 +157,7 @@ namespace HangFire.Tests.States
                 transaction.Commit();
             }
         }*/
-
-        [When(@"I change the state of the job")]
-        public void WhenIApplyTheState()
-        {
-            var stateMachine = new StateMachine(
-                new RedisConnection(Redis.Storage, Redis.Client), _handlers, _filters);
-            stateMachine.ChangeState(JobSteps.DefaultJobId, _state);
-        }
-
+        
         [When(@"I change the state of the job to the '(\w+)'")]
         public void WhenIChangeTheStateOfTheJobToThe(string state)
         {
@@ -187,27 +167,10 @@ namespace HangFire.Tests.States
                 state));
         }
 
-        [When(@"I change the state of the '(\w+)' job to the '(\w+)'")]
-        public void WhenIChangeTheStateOfTheJobToThe(string jobId, string state)
-        {
-            var stateMachine = new StateMachine(
-                new RedisConnection(Redis.Storage, Redis.Client), _handlers, _filters);
-            stateMachine.ChangeState(jobId, _stateMocks[state].Object);
-        }
-
-        [When(@"I change the state of the job to the '(\w+)' allowing only transition from the '(\w+)' state")]
-        public void WhenIChangeTheStateOfTheJobToTheStateAllowedTransitions(
-            string state, string allowedState)
-        {
-            var stateMachine = new StateMachine(
-                new RedisConnection(Redis.Storage, Redis.Client), _handlers, _filters);
-            stateMachine.ChangeState(JobSteps.DefaultJobId, _stateMocks[state].Object, allowedState);
-        }
-
         [Then(@"the state name should be equal to '(.+)'")]
         public void ThenTheStateNameIsEqualTo(string name)
         {
-            Assert.Equal(name, _state.StateName);
+            Assert.Equal(name, _state.Name);
         }
 
         [Then(@"it should expire the job")]
@@ -269,14 +232,6 @@ namespace HangFire.Tests.States
         public void ThenTheJobShouldBeRemovedFromTheSucceededList()
         {
             Assert.Equal(0, Redis.Client.GetListCount("hangfire:succeeded"));
-        }
-
-        [Then(@"properties table should contain the following items:")]
-        public void ThenPropertiesTableContainsTheFollowingItems(Table table)
-        {
-            TableAssert.ContainsFollowingItems(
-                table,
-                _state.GetData(_defaultData));
         }
 
         [Then(@"the job should be added to the failed set")]

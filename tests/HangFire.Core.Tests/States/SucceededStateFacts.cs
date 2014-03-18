@@ -10,21 +10,20 @@ namespace HangFire.Core.Tests.States
         public void StateName_IsCorrect()
         {
             var state = new SucceededState();
-            Assert.Equal(SucceededState.Name, state.StateName);
+            Assert.Equal(SucceededState.StateName, state.Name);
         }
 
         [Fact]
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new SucceededState();
-            var data = state.GetData(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
                 {
                     { "SucceededAt", "<UtcNow timestamp>" },
                 },
-                data);
+                state.Serialize());
         }
 
         [Fact]

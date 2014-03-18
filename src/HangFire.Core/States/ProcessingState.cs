@@ -23,24 +23,28 @@ namespace HangFire.States
 {
     public class ProcessingState : State
     {
-        public static readonly string Name = "Processing";
-        private readonly string _serverName;
+        public static readonly string StateName = "Processing";
 
         public ProcessingState(string serverName)
         {
-            if (String.IsNullOrWhiteSpace(serverName)) {throw new ArgumentNullException("serverName");}
-            _serverName = serverName;
+            if (String.IsNullOrWhiteSpace(serverName)) throw new ArgumentNullException("serverName");
+
+            ServerName = serverName;
+            StartedAt = DateTime.UtcNow;
         }
 
-        public override string StateName { get { return Name; } }
+        public DateTime StartedAt { get; set; }
+        public string ServerName { get; set; }
 
-        public override IDictionary<string, string> GetData(MethodData data)
+        public override string Name { get { return StateName; } }
+
+        public override Dictionary<string, string> Serialize()
         {
             return new Dictionary<string, string>
-                {
-                    { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                    { "ServerName", _serverName }
-                };
+            {
+                { "StartedAt", JobHelper.ToStringTimestamp(StartedAt) },
+                { "ServerName", ServerName }
+            };
         }
     }
 }

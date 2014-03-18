@@ -63,7 +63,7 @@ namespace HangFire.Tests
                     {
                         { "Type", type },
                         { "Args", JobHelper.ToJson(args.Rows.ToDictionary(x => x["Name"], x => x["Value"])) },
-                        { "State", EnqueuedState.Name },
+                        { "State", EnqueuedState.StateName },
                     });
         }
 

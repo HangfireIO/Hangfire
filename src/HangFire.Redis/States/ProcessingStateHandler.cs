@@ -25,7 +25,7 @@ namespace HangFire.Redis.States
 
         public override string StateName
         {
-            get { return ProcessingState.Name; }
+            get { return ProcessingState.StateName; }
         }
     }
 }

@@ -22,10 +22,10 @@ namespace HangFire.Common.States
     {
         public string Reason { get; set; }
 
-        public abstract string StateName { get; }
+        public abstract string Name { get; }
         public virtual bool ExpireJobOnApply { get { return false; } }
 
-        public virtual IDictionary<string, string> GetData(MethodData data)
+        public virtual Dictionary<string, string> Serialize()
         {
             return new Dictionary<string, string>();
         }

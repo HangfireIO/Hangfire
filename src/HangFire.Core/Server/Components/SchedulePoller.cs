@@ -59,7 +59,7 @@ namespace HangFire.Server.Components
                     Reason = "Enqueued as a scheduled job"
                 };
 
-                stateMachine.ChangeState(jobId, enqueuedState, ScheduledState.Name);
+                stateMachine.TryToChangeState(jobId, enqueuedState, new [] { ScheduledState.StateName });
 
                 return true;
             }

@@ -10,22 +10,20 @@ namespace HangFire.Core.Tests.States
         public void StateName_IsCorrect()
         {
             var state = new EnqueuedState();
-            Assert.Equal(EnqueuedState.Name, state.StateName);
+            Assert.Equal(EnqueuedState.StateName, state.Name);
         }
 
-        /*[Fact]
+        [Fact]
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new EnqueuedState();
-            var data = state.GetProperties(null);
 
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
                 {
                     { "EnqueuedAt", "<UtcNow timestamp>" },
-                    { "Queue", "default" },
                 },
-                data);
-        }*/
+                state.Serialize());
+        }
     }
 }

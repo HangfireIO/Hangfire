@@ -4,7 +4,7 @@ using Xunit;
 
 namespace HangFire.Core.Tests.States
 {
-    public class JobStateFacts
+    public class StateFacts
     {
         [Fact]
         public void ShouldNotExpireJobOnApplyByDefault()
@@ -21,10 +21,7 @@ namespace HangFire.Core.Tests.States
             var stateMock = new Mock<State>();
             stateMock.CallBase = true;
 
-            var data = stateMock.Object.GetData(null);
-
-            Assert.NotNull(data);
-            Assert.Empty(data);
+            Assert.Empty(stateMock.Object.Serialize());
         }
     }
 }

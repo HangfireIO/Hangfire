@@ -46,7 +46,7 @@ namespace HangFire.Filters
 
         public void OnStateChanging(StateChangingContext context)
         {
-            if (context.CandidateState.StateName != FailedState.Name)
+            if (context.CandidateState.Name != FailedState.StateName)
             {
                 // This filter accepts only failed job state.
                 return;
