@@ -155,11 +155,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SchedulePoller.feature</DependentUpon>
     </Compile>
-    <Compile Include="States\ScheduledState.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ScheduledState.feature</DependentUpon>
-    </Compile>
     <Compile Include="StateMachine.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -214,10 +209,6 @@
     <None Include="Server\ServerWatchdog.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ServerWatchdog.feature.cs</LastGenOutput>
-    </None>
-    <None Include="States\ScheduledState.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>ScheduledState.feature.cs</LastGenOutput>
     </None>
     <None Include="StateMachine.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
