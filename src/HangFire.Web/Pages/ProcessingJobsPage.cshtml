@@ -41,7 +41,7 @@ else
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Job type</th>
+                <th>Job</th>
                 <th>Server</th>
                 <th>Started</th>
             </tr>
@@ -60,7 +60,6 @@ else
                         }
                     </td>
                     <td>
-                        @HtmlHelper.QueueLabel(job.Value.MethodData)
                         <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
                             @HtmlHelper.DisplayMethod(job.Value.MethodData)
                         </span>

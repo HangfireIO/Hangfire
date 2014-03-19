@@ -64,7 +64,7 @@ namespace HangFire.Core.Tests.Common
         [Fact]
         public void Deserialize_WrapsAnException_WithTheJobLoadException()
         {
-            var serializedData = new InvocationData();
+            var serializedData = new InvocationData(null, null, null);
 
             Assert.Throws<JobLoadException>(
                 () => MethodData.Deserialize(serializedData));

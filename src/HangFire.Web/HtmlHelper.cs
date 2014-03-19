@@ -88,11 +88,6 @@ namespace HangFire.Web
             return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
         }
 
-        public static IHtmlString QueueLabel(MethodData methodData)
-        {
-            return QueueLabel(methodData.GetQueue());
-        }
-
         public static IHtmlString QueueLabel(string queue)
         {
             string label;

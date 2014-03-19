@@ -55,7 +55,7 @@ else
             <tr>
                 <th>Id</th>
                 <th>State</th>
-                <th>Job type</th>
+                <th>Job</th>
                 <th>Created</th>
                 <th>Fetched</th>
             </tr>
@@ -71,7 +71,11 @@ else
                         <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
                             @job.Value.State</span>
                     </td>
-                    <td>@HtmlHelper.DisplayMethod(job.Value.MethodData)</td>
+                    <td>
+                        <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
+                            @HtmlHelper.DisplayMethod(job.Value.MethodData)
+                        </span>
+                    </td>
                     <td>
                         @if (job.Value.CreatedAt.HasValue)
                         {

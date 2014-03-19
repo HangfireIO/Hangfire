@@ -150,8 +150,8 @@ Write(RenderPartial(new PerPageSelector(pager)));
             #line default
             #line hidden
 WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Id</th>\r\n                <th>Job type</th>\r\n                <th>Enqueued</th>\r\n" +
-"            </tr>\r\n        </thead>\r\n        <tbody>\r\n");
+">Id</th>\r\n                <th>Job</th>\r\n                <th>Enqueued</th>\r\n     " +
+"       </tr>\r\n        </thead>\r\n        <tbody>\r\n");
 
 
             
@@ -214,21 +214,33 @@ WriteLiteral("                            <span title=\"Job\'s state has been ch
             
             #line default
             #line hidden
-WriteLiteral("                    </td> \r\n                    <td>");
+WriteLiteral("                    </td> \r\n                    <td>\r\n                        <sp" +
+"an title=\"");
 
 
             
-            #line 70 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                   Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
+            #line 71 "..\..\Pages\EnqueuedJobsPage.cshtml"
+                                Write(HtmlHelper.DisplayMethodHint(job.Value.MethodData));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td>\r\n");
+WriteLiteral("\">\r\n                            ");
 
 
             
             #line 72 "..\..\Pages\EnqueuedJobsPage.cshtml"
+                       Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </span>\r\n                    </td>\r\n                   " +
+" <td>\r\n");
+
+
+            
+            #line 76 "..\..\Pages\EnqueuedJobsPage.cshtml"
                          if (job.Value.EnqueuedAt.HasValue)
                         {
 
@@ -239,7 +251,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 74 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 78 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.EnqueuedAt.Value));
 
             
@@ -249,7 +261,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 75 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 79 "..\..\Pages\EnqueuedJobsPage.cshtml"
                            Write(job.Value.EnqueuedAt);
 
             
@@ -259,7 +271,7 @@ WriteLiteral("        \r\n                            </span>\r\n");
 
 
             
-            #line 77 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 81 "..\..\Pages\EnqueuedJobsPage.cshtml"
                         }
 
             
@@ -269,7 +281,7 @@ WriteLiteral("                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 80 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 84 "..\..\Pages\EnqueuedJobsPage.cshtml"
             }
 
             
@@ -279,21 +291,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 83 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 87 "..\..\Pages\EnqueuedJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 84 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 88 "..\..\Pages\EnqueuedJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 84 "..\..\Pages\EnqueuedJobsPage.cshtml"
+            #line 88 "..\..\Pages\EnqueuedJobsPage.cshtml"
                                         
 }
             

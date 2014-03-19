@@ -69,12 +69,4 @@ namespace HangFire.States
             }
         }
     }
-
-    public static class EnqueuedStateExtensions
-    {
-        public static string GetQueue(this MethodData methodData)
-        {
-            return "TODO: change me!";
-        }
-    }
 }

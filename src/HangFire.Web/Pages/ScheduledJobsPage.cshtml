@@ -41,7 +41,7 @@ else
             <tr>
                 <th>Id</th>
                 <th>Enqueue</th>
-                <th>Job type</th>
+                <th>Job</th>
                 <th></th>
             </tr>
         </thead>
@@ -59,7 +59,6 @@ else
                 </td>
                 <td data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt)">@job.Value.ScheduledAt</td>
                 <td>
-                    @HtmlHelper.QueueLabel(job.Value.MethodData)
                     <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
                         @HtmlHelper.DisplayMethod(job.Value.MethodData)
                     </span>

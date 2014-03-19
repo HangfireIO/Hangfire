@@ -125,9 +125,9 @@ Write(RenderPartial(new PerPageSelector(pager)));
             #line default
             #line hidden
 WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Id</th>\r\n                <th>Job type</th>\r\n                <th>Server</th>\r\n  " +
-"              <th>Started</th>\r\n            </tr>\r\n        </thead>\r\n        <tb" +
-"ody>\r\n");
+">Id</th>\r\n                <th>Job</th>\r\n                <th>Server</th>\r\n       " +
+"         <th>Started</th>\r\n            </tr>\r\n        </thead>\r\n        <tbody>\r" +
+"\n");
 
 
             
@@ -190,21 +190,12 @@ WriteLiteral("                            <span title=\"Job\'s state has been ch
             
             #line default
             #line hidden
-WriteLiteral("                    </td>\r\n                    <td>\r\n                        ");
+WriteLiteral("                    </td>\r\n                    <td>\r\n                        <spa" +
+"n title=\"");
 
 
             
             #line 63 "..\..\Pages\ProcessingJobsPage.cshtml"
-                   Write(HtmlHelper.QueueLabel(job.Value.MethodData));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                        <span title=\"");
-
-
-            
-            #line 64 "..\..\Pages\ProcessingJobsPage.cshtml"
                                 Write(HtmlHelper.DisplayMethodHint(job.Value.MethodData));
 
             
@@ -214,7 +205,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 65 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 64 "..\..\Pages\ProcessingJobsPage.cshtml"
                        Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
 
             
@@ -225,7 +216,7 @@ WriteLiteral("\r\n                        </span>\r\n                    </td>\r
 
 
             
-            #line 69 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 68 "..\..\Pages\ProcessingJobsPage.cshtml"
                    Write(job.Value.ServerName);
 
             
@@ -235,7 +226,7 @@ WriteLiteral("\r\n                    </td>\r\n                    <td>\r\n");
 
 
             
-            #line 72 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 71 "..\..\Pages\ProcessingJobsPage.cshtml"
                          if (job.Value.StartedAt.HasValue)
                         {
 
@@ -246,7 +237,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 74 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 73 "..\..\Pages\ProcessingJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.StartedAt.Value));
 
             
@@ -256,7 +247,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 75 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 74 "..\..\Pages\ProcessingJobsPage.cshtml"
                            Write(job.Value.StartedAt);
 
             
@@ -266,7 +257,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 77 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 76 "..\..\Pages\ProcessingJobsPage.cshtml"
                         }
 
             
@@ -276,7 +267,7 @@ WriteLiteral("                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 80 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 79 "..\..\Pages\ProcessingJobsPage.cshtml"
             }
 
             
@@ -286,21 +277,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 83 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 82 "..\..\Pages\ProcessingJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 84 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 83 "..\..\Pages\ProcessingJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 84 "..\..\Pages\ProcessingJobsPage.cshtml"
+            #line 83 "..\..\Pages\ProcessingJobsPage.cshtml"
                                         
 }
 

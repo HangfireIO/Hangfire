@@ -43,8 +43,7 @@ else
             <tr>
                 <th>Id</th>
                 <th>Failed</th>
-                <th>Queue</th>
-                <th>Job type</th>
+                <th>Job</th>
                 <th></th>
             </tr>
         </thead>
@@ -70,7 +69,6 @@ else
                             </span>
                         }
                     </td>
-                    <td>@HtmlHelper.QueueLabel(job.Value.MethodData)</td>
                     <td class="@(job.Value.InFailedState ? "expander" : null)">
                         <div>
                             <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">

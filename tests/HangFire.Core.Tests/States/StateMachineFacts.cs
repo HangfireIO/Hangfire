@@ -96,7 +96,7 @@ namespace HangFire.Core.Tests.States
             stateMachine.CreateInState(job, _parameters, _state.Object);
 
             _connection.Verify(x => x.CreateExpiredJob(
-                job.MethodData.Serialize(),
+                It.Is<InvocationData>(d => d.Type == typeof(Console).AssemblyQualifiedName),
                 new [] { "SomeString" },
                 It.Is<Dictionary<string, string>>(d => d["Name"] == "Value"),
                 It.IsAny<TimeSpan>()));
