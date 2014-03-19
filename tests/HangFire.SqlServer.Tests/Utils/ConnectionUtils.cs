@@ -23,7 +23,7 @@ namespace HangFire.SqlServer.Tests
             return String.Format(GetConnectionStringTemplate(), MasterDatabaseName);
         }
 
-        public static string GetDatabaseConnectionString()
+        public static string GetConnectionString()
         {
             return String.Format(GetConnectionStringTemplate(), GetDatabaseName());
         }

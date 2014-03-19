@@ -56,7 +56,7 @@ namespace HangFire.SqlServer.Tests
             }
 
             using (var connection = new SqlConnection(
-                ConnectionUtils.GetDatabaseConnectionString()))
+                ConnectionUtils.GetConnectionString()))
             {
                 SqlServerObjectsInstaller.Install(connection);
             }

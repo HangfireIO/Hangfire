@@ -5,6 +5,7 @@
 
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
+    <BuildEnvironment Condition="'$(BuildEnvironment)' == ''">local</BuildEnvironment>
     <Nightly Condition="$(Nightly) == ''">true</Nightly>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
@@ -21,6 +22,11 @@
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
     <XunitPath>$(ToolsPath)xunit\</XunitPath>
+    <DefaultSqlServerConnectionStringTemplate>
+      Server=.\sqlexpress;Database={0};Trusted_Connection=True;
+    </DefaultSqlServerConnectionStringTemplate>
+    <DefaultSqlServerTestDatabase>HangFire.Test</DefaultSqlServerTestDatabase>
+    <DefaultRedisPort>6378</DefaultRedisPort>
   </PropertyGroup>
 
   <Import Project="$(MSBuildProjectDirectory)\HangFire.versions.targets" />
@@ -49,8 +55,11 @@
 
   <ItemGroup>
     <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.Core.Tests\HangFire.Core.Tests.csproj"></UnitTestProjects>
-    <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.Redis.Tests\HangFire.Redis.Tests.csproj"></UnitTestProjects>
-    <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.csproj"></UnitTestProjects>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.Redis.Tests\HangFire.Redis.Tests.csproj"></IntegrationTestProjects>
+    <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.csproj"></IntegrationTestProjects>
   </ItemGroup>
 
   <ItemGroup>
@@ -71,7 +80,7 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
   
-  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunAppVeyorTests; BuildPackages">
+  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; BuildPackages">
   </Target>
 
   <Target Name="Go" DependsOnTargets="Build; CopyArtifacts; RunTests;">
@@ -87,41 +96,65 @@
              Condition=" '$(OS)' == 'Windows_NT'"/>
   </Target>
 
-  <Target Name="BuildNetFunctionalTests" DependsOnTargets="CreateOutputDirs">
-    <MSBuild Projects="%(FunctionalTestProjects.Identity)"
+  <Target Name="BuildNetIntegrationTests" DependsOnTargets="CreateOutputDirs">
+    <MSBuild Projects="%(IntegrationTestProjects.Identity)"
              Targets="Build"
              Properties="Configuration=$(Configuration);ArtifactsDir=$(ProjectArtifactsDir);SolutionDir=$(ProjectRoot)\;$(ExtraProperties)"
              Condition=" '$(OS)' == 'Windows_NT'"/>
   </Target>
+  
+  <Target Name="PrepareForIntegrationTests">
+    <SetEnvironmentVariableIfNotExists Name="HangFire_Redis_Port" Value="$(DefaultRedisPort)" />
+    
+    <SetEnvironmentVariableIfNotExists Name="HangFire_SqlServer_ConnectionStringTemplate" 
+                                       Value="$(DefaultSqlServerConnectionStringTemplate)" />
+    <SetEnvironmentVariableIfNotExists Name="HangFire_SqlServer_DatabaseName" 
+                                       Value="$(DefaultSqlServerTestDatabase)" />
+  </Target>
 
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
-    <xunit Assembly="$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll"
+    
+    <!-- Core tests -->
+    
+    <xunit Condition=" '$(BuildEnvironment)' == 'local' "
+           Assembly="$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll"
            Xml="$(TestResultsPath)\HangFire.Core.Tests.XunitResults.xml"
            Verbose="true" />
-    <xunit Assembly="$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll"
-           Xml="$(TestResultsPath)\HangFire.Redis.Tests.XunitResults.xml"
-           Verbose="true" />
-    <xunit Assembly="$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll"
-           Xml="$(TestResultsPath)\HangFire.SqlServer.Tests.XunitResults.xml"
-           Verbose="true" />
-  </Target>
-
-  <Target Name="RunFunctionalTests" DependsOnTargets="BuildNetFunctionalTests">
-  </Target>
-
-  <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunFunctionalTests;">
-  </Target>
-
-  <Target Name="RunAppVeyorTests" DependsOnTargets="BuildNetUnitTests">
-    <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
+  
+    <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
+          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
 	  </Exec>
-    <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll&quot; /appveyor"
+  </Target>
+
+  <Target Name="RunIntegrationTests" DependsOnTargets="BuildNetIntegrationTests; PrepareForIntegrationTests">
+    
+    <!-- Redis integration tests -->    
+
+    <xunit Condition=" '$(BuildEnvironment)' == 'local' "
+           Assembly="$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll"
+           Xml="$(TestResultsPath)\HangFire.Redis.Tests.XunitResults.xml"
+           Verbose="true" />
+    
+    <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
+          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
-    <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll&quot; /appveyor"
+    
+    <!-- SQL Server integration tests -->
+
+    <xunit Condition=" '$(BuildEnvironment)' == 'local' "
+           Assembly="$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll"
+           Xml="$(TestResultsPath)\HangFire.SqlServer.Tests.XunitResults.xml"
+           Verbose="true" />
+  
+    <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
+          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
+  </Target>
+
+  <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunIntegrationTests;">
   </Target>
 
   <Target Name="CreateOutputDirs">

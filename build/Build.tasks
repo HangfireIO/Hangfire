@@ -31,4 +31,23 @@
           ]]></Code>
         </Task>
     </UsingTask>
+  <UsingTask TaskName="SetEnvironmentVariableIfNotExists" TaskFactory="CodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
+
+    <ParameterGroup>
+      <Name ParameterType="System.String" Required="true" />
+      <Value ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        if (Environment.GetEnvironmentVariable(Name) == null)
+          Environment.SetEnvironmentVariable(Name, Value);
+      ]]>
+      </Code>
+    </Task>
+
+  </UsingTask>
 </Project>
