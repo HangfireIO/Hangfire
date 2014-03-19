@@ -16,7 +16,7 @@
 
 using System;
 using System.Threading;
-using ServiceStack.Logging;
+using Common.Logging;
 
 namespace HangFire.Server
 {

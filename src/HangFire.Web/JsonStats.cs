@@ -15,8 +15,8 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Text;
-using HangFire.Storage;
-using ServiceStack.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace HangFire.Web
 {
@@ -28,13 +28,16 @@ namespace HangFire.Web
             {
                 var response = monitoring.GetStatistics();
 
-                using (JsConfig.With(emitCamelCaseNames: true))
+                // TODO: th
+                var settings = new JsonSerializerSettings
                 {
-                    var serialized = JsonSerializer.SerializeToString(response);
-                    Response.ContentType = "application/json";
-                    Response.ContentEncoding = Encoding.UTF8;
-                    Response.Write(serialized);
-                }
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                };
+                var serialized = JsonConvert.SerializeObject(response, settings);
+
+                Response.ContentType = "application/json";
+                Response.ContentEncoding = Encoding.UTF8;
+                Response.Write(serialized);
             }
         }
     }

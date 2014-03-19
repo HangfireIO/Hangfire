@@ -1,8 +1,8 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
 @using System.Collections.Generic
+@using Newtonsoft.Json
 @using Pages
-@using ServiceStack.Text
 @using HangFire.Storage
 @inherits RazorPage
 @{
@@ -42,11 +42,8 @@
 
 @if (succeeded != null && failed != null)
 {
-    using (JsConfig.With(dateHandler: JsonDateHandler.ISO8601))
-    {
     <div id="historyGraph" 
-          data-succeeded="@JsonSerializer.SerializeToString(succeeded)" 
-          data-failed="@JsonSerializer.SerializeToString(failed)">
+          data-succeeded="@JsonConvert.SerializeObject(succeeded)" 
+          data-failed="@JsonConvert.SerializeObject(failed)">
     </div>
-    }
 }

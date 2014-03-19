@@ -36,21 +36,9 @@
     <DocumentationFile>bin\Release\HangFire.Web.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Common, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Redis, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Redis.3.9.69\lib\net35\ServiceStack.Redis.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Text.3.9.69\lib\net35\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -74,6 +62,7 @@
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
     <Compile Include="JavaScriptHandler.cs" />
+    <None Include="packages.config" />
     <None Include="Pages\ErrorPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>ErrorPage.generated.cs</LastGenOutput>
@@ -186,7 +175,6 @@
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Content\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="packages.config" />
     <None Include="Pages\QueuesPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>

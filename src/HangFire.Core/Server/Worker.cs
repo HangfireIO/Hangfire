@@ -17,15 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Runtime.Remoting.Contexts;
 using System.Threading;
+using Common.Logging;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Server.Performing;
 using HangFire.States;
 using HangFire.Storage;
-using ServiceStack.Logging;
 
 namespace HangFire.Server
 {

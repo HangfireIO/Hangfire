@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Common.Logging;
+using Common.Logging.Simple;
 using HangFire;
 using HangFire.Filters;
 using HangFire.Redis;
 using HangFire.SqlServer;
-using ServiceStack.Logging;
 using ServiceStack.Logging.Support.Logging;
+using LogManager = ServiceStack.Logging.LogManager;
 
 namespace ConsoleSample
 {
@@ -14,6 +16,8 @@ namespace ConsoleSample
         public static void Main()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
+            Common.Logging.LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
+                LogLevel.All, false, false, true, "");
 
             JobStorage.Current = 
                 new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;");

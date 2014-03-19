@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using HangFire.Redis;
 using HangFire.Server;
-using HangFire.Storage;
 using TechTalk.SpecFlow;
 using Xunit;
 

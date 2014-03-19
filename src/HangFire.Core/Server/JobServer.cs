@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using Common.Logging;
 using HangFire.Server.Performing;
-using HangFire.Storage;
-using ServiceStack.Logging;
 
 namespace HangFire.Server
 {

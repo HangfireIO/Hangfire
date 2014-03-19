@@ -301,8 +301,8 @@ WriteLiteral("\" \r\n                           href=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                            <span id=\"stats-workers\" class=\"label label-warni" +
-"ng pull-right\">\r\n                                ");
+WriteLiteral("\">\r\n                            <span id=\"stats-processing\" class=\"label label-wa" +
+"rning pull-right\">\r\n                                ");
 
 
             

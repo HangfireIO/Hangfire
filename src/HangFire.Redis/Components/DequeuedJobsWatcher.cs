@@ -16,10 +16,10 @@
 
 using System;
 using System.Threading;
+using Common.Logging;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.States;
-using ServiceStack.Logging;
 using ServiceStack.Redis;
 
 namespace HangFire.Redis.Components

@@ -17,9 +17,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Common.Logging;
 using HangFire.Common;
 using HangFire.States;
-using ServiceStack.Logging;
 
 namespace HangFire.Server.Components
 {

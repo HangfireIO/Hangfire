@@ -15,7 +15,7 @@
 // along with HangFire.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using ServiceStack.Text;
+using Newtonsoft.Json;
 
 namespace HangFire.Common
 {
@@ -23,12 +23,14 @@ namespace HangFire.Common
     {
         public static string ToJson(object value)
         {
-            return JsonSerializer.SerializeToString(value);
+            return JsonConvert.SerializeObject(value);
         }
 
         public static T FromJson<T>(string value)
         {
-            return JsonSerializer.DeserializeFromString<T>(value);
+            return value != null 
+                ? JsonConvert.DeserializeObject<T>(value)
+                : default(T);
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

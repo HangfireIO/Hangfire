@@ -92,7 +92,7 @@
                         </a>
                         <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/processing") ? "active" : null)" 
                            href="@Request.LinkTo("/processing")">
-                            <span id="stats-workers" class="label label-warning pull-right">
+                            <span id="stats-processing" class="label label-warning pull-right">
                                 @statistics.Processing
                             </span>
                             Processing

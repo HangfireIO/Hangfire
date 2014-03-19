@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
+using Common.Logging;
 using Dapper;
 using HangFire.Server;
-using ServiceStack.Logging;
 
 namespace HangFire.SqlServer.Components
 {

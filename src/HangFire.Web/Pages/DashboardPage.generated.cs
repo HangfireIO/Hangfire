@@ -33,13 +33,13 @@ namespace HangFire.Web.Pages
     #line hidden
     
     #line 4 "..\..\Pages\DashboardPage.cshtml"
-    using Pages;
+    using Newtonsoft.Json;
     
     #line default
     #line hidden
     
     #line 5 "..\..\Pages\DashboardPage.cshtml"
-    using ServiceStack.Text;
+    using Pages;
     
     #line default
     #line hidden
@@ -119,8 +119,6 @@ WriteLiteral("\">Week</a>\r\n    </div>\r\n    History graph\r\n</h3>\r\n\r\n");
             #line 43 "..\..\Pages\DashboardPage.cshtml"
  if (succeeded != null && failed != null)
 {
-    using (JsConfig.With(dateHandler: JsonDateHandler.ISO8601))
-    {
 
             
             #line default
@@ -129,8 +127,8 @@ WriteLiteral("    <div id=\"historyGraph\" \r\n          data-succeeded=\"");
 
 
             
-            #line 48 "..\..\Pages\DashboardPage.cshtml"
-                     Write(JsonSerializer.SerializeToString(succeeded));
+            #line 46 "..\..\Pages\DashboardPage.cshtml"
+                     Write(JsonConvert.SerializeObject(succeeded));
 
             
             #line default
@@ -139,8 +137,8 @@ WriteLiteral("\" \r\n          data-failed=\"");
 
 
             
-            #line 49 "..\..\Pages\DashboardPage.cshtml"
-                  Write(JsonSerializer.SerializeToString(failed));
+            #line 47 "..\..\Pages\DashboardPage.cshtml"
+                  Write(JsonConvert.SerializeObject(failed));
 
             
             #line default
@@ -149,8 +147,7 @@ WriteLiteral("\">\r\n    </div>\r\n");
 
 
             
-            #line 51 "..\..\Pages\DashboardPage.cshtml"
-    }
+            #line 49 "..\..\Pages\DashboardPage.cshtml"
 }
             
             #line default

@@ -16,11 +16,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Web;
 using HangFire.Common;
-using ServiceStack.Text;
 
 namespace HangFire.Web
 {
@@ -235,7 +233,7 @@ namespace HangFire.Web
 
             public static ArgumentRenderer GetRenderer(Type type)
             {
-                if (type.IsNumericType())
+                if (IsNumericType(type))
                 {
                     return new ArgumentRenderer
                     {
@@ -273,6 +271,40 @@ namespace HangFire.Web
                 {
                     _deserializationType = type,
                 };
+            }
+
+            private static bool IsNumericType(Type type)
+            {
+                if (type == null) return false;
+
+                switch (Type.GetTypeCode(type))
+                {
+                    case TypeCode.Byte:
+                    case TypeCode.Decimal:
+                    case TypeCode.Double:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.Int64:
+                    case TypeCode.SByte:
+                    case TypeCode.Single:
+                    case TypeCode.UInt16:
+                    case TypeCode.UInt32:
+                    case TypeCode.UInt64:
+                        return true;
+
+                    case TypeCode.Object:
+                        if (IsNullableType(type))
+                        {
+                            return IsNumericType(Nullable.GetUnderlyingType(type));
+                        }
+                        return false;
+                }
+                return false;
+            }
+
+            private static bool IsNullableType(Type type)
+            {
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
             }
         }
     }

@@ -92,6 +92,17 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
+        public void SetJobParameter_CanReceiveNullValue()
+        {
+            var context = CreateContext();
+
+            context.SetJobParameter("Name", (string)null);
+
+            _connectionMock.Verify(x => x.SetJobParameter(
+                JobId, "Name", JobHelper.ToJson(null)));
+        }
+
+        [Fact]
         public void GetJobParameter_CallsTheCorrespondingMethod_WithJsonDecodedValue()
         {
             var context = CreateContext();
@@ -107,7 +118,7 @@ namespace HangFire.Core.Tests.States
         public void GetJobParameter_ReturnsDefaultValue_WhenNoValueProvided()
         {
             var context = CreateContext();
-            _connectionMock.Setup(x => x.GetJobParameter("1", "Name"))
+            _connectionMock.Setup(x => x.GetJobParameter("1", "Value"))
                 .Returns(JobHelper.ToJson(null));
 
             var value = context.GetJobParameter<int>("Name");

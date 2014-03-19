@@ -4,13 +4,13 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Common.Logging;
 using Dapper;
 using HangFire.Server;
 using HangFire.Server.Components;
 using HangFire.SqlServer.Components;
 using HangFire.Storage;
 using HangFire.Storage.Monitoring;
-using ServiceStack.Logging;
 
 namespace HangFire.SqlServer
 {

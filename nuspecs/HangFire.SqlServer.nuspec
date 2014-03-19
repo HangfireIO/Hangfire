@@ -15,8 +15,7 @@
     <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
     <dependencies>
       <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
-      <dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
+      <dependency id="Common.Logging" version="2.1.2" />
       <dependency id="Dapper" version="1.13" />
     </dependencies>
   </metadata>

@@ -16,17 +16,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using HangFire.Common;
-using HangFire.Common.States;
-using HangFire.States;
-using ServiceStack.Text;
 
 namespace HangFire.Web
 {
