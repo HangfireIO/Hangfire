@@ -86,6 +86,11 @@ namespace HangFire.Redis
             var storedData = new Dictionary<string, string>(state.Serialize());
             storedData.Add("State", state.Name);
 
+            if (state.Reason != null)
+            {
+                storedData.Add("Reason", state.Reason);
+            }
+
             _transaction.QueueCommand(x => x.SetRangeInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId),
                 storedData));
