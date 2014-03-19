@@ -20,11 +20,11 @@ using HangFire.Storage;
 
 namespace HangFire.Common.States
 {
-    public class StateChangingContext : StateContext
+    public class ElectStateContext : StateContext
     {
         private State _candidateState;
 
-        internal StateChangingContext(
+        internal ElectStateContext(
             StateContext context, 
             State candidateState, 
             string currentState, 
@@ -64,6 +64,26 @@ namespace HangFire.Common.States
         {
             return JobHelper.FromJson<T>(Connection.GetJobParameter(
                 JobId, name));
+        }
+
+        internal State ElectState(IEnumerable<IElectStateFilter> filters)
+        {
+            foreach (var filter in filters)
+            {
+                var oldState = CandidateState;
+                filter.OnStateElection(this);
+
+                if (oldState != CandidateState)
+                {
+                    using (var transaction = Connection.CreateWriteTransaction())
+                    {
+                        transaction.AddJobState(JobId, oldState);
+                        transaction.Commit();
+                    }
+                }
+            }
+
+            return CandidateState;
         }
     }
 }

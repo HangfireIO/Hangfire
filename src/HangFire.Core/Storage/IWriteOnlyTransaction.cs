@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using HangFire.Common;
 using HangFire.Common.States;
 
 namespace HangFire.Storage
@@ -37,6 +35,6 @@ namespace HangFire.Storage
         void DecrementValue(string key);
         void ExpireValue(string key, TimeSpan expireIn);
 
-        bool Commit();
+        void Commit();
     }
 }

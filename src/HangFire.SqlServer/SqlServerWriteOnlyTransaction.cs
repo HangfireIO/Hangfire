@@ -27,7 +27,7 @@ namespace HangFire.SqlServer
         {
         }
         
-        public bool Commit()
+        public void Commit()
         {
             using (var transaction = new TransactionScope(
                 TransactionScopeOption.RequiresNew,
@@ -42,8 +42,6 @@ namespace HangFire.SqlServer
 
                 transaction.Complete();
             }
-
-            return true;
         }
 
         public void ExpireJob(string jobId, TimeSpan expireIn)

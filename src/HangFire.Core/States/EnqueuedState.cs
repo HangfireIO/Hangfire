@@ -50,7 +50,7 @@ namespace HangFire.States
         public class Handler : StateHandler
         {
             public override void Apply(
-                StateApplyingContext context, IWriteOnlyTransaction transaction)
+                ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 var enqueuedState = context.NewState as EnqueuedState;
                 if (enqueuedState == null)

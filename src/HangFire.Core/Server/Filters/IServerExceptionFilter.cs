@@ -22,7 +22,7 @@ namespace HangFire.Server.Filters
     public interface IServerExceptionFilter
     {
         /// <summary>
-        /// Called when an exception occured during the performance of the job.
+        /// Called when an exception occurred during the performance of the job.
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
         void OnServerException(ServerExceptionContext filterContext);

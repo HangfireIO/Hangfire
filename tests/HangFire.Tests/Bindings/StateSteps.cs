@@ -343,7 +343,7 @@ namespace HangFire.Tests.States
         {
             _oldStateDescriptorMock.Verify(
                 x => x.Unapply(
-                    It.Is<StateApplyingContext>(y => y.JobId == JobSteps.DefaultJobId),
+                    It.Is<ApplyStateContext>(y => y.JobId == JobSteps.DefaultJobId),
                     It.IsAny<IWriteOnlyTransaction>()));
         }
 
@@ -351,7 +351,7 @@ namespace HangFire.Tests.States
         public void ThenTheOldStateWasNotUnapplied()
         {
             _oldStateDescriptorMock.Verify(
-                x => x.Unapply(It.IsAny<StateApplyingContext>(), It.IsAny<IWriteOnlyTransaction>()),
+                x => x.Unapply(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()),
                 Times.Never);
         }
 

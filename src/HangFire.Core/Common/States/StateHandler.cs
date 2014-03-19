@@ -21,12 +21,12 @@ namespace HangFire.Common.States
     public abstract class StateHandler
     {
         public virtual void Apply(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
         }
 
         public virtual void Unapply(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
         }
 

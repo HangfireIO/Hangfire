@@ -21,7 +21,7 @@ using HangFire.States;
 
 namespace HangFire.Filters
 {
-    public class RecurringAttribute : JobFilterAttribute, IStateChangingFilter
+    public class RecurringAttribute : JobFilterAttribute, IElectStateFilter
     {
         public RecurringAttribute(int intervalInSeconds)
         {
@@ -30,7 +30,7 @@ namespace HangFire.Filters
 
         public int RepeatInterval { get; private set; }
 
-        public void OnStateChanging(StateChangingContext context)
+        public void OnStateElection(ElectStateContext context)
         {
             if (context.CandidateState.Name == SucceededState.StateName)
             {

@@ -49,7 +49,7 @@ namespace HangFire.States
         public class Handler : StateHandler
         {
             public override void Apply(
-                StateApplyingContext context, IWriteOnlyTransaction transaction)
+                ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 var scheduledState = context.NewState as ScheduledState;
                 if (scheduledState == null)
@@ -64,7 +64,7 @@ namespace HangFire.States
             }
 
             public override void Unapply(
-                StateApplyingContext context, IWriteOnlyTransaction transaction)
+                ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 transaction.RemoveFromSet("schedule", context.JobId);
             }

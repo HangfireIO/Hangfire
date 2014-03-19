@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
@@ -11,17 +12,20 @@ namespace HangFire.Core.Tests.States
 {
     public class StateMachineFacts
     {
-        private readonly Mock<IStorageConnection> _connectionMock =
-            new Mock<IStorageConnection>();
+        private readonly Mock<IStorageConnection> _connection
+            = new Mock<IStorageConnection>();
+        private readonly Mock<IWriteOnlyTransaction> _transaction
+            = new Mock<IWriteOnlyTransaction>();
         private readonly List<StateHandler> _handlers = new List<StateHandler>();
         private readonly List<object> _filters = new List<object>();
 
         private readonly Job _job;
         private readonly Dictionary<string, string> _parameters;
         private readonly Mock<State> _state;
+        private const string StateName = "State";
+        private const string OldStateName = "Old";
 
         private const string JobId = "1";
-        private const string StateName = "State";
 
         public StateMachineFacts()
         {
@@ -30,9 +34,9 @@ namespace HangFire.Core.Tests.States
             _state = new Mock<State>();
             _state.Setup(x => x.Name).Returns(StateName);
 
-            _connectionMock.Setup(x => x.CreateWriteTransaction())
-                .Returns(new Mock<IWriteOnlyTransaction>().Object);
-            _connectionMock.Setup(x => x.CreateExpiredJob(
+            _connection.Setup(x => x.CreateWriteTransaction())
+                .Returns(_transaction.Object);
+            _connection.Setup(x => x.CreateExpiredJob(
                 It.IsAny<InvocationData>(),
                 It.IsAny<string[]>(),
                 It.IsAny<IDictionary<string, string>>(),
@@ -91,7 +95,7 @@ namespace HangFire.Core.Tests.States
 
             stateMachine.CreateInState(job, _parameters, _state.Object);
 
-            _connectionMock.Verify(x => x.CreateExpiredJob(
+            _connection.Verify(x => x.CreateExpiredJob(
                 job.MethodData.Serialize(),
                 new [] { "SomeString" },
                 It.Is<Dictionary<string, string>>(d => d["Name"] == "Value"),
@@ -155,7 +159,7 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_WorksWithinAJobLock()
         {
             var disposableMock = new Mock<IDisposable>();
-            _connectionMock.Setup(x => x.AcquireJobLock("1")).Returns(disposableMock.Object);
+            _connection.Setup(x => x.AcquireJobLock("1")).Returns(disposableMock.Object);
 
             var stateMachine = CreateStateMachine();
 
@@ -168,7 +172,7 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_ReturnsFalse_WhenJobIsNotFound()
         {
             // Arrange
-            _connectionMock.Setup(x => x.GetJobStateAndInvocationData(It.IsAny<string>()))
+            _connection.Setup(x => x.GetJobStateAndInvocationData(It.IsAny<string>()))
                 .Returns((StateAndInvocationData)null);
 
             var stateMachine = CreateStateMachineMock();
@@ -178,7 +182,7 @@ namespace HangFire.Core.Tests.States
 
             // Assert
             Assert.False(result);
-            _connectionMock.Verify(x => x.GetJobStateAndInvocationData("1"));
+            _connection.Verify(x => x.GetJobStateAndInvocationData("1"));
 
             stateMachine.Verify(
                 x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()),
@@ -189,7 +193,7 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_ReturnsFalse_WhenFromStatesArgumentDoesNotContainCurrentState()
         {
             // Arrange
-            _connectionMock.Setup(x => x.GetJobStateAndInvocationData("1"))
+            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
                 .Returns(new StateAndInvocationData
                 {
                     State = "Old",
@@ -210,10 +214,34 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
+        public void TryToChangeState_ReturnsFalse_WhenStateChangeReturnsFalse()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
+                .Returns(new StateAndInvocationData
+                {
+                    State = "Old",
+                    InvocationData = MethodData.FromExpression(() => Console.WriteLine()).Serialize()
+                });
+
+            var stateMachine = CreateStateMachineMock();
+            stateMachine.Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()))
+                .Returns(false);
+
+            // Act
+            var result = stateMachine.Object.TryToChangeState("1", _state.Object, new[] { "Old" });
+
+            // Assert
+            stateMachine.Verify(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()));
+            Assert.False(result);
+
+        }
+
+        [Fact]
         public void TryToChangeState_MoveJobToTheSpecifiedState_WhenMethodDataCouldBeFound()
         {
             // Arrange
-            _connectionMock.Setup(x => x.GetJobStateAndInvocationData("1"))
+            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
                 .Returns(new StateAndInvocationData
                 {
                     State = "Old",
@@ -242,7 +270,7 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_MoveJobToTheFailedState_IfMethodDataCouldNotBeResolved()
         {
             // Arrange
-            _connectionMock.Setup(x => x.GetJobStateAndInvocationData("1"))
+            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
                 .Returns(new StateAndInvocationData
                 {
                     State = "Old",
@@ -252,19 +280,105 @@ namespace HangFire.Core.Tests.States
             var stateMachine = CreateStateMachineMock();
 
             // Act
-            stateMachine.Object.TryToChangeState("1", _state.Object, new[] { "Old" });
+            var result = stateMachine.Object.TryToChangeState("1", _state.Object, new[] { "Old" });
 
             // Assert
             stateMachine.Verify(x => x.ChangeState(
                 It.Is<StateContext>(sc => sc.JobId == "1" && sc.MethodData == null),
                 It.Is<FailedState>(s => s.Exception != null),
                 "Old"));
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ChangeState_AppliesState_AndReturnsTrue()
+        {
+            var stateMachine = CreateStateMachineMock();
+            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+            
+            var result = stateMachine.Object.ChangeState(
+                context, _state.Object, OldStateName);
+
+            stateMachine.Verify(x => x.ApplyState(
+                context, _state.Object, OldStateName, It.IsNotNull<IEnumerable<IApplyStateFilter>>()));
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ChangeState_AppliesOnlyElectedState()
+        {
+            var stateMachine = CreateStateMachineMock();
+            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+            var electedState = new Mock<State>();
+
+            stateMachine
+                .Setup(x => x.ElectState(
+                    context, _state.Object, OldStateName, It.IsNotNull<IEnumerable<IElectStateFilter>>()))
+                .Returns(electedState.Object);
+
+            stateMachine.Object.ChangeState(context, _state.Object, OldStateName);
+
+            stateMachine.Verify(x => x.ApplyState(
+                context, electedState.Object, OldStateName, It.IsAny<IEnumerable<IApplyStateFilter>>()));
+        }
+
+        [Fact]
+        public void ChangeState_AppliesFailedState_WhenThereIsAnException()
+        {
+            var stateMachine = CreateStateMachineMock();
+            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+            var exception = new NotSupportedException();
+
+            stateMachine.Setup(x => x.ApplyState(
+                context, _state.Object, OldStateName, It.IsAny<IEnumerable<IApplyStateFilter>>()))
+                .Throws(exception);
+
+            var result = stateMachine.Object.ChangeState(
+                context, _state.Object, OldStateName);
+
+            stateMachine.Verify(x => x.ApplyState(
+                context, 
+                It.Is<FailedState>(s => s.Exception == exception), 
+                OldStateName,
+                It.Is<IEnumerable<IApplyStateFilter>>(f => !f.Any())));
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ApplyState_RunsAllHandlers()
+        {
+            // Arrange
+            var handler1 = new Mock<StateHandler>();
+            handler1.Setup(x => x.StateName).Returns(StateName);
+
+            var handler2 = new Mock<StateHandler>();
+            handler2.Setup(x => x.StateName).Returns(StateName);
+
+            _handlers.Add(handler1.Object);
+            _handlers.Add(handler2.Object);
+
+            var stateMachine = CreateStateMachine();
+            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+
+            // Act
+            stateMachine.ApplyState(
+                context, _state.Object, OldStateName, Enumerable.Empty<IApplyStateFilter>());
+
+            // Assert
+            handler1.Verify(x => x.Apply(
+                It.Is<ApplyStateContext>(c => 
+                    c.JobId == context.JobId 
+                    && c.MethodData == context.MethodData 
+                    && c.NewState == _state.Object 
+                    && c.OldStateName == OldStateName),
+                It.IsAny<IWriteOnlyTransaction>()));
         }
 
         private StateMachine CreateStateMachine()
         {
             return new StateMachine(
-                _connectionMock.Object,
+                _connection.Object,
                 _handlers,
                 _filters);
         }
@@ -272,11 +386,11 @@ namespace HangFire.Core.Tests.States
         private Mock<StateMachine> CreateStateMachineMock()
         {
             return new Mock<StateMachine>(
-                _connectionMock.Object,
+                _connection.Object,
                 _handlers,
                 _filters)
             {
-                CallBase = false
+                CallBase = true
             };
         }
     }

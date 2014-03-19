@@ -9,7 +9,7 @@ namespace HangFire.Redis.States
     internal class FailedStateHandler : StateHandler
     {
         public override void Apply(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.AddToSet(
                 "failed",
@@ -18,7 +18,7 @@ namespace HangFire.Redis.States
         }
 
         public override void Unapply(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.RemoveFromSet("failed", context.JobId);
         }

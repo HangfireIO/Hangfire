@@ -54,13 +54,13 @@ namespace HangFire.States
         public class Handler : StateHandler
         {
             public override void Apply(
-                StateApplyingContext context, IWriteOnlyTransaction transaction)
+                ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 transaction.IncrementCounter("stats:succeeded");
             }
 
             public override void Unapply(
-                StateApplyingContext context, IWriteOnlyTransaction transaction)
+                ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 transaction.DecrementCounter("stats:succeeded");
             }

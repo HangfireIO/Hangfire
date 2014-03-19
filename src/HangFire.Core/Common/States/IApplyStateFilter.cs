@@ -21,20 +21,20 @@ namespace HangFire.Common.States
     /// <summary>
     /// Provides methods that are required for a state changed filter.
     /// </summary>
-    public interface IStateChangedFilter
+    public interface IApplyStateFilter
     {
         /// <summary>
         /// Called after the specified state was applied
         /// to the job within the given transaction.
         /// </summary>
         void OnStateApplied(
-            StateApplyingContext context, IWriteOnlyTransaction transaction);
+            ApplyStateContext context, IWriteOnlyTransaction transaction);
 
         /// <summary>
         /// Called when the state with specified state was 
         /// unapplied from the job within the given transaction.
         /// </summary>
         void OnStateUnapplied(
-            StateApplyingContext context, IWriteOnlyTransaction transaction);
+            ApplyStateContext context, IWriteOnlyTransaction transaction);
     }
 }

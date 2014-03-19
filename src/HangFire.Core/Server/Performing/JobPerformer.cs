@@ -96,7 +96,7 @@ namespace HangFire.Server.Performing
             catch (Exception filterException)
             {
                 throw new JobPerformanceException(
-                    "An exception occured during execution of one of the filters",
+                    "An exception occurred during execution of one of the filters",
                     filterException);
             }
             
@@ -125,7 +125,7 @@ namespace HangFire.Server.Performing
                 catch (Exception filterException)
                 {
                     throw new JobPerformanceException(
-                        "An exception occured during execution of one of the filters",
+                        "An exception occurred during execution of one of the filters",
                         filterException);
                 }
 

@@ -21,7 +21,7 @@ using HangFire.States;
 
 namespace HangFire.Filters
 {
-    public class RetryAttribute : JobFilterAttribute, IStateChangingFilter
+    public class RetryAttribute : JobFilterAttribute, IElectStateFilter
     {
         private int _attempts;
         private const int DefaultRetryAttempts = 3;
@@ -44,7 +44,7 @@ namespace HangFire.Filters
             }
         }
 
-        public void OnStateChanging(StateChangingContext context)
+        public void OnStateElection(ElectStateContext context)
         {
             if (context.CandidateState.Name != FailedState.StateName)
             {

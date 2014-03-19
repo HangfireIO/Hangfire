@@ -7,14 +7,14 @@ namespace HangFire.Redis.States
     internal class SucceededStateHandler : StateHandler
     {
         public override void Apply(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.InsertToList("succeeded", context.JobId);
             transaction.TrimList("succeeded", 0, 99);
         }
 
         public override void Unapply(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.RemoveFromList("succeeded", context.JobId);
         }

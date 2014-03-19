@@ -1,4 +1,5 @@
-﻿using HangFire;
+﻿using System.Web.Mvc;
+using HangFire;
 using HangFire.Redis;
 using HangFire.SqlServer;
 using HangFire.Web;
@@ -26,7 +27,7 @@ namespace MvcSample
             
             JobStorage.Current = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;");
-
+            
             // If your project infrastructure contains Redis server, you may
             // choose Redis job storage implementation (it is much faster).
             // To do this, type in your Package Manager Console window:

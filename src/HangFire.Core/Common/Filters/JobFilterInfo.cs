@@ -29,8 +29,8 @@ namespace HangFire.Common.Filters
     {
         private readonly List<IClientFilter> _clientFilters = new List<IClientFilter>();
         private readonly List<IServerFilter> _serverFilters = new List<IServerFilter>();
-        private readonly List<IStateChangingFilter> _stateChangingFilters = new List<IStateChangingFilter>();
-        private readonly List<IStateChangedFilter> _stateChangedFilters = new List<IStateChangedFilter>();
+        private readonly List<IElectStateFilter> _electStateFilters = new List<IElectStateFilter>();
+        private readonly List<IApplyStateFilter> _applyStateFilters = new List<IApplyStateFilter>();
         private readonly List<IClientExceptionFilter> _clientExceptionFilters = new List<IClientExceptionFilter>(); 
         private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>();
 
@@ -52,8 +52,8 @@ namespace HangFire.Common.Filters
             _clientFilters.AddRange(list.OfType<IClientFilter>());
             _serverFilters.AddRange(list.OfType<IServerFilter>());
 
-            _stateChangingFilters.AddRange(list.OfType<IStateChangingFilter>());
-            _stateChangedFilters.AddRange(list.OfType<IStateChangedFilter>());
+            _electStateFilters.AddRange(list.OfType<IElectStateFilter>());
+            _applyStateFilters.AddRange(list.OfType<IApplyStateFilter>());
 
             _clientExceptionFilters.AddRange(list.OfType<IClientExceptionFilter>());
             _serverExceptionFilters.AddRange(list.OfType<IServerExceptionFilter>());
@@ -90,9 +90,9 @@ namespace HangFire.Common.Filters
         /// <returns>
         /// The state changing filters.
         /// </returns>
-        public IList<IStateChangingFilter> StateChangingFilters
+        public IList<IElectStateFilter> ElectStateFilters
         {
-            get { return _stateChangingFilters; }
+            get { return _electStateFilters; }
         }
 
         /// <summary>
@@ -102,9 +102,9 @@ namespace HangFire.Common.Filters
         /// <returns>
         /// The state changed filters.
         /// </returns>
-        public IList<IStateChangedFilter> StateChangedFilters
+        public IList<IApplyStateFilter> ApplyStateFilters
         {
-            get { return _stateChangedFilters; }
+            get { return _applyStateFilters; }
         }
 
         /// <summary>

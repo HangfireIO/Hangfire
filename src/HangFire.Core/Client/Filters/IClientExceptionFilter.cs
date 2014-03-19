@@ -22,7 +22,7 @@ namespace HangFire.Client.Filters
     public interface IClientExceptionFilter
     {
         /// <summary>
-        /// Called when an exception occured during the creation of the job.
+        /// Called when an exception occurred during the creation of the job.
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
         void OnClientException(ClientExceptionContext filterContext);

@@ -21,14 +21,14 @@ using HangFire.States;
 
 namespace HangFire.Filters
 {
-    public class StatisticsHistoryFilterAttribute : JobFilterAttribute, IStateChangingFilter
+    public class StatisticsHistoryFilterAttribute : JobFilterAttribute, IElectStateFilter
     {
         public StatisticsHistoryFilterAttribute()
         {
             Order = 30;
         }
 
-        public void OnStateChanging(StateChangingContext context)
+        public void OnStateElection(ElectStateContext context)
         {
             using (var transaction = context.Connection.CreateWriteTransaction())
             {

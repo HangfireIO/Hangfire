@@ -19,7 +19,7 @@ namespace HangFire.Common.States
     /// <summary>
     /// Defines methods that are required for a state changing filter.
     /// </summary>
-    public interface IStateChangingFilter
+    public interface IElectStateFilter
     {
         /// <summary>
         /// Called when the current state of the job is being changed to the
@@ -28,6 +28,6 @@ namespace HangFire.Common.States
         /// be changed through setting the different state in the context 
         /// in an implementation of this method.
         /// </summary>
-        void OnStateChanging(StateChangingContext context);
+        void OnStateElection(ElectStateContext context);
     }
 }

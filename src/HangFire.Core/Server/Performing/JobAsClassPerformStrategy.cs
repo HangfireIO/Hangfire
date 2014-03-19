@@ -62,7 +62,7 @@ namespace HangFire.Server.Performing
                 catch (Exception ex)
                 {
                     throw new JobPerformanceException(
-                        "An exception occured during performance of the job",
+                        "An exception occurred during performance of the job",
                         ex);
                 }
             }

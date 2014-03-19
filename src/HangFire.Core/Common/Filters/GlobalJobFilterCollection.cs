@@ -125,8 +125,8 @@ namespace HangFire.Common.Filters
                 || instance is IServerFilter 
                 || instance is IClientExceptionFilter 
                 || instance is IServerExceptionFilter
-                || instance is IStateChangedFilter
-                || instance is IStateChangingFilter))
+                || instance is IApplyStateFilter
+                || instance is IElectStateFilter))
             {
                 throw new InvalidOperationException("Unsupported filter instance");
             }

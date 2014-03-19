@@ -7,14 +7,14 @@ using Xunit;
 
 namespace HangFire.Core.Tests.States
 {
-    public class StateChangingContextFacts
+    public class ElectStateContextFacts
     {
         private const string JobId = "1";
         private readonly StateContext _stateContext;
         private readonly Mock<State> _candidateStateMock;
         private readonly Mock<IStorageConnection> _connectionMock;
 
-        public StateChangingContextFacts()
+        public ElectStateContextFacts()
         {
             var methodData = MethodData.FromExpression(() => Console.WriteLine());
             _stateContext = new StateContext(JobId, methodData);
@@ -26,7 +26,7 @@ namespace HangFire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenCandidateStateIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangingContext(
+                () => new ElectStateContext(
                     _stateContext,
                     null,
                     null,
@@ -39,7 +39,7 @@ namespace HangFire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangingContext(
+                () => new ElectStateContext(
                     _stateContext,
                     _candidateStateMock.Object,
                     null,
@@ -115,9 +115,9 @@ namespace HangFire.Core.Tests.States
             Assert.Equal(default(int), value);
         }
 
-        private StateChangingContext CreateContext()
+        private ElectStateContext CreateContext()
         {
-            return new StateChangingContext(
+            return new ElectStateContext(
                 _stateContext,
                 _candidateStateMock.Object,
                 "State",

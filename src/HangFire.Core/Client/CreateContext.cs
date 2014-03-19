@@ -75,7 +75,7 @@ namespace HangFire.Client
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
         /// the final state of the created job could be changed after 
-        /// the registered instances of the <see cref="IStateChangingFilter"/>
+        /// the registered instances of the <see cref="IElectStateFilter"/>
         /// class are doing their job.
         /// </summary>
         public State InitialState { get; private set; }

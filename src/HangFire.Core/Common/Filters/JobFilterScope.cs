@@ -39,13 +39,13 @@ namespace HangFire.Common.Filters
     ///     <item>
     ///         <description>
     ///             State changing filters, which implement the
-    ///             <see cref="IStateChangingFilter"/> interface.
+    ///             <see cref="IElectStateFilter"/> interface.
     ///         </description>
     ///     </item>
     ///     <item>
     ///         <description>
     ///             State changed filters, which implement the
-    ///             <see cref="IStateChangedFilter"/> interface.
+    ///             <see cref="IApplyStateFilter"/> interface.
     ///         </description>
     ///     </item>
     ///     <item>

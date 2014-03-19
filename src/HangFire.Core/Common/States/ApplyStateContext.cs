@@ -20,18 +20,21 @@ using HangFire.Storage;
 
 namespace HangFire.Common.States
 {
-    public class StateApplyingContext : StateContext
+    public class ApplyStateContext : StateContext
     {
         private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
+
         private readonly IStorageConnection _connection;
 
-        internal StateApplyingContext(
-            StateContext context,
+        internal ApplyStateContext(
             IStorageConnection connection,
+            StateContext context,
             State newState,
             string oldStateName)
             : base(context)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
+
             _connection = connection;
             OldStateName = oldStateName;
             NewState = newState;
@@ -40,9 +43,8 @@ namespace HangFire.Common.States
         public string OldStateName { get; private set; }
         public State NewState { get; private set; }
 
-        internal virtual bool ApplyState(
-            StateHandlerCollection handlers,
-            IEnumerable<IStateChangedFilter> filters)
+        internal void ApplyState(
+            StateHandlerCollection handlers, IEnumerable<IApplyStateFilter> filters)
         {
             if (handlers == null) throw new ArgumentNullException("handlers");
             if (filters == null) throw new ArgumentNullException("filters");
@@ -80,7 +82,7 @@ namespace HangFire.Common.States
                     transaction.PersistJob(JobId);
                 }
 
-                return transaction.Commit();
+                transaction.Commit();
             }
         }
     }

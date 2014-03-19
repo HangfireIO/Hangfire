@@ -96,10 +96,11 @@
     <Compile Include="Common\Filters\GlobalJobFilterCollection.cs" />
     <Compile Include="Client\Filters\IClientExceptionFilter.cs" />
     <Compile Include="Common\Filters\IJobFilterProvider.cs" />
-    <Compile Include="Common\States\IStateChangingFilter.cs" />
+    <Compile Include="Common\States\IElectStateFilter.cs" />
     <Compile Include="Common\Filters\JobFilterAttribute.cs" />
     <Compile Include="Common\Filters\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\Filters\JobFilterInfo.cs" />
+    <Compile Include="Common\States\StateHandlerProviders.cs" />
     <Compile Include="Common\States\StateHandlerCollection.cs" />
     <Compile Include="Server\Components\SchedulePoller.cs" />
     <Compile Include="Server\Components\ServerWatchdog.cs" />
@@ -114,7 +115,7 @@
     <Compile Include="Server\Filters\PerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="BackgroundJobServer.cs" />
-    <Compile Include="Common\States\IStateChangedFilter.cs" />
+    <Compile Include="Common\States\IApplyStateFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Filters\RecurringAttribute.cs" />
     <Compile Include="Filters\RetryAttribute.cs" />
@@ -164,8 +165,8 @@
     <Compile Include="Common\States\StateHandler.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
-    <Compile Include="Common\States\StateApplyingContext.cs" />
-    <Compile Include="Common\States\StateChangingContext.cs" />
+    <Compile Include="Common\States\ApplyStateContext.cs" />
+    <Compile Include="Common\States\ElectStateContext.cs" />
     <Compile Include="Common\States\StateContext.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />

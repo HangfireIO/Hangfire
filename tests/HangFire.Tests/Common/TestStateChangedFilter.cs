@@ -8,7 +8,7 @@ using Xunit;
 
 namespace HangFire.Tests
 {
-    public class TestStateChangedFilter : IStateChangedFilter
+    public class TestStateChangedFilter : IApplyStateFilter
     {
         private readonly string _name;
         private readonly IList<string> _results;
@@ -20,7 +20,7 @@ namespace HangFire.Tests
         }
 
         public void OnStateApplied(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             Assert.NotNull(context);
             Assert.NotNull(transaction);
@@ -29,7 +29,7 @@ namespace HangFire.Tests
         }
 
         public void OnStateUnapplied(
-            StateApplyingContext context, IWriteOnlyTransaction transaction)
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             Assert.NotNull(context);
             Assert.NotNull(transaction);

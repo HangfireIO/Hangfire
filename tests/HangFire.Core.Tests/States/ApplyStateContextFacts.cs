@@ -9,18 +9,18 @@ using Xunit;
 
 namespace HangFire.Core.Tests.States
 {
-    public class StateApplyingContextFacts
+    public class ApplyStateContextFacts
     {
         private const string JobId = "1";
         private readonly Mock<State> _newStateMock;
         private readonly MethodData _methodData;
-        private readonly List<IStateChangedFilter> _filters;
+        private readonly List<IApplyStateFilter> _filters;
         private readonly StateHandlerCollection _handlers;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private const string OldState = "SomeState";
         private const string NewState = "NewState";
 
-        public StateApplyingContextFacts()
+        public ApplyStateContextFacts()
         {
             _methodData = MethodData.FromExpression(() => Console.WriteLine());
             _newStateMock = new Mock<State>();
@@ -28,18 +28,8 @@ namespace HangFire.Core.Tests.States
 
             _transaction = new Mock<IWriteOnlyTransaction>();
             
-            _filters = new List<IStateChangedFilter>();
+            _filters = new List<IApplyStateFilter>();
             _handlers = new StateHandlerCollection();
-        }
-
-        [Fact]
-        public void Ctor_ShouldSetPropertiesCorrectly()
-        {
-            var context = CreateContext();
-
-            Assert.Equal(OldState, context.OldStateName);
-            Assert.Same(_newStateMock.Object, context.NewState);
-            Assert.Same(_methodData, context.MethodData);
         }
 
         [Fact]
@@ -62,18 +52,6 @@ namespace HangFire.Core.Tests.States
                 () => context.ApplyState(_handlers, null));
 
             Assert.Equal("filters", exception.ParamName);
-        }
-
-        [Fact]
-        public void ApplyState_ShouldReturnTransactionCommit()
-        {
-            var context = CreateContext();
-
-            _transaction.Setup(x => x.Commit()).Returns(true);
-            Assert.True(context.ApplyState(_handlers, _filters));
-
-            _transaction.Setup(x => x.Commit()).Returns(false);
-            Assert.False(context.ApplyState(_handlers, _filters));
         }
 
         [Fact, Sequence]
@@ -101,7 +79,7 @@ namespace HangFire.Core.Tests.States
 
             var handler1 = new Mock<StateHandler>();
             handler1.Setup(x => x.StateName).Returns(OldState);
-            
+
             var handler2 = new Mock<StateHandler>();
             handler2.Setup(x => x.StateName).Returns(OldState);
 
@@ -175,8 +153,8 @@ namespace HangFire.Core.Tests.States
             // Arrange
             var context = CreateContext();
 
-            var filter1 = new Mock<IStateChangedFilter>();
-            var filter2 = new Mock<IStateChangedFilter>();
+            var filter1 = new Mock<IApplyStateFilter>();
+            var filter2 = new Mock<IApplyStateFilter>();
 
             _filters.Add(filter1.Object);
             _filters.Add(filter2.Object);
@@ -201,8 +179,8 @@ namespace HangFire.Core.Tests.States
             // Arrange
             var context = CreateContext();
 
-            var filter1 = new Mock<IStateChangedFilter>();
-            var filter2 = new Mock<IStateChangedFilter>();
+            var filter1 = new Mock<IApplyStateFilter>();
+            var filter2 = new Mock<IApplyStateFilter>();
 
             _filters.Add(filter1.Object);
             _filters.Add(filter2.Object);
@@ -218,14 +196,24 @@ namespace HangFire.Core.Tests.States
             // Assert - Sequence
         }
 
-        private StateApplyingContext CreateContext()
+        [Fact]
+        public void Ctor_ShouldSetPropertiesCorrectly()
+        {
+            var context = CreateContext();
+
+            Assert.Equal(OldState, context.OldStateName);
+            Assert.Same(_newStateMock.Object, context.NewState);
+            Assert.Same(_methodData, context.MethodData);
+        }
+
+        private ApplyStateContext CreateContext()
         {
             var connectionMock = new Mock<IStorageConnection>();
             connectionMock.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
-            return new StateApplyingContext(
-                new StateContext(JobId, _methodData),
+            return new ApplyStateContext(
                 connectionMock.Object,
+                new StateContext(JobId, _methodData),
                 _newStateMock.Object,
                 OldState);
         }

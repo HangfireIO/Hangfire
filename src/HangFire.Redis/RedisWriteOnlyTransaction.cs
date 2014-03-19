@@ -23,9 +23,25 @@ namespace HangFire.Redis
             _transaction.Dispose();
         }
 
-        public bool Commit()
+        public void Commit()
         {
-            return _transaction.Commit();
+            if (!_transaction.Commit())
+            {
+                // RedisTransaction.Commit returns false only when
+                // WATCH condition has been failed. So, we should 
+                // re-play the transaction.
+
+                int replayCount = 1;
+                const int maxReplayCount = 3;
+
+                while (!_transaction.Replay())
+                {
+                    if (replayCount++ >= maxReplayCount)
+                    {
+                        throw new RedisException("Transaction commit was failed due to WATCH condition failure. Retry attempts exceeded.");
+                    }
+                }
+            }
         }
 
         public void ExpireJob(string jobId, TimeSpan expireIn)

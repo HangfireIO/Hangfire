@@ -48,7 +48,7 @@ namespace HangFire
     /// 
     /// ]]></example>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public sealed class QueueAttribute : JobFilterAttribute, IStateChangingFilter
+    public sealed class QueueAttribute : JobFilterAttribute, IElectStateFilter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="QueueAttribute"/> class
@@ -78,7 +78,7 @@ namespace HangFire
         /// </summary>
         public string Queue { get; private set; }
 
-        public void OnStateChanging(StateChangingContext context)
+        public void OnStateElection(ElectStateContext context)
         {
             var enqueuedState = context.CandidateState as EnqueuedState;
             if (enqueuedState != null)

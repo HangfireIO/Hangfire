@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HangFire.Common.States;
 using HangFire.States;
 
@@ -7,12 +8,12 @@ namespace HangFire
     {
         static GlobalStateHandlers()
         {
-            Handlers = new StateHandlerCollection();
-            Handlers.AddHandler(new SucceededState.Handler());
-            Handlers.AddHandler(new ScheduledState.Handler());
-            Handlers.AddHandler(new EnqueuedState.Handler());
+            Handlers = new List<StateHandler>();
+            Handlers.Add(new SucceededState.Handler());
+            Handlers.Add(new ScheduledState.Handler());
+            Handlers.Add(new EnqueuedState.Handler());
         }
 
-        public static StateHandlerCollection Handlers { get; private set; }
+        public static ICollection<StateHandler> Handlers { get; private set; }
     }
 }

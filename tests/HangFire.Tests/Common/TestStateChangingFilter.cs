@@ -6,7 +6,7 @@ using Xunit;
 
 namespace HangFire.Tests
 {
-    public class TestStateChangingFilter : IStateChangingFilter
+    public class TestStateChangingFilter : IElectStateFilter
     {
         private readonly string _name;
         private readonly IList<string> _results;
@@ -19,7 +19,7 @@ namespace HangFire.Tests
             _changeState = changeState;
         }
 
-        public void OnStateChanging(StateChangingContext context)
+        public void OnStateElection(ElectStateContext context)
         {
             Assert.NotNull(context);
 

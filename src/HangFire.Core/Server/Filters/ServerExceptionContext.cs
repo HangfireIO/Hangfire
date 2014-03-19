@@ -34,13 +34,13 @@ namespace HangFire.Server.Filters
         }
 
         /// <summary>
-        /// Gets an exception that occured during the performance of the job.
+        /// Gets an exception that occurred during the performance of the job.
         /// </summary>
         public Exception Exception { get; private set; }
 
         /// <summary>
         /// Gets or sets a value that indicates that this <see cref="ServerExceptionContext"/>
-        /// object handles an exception occured during the performance of the job.
+        /// object handles an exception occurred during the performance of the job.
         /// </summary>
         public bool ExceptionHandled { get; set; }
     }

@@ -10,23 +10,19 @@ namespace HangFire.Core.Tests.States
 {
     public class EnqueuedStateHandlerFacts
     {
-        private readonly StateApplyingContext _context;
+        private readonly ApplyStateContext _context;
         private readonly Mock<IWriteOnlyTransaction> _transactionMock
             = new Mock<IWriteOnlyTransaction>();
-
-        private readonly EnqueuedState _state;
 
         private const string JobId = "1";
 
         public EnqueuedStateHandlerFacts()
         {
             var methodData = MethodData.FromExpression(() => Console.WriteLine());
-            
-            _state = new EnqueuedState();
-            _context = new StateApplyingContext(
-                new StateContext(JobId, methodData),
+            _context = new ApplyStateContext(
                 new Mock<IStorageConnection>().Object,
-                _state,
+                new StateContext(JobId, methodData), 
+                new EnqueuedState(), 
                 null);
         }
 
