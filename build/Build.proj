@@ -84,7 +84,7 @@
   <UsingTask AssemblyFile="$(XunitPath)xunit.runner.msbuild.dll"
              TaskName="Xunit.Runner.MSBuild.xunit" />
   
-  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; BuildPackages">
+  <Target Name="CI" DependsOnTargets="Build; CopyArtifacts; RunTests; BuildPackages">
   </Target>
 
   <Target Name="Go" DependsOnTargets="Build; CopyArtifacts; RunTests;">
