@@ -16,7 +16,7 @@ namespace ConsoleSample
                 LogLevel.All, false, false, true, "");
 
             JobStorage.Current = 
-                new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;");
+                new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
                 //new RedisStorage("localhost:6379", 3);
 
             GlobalJobFilters.Filters.Add(new RetryAttribute());

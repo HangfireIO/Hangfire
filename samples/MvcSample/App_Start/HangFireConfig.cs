@@ -26,7 +26,7 @@ namespace MvcSample
             // all database objects will be installed automatically.
             
             JobStorage.Current = new SqlServerStorage(
-                @"Server=.\sqlexpress;Database=HangFire.SqlServer.Tests;Trusted_Connection=True;");
+                @"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
             
             // If your project infrastructure contains Redis server, you may
             // choose Redis job storage implementation (it is much faster).
