@@ -16,13 +16,9 @@ namespace HangFire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
-        private const int RequiredSchemaVersion = 1;
-
-        private static readonly ILog Log = LogManager.GetLogger(typeof(SqlServerStorage));
-
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
-        
+
         public SqlServerStorage(string connectionString)
             : this(connectionString, new SqlServerStorageOptions())
         {
@@ -38,28 +34,11 @@ namespace HangFire.SqlServer
 
             if (options.PrepareSchemaIfNecessary)
             {
-                PrepareSchemaIfNecessary();
+                using (var connection = CreateAndOpenConnection())
+                {
+                    SqlServerObjectsInstaller.Install(connection);
+                }
             }
-        }
-
-        public void PrepareSchemaIfNecessary()
-        {
-            Log.Debug("Start installing HangFire SQL objects...");
-
-            if (!IsSqlEditionSupported(_connectionString))
-            {
-                throw new PlatformNotSupportedException("The SQL Server edition of the target server is unsupported, e.g. SQL Azure.");
-            }
-
-            var script = GetStringResource(GetType().Assembly, "HangFire.SqlServer.Install.sql");
-            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 2;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
-
-            using (var connection = CreateAndOpenConnection())
-            {
-                connection.Execute(script);
-            }
-
-            Log.Debug("HangFire SQL objects installed.");
         }
 
         public override IMonitoringApi GetMonitoringApi()
@@ -85,34 +64,6 @@ namespace HangFire.SqlServer
             connection.Open();
 
             return connection;
-        }
-
-        private bool IsSqlEditionSupported(string connectionString)
-        {
-            using (var connection = CreateAndOpenConnection())
-            {
-                var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
-                return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;
-            }
-        }
-
-        private static string GetStringResource(Assembly assembly, string resourceName)
-        {
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new StreamReader(stream))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
-        private static class SqlEngineEdition
-        {
-            // See article http://technet.microsoft.com/en-us/library/ms174396.aspx for details on EngineEdition
-            public const int Personal = 1;
-            public const int Standard = 2;
-            public const int Enterprise = 3;
-            public const int Express = 4;
-            public const int SqlAzure = 5;
         }
     }
 }

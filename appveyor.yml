@@ -7,6 +7,18 @@
 #   - Section names should be unique on each level.
 
 #---------------------------------#
+#    environment configuration    #
+#---------------------------------#
+
+# environment variables
+environment:
+  HangFire_SqlServer_ConnectionStringTemplate: Server=.\SQL2008R2SP2;Database={0};User Id=sa;Password=Password12!
+
+# enable service required for tests
+services:
+  - mssql2008r2sp2
+
+#---------------------------------#
 #       build configuration       #
 #---------------------------------#
 

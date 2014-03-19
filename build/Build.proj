@@ -50,6 +50,7 @@
   <ItemGroup>
     <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.Core.Tests\HangFire.Core.Tests.csproj"></UnitTestProjects>
     <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.Redis.Tests\HangFire.Redis.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
 
   <ItemGroup>
@@ -100,6 +101,9 @@
     <xunit Assembly="$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll"
            Xml="$(TestResultsPath)\HangFire.Redis.Tests.XunitResults.xml"
            Verbose="true" />
+    <xunit Assembly="$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll"
+           Xml="$(TestResultsPath)\HangFire.SqlServer.Tests.XunitResults.xml"
+           Verbose="true" />
   </Target>
 
   <Target Name="RunFunctionalTests" DependsOnTargets="BuildNetFunctionalTests">
@@ -113,6 +117,9 @@
           LogStandardErrorAsError="true">
 	  </Exec>
     <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll&quot; /appveyor"
+          LogStandardErrorAsError="true">
+    </Exec>
+    <Exec Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
   </Target>
