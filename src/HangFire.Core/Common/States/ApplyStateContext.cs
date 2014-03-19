@@ -26,7 +26,7 @@ namespace HangFire.Common.States
 
         private readonly IStorageConnection _connection;
 
-        internal ApplyStateContext(
+        public ApplyStateContext(
             IStorageConnection connection,
             StateContext context,
             State newState,

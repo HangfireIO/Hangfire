@@ -155,21 +155,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SchedulePoller.feature</DependentUpon>
     </Compile>
-    <Compile Include="States\EnqueuedState.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>EnqueuedState.feature</DependentUpon>
-    </Compile>
-    <Compile Include="States\FailedState.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FailedState.feature</DependentUpon>
-    </Compile>
-    <Compile Include="States\ProcessingState.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ProcessingState.feature</DependentUpon>
-    </Compile>
     <Compile Include="States\ScheduledState.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -181,11 +166,6 @@
       <DependentUpon>StateMachine.feature</DependentUpon>
     </Compile>
     <Compile Include="Bindings\StateSteps.cs" />
-    <Compile Include="States\SucceededState.feature.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SucceededState.feature</DependentUpon>
-    </Compile>
     <Compile Include="Server\WorkerManager.feature.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -235,18 +215,6 @@
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ServerWatchdog.feature.cs</LastGenOutput>
     </None>
-    <None Include="States\EnqueuedState.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>EnqueuedState.feature.cs</LastGenOutput>
-    </None>
-    <None Include="States\FailedState.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>FailedState.feature.cs</LastGenOutput>
-    </None>
-    <None Include="States\ProcessingState.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>ProcessingState.feature.cs</LastGenOutput>
-    </None>
     <None Include="States\ScheduledState.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>ScheduledState.feature.cs</LastGenOutput>
@@ -254,10 +222,6 @@
     <None Include="StateMachine.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>
       <LastGenOutput>StateMachine.feature.cs</LastGenOutput>
-    </None>
-    <None Include="States\SucceededState.feature">
-      <Generator>SpecFlowSingleFileGenerator</Generator>
-      <LastGenOutput>SucceededState.feature.cs</LastGenOutput>
     </None>
     <None Include="Server\WorkerManager.feature">
       <Generator>SpecFlowSingleFileGenerator</Generator>

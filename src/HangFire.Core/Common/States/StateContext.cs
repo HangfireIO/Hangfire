@@ -20,17 +20,17 @@ namespace HangFire.Common.States
 {
     public class StateContext
     {
-        internal StateContext(StateContext context)
-            : this(context.JobId, context.MethodData)
-        {
-        }
-
-        internal StateContext(string jobId, MethodData methodData)
+        public StateContext(string jobId, MethodData methodData)
         {
             if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
             
             JobId = jobId;
             MethodData = methodData;
+        }
+
+        internal StateContext(StateContext context)
+            : this(context.JobId, context.MethodData)
+        {
         }
 
         public string JobId { get; private set; }

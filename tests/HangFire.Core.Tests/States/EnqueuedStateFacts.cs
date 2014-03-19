@@ -22,6 +22,7 @@ namespace HangFire.Core.Tests.States
                 new Dictionary<string, string>
                 {
                     { "EnqueuedAt", "<UtcNow timestamp>" },
+                    { "Queue", "default" }
                 },
                 state.Serialize());
         }

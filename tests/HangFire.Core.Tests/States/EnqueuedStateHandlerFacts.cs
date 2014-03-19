@@ -15,6 +15,7 @@ namespace HangFire.Core.Tests.States
             = new Mock<IWriteOnlyTransaction>();
 
         private const string JobId = "1";
+        private const string Queue = "critical";
 
         public EnqueuedStateHandlerFacts()
         {
@@ -22,7 +23,7 @@ namespace HangFire.Core.Tests.States
             _context = new ApplyStateContext(
                 new Mock<IStorageConnection>().Object,
                 new StateContext(JobId, methodData), 
-                new EnqueuedState(), 
+                new EnqueuedState { Queue = Queue }, 
                 null);
         }
 
@@ -34,27 +35,14 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void Apply_ShouldAddJobToTheDefaultQueue_WhenTheJobMethodIsUndecorated()
+        public void Apply_ShouldAddJob_ToTheSpecifiedQueue()
         {
             var handler = new EnqueuedState.Handler();
 
             handler.Apply(_context, _transactionMock.Object);
 
             _transactionMock.Verify(
-                x => x.AddToQueue(EnqueuedState.DefaultQueue, JobId));
-        }
-
-        // TODO: add more tests
-
-        [Fact]
-        public void OnStateChanging_ShouldMutateStateData_WithTheQueueName()
-        {
-            /*var handler = new EnqueuedState.Handler();
-
-            handler.OnStateChanging(_changingContext);
-            // TODO: should be added to global collection
-            Assert.True(_state.Object.Data.ContainsKey("Queue"));
-            Assert.Equal(EnqueuedState.DefaultQueue, _state.Object.Data["Queue"]);*/
+                x => x.AddToQueue(Queue, JobId));
         }
     }
 }
