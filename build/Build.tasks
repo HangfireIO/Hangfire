@@ -37,17 +37,45 @@
     <ParameterGroup>
       <Name ParameterType="System.String" Required="true" />
       <Value ParameterType="System.String" Required="true" />
+      <ActualValue ParameterType="System.String" Output="true" />
     </ParameterGroup>
 
     <Task>
       <Using Namespace="System" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-        if (Environment.GetEnvironmentVariable(Name) == null)
+        ActualValue = Environment.GetEnvironmentVariable(Name);
+        if (ActualValue == null) {
           Environment.SetEnvironmentVariable(Name, Value);
+          ActualValue = Value;
+        }
       ]]>
       </Code>
     </Task>
 
+  </UsingTask>
+  <UsingTask TaskName="ExecAsync" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <!--The file path is the full path to the executable file to run-->
+      <FilePath ParameterType="System.String" Required="true" />
+      <!--The arguments should contain all the command line arguments that need to be sent to the application-->
+      <Arguments ParameterType="System.String" Required="true" />
+      <Pid ParameterType="System.Int32" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+  string name = System.IO.Path.GetFileNameWithoutExtension(FilePath);
+  Log.LogMessage("Starting {0}...", name);        
+  System.Diagnostics.ProcessStartInfo processStartInfo = new System.Diagnostics.ProcessStartInfo(FilePath, Arguments);
+  processStartInfo.UseShellExecute = false;
+  processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+  processStartInfo.CreateNoWindow = true;
+  var process = System.Diagnostics.Process.Start(processStartInfo);
+  Log.LogMessage("Process {0} started with PID {1}.", name, process.Id);
+  Pid = process.Id;
+  ]]>
+      </Code>
+    </Task>
   </UsingTask>
 </Project>

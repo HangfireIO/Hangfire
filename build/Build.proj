@@ -26,6 +26,10 @@
       Server=.\sqlexpress;Database={0};Trusted_Connection=True;
     </DefaultSqlServerConnectionStringTemplate>
     <DefaultSqlServerTestDatabase>HangFire.Test</DefaultSqlServerTestDatabase>
+    <RedisDir>$(ProjectRoot)\packages\Redis-32.2.6.12.1\tools</RedisDir>
+    <RedisFileName>redis-server.exe</RedisFileName>
+    <RedisExePath>$(RedisDir)\$(RedisFileName)</RedisExePath>
+    <RedisLogPath>$(ProjectRoot)\redis.log</RedisLogPath>
     <DefaultRedisPort>6378</DefaultRedisPort>
   </PropertyGroup>
 
@@ -104,12 +108,28 @@
   </Target>
   
   <Target Name="PrepareForIntegrationTests">
-    <SetEnvironmentVariableIfNotExists Name="HangFire_Redis_Port" Value="$(DefaultRedisPort)" />
+    <SetEnvironmentVariableIfNotExists Name="HangFire_Redis_Port" Value="$(DefaultRedisPort)">
+      <Output TaskParameter="ActualValue" PropertyName="HangFire_Redis_Port" />
+    </SetEnvironmentVariableIfNotExists>
     
     <SetEnvironmentVariableIfNotExists Name="HangFire_SqlServer_ConnectionStringTemplate" 
                                        Value="$(DefaultSqlServerConnectionStringTemplate)" />
     <SetEnvironmentVariableIfNotExists Name="HangFire_SqlServer_DatabaseName" 
                                        Value="$(DefaultSqlServerTestDatabase)" />
+  
+    <Delete Files="$(RedisLogPath)" />
+    <ExecAsync FilePath='$(RedisExePath)' Arguments='--port $(HangFire_Redis_Port) --logfile "$(RedisLogPath)"' ContinueOnError='true'>
+      <Output TaskParameter="Pid" PropertyName="RedisPid" />
+    </ExecAsync>
+  </Target>
+  
+  <Target Name="CleanUpAfterIntegrationTests">
+    <Exec Command="taskkill /F /PID $(RedisPid)" IgnoreExitCode="true" />
+    <Message Text="$(RedisLogPath):" />
+    <ReadLinesFromFile File="$(RedisLogPath)">
+      <Output TaskParameter="Lines" ItemName="RedisLogContents" />
+    </ReadLinesFromFile>
+    <Message Text="%(RedisLogContents.Identity)" />
   </Target>
 
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
@@ -126,8 +146,11 @@
           LogStandardErrorAsError="true">
 	  </Exec>
   </Target>
+  
+  <Target Name="RunIntegrationTests" DependsOnTargets="DoIntegrationTests; CleanUpAfterIntegrationTests">
+  </Target>
 
-  <Target Name="RunIntegrationTests" DependsOnTargets="BuildNetIntegrationTests; PrepareForIntegrationTests">
+  <Target Name="DoIntegrationTests" DependsOnTargets="BuildNetIntegrationTests; PrepareForIntegrationTests">
     
     <!-- Redis integration tests -->    
 

@@ -10,14 +10,14 @@ namespace HangFire.SqlServer.Tests
 {
     public class CleanDatabaseAttribute : BeforeAfterTestAttribute
     {
-        private static readonly object SqlInstallerLock = new object();
+        private static readonly object GlobalLock = new object();
         private static bool _sqlObjectInstalled;
 
         private TransactionScope _transaction;
 
         public override void Before(MethodInfo methodUnderTest)
         {
-            Monitor.Enter(SqlInstallerLock);
+            Monitor.Enter(GlobalLock);
 
             if (!_sqlObjectInstalled)
             {
@@ -38,7 +38,7 @@ namespace HangFire.SqlServer.Tests
             }
             finally
             {
-                Monitor.Exit(SqlInstallerLock);
+                Monitor.Exit(GlobalLock);
             }
             
         }
