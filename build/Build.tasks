@@ -72,7 +72,7 @@
   processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
   processStartInfo.CreateNoWindow = true;
   var process = System.Diagnostics.Process.Start(processStartInfo);
-  Log.LogMessage("Process {0} started with PID {1}.", name, process.Id);
+  Log.LogMessage(MessageImportance.High, "Process {0} started with PID {1}.", name, process.Id);
   Pid = process.Id;
   ]]>
       </Code>
