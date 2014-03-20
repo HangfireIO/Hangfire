@@ -58,6 +58,7 @@
     <Compile Include="StorageOptionsFacts.cs" />
     <Compile Include="Utils\ConnectionUtils.cs" />
     <Compile Include="Utils\CleanDatabaseAttribute.cs" />
+    <Compile Include="WriteTransactionFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

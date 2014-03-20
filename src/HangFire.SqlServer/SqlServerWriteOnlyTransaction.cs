@@ -30,7 +30,7 @@ namespace HangFire.SqlServer
         public void Commit()
         {
             using (var transaction = new TransactionScope(
-                TransactionScopeOption.RequiresNew,
+                TransactionScopeOption.Required,
                 new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
             {
                 _connection.EnlistTransaction(Transaction.Current);
