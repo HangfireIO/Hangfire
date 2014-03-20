@@ -53,7 +53,7 @@ namespace HangFire.SqlServer
 
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
-            yield return new SchedulePoller(this, _options.PollInterval);
+            yield return new SchedulePoller(this, _options.QueuePollInterval);
             yield return new ServerWatchdog(this);
             yield return new ExpirationManager(this);
         }

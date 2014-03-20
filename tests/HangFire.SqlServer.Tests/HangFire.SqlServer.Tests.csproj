@@ -35,6 +35,9 @@
     <Reference Include="Dapper">
       <HintPath>..\..\packages\Dapper.1.13\lib\net45\Dapper.dll</HintPath>
     </Reference>
+    <Reference Include="Moq">
+      <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Transactions" />
@@ -48,8 +51,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DatabaseTest.cs" />
+    <Compile Include="FetcherFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StorageFacts.cs" />
+    <Compile Include="StorageOptionsFacts.cs" />
     <Compile Include="Utils\ConnectionUtils.cs" />
     <Compile Include="Utils\CleanDatabaseAttribute.cs" />
   </ItemGroup>

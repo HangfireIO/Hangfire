@@ -16,6 +16,8 @@ namespace HangFire.SqlServer
 
         public static void Install(SqlConnection connection)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
+
             Log.Debug("Start installing HangFire SQL objects...");
 
             if (!IsSqlEditionSupported(connection))
@@ -43,20 +45,32 @@ namespace HangFire.SqlServer
         private static string GetStringResource(Assembly assembly, string resourceName)
         {
             using (var stream = assembly.GetManifestResourceStream(resourceName))
-            using (var reader = new StreamReader(stream))
             {
-                return reader.ReadToEnd();
+                if (stream == null) 
+                {
+                    throw new InvalidOperationException(String.Format(
+                        "Requested resource `{0}` was not found in the assembly `{1}`.",
+                        resourceName,
+                        assembly));
+                }
+
+                using (var reader = new StreamReader(stream))
+                {
+                    return reader.ReadToEnd();
+                }
             }
         }
 
         private static class SqlEngineEdition
         {
+// ReSharper disable UnusedMember.Local
             // See article http://technet.microsoft.com/en-us/library/ms174396.aspx for details on EngineEdition
             public const int Personal = 1;
             public const int Standard = 2;
             public const int Enterprise = 3;
             public const int Express = 4;
             public const int SqlAzure = 5;
+// ReSharper restore UnusedMember.Local
         }
     }
 }

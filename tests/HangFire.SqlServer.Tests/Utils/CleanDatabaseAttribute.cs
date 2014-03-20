@@ -13,7 +13,18 @@ namespace HangFire.SqlServer.Tests
         private static readonly object GlobalLock = new object();
         private static bool _sqlObjectInstalled;
 
+        private readonly IsolationLevel _isolationLevel;
         private TransactionScope _transaction;
+
+        public CleanDatabaseAttribute()
+            : this(IsolationLevel.Serializable)
+        {
+        }
+
+        public CleanDatabaseAttribute(IsolationLevel isolationLevel)
+        {
+            _isolationLevel = isolationLevel;
+        }
 
         public override void Before(MethodInfo methodUnderTest)
         {
@@ -27,7 +38,7 @@ namespace HangFire.SqlServer.Tests
 
             _transaction = new TransactionScope(
                 TransactionScopeOption.RequiresNew,
-                new TransactionOptions { IsolationLevel = IsolationLevel.Serializable });
+                new TransactionOptions { IsolationLevel = _isolationLevel });
         }
 
         public override void After(MethodInfo methodUnderTest)

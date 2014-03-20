@@ -96,13 +96,7 @@ namespace HangFire.Server
                             using (var connection = _storage.GetConnection())
                             {
                                 var fetcher = connection.CreateFetcher(_context.QueueNames);
-                                var payload = fetcher.DequeueJob(_cts.Token);
-
-                                if (payload == null)
-                                {
-                                    _cts.Cancel();
-                                    return;
-                                }
+                                var payload = fetcher.FetchNextJob(_cts.Token);
 
                                 PerformJob(connection, payload);
 

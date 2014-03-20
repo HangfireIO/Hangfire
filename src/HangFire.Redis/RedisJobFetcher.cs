@@ -25,7 +25,7 @@ namespace HangFire.Redis
             _fetchTimeout = fetchTimeout;
         }
 
-        public JobPayload DequeueJob(CancellationToken cancellationToken)
+        public JobPayload FetchNextJob(CancellationToken cancellationToken)
         {
             string jobId;
             string queueName;

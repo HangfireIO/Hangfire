@@ -20,6 +20,6 @@ namespace HangFire.Server
 {
     public interface IJobFetcher
     {
-        JobPayload DequeueJob(CancellationToken cancellationToken);
+        JobPayload FetchNextJob(CancellationToken cancellationToken);
     }
 }

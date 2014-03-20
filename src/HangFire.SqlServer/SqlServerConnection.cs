@@ -34,7 +34,7 @@ namespace HangFire.SqlServer
 
         public IJobFetcher CreateFetcher(IEnumerable<string> queueNames)
         {
-            return new SqlServerFetcher(_connection, queueNames);
+            return new SqlServerFetcher(_connection, queueNames.ToArray());
         }
 
         public IDisposable AcquireJobLock(string jobId)

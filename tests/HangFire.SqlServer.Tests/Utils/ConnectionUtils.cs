@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlClient;
 
 namespace HangFire.SqlServer.Tests
 {
@@ -32,6 +33,14 @@ namespace HangFire.SqlServer.Tests
         {
             return Environment.GetEnvironmentVariable(ConnectionStringTemplateVariable)
                    ?? DefaultConnectionStringTemplate;
+        }
+
+        public static SqlConnection CreateConnection()
+        {
+            var connection = new SqlConnection(GetConnectionString());
+            connection.Open();
+
+            return connection;
         }
     }
 }

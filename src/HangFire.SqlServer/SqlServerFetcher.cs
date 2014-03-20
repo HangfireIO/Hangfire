@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -16,40 +16,42 @@ namespace HangFire.SqlServer
     {
         private static readonly TimeSpan JobTimeOut = TimeSpan.FromMinutes(30);
 
-        private readonly SqlConnection _connection;
-        private readonly IEnumerable<string> _queues;
+        private readonly IDbConnection _connection;
+        private readonly string[] _queues;
 
-        public SqlServerFetcher(SqlConnection connection, IEnumerable<string> queues)
+        public SqlServerFetcher(IDbConnection connection, string[] queues)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
+            if (queues == null) throw new ArgumentNullException("queues");
+            if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
+
             _connection = connection;
             _queues = queues;
         }
 
-        public JobPayload DequeueJob(CancellationToken cancellationToken)
+        public JobPayload FetchNextJob(CancellationToken cancellationToken)
         {
             SqlJob job = null;
             string queueName = null;
 
-            const string fetchJobSql = @"
+            const string fetchJobSqlTemplate = @"
 set transaction isolation level read committed
 update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
 output INSERTED.JobId, INSERTED.Queue
-where FetchedAt is null
+where FetchedAt {0}
 and Queue in @queues";
 
-            const string fetchTimedOutJobSql = @"
-update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
-output INSERTED.JobId, INSERTED.Queue
-where FetchedAt < DATEADD(second, @timeout, GETUTCDATE())
-and Queue in @queues";
-
-            var fetchQueries = new[] { fetchJobSql, fetchTimedOutJobSql };
+            // Sql query is splitted to force SQL Server to use 
+            // INDEX SEEK instead of INDEX SCAN operator.
+            var fetchConditions = new[] { "is null", "< DATEADD(second, @timeout, GETUTCDATE())" };
             var currentQueryIndex = 0;
 
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var idAndQueue = _connection.Query(
-                    fetchQueries[currentQueryIndex],
+                    String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
                     new { queues = _queues, timeout = JobTimeOut.Negate().TotalSeconds })
                     .SingleOrDefault();
 
@@ -57,7 +59,7 @@ and Queue in @queues";
                 {
                     // Using DynamicParameters with explicit parameter type 
                     // instead of anonymous object, because of a strange
-                    // behaviour of a query plan builder: execution plan
+                    // behavior of a query plan builder: execution plan
                     // was based on index scan instead of index seek. 
                     // As a result, this query was the slowest.
                     var parameters = new DynamicParameters();
@@ -68,23 +70,33 @@ and Queue in @queues";
                         parameters)
                         .SingleOrDefault();
 
+                    if (job == null)
+                    {
+                        _connection.Execute(
+                            @"delete from HangFire.JobQueue where JobId = @id",
+                            parameters);
+                    }
+
                     queueName = idAndQueue.Queue;
                 }
 
-                if (job == null && currentQueryIndex == fetchQueries.Length - 1)
+                if (job == null && currentQueryIndex == fetchConditions.Length - 1)
                 {
                     if (cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
                     {
-                        return null;
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
 
-                currentQueryIndex = (currentQueryIndex + 1) % fetchQueries.Length;
+                currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
             } while (job == null);
 
             var invocationData = JobHelper.FromJson<InvocationData>(job.InvocationData);
 
-            return new JobPayload(job.Id.ToString(), queueName, invocationData)
+            return new JobPayload(
+                job.Id.ToString(CultureInfo.InvariantCulture), 
+                queueName, 
+                invocationData)
             {
                 Arguments = job.Arguments
             };

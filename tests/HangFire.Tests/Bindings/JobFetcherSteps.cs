@@ -58,7 +58,7 @@ namespace HangFire.Tests
 
             try
             {
-                _job = _fetcher.DequeueJob(cts.Token);
+                _job = _fetcher.FetchNextJob(cts.Token);
             }
             catch (Exception ex)
             {
