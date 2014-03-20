@@ -274,7 +274,7 @@ values (@id, @queue)";
 
         private static CancellationToken CreateTimingOutCancellationToken()
         {
-            var source = new CancellationTokenSource(500);
+            var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             return source.Token;
         }
     }
