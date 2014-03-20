@@ -67,9 +67,9 @@ namespace HangFire.Redis
             // the way to perform the job when the server was crashed after
             // reaching it.
 
-            // Checkpoint #1-1. The job was dequeued into the dequeued list,
-            // that is being inspected by the DequeuedJobsWatcher instance.
-            // Job's has the implicit 'Dequeued' state.
+            // Checkpoint #1-1. The job was fetched into the fetched list,
+            // that is being inspected by the FetchedJobsWatcher instance.
+            // Job's has the implicit 'Fetched' state.
 
             string type = null;
             string method = null;

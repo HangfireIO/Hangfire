@@ -114,7 +114,7 @@ WriteLiteral(@"    <table class=""table table-striped"">
             <tr>
                 <th>Queue</th>
                 <th>Length</th>
-                <th>Dequeued</th>
+                <th>Fetched</th>
                 <th>Next jobs</th>
             </tr>
         </thead>
@@ -167,7 +167,7 @@ WriteLiteral("</td>\r\n                    <td>\r\n                        <a hr
 
             
             #line 48 "..\..\Pages\QueuesPage.cshtml"
-                            Write(Request.LinkTo("/queues/dequeued/" + queue.Name));
+                            Write(Request.LinkTo("/queues/fetched/" + queue.Name));
 
             
             #line default
@@ -177,7 +177,7 @@ WriteLiteral("\">\r\n                            ");
 
             
             #line 49 "..\..\Pages\QueuesPage.cshtml"
-                       Write(queue.Dequeued);
+                       Write(queue.Fetched);
 
             
             #line default
@@ -185,7 +185,7 @@ WriteLiteral("\">\r\n                            ");
 
             
             #line 49 "..\..\Pages\QueuesPage.cshtml"
-                                           WriteLiteral("    \r\n                        </a>\r\n                    </td>\r\n                  " +
+                                          WriteLiteral("    \r\n                        </a>\r\n                    </td>\r\n                  " +
 "  <td>");
 
             

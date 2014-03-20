@@ -121,7 +121,7 @@
     <Compile Include="GlobalStateHandlers.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
-    <Compile Include="Storage\Monitoring\DequeuedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\FetchedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FailedJobDto.cs" />
     <Compile Include="Storage\Monitoring\JobDetailsDto.cs" />

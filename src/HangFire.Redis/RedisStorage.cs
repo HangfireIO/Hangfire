@@ -57,7 +57,7 @@ namespace HangFire.Redis
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
             yield return new SchedulePoller(this, _options.PollInterval);
-            yield return new DequeuedJobsWatcher(this);
+            yield return new FetchedJobsWatcher(this);
             yield return new ServerWatchdog(this);
         }
 

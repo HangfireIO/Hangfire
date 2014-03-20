@@ -129,7 +129,7 @@ namespace HangFire.Redis
 
         public void DeleteJobFromQueue(string id, string queue)
         {
-            RemoveFromDequeuedList(_redis, queue, id);
+            RemoveFromFetchedList(_redis, queue, id);
         }
 
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
@@ -238,7 +238,7 @@ namespace HangFire.Redis
             return removedServerCount;
         }
 
-        public static void RemoveFromDequeuedList(
+        public static void RemoveFromFetchedList(
             IRedisClient redis,
             string queue,
             string jobId)

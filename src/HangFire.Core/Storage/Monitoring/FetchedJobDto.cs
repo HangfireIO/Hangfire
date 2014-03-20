@@ -3,7 +3,7 @@ using HangFire.Common;
 
 namespace HangFire.Storage.Monitoring
 {
-    public class DequeuedJobDto
+    public class FetchedJobDto
     {
         public MethodData MethodData { get; set; }
         public string State { get; set; }

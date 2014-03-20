@@ -11,7 +11,7 @@ namespace HangFire.Storage.Monitoring
         StatisticsDto GetStatistics();
 
         JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage);
-        JobList<DequeuedJobDto> DequeuedJobs(string queue, int from, int perPage);
+        JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage);
 
         JobList<ProcessingJobDto> ProcessingJobs(int from, int count);
         JobList<ScheduleDto> ScheduledJobs(int from, int count);
@@ -20,7 +20,7 @@ namespace HangFire.Storage.Monitoring
 
         long ScheduledCount();
         long EnqueuedCount(string queue);
-        long DequeuedCount(string queue);
+        long FetchedCount(string queue);
         long FailedCount();
         long ProcessingCount();
 

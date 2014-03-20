@@ -48,7 +48,7 @@ namespace HangFire.SqlServer
                 .Single();
         }
 
-        public long DequeuedCount(string queue)
+        public long FetchedCount(string queue)
         {
             return _connection.Query<int>(
                 @"select count(JobId) from HangFire.JobQueue "
@@ -248,7 +248,7 @@ from HangFire.[JobQueue] as q
                 {
                     Name = queue.Queue,
                     Length = queue.Enqueued,
-                    Dequeued = queue.Fetched,
+                    Fetched = queue.Fetched,
                     FirstJobs = EnqueuedJobs(queue.Queue, 0, 5)
                 });
             }
@@ -282,7 +282,7 @@ where r.row_num between @start and @end";
                 });
         }
 
-        public JobList<DequeuedJobDto> DequeuedJobs(string queue, int @from, int perPage)
+        public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
         {
             const string fetchedJobsSql = @"
 select * from (
@@ -298,13 +298,13 @@ where r.row_num between @start and @end";
                 new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList();
 
-            var result = new List<KeyValuePair<string, DequeuedJobDto>>(jobs.Count);
+            var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);
 
             foreach (var job in jobs)
             {
-                result.Add(new KeyValuePair<string, DequeuedJobDto>(
+                result.Add(new KeyValuePair<string, FetchedJobDto>(
                     job.Id.ToString(),
-                    new DequeuedJobDto
+                    new FetchedJobDto
                     {
                         MethodData = DeserializeMethodData(job.InvocationData),
                         State = job.StateName,
@@ -313,7 +313,7 @@ where r.row_num between @start and @end";
                     }));
             }
 
-            return new JobList<DequeuedJobDto>(result);
+            return new JobList<FetchedJobDto>(result);
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()

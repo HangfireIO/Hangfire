@@ -67,9 +67,9 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>ErrorPage.generated.cs</LastGenOutput>
     </None>
-    <None Include="Pages\DequeuedJobsPage.cshtml">
+    <None Include="Pages\FetchedJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>DequeuedJobsPage.generated.cs</LastGenOutput>
+      <LastGenOutput>FetchedJobsPage.generated.cs</LastGenOutput>
     </None>
     <None Include="Pages\_PerPageSelector.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -98,13 +98,13 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Pages\DequeuedJobsPage.generated.cs">
-      <DependentUpon>DequeuedJobsPage.cshtml</DependentUpon>
+    <Compile Include="Pages\FetchedJobsPage.generated.cs">
+      <DependentUpon>FetchedJobsPage.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Pages\DequeuedJobsPage.cs">
-      <DependentUpon>DequeuedJobsPage.cshtml</DependentUpon>
+    <Compile Include="Pages\FetchedJobsPage.cs">
+      <DependentUpon>FetchedJobsPage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Pages\JobDetailsPage1.generated.cs">
       <AutoGen>True</AutoGen>

@@ -24,20 +24,20 @@ using ServiceStack.Redis;
 
 namespace HangFire.Redis.Components
 {
-    internal class DequeuedJobsWatcher : IThreadWrappable
+    internal class FetchedJobsWatcher : IThreadWrappable
     {
-        private static readonly TimeSpan DequeuedLockTimeout = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan FetchedLockTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan CheckedTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan SleepTimeout = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan JobTimeout = TimeSpan.FromMinutes(15);
 
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(DequeuedJobsWatcher));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(FetchedJobsWatcher));
 
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly RedisStorage _storage;
 
-        public DequeuedJobsWatcher(RedisStorage storage)
+        public FetchedJobsWatcher(RedisStorage storage)
         {
             _storage = storage;
         }
@@ -54,11 +54,11 @@ namespace HangFire.Redis.Components
                     // jobs from the specified queue.
 
                     Logger.DebugFormat(
-                        "Acquiring the lock for the dequeued list of the '{0}' queue...", queue);
+                        "Acquiring the lock for the fetched list of the '{0}' queue...", queue);
 
                     using (redis.AcquireLock(
                         String.Format("hangfire:queue:{0}:dequeued:lock", queue),
-                        DequeuedLockTimeout))
+                        FetchedLockTimeout))
                     {
                         Logger.DebugFormat(
                             "Looking for timed out jobs in the '{0}' queue...", queue);
@@ -105,14 +105,14 @@ namespace HangFire.Redis.Components
             if (String.IsNullOrEmpty(fetched) && String.IsNullOrEmpty(@checked))
             {
                 // If the job does not have these flags set, then it is
-                // in the implicit 'Dequeued' state. This state has no 
-                // information about the time it was dequeued. So we
+                // in the implicit 'Fetched' state. This state has no 
+                // information about the time it was fetched. So we
                 // can not do anything with the job in this state, because
                 // there are two options:
 
                 // 1. It is going to move to the implicit 'Fetched' state
                 //    in a short time.
-                // 2. It will stay in the 'Dequeued' state forever due to
+                // 2. It will stay in the 'Fetched' state forever due to
                 //    its processing server is dead.
 
                 // To ensure its server is dead, we'll move the job to
@@ -144,7 +144,7 @@ namespace HangFire.Redis.Components
                         state, 
                         new [] { EnqueuedState.StateName, ProcessingState.StateName });
 
-                    RedisConnection.RemoveFromDequeuedList(redis, queue, jobId);
+                    RedisConnection.RemoveFromFetchedList(redis, queue, jobId);
 
                     return true;
                 }
@@ -177,7 +177,7 @@ namespace HangFire.Redis.Components
         {
             try
             {
-                Logger.Info("Dequeued jobs watcher has been started.");
+                Logger.Info("Fetched jobs watcher has been started.");
 
                 while (true)
                 {
@@ -189,12 +189,12 @@ namespace HangFire.Redis.Components
                     }
                 }
 
-                Logger.Info("Dequeued jobs watcher has been stopped.");
+                Logger.Info("Fetched jobs watcher has been stopped.");
             }
             catch (Exception ex)
             {
                 Logger.Fatal(
-                    "Unexpected exception caught in the dequeued jobs watcher. Timed out jobs will not be re-queued.",
+                    "Unexpected exception caught in the fetched jobs watcher. Timed out jobs will not be re-queued.",
                     ex);
             }
         }

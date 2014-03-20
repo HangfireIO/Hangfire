@@ -1,8 +1,8 @@
 ﻿namespace HangFire.Web.Pages
 {
-    partial class DequeuedJobsPage
+    partial class FetchedJobsPage
     {
-        public DequeuedJobsPage(string queue)
+        public FetchedJobsPage(string queue)
         {
             Queue = queue;
         }

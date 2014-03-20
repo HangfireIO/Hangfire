@@ -49,7 +49,7 @@ namespace HangFire.Redis
             return _redis.GetListCount(String.Format("hangfire:queue:{0}", queue));
         }
 
-        public long DequeuedCount(string queue)
+        public long FetchedCount(string queue)
         {
             return _redis.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue));
         }
@@ -242,7 +242,7 @@ namespace HangFire.Redis
             {
                 IList<string> firstJobIds = null;
                 long length = 0;
-                long dequeued = 0;
+                long fetched = 0;
 
                 using (var pipeline = _redis.CreatePipeline())
                 {
@@ -257,7 +257,7 @@ namespace HangFire.Redis
 
                     pipeline.QueueCommand(
                         x => x.GetListCount(String.Format("hangfire:queue:{0}:dequeued", queue)),
-                        x => dequeued = x);
+                        x => fetched = x);
 
                     pipeline.Flush();
                 }
@@ -279,7 +279,7 @@ namespace HangFire.Redis
                     Name = queue,
                     FirstJobs = jobs,
                     Length = length,
-                    Dequeued = dequeued
+                    Fetched = fetched
                 });
             }
 
@@ -307,7 +307,7 @@ namespace HangFire.Redis
                 });
         }
 
-        public JobList<DequeuedJobDto> DequeuedJobs(
+        public JobList<FetchedJobDto> FetchedJobs(
             string queue, int from, int perPage)
         {
             var jobIds = _redis.GetRangeFromList(
@@ -319,7 +319,7 @@ namespace HangFire.Redis
                 jobIds,
                 new[] { "State", "CreatedAt", "Fetched" },
                 null,
-                (method, job, state) => new DequeuedJobDto
+                (method, job, state) => new FetchedJobDto
                 {
                     MethodData = method,
                     State = job[0],

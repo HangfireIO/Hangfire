@@ -11,13 +11,13 @@
     Layout = new LayoutPage
         {
             Title = Queue.ToUpperInvariant(),
-            Subtitle = "Dequeued jobs",
+            Subtitle = "Fetched jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {
                     { "Queues", Request.LinkTo("/queues") },
                     { Queue.ToUpperInvariant(), Request.LinkTo("/queues/" + Queue) }
                 },
-            BreadcrumbsTitle = "Dequeued jobs",    
+            BreadcrumbsTitle = "Fetched jobs",    
         };
 
     int from, perPage;
@@ -26,17 +26,17 @@
     int.TryParse(Request.QueryString["count"], out perPage);
 
     Pager pager;
-    JobList<DequeuedJobDto> dequeuedJobs;
+    JobList<FetchedJobDto> fetchedJobs;
     
     using (var monitor = JobStorage.Current.GetMonitoringApi())
     {
-        pager = new Pager(from, perPage, monitor.DequeuedCount(Queue))
+        pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
         {
-            BasePageUrl = Request.LinkTo("/queues/dequeued/" + Queue)
+            BasePageUrl = Request.LinkTo("/queues/fetched/" + Queue)
         };
 
-        dequeuedJobs = monitor
-            .DequeuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
+        fetchedJobs = monitor
+            .FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
     }
 }
 
@@ -61,7 +61,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var job in dequeuedJobs)
+            @foreach (var job in fetchedJobs)
             {
                 <tr>
                     <td>
