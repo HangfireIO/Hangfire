@@ -20,6 +20,10 @@
 
 Dear 0.7-alpha users! Please, DROP ALL HangFire tables before using this release!
 
+0.7-beta2
+* Using Common.Logging for logging and Json.NET for json encoding, they are more stable.
+* Integration testing helped to fix some internal mistakes.
+
 0.7-beta1
 * Short exception stack traces, they contain only your code.
 * Clarified some type names, state subsystem was greatly simplified.
