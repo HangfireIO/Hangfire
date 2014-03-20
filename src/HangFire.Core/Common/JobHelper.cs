@@ -23,7 +23,9 @@ namespace HangFire.Common
     {
         public static string ToJson(object value)
         {
-            return JsonConvert.SerializeObject(value);
+            return value != null 
+                ? JsonConvert.SerializeObject(value)
+                : null;
         }
 
         public static T FromJson<T>(string value)

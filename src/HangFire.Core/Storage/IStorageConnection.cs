@@ -22,9 +22,9 @@ namespace HangFire.Storage
 
         IDisposable AcquireJobLock(string jobId);
         StateAndInvocationData GetJobStateAndInvocationData(string id);
-        void CompleteJob(JobPayload payload);
+        void DeleteJobFromQueue(string jobId, string queue);
 
-        string GetFirstByLowestScoreFromSet(string key, long fromScore, long toScore);
+        string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 
         void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues);
         void RemoveServer(string serverId);

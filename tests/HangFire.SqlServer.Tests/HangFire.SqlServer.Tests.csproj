@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConnectionFacts.cs" />
     <Compile Include="FetcherFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StorageFacts.cs" />

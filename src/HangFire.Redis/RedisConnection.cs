@@ -127,12 +127,12 @@ namespace HangFire.Redis
                 name);
         }
 
-        public void CompleteJob(JobPayload payload)
+        public void DeleteJobFromQueue(string id, string queue)
         {
-            RedisConnection.RemoveFromDequeuedList(_redis, payload.Queue, payload.Id);
+            RemoveFromDequeuedList(_redis, queue, id);
         }
 
-        public string GetFirstByLowestScoreFromSet(string key, long fromScore, long toScore)
+        public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             return _redis.GetRangeFromSortedSetByLowestScore(
                 RedisStorage.Prefix + key, fromScore, toScore, 0, 1)

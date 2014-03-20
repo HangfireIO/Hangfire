@@ -16,6 +16,9 @@ namespace HangFire.SqlServer
 
         public SqlServerConnection(JobStorage storage, SqlConnection connection)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (connection == null) throw new ArgumentNullException("connection");
+
             _connection = connection;
             Storage = storage;
         }
@@ -50,6 +53,10 @@ namespace HangFire.SqlServer
             IDictionary<string, string> parameters, 
             TimeSpan expireIn)
         {
+            if (invocationData == null) throw new ArgumentNullException("invocationData");
+            if (arguments == null) throw new ArgumentNullException("arguments");
+            if (parameters == null) throw new ArgumentNullException("parameters");
+
             const string createJobSql = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 values (@invocationData, @arguments, @createdAt, @expireAt);
@@ -91,16 +98,17 @@ values (@jobId, @name, @value)";
 
         public StateAndInvocationData GetJobStateAndInvocationData(string id)
         {
-            const string sql = @"
-select InvocationData, StateName 
-from HangFire.Job
-where id = @id";
+            if (id == null) throw new ArgumentNullException("id");
+
+            const string sql = 
+                @"select InvocationData, StateName from HangFire.Job where id = @id";
 
             var job = _connection.Query<SqlJob>(sql, new { id = id })
                 .SingleOrDefault();
 
             if (job == null) return null;
 
+            // TODO: conversion exception could be thrown.
             var data = JobHelper.FromJson<InvocationData>(job.InvocationData);
 
             return new StateAndInvocationData
@@ -112,6 +120,9 @@ where id = @id";
 
         public void SetJobParameter(string id, string name, string value)
         {
+            if (id == null) throw new ArgumentNullException("id");
+            if (name == null) throw new ArgumentNullException("name");
+
             _connection.Execute(
                 @"merge HangFire.JobParameter as Target "
                 + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
@@ -123,20 +134,29 @@ where id = @id";
 
         public string GetJobParameter(string id, string name)
         {
+            if (id == null) throw new ArgumentNullException("id");
+            if (name == null) throw new ArgumentNullException("name");
+
             return _connection.Query<string>(
                 @"select Value from HangFire.JobParameter where JobId = @id and Name = @name",
                 new { id = id, name = name })
                 .SingleOrDefault();
         }
 
-        public void CompleteJob(JobPayload payload)
+        public void DeleteJobFromQueue(string id, string queue)
         {
+            if (id == null) throw new ArgumentNullException("id");
+            if (queue == null) throw new ArgumentNullException("queue");
+
             _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
-                new { id = payload.Id, queueName = payload.Queue });
+                new { id = id, queueName = queue });
         }
 
-        public string GetFirstByLowestScoreFromSet(string key, long fromScore, long toScore)
+        public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
+            if (key == null) throw new ArgumentNullException("key");
+            if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
+
             return _connection.Query<string>(
                 @"select top 1 Value from HangFire.[Set] where [Key] = @key and Score between @from and @to order by Score",
                 new { key, from = fromScore, to = toScore })
@@ -145,6 +165,9 @@ where id = @id";
 
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
         {
+            if (serverId == null) throw new ArgumentNullException("serverId");
+            if (queues == null) throw new ArgumentNullException("queues");
+
             var data = new ServerData
             {
                 WorkerCount = workerCount,
@@ -152,6 +175,8 @@ where id = @id";
                 StartedAt = DateTime.UtcNow,
             };
 
+            // TODO: set the LastHeartbeat column to now, make it non-nullable.
+            
             _connection.Execute(
                 @"merge HangFire.Server as Target "
                 + @"using (VALUES (@id, @data)) as Source (Id, Data) "
@@ -163,6 +188,8 @@ where id = @id";
 
         public void RemoveServer(string serverId)
         {
+            if (serverId == null) throw new ArgumentNullException("serverId");
+
             _connection.Execute(
                 @"delete from HangFire.Server where Id = @id",
                 new { id = serverId });
@@ -170,6 +197,8 @@ where id = @id";
 
         public void Heartbeat(string serverId)
         {
+            if (serverId == null) throw new ArgumentNullException("serverId");
+
             _connection.Execute(
                 @"update HangFire.Server set LastHeartbeat = @now where Id = @id",
                 new { now = DateTime.UtcNow, id = serverId });
@@ -177,6 +206,11 @@ where id = @id";
 
         public int RemoveTimedOutServers(TimeSpan timeOut)
         {
+            if (timeOut.Duration() != timeOut)
+            {
+                throw new ArgumentException("The `timeOut` value must be positive.", "timeOut");
+            }
+
             return _connection.Execute(
                 @"delete from HangFire.Server where LastHeartbeat < @timeOutAt",
                 new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) });

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -91,6 +90,7 @@ and Queue in @queues";
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
             } while (job == null);
 
+            // TODO: There could be a conversion exception.
             var invocationData = JobHelper.FromJson<InvocationData>(job.InvocationData);
 
             return new JobPayload(
