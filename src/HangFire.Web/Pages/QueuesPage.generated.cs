@@ -96,8 +96,8 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-warning\">\r\n        You have no queues yet. Try to enq" +
-"ueue your first job.\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-warning\">\r\n        No queued jobs found. Try to enque" +
+"ue a job.\r\n    </div>\r\n");
 
 
             

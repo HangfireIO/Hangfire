@@ -11,7 +11,7 @@ namespace HangFire.Storage.Monitoring
         }
 
         public MethodData MethodData { get; set; }
-        public DateTime ScheduledAt { get; set; }
+        public DateTime EnqueueAt { get; set; }
         public bool InScheduledState { get; set; }
     }
 }

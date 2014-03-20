@@ -154,7 +154,7 @@ select * from (
                 (job, method, stateData) => new ScheduleDto
                 {
                     MethodData = method,
-                    ScheduledAt = JobHelper.FromStringTimestamp(stateData["ScheduledAt"])
+                    EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"])
                 });
         }
 

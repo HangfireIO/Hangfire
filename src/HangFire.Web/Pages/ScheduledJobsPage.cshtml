@@ -57,7 +57,7 @@ else
                         <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                     }
                 </td>
-                <td data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt)">@job.Value.ScheduledAt</td>
+                <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueueAt)">@job.Value.EnqueueAt</td>
                 <td>
                     <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
                         @HtmlHelper.DisplayMethod(job.Value.MethodData)

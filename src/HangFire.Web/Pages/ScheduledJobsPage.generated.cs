@@ -193,7 +193,7 @@ WriteLiteral("                </td>\r\n                <td data-moment=\"");
 
             
             #line 60 "..\..\Pages\ScheduledJobsPage.cshtml"
-                            Write(JobHelper.ToStringTimestamp(job.Value.ScheduledAt));
+                            Write(JobHelper.ToStringTimestamp(job.Value.EnqueueAt));
 
             
             #line default
@@ -203,7 +203,7 @@ WriteLiteral("\">");
 
             
             #line 60 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                                                                 Write(job.Value.ScheduledAt);
+                                                                                 Write(job.Value.EnqueueAt);
 
             
             #line default

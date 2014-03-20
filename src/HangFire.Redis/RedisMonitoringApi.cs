@@ -128,7 +128,7 @@ namespace HangFire.Redis
                     job.Key,
                     new ScheduleDto
                     {
-                        ScheduledAt = JobHelper.FromTimestamp((long) job.Value),
+                        EnqueueAt = JobHelper.FromTimestamp((long) job.Value),
                         MethodData = TryToGetMethod(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2]),
                         InScheduledState =
                             ScheduledState.StateName.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
