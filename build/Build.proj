@@ -208,11 +208,14 @@
                  Condition="%(Projects.CopyArtifacts) And !%(Projects.Sample)">
         <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
-      <!-- Copy combined/minified JS, sql scripts and READMEs to artifacts/{Configuration}/package-src/Content/ -->
-      <Artifacts Include="$(ProjectRoot)\src\HangFire.SqlServer\Install.sql;
-                          $(ContentPath)\HangFireConfig.cs.pp;
+      <!-- Copy transformations to artifacts/{Configuration}/package-src/Content/ -->
+      <Artifacts Include="$(ContentPath)\HangFireConfig.cs.pp;
                           $(ContentPath)\web.config.transform">
         <Destination>$(PackageSrcDir)\Content</Destination>
+      </Artifacts>
+      <!-- Copy tools to artifacts/{Configuration}/package-src/Tools -->
+      <Artifacts Include="$(ProjectRoot)\src\HangFire.SqlServer\Install.sql">
+        <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
       <!-- Copy samples to artifacts/{Configuration}/samples while keeping directory structure -->
       <Artifacts Include="$(ProjectArtifactsDir)\%(Projects.FileName)\**\*.*" Condition="%(Projects.Sample)">
