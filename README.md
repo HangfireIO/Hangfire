@@ -25,7 +25,7 @@ Installation
 
 HangFire has a [couple of packages](https://www.nuget.org/packages?q=hangfire) available on NuGet. To install HangFire into your **ASP.NET application** with **SQL Server** storage, type the following command into the Package Manager Console window:
 
-<pre style="background-color: #202020;border: 4px solid silver;border-radius: 3px;color: #E2E2E2;display: block;padding: 10px;">PM> Install-Package HangFire -Pre</pre>
+<pre style="background-color: #202020;border: 4px solid silver;border-radius: 3px;color: #E2E2E2;display: block;padding: 10px;">PM> Install-Package HangFire</pre>
 
 During the installation, Package Manager will update your `web.config` file to add the `hangfire.axd` HTTP handler. It also adds the autoload `HangFireConfig` class that contains default configuration and code required to start the job processing.
 
