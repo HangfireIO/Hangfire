@@ -26,6 +26,9 @@ namespace HangFire
 {
     public class BackgroundJobServer : IDisposable
     {
+        private static readonly int DefaultWorkerCount
+            = Environment.ProcessorCount * 5;
+
         private JobServer _server;
         private IEnumerable<string> _queues;
         private int _workerCount;
@@ -35,7 +38,7 @@ namespace HangFire
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/>.
         /// </summary>
         public BackgroundJobServer(params string[] queues)
-            : this(Environment.ProcessorCount, queues)
+            : this(DefaultWorkerCount, queues)
         {
         }
 
