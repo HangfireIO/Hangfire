@@ -173,7 +173,7 @@ Open-source projects are developing more smoothly when all discussions are held 
 
 Unfortunately, I can't do all the things at a time. And I appreciate any help related to the project:
 
-* Code contributing, bug fixes.
+* Code contributions, bug fixes.
 * Spelling and grammar errors fixes.
 * Web interface improvements.
 * Documentation clarification.
