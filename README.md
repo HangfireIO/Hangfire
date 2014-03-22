@@ -166,10 +166,20 @@ public class NotificationService : IDisposable
 }
 ```
 
-Questions? Problems? 
----------------------
+Contributing
+-------------
 
-If you have installation issues, problems or questions, just let me know. Open a [new issue](https://github.com/odinserj/HangFire/issues?state=open) and I'll answer to it.
+Open-source projects are developing more smoothly when all discussions are held in public. If you have **any** questions or suggestions, please open GitHub [issues](https://github.com/odinserj/HangFire/issues).
+
+Unfortunately, I can't do all the things at a time. And I appreciate any help related to the project:
+
+* Code contributions, bug fixes.
+* Spelling and grammar errors fixes.
+* Web interface improvements.
+* Documentation clarification.
+* Code review.
+
+To make a contribution, please fork a project, do the work and make a [pull-request](https://github.com/odinserj/HangFire/pulls).
 
 License
 --------
