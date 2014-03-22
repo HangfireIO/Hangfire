@@ -10,41 +10,35 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
     <description>
-      HangFire helps to perform background jobs inside your ASP.NET application in a simple, efficient and transparent way. It allows you to define, create and process these jobs asynchronously. With this library, you can move your long running tasks out of the request processing pipeline without losing control over them.
-      This package pulls in the core components, SQL Server job storage and other classes required to use HangFire in an ASP.NET application.
+      HangFire gives you a simple way to kick off long-running processes from the ASP.NET request processing pipeline. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
       https://github.com/odinserj/HangFire
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
-    <tags>AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
+    <tags>LongRunning AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
 
 Dear 0.7-alpha users! Please, DROP ALL HangFire tables before using this release!
 
-0.7-beta2
-* Using Common.Logging for logging and Json.NET for json encoding, they are more stable.
-* Integration testing helped to fix some internal mistakes.
-
-0.7-beta1
-* Short exception stack traces, they contain only your code.
-* Clarified some type names, state subsystem was greatly simplified.
-* Started work on restoration of the broken tests.
-* Fixed: Apply the Failed state when state filters/handlers cause an exception.
-
-0.7-alpha4
+0.7
 * Changed NuGet package structure. See the Upgrading Guide on GitHub!
+* Job storage abstraction.
 * SQL Server job storage implementation.
+* Using Common.Logging for logging and Json.NET for json encoding.
+* Short exception stack traces, they contain only your code.
 * Improved job fetching implementation.
 * Removed obsolete `Perform` class.
+* Increased default worker number.
+* Clarified some type names, state subsystem was greatly simplified.
 * Fixed: empty MVC 5 project Internal Server Error.
+* Fixed: Apply the Failed state when state filters/handlers cause an exception.
 * Fixed: Some history statistic counters do not expire.
 * Fixed: Use `StatisticsHistoryFilter` by default.
+* Fixed some internal mistakes.
 
 0.6.2
+* This release contains new client API, based on expressions. Please, see https://github.com/odinserj/HangFire/releases/tag/v0.6 for details.
 * Fixed NullReferenceException when trying to create a job using the Old API.
-0.6.1
-Fixes some NuGet package issues.
-0.6
-This release contains new client API, based on expressions. Please, see https://github.com/odinserj/HangFire/releases/tag/v0.6 for details.
+* Fixes some NuGet package issues.
     </releaseNotes>
     <dependencies>
       <dependency id="HangFire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
