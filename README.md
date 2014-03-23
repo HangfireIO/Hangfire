@@ -113,58 +113,8 @@ So, HangFire is an ideal solution for performing background jobs in ASP.NET appl
 Advanced usage
 ---------------
 
-### IoC Containers
-
-However, if you use an IoC container, you can create your own job activator and register it.
-
-```csharp
-public class AutofacActivator : JobActivator
-{
-    private readonly ILifetimeScope _scope;
-
-    public AutofacActivator(ILifetimeScope scope)
-    {
-        _scope = scope;
-    }
-
-    public object ActivateJob(Type type)
-    {
-        return _scope.Resolve(type);
-    }
-}
-
-/* Global.asax.cs */
-JobActivator.Current = new AutofacActivator(scope);
-```
-
-After that, you could use any constructors.
-
-```csharp
-public class NotificationService : IDisposable
-{
-    private readonly DbContext _context;
-    private readonly IEmailService _email;    
-
-    public NotificationService(DbContext context, IEmailService email)
-    {
-        _context = context;
-        _email = email;
-    }
-
-    public void SendNotification(int userId, string template)
-    {
-        var user = _context.Users.Get(1);
-        _email.Send(user.Email, template);
-    }
-
-    // Instances of classes that implement the IDisposable
-    // interface, will be disposed.
-    public void Dispose()
-    {
-        _context.Dispose();
-    }
-}
-```
+* [Best practices](https://github.com/odinserj/HangFire/wiki/Best-Practices)
+* [IoC containers](https://github.com/odinserj/HangFire/wiki/IoC-Containers)
 
 Contributing
 -------------
