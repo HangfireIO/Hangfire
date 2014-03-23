@@ -101,16 +101,11 @@ During the performance of a job, HangFire Worker will activate an instance of th
 
 ### … and relax
 
-HangFire processes each job in a reliable way. Your can stop your application, kill it using task manager, shutdown your computer<sup>1</sup>, enqueue broken jobs. HangFire contains auto-retrying facilities, or you can retry failed job manually using the integrated Monitor.
+HangFire saves your jobs into persistent storage and processes them in a reliable way. It means that you can abort HangFire worker threads, unload application domain or even terminate its process, and your jobs will be processed anyway<sup>1</sup>. HangFire flags your job as completed only when the last line of your code was performed, and knows that the job can fail before this last line. It contains different auto-retrying facilities, that can handle either storage errors or errors inside your code.
 
-So, HangFire is an ideal solution for performing background jobs in ASP.NET applications, because IIS Application Pools contain several mechanisms that can stop your application.
+This is very important for generic hosting environment, such as IIS Server. They can contain different [optimizations, timeouts and error-handling code](https://github.com/odinserj/HangFire/wiki/IIS-Can-Kill-Your-Threads) (that may cause process termination) to prevent bad things to happen. If you are not using the reliable processing and auto-retrying, your job can be lost. And your end user may wait for its email, report, notification, etc. indefinitely.
 
-* Idle Time-out
-* Recycling, including on configuration changes
-* Rapid-Fail protection
-* Application re-deployment
-
-<sup>1</sup> Only processing is reliable. If your storage became broken, HangFire can not do anything. To guarantee the processing of each job, you should guarantee the reliability of your storage.
+<sup>1</sup> But when your storage becomes broken, HangFire can not do anything. Please, use different failover strategies for your storage to guarantee the processing of each job in case of a disaster.
 
 ### Advanced usage
 
