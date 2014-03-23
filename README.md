@@ -95,7 +95,7 @@ public class NotificationService
 BackgroundJob.Enqueue<NotificationService>(x => x.SendNotification(1, "hello"));
 ```
 
-During the performance of a job, HangFire Worker will activate an instance of the job and then invoke the given method. Job activation is performed by the `JobActivator.Current` instance. Default `JobActivator` uses `Activator.CreateInstance` method, so it can instantiate only classes with default constructor.
+During the performance of a job, HangFire Worker will activate an instance of the job and then invoke the given method. Job activation is performed by the `JobActivator.Current` instance. Default `JobActivator` uses `Activator.CreateInstance` method, so it can instantiate only classes with default constructor. You can [override](https://github.com/odinserj/HangFire/wiki/Best-Practices) this behavior.
 
 ### … and relax
 
