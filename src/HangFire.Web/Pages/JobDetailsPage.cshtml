@@ -24,7 +24,7 @@
 
     title = title ?? "Job";
 
-    Layout = new LayoutPage { Title = title, Subtitle = HtmlHelper.JobId(JobId.ToString(), false).ToString() };
+    Layout = new LayoutPage { Title = title };
 }
 
 @if (job == null)
@@ -33,6 +33,9 @@
 }
 else
 {
+    <div class="job-snippet-header">
+        Job ID: <span class="job-snippet-id">@HtmlHelper.JobId(JobId.ToString(), false)</span>
+    </div>
     <div class="job-snippet">
         <div class="job-snippet-code">
             @if (job.CreatedAt.HasValue)
@@ -56,68 +59,70 @@ else
                     @foreach (var property in job.Properties)
                     {
                         <dt>@property.Key</dt>
-                        <dd><pre>@property.Value</pre></dd>
+                        <dd>
+                            <pre>@property.Value</pre>
+                        </dd>
                     }
                 </dl>
             </div>
         }
     </div>
 
-    if (job.History.Count > 0)
-    {
-        <h3>History</h3>
-        var index = 0;
-        foreach (var entry in job.History)
+        if (job.History.Count > 0)
         {
-            var background = JobHistoryRenderer.BackgroundStateColors.ContainsKey(entry.StateName)
-               ? JobHistoryRenderer.BackgroundStateColors[entry.StateName]
-               : null;
-
-            if (index == 0)
+    <h3>History</h3>
+            var index = 0;
+            foreach (var entry in job.History)
             {
-                background = JobHistoryRenderer.ForegroundStateColors.ContainsKey(entry.StateName)
-                    ? JobHistoryRenderer.ForegroundStateColors[entry.StateName]
-                    : null;
-            }
+                var background = JobHistoryRenderer.BackgroundStateColors.ContainsKey(entry.StateName)
+                   ? JobHistoryRenderer.BackgroundStateColors[entry.StateName]
+                   : null;
 
-            <div class="job-history @(index == 0 ? "job-history-current" : null)">
-                <div class="job-history-heading" style="@(background != null ? String.Format("background-color: {0};", background) : null)">
-                    <span class="pull-right" data-moment="@JobHelper.ToStringTimestamp(entry.CreatedAt)">@entry.CreatedAt</span>
-                    <h4 class="job-history-title">
-                        @entry.StateName
-
-                        @if (!String.IsNullOrWhiteSpace(entry.Reason))
-                        {
-                            <small>@entry.Reason</small>
-                        }
-                    </h4>
-                </div>
-
-                @if (JobHistoryRenderer.Exists(entry.StateName))
+                if (index == 0)
                 {
-                    var rendered = JobHistoryRenderer.Render(entry.StateName, entry.Data);
-                    if (rendered != null)
-                    {
-                        <div class="job-history-body">
-                            @rendered
-                        </div>
-                    }
+                    background = JobHistoryRenderer.ForegroundStateColors.ContainsKey(entry.StateName)
+                        ? JobHistoryRenderer.ForegroundStateColors[entry.StateName]
+                        : null;
                 }
-                else
+
+    <div class="job-history @(index == 0 ? "job-history-current" : null)">
+        <div class="job-history-heading" style="@(background != null ? String.Format("background-color: {0};", background) : null)">
+            <span class="pull-right" data-moment="@JobHelper.ToStringTimestamp(entry.CreatedAt)">@entry.CreatedAt</span>
+            <h4 class="job-history-title">
+                @entry.StateName
+
+                @if (!String.IsNullOrWhiteSpace(entry.Reason))
                 {
-                    <div class="job-history-body">
-                        <dl class="dl-horizontal">
-                            @foreach (var item in entry.Data)
-                            {
-                                <dt>@item.Key:</dt>
-                                <dd>@item.Value</dd>
-                            }
-                        </dl>
-                    </div>
+                    <small>@entry.Reason</small>
                 }
+            </h4>
+        </div>
+
+        @if (JobHistoryRenderer.Exists(entry.StateName))
+        {
+            var rendered = JobHistoryRenderer.Render(entry.StateName, entry.Data);
+            if (rendered != null)
+            {
+            <div class="job-history-body">
+                @rendered
             </div>
-
-                index++;
+            }
         }
-    }
+        else
+        {
+            <div class="job-history-body">
+                <dl class="dl-horizontal">
+                    @foreach (var item in entry.Data)
+                    {
+                        <dt>@item.Key:</dt>
+                        <dd>@item.Value</dd>
+                    }
+                </dl>
+            </div>
+        }
+    </div>
+
+        index++;
+            }
+        }
 }

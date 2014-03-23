@@ -40,11 +40,10 @@ namespace HangFire.Web
             {
                 var serviceName = Char.ToLower(methodData.Type.Name[0]) + methodData.Type.Name.Substring(1);
 
-                builder.Append(WrapKeyword("var"));
+                builder.Append(WrapType(methodData.Type.Name));
                 builder.AppendFormat(
-                    " {0} = {1}.Current.Activate<{2}>();",
+                    " {0} = Activate<{1}>();",
                     Encode(serviceName),
-                    WrapType("JobActivator"),
                     WrapType(Encode(methodData.Type.Name)));
 
                 builder.AppendLine();
