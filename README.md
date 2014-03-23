@@ -110,8 +110,7 @@ So, HangFire is an ideal solution for performing background jobs in ASP.NET appl
 
 <sup>1</sup> Only processing is reliable. If your storage became broken, HangFire can not do anything. To guarantee the processing of each job, you should guarantee the reliability of your storage.
 
-Advanced usage
----------------
+### Advanced usage
 
 * [Best practices](https://github.com/odinserj/HangFire/wiki/Best-Practices)
 * [IoC containers](https://github.com/odinserj/HangFire/wiki/IoC-Containers)
