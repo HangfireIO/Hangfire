@@ -1,7 +1,7 @@
 HangFire 
 =========
 
-[![Build status](https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4)](https://ci.appveyor.com/project/odinserj/hangfire)
+[![Build status](https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4)](https://ci.appveyor.com/project/odinserj/hangfire) 
 
 HangFire gives you a simple way to kick off **long-running processes** from the **ASP.NET request processing pipeline**. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
 
@@ -115,7 +115,7 @@ This is very important for generic hosting environment, such as IIS Server. They
 Contributing
 -------------
 
-Open-source projects are developing more smoothly when all discussions are held in public. If you have **any** questions or suggestions, please open GitHub [issues](https://github.com/odinserj/HangFire/issues).
+Open-source projects are developing more smoothly when all discussions are held in public. If you have **any** questions or suggestions, please open GitHub [issues](https://github.com/odinserj/HangFire/issues) or mention [@hangfire_net](https://twitter.com/hangfire_net) on Twitter.
 
 Unfortunately, I can't do all the things at a time. And I appreciate any help related to the project:
 
