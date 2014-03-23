@@ -57,7 +57,9 @@ Let's start with Monitor to test your configuration. Please, build the project a
 <span style="color: #666;">http://&lt;your-site&gt;</span>/hangfire.axd
 </div>
 
-![HangFire Dashboard](https://github.com/odinserj/hangfire/raw/master/content/dashboard_min.png)
+[![HangFire Dashboard](https://github.com/odinserj/hangfire/raw/master/content/dashboard.png)](https://github.com/odinserj/HangFire/wiki/Screenshots)
+
+[Other screenshots](https://github.com/odinserj/HangFire/wiki/Screenshots) are also available.
 
 ### Add a job…
 
