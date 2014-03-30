@@ -46,7 +46,7 @@ namespace HangFire.Server.Performing
             return new JobFilterInfo(_getFiltersThunk(methodData));
         }
 
-        public void PerformJob(PerformContext context, IJobPerformStrategy strategy)
+        public void Run(PerformContext context, IJobPerformStrategy strategy)
         {
             var filterInfo = GetFilters(context.MethodData);
 
