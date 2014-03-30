@@ -12,7 +12,7 @@ namespace HangFire.Core.Tests.Client
     {
         private readonly JobClient _client;
         private readonly Mock<IStorageConnection> _connectionMock;
-        private readonly Mock<JobCreator> _creatorMock;
+        private readonly Mock<JobCreationPipeline> _creatorMock;
         private readonly Mock<State> _stateMock;
         private readonly Job _job;
 
@@ -21,7 +21,7 @@ namespace HangFire.Core.Tests.Client
             _connectionMock = new Mock<IStorageConnection>();
             _connectionMock.Setup(x => x.Storage).Returns(new Mock<JobStorage>().Object);
 
-            _creatorMock = new Mock<JobCreator>();
+            _creatorMock = new Mock<JobCreationPipeline>();
             _client = new JobClient(_connectionMock.Object, _creatorMock.Object);
             _stateMock = new Mock<State>();
             _job = Job.FromExpression(() => Method());

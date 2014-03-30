@@ -174,7 +174,7 @@ namespace HangFire.Server
                 }
                 
                 var performContext = new PerformContext(_context, connection, payload.Id, methodData);
-                _context.Performer.PerformJob(performContext, performStrategy);
+                _context.PerformancePipeline.PerformJob(performContext, performStrategy);
 
                 state = new SucceededState();
             }

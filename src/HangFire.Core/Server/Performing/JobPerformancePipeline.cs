@@ -23,16 +23,16 @@ using HangFire.Server.Filters;
 
 namespace HangFire.Server.Performing
 {
-    internal class JobPerformer
+    internal class JobPerformancePipeline
     {
         private readonly Func<MethodData, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
-        public JobPerformer()
+        public JobPerformancePipeline()
         {
         }
 
-        internal JobPerformer(IEnumerable<object> filters)
+        internal JobPerformancePipeline(IEnumerable<object> filters)
             : this()
         {
             if (filters != null)

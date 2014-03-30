@@ -59,7 +59,7 @@
     <Compile Include="Common\CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
     <Compile Include="Client\IJobClient.cs" />
-    <Compile Include="Client\JobCreator.cs" />
+    <Compile Include="Client\JobCreationPipeline.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Common\Job.cs" />
     <Compile Include="Common\MethodData.cs" />
@@ -151,7 +151,7 @@
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\Performing\JobAsMethodPerformStrategy.cs" />
-    <Compile Include="Server\Performing\JobPerformer.cs" />
+    <Compile Include="Server\Performing\JobPerformancePipeline.cs" />
     <Compile Include="Client\JobClient.cs" />
     <Compile Include="Server\Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -35,7 +35,7 @@ namespace HangFire.Tests
                 new RedisConnection(
                     Redis.Storage,
                     Redis.Storage.PooledManager.GetClient()),
-                new JobCreator(_filters));
+                new JobCreationPipeline(_filters));
         }
 
         [Given("the client filter '(.+)'")]

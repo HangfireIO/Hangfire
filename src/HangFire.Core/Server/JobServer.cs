@@ -59,7 +59,7 @@ namespace HangFire.Server
             _context = new ServerContext(
                 serverName,
                 _queues,
-                new JobPerformer());
+                new JobPerformancePipeline());
 
             _serverThread = new Thread(RunServer)
                 {

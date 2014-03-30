@@ -31,15 +31,15 @@ namespace HangFire.Client
     internal class JobClient : IJobClient
     {
         private readonly IStorageConnection _connection;
-        private readonly JobCreator _jobCreator;
+        private readonly JobCreationPipeline _creationPipeline;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="JobClient"/> class
         /// with a specified Redis client manager and the default global
-        /// <see cref="JobCreator"/> instance.
+        /// <see cref="JobCreationPipeline"/> instance.
         /// </summary>
         public JobClient(IStorageConnection connection)
-            : this(connection, JobCreator.Instance)
+            : this(connection, JobCreationPipeline.Instance)
         {
         }
 
@@ -47,13 +47,13 @@ namespace HangFire.Client
         /// Initializes a new instance of the <see cref="JobClient"/> class
         /// with a specified Redis client manager and a job creator.
         /// </summary>
-        public JobClient(IStorageConnection connection, JobCreator jobCreator)
+        public JobClient(IStorageConnection connection, JobCreationPipeline creationPipeline)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (jobCreator == null) throw new ArgumentNullException("jobCreator");
+            if (creationPipeline == null) throw new ArgumentNullException("creationPipeline");
 
             _connection = connection;
-            _jobCreator = jobCreator;
+            _creationPipeline = creationPipeline;
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace HangFire.Client
             ValidateMethodParameters(parameters);
 
             var context = new CreateContext(_connection, job, state);
-            _jobCreator.CreateJob(context);
+            _creationPipeline.Run(context);
 
             return context.JobId;
         }
