@@ -13,7 +13,7 @@ HangFire has a `couple of packages
 
 During the installation, Package Manager will update your ``web.config`` file to add the `hangfire.axd` HTTP handler. It also adds the autoload ``HangFireConfig`` class that contains default configuration and code required to start the job processing.
 
-Basic configuration
+Configuration
 --------------------
 
 After installing the package, open the ``App_Start\HangFireConfig.cs`` file in your project and set the connection string for your SQL Server database.
