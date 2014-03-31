@@ -186,6 +186,10 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'HangFiredoc'
 
+if on_rtd: 
+  html_context = {
+     "disqus_shortname" : 'hangfire',
+  }
 
 # -- Options for LaTeX output ---------------------------------------------
 
