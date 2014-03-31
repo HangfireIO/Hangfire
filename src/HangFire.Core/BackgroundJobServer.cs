@@ -30,8 +30,6 @@ namespace HangFire
             = Environment.ProcessorCount * 5;
 
         private JobServer _server;
-        private IEnumerable<string> _queues;
-        private int _workerCount;
         private string _machineName;
 
         /// <summary>
@@ -44,30 +42,16 @@ namespace HangFire
 
         public BackgroundJobServer(int workerCount, params string[] queues)
         {
+            if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
+
             MachineName = Environment.MachineName;
 
             WorkerCount = workerCount;
             Queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
         }
 
-        public IEnumerable<string> Queues
-        {
-            get { return _queues; }
-            set
-            {
-                _queues = value;
-            }
-        }
-
-        public int WorkerCount
-        {
-            get { return _workerCount; }
-            set
-            {
-                if (value <= 0) throw new ArgumentOutOfRangeException("value", "Worker count value must be more than zero.");
-                _workerCount = value;
-            }
-        }
+        public IEnumerable<string> Queues { get; private set; }
+        public int WorkerCount { get; private set; }
 
         /// <summary>
         /// Gets or sets the server name.
@@ -75,7 +59,7 @@ namespace HangFire
         public string MachineName
         {
             get { return _machineName; }
-            set
+            private set
             {
                 if (value == null)
                 {
