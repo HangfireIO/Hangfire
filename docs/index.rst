@@ -29,6 +29,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   pages
    quickstart
    features
    advfeatures
