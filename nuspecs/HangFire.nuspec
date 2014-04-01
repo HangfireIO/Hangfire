@@ -22,6 +22,7 @@
 * HangFire.Ninject package.
 * Added some Sphinx-based docs.
 * New project site and docs site.
+* Some minor fixes.
 0.7
 * Changed NuGet package structure. See the Upgrading Guide on GitHub!
 * Job storage abstraction.
