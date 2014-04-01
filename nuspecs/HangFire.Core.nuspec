@@ -6,9 +6,9 @@
     <title>HangFire.Core</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
+    <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
+    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
     <description>Core components for HangFire.</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>LongRunning Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>

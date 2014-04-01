@@ -523,7 +523,7 @@ WriteLiteral(@"
             <div class=""container"">
                 <ul class=""list-inline credit"">
                     <li>
-                        <a href=""http://github.io/odinserj/hangfire"" target=""_blank"">HangFire 
+                        <a href=""http://hangfire.io/"" target=""_blank"">HangFire 
                             ");
 
 

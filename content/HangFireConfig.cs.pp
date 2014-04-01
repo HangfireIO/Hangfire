@@ -15,7 +15,7 @@ namespace $rootnamespace$
 
         public static void Start()
         {
-            // Please, visit https://github.com/odinserj/HangFire for details.
+            // Please, visit http://hangfire.io/ for details.
 
             // HangFire uses persistent data storage to store information
             // about jobs, queues, statistics, etc. 

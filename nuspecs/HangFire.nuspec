@@ -6,18 +6,16 @@
     <title>HangFire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>https://github.com/odinserj/HangFire</projectUrl>
+    <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/COPYING.LESSER</licenseUrl>
+    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
     <description>
       HangFire gives you a simple way to kick off long-running processes from the ASP.NET request processing pipeline. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
-      https://github.com/odinserj/HangFire
+      http://hangfire.io/
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>LongRunning AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
-
-Dear 0.7-alpha users! Please, DROP ALL HangFire tables before using this release!
 
 0.7
 * Changed NuGet package structure. See the Upgrading Guide on GitHub!
