@@ -24,8 +24,8 @@ Just wrap your long-running process to a method and instruct HangFire to create 
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job). 
 
-Related Project
-----------------
+Related Projects
+-----------------
 
 * [HangFire.Autofac](https://github.com/odinserj/HangFire.Autofac)
 * [HangFire.Ninject](https://github.com/odinserj/HangFire.Ninject)
