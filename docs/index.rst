@@ -30,6 +30,8 @@ Contents
    :maxdepth: 2
 
    quickstart
+   features
+   advfeatures
 
 
 Indices and tables
