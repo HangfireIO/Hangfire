@@ -17,6 +17,11 @@
     <tags>LongRunning AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
 
+0.7.1
+* HangFire.Autofac package.
+* HangFire.Ninject package.
+* Added some Sphinx-based docs.
+* New project site and docs site.
 0.7
 * Changed NuGet package structure. See the Upgrading Guide on GitHub!
 * Job storage abstraction.
