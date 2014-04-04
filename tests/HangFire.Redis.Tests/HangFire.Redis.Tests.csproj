@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RedisStorageTests.cs" />
     <Compile Include="RedisTest.cs" />
     <Compile Include="States\FailedStateHandlerFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

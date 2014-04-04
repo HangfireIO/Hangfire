@@ -31,32 +31,42 @@ namespace HangFire.Redis
     {
         internal static readonly string Prefix = "hangfire:";
 
-        private readonly string _host;
-        private readonly int _db;
-
-        private readonly RedisStorageOptions _options;
         private readonly PooledRedisClientManager _pooledManager;
 
-        public RedisStorage(string host, int db)
-            : this(host, db, new RedisStorageOptions())
+        public RedisStorage()
+            : this(String.Format("{0}:{1}", RedisNativeClient.DefaultHost, RedisNativeClient.DefaultPort))
         {
         }
 
-        public RedisStorage(string host, int db, RedisStorageOptions options)
+        public RedisStorage(string hostAndPort)
+            : this(hostAndPort, (int)RedisNativeClient.DefaultDb)
         {
-            _host = host;
-            _db = db;
-            _options = options;
+        }
+
+        public RedisStorage(string hostAndPort, int db)
+            : this(hostAndPort, db, new RedisStorageOptions())
+        {
+        }
+
+        public RedisStorage(string hostAndPort, int db, RedisStorageOptions options)
+        {
+            HostAndPort = hostAndPort;
+            Db = db;
+            Options = options;
 
             _pooledManager = new PooledRedisClientManager(
-                new []{ host },
+                new []{ HostAndPort },
                 new string[0],
                 new RedisClientManagerConfig
                 {
-                    DefaultDb = db,
-                    MaxWritePoolSize = _options.ConnectionPoolSize
+                    DefaultDb = Db,
+                    MaxWritePoolSize = Options.ConnectionPoolSize
                 });
         }
+
+        public string HostAndPort { get; private set; }
+        public int Db { get; private set; }
+        public RedisStorageOptions Options { get; private set; }
 
         public PooledRedisClientManager PooledManager { get { return _pooledManager; } }
 
@@ -72,7 +82,7 @@ namespace HangFire.Redis
 
         public override IEnumerable<IThreadWrappable> GetComponents()
         {
-            yield return new SchedulePoller(this, _options.PollInterval);
+            yield return new SchedulePoller(this, Options.PollInterval);
             yield return new FetchedJobsWatcher(this);
             yield return new ServerWatchdog(this);
         }
@@ -86,7 +96,7 @@ namespace HangFire.Redis
 
         public override string ToString()
         {
-            return String.Format("redis://{0}/{1}", _host, _db);
+            return String.Format("redis://{0}/{1}", HostAndPort, Db);
         }
     }
 }
