@@ -73,10 +73,17 @@ namespace HangFire
             if (job == null) throw new ArgumentNullException("job");
             if (state == null) throw new ArgumentNullException("state");
 
-            var context = new CreateContext(_connection, job, state);
-            _process.Run(context);
+            try
+            {
+                var context = new CreateContext(_connection, job, state);
+                _process.Run(context);
 
-            return context.JobId;
+                return context.JobId;
+            }
+            catch (Exception ex)
+            {
+                throw new CreateJobFailedException("Job creation process has bee failed. See inner exception for details", ex);
+            }
         }
 
         /// <summary>

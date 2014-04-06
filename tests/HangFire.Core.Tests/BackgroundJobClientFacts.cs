@@ -10,53 +10,89 @@ namespace HangFire.Core.Tests
 {
     public class BackgroundJobClientFacts
     {
-        private readonly BackgroundJobClient _client;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IJobCreationProcess> _pipeline;
+        private readonly Mock<IJobCreationProcess> _process;
         private readonly Mock<State> _state;
         private readonly Job _job;
 
         public BackgroundJobClientFacts()
         {
             _connection = new Mock<IStorageConnection>();
-            _connection.Setup(x => x.Storage).Returns(new Mock<JobStorage>().Object);
-
-            _pipeline = new Mock<IJobCreationProcess>();
-            _client = new BackgroundJobClient(_connection.Object, _pipeline.Object);
+            _process = new Mock<IJobCreationProcess>();
             _state = new Mock<State>();
             _job = Job.FromExpression(() => Method());
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenClientManagerIsNull()
+        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(null, _pipeline.Object));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundJobClient(null, _process.Object));
+
+            Assert.Equal("connection", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenJobCreatorIsNull()
+        public void Ctor_ThrowsAnException_WhenCreationProcessIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
+            var exception = Assert.Throws<ArgumentNullException>(
                 () => new BackgroundJobClient(_connection.Object, null));
+
+            Assert.Equal("process", exception.ParamName);
         }
 
         [Fact]
         public void CreateJob_ThrowsAnException_WhenJobIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
-                () => _client.Create(null, _state.Object));
+            var client = CreateClient();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => client.Create(null, _state.Object));
+
+            Assert.Equal("job", exception.ParamName);
         }
 
         [Fact]
         public void CreateJob_ThrowsAnException_WhenStateIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
-                () => _client.Create(_job, null));
+            var client = CreateClient();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => client.Create(_job, null));
+
+            Assert.Equal("state", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateJob_RunsTheJobCreationProcess()
+        {
+            var client = CreateClient();
+
+            client.Create(_job, _state.Object);
+
+            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>()));
+        }
+
+        [Fact]
+        public void CreateJob_WrapsProcessException_IntoItsOwnException()
+        {
+            var client = CreateClient();
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
+
+            var exception = Assert.Throws<CreateJobFailedException>(
+                () => client.Create(_job, _state.Object));
+
+            Assert.NotNull(exception.InnerException);
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
         }
 
         public static void Method()
         {
+        }
+
+        private BackgroundJobClient CreateClient()
+        {
+            return new BackgroundJobClient(_connection.Object, _process.Object);
         }
     }
 }

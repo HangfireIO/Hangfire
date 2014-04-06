@@ -62,6 +62,7 @@
     <Compile Include="BackgroundJobClientExtensionsFacts.cs" />
     <Compile Include="BackgroundJobClientFacts.cs" />
     <Compile Include="Client\CreateContextFacts.cs" />
+    <Compile Include="Client\JobCreationProcessFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
     <Compile Include="Common\MethodDataFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
