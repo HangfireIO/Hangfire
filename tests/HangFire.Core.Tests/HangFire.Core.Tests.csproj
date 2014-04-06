@@ -59,7 +59,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\JobClientTests.cs" />
+    <Compile Include="Client\JobClientExtensionsFacts.cs" />
+    <Compile Include="Client\JobClientFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
     <Compile Include="Common\MethodDataFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -138,7 +138,7 @@ namespace HangFire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
             }
 
-            // Static methods can not be overrided in the derived classes, 
+            // Static methods can not be overridden in the derived classes, 
             // so we can take the method's declaring type.
             return new MethodData(callExpression.Method.DeclaringType, callExpression.Method);
         }

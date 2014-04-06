@@ -13,8 +13,8 @@ namespace HangFire.Tests
     {
         private readonly Mock<State> _stateMock;
 
-        private readonly Func<IJobClient> _oldClientFactory;
-        private readonly Mock<IJobClient> _jobClientMock;
+        private readonly Func<IBackgroundJobClient> _oldClientFactory;
+        private readonly Mock<IBackgroundJobClient> _jobClientMock;
 
         #region Tests initialization & clean up logic
 
@@ -23,7 +23,7 @@ namespace HangFire.Tests
             GlobalLock.Acquire();
             _oldClientFactory = BackgroundJob.ClientFactory;
 
-            _jobClientMock = new Mock<IJobClient>();
+            _jobClientMock = new Mock<IBackgroundJobClient>();
             BackgroundJob.ClientFactory = () => _jobClientMock.Object;
 
             _stateMock = new Mock<State>();
@@ -47,7 +47,7 @@ namespace HangFire.Tests
         public void Create_InstanceExpression_ReturnIdentifierReturnedByClient()
         {
             _jobClientMock
-                .Setup(x => x.CreateJob(
+                .Setup(x => x.Create(
                     It.IsAny<Job>(),
                     It.IsAny<State>()))
                 .Returns("id");
@@ -61,7 +61,7 @@ namespace HangFire.Tests
         public void Create_StaticExpression_ReturnsIdentifierFromReturnedByClient()
         {
             _jobClientMock
-                .Setup(x => x.CreateJob(
+                .Setup(x => x.Create(
                     It.IsAny<Job>(),
                     It.IsAny<State>()))
                 .Returns("id");
@@ -76,7 +76,7 @@ namespace HangFire.Tests
         {
             //BackgroundJob.Create<TestService>(x => x.InstanceMethod(), _stateMock.Object);
 
-            _jobClientMock.Verify(client => client.CreateJob(
+            _jobClientMock.Verify(client => client.Create(
                 It.IsAny<Job>(),
                 It.Is<State>(x => x == _stateMock.Object)));
         }
@@ -181,7 +181,7 @@ namespace HangFire.Tests
         {
             BackgroundJob.Enqueue<TestService>(x => x.InstanceMethod());
 
-            _jobClientMock.Verify(client => client.CreateJob(
+            _jobClientMock.Verify(client => client.Create(
                 It.IsAny<Job>(),
                 It.Is<State>(x => x is EnqueuedState)));
         }
@@ -191,7 +191,7 @@ namespace HangFire.Tests
         {
             BackgroundJob.Enqueue(() => TestService.StaticMethod());
 
-            _jobClientMock.Verify(client => client.CreateJob(
+            _jobClientMock.Verify(client => client.Create(
                 It.IsAny<Job>(),
                 It.Is<State>(x => x is EnqueuedState)));
         }
@@ -201,7 +201,7 @@ namespace HangFire.Tests
         {
             BackgroundJob.Schedule<TestService>(x => x.InstanceMethod(), TimeSpan.FromHours(5));
 
-            _jobClientMock.Verify(x => x.CreateJob(
+            _jobClientMock.Verify(x => x.Create(
                 It.IsAny<Job>(),
                 It.Is<State>(y => 
                     y is ScheduledState 
@@ -215,7 +215,7 @@ namespace HangFire.Tests
         {
             BackgroundJob.Schedule(() => TestService.StaticMethod(), TimeSpan.FromHours(5));
 
-            _jobClientMock.Verify(x => x.CreateJob(
+            _jobClientMock.Verify(x => x.Create(
                 It.IsAny<Job>(),
                 It.Is<State>(y =>
                     y is ScheduledState

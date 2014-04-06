@@ -17,7 +17,7 @@ namespace HangFire.Tests
     [Binding]
     public class JobClientSteps : Steps
     {
-        private JobClient _client;
+        private BackgroundJobClient _client;
         private Mock<State> _stateMock;
         private IDictionary<string, string> _arguments = new Dictionary<string, string>();
         private Exception _exception;
@@ -31,11 +31,11 @@ namespace HangFire.Tests
         [Given("a client")]
         public void GivenAClient()
         {
-            _client = new JobClient(
+            _client = new BackgroundJobClient(
                 new RedisConnection(
                     Redis.Storage,
                     Redis.Storage.PooledManager.GetClient()),
-                new JobCreationPipeline(_filters));
+                new JobCreationProcess(_filters));
         }
 
         [Given("the client filter '(.+)'")]

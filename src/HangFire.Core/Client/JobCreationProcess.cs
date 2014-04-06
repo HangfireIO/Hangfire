@@ -23,23 +23,23 @@ using HangFire.Common.Filters;
 
 namespace HangFire.Client
 {
-    internal class JobCreationPipeline
+    internal class JobCreationProcess : IJobCreationProcess
     {
-        public static JobCreationPipeline Instance { get; private set; }
+        public static JobCreationProcess Instance { get; private set; }
 
-        static JobCreationPipeline()
+        static JobCreationProcess()
         {
-            Instance = new JobCreationPipeline();
+            Instance = new JobCreationProcess();
         }
 
         private readonly Func<MethodData, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
-        public JobCreationPipeline()
+        public JobCreationProcess()
         {
         }
 
-        internal JobCreationPipeline(IEnumerable<object> filters)
+        internal JobCreationProcess(IEnumerable<object> filters)
         {
             if (filters == null) throw new ArgumentNullException("filters");
 

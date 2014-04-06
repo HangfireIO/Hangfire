@@ -14,6 +14,13 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ShouldSetQueue_WhenItWasGiven()
+        {
+            var state = new EnqueuedState("critical");
+            Assert.Equal("critical", state.Queue);
+        }
+
+        [Fact]
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new EnqueuedState();

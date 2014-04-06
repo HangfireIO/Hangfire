@@ -17,8 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace HangFire.Common
 {
@@ -40,12 +42,18 @@ namespace HangFire.Common
         /// 
         /// <param name="methodData">Method that will be called during the performance of the job.</param>
         /// <param name="arguments">Serialized arguments that will be passed to a <paramref name="methodData"/>.</param>
-        public Job(MethodData methodData, IEnumerable<string> arguments)
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodData"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
+        public Job(MethodData methodData, string[] arguments)
         {
             if (methodData == null) throw new ArgumentNullException("methodData");
+            if (arguments == null) throw new ArgumentNullException("arguments");
+
+            ValidateMethod(methodData.MethodInfo);
 
             MethodData = methodData;
-            Arguments = arguments ?? Enumerable.Empty<string>();
+            Arguments = arguments;
         }
 
         /// <summary>
@@ -54,14 +62,17 @@ namespace HangFire.Common
         public MethodData MethodData { get; private set; }
 
         /// <summary>
-        /// Gets arguments collection that will be passed to the method.
+        /// Gets arguments array that will be passed to the method during its invocation.
         /// </summary>
-        public IEnumerable<string> Arguments { get; private set; }
+        public string[] Arguments { get; private set; }
 
         /// <summary>
         /// Creates a new instance of the <see cref="Job"/> class on a 
         /// basis of the given static method call expression.
         /// </summary>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
         public static Job FromExpression(Expression<Action> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
@@ -69,7 +80,7 @@ namespace HangFire.Common
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
+                throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
             }
 
             return new Job(MethodData.FromExpression(methodCall), GetArguments(callExpression));
@@ -79,6 +90,9 @@ namespace HangFire.Common
         /// Creates a new instance of the <see cref="Job"/> class on a 
         /// basis of the given instance method call expression.
         /// </summary>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
         public static Job FromExpression<T>(Expression<Action<T>> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
@@ -86,15 +100,44 @@ namespace HangFire.Common
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
+                throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
             }
 
             return new Job(MethodData.FromExpression(methodCall), GetArguments(callExpression));
         }
 
-        private static IEnumerable<string> GetArguments(MethodCallExpression callExpression)
+        private static void ValidateMethod(MethodBase methodInfo)
         {
-            if (callExpression == null) throw new ArgumentNullException("callExpression");
+            if (!methodInfo.IsPublic)
+            {
+                throw new NotSupportedException("Only public methods can be invoked in the background.");
+            }
+
+            var parameters = methodInfo.GetParameters();
+
+            foreach (var parameter in parameters)
+            {
+                // There is no guarantee that specified method will be invoked
+                // in the same process. Therefore, output parameters and parameters
+                // passed by reference are not supported.
+
+                if (parameter.IsOut)
+                {
+                    throw new NotSupportedException(
+                        "Output parameters are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+                }
+
+                if (parameter.ParameterType.IsByRef)
+                {
+                    throw new NotSupportedException(
+                        "Parameters, passed by reference, are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+                }
+            }
+        }
+
+        private static string[] GetArguments(MethodCallExpression callExpression)
+        {
+            Debug.Assert(callExpression != null);
 
             var arguments = callExpression.Arguments.Select(GetArgumentValue).ToArray();
 
@@ -121,6 +164,8 @@ namespace HangFire.Common
 
         private static object GetArgumentValue(Expression expression)
         {
+            Debug.Assert(expression != null);
+
             var constantExpression = expression as ConstantExpression;
 
             if (constantExpression != null)

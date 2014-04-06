@@ -19,7 +19,7 @@ using System;
 namespace HangFire.Client
 {
     /// <summary>
-    /// The exception that is thrown when a <see cref="JobClient"/> class instance
+    /// The exception that is thrown when a <see cref="BackgroundJobClient"/> class instance
     /// could not create a job due to another exception was thrown.
     /// </summary>
     [Serializable]

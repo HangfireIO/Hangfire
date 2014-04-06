@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Storage;
@@ -27,13 +28,41 @@ namespace HangFire.States
         public const string DefaultQueue = "default";
         public static readonly string StateName = "Enqueued";
 
+        private string _queue;
+
         public EnqueuedState()
+            : this(DefaultQueue)
         {
-            EnqueuedAt = DateTime.UtcNow;
-            Queue = DefaultQueue;
         }
 
-        public string Queue { get; set; }
+        public EnqueuedState(string queue)
+        {
+            EnqueuedAt = DateTime.UtcNow;
+            Queue = queue;
+        }
+
+        public string Queue
+        {
+            get { return _queue; }
+            set
+            {
+                if (String.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentNullException("value");
+                }
+
+                if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
+                {
+                    throw new ArgumentException(
+                        String.Format(
+                            "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'.", value),
+                        "value");
+                }
+
+                _queue = value;
+            }
+        }
+
         public DateTime EnqueuedAt { get; set; }
 
         public override string Name { get { return StateName; } }

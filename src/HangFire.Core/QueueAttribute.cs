@@ -57,19 +57,6 @@ namespace HangFire
         /// <param name="queue">Queue name.</param>
         public QueueAttribute(string queue)
         {
-            if (String.IsNullOrWhiteSpace(queue))
-            {
-                throw new ArgumentNullException("queue");
-            }
-
-            if (!Regex.IsMatch(queue, @"^[a-z0-9_]+$"))
-            {
-                throw new ArgumentException(
-                    String.Format(
-                        "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'", queue),
-                    "queue");
-            }
-
             Queue = queue;
         }
 

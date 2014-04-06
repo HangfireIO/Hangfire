@@ -56,10 +56,12 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Client\IJobCreationProcess.cs" />
+    <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
-    <Compile Include="Client\IJobClient.cs" />
-    <Compile Include="Client\JobCreationPipeline.cs" />
+    <Compile Include="IBackgroundJobClient.cs" />
+    <Compile Include="Client\JobCreationProcess.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Common\Job.cs" />
     <Compile Include="Common\MethodData.cs" />
@@ -152,7 +154,7 @@
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\Performing\JobAsMethodPerformStrategy.cs" />
     <Compile Include="Server\Performing\JobPerformancePipeline.cs" />
-    <Compile Include="Client\JobClient.cs" />
+    <Compile Include="BackgroundJobClient.cs" />
     <Compile Include="Server\Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />

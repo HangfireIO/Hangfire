@@ -25,6 +25,11 @@ namespace HangFire.States
     public class ScheduledState : State
     {
         public static readonly string StateName = "Scheduled";
+
+        public ScheduledState(TimeSpan enqueueIn)
+            : this(DateTime.UtcNow.Add(enqueueIn))
+        {
+        }
         
         public ScheduledState(DateTime enqueueAt)
         {

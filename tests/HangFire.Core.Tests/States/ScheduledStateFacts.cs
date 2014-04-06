@@ -15,6 +15,14 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_SetsTheCorrectDate_WhenTimeSpanIsPassed()
+        {
+            var state = new ScheduledState(TimeSpan.FromDays(1));
+            Assert.True(DateTime.UtcNow.AddDays(1).AddMinutes(-1) < state.EnqueueAt);
+            Assert.True(state.EnqueueAt < DateTime.UtcNow.AddDays(1).AddMinutes(1));
+        }
+
+        [Fact]
         public void GetStateData_ReturnsCorrectData()
         {
             var state = new ScheduledState(DateTime.UtcNow.AddDays(1));
