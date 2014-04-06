@@ -1,11 +1,12 @@
 Project pages
 ==============
 
-======================== ===============================================
-HangFire Site            http://hangfire.io
-HangFire Documentation   http://docs.hangfire.io
-HangFire NuGet Packages  https://www.nuget.org/packages?q=hangfire
-HangFire Development     https://github.com/odinserj/HangFire
-HangFire Issues          https://github.com/odinserj/HangFire/issues
-HangFire Release Notes   https://github.com/odinserj/HangFire/releases
-======================== ===============================================
+=============== ===============================================
+Site            http://hangfire.io
+Documentation   http://docs.hangfire.io
+Chat            https://jabbr.net/#/rooms/HangFire, ``HangFire`` room
+NuGet Packages  https://www.nuget.org/packages?q=hangfire
+Development     https://github.com/odinserj/HangFire
+Issues          https://github.com/odinserj/HangFire/issues
+Release Notes   https://github.com/odinserj/HangFire/releases
+=============== ===============================================

@@ -6,6 +6,7 @@ HangFire
 * [HangFire Site](http://hangfire.io)
 * [HangFire Documentation](http://docs.hangfire.io)
 * [HangFire NuGet Packages](https://www.nuget.org/packages?q=hangfire)
+* Join [HangFire](https://jabbr.net/#/rooms/HangFire) room on [JabbR](https://jabbr.net).
 
 HangFire gives you a simple way to kick off **long-running processes** from the **ASP.NET request processing pipeline**. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
 
