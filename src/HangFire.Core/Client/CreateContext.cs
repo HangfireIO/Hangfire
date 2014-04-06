@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
-using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire.Client
@@ -31,7 +30,6 @@ namespace HangFire.Client
     {
         private readonly IDictionary<string, string> _parameters
             = new Dictionary<string, string>();
-        private readonly StateMachine _stateMachine;
 
         private bool _jobWasCreated;
 
@@ -39,6 +37,7 @@ namespace HangFire.Client
             : this(context.Connection, context.Job, context.InitialState)
         {
             Items = context.Items;
+            JobId = context.JobId;
             _jobWasCreated = context._jobWasCreated;
         }
 
@@ -56,8 +55,6 @@ namespace HangFire.Client
             InitialState = initialState;
 
             Items = new Dictionary<string, object>();
-
-            _stateMachine = new StateMachine(connection);
         }
 
         public IStorageConnection Connection { get; private set; }
@@ -127,14 +124,25 @@ namespace HangFire.Client
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 
-            return _parameters.ContainsKey(name)
-                ? JobHelper.FromJson<T>(_parameters[name])
-                : default(T);
+            try
+            {
+                return _parameters.ContainsKey(name)
+                    ? JobHelper.FromJson<T>(_parameters[name])
+                    : default(T);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(String.Format(
+                    "Could not get a value of the job parameter `{0}`. See inner exception for details.",
+                    name), ex);
+            }
         }
 
         internal void CreateJob()
         {
-            JobId = _stateMachine.CreateInState(Job, _parameters, InitialState);
+            var stateMachine = Connection.CreateStateMachine();
+
+            JobId = stateMachine.CreateInState(Job, _parameters, InitialState);
             _jobWasCreated = true;
         }
     }

@@ -24,7 +24,7 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class StateMachine
+    public class StateMachine : IStateMachine
     {
         private readonly IStorageConnection _connection;
         private StateHandlerCollection _handlersCache;

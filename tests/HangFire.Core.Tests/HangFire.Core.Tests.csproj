@@ -59,8 +59,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\JobClientExtensionsFacts.cs" />
-    <Compile Include="Client\JobClientFacts.cs" />
+    <Compile Include="BackgroundJobClientExtensionsFacts.cs" />
+    <Compile Include="BackgroundJobClientFacts.cs" />
+    <Compile Include="Client\CreateContextFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
     <Compile Include="Common\MethodDataFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

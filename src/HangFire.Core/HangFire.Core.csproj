@@ -121,6 +121,7 @@
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
+    <Compile Include="States\IStateMachine.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
     <Compile Include="Storage\Monitoring\FetchedJobDto.cs" />

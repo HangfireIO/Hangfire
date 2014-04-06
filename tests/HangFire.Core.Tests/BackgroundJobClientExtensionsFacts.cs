@@ -1,19 +1,18 @@
 ﻿using System;
-using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.Client
+namespace HangFire.Core.Tests
 {
-    public class JobClientExtensionsFacts
+    public class BackgroundJobClientExtensionsFacts
     {
         private readonly Mock<IBackgroundJobClient> _client;
         private readonly Mock<State> _state;
 
-        public JobClientExtensionsFacts()
+        public BackgroundJobClientExtensionsFacts()
         {
             _client = new Mock<IBackgroundJobClient>();
             _state = new Mock<State>();
@@ -30,7 +29,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void InstanceCreate_ShouldCreateAJobInTheGivenState()
         {
-            _client.Object.Create<JobClientExtensionsFacts>(x => x.InstanceMethod(), _state.Object);
+            _client.Object.Create<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod(), _state.Object);
 
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), _state.Object));
         }
@@ -46,7 +45,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void InstanceEnqueue_ShouldCreateAJobInTheEnqueuedState()
         {
-            _client.Object.Enqueue<JobClientExtensionsFacts>(x => x.InstanceMethod());
+            _client.Object.Enqueue<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod());
 
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
         }
@@ -64,7 +63,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void InstanceEnqueue_WithQueue_ShouldCreateAJobInTheEnqueuedState()
         {
-            _client.Object.Enqueue<JobClientExtensionsFacts>(x => x.InstanceMethod(), "critical");
+            _client.Object.Enqueue<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod(), "critical");
 
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
@@ -84,7 +83,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void InstanceSchedule_ShouldCreateAJobInTheScheduledState()
         {
-            _client.Object.Schedule<JobClientExtensionsFacts>(
+            _client.Object.Schedule<BackgroundJobClientExtensionsFacts>(
                 x => x.InstanceMethod(), TimeSpan.FromDays(1));
 
             _client.Verify(x => x.Create(

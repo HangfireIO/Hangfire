@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Server;
+using HangFire.States;
 
 namespace HangFire.Storage
 {
@@ -24,6 +25,7 @@ namespace HangFire.Storage
     {
         JobStorage Storage { get; }
 
+        IStateMachine CreateStateMachine();
         IWriteOnlyTransaction CreateWriteTransaction();
         IJobFetcher CreateFetcher(IEnumerable<string> queueNames);
 

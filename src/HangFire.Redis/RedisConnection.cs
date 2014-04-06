@@ -20,6 +20,7 @@ using System.Globalization;
 using System.Linq;
 using HangFire.Common;
 using HangFire.Server;
+using HangFire.States;
 using HangFire.Storage;
 using ServiceStack.Redis;
 
@@ -40,6 +41,11 @@ namespace HangFire.Redis
         public void Dispose()
         {
             _redis.Dispose();
+        }
+
+        public IStateMachine CreateStateMachine()
+        {
+            return new StateMachine(this);
         }
 
         public IWriteOnlyTransaction CreateWriteTransaction()

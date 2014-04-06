@@ -6,9 +6,9 @@ using HangFire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.Client
+namespace HangFire.Core.Tests
 {
-    public class JobClientFacts
+    public class BackgroundJobClientFacts
     {
         private readonly BackgroundJobClient _client;
         private readonly Mock<IStorageConnection> _connection;
@@ -16,7 +16,7 @@ namespace HangFire.Core.Tests.Client
         private readonly Mock<State> _state;
         private readonly Job _job;
 
-        public JobClientFacts()
+        public BackgroundJobClientFacts()
         {
             _connection = new Mock<IStorageConnection>();
             _connection.Setup(x => x.Storage).Returns(new Mock<JobStorage>().Object);

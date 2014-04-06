@@ -22,6 +22,7 @@ using Dapper;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.SqlServer.Entities;
+using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
@@ -44,6 +45,11 @@ namespace HangFire.SqlServer
         public void Dispose()
         {
             _connection.Dispose();
+        }
+
+        public IStateMachine CreateStateMachine()
+        {
+            return new StateMachine(this);
         }
 
         public IWriteOnlyTransaction CreateWriteTransaction()
