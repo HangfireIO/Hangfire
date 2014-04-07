@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
 using HangFire.Server;
 using HangFire.States;
 
@@ -64,11 +63,6 @@ namespace HangFire
                 if (value == null)
                 {
                     throw new ArgumentNullException("value", "Machine name value can not be null.");
-                }
-
-                if (!Regex.IsMatch(value, @"^[a-zA-Z0-9\-]+$"))
-                {
-                    throw new ArgumentException("Machine name must consist only of letters, digits and hyphens.");
                 }
 
                 _machineName = value;
