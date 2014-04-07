@@ -28,7 +28,7 @@ namespace HangFire
         public abstract void Perform();
 
         private static Func<IBackgroundJobClient> _clientFactory =
-            () => new BackgroundJobClient(JobStorage.Current.GetConnection());
+            () => new BackgroundJobClient(JobStorage.Current);
         private static readonly object ClientFactoryLock = new object();
 
         public static Func<IBackgroundJobClient> ClientFactory

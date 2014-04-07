@@ -32,9 +32,7 @@ namespace HangFire.Tests
         public void GivenAClient()
         {
             _client = new BackgroundJobClient(
-                new RedisConnection(
-                    Redis.Storage,
-                    Redis.Storage.PooledManager.GetClient()),
+                Redis.Storage,
                 new JobCreationProcess(_filters));
         }
 

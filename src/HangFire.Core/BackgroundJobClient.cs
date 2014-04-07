@@ -37,33 +37,33 @@ namespace HangFire
         /// <see cref="JobCreationProcess"/> instance.
         /// </summary>
         public BackgroundJobClient()
-            : this(JobStorage.Current.GetConnection())
+            : this(JobStorage.Current)
         {
         }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with a specified storage connection and the default global
+        /// with a specified storage and the default global
         /// <see cref="JobCreationProcess"/> instance.
         /// </summary>
-        public BackgroundJobClient(IStorageConnection connection)
-            : this(connection, JobCreationProcess.Instance)
+        public BackgroundJobClient(JobStorage storage)
+            : this(storage, JobCreationProcess.Instance)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with a specified Redis client manager and a job creator.
+        /// with a specified job storage and job creation process.
         /// </summary>
         /// 
-        /// <exception cref="ArgumentNullException"><paramref name="connection"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="storage"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="process"/> argument is null.</exception>
-        public BackgroundJobClient(IStorageConnection connection, IJobCreationProcess process)
+        public BackgroundJobClient(JobStorage storage, IJobCreationProcess process)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (storage == null) throw new ArgumentNullException("storage");
             if (process == null) throw new ArgumentNullException("process");
 
-            _connection = connection;
+            _connection = storage.GetConnection();
             _process = process;
         }
 

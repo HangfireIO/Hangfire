@@ -10,6 +10,7 @@ namespace HangFire.Core.Tests
 {
     public class BackgroundJobClientFacts
     {
+        private readonly Mock<JobStorage> _storage;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IJobCreationProcess> _process;
         private readonly Mock<State> _state;
@@ -18,27 +19,46 @@ namespace HangFire.Core.Tests
         public BackgroundJobClientFacts()
         {
             _connection = new Mock<IStorageConnection>();
+            _storage = new Mock<JobStorage>();
+            _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
+
             _process = new Mock<IJobCreationProcess>();
             _state = new Mock<State>();
             _job = Job.FromExpression(() => Method());
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new BackgroundJobClient(null, _process.Object));
 
-            Assert.Equal("connection", exception.ParamName);
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenCreationProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(_connection.Object, null));
+                () => new BackgroundJobClient(_storage.Object, null));
 
             Assert.Equal("process", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_TakesAConnection()
+        {
+            CreateClient();
+            _storage.Verify(x => x.GetConnection());
+        }
+
+        [Fact]
+        public void Dispose_DisposesTheConnection()
+        {
+            var client = CreateClient();
+            client.Dispose();
+
+            _connection.Verify(x => x.Dispose());
         }
 
         [Fact]
@@ -92,7 +112,7 @@ namespace HangFire.Core.Tests
 
         private BackgroundJobClient CreateClient()
         {
-            return new BackgroundJobClient(_connection.Object, _process.Object);
+            return new BackgroundJobClient(_storage.Object, _process.Object);
         }
     }
 }
