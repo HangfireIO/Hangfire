@@ -33,3 +33,4 @@ Contents
    quickstart
    features
    advfeatures
+   tutorials/index
