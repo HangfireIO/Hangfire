@@ -76,7 +76,7 @@ namespace HangFire
         {
             if (_server != null)
             {
-                throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
+                    throw new InvalidOperationException("Background job server has already been started. Please stop it first.");    
             }
 
             var serverName = String.Format("{0}:{1}", MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
