@@ -17,6 +17,9 @@
     <tags>Long-Running AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
 
+0.7.5
+* Added possibility to change the job expiration time.
+* Clarified common exception message.
 0.7.4
 * Removed `BackgroundJobServer.MachineName` validation. It caused exceptions with valid NetBIOS names.
 * Ability to specify target queue in `BackgroundJob.Enqueue` method.
