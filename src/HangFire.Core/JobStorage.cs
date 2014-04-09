@@ -37,7 +37,7 @@ namespace HangFire
                 {
                     if (_current == null)
                     {
-                        throw new InvalidOperationException();
+                       throw new InvalidOperationException("JobStorage.Current property value has not been initialized. You must set it before using HangFire Client or Server API.");
                     }
 
                     return _current;
