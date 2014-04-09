@@ -22,8 +22,6 @@ namespace HangFire.Common.States
 {
     public class ApplyStateContext : StateContext
     {
-        private static readonly TimeSpan JobExpirationTimeout = TimeSpan.FromDays(1);
-
         private readonly IStorageConnection _connection;
 
         public ApplyStateContext(
@@ -38,10 +36,12 @@ namespace HangFire.Common.States
             _connection = connection;
             OldStateName = oldStateName;
             NewState = newState;
+            JobExpirationTimeout = TimeSpan.FromDays(1);
         }
 
         public string OldStateName { get; private set; }
         public State NewState { get; private set; }
+        public TimeSpan JobExpirationTimeout { get; set; }
 
         internal void ApplyState(
             StateHandlerCollection handlers, IEnumerable<IApplyStateFilter> filters)
