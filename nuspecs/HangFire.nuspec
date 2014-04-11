@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
     <description>
-      HangFire gives you a simple way to kick off long-running processes from the ASP.NET request processing pipeline. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
+      A reliable way to kick off long-running processes from the ASP.NET request processing pipeline. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
       http://hangfire.io/
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
