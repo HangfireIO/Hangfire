@@ -24,7 +24,7 @@ namespace HangFire.Filters
     public class RetryAttribute : JobFilterAttribute, IElectStateFilter
     {
         private int _attempts;
-        private const int DefaultRetryAttempts = 3;
+        private const int DefaultRetryAttempts = 10;
 
         public RetryAttribute()
         {
