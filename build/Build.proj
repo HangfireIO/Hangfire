@@ -13,6 +13,7 @@
     <PackageSrcDir>$(ArtifactsDir)\package-src</PackageSrcDir>
     <PackagesDestinationDir>$(ArtifactsDir)\packages</PackagesDestinationDir>
     <FxCopDir>$(ArtifactsDir)\fxcop</FxCopDir>
+    <SamplesDir>$(ArtifactsDir)\samples</SamplesDir>
     <NuspecsSource>$(ProjectRoot)\nuspecs</NuspecsSource>
     <NuspecsDestination>$(ArtifactsDir)\nuspecs</NuspecsDestination>
     <TestResultsPath>$(ArtifactsDir)\TestResults</TestResultsPath>
@@ -50,6 +51,11 @@
   <ItemGroup>
     <!-- Add any src projects that have not been defined manually -->
     <Projects Include="$(ProjectRoot)\src\**\*.csproj" Exclude="@(Projects)" />
+
+    <Projects Include="$(ProjectRoot)\samples\HangFire.Sample.Highlighter\HangFire.Sample.Highlighter.csproj">
+      <BuildDeploymentPackage>true</BuildDeploymentPackage>
+      <Sample>true</Sample>
+    </Projects>
 
     <!-- Add any sample projects that have not been defined manually -->
     <Projects Include="$(ProjectRoot)\samples\**\*.csproj" Exclude="@(Projects)">
@@ -184,6 +190,7 @@
     <RemoveDir Directories="$(ArtifactsDir)" Condition="Exists('$(ArtifactsDir)')" ContinueOnError="true" />
     <MakeDir Directories="$(ArtifactsDir)" Condition="!Exists('$(ArtifactsDir)')" />
     <MakeDir Directories="$(PackagesDestinationDir)" Condition="!Exists('$(PackagesDestinationDir)')" />
+    <MakeDir Directories="$(SamplesDir)" Condition="!Exists('$(SamplesDir)')" />
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
   </Target>
 
@@ -191,7 +198,12 @@
     <MSBuild Projects="@(Projects)"
              Targets="%(BuildTargets)"
              Properties="%(BuildProperties)"
-             Condition="%(Build) And '$(OS)' == 'Windows_NT'"/>
+             Condition="%(Build) And '$(OS)' == 'Windows_NT' And '%(Projects.BuildDeploymentPackage)' != 'true'"/>
+
+    <MSBuild Projects="@(Projects)"
+             Targets="Package"
+             Properties="%(BuildProperties);PackageLocation=$(SamplesDir)\%(Projects.FileName).zip;PackageAsSingleFile=True"
+             Condition="%(Build) And '$(OS)' == 'Windows_NT' And '%(Projects.BuildDeploymentPackage)' == 'true'"/>
   </Target>
 
   <Target Name="CopyArtifacts" DependsOnTargets="Build">
