@@ -38,3 +38,4 @@ test: off
 
 artifacts:
   - path: artifacts\release\packages\*.nupkg
+  - path: artifacts\release\samples\*.zip
