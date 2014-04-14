@@ -1,7 +1,9 @@
 HangFire 
 =========
 
-[![Build status](https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4)](https://ci.appveyor.com/project/odinserj/hangfire) 
+<a href="https://ci.appveyor.com/project/odinserj/hangfire">
+	<img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4?retina=true" />
+</a>
 
 * [HangFire Site](http://hangfire.io)
 * [HangFire Documentation](http://docs.hangfire.io)
