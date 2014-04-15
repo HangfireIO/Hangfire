@@ -229,7 +229,7 @@ Now its time to breathe life into our project. Please, modify the following file
 
 .. code-block:: html
 
-  @* ~/Views/Index.cshtml *@
+  @* ~/Views/Home/Index.cshtml *@
 
   @model IEnumerable<HangFire.Highlighter.Models.CodeSnippet>
   @{ ViewBag.Title = "Snippets"; }
@@ -258,7 +258,7 @@ Now its time to breathe life into our project. Please, modify the following file
 
 .. code-block:: html
 
-  @* ~/Views/Create.cshtml *@
+  @* ~/Views/Home/Create.cshtml *@
 
   @model HangFire.Highlighter.Models.CodeSnippet
   @{ ViewBag.Title = "Create a snippet"; }
@@ -281,7 +281,7 @@ Now its time to breathe life into our project. Please, modify the following file
 
 .. code-block:: html
 
-  @* ~/Views/Details.cshtml *@
+  @* ~/Views/Home/Details.cshtml *@
 
   @model HangFire.Highlighter.Models.CodeSnippet
   @{ ViewBag.Title = "Details"; }
@@ -595,6 +595,8 @@ But empty page can confuse a user. What to do? First, you should take this speci
 In our example, we'll simply show the notification to a user and the un-highlighted code, if highlighted one is not available yet:
 
 .. code-block:: html
+
+  @* ~/Views/Home/Details.cshtml *@
 
   <div>
       @if (Model.HighlightedCode == null)
