@@ -8,7 +8,7 @@ HangFire
 * [HangFire Site](http://hangfire.io)
 * [HangFire Documentation](http://docs.hangfire.io)
 * [HangFire NuGet Packages](https://www.nuget.org/packages?q=hangfire)
-* [Google Groups](https://groups.google.com/forum/?hl=en#!forum/hangfire_net)
+* [Discussion Forum](https://groups.google.com/forum/?hl=en#!forum/hangfire_net)
 * Join [HangFire](https://jabbr.net/#/rooms/HangFire) room on [JabbR](https://jabbr.net)
 * [@hangfire_net](https://twitter.com/hangfire_net) on Twitter
 
