@@ -3,12 +3,12 @@ Code Syntax Highlighting
 
 .. warning::
 
-   This is a draft version of tutorial. Please, follow `@hangfire_net
-   <https://twitter.com/hangfire_net>`_ on Twitter to receive tutorial update notifications.
+   This is a draft version of tutorial. Please, follow `@hangfire_net <https://twitter.com/hangfire_net>`_ on Twitter to receive tutorial update notifications.
 
-This tutorial uses **Visual Studio 2012** with `Web Tools 2013 for Visual Studio 2012
-<http://www.asp.net/visual-studio/overview/2012/aspnet-and-web-tools-20131-for-visual-studio-2012>`_ installed, but it can be built either with Visual Studio 2013. Tutorial source code is available on `GitHub
-<https://github.com/odinserj/HangFire.Highlighter>`_.
+==================== =======
+Tutorial source code https://github.com/odinserj/HangFire.Highlighter 
+Full sample          http://highlighter.hangfire.io
+==================== =======
 
 .. contents:: Table of Contents
    :local:
@@ -17,34 +17,44 @@ This tutorial uses **Visual Studio 2012** with `Web Tools 2013 for Visual Studio
 Overview
 ---------
 
-Let's start with a simple example. Consider you are building a code snippet gallery web application like `GitHub Gists
-<http://gist.github.com>`_ and want to implement the syntax highlighting feature. To improve user experience, you are also want it to work even if a user disabled JavaScript in her browser.
+Let's start with a simple example. Consider you are building a code snippet gallery web application like `GitHub Gists <http://gist.github.com>`_, and want to implement the syntax highlighting feature. To improve user experience, you are also want it to work even if a user disabled JavaScript in her browser.
 
 To support this scenario and to reduce the project development time, you choosed to use a web service for syntax highlighting, such as http://pygments.appspot.com or http://www.hilite.me.
 
 .. note::
 
-   Although there are some syntax highlighter libraries for .NET, we are using web services just to show some pitfalls regarding to their use in applications. You can substitute this example with real-world scenario, like using the http://postageapp.com service.
+   Although this feature can be implemented without web services (using different syntax highlighter libraries for .NET), we are using them just to show some pitfalls regarding to their usage in web applications.
+
+   You can substitute this example with real-world scenario, like using external SMTP server, another services or even long-running CPU-intensive task.
 
 Setting up the project
 -----------------------
 
 .. tip::
 
-   This section contains steps to prepare the project. However, if you are not want to do the boring stuff, you can clone the repo and go straight to the `Hiliting the code!` section.
+   This section contains steps to prepare the project. However, if you don't want to do the boring stuff or if you have problems with project set-up, you can clone the `tutorial repository <https://github.com/odinserj/HangFire.Highlighter/tree/before>`_ (its ``before``  branch) and go straight to :ref:`the-problem` section.
+
+Prerequisites
+^^^^^^^^^^^^^^
+
+The tutorial uses **Visual Studio 2012** with `Web Tools 2013 for Visual Studio 2012 <http://www.asp.net/visual-studio/overview/2012/aspnet-and-web-tools-20131-for-visual-studio-2012>`_ installed, but it can be built either with Visual Studio 2013.
+
+The project uses **.NET 4.5** and **SQL Server 2008 Express** or later database.
 
 Creating a project
 ^^^^^^^^^^^^^^^^^^^
 
-Let's create an empty ASP.NET MVC 5 application and try to build an awesome app called ``HangFire.Highlighter``:
+Let's start from scratch. Create an *ASP.NET MVC 5 Empty Project* and name this awesome web application ``HangFire.Highlighter`` (you can name it as you want, but prepare to change namespaces).
+
+I've included some screenshots to make the project set-up not so boring:
 
 .. image:: highlighter/newproj.png
 
-Then, scaffold an **MVC 5 Controller - Empty** controller and call it ``HomeController``:
+Then, we need a controller to handle web requests. So scaffold an **MVC 5 Controller - Empty** controller and call it ``HomeController``:
 
 .. image:: highlighter/addcontrollername.png
 
-Our controller looks like:
+Our controller contains now only ``Index`` action and looks like:
 
 .. code-block:: c#
 
@@ -56,34 +66,35 @@ Our controller looks like:
        }
    }
 
-Now we need to show something, so let's scaffold an **empty view** for the ``Index`` action:
+We have a controller with a single action. To test that our application is working, scaffold an **empty view** for ``Index`` action.
 
 .. image:: highlighter/addview.png
 
-After these steps my solution looks like:
+The view scaffolding process also adds additional components to the project, like *Bootstrap*, *jQuery*, etc. After these steps my solution looks like:
 
 .. image:: highlighter/solutionafterview.png
 
-Defining a model
-^^^^^^^^^^^^^^^^^
+Let's test the initial setup of our application. Press the :kbd:`F5` key to start debugging and wait for your browser. If you encounter exceptions or don't see the default page, try to reproduce all the given steps, see the `tutorial sources <https://github.com/odinserj/HangFire.Highlighter>`_ or ask a question in the comments below.
 
-We'll use `SQL Server 2012 Express (or later)
-<http://www.microsoft.com/sqlserver/en/us/editions/express.aspx>`_ to store code snippets and `Entity Framework
-<http://msdn.microsoft.com/ru-ru/data/ef.aspx>`_ to access our database.
+Defining a model
+~~~~~~~~~~~~~~~~
+
+We should use a persistent storage to preserve snippets after application restarts. So, we'll use **SQL Server 2008 Express** (or later) as a relational storage, and **Entity Framework** to access the data of our application.
 
 Installing Entity Framework
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++++++++++
 
-Open the `Package Manager Console
-<https://docs.nuget.org/docs/start-here/using-the-package-manager-console>`_ window and type:
+Open the `Package Manager Console <https://docs.nuget.org/docs/start-here/using-the-package-manager-console>`_ window and type:
 
 .. code-block:: powershell
 
    Install-Package EntityFramework
 
-After install the package, create a new class in the ``Models`` folder and name it ``HighlighterDbContext``:
+After the package installed, create a new class in the ``Models`` folder and name it ``HighlighterDbContext``:
 
 .. code-block:: c#
+
+   // ~/Models/HighlighterDbContext.cs
 
    using System.Data.Entity;
 
@@ -105,18 +116,20 @@ Please note, that we are using undefined yet connection string name ``Highlighte
      <add name="HighlighterDb" connectionString="Server=.\sqlexpress; Database=HangFire.Highlighter; Trusted_Connection=True;" providerName="System.Data.SqlClient" />
    </connectionStrings>
 
-And enable Entity Framework Code First Migrations by typing in your Package Manager Console window the following command:
+Then enable **Entity Framework Code First Migrations** by typing in your *Package Manager Console* window the following command:
 
 .. code-block:: powershell
 
    Enable-Migrations
 
 Adding code snippet model
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++++++++
 
 It's time to add the most valuable class in the application. Create the ``CodeSnippet`` class in the ``Models`` folder with the following code:
 
 .. code-block:: c#
+
+   // ~/Models/CodeSnippet.cs
 
    using System;
    using System.ComponentModel.DataAnnotations;
@@ -137,8 +150,11 @@ It's time to add the most valuable class in the application. Create the ``CodeSn
        }
    }
 
-   // Don't forget to include the following property in the 
-   // `HighlighterDbContext` class:
+Don't forget to include the following property in the ``HighlighterDbContext`` class:
+
+.. code-block:: c#
+
+   // ~/Models/HighlighterDbContext.cs
    public DbSet<CodeSnippet> CodeSnippets { get; set; }
 
 Then add a database migration and run it by typing the following commands into the Package Manager Console window:
@@ -151,13 +167,13 @@ Then add a database migration and run it by typing the following commands into t
 Our database is ready to use!
 
 Creating actions and views
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now its time to breathe life into our project. Please, modify the following files as described.
 
 .. code-block:: c#
 
-  // Controllers/HomeController.cs
+  // ~/Controllers/HomeController.cs
 
   using System;
   using System.Linq;
@@ -192,11 +208,13 @@ Now its time to breathe life into our project. Please, modify the following file
               if (ModelState.IsValid)
               {
                   snippet.CreatedAt = DateTime.UtcNow;
+                   
+                  // We'll add the highlighting a bit later.
 
                   _db.CodeSnippets.Add(snippet);
                   _db.SaveChanges();
 
-                  return RedirectToAction("Index");
+                  return RedirectToAction("Details", new { id = snippet.Id });
               }
 
               return View(snippet);
@@ -287,11 +305,289 @@ Now its time to breathe life into our project. Please, modify the following file
 
   <div>@Html.Raw(Model.HighlightedCode)</div>
 
-Hiliting the code!
--------------------
+Adding MiniProfiler
+~~~~~~~~~~~~~~~~~~~~
 
-http://hilite.me service provides HTTP API to perform highlighting work. We'll consume it with the ``Microsoft.Net.Http`` package:
+To not to profile our application by eye, we'll use the ``MiniProfiler`` package available on NuGet.
+
+.. code-block:: c#
+
+  Install-Package MiniProfiler
+
+After installing, update the following files as described to enable profiling.
+
+.. code-block:: c#
+
+  // ~/Global.asax.cs
+
+  public class MvcApplication : HttpApplication
+  {
+      /* ... */
+
+      protected void Application_BeginRequest()
+      {
+          StackExchange.Profiling.MiniProfiler.Start();
+      }
+
+      protected void Application_EndRequest()
+      {
+          StackExchange.Profiling.MiniProfiler.Stop();
+      }
+  }
+
+.. code-block:: html
+
+  @* ~/Views/Shared/_Layout.cshtml *@
+
+  <head>
+    <!-- ... -->
+    @StackExchange.Profiling.MiniProfiler.RenderIncludes()
+  </head>
+
+You should also include the following setting to the ``web.config`` file, if the ``runAllManagedModulesForAllRequests`` is set to ``false`` in your application (it is by default):
+
+.. code-block:: xml
+
+  <!-- ~/web.config -->
+
+  <configuration>
+    ...
+    <system.webServer>
+      ...
+      <handlers>
+        <add name="MiniProfiler" path="mini-profiler-resources/*" verb="*" type="System.Web.Routing.UrlRoutingModule" resourceType="Unspecified" preCondition="integratedMode" />
+      </handlers>
+    </system.webServer>
+  </configuration>
+
+Hiliting the code
+^^^^^^^^^^^^^^^^^^
+
+It is the core functionality of our application. We'll use the http://hilite.me service that provides HTTP API to perform highlighting work. To start to consume its API, install the ``Microsoft.Net.Http`` package:
 
 .. code-block:: powershell
 
    Install-Package Microsoft.Net.Http
+
+This library provides simple asynchronous API for sending HTTP requests and receiving HTTP responses. So, let's use it to make an HTTP request to the *hilite.me* service:
+
+.. code-block:: c#
+
+  // ~/Controllers/HomeController.cs
+
+  /* ... */
+
+  public class HomeController
+  {
+      /* ... */
+
+      private static async Task<string> HighlightSourceAsync(string source)
+      {
+          using (var client = new HttpClient())
+          {
+              var response = await client.PostAsync(
+                  @"http://hilite.me/api",
+                  new FormUrlEncodedContent(new Dictionary<string, string>
+                  {
+                      { "lexer", "c#" },
+                      { "style", "vs" },
+                      { "code", source }
+                  }));
+
+              response.EnsureSuccessStatusCode();
+
+              return await response.Content.ReadAsStringAsync();
+          }
+      }
+
+      private static string HighlightSource(string source)
+      {
+          // Microsoft.Net.Http does not provide synchronous API,
+          // so we are using wrapper to perform a sync call.
+          return RunSync(() => HighlightSourceAsync(source));
+      }
+
+      private static TResult RunSync<TResult>(Func<Task<TResult>> func)
+      {
+          return Task.Run<Task<TResult>>(func).Unwrap().GetAwaiter().GetResult();
+      }
+  }
+
+Then, call it inside the ``HomeController.Create`` method. 
+
+.. code-block:: c#
+
+  // ~/Controllers/HomeController.cs
+
+  [HttpPost]
+  public ActionResult Create([Bind(Include = "SourceCode")] CodeSnippet snippet)
+  {
+      try
+      {
+          if (ModelState.IsValid)
+          {
+              snippet.CreatedAt = DateTime.UtcNow;
+
+              using (StackExchange.Profiling.MiniProfiler.StepStatic("Service call"))
+              {
+                  snippet.HighlightedCode = HighlightSource(snippet.SourceCode);
+                  snippet.HighlightedAt = DateTime.UtcNow;
+              }
+
+              _db.CodeSnippets.Add(snippet);
+              _db.SaveChanges();
+
+              return RedirectToAction("Details", new { id = snippet.Id });
+          }
+      }
+      catch (HttpRequestException)
+      {
+          ModelState.AddModelError("", "Highlighting service returned error. Try again later.");
+      }
+
+      return View(snippet);
+  }
+
+.. note::
+
+  We are using synchronous controller action method, although it is recommended to use `asynchronous one <http://www.asp.net/mvc/tutorials/mvc-4/using-asynchronous-methods-in-aspnet-mvc-4>`_ to make network calls inside ASP.NET request handling logic. As written in the given article, asynchronous actions greatly increase application :abbr:`capacity (The maximum throughput a system can sustain, for a given workload, while maintaining an acceptable response time for each individual transaction. – from "Release It" book written by Michael T. Nygard)`, but does not help to increase :abbr:`performance (How fast the system processes a single transaction. – from "Release It" book written by Michael T. Nygard)`. You can test it by yourself with a `sample application <http://highlighter.hangfire.io>`_ – there are no differences in using sync or async actions with a single request.
+
+  This sample is aimed to show you the problems related to application performance. And sync actions are used only to keep the tutorial simple.
+
+.. _the-problem:
+
+The problem
+------------
+
+Then try to create some code snippets and see the timings. My times with different code sizes were the following.
+
+Small code block:
+
+.. image:: highlighter/smcodeprof.png
+
+Medium code block:
+
+.. image:: highlighter/mdcodeprof.png
+
+Large code block:
+
+.. image:: highlighter/lgcodeprof.png
+
+Hm, yes, async controller actions let the worker thread to relax for the specified time. But as a user, I don't wait for two or more seconds. And this is fast service, what to do if it will be much slower? Wait 30 seconds?
+
+Solving a problem
+------------------
+
+We can not reduce the time that is needed for the ``HighlightSource`` method to do its job – it contains only network calls. To optimize our application
+
+.. note::
+
+  Async controller actions does not help there, you can check it by yourself. As written <here>, they handle capacity problems, and can not be used as fire-and-forget technique.
+
+Installing HangFire
+^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: powershell
+
+   Install-Package HangFire
+
+After the package installed, open the ``App_Start/HangFireConfig.cs`` file to change the connection string:
+
+.. code-block:: c#
+
+   JobStorage.Current = new SqlServerStorage(System.Configuration.ConfigurationManager
+       .ConnectionStrings["HighlighterDb"]
+       .ConnectionString);
+
+That's all. 
+
+Moving to background
+^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: c#
+
+  // ~/Controllers/HomeController.cs
+
+  [HttpPost]
+  public ActionResult Create([Bind(Include = "SourceCode")] CodeSnippet snippet)
+  {
+      if (ModelState.IsValid)
+      {
+          snippet.CreatedAt = DateTime.UtcNow;
+
+          _db.CodeSnippets.Add(snippet);
+          _db.SaveChanges();
+
+          using (StackExchange.Profiling.MiniProfiler.StepStatic("Job enqueue"))
+          {
+              BackgroundJob.Enqueue(() => HighlightSnippet(snippet.Id));
+          }
+
+          return RedirectToAction("Details", new { id = snippet.Id });
+      }
+
+      return View(snippet);
+  }
+
+  public static void HighlightSnippet(int snippetId)
+  {
+      using (var db = new HighlighterDbContext())
+      {
+          var snippet = db.CodeSnippets.Find(snippetId);
+          if (snippet == null) return;
+
+          snippet.HighlightedCode = HighlightSource(snippet.SourceCode);
+          snippet.HighlightedAt = DateTime.UtcNow;
+
+          db.SaveChanges();
+      }
+  }
+
+Try to create some snippets and see the timings (don't worry if you encounter an empty page, I'll cover it a bit later):
+
+.. image:: highlighter/jobprof.png
+
+Good, 6ms vs ~2s. But there is another problem. Did you notice that sometimes you are being redirected to the page with no sources at all? This happens because our view contains the following line:
+
+.. code-block:: html
+  
+   <div>@Html.Raw(Model.HighlightedCode)</div>
+
+Why the ``Model.HighlightedCode`` returns null instead of highlighted code? This happens because of latency of the background job invocation – there is some delay before a worker fetch the job and perform it. You can refresh the page and the highlighted code will appear on your screen.
+
+But empty page can confuse a user. What to do? First, you should take this specific into a place. You can reduce the latency to a minimum, but **you can not avoid it**. So, your application should deal with this specific issue. 
+
+In our example, we'll simply show the notification to a user and the un-highlighted code, if highlighted one is not available yet:
+
+.. code-block:: html
+
+  <div>
+      @if (Model.HighlightedCode == null)
+      {
+          <div class="alert alert-info">
+              <h4>Highlighted code is not available yet.</h4>
+              <p>Don't worry, it will be highlighted even in case of a disaster 
+                  (if we implement failover strategies for our job storage).</p>
+              <p><a href="javascript:window.location.reload()">Reload the page</a> 
+                  manually to ensure your code is highlighted.</p>
+          </div>
+          
+          @Model.SourceCode
+      }
+      else
+      {
+          @Html.Raw(Model.HighlightedCode)
+      }
+  </div>
+
+Homework
+---------
+
+As a homework task, you can try to improve the user experience.
+
+Conclusion
+-----------
+
+You've seen an example of how to reduce the time of user waiting for a request to be completed, especially if you don't own a web server and you can not make it more performant.
+
+You've also seen a problem related to all fire-and-forget jobs – latency and how to deal with it.
