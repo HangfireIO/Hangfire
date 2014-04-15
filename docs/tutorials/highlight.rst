@@ -1,4 +1,4 @@
-Code Syntax Highlighting
+Highlighter Tutorial
 =========================
 
 ====================== =======
@@ -28,7 +28,7 @@ Setting up the project
 
 .. tip::
 
-   This section contains steps to prepare the project. However, if you don't want to do the boring stuff or if you have problems with project set-up, you can clone the `tutorial repository <https://github.com/odinserj/HangFire.Highlighter/tree/before>`_ (its ``before``  branch) and go straight to :ref:`the-problem` section.
+   This section contains steps to prepare the project. However, if you don't want to do the boring stuff or if you have problems with project set-up, you can download the tutorial `source code <https://github.com/odinserj/HangFire.Highlighter/releases/tag/vBefore>`_ and go straight to :ref:`the-problem` section.
 
 Prerequisites
 ^^^^^^^^^^^^^^
