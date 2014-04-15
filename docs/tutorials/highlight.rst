@@ -448,6 +448,8 @@ Then, call it inside the ``HomeController.Create`` method.
       return View(snippet);
   }
 
+.. _async-note:
+
 .. note::
 
   We are using synchronous controller action method, although it is recommended to use `asynchronous one <http://www.asp.net/mvc/tutorials/mvc-4/using-asynchronous-methods-in-aspnet-mvc-4>`_ to make network calls inside ASP.NET request handling logic. As written in the given article, asynchronous actions greatly increase application :abbr:`capacity (The maximum throughput a system can sustain, for a given workload, while maintaining an acceptable response time for each individual transaction. – from "Release It" book written by Michael T. Nygard)`, but does not help to increase :abbr:`performance (How fast the system processes a single transaction. – from "Release It" book written by Michael T. Nygard)`. You can test it by yourself with a `sample application <http://highlighter.hangfire.io>`_ – there are no differences in using sync or async actions with a single request.
@@ -459,24 +461,30 @@ Then, call it inside the ``HomeController.Create`` method.
 The problem
 ------------
 
-Then try to create some code snippets and see the timings. My times with different code sizes were the following.
+.. tip::
 
-Small code block:
+  You can use the `hosted sample <http://highlighter.hangfire.io>`_ to see what's going on.
+
+Now, when the application is ready, try to create some code snippets, starting from a smaller ones. Do you notice a small delay after you clicked the :guilabel:`Create` button?
+
+On my development machine it took about 0.5s to redirect me to the details page. But let's look at *MiniProfiler* to see what is the cause of this delay:
 
 .. image:: highlighter/smcodeprof.png
 
-Medium code block:
+As we see, call to web service is our main problem. But what happens when we try to create a medium code block?
 
 .. image:: highlighter/mdcodeprof.png
 
-Large code block:
+And finally a large one:
 
 .. image:: highlighter/lgcodeprof.png
 
-Hm, yes, async controller actions let the worker thread to relax for the specified time. But as a user, I don't wait for two or more seconds. And this is fast service, what to do if it will be much slower? Wait 30 seconds?
+The lag is increasing when we enlarge our code snippets. Moreover, consider that syntax highlighting web service (that is not under your control) experiences heavy load, or there are latency problems with network on their side. Or consider heavy CPU-intensive task instead of web service call that you can not optimize well. Your users will be annoyed with unresponsible application and inadequate delays.
 
 Solving a problem
 ------------------
+
+What can you do with a such problem? `Async controller actions <http://www.asp.net/mvc/tutorials/mvc-4/using-asynchronous-methods-in-aspnet-mvc-4>`_ will not help, as I said :ref:`earlier <async-note>`. 
 
 We can not reduce the time that is needed for the ``HighlightSource`` method to do its job – it contains only network calls. To optimize our application
 
