@@ -1,14 +1,10 @@
 Code Syntax Highlighting
 =========================
 
-.. warning::
-
-   This is a draft version of tutorial. Please, follow `@hangfire_net <https://twitter.com/hangfire_net>`_ on Twitter to receive tutorial update notifications.
-
-==================== =======
-Tutorial source code https://github.com/odinserj/HangFire.Highlighter 
-Full sample          http://highlighter.hangfire.io
-==================== =======
+====================== =======
+Simple sample          https://github.com/odinserj/HangFire.Highlighter 
+Full sample            http://highlighter.hangfire.io, `sources <https://github.com/odinserj/HangFire/tree/master/samples/HangFire.Sample.Highlighter>`_
+====================== =======
 
 .. contents:: Table of Contents
    :local:
@@ -39,7 +35,7 @@ Prerequisites
 
 The tutorial uses **Visual Studio 2012** with `Web Tools 2013 for Visual Studio 2012 <http://www.asp.net/visual-studio/overview/2012/aspnet-and-web-tools-20131-for-visual-studio-2012>`_ installed, but it can be built either with Visual Studio 2013.
 
-The project uses **.NET 4.5** and **SQL Server 2008 Express** or later database.
+The project uses **.NET 4.5**, **ASP.NET MVC 5** and **SQL Server 2008 Express** or later database.
 
 Creating a project
 ^^^^^^^^^^^^^^^^^^^
@@ -479,27 +475,44 @@ And finally a large one:
 
 .. image:: highlighter/lgcodeprof.png
 
-The lag is increasing when we enlarge our code snippets. Moreover, consider that syntax highlighting web service (that is not under your control) experiences heavy load, or there are latency problems with network on their side. Or consider heavy CPU-intensive task instead of web service call that you can not optimize well. Your users will be annoyed with unresponsible application and inadequate delays.
+The lag is increasing when we enlarge our code snippets. Moreover, consider that syntax highlighting web service (that is not under your control) experiences heavy load, or there are latency problems with network on their side. Or consider heavy CPU-intensive task instead of web service call that you can not optimize well. 
+
+Your users will be annoyed with unresponsible application and inadequate delays.
 
 Solving a problem
 ------------------
 
-What can you do with a such problem? `Async controller actions <http://www.asp.net/mvc/tutorials/mvc-4/using-asynchronous-methods-in-aspnet-mvc-4>`_ will not help, as I said :ref:`earlier <async-note>`. 
+What can you do with a such problem? `Async controller actions <http://www.asp.net/mvc/tutorials/mvc-4/using-asynchronous-methods-in-aspnet-mvc-4>`_ will not help, as I said :ref:`earlier <async-note>`. You should somehow take out web service call and process it outside of a request, in the background. Here is some ways to do this:
 
-We can not reduce the time that is needed for the ``HighlightSource`` method to do its job – it contains only network calls. To optimize our application
+* **Use recurring tasks** and scan un-highlighted snippets on some interval.
+* **Use job queues**. Your application will enqueue a job, and some external worker threads will listen this queue for new jobs.
+
+Ok, great. But there are several difficulties related to these techniques. The former requires us to set some check interval. Shorter interval can abuse our database, longer interval increases latency. 
+
+The latter way solves this problem, but brings another ones. Should the queue be persistent? How many workers do you need? How to coordinate them? Where should they work, inside of ASP.NET application or outside, in Windows Service? The last question is the sore spot of long-running requests processing in ASP.NET application:
+
+.. warning::
+
+   **DO NOT** run long-running processes inside of your ASP.NET application, unless they are prepared to **die at any instruction** and there is mechanism that can re-run them.
+
+   They will be simple aborted on application shutdown, and can be aborted even if the ``IRegisteredObject`` interface is being used due to time out.
+
+Too many questions? Relax, you can use `HangFire <http://hangfire.io>`_. It is based on *persistent queues* to survive on application restarts, uses *reliable fetching* to handle unexpected thread aborts and contains *coordination logic* to allow multiple worker threads. And it is simple enough to use it.
 
 .. note::
 
-  Async controller actions does not help there, you can check it by yourself. As written <here>, they handle capacity problems, and can not be used as fire-and-forget technique.
+   **YOU CAN** process your long-running jobs with HangFire inside ASP.NET application – aborted jobs will be restarted automatically.
 
 Installing HangFire
 ^^^^^^^^^^^^^^^^^^^^
+
+To install HangFire, run the following command in the Package Manager Console window:
 
 .. code-block:: powershell
 
    Install-Package HangFire
 
-After the package installed, open the ``App_Start/HangFireConfig.cs`` file to change the connection string:
+After the package installed, open the ``App_Start/HangFireConfig.cs`` file to change the database connection string:
 
 .. code-block:: c#
 
@@ -507,10 +520,37 @@ After the package installed, open the ``App_Start/HangFireConfig.cs`` file to ch
        .ConnectionStrings["HighlighterDb"]
        .ConnectionString);
 
-That's all. 
+That's all. All database tables will be created automatically on first start-up.
 
 Moving to background
 ^^^^^^^^^^^^^^^^^^^^^
+
+First, we need to define our background job method that will be called when worker thread catches highlighting job. We'll simply define it as a static method inside the ``HomeController`` class with the ``snippetId`` parameter.
+
+.. code-block:: c#
+
+  // ~/Controllers/HomeController.cs
+
+  /* ... Action methods ... */
+
+  // Process a job
+  public static void HighlightSnippet(int snippetId)
+  {
+      using (var db = new HighlighterDbContext())
+      {
+          var snippet = db.CodeSnippets.Find(snippetId);
+          if (snippet == null) return;
+
+          snippet.HighlightedCode = HighlightSource(snippet.SourceCode);
+          snippet.HighlightedAt = DateTime.UtcNow;
+
+          db.SaveChanges();
+      }
+  }
+
+Note that it is simple method that does not contain any HangFire-related functionality. It creates a new instance of the ``HighlighterDbContext`` class, looks for the desired snippet and makes a call to a web service.
+
+Then, we need to place the invocation of this method on a queue. So, let's modify the ``Create`` action:
 
 .. code-block:: c#
 
@@ -528,6 +568,7 @@ Moving to background
 
           using (StackExchange.Profiling.MiniProfiler.StepStatic("Job enqueue"))
           {
+              // Enqueue a job
               BackgroundJob.Enqueue(() => HighlightSnippet(snippet.Id));
           }
 
@@ -537,31 +578,17 @@ Moving to background
       return View(snippet);
   }
 
-  public static void HighlightSnippet(int snippetId)
-  {
-      using (var db = new HighlighterDbContext())
-      {
-          var snippet = db.CodeSnippets.Find(snippetId);
-          if (snippet == null) return;
-
-          snippet.HighlightedCode = HighlightSource(snippet.SourceCode);
-          snippet.HighlightedAt = DateTime.UtcNow;
-
-          db.SaveChanges();
-      }
-  }
-
-Try to create some snippets and see the timings (don't worry if you encounter an empty page, I'll cover it a bit later):
+That's all. Try to create some snippets and see the timings (don't worry if you see an empty page, I'll cover it a bit later):
 
 .. image:: highlighter/jobprof.png
 
-Good, 6ms vs ~2s. But there is another problem. Did you notice that sometimes you are being redirected to the page with no sources at all? This happens because our view contains the following line:
+Good, 6ms vs ~2s. But there is another problem. Did you notice that sometimes you are being redirected to the page with no source code at all? This happens because our view contains the following line:
 
 .. code-block:: html
   
    <div>@Html.Raw(Model.HighlightedCode)</div>
 
-Why the ``Model.HighlightedCode`` returns null instead of highlighted code? This happens because of latency of the background job invocation – there is some delay before a worker fetch the job and perform it. You can refresh the page and the highlighted code will appear on your screen.
+Why the ``Model.HighlightedCode`` returns null instead of highlighted code? This happens because of **latency** of the background job invocation – there is some delay before a worker fetch the job and perform it. You can refresh the page and the highlighted code will appear on your screen.
 
 But empty page can confuse a user. What to do? First, you should take this specific into a place. You can reduce the latency to a minimum, but **you can not avoid it**. So, your application should deal with this specific issue. 
 
@@ -588,14 +615,33 @@ In our example, we'll simply show the notification to a user and the un-highligh
       }
   </div>
 
-Homework
----------
+But instead you could poll your application from a page using AJAX until it returns highlighted code:
 
-As a homework task, you can try to improve the user experience.
+.. code-block:: c#
+
+   // ~/Controllers/HomeController.cs
+
+   public ActionResult HighlightedCode(int snippetId)
+   {
+       var snippet = _db.Snippets.Find(snippetId);
+       if (snippet.HighlightedCode == null)
+       {
+           return new HttpStatusCodeResult(HttpStatusCode.NoContent);
+       }
+
+       return Content(snippet.HighlightedCode);
+   }
+
+Or you can also use send a command to users via SignalR channel from your ``HighlightSnippet`` method. But that's another story.
 
 Conclusion
 -----------
 
-You've seen an example of how to reduce the time of user waiting for a request to be completed, especially if you don't own a web server and you can not make it more performant.
+In this tutorial you've seen that:
 
-You've also seen a problem related to all fire-and-forget jobs – latency and how to deal with it.
+* Sometimes you can't avoid long-running methods in ASP.NET applications.
+* Long running methods can cause your application to be un-responsible from the users point of view.
+* To remove waits you should place your long-running method invocation into background job.
+* Background job processing is complex itself, but simple with HangFire.
+
+Please, ask any questions using the comments form below.
