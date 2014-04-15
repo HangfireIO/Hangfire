@@ -634,6 +634,10 @@ But instead you could poll your application from a page using AJAX until it retu
 
 Or you can also use send a command to users via SignalR channel from your ``HighlightSnippet`` method. But that's another story.
 
+.. note::
+
+   Please, note that user still waits until its source code will be highlighted. But the application itself became more responsible and he is able to do another things while background job is being processed.
+
 Conclusion
 -----------
 
@@ -643,5 +647,6 @@ In this tutorial you've seen that:
 * Long running methods can cause your application to be un-responsible from the users point of view.
 * To remove waits you should place your long-running method invocation into background job.
 * Background job processing is complex itself, but simple with HangFire.
+* You can process background jobs even inside ASP.NET applications with HangFire.
 
 Please, ask any questions using the comments form below.
