@@ -1,0 +1,211 @@
+Sending Mail in Background with ASP.NET MVC
+============================================
+
+Let's start with a simple example: you are building your own blog using ASP.NET MVC and want to receive email notification about each posted comment. We will use simple but awesome `Postal <http://aboutcode.net/postal/>`_ library to send emails. 
+
+.. tip::
+
+   I've prepared a simple application that has only comments list, you can `download its sources <https://github.com/odinserj/HangFire.Mailer/releases/tag/vBare>`_ to start work on tutorial.
+
+You already have a controller action that creates new comment, and want to add the notification feature.
+
+.. code-block:: c#
+
+    // ~/HomeController.cs
+
+    [HttpPost]
+    public ActionResult Create(Comment model)
+    {
+        if (ModelState.IsValid)
+        {
+            _db.Comments.Add(model);
+            _db.SaveChanges();
+        }
+
+        return RedirectToAction("Index");
+    }
+
+Installing Postal
+------------------
+
+First, install the ``Postal`` NuGet package:
+
+.. code-block:: powershell
+
+   Install-Package Postal
+
+Then, create ``~/Models/NewCommentEmail.cs`` file with the following contents:
+
+.. code-block:: c#
+
+    using Postal;
+
+    namespace HangFire.Mailer.Models
+    {
+        public class NewCommentEmail : Email
+        {
+            public string To { get; set; }
+            public string UserName { get; set; }
+            public string Comment { get; set; }
+        }
+    }
+
+Create a corresponding template for this email by adding the ``~/Views/Emails/NewComment.cshtml`` file:
+
+.. code-block:: text
+
+    @model HangFire.Mailer.Models.NewCommentEmail
+    To: @Model.To
+    From: mailer@example.com
+    Subject: New comment posted
+
+    Hello, 
+    There is a new comment from @Model.UserName:
+
+    @Model.Comment
+
+    <3
+
+And call Postal to sent email notification from the ``Create`` controller action:
+
+.. code-block:: c#
+
+    [HttpPost]
+    public ActionResult Create(Comment model)
+    {
+        if (ModelState.IsValid)
+        {
+            _db.Comments.Add(model);
+            _db.SaveChanges();
+
+            var email = new NewCommentEmail
+            {
+                To = "yourmail@example.com",
+                UserName = model.UserName,
+                Comment = model.Text
+            };
+
+            email.Send();
+        }
+
+        return RedirectToAction("Index");
+    }
+
+Then configure the delivery method in the ``web.config`` file (by default, tutorial source code uses ``C:\Temp`` directory to store outgoing mail):
+
+.. code-block:: xml
+
+  <system.net>
+    <mailSettings>
+      <smtp deliveryMethod="SpecifiedPickupDirectory">
+        <specifiedPickupDirectory pickupDirectoryLocation="C:\Temp\" />
+      </smtp>
+    </mailSettings>
+  </system.net>
+
+That's all. Try to create some comments and see notifications in the pickup directory.
+
+Further considerations
+-----------------------
+
+But why a user should wait until the notification was sent? There should be some way to send emails asynchronously, in the background, and return a response to user as soon as possible. 
+
+Unfortunately, `asynchronous <http://www.asp.net/mvc/tutorials/mvc-4/using-asynchronous-methods-in-aspnet-mvc-4>`_ controller actions `does not help <http://blog.stephencleary.com/2012/08/async-doesnt-change-http-protocol.html>`_ in this scenario, because they do not yield response to user while waiting for asynchronous operation to complete. They only solve internal issues related to thread pool and application capacity.
+
+There are `great problems <http://blog.stephencleary.com/2012/12/returning-early-from-aspnet-requests.html>`_ with background threads also. You should use Thread Pool threads or custom ones that are running inside ASP.NET application with care – you can simply lose your emails during application recycle process (even if you register an implementation of the ``IRegisteredObject`` interface in ASP.NET).
+
+And you are unlikely want to install external Windows Services or use Windows Scheduler with console application to solve this simple problem (we are building a personal blog, not an e-commerce solution).
+
+Installing HangFire
+--------------------
+
+To be able to put tasks into background and to not to lose them during application restarts, we'll use `HangFire <http://hangfire.io>`_. It can handle background jobs in a reliable way inside ASP.NET application without external Windows Services or Windows Scheduler.
+
+.. code-block:: powershell
+
+   Install-Package HangFire
+
+HangFire uses SQL Server or Redis to store information about background jobs. So, let's configure it. Go to ``~/App_Start/HangFireConfig.cs`` file and modify it:
+
+.. code-block:: c#
+
+   JobStorage.Current = new SqlServerStorage(
+       ConfigurationManager.ConnectionStrings["MailerDb"].ConnectionString);
+
+The ``SqlServerStorage`` class will install all database tables automatically on application start-up (but you are able to do it manually).
+
+Now we are ready to use HangFire. It asks us to wrap a piece of code that should be executed in background to a public method.
+
+.. code-block:: c#
+
+    [HttpPost]
+    public ActionResult Create(Comment model)
+    {
+        if (ModelState.IsValid)
+        {
+            _db.Comments.Add(model);
+            _db.SaveChanges();
+
+            BackgroundJob.Enqueue(() => NotifyNewComment(model.Id));
+        }
+
+        return RedirectToAction("Index");
+    }
+
+Note, that we are passing comment identifier instead of a full comment – HangFire should be able to serialize all method call arguments to string values. Default serializer does not know anything about our ``Comment`` class. Furthermore, integer identifier takes less space in serialized form than full comment text.
+
+Now, we need to prepare the ``NotifyNewComment`` method that will be called in background. Note, that ``HttpContext.Current`` is not available in this situation, but Postal library can work even `outside of ASP.NET request <http://aboutcode.net/postal/outside-aspnet.html>`_. But first install another package (that is needed for Postal 0.9.2, see `the issue <https://github.com/andrewdavey/postal/issues/68>`_).
+
+.. code-block:: powershell
+
+   Install-Package RazorEngine
+
+.. code-block:: c#
+
+    public static void NotifyNewComment(int commentId)
+    {
+        // Prepare Postal classes to work outside of ASP.NET request
+        var viewsPath = Path.GetFullPath(HostingEnvironment.MapPath(@"~/Views/Emails"));
+        var engines = new ViewEngineCollection();
+        engines.Add(new FileSystemRazorViewEngine(viewsPath));
+
+        var emailService = new EmailService(engines);
+
+        // Get comment and send a notification.
+        using (var db = new MailerDbContext())
+        {
+            var comment = db.Comments.Find(commentId);
+
+            var email = new NewCommentEmail
+            {
+                To = "yourmail@example.com",
+                UserName = comment.UserName,
+                Comment = comment.Text
+            };
+
+            emailService.Send(email);
+        }
+    }
+
+This is plain C# static method. We creating an ``EmailService`` instance, finding the needed comment and sending a mail with Postal. Simple enough, especially when comparing to custom Windows Service solution.
+
+That's all! Try to create some comments and see the ``C:\Temp`` path. You are also can check your background jobs at ``http://<your-app>/hangfire.axd``. If you have any questions – welcome to the comments form below.
+
+.. note::
+
+   If you experience assembly load exceptions, please, please delete the following sections from the ``web.config`` file (I forgot to do this, but don't want to re-create the repository):
+
+   .. code-block:: xml
+
+      <dependentAssembly>
+        <assemblyIdentity name="Ninject" publicKeyToken="c7192dc5380945e7" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-3.2.0.0" newVersion="3.2.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-6.0.0.0" newVersion="6.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Common.Logging" publicKeyToken="af08829b84f0328e" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-2.2.0.0" newVersion="2.2.0.0" />
+      </dependentAssembly>

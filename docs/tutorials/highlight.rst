@@ -13,7 +13,7 @@ Full sample            http://highlighter.hangfire.io, `sources <https://github.
 Overview
 ---------
 
-Let's start with a simple example. Consider you are building a code snippet gallery web application like `GitHub Gists <http://gist.github.com>`_, and want to implement the syntax highlighting feature. To improve user experience, you are also want it to work even if a user disabled JavaScript in her browser.
+Consider you are building a code snippet gallery web application like `GitHub Gists <http://gist.github.com>`_, and want to implement the syntax highlighting feature. To improve user experience, you are also want it to work even if a user disabled JavaScript in her browser.
 
 To support this scenario and to reduce the project development time, you choosed to use a web service for syntax highlighting, such as http://pygments.appspot.com or http://www.hilite.me.
 
