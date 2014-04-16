@@ -1,6 +1,10 @@
 Sending Mail in Background with ASP.NET MVC
 ============================================
 
+.. contents:: Table of Contents
+   :local:
+   :depth: 2
+
 Let's start with a simple example: you are building your own blog using ASP.NET MVC and want to receive email notification about each posted comment. We will use simple but awesome `Postal <http://aboutcode.net/postal/>`_ library to send emails. 
 
 .. tip::
@@ -209,3 +213,95 @@ That's all! Try to create some comments and see the ``C:\Temp`` path. You are al
         <assemblyIdentity name="Common.Logging" publicKeyToken="af08829b84f0328e" culture="neutral" />
         <bindingRedirect oldVersion="0.0.0.0-2.2.0.0" newVersion="2.2.0.0" />
       </dependentAssembly>
+
+Automatic retries
+------------------
+
+When the ``emailService.Send`` method throws an exception, HangFire will retry it automatically after some delay (that is increased with each attempt). Retry attempt count is limited (3 by default), but you can increase it. Just apply the ``RetryAttribute`` to the ``NotifyNewComment`` method:
+
+.. code-block:: c#
+
+   [Retry(20)]
+   public static void NotifyNewComment(int commentId)
+   {
+       /* ... */
+   }
+
+Logging
+--------
+
+You can log cases, when max retry attempts number was exceeded. Try to create the following class:
+
+.. code-block:: c#
+
+    public class LogFailureAttribute : JobFilterAttribute, IApplyStateFilter
+    {
+        private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
+
+        public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            var failedState = context.NewState as FailedState;
+            if (failedState != null)
+            {
+                Logger.Error(
+                    String.Format("Background job #{0} was failed with an exception.", context.JobId), 
+                    failedState.Exception);
+            }
+        }
+
+        public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+        }
+    }
+
+And add it either globally through calling the following method at the application start:
+
+.. code-block:: c#
+
+   GlobalJobFilters.Filters.Add(new LogFailureAttribute());
+
+Or locally by applying the attribute to a method:
+
+.. code-block:: c#
+
+   [LogFailure]
+   public static void NotifyNewComment(int commentId)
+   {
+       /* ... */
+   }
+
+Fix-and-retry
+--------------
+
+If you made a mistake in your ``NotifyNewComment`` method, you can fix it and restart the failed background job via web interface. Try to do it:
+
+.. code-block:: c#
+
+   // Break background job by setting null to emailService:
+   var emailService = null;
+
+Compile a project, add a comment and go to web interface by typing ``http://<your-app>/hangfire.axd``. Exceed all automatic attempts, then fix the job, restart application, and click the ``Retry`` button at *Failed jobs* page.
+
+Preserving current culture
+---------------------------
+
+If you set a custom culture for your requests, HangFire will store and set it during the performance of background job. Try to do the following:
+
+.. code-block:: c#
+
+   // HomeController/Create action
+   Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("es-ES");
+   BackgroundJob.Enqueue(() => NotifyNewComment(model.Id));
+
+And check it inside background job:
+
+.. code-block:: c#
+
+    public static void NotifyNewComment(int commentId)
+    {
+        var currentCultureName = Thread.CurrentThread.CurrentCulture.Name;
+        if (currentCultureName != "es-ES")
+        {
+            throw new InvalidOperationException(String.Format("Current culture is {0}", currentCultureName));
+        }
+        // ...
