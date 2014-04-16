@@ -38,7 +38,7 @@ else
                     @Html.ActionLink(item.Id.ToString(), "Snippet", new { id = item.Id })
                 </td>
                 <td class="source">
-                    <a href="@Url.Action("Details", new { id = item.Id })">
+                    <a href="@Url.Action("Snippet", new { id = item.Id })">
                         @if (item.HighlightedSource != null)
                         {
                             @Html.Raw(item.HighlightedSource)
