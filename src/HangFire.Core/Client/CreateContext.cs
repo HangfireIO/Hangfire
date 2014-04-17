@@ -39,6 +39,7 @@ namespace HangFire.Client
             Items = context.Items;
             JobId = context.JobId;
             _jobWasCreated = context._jobWasCreated;
+            _parameters = context._parameters;
         }
 
         internal CreateContext(

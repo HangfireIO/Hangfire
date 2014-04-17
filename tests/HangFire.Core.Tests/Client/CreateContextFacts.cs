@@ -174,6 +174,18 @@ namespace HangFire.Core.Tests.Client
         }
 
         [Fact]
+        public void CopyCtor_CopiesJobParameters_FromTheGivenContext()
+        {
+            var context = CreateContext();
+            context.SetJobParameter("name", "value");
+            var contextCopy = new CreateContext(context);
+
+            var value = contextCopy.GetJobParameter<string>("name");
+
+            Assert.Equal("value", value);
+        }
+
+        [Fact]
         public void CreateJob_DelegatesItsExecution_ToStateMachine()
         {
             var context = CreateContext();
