@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Web;
-
+using HangFire.Web.Configuration;
 using HangFire.Web.Pages;
 
 namespace HangFire.Web
@@ -91,6 +91,11 @@ namespace HangFire.Web
         public IHttpHandler GetHandler(HttpContext context, string requestType, string url, string pathTranslated)
         {
             if (context == null) throw new ArgumentNullException("context");
+
+            if (!HangFireConfiguration.EnableRemoteMonitorAccess && !context.Request.IsLocal)
+            {
+                throw new HttpException(401, "Authorization failed due to configuration.");
+            }
 
             context.Items.Add("GenerationStartedAt", DateTime.UtcNow);
 
