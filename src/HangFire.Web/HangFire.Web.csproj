@@ -41,6 +41,7 @@
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
@@ -54,6 +55,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Command.cs" />
+    <Compile Include="Configuration\HangFireConfiguration.cs" />
     <Compile Include="Handlers\CommandHandler.cs" />
     <Compile Include="FontsHandler.cs" />
     <Compile Include="Handlers\CombinedResourceHandler.cs" />
@@ -61,6 +63,7 @@
     <Compile Include="Handlers\GenericHandler.cs" />
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
+    <Compile Include="Handlers\HttpStatusHandler.cs" />
     <Compile Include="JavaScriptHandler.cs" />
     <None Include="packages.config" />
     <None Include="Pages\ErrorPage.cshtml">

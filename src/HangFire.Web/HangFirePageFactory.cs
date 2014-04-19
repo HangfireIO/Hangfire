@@ -16,9 +16,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
-
+using HangFire.Web.Configuration;
 using HangFire.Web.Pages;
 
 namespace HangFire.Web
@@ -92,6 +93,11 @@ namespace HangFire.Web
         {
             if (context == null) throw new ArgumentNullException("context");
 
+            if (!HangFireConfiguration.EnableRemoteMonitorAccess && !context.Request.IsLocal)
+            {
+                return HttpStatusHandler.Process(context, HttpStatusCode.Unauthorized);
+            }
+
             context.Items.Add("GenerationStartedAt", DateTime.UtcNow);
 
             var request = context.Request;
@@ -102,7 +108,7 @@ namespace HangFire.Web
             var handler = FindHandler(resource);
             if (handler == null)
             {
-                throw new HttpException(404, "Resource not found.");
+                return HttpStatusHandler.Process(context, HttpStatusCode.NotFound);
             }
 
             return handler;
