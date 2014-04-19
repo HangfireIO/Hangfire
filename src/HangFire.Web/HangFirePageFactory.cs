@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
 using HangFire.Web.Configuration;
@@ -94,7 +95,7 @@ namespace HangFire.Web
 
             if (!HangFireConfiguration.EnableRemoteMonitorAccess && !context.Request.IsLocal)
             {
-                throw new HttpException(401, "Authorization failed due to configuration.");
+                return HttpStatusHandler.Process(context, HttpStatusCode.Unauthorized);
             }
 
             context.Items.Add("GenerationStartedAt", DateTime.UtcNow);
@@ -107,7 +108,7 @@ namespace HangFire.Web
             var handler = FindHandler(resource);
             if (handler == null)
             {
-                throw new HttpException(404, "Resource not found.");
+                return HttpStatusHandler.Process(context, HttpStatusCode.NotFound);
             }
 
             return handler;

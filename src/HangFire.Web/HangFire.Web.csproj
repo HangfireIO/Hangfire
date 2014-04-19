@@ -63,6 +63,7 @@
     <Compile Include="Handlers\GenericHandler.cs" />
     <Compile Include="Handlers\SingleResourceHandler.cs" />
     <Compile Include="HtmlHelper.cs" />
+    <Compile Include="Handlers\HttpStatusHandler.cs" />
     <Compile Include="JavaScriptHandler.cs" />
     <None Include="packages.config" />
     <None Include="Pages\ErrorPage.cshtml">
