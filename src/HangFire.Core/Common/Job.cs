@@ -83,6 +83,8 @@ namespace HangFire.Common
                 throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
             }
 
+            // TODO: user can call this method with instance method expression. We need to check for it.
+
             return new Job(MethodData.FromExpression(methodCall), GetArguments(callExpression));
         }
 
