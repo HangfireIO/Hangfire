@@ -139,7 +139,7 @@ namespace HangFire.Client
             }
         }
 
-        internal void CreateJob()
+        internal virtual void CreateJob()
         {
             var stateMachine = Connection.CreateStateMachine();
 

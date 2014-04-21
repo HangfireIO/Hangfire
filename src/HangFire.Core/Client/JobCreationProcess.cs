@@ -40,14 +40,17 @@ namespace HangFire.Client
         }
 
         internal JobCreationProcess(IEnumerable<object> filters)
+            : this()
         {
             if (filters == null) throw new ArgumentNullException("filters");
 
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
-        public virtual void Run(CreateContext context)
+        public void Run(CreateContext context)
         {
+            if (context == null) throw new ArgumentNullException("context");
+
             var filterInfo = GetFilters(context.Job.MethodData);
 
             try
@@ -66,7 +69,7 @@ namespace HangFire.Client
             }
         }
 
-        protected virtual JobFilterInfo GetFilters(MethodData methodData)
+        private JobFilterInfo GetFilters(MethodData methodData)
         {
             return new JobFilterInfo(_getFiltersThunk(methodData));
         }

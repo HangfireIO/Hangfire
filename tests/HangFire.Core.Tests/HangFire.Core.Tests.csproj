@@ -61,7 +61,10 @@
   <ItemGroup>
     <Compile Include="BackgroundJobClientExtensionsFacts.cs" />
     <Compile Include="BackgroundJobClientFacts.cs" />
+    <Compile Include="Client\ClientExceptionContextFacts.cs" />
     <Compile Include="Client\CreateContextFacts.cs" />
+    <Compile Include="Client\CreatedContextFacts.cs" />
+    <Compile Include="Client\CreatingContextFacts.cs" />
     <Compile Include="Client\JobCreationProcessFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
     <Compile Include="Common\MethodDataFacts.cs" />

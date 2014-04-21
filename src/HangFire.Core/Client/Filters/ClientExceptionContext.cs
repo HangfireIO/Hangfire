@@ -27,6 +27,8 @@ namespace HangFire.Client.Filters
         internal ClientExceptionContext(CreateContext createContext, Exception exception)
             : base(createContext)
         {
+            if (exception == null) throw new ArgumentNullException("exception");
+
             Exception = exception;
         }
 
