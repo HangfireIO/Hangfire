@@ -22,23 +22,23 @@ namespace HangFire.Server
     public class ServerContext
     {
         internal ServerContext(ServerContext context)
-            : this(context.ServerName, context.QueueNames, context.PerformancePipeline)
+            : this(context.ServerName, context.QueueNames, context.PerformanceProcess)
         {
         }
 
         internal ServerContext(
             string serverName,
             IEnumerable<string> queueNames,
-            JobPerformancePipeline performancePipeline)
+            JobPerformanceProcess performanceProcess)
         {
             ServerName = serverName;
-            PerformancePipeline = performancePipeline;
+            PerformanceProcess = performanceProcess;
             QueueNames = queueNames;
         }
 
         public string ServerName { get; private set; }
         public IEnumerable<string> QueueNames { get; private set; }
 
-        internal JobPerformancePipeline PerformancePipeline { get; private set; }
+        internal JobPerformanceProcess PerformanceProcess { get; private set; }
     }
 }
