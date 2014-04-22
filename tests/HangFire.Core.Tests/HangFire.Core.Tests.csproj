@@ -70,7 +70,6 @@
     <Compile Include="Common\MethodDataFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
-    <Compile Include="Server\JobAsMethodPerformStrategyFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
@@ -99,7 +98,9 @@
       <Name>HangFire.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Server\" />
+  </ItemGroup>
   <Import Project="..\..\src\Common\HangFire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
