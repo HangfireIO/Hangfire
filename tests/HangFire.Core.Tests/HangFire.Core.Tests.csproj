@@ -70,6 +70,7 @@
     <Compile Include="Common\MethodDataFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
+    <Compile Include="Server\JobAsMethodPerformStrategyFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="States\SucceededStateHandlerFacts.cs" />
     <Compile Include="Utils\DictionaryAssert.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
+    <Compile Include="Utils\StaticLockAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

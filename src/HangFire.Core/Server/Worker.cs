@@ -168,9 +168,9 @@ namespace HangFire.Server
                 else
                 {
                     var arguments = JobHelper.FromJson<string[]>(payload.Arguments);
+                    var job = new Job(methodData, arguments);
 
-                    performStrategy = new JobAsMethodPerformStrategy(
-                        methodData, arguments);
+                    performStrategy = new JobAsMethodPerformStrategy(job);
                 }
                 
                 var performContext = new PerformContext(_context, connection, payload.Id, methodData);

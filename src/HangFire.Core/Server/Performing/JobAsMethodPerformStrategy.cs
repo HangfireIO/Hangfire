@@ -24,20 +24,21 @@ namespace HangFire.Server.Performing
 {
     internal class JobAsMethodPerformStrategy : IJobPerformStrategy
     {
+        private readonly Job _job;
         private readonly JobActivator _activator = JobActivator.Current;
 
-        private readonly MethodData _methodData;
-        private readonly string[] _arguments;
-
-        public JobAsMethodPerformStrategy(
-            MethodData methodData,
-            string[] arguments)
+        public JobAsMethodPerformStrategy(Job job)
+            : this(job, JobActivator.Current)
         {
-            if (methodData == null) throw new ArgumentNullException("methodData");
-            if (arguments == null) throw new ArgumentNullException("arguments");
+        }
 
-            _methodData = methodData;
-            _arguments = arguments;
+        public JobAsMethodPerformStrategy(Job job, JobActivator activator)
+        {
+            if (job == null) throw new ArgumentNullException("job");
+            if (activator == null) throw new ArgumentNullException("activator");
+
+            _job = job;
+            _activator = activator;
         }
 
         public void Perform()
@@ -46,22 +47,57 @@ namespace HangFire.Server.Performing
 
             try
             {
-                if (!_methodData.MethodInfo.IsStatic)
+                if (!_job.MethodData.MethodInfo.IsStatic)
                 {
                     instance = ActivateJob();
                 }
 
-                var parameters = _methodData.MethodInfo.GetParameters();
-                var deserializedArguments = new List<object>(_arguments.Length);
+                var deserializedArguments = DeserializeArguments();
+                InvokeMethod(instance, deserializedArguments);
+            }
+            finally
+            {
+                Dispose(instance);
+            }
+        }
+
+        private object ActivateJob()
+        {
+            try
+            {
+                var instance = _activator.ActivateJob(_job.MethodData.Type);
+
+                if (instance == null)
+                {
+                    throw new InvalidOperationException(
+                        String.Format("JobActivator returned NULL instance of the '{0}' type.", _job.MethodData.Type));
+                }
+
+                return instance;
+            }
+            catch (Exception ex)
+            {
+                throw new JobPerformanceException(
+                    "An exception occured during job activation.",
+                    ex);
+            }
+        }
+
+        private object[] DeserializeArguments()
+        {
+            try
+            {
+                var parameters = _job.MethodData.MethodInfo.GetParameters();
+                var result = new List<object>(_job.Arguments.Length);
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
-                    var argument = _arguments[i];
+                    var argument = _job.Arguments[i];
 
                     object value;
 
-                    if (parameter.ParameterType == typeof (object))
+                    if (parameter.ParameterType == typeof(object))
                     {
                         // Special case for handling object types, because string can not
                         // be converted to object type.
@@ -73,21 +109,36 @@ namespace HangFire.Server.Performing
                         value = converter.ConvertFromInvariantString(argument);
                     }
 
-                    deserializedArguments.Add(value);
+                    result.Add(value);
                 }
 
-                try
-                {
-                    _methodData.MethodInfo.Invoke(instance, deserializedArguments.ToArray());
-                }
-                catch (TargetInvocationException ex)
-                {
-                    throw new JobPerformanceException(
-                        "An exception occurred during performance of the job",
-                        ex.InnerException);
-                }
+                return result.ToArray();
             }
-            finally
+            catch (Exception ex)
+            {
+                throw new JobPerformanceException(
+                    "An exception occured during arguments deserialization.",
+                    ex);
+            }
+        }
+
+        private void InvokeMethod(object instance, object[] deserializedArguments)
+        {
+            try
+            {
+                _job.MethodData.MethodInfo.Invoke(instance, deserializedArguments);
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw new JobPerformanceException(
+                    "An exception occurred during performance of the job.",
+                    ex.InnerException);
+            }
+        }
+
+        private static void Dispose(object instance)
+        {
+            try
             {
                 var disposable = instance as IDisposable;
                 if (disposable != null)
@@ -95,19 +146,12 @@ namespace HangFire.Server.Performing
                     disposable.Dispose();
                 }
             }
-        }
-
-        private object ActivateJob()
-        {
-            var instance = _activator.ActivateJob(_methodData.Type);
-
-            if (instance == null)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException(
-                    String.Format("JobActivator returned NULL instance of the '{0}' type.", _methodData.Type));
+                throw new JobPerformanceException(
+                    "Job has been performed, but an exception occured during disposal.",
+                    ex);
             }
-
-            return instance;
         }
     }
 }
