@@ -153,7 +153,7 @@
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\ServerContext.cs" />
-    <Compile Include="Server\Performing\JobPerformancePipeline.cs" />
+    <Compile Include="Server\Performing\JobPerformanceProcess.cs" />
     <Compile Include="BackgroundJobClient.cs" />
     <Compile Include="Server\Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
