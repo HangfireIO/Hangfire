@@ -15,7 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using Common.Logging;
 
@@ -35,6 +34,12 @@ namespace HangFire.Server
             string[] queueNames,
             int workerCount)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (serverName == null) throw new ArgumentNullException("serverName");
+            if (queueNames == null) throw new ArgumentNullException("queueNames");
+
+            if (workerCount <= 0) throw new ArgumentException("Worker count value must be greater than zero", "workerCount");
+
             _workers = new DisposableCollection<Worker>();
 
             for (var i = 1; i <= workerCount; i++)
