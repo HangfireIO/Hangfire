@@ -42,6 +42,10 @@ namespace HangFire.Server
 
         public Worker(JobStorage storage, WorkerContext context, IJobPerformanceProcess process)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (context == null) throw new ArgumentNullException("context");
+            if (process == null) throw new ArgumentNullException("process");
+
             _storage = storage;
             _context = context;
             _process = process;
@@ -81,10 +85,10 @@ namespace HangFire.Server
             _cts.Dispose();
         }
 
-        internal void ProcessNextJob(CancellationToken cancellationToken)
+        private void ProcessNextJob()
         {
             using (var connection = _storage.GetConnection())
-            using (var nextJob = connection.FetchNextJob(_context.QueueNames, cancellationToken))
+            using (var nextJob = connection.FetchNextJob(_context.QueueNames, _cts.Token))
             {
                 nextJob.Process(_context, _process);
 
@@ -110,7 +114,7 @@ namespace HangFire.Server
                     _cts.Token.ThrowIfCancellationRequested();
 
                     JobServer.RetryOnException(
-                        () => ProcessNextJob(_cts.Token), 
+                        ProcessNextJob, 
                         _cts.Token.WaitHandle);
                 }
             }

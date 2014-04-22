@@ -74,6 +74,7 @@
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\ProcessingJobFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
+    <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
