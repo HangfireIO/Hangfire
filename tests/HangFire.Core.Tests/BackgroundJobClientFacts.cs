@@ -90,14 +90,15 @@ namespace HangFire.Core.Tests
 
             client.Create(_job, _state.Object);
 
-            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>()));
+            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>(), It.IsNotNull<IJobCreator>()));
         }
 
         [Fact]
         public void CreateJob_WrapsProcessException_IntoItsOwnException()
         {
             var client = CreateClient();
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Throws<InvalidOperationException>();
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IJobCreator>()))
+                .Throws<InvalidOperationException>();
 
             var exception = Assert.Throws<CreateJobFailedException>(
                 () => client.Create(_job, _state.Object));

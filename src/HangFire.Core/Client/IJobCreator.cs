@@ -1,5 +1,5 @@
-// This file is part of HangFire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of HangFire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,16 +16,8 @@
 
 namespace HangFire.Client
 {
-    /// <summary>
-    /// This interface acts as extensibility point for the process
-    /// of job creation. See the default implementation in the
-    /// <see cref="JobCreationProcess"/> class.
-    /// </summary>
-    public interface IJobCreationProcess
+    public interface IJobCreator
     {
-        /// <summary>
-        /// Runs the process of job creation with the specified context.
-        /// </summary>
-        void Run(CreateContext context, IJobCreator creator);
+        void Create();
     }
 }

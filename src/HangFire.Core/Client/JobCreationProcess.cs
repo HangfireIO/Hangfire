@@ -47,15 +47,16 @@ namespace HangFire.Client
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
-        public void Run(CreateContext context)
+        public void Run(CreateContext context, IJobCreator creator)
         {
             if (context == null) throw new ArgumentNullException("context");
+            if (creator == null) throw new ArgumentNullException("creator");
 
             var filterInfo = GetFilters(context.Job.MethodData);
 
             try
             {
-                CreateWithFilters(context, filterInfo.ClientFilters);
+                CreateWithFilters(context, creator, filterInfo.ClientFilters);
             }
             catch (Exception ex)
             {
@@ -76,12 +77,13 @@ namespace HangFire.Client
 
         private static void CreateWithFilters(
             CreateContext context,
+            IJobCreator creator,
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                context.CreateJob();
+                creator.Create();
                 return new CreatedContext(context, false, null);
             };
 

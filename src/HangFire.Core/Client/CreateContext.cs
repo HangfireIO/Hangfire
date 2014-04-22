@@ -26,7 +26,7 @@ namespace HangFire.Client
     /// Provides information about the context in which the job
     /// is being created.
     /// </summary>
-    public class CreateContext
+    public class CreateContext : IJobCreator
     {
         private readonly IDictionary<string, string> _parameters
             = new Dictionary<string, string>();
@@ -139,7 +139,7 @@ namespace HangFire.Client
             }
         }
 
-        internal virtual void CreateJob()
+        void IJobCreator.Create()
         {
             var stateMachine = Connection.CreateStateMachine();
 

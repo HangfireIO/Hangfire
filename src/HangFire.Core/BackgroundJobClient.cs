@@ -76,7 +76,7 @@ namespace HangFire
             try
             {
                 var context = new CreateContext(_connection, job, state);
-                _process.Run(context);
+                _process.Run(context, context);
 
                 return context.JobId;
             }

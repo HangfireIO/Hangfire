@@ -13,8 +13,9 @@ namespace HangFire.Core.Tests.Client
 {
     public class JobCreationProcessFacts
     {
-        private readonly Mock<CreateContext> _context;
-        private readonly IList<object> _filters; 
+        private readonly CreateContext _context;
+        private readonly IList<object> _filters;
+        private readonly Mock<IJobCreator> _creator;
 
         public JobCreationProcessFacts()
         {
@@ -23,10 +24,8 @@ namespace HangFire.Core.Tests.Client
             var state = new Mock<State>();
 
             _filters = new List<object>();
-            _context = new Mock<CreateContext>(connection.Object, job, state.Object)
-            {
-                CallBase = false
-            };
+            _context = new CreateContext(connection.Object, job, state.Object);
+            _creator = new Mock<IJobCreator>();
         }
 
         [Fact]
@@ -34,8 +33,21 @@ namespace HangFire.Core.Tests.Client
         {
             var process = CreateProcess();
 
-            Assert.Throws<ArgumentNullException>(
-                () => process.Run(null));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => process.Run(null, _creator.Object));
+
+            Assert.Equal("context", exception.ParamName);
+        }
+
+        [Fact]
+        public void Run_ThrowsAnException_WhenCreatorIsNull()
+        {
+            var process = CreateProcess();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => process.Run(_context, null));
+
+            Assert.Equal("creator", exception.ParamName);
         }
 
         [Fact]
@@ -43,19 +55,19 @@ namespace HangFire.Core.Tests.Client
         {
             var process = CreateProcess();
 
-            process.Run(_context.Object);
+            process.Run(_context, _creator.Object);
 
-            _context.Verify(x => x.CreateJob(), Times.Once);
+            _creator.Verify(x => x.Create(), Times.Once);
         }
 
         [Fact]
         public void Run_DoesNotCatchExceptions()
         {
-            _context.Setup(x => x.CreateJob()).Throws<InvalidOperationException>();
+            _creator.Setup(x => x.Create()).Throws<InvalidOperationException>();
             var process = CreateProcess();
 
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => process.Run(_context, _creator.Object));
         }
 
         [Fact]
@@ -64,11 +76,11 @@ namespace HangFire.Core.Tests.Client
             var filter = new Mock<IClientExceptionFilter>();
             _filters.Add(filter.Object);
 
-            _context.Setup(x => x.CreateJob()).Throws<InvalidOperationException>();
+            _creator.Setup(x => x.Create()).Throws<InvalidOperationException>();
             var process = CreateProcess();
 
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => process.Run(_context, _creator.Object));
             
             filter.Verify(x => x.OnClientException(
                 It.IsNotNull<ClientExceptionContext>()));
@@ -87,13 +99,13 @@ namespace HangFire.Core.Tests.Client
             _filters.Add(filter1.Object);
             _filters.Add(filter2.Object);
 
-            _context.Setup(x => x.CreateJob()).Throws<InvalidOperationException>();
+            _creator.Setup(x => x.Create()).Throws<InvalidOperationException>();
 
             var process = CreateProcess();
 
             // Act
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => process.Run(_context, _creator.Object));
 
             // Assert - see the `SequenceAttribute` class.
         }
@@ -111,7 +123,7 @@ namespace HangFire.Core.Tests.Client
             var process = CreateProcess();
 
             // Act & Assert
-            Assert.DoesNotThrow(() => process.Run(_context.Object));
+            Assert.DoesNotThrow(() => process.Run(_context, _creator.Object));
         }
 
         [Fact, Sequence]
@@ -122,13 +134,13 @@ namespace HangFire.Core.Tests.Client
             _filters.Add(filter.Object);
 
             filter.Setup(x => x.OnCreating(It.IsNotNull<CreatingContext>())).InSequence();
-            _context.Setup(x => x.CreateJob()).InSequence();
+            _creator.Setup(x => x.Create()).InSequence();
             filter.Setup(x => x.OnCreated(It.IsNotNull<CreatedContext>())).InSequence();
 
             var process = CreateProcess();
 
             // Act
-            process.Run(_context.Object);
+            process.Run(_context, _creator.Object);
 
             // Assert - see the `SequenceAttribute` class.
         }
@@ -151,7 +163,7 @@ namespace HangFire.Core.Tests.Client
             var process = CreateProcess();
 
             // Act
-            process.Run(_context.Object);
+            process.Run(_context, _creator.Object);
 
             // Assert - see the `SequenceAttribute` class.
         }
@@ -169,10 +181,10 @@ namespace HangFire.Core.Tests.Client
             var process = CreateProcess();
 
             // Act
-            process.Run(_context.Object);
+            process.Run(_context, _creator.Object);
 
             // Assert
-            _context.Verify(x => x.CreateJob(), Times.Never);
+            _creator.Verify(x => x.Create(), Times.Never);
             filter.Verify(x => x.OnCreated(It.IsAny<CreatedContext>()), Times.Never);
         }
 
@@ -192,7 +204,7 @@ namespace HangFire.Core.Tests.Client
             var process = CreateProcess();
 
             // Act
-            process.Run(_context.Object);
+            process.Run(_context, _creator.Object);
 
             // Assert
             outerFilter.Verify(x => x.OnCreated(It.Is<CreatedContext>(context => context.Canceled)));
@@ -212,10 +224,10 @@ namespace HangFire.Core.Tests.Client
 
             // Act
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => process.Run(_context, _creator.Object));
 
             // Assert
-            _context.Verify(x => x.CreateJob(), Times.Never);
+            _creator.Verify(x => x.Create(), Times.Never);
             filter.Verify(x => x.OnCreated(It.IsAny<CreatedContext>()), Times.Never);
         }
 
@@ -227,13 +239,13 @@ namespace HangFire.Core.Tests.Client
             _filters.Add(filter.Object);
 
             var exception = new InvalidOperationException();
-            _context.Setup(x => x.CreateJob()).Throws(exception);
+            _creator.Setup(x => x.Create()).Throws(exception);
 
             var process = CreateProcess();
 
             // Act
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => process.Run(_context, _creator.Object));
 
             // Assert
             filter.Verify(x => x.OnCreated(It.Is<CreatedContext>(
@@ -251,13 +263,13 @@ namespace HangFire.Core.Tests.Client
             _filters.Add(innerFilter.Object);
 
             var exception = new InvalidOperationException();
-            _context.Setup(x => x.CreateJob()).Throws(exception);
+            _creator.Setup(x => x.Create()).Throws(exception);
 
             var process = CreateProcess();
 
             // Act
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => process.Run(_context, _creator.Object));
 
             outerFilter.Verify(x => x.OnCreated(It.Is<CreatedContext>(context => context.Exception == exception)));
         }
@@ -270,7 +282,7 @@ namespace HangFire.Core.Tests.Client
             _filters.Add(filter.Object);
 
             var exception = new InvalidOperationException();
-            _context.Setup(x => x.CreateJob()).Throws(exception);
+            _creator.Setup(x => x.Create()).Throws(exception);
 
             filter.Setup(x => x.OnCreated(It.Is<CreatedContext>(context => context.Exception == exception)))
                 .Callback((CreatedContext x) => x.ExceptionHandled = true);
@@ -278,7 +290,7 @@ namespace HangFire.Core.Tests.Client
             var process = CreateProcess();
 
             // Act & Assert
-            Assert.DoesNotThrow(() => process.Run(_context.Object));
+            Assert.DoesNotThrow(() => process.Run(_context, _creator.Object));
         }
 
         [Fact]
@@ -291,7 +303,7 @@ namespace HangFire.Core.Tests.Client
             _filters.Add(outerFilter.Object);
             _filters.Add(innerFilter.Object);
 
-            _context.Setup(x => x.CreateJob()).Throws<InvalidOperationException>();
+            _creator.Setup(x => x.Create()).Throws<InvalidOperationException>();
 
             innerFilter.Setup(x => x.OnCreated(It.IsAny<CreatedContext>()))
                 .Callback((CreatedContext x) => x.ExceptionHandled = true);
@@ -299,7 +311,7 @@ namespace HangFire.Core.Tests.Client
             var process = CreateProcess();
 
             // Act
-            Assert.DoesNotThrow(() => process.Run(_context.Object));
+            Assert.DoesNotThrow(() => process.Run(_context, _creator.Object));
 
             // Assert
             outerFilter.Verify(x => x.OnCreated(It.Is<CreatedContext>(context => context.Exception != null)));

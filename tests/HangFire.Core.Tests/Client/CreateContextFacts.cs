@@ -190,7 +190,7 @@ namespace HangFire.Core.Tests.Client
         {
             var context = CreateContext();
 
-            context.CreateJob();
+            ((IJobCreator)context).Create();
 
             _stateMachine.Verify(x => x.CreateInState(
                 context.Job,
@@ -206,7 +206,7 @@ namespace HangFire.Core.Tests.Client
                 .Setup(x => x.CreateInState(context.Job, It.IsAny<Dictionary<string, string>>(), context.InitialState))
                 .Returns("id");
 
-            context.CreateJob();
+            ((IJobCreator)context).Create();
 
             Assert.Equal("id", context.JobId);
         }
@@ -217,7 +217,7 @@ namespace HangFire.Core.Tests.Client
             var context = CreateContext();
             context.SetJobParameter("name", new { key = "value" });
 
-            context.CreateJob();
+            ((IJobCreator)context).Create();
 
             _stateMachine.Verify(x => x.CreateInState(
                 It.IsAny<Job>(),
@@ -230,7 +230,7 @@ namespace HangFire.Core.Tests.Client
         public void SetJobParameter_ThrowsAnException_AfterCreateJobWasCalled()
         {
             var context = CreateContext();
-            context.CreateJob();
+            ((IJobCreator)context).Create();
 
             Assert.Throws<InvalidOperationException>(
                 () => context.SetJobParameter("name", "value"));
@@ -241,7 +241,7 @@ namespace HangFire.Core.Tests.Client
         {
             var context = CreateContext();
 
-            context.CreateJob();
+            ((IJobCreator)context).Create();
 
             Assert.DoesNotThrow(
                 () => context.GetJobParameter<string>("name"));
@@ -255,7 +255,7 @@ namespace HangFire.Core.Tests.Client
                 .Returns("id");
 
             var context = CreateContext();
-            context.CreateJob();
+            ((IJobCreator)context).Create();
 
             var contextCopy = new CreateContext(context);
 
@@ -266,7 +266,7 @@ namespace HangFire.Core.Tests.Client
         public void CopyCtor_CopiesTheFactThatJobWasCreated()
         {
             var context = CreateContext();
-            context.CreateJob();
+            ((IJobCreator)context).Create();
 
             var contextCopy = new CreateContext(context);
 

@@ -58,6 +58,7 @@
     </Compile>
     <Compile Include="Client\IJobCreationProcess.cs" />
     <Compile Include="BackgroundJobClientExtensions.cs" />
+    <Compile Include="Client\IJobCreator.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
     <Compile Include="IBackgroundJobClient.cs" />
