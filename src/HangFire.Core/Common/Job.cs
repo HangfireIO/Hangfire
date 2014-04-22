@@ -52,6 +52,11 @@ namespace HangFire.Common
 
             ValidateMethod(methodData.MethodInfo);
 
+            if (methodData.MethodInfo.GetParameters().Length != arguments.Length)
+            {
+                throw new ArgumentException("Argument count must be equal to method parameter count.", "arguments");
+            }
+
             MethodData = methodData;
             Arguments = arguments;
         }

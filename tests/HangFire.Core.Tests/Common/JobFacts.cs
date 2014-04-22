@@ -12,7 +12,7 @@ namespace HangFire.Core.Tests.Common
         public JobFacts()
         {
             _methodData = MethodData.FromExpression(() => StaticMethod());
-            _arguments = new[] { "hello", "world" };
+            _arguments = new string[0];
         }
 
         [Fact]
@@ -36,6 +36,16 @@ namespace HangFire.Core.Tests.Common
 
             Assert.Same(_methodData, job.MethodData);
             Assert.Same(_arguments, job.Arguments);
+        }
+
+        [Fact]
+        public void Ctor_ShouldThrowAnException_WhenArgumentCountIsNotEqualToParameterCount()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => new Job(_methodData, new[] { "hello!" }));
+
+            Assert.Equal("arguments", exception.ParamName);
+            Assert.Contains("count", exception.Message);
         }
 
         [Fact]
