@@ -34,8 +34,8 @@ namespace HangFire.Server.Performing
         }
 
         internal PerformContext(
-            WorkerContext workerContext, 
-            IStorageConnection connection, 
+            WorkerContext workerContext,
+            IStorageConnection connection,
             string jobId,
             MethodData methodData)
             : base(workerContext)
@@ -64,12 +64,25 @@ namespace HangFire.Server.Performing
 
         public void SetJobParameter(string name, object value)
         {
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+
             Connection.SetJobParameter(JobId, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            return JobHelper.FromJson<T>(Connection.GetJobParameter(JobId, name));
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+
+            try
+            {
+                return JobHelper.FromJson<T>(Connection.GetJobParameter(JobId, name));
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(String.Format(
+                    "Could not get a value of the job parameter `{0}`. See inner exception for details.",
+                    name), ex);
+            }
         }
     }
 }

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
+using System;
 
 namespace HangFire.Server
 {
@@ -30,6 +30,9 @@ namespace HangFire.Server
             string[] queueNames, 
             int workerNumber)
         {
+            if (serverName == null) throw new ArgumentNullException("serverName");
+            if (queueNames == null) throw new ArgumentNullException("queueNames");
+
             ServerName = serverName;
             QueueNames = queueNames;
             WorkerNumber = workerNumber;

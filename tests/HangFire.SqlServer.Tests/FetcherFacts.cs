@@ -86,7 +86,7 @@ values (@jobId, @queue)";
                     CreateTimingOutCancellationToken());
 
                 // Assert
-                Assert.Equal("1", payload.Id);
+                Assert.Equal("1", payload.JobId);
                 Assert.Equal("default", payload.Queue);
             });
         }
@@ -117,7 +117,7 @@ values (scope_identity(), @queue)";
 
                 var fetchedAt = connection.Query<DateTime?>(
                     "select FetchedAt from HangFire.JobQueue where JobId = @id",
-                    new { id = payload.Id }).Single();
+                    new { id = payload.JobId }).Single();
 
                 Assert.NotNull(fetchedAt);
                 Assert.True(fetchedAt > DateTime.UtcNow.AddMinutes(-1));
@@ -152,7 +152,7 @@ values (scope_identity(), @queue, @fetchedAt)";
                     CreateTimingOutCancellationToken());
 
                 // Assert
-                Assert.NotEmpty(payload.Id);
+                Assert.NotEmpty(payload.JobId);
             });
         }
 
@@ -183,7 +183,7 @@ values (scope_identity(), @queue)";
                 // Assert
                 var otherJobFetchedAt = connection.Query<DateTime?>(
                     "select FetchedAt from HangFire.JobQueue where JobId != @id",
-                    new { id = payload.Id }).Single();
+                    new { id = payload.JobId }).Single();
 
                 Assert.Null(otherJobFetchedAt);
             });
@@ -234,14 +234,14 @@ values (scope_identity(), @queue)";
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 
-                Assert.NotNull(critical.Id);
+                Assert.NotNull(critical.JobId);
                 Assert.Equal("critical", critical.Queue);
 
                 var @default = storageConnection.FetchNextJob(
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 
-                Assert.NotNull(@default.Id);
+                Assert.NotNull(@default.JobId);
                 Assert.Equal("default", @default.Queue);
             });
         }

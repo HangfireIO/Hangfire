@@ -170,7 +170,7 @@
     <Compile Include="Filters\StatisticsHistoryFilterAttribute.cs" />
     <Compile Include="Storage\IWriteOnlyTransaction.cs" />
     <Compile Include="Storage\IStorageConnection.cs" />
-    <Compile Include="Storage\StateAndInvocationData.cs" />
+    <Compile Include="Storage\JobData.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

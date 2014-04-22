@@ -15,7 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Server.Performing;
@@ -30,24 +29,31 @@ namespace HangFire.Server
 
         public ProcessingJob(
             IStorageConnection connection,
-            string id,
+            string jobId,
             string queue)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (queue == null) throw new ArgumentNullException("queue");
+
             _connection = connection;
-            Id = id;
+            JobId = jobId;
             Queue = queue;
         }
 
-        public string Id { get; private set; }
+        public string JobId { get; private set; }
         public string Queue { get; private set; }
 
         internal virtual void Process(WorkerContext context, IJobPerformanceProcess process)
         {
+            if (context == null) throw new ArgumentNullException("context");
+            if (process == null) throw new ArgumentNullException("process");
+
             var stateMachine = _connection.CreateStateMachine();
             var processingState = new ProcessingState(context.ServerName);
 
             if (!stateMachine.TryToChangeState(
-                Id, 
+                JobId, 
                 processingState, 
                 new [] { EnqueuedState.StateName, ProcessingState.StateName }))
             {
@@ -65,7 +71,7 @@ namespace HangFire.Server
             {
                 IJobPerformer performer;
 
-                var jobData = _connection.GetJobData(Id);
+                var jobData = _connection.GetJobData(JobId);
                 jobData.EnsureLoaded();
 
                 if (jobData.MethodData.OldFormat)
@@ -77,7 +83,7 @@ namespace HangFire.Server
                     performer = new Job(jobData.MethodData, jobData.Arguments);
                 }
                 
-                var performContext = new PerformContext(context, _connection, Id, jobData.MethodData);
+                var performContext = new PerformContext(context, _connection, JobId, jobData.MethodData);
                 process.Run(performContext, performer);
 
                 state = new SucceededState();
@@ -97,13 +103,14 @@ namespace HangFire.Server
                 };
             }
 
-            // TODO: check return value
-            stateMachine.TryToChangeState(Id, state, new [] { ProcessingState.StateName });
+            // Ignore return value, because we should not do
+            // anything when current state is not Processing.
+            stateMachine.TryToChangeState(JobId, state, new [] { ProcessingState.StateName });
         }
 
         public void Dispose()
         {
-            _connection.DeleteJobFromQueue(Id, Queue);
+            _connection.DeleteJobFromQueue(JobId, Queue);
         }
     }
 }
