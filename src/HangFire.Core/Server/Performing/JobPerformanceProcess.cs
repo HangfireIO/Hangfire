@@ -41,13 +41,11 @@ namespace HangFire.Server.Performing
             }
         }
 
-        protected virtual JobFilterInfo GetFilters(MethodData methodData)
-        {
-            return new JobFilterInfo(_getFiltersThunk(methodData));
-        }
-
         public void Run(PerformContext context, IJobPerformStrategy strategy)
         {
+            if (context == null) throw new ArgumentNullException("context");
+            if (strategy == null) throw new ArgumentNullException("strategy");
+
             var filterInfo = GetFilters(context.MethodData);
 
             try
@@ -64,6 +62,11 @@ namespace HangFire.Server.Performing
                     throw;
                 }
             }
+        }
+
+        private JobFilterInfo GetFilters(MethodData methodData)
+        {
+            return new JobFilterInfo(_getFiltersThunk(methodData));
         }
 
         private static void PerformJobWithFilters(
