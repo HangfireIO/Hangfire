@@ -11,7 +11,7 @@ using Xunit;
 
 namespace HangFire.SqlServer.Tests
 {
-    public class ConnectionFacts
+    public partial class ConnectionFacts
     {
         private readonly Mock<JobStorage> _storage;
 
@@ -54,16 +54,6 @@ namespace HangFire.SqlServer.Tests
             {
                 var transaction = connection.CreateWriteTransaction();
                 Assert.NotNull(transaction);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void CreateFetcher_ReturnsNonNullInstance()
-        {
-            UseConnection(connection =>
-            {
-                var fetcher = connection.CreateFetcher(new[] { "default" });
-                Assert.NotNull(fetcher);
             });
         }
 
@@ -160,28 +150,28 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void GetJobStateAndInvocationData_ThrowsAnException_WhenJobIdIsNull()
+        public void GetJobData_ThrowsAnException_WhenJobIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>(
-                    () => connection.GetJobStateAndInvocationData(null)));
+                    () => connection.GetJobData(null)));
         }
 
         [Fact, CleanDatabase]
-        public void GetJobStateAndInvocationData_ReturnsNull_WhenThereIsNoSuchJob()
+        public void GetJobData_ReturnsNull_WhenThereIsNoSuchJob()
         {
             UseConnection(connection =>
             {
-                var result = connection.GetJobStateAndInvocationData("1");
+                var result = connection.GetJobData("1");
                 Assert.Null(result);
             });
         }
 
         [Fact, CleanDatabase]
-        public void GetJobStateAndInvocationData_ReturnsResult_WhenJobExists()
+        public void GetJobData_ReturnsResult_WhenJobExists()
         {
             const string arrangeSql = @"
 insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
-values (@invocationData, '', @stateName, getutcdate())
+values (@invocationData, @arguments, @stateName, getutcdate())
 select scope_identity() as Id";
 
             UseConnections((sql, connection) =>
@@ -190,17 +180,17 @@ select scope_identity() as Id";
                     arrangeSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(new InvocationData("Type", "Method", "Parameters")),
-                        stateName = "Succeeded"
+                        invocationData = JobHelper.ToJson(MethodData.FromExpression(() => SampleMethod()).Serialize()),
+                        stateName = "Succeeded",
+                        arguments = "['Arguments']"
                     }).Single();
 
-                var result = connection.GetJobStateAndInvocationData(jobId.Id.ToString());
+                var result = connection.GetJobData(((int)jobId.Id).ToString());
 
                 Assert.NotNull(result);
-                Assert.Equal("Type", result.InvocationData.Type);
-                Assert.Equal("Method", result.InvocationData.Method);
-                Assert.Equal("Parameters", result.InvocationData.ParameterTypes);
+                Assert.NotNull(result.MethodData);
                 Assert.Equal("Succeeded", result.State);
+                Assert.Equal("Arguments", result.Arguments[0]);
             });
         }
 
@@ -624,5 +614,7 @@ values (@id, '', @heartbeat)";
                 action(connection);
             }
         }
+
+        public static void SampleMethod(){ }
     }
 }

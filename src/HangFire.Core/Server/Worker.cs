@@ -15,15 +15,10 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Common.Logging;
-using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.Server.Performing;
-using HangFire.States;
-using HangFire.Storage;
 
 namespace HangFire.Server
 {
@@ -31,6 +26,7 @@ namespace HangFire.Server
     {
         private readonly JobStorage _storage;
         private readonly WorkerContext _context;
+        private readonly IJobPerformanceProcess _process;
 
         private Thread _thread;
         private readonly ILog _logger;
@@ -40,9 +36,15 @@ namespace HangFire.Server
         private bool _stopSent;
 
         public Worker(JobStorage storage, WorkerContext context)
+            : this(storage, context, new JobPerformanceProcess())
+        {
+        }
+
+        public Worker(JobStorage storage, WorkerContext context, IJobPerformanceProcess process)
         {
             _storage = storage;
             _context = context;
+            _process = process;
 
             _logger = LogManager.GetLogger(String.Format("HangFire.Worker.{0}", context.WorkerNumber));
         }
@@ -79,6 +81,23 @@ namespace HangFire.Server
             _cts.Dispose();
         }
 
+        internal void ProcessNextJob(CancellationToken cancellationToken)
+        {
+            using (var connection = _storage.GetConnection())
+            using (var nextJob = connection.FetchNextJob(_context.QueueNames, cancellationToken))
+            {
+                nextJob.Process(_context, _process);
+
+                // Checkpoint #4. The job was performed, and it is in the one
+                // of the explicit states (Succeeded, Scheduled and so on).
+                // It should not be re-queued, but we still need to remove its
+                // processing information.
+            }
+
+            // Success point. No things must be done after previous command
+            // was succeeded.
+        }
+
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Unexpected exception should not fail the whole application.")]
         private void DoWork()
         {
@@ -91,26 +110,8 @@ namespace HangFire.Server
                     _cts.Token.ThrowIfCancellationRequested();
 
                     JobServer.RetryOnException(
-                        () =>
-                        {
-                            using (var connection = _storage.GetConnection())
-                            {
-                                var fetcher = connection.CreateFetcher(_context.QueueNames);
-                                var payload = fetcher.FetchNextJob(_cts.Token);
-
-                                PerformJob(connection, payload);
-
-                                // Checkpoint #4. The job was performed, and it is in the one
-                                // of the explicit states (Succeeded, Scheduled and so on).
-                                // It should not be re-queued, but we still need to remove its
-                                // processing information.
-
-                                connection.DeleteJobFromQueue(payload.Id, payload.Queue);
-
-                                // Success point. No things must be done after previous command
-                                // was succeeded.
-                            }
-                        }, _cts.Token.WaitHandle);
+                        () => ProcessNextJob(_cts.Token), 
+                        _cts.Token.WaitHandle);
                 }
             }
             catch (OperationCanceledException)
@@ -123,76 +124,6 @@ namespace HangFire.Server
                     String.Format("Unexpected exception caught. The worker will be stopped."),
                     ex);
             }
-        }
-
-        private void PerformJob(IStorageConnection connection, JobPayload payload)
-        {
-            if (payload == null)
-            {
-                return;
-            }
-
-            var stateMachine = new StateMachine(connection);
-            var processingState = new ProcessingState(_context.ServerName);
-
-            if (!stateMachine.TryToChangeState(
-                payload.Id, 
-                processingState, 
-                new [] { EnqueuedState.StateName, ProcessingState.StateName }))
-            {
-                return;
-            }
-
-            // Checkpoint #3. Job is in the Processing state. However, there are
-            // no guarantees that it was performed. We need to re-queue it even
-            // it was performed to guarantee that it was performed AT LEAST once.
-            // It will be re-queued after the JobTimeout was expired.
-
-            State state;
-
-            try
-            {
-                IJobPerformer performer;
-
-                var methodData = MethodData.Deserialize(payload.InvocationData);
-                if (methodData.OldFormat)
-                {
-                    // For compatibility with the Old Client API.
-                    // TODO: remove it in version 1.0
-                    var arguments = JobHelper.FromJson<Dictionary<string, string>>(
-                        payload.Args);
-
-                    performer = new JobAsClassPerformer(
-                        methodData, arguments);
-                }
-                else
-                {
-                    var arguments = JobHelper.FromJson<string[]>(payload.Arguments);
-                    performer = new Job(methodData, arguments);
-                }
-                
-                var performContext = new PerformContext(_context, connection, payload.Id, methodData);
-                _context.PerformanceProcess.Run(performContext, performer);
-
-                state = new SucceededState();
-            }
-            catch (JobPerformanceException ex)
-            {
-                state = new FailedState(ex.InnerException)
-                {
-                    Reason = ex.Message
-                };
-            }
-            catch (Exception ex)
-            {
-                state = new FailedState(ex)
-                {
-                    Reason = "Internal HangFire Server exception occurred. Please, report it to HangFire developers."
-                };
-            }
-
-            // TODO: check return value
-            stateMachine.TryToChangeState(payload.Id, state, new [] { ProcessingState.StateName });
         }
     }
 }

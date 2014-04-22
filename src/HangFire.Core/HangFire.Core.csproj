@@ -106,6 +106,7 @@
     <Compile Include="Client\Filters\CreatedContext.cs" />
     <Compile Include="Client\Filters\CreatingContext.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
+    <Compile Include="Server\Performing\IJobPerformanceProcess.cs" />
     <Compile Include="Server\Performing\JobAsClassPerformStrategy.cs" />
     <Compile Include="Server\Performing\PerformContext.cs" />
     <Compile Include="Server\Filters\ServerExceptionContext.cs" />
@@ -118,7 +119,6 @@
     <Compile Include="Filters\RecurringAttribute.cs" />
     <Compile Include="Filters\RetryAttribute.cs" />
     <Compile Include="Server\DisposableCollection.cs" />
-    <Compile Include="Server\IJobFetcher.cs" />
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
@@ -139,7 +139,7 @@
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
     <Compile Include="Server\Performing\IJobPerformer.cs" />
     <Compile Include="Server\WorkerManager.cs" />
-    <Compile Include="Server\JobPayload.cs" />
+    <Compile Include="Server\ProcessingJob.cs" />
     <Compile Include="JobStorage.cs" />
     <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="States\EnqueuedState.cs" />
@@ -153,7 +153,6 @@
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />
     <Compile Include="Server\JobServer.cs" />
-    <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\Performing\JobPerformanceProcess.cs" />
     <Compile Include="BackgroundJobClient.cs" />
     <Compile Include="Server\Worker.cs" />

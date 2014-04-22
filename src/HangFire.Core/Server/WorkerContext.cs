@@ -18,19 +18,25 @@ using System.Collections.Generic;
 
 namespace HangFire.Server
 {
-    public class WorkerContext : ServerContext
+    public class WorkerContext
     {
         internal WorkerContext(WorkerContext workerContext)
-            : this (workerContext, workerContext.WorkerNumber)
+            : this (workerContext.ServerName, workerContext.QueueNames, workerContext.WorkerNumber)
         {
         }
 
-        internal WorkerContext(ServerContext serverContext, int workerNumber)
-            : base(serverContext)
+        internal WorkerContext(
+            string serverName,
+            string[] queueNames, 
+            int workerNumber)
         {
+            ServerName = serverName;
+            QueueNames = queueNames;
             WorkerNumber = workerNumber;
         }
 
+        public string ServerName { get; private set; }
+        public string[] QueueNames { get; private set; }
         public int WorkerNumber { get; private set; }
     }
 }

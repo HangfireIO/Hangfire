@@ -14,12 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
-
-namespace HangFire.Server
+namespace HangFire.Server.Performing
 {
-    public interface IJobFetcher
+    internal interface IJobPerformanceProcess
     {
-        JobPayload FetchNextJob(CancellationToken cancellationToken);
+        void Run(PerformContext context, IJobPerformer performer);
     }
 }

@@ -16,8 +16,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
@@ -29,6 +32,7 @@ namespace HangFire.SqlServer
 {
     internal class SqlServerConnection : IStorageConnection
     {
+        private static readonly TimeSpan JobInvisibilityTimeOut = TimeSpan.FromMinutes(30);
         private readonly SqlConnection _connection;
 
         public SqlServerConnection(JobStorage storage, SqlConnection connection)
@@ -57,16 +61,59 @@ namespace HangFire.SqlServer
             return new SqlServerWriteOnlyTransaction(_connection);
         }
 
-        public IJobFetcher CreateFetcher(IEnumerable<string> queueNames)
-        {
-            return new SqlServerFetcher(_connection, queueNames.ToArray());
-        }
-
         public IDisposable AcquireJobLock(string jobId)
         {
             return new SqlServerDistributedLock(
                 String.Format("HangFire:Job:{0}", jobId), 
                 _connection);
+        }
+
+        public ProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        {
+            if (queues == null) throw new ArgumentNullException("queues");
+            if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
+
+            dynamic idAndQueue;
+
+            const string fetchJobSqlTemplate = @"
+set transaction isolation level read committed
+update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
+output INSERTED.JobId, INSERTED.Queue
+where FetchedAt {0}
+and Queue in @queues";
+
+            // Sql query is splitted to force SQL Server to use 
+            // INDEX SEEK instead of INDEX SCAN operator.
+            var fetchConditions = new[] { "is null", "< DATEADD(second, @timeout, GETUTCDATE())" };
+            var currentQueryIndex = 0;
+
+            do
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                idAndQueue = _connection.Query(
+                    String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
+                    new { queues = queues, timeout = JobInvisibilityTimeOut.Negate().TotalSeconds })
+                    .SingleOrDefault();
+
+                if (idAndQueue == null)
+                {
+                    if (currentQueryIndex == fetchConditions.Length - 1)
+                    {
+                        if (cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                        }
+                    }
+                }
+
+                currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
+            } while (idAndQueue == null);
+
+            return new ProcessingJob(
+                this,
+                idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
+                idAndQueue.Queue);
         }
 
         public string CreateExpiredJob(
@@ -118,12 +165,12 @@ values (@jobId, @name, @value)";
             return jobId;
         }
 
-        public StateAndInvocationData GetJobStateAndInvocationData(string id)
+        public JobData GetJobData(string id)
         {
             if (id == null) throw new ArgumentNullException("id");
 
             const string sql = 
-                @"select InvocationData, StateName from HangFire.Job where id = @id";
+                @"select InvocationData, StateName, Arguments from HangFire.Job where id = @id";
 
             var job = _connection.Query<SqlJob>(sql, new { id = id })
                 .SingleOrDefault();
@@ -133,10 +180,24 @@ values (@jobId, @name, @value)";
             // TODO: conversion exception could be thrown.
             var data = JobHelper.FromJson<InvocationData>(job.InvocationData);
 
-            return new StateAndInvocationData
+            MethodData methodData = null;
+            JobLoadException loadException = null;
+
+            try
             {
-                InvocationData = data,
+                methodData = MethodData.Deserialize(data);
+            }
+            catch (JobLoadException ex)
+            {
+                loadException = ex;
+            }
+
+            return new JobData
+            {
+                MethodData = methodData,
                 State = job.StateName,
+                Arguments = JobHelper.FromJson<string[]>(job.Arguments),
+                LoadException = loadException
             };
         }
 

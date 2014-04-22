@@ -20,8 +20,7 @@ namespace HangFire.Core.Tests.Server
 
         public JobPerformanceProcessFacts()
         {
-            var serverContext = new ServerContext("server", new string[0], null);
-            var workerContext = new WorkerContext(serverContext, 1);
+            var workerContext = new WorkerContext("server", new string[0], 1);
 
             var connection = new Mock<IStorageConnection>();
             const string jobId = "someId";

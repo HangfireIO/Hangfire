@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using HangFire.Server;
 using HangFire.States;
 
@@ -27,7 +28,6 @@ namespace HangFire.Storage
 
         IStateMachine CreateStateMachine();
         IWriteOnlyTransaction CreateWriteTransaction();
-        IJobFetcher CreateFetcher(IEnumerable<string> queueNames);
 
         string CreateExpiredJob(
             InvocationData invocationData,
@@ -35,12 +35,14 @@ namespace HangFire.Storage
             IDictionary<string, string> parameters,
             TimeSpan expireIn);
 
+        ProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
+        void DeleteJobFromQueue(string jobId, string queue);
+
         void SetJobParameter(string id, string name, string value);
         string GetJobParameter(string id, string name);
 
         IDisposable AcquireJobLock(string jobId);
-        StateAndInvocationData GetJobStateAndInvocationData(string id);
-        void DeleteJobFromQueue(string jobId, string queue);
+        JobData GetJobData(string id);
 
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 

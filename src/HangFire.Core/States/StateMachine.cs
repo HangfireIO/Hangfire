@@ -92,7 +92,9 @@ namespace HangFire.States
             // any state transitions will be made only within a such lock.
             using (_connection.AcquireJobLock(jobId))
             {
-                var jobData = _connection.GetJobStateAndInvocationData(jobId);
+                bool loadSucceeded;
+
+                var jobData = _connection.GetJobData(jobId);
 
                 if (jobData == null)
                 {
@@ -106,12 +108,10 @@ namespace HangFire.States
                     return false;
                 }
 
-                MethodData methodData = null;
-                bool loadSucceeded = true;
-
                 try
                 {
-                    methodData = MethodData.Deserialize(jobData.InvocationData);
+                    jobData.EnsureLoaded();
+                    loadSucceeded = true;
                 }
                 catch (JobLoadException ex)
                 {
@@ -130,7 +130,7 @@ namespace HangFire.States
                     loadSucceeded = false;
                 }
 
-                var context = new StateContext(jobId, methodData);
+                var context = new StateContext(jobId, jobData.MethodData);
                 var stateChanged = ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;

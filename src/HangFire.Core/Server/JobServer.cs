@@ -20,7 +20,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Common.Logging;
-using HangFire.Server.Performing;
 
 namespace HangFire.Server
 {
@@ -31,9 +30,9 @@ namespace HangFire.Server
 
         private static readonly ILog Logger = LogManager.GetLogger(typeof(JobServer));
 
-        private readonly ServerContext _context;
         private readonly int _workerCount;
-        private readonly IEnumerable<string> _queues;
+        private readonly string _serverName;
+        private readonly string[] _queues;
 
         private readonly Thread _serverThread;
 
@@ -48,18 +47,14 @@ namespace HangFire.Server
             JobStorage storage,
             string serverName,
             int workerCount,
-            IEnumerable<string> queues)
+            string[] queues)
         {
             _storage = storage;
             _workerCount = workerCount;
             _queues = queues;
+            _serverName = serverName;
 
             if (queues == null) throw new ArgumentNullException("queues");
-
-            _context = new ServerContext(
-                serverName,
-                _queues,
-                new JobPerformanceProcess());
 
             _serverThread = new Thread(RunServer)
                 {
@@ -79,7 +74,7 @@ namespace HangFire.Server
         {
             var storage = JobStorage.Current;
 
-            _manager = new WorkerManager(_storage, _context, _workerCount);
+            _manager = new WorkerManager(_storage, _serverName, _queues, _workerCount);
 
             var components = storage.GetComponents();
             foreach (var component in components)
@@ -107,7 +102,7 @@ namespace HangFire.Server
 
                 using (var connection = _storage.GetConnection())
                 {
-                    connection.AnnounceServer(_context.ServerName, _workerCount, _queues);
+                    connection.AnnounceServer(_serverName, _workerCount, _queues);
                 }
                 StartServer();
 
@@ -120,7 +115,7 @@ namespace HangFire.Server
                         {
                             using (var connection = _storage.GetConnection())
                             {
-                                connection.Heartbeat(_context.ServerName);
+                                connection.Heartbeat(_serverName);
                             }
                         }, 
                         _stopped);
@@ -137,7 +132,7 @@ namespace HangFire.Server
 
                 using (var connection = _storage.GetConnection())
                 {
-                    connection.RemoveServer(_context.ServerName);
+                    connection.RemoveServer(_serverName);
                 }
 
                 Logger.Info("HangFire Server has been stopped.");

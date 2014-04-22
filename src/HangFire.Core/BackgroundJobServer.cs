@@ -49,7 +49,7 @@ namespace HangFire
             Queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
         }
 
-        public IEnumerable<string> Queues { get; private set; }
+        public string[] Queues { get; private set; }
         public int WorkerCount { get; private set; }
 
         /// <summary>

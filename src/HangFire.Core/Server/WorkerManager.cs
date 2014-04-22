@@ -15,6 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using Common.Logging;
 
@@ -28,13 +29,17 @@ namespace HangFire.Server
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         
-        public WorkerManager(JobStorage storage, ServerContext context, int workerCount)
+        public WorkerManager(
+            JobStorage storage, 
+            string serverName,
+            string[] queueNames,
+            int workerCount)
         {
             _workers = new DisposableCollection<Worker>();
 
             for (var i = 1; i <= workerCount; i++)
             {
-                var workerContext = new WorkerContext(context, i);
+                var workerContext = new WorkerContext(serverName, queueNames, i);
 
                 var worker = new Worker(storage, workerContext);
                 worker.Start();

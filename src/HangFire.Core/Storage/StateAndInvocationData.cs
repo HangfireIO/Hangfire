@@ -14,11 +14,27 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using HangFire.Common;
+
 namespace HangFire.Storage
 {
-    public class StateAndInvocationData
+    public class JobData
     {
         public string State { get; set; }
-        public InvocationData InvocationData { get; set; }
+        public MethodData MethodData { get; set; }
+        public string[] Arguments { get; set; }
+        public Dictionary<string, string> Args { get; set; }
+
+        public JobLoadException LoadException { get; set; }
+
+        public void EnsureLoaded()
+        {
+            if (LoadException != null)
+            {
+                throw LoadException;
+            }
+        }
     }
 }

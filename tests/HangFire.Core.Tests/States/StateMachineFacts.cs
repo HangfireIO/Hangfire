@@ -172,8 +172,8 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_ReturnsFalse_WhenJobIsNotFound()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobStateAndInvocationData(It.IsAny<string>()))
-                .Returns((StateAndInvocationData)null);
+            _connection.Setup(x => x.GetJobData(It.IsAny<string>()))
+                .Returns((JobData)null);
 
             var stateMachine = CreateStateMachineMock();
 
@@ -182,7 +182,7 @@ namespace HangFire.Core.Tests.States
 
             // Assert
             Assert.False(result);
-            _connection.Verify(x => x.GetJobStateAndInvocationData("1"));
+            _connection.Verify(x => x.GetJobData("1"));
 
             stateMachine.Verify(
                 x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()),
@@ -193,11 +193,11 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_ReturnsFalse_WhenFromStatesArgumentDoesNotContainCurrentState()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
-                .Returns(new StateAndInvocationData
+            _connection.Setup(x => x.GetJobData("1"))
+                .Returns(new JobData
                 {
                     State = "Old",
-                    InvocationData = MethodData.FromExpression(() => Console.WriteLine()).Serialize()
+                    MethodData = MethodData.FromExpression(() => Console.WriteLine())
                 });
 
             var stateMachine = CreateStateMachineMock();
@@ -217,11 +217,11 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_ReturnsFalse_WhenStateChangeReturnsFalse()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
-                .Returns(new StateAndInvocationData
+            _connection.Setup(x => x.GetJobData("1"))
+                .Returns(new JobData
                 {
                     State = "Old",
-                    InvocationData = MethodData.FromExpression(() => Console.WriteLine()).Serialize()
+                    MethodData = MethodData.FromExpression(() => Console.WriteLine())
                 });
 
             var stateMachine = CreateStateMachineMock();
@@ -241,11 +241,11 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_MoveJobToTheSpecifiedState_WhenMethodDataCouldBeFound()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
-                .Returns(new StateAndInvocationData
+            _connection.Setup(x => x.GetJobData("1"))
+                .Returns(new JobData
                 {
                     State = "Old",
-                    InvocationData = MethodData.FromExpression(() => Console.WriteLine()).Serialize()
+                    MethodData = MethodData.FromExpression(() => Console.WriteLine())
                 });
 
             var stateMachine = CreateStateMachineMock();
@@ -270,11 +270,12 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_MoveJobToTheFailedState_IfMethodDataCouldNotBeResolved()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobStateAndInvocationData("1"))
-                .Returns(new StateAndInvocationData
+            _connection.Setup(x => x.GetJobData("1"))
+                .Returns(new JobData
                 {
                     State = "Old",
-                    InvocationData = new InvocationData("NotExists", "NotExists", null)
+                    MethodData = null,
+                    LoadException = new JobLoadException()
                 });
 
             var stateMachine = CreateStateMachineMock();

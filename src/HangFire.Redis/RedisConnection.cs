@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.States;
@@ -28,6 +29,7 @@ namespace HangFire.Redis
 {
     internal class RedisConnection : IStorageConnection
     {
+        private static readonly TimeSpan FetchTimeout = TimeSpan.FromSeconds(1);
         private readonly IRedisClient _redis;
 
         public RedisConnection(JobStorage storage, IRedisClient redis)
@@ -53,9 +55,62 @@ namespace HangFire.Redis
             return new RedisWriteOnlyTransaction(_redis.CreateTransaction());
         }
 
-        public IJobFetcher CreateFetcher(IEnumerable<string> queueNames)
+        public ProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            return new RedisJobFetcher(_redis, queueNames, TimeSpan.FromSeconds(1));
+            string jobId;
+            string queueName;
+            var queueIndex = 0;
+
+            do
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                queueIndex = (queueIndex + 1) % queues.Length;
+                queueName = queues[queueIndex];
+
+                var queueKey = RedisStorage.Prefix + String.Format("queue:{0}", queueName);
+                var fetchedKey = RedisStorage.Prefix + String.Format("queue:{0}:dequeued", queueName);
+
+                if (queueIndex == 0)
+                {
+                    jobId = _redis.BlockingPopAndPushItemBetweenLists(
+                        queueKey,
+                        fetchedKey,
+                        FetchTimeout);
+                }
+                else
+                {
+                    jobId = _redis.PopAndPushItemBetweenLists(
+                        queueKey, fetchedKey);
+                }
+
+            } while (jobId == null);
+
+            // The job was fetched by the server. To provide reliability,
+            // we should ensure, that the job will be performed and acquired
+            // resources will be disposed even if the server will crash 
+            // while executing one of the subsequent lines of code.
+
+            // The job's processing is splitted into a couple of checkpoints.
+            // Each checkpoint occurs after successful update of the 
+            // job information in the storage. And each checkpoint describes
+            // the way to perform the job when the server was crashed after
+            // reaching it.
+
+            // Checkpoint #1-1. The job was fetched into the fetched list,
+            // that is being inspected by the FetchedJobsWatcher instance.
+            // Job's has the implicit 'Fetched' state.
+
+            _redis.SetEntryInHash(
+                String.Format(RedisStorage.Prefix + "job:{0}", jobId),
+                "Fetched",
+                JobHelper.ToStringTimestamp(DateTime.UtcNow));
+
+            // Checkpoint #2. The job is in the implicit 'Fetched' state now.
+            // This state stores information about fetched time. The job will
+            // be re-queued when the JobTimeout will be expired.
+
+            return new ProcessingJob(this, jobId, queueName);
         }
 
         public IDisposable AcquireJobLock(string jobId)
@@ -98,39 +153,51 @@ namespace HangFire.Redis
             return jobId;
         }
 
-        public StateAndInvocationData GetJobStateAndInvocationData(string id)
+        public JobData GetJobData(string id)
         {
-            var jobData = _redis.GetAllEntriesFromHash(
+            var storedData = _redis.GetAllEntriesFromHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", id));
 
-            if (jobData.Count == 0) return null;
+            if (storedData.Count == 0) return null;
 
             string type = null;
             string method = null;
             string parameterTypes = null;
 
-            if (jobData.ContainsKey("Type"))
+            if (storedData.ContainsKey("Type"))
             {
-                type = jobData["Type"];
+                type = storedData["Type"];
             }
-            if (jobData.ContainsKey("Method"))
+            if (storedData.ContainsKey("Method"))
             {
-                method = jobData["Method"];
+                method = storedData["Method"];
             }
-            if (jobData.ContainsKey("ParameterTypes"))
+            if (storedData.ContainsKey("ParameterTypes"))
             {
-                parameterTypes = jobData["ParameterTypes"];
+                parameterTypes = storedData["ParameterTypes"];
             }
 
-            var invocationData = new InvocationData(
-                type,
-                method,
-                parameterTypes);
+            MethodData methodData = null;
+            JobLoadException loadException = null;
 
-            return new StateAndInvocationData
+            var invocationData = new InvocationData(type, method, parameterTypes);
+
+            try
             {
-                InvocationData = invocationData,
-                State = jobData.ContainsKey("State") ? jobData["State"] : null,
+                methodData = MethodData.Deserialize(invocationData);
+            }
+            catch (JobLoadException ex)
+            {
+                loadException = ex;
+            }
+            
+            return new JobData
+            {
+                MethodData = methodData,
+                State = storedData.ContainsKey("State") ? storedData["State"] : null,
+                Arguments = JobHelper.FromJson<string[]>(storedData.ContainsKey("Arguments") ? storedData["Arguments"] : null),
+                Args = JobHelper.FromJson<Dictionary<string, string>>(storedData.ContainsKey("Args") ? storedData["Args"] : null),
+                LoadException = loadException
             };
         }
 

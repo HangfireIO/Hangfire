@@ -23,7 +23,7 @@ using HangFire.Server.Filters;
 
 namespace HangFire.Server.Performing
 {
-    internal class JobPerformanceProcess
+    internal class JobPerformanceProcess : IJobPerformanceProcess
     {
         private readonly Func<MethodData, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
