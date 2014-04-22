@@ -21,14 +21,14 @@ using HangFire.Common;
 
 namespace HangFire.Server.Performing
 {
-    internal class JobAsClassPerformStrategy : IJobPerformStrategy
+    internal class JobAsClassPerformer : IJobPerformer
     {
         private readonly JobActivator _activator = JobActivator.Current;
 
         private readonly MethodData _methodData;
         private readonly Dictionary<string, string> _arguments;
 
-        public JobAsClassPerformStrategy(
+        public JobAsClassPerformer(
             MethodData methodData,
             Dictionary<string, string> arguments)
         {

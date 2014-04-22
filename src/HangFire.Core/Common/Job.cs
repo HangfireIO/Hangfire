@@ -29,7 +29,7 @@ namespace HangFire.Common
     /// <summary>
     /// Represents the information about background invocation of a method.
     /// </summary>
-    public class Job : IJobPerformStrategy
+    public class Job : IJobPerformer
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with

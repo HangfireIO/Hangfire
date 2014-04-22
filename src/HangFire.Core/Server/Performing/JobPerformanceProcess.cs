@@ -41,16 +41,16 @@ namespace HangFire.Server.Performing
             }
         }
 
-        public void Run(PerformContext context, IJobPerformStrategy strategy)
+        public void Run(PerformContext context, IJobPerformer performer)
         {
             if (context == null) throw new ArgumentNullException("context");
-            if (strategy == null) throw new ArgumentNullException("strategy");
+            if (performer == null) throw new ArgumentNullException("performer");
 
             var filterInfo = GetFilters(context.MethodData);
 
             try
             {
-                PerformJobWithFilters(context, strategy, filterInfo.ServerFilters);
+                PerformJobWithFilters(context, performer, filterInfo.ServerFilters);
             }
             catch (Exception ex)
             {
@@ -71,7 +71,7 @@ namespace HangFire.Server.Performing
 
         private static void PerformJobWithFilters(
             PerformContext context,
-            IJobPerformStrategy strategy,
+            IJobPerformer strategy,
             IEnumerable<IServerFilter> filters)
         {
             var preContext = new PerformingContext(context);

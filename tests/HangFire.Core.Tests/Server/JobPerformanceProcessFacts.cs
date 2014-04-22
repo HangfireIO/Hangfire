@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Client.Filters;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.Server.Filters;
@@ -15,7 +14,7 @@ namespace HangFire.Core.Tests.Server
     public class JobPerformanceProcessFacts
     {
         private readonly PerformContext _context;
-        private readonly Mock<IJobPerformStrategy> _performer;
+        private readonly Mock<IJobPerformer> _performer;
 
         private readonly IList<object> _filters; 
 
@@ -29,7 +28,7 @@ namespace HangFire.Core.Tests.Server
             var methodData = MethodData.FromExpression(() => Method());
 
             _context = new PerformContext(workerContext, connection.Object, jobId, methodData);
-            _performer = new Mock<IJobPerformStrategy>();
+            _performer = new Mock<IJobPerformer>();
 
             _filters = new List<object>();
         }
@@ -46,14 +45,14 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsAnException_WhenPerformStrategyIsNull()
+        public void Run_ThrowsAnException_WhenPerformPerformerIsNull()
         {
             var process = CreateProcess();
 
             var exception = Assert.Throws<ArgumentNullException>(
                 () => process.Run(_context, null));
 
-            Assert.Equal("strategy", exception.ParamName);
+            Assert.Equal("performer", exception.ParamName);
         }
 
         [Fact]

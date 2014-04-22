@@ -136,7 +136,7 @@
     <Compile Include="Storage\Monitoring\StateHistoryDto.cs" />
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
-    <Compile Include="Server\Performing\IJobPerformStrategy.cs" />
+    <Compile Include="Server\Performing\IJobPerformer.cs" />
     <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\JobPayload.cs" />
     <Compile Include="JobStorage.cs" />

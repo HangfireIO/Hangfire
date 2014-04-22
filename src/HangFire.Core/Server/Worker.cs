@@ -152,7 +152,7 @@ namespace HangFire.Server
 
             try
             {
-                IJobPerformStrategy performStrategy;
+                IJobPerformer performer;
 
                 var methodData = MethodData.Deserialize(payload.InvocationData);
                 if (methodData.OldFormat)
@@ -162,17 +162,17 @@ namespace HangFire.Server
                     var arguments = JobHelper.FromJson<Dictionary<string, string>>(
                         payload.Args);
 
-                    performStrategy = new JobAsClassPerformStrategy(
+                    performer = new JobAsClassPerformer(
                         methodData, arguments);
                 }
                 else
                 {
                     var arguments = JobHelper.FromJson<string[]>(payload.Arguments);
-                    performStrategy = new Job(methodData, arguments);
+                    performer = new Job(methodData, arguments);
                 }
                 
                 var performContext = new PerformContext(_context, connection, payload.Id, methodData);
-                _context.PerformanceProcess.Run(performContext, performStrategy);
+                _context.PerformanceProcess.Run(performContext, performer);
 
                 state = new SucceededState();
             }
