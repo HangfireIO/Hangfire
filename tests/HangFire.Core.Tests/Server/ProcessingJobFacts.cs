@@ -108,14 +108,16 @@ namespace HangFire.Core.Tests.Server
             // Arrange
             _stateMachine
                 .Setup(x => x.TryToChangeState(JobId, It.IsAny<ProcessingState>(), It.IsAny<string[]>()))
-                .InSequence();
+                .InSequence()
+                .Returns(true);
 
             _performanceProcess.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
                 .InSequence();
 
             _stateMachine
                 .Setup(x => x.TryToChangeState(JobId, It.IsAny<SucceededState>(), It.IsAny<string[]>()))
-                .InSequence();
+                .InSequence()
+                .Returns(true);
 
             var processingJob = CreateProcessingJob();
 
@@ -194,7 +196,7 @@ namespace HangFire.Core.Tests.Server
             _stateMachine.Verify(x => x.TryToChangeState(
                 It.IsAny<string>(),
                 It.IsAny<SucceededState>(),
-                It.Is<string[]>(states => states.Length == 1 && states[0] == SucceededState.StateName)));
+                It.Is<string[]>(states => states.Length == 1 && states[0] == ProcessingState.StateName)));
         }
 
         [Fact]
