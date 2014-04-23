@@ -24,9 +24,6 @@ namespace HangFire
     /// </summary>
     public abstract class BackgroundJob
     {
-        [Obsolete("Background job definitions that are based on the BackgroundJob class are no longer supported. Please, see 'Upgrading' section of the documentation.")]
-        public abstract void Perform();
-
         private static Func<IBackgroundJobClient> _clientFactory =
             () => new BackgroundJobClient(JobStorage.Current);
         private static readonly object ClientFactoryLock = new object();

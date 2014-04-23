@@ -74,14 +74,6 @@ namespace HangFire.Common
         /// </summary>
         public MethodInfo MethodInfo { get; private set; }
         
-        /// <summary>
-        /// Gets wheither this instance contains the information in the
-        /// Old Job Format.
-        /// TODO: remove it before 1.0
-        /// </summary>
-        [Obsolete("This property will be removed before 1.0. Use the new version of the Client API.")]
-        public bool OldFormat { get; private set; }
-
         public InvocationData Serialize()
         {
             return new InvocationData(
@@ -92,19 +84,6 @@ namespace HangFire.Common
 
         public static MethodData Deserialize(InvocationData invocationData)
         {
-            var oldFormat = false;
-
-            // Normalize a job in the old format.
-            if (invocationData.Method == null)
-            {
-                invocationData = new InvocationData(
-                    invocationData.Type,
-                    "Perform",
-                    JobHelper.ToJson(new Type[0]));
-
-                oldFormat = true;
-            }
-
             try
             {
                 var type = Type.GetType(invocationData.Type, throwOnError: true, ignoreCase: true);
@@ -120,7 +99,7 @@ namespace HangFire.Common
                         String.Join(", ", parameterTypes.Select(x => x.Name))));
                 }
 
-                return new MethodData(type, method) { OldFormat = oldFormat };
+                return new MethodData(type, method);
             }
             catch (Exception ex)
             {

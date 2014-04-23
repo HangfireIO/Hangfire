@@ -41,7 +41,6 @@ namespace HangFire.Core.Tests.Common
 
             Assert.Equal(type, method.Type);
             Assert.Equal(methodInfo, method.MethodInfo);
-            Assert.False(method.OldFormat);
         }
 
         [Fact]
@@ -58,7 +57,6 @@ namespace HangFire.Core.Tests.Common
 
             Assert.Equal(type, method.Type);
             Assert.Equal(methodInfo, method.MethodInfo);
-            Assert.False(method.OldFormat);
         }
 
         [Fact]
@@ -177,34 +175,6 @@ namespace HangFire.Core.Tests.Common
             return new MethodData(type, methodInfo);
         }
 
-        #region Old Client API tests
-
-        [Fact]
-        public void Deserialization_FromTheOldFormat_CorrectlySerializesBothTypeAndMethod()
-        {
-            var serializedData = new InvocationData(
-                typeof (TestJob).AssemblyQualifiedName,
-                null,
-                null);
-
-            var method = MethodData.Deserialize(serializedData);
-            Assert.Equal(typeof(TestJob), method.Type);
-            Assert.Equal(typeof(TestJob).GetMethod("Perform"), method.MethodInfo);
-            Assert.True(method.OldFormat);
-        }
-
-        [Fact]
-        public void SerializedData_IsNotBeingChanged_DuringTheDeserialization()
-        {
-            var serializedData = new InvocationData(
-                typeof (TestJob).AssemblyQualifiedName,
-                null,
-                null);
-
-            MethodData.Deserialize(serializedData);
-            Assert.Null(serializedData.Method);
-        }
-
         public class TestTypeAttribute : JobFilterAttribute
         {
         }
@@ -214,14 +184,12 @@ namespace HangFire.Core.Tests.Common
         }
 
         [TestType]
-        public class TestJob : BackgroundJob
+        public class TestJob
         {
             [TestMethod]
-            public override void Perform()
+            public void Perform()
             {
             }
         }
-
-        #endregion
     }
 }

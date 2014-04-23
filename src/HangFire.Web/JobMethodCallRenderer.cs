@@ -28,7 +28,7 @@ namespace HangFire.Web
             MethodData methodData, string[] arguments, IDictionary<string, string> oldArguments)
         {
             var builder = new StringBuilder();
-            
+
             builder.Append(WrapKeyword("using"));
             builder.Append(" ");
             builder.Append(Encode(methodData.Type.Namespace));
@@ -48,34 +48,6 @@ namespace HangFire.Web
 
                 builder.AppendLine();
 
-                if (methodData.OldFormat && oldArguments.Count != 0)
-                {
-                    foreach (var argument in oldArguments)
-                    {
-                        builder.Append(Encode(serviceName));
-                        builder.Append(".");
-                        builder.Append(Encode(argument.Key));
-                        builder.Append(" = ");
-
-                        var propertyInfo = methodData.Type.GetProperty(argument.Key);
-                        var propertyType = propertyInfo != null ? propertyInfo.PropertyType : null;
-
-                        var argumentRenderer = ArgumentRenderer.GetRenderer(propertyType);
-                        builder.Append(argumentRenderer.Render(null, argument.Value));
-                        builder.Append(";");
-
-                        if (propertyInfo == null)
-                        {
-                            builder.Append(" ");
-                            builder.Append(WrapComment("// Warning: property is missing"));
-                        }
-
-                        builder.AppendLine();
-                    }
-
-                    builder.AppendLine();
-                }
-
                 builder.Append(Encode(serviceName));
             }
             else
@@ -88,53 +60,49 @@ namespace HangFire.Web
             builder.Append("(");
 
             var parameters = methodData.MethodInfo.GetParameters();
-            
-            if (!methodData.OldFormat)
+            var renderedArguments = new List<string>(parameters.Length);
+            var renderedArgumentsTotalLength = 0;
+
+            const int splitStringMinLength = 200;
+
+            for (var i = 0; i < parameters.Length; i++)
             {
-                var renderedArguments = new List<string>(parameters.Length);
-                var renderedArgumentsTotalLength = 0;
+                var parameter = parameters[i];
 
-                const int splitStringMinLength = 200;
-
-                for (var i = 0; i < parameters.Length; i++)
+                if (i < arguments.Length)
                 {
-                    var parameter = parameters[i];
+                    var argument = arguments[i]; // TODO: check bounds
 
-                    if (i < arguments.Length)
-                    {
-                        var argument = arguments[i]; // TODO: check bounds
+                    var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
 
-                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                    var renderedArgument = argumentRenderer.Render(parameter.Name, argument);
+                    renderedArguments.Add(renderedArgument);
+                    renderedArgumentsTotalLength += renderedArgument.Length;
+                }
+                else
+                {
+                    renderedArguments.Add(Encode("<NO VALUE>"));
+                }
+            }
 
-                        var renderedArgument = argumentRenderer.Render(parameter.Name, argument);
-                        renderedArguments.Add(renderedArgument);
-                        renderedArgumentsTotalLength += renderedArgument.Length;
-                    }
-                    else
-                    {
-                        renderedArguments.Add(Encode("<NO VALUE>"));
-                    }
+            for (int i = 0; i < renderedArguments.Count; i++)
+            {
+                var renderedArgument = renderedArguments[i];
+                if (renderedArgumentsTotalLength > splitStringMinLength)
+                {
+                    builder.AppendLine();
+                    builder.Append("    ");
+                }
+                else if (i > 0)
+                {
+                    builder.Append(" ");
                 }
 
-                for (int i = 0; i < renderedArguments.Count; i++)
+                builder.Append(renderedArgument);
+
+                if (i < renderedArguments.Count - 1)
                 {
-                    var renderedArgument = renderedArguments[i];
-                    if (renderedArgumentsTotalLength > splitStringMinLength)
-                    {
-                        builder.AppendLine();
-                        builder.Append("    ");
-                    }
-                    else if (i > 0)
-                    {
-                        builder.Append(" ");
-                    }
-
-                    builder.Append(renderedArgument);
-
-                    if (i < renderedArguments.Count - 1)
-                    {
-                        builder.Append(",");
-                    }
+                    builder.Append(",");
                 }
             }
 

@@ -69,20 +69,11 @@ namespace HangFire.Server
 
             try
             {
-                IJobPerformer performer;
-
                 var jobData = _connection.GetJobData(JobId);
                 jobData.EnsureLoaded();
 
-                if (jobData.MethodData.OldFormat)
-                {
-                    performer = new JobAsClassPerformer(jobData.MethodData, jobData.Args);
-                }
-                else
-                {
-                    performer = new Job(jobData.MethodData, jobData.Arguments);
-                }
-                
+                var performer = new Job(jobData.MethodData, jobData.Arguments);
+
                 var performContext = new PerformContext(context, _connection, JobId, jobData.MethodData);
                 process.Run(performContext, performer);
 
