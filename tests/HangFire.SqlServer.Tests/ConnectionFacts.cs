@@ -180,7 +180,7 @@ select scope_identity() as Id";
                     arrangeSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(MethodData.FromExpression(() => SampleMethod()).Serialize()),
+                        invocationData = JobHelper.ToJson(MethodData.FromExpression(() => SampleMethod("asf")).Serialize()),
                         stateName = "Succeeded",
                         arguments = "['Arguments']"
                     }).Single();
@@ -188,9 +188,9 @@ select scope_identity() as Id";
                 var result = connection.GetJobData(((int)jobId.Id).ToString());
 
                 Assert.NotNull(result);
-                Assert.NotNull(result.MethodData);
+                Assert.NotNull(result.Job);
                 Assert.Equal("Succeeded", result.State);
-                Assert.Equal("Arguments", result.Arguments[0]);
+                Assert.Equal("Arguments", result.Job.Arguments[0]);
             });
         }
 
@@ -615,6 +615,6 @@ values (@id, '', @heartbeat)";
             }
         }
 
-        public static void SampleMethod(){ }
+        public static void SampleMethod(string arg){ }
     }
 }

@@ -34,8 +34,7 @@ namespace HangFire.Core.Tests.Server
             _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData
                 {
-                    MethodData = MethodData.FromExpression(() => Method()),
-                    Arguments = new string[0]
+                    Job = Job.FromExpression(() => Method()),
                 });
 
             _stateMachine.Setup(x => x.TryToChangeState(

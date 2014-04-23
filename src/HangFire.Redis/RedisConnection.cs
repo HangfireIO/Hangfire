@@ -177,14 +177,16 @@ namespace HangFire.Redis
                 parameterTypes = storedData["ParameterTypes"];
             }
 
-            MethodData methodData = null;
+            Job job = null;
             JobLoadException loadException = null;
 
             var invocationData = new InvocationData(type, method, parameterTypes);
 
             try
             {
-                methodData = MethodData.Deserialize(invocationData);
+                var methodData = MethodData.Deserialize(invocationData);
+                var arguments = JobHelper.FromJson<string[]>(storedData["Arguments"]);
+                job = new Job(methodData, arguments);
             }
             catch (JobLoadException ex)
             {
@@ -193,9 +195,8 @@ namespace HangFire.Redis
             
             return new JobData
             {
-                MethodData = methodData,
+                Job = job,
                 State = storedData.ContainsKey("State") ? storedData["State"] : null,
-                Arguments = JobHelper.FromJson<string[]>(storedData.ContainsKey("Arguments") ? storedData["Arguments"] : null),
                 LoadException = loadException
             };
         }

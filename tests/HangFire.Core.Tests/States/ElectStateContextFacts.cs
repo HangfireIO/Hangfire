@@ -16,8 +16,8 @@ namespace HangFire.Core.Tests.States
 
         public ElectStateContextFacts()
         {
-            var methodData = MethodData.FromExpression(() => Console.WriteLine());
-            _stateContext = new StateContext(JobId, methodData);
+            var job = Job.FromExpression(() => Console.WriteLine());
+            _stateContext = new StateContext(JobId, job);
             _candidateStateMock = new Mock<State>();
             _connectionMock = new Mock<IStorageConnection>();
         }
@@ -54,7 +54,7 @@ namespace HangFire.Core.Tests.States
             var context = CreateContext();
 
             Assert.Equal(_stateContext.JobId, context.JobId);
-            Assert.Equal(_stateContext.MethodData, context.MethodData);
+            Assert.Equal(_stateContext.Job, context.Job);
 
             Assert.Same(_candidateStateMock.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);

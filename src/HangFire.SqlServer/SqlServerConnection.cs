@@ -172,20 +172,22 @@ values (@jobId, @name, @value)";
             const string sql = 
                 @"select InvocationData, StateName, Arguments from HangFire.Job where id = @id";
 
-            var job = _connection.Query<SqlJob>(sql, new { id = id })
+            var jobData = _connection.Query<SqlJob>(sql, new { id = id })
                 .SingleOrDefault();
 
-            if (job == null) return null;
+            if (jobData == null) return null;
 
             // TODO: conversion exception could be thrown.
-            var data = JobHelper.FromJson<InvocationData>(job.InvocationData);
+            var invocationData = JobHelper.FromJson<InvocationData>(jobData.InvocationData);
 
-            MethodData methodData = null;
+            Job job = null;
             JobLoadException loadException = null;
 
             try
             {
-                methodData = MethodData.Deserialize(data);
+                var methodData = MethodData.Deserialize(invocationData);
+                var arguments = JobHelper.FromJson<string[]>(jobData.Arguments);
+                job = new Job(methodData, arguments);
             }
             catch (JobLoadException ex)
             {
@@ -194,9 +196,8 @@ values (@jobId, @name, @value)";
 
             return new JobData
             {
-                MethodData = methodData,
-                State = job.StateName,
-                Arguments = JobHelper.FromJson<string[]>(job.Arguments),
+                Job = job,
+                State = jobData.StateName,
                 LoadException = loadException
             };
         }

@@ -71,7 +71,7 @@ namespace HangFire.States
                 parameters,
                 TimeSpan.FromHours(1));
 
-            var context = new StateContext(jobId, job.MethodData);
+            var context = new StateContext(jobId, job);
             ChangeState(context, state, null);
 
             return jobId;
@@ -130,7 +130,7 @@ namespace HangFire.States
                     loadSucceeded = false;
                 }
 
-                var context = new StateContext(jobId, jobData.MethodData);
+                var context = new StateContext(jobId, jobData.Job);
                 var stateChanged = ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;
@@ -141,7 +141,7 @@ namespace HangFire.States
         {
             try
             {
-                var filterInfo = GetFilters(context.MethodData);
+                var filterInfo = GetFilters(context.Job.MethodData);
 
                 var electedState = ElectState(context, toState, oldStateName, filterInfo.ElectStateFilters);
                 ApplyState(context, electedState, oldStateName, filterInfo.ApplyStateFilters);

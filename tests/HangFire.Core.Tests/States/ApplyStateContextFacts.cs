@@ -13,7 +13,7 @@ namespace HangFire.Core.Tests.States
     {
         private const string JobId = "1";
         private readonly Mock<State> _newStateMock;
-        private readonly MethodData _methodData;
+        private readonly Job _job;
         private readonly List<IApplyStateFilter> _filters;
         private readonly StateHandlerCollection _handlers;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -22,7 +22,7 @@ namespace HangFire.Core.Tests.States
 
         public ApplyStateContextFacts()
         {
-            _methodData = MethodData.FromExpression(() => Console.WriteLine());
+            _job = Job.FromExpression(() => Console.WriteLine());
             _newStateMock = new Mock<State>();
             _newStateMock.Setup(x => x.Name).Returns(NewState);
 
@@ -203,7 +203,7 @@ namespace HangFire.Core.Tests.States
 
             Assert.Equal(OldState, context.OldStateName);
             Assert.Same(_newStateMock.Object, context.NewState);
-            Assert.Same(_methodData, context.MethodData);
+            Assert.Same(_job, context.Job);
         }
 
         private ApplyStateContext CreateContext()
@@ -213,7 +213,7 @@ namespace HangFire.Core.Tests.States
 
             return new ApplyStateContext(
                 connectionMock.Object,
-                new StateContext(JobId, _methodData),
+                new StateContext(JobId, _job),
                 _newStateMock.Object,
                 OldState);
         }

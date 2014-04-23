@@ -16,11 +16,11 @@ namespace HangFire.Core.Tests.States
 
         public SucceededStateHandlerFacts()
         {
-            var methodData = MethodData.FromExpression(() => Console.WriteLine());
+            var job = Job.FromExpression(() => Console.WriteLine());
 
             _context = new ApplyStateContext(
                 new Mock<IStorageConnection>().Object,
-                new StateContext("1", methodData), 
+                new StateContext("1", job), 
                 new SucceededState(), 
                 null);
         }

@@ -110,7 +110,7 @@ namespace HangFire.Core.Tests.States
             stateMachine.Object.CreateInState(_job, _parameters, _state.Object);
 
             stateMachine.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == JobId && sc.MethodData == _job.MethodData),
+                It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job == _job),
                 _state.Object,
                 null));
         }
@@ -197,7 +197,7 @@ namespace HangFire.Core.Tests.States
                 .Returns(new JobData
                 {
                     State = "Old",
-                    MethodData = MethodData.FromExpression(() => Console.WriteLine())
+                    Job = Job.FromExpression(() => Console.WriteLine())
                 });
 
             var stateMachine = CreateStateMachineMock();
@@ -221,7 +221,7 @@ namespace HangFire.Core.Tests.States
                 .Returns(new JobData
                 {
                     State = "Old",
-                    MethodData = MethodData.FromExpression(() => Console.WriteLine())
+                    Job = Job.FromExpression(() => Console.WriteLine())
                 });
 
             var stateMachine = CreateStateMachineMock();
@@ -245,7 +245,7 @@ namespace HangFire.Core.Tests.States
                 .Returns(new JobData
                 {
                     State = "Old",
-                    MethodData = MethodData.FromExpression(() => Console.WriteLine())
+                    Job = Job.FromExpression(() => Console.WriteLine())
                 });
 
             var stateMachine = CreateStateMachineMock();
@@ -259,7 +259,7 @@ namespace HangFire.Core.Tests.States
 
             // Assert
             stateMachine.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == "1" && sc.MethodData.Type.Name.Equals("Console")),
+                It.Is<StateContext>(sc => sc.JobId == "1" && sc.Job.MethodData.Type.Name.Equals("Console")),
                 _state.Object,
                 "Old"));
 
@@ -274,7 +274,7 @@ namespace HangFire.Core.Tests.States
                 .Returns(new JobData
                 {
                     State = "Old",
-                    MethodData = null,
+                    Job = null,
                     LoadException = new JobLoadException()
                 });
 
@@ -285,7 +285,7 @@ namespace HangFire.Core.Tests.States
 
             // Assert
             stateMachine.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == "1" && sc.MethodData == null),
+                It.Is<StateContext>(sc => sc.JobId == "1" && sc.Job == null),
                 It.Is<FailedState>(s => s.Exception != null),
                 "Old"));
 
@@ -296,7 +296,7 @@ namespace HangFire.Core.Tests.States
         public void ChangeState_AppliesState_AndReturnsTrue()
         {
             var stateMachine = CreateStateMachineMock();
-            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
             
             var result = stateMachine.Object.ChangeState(
                 context, _state.Object, OldStateName);
@@ -310,7 +310,7 @@ namespace HangFire.Core.Tests.States
         public void ChangeState_AppliesOnlyElectedState()
         {
             var stateMachine = CreateStateMachineMock();
-            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
             var electedState = new Mock<State>();
 
             stateMachine
@@ -328,7 +328,7 @@ namespace HangFire.Core.Tests.States
         public void ChangeState_AppliesFailedState_WhenThereIsAnException()
         {
             var stateMachine = CreateStateMachineMock();
-            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
             var exception = new NotSupportedException();
 
             stateMachine.Setup(x => x.ApplyState(
@@ -360,7 +360,7 @@ namespace HangFire.Core.Tests.States
             _handlers.Add(handler2.Object);
 
             var stateMachine = CreateStateMachine();
-            var context = new StateContext("1", MethodData.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
 
             // Act
             stateMachine.ApplyState(
@@ -370,7 +370,7 @@ namespace HangFire.Core.Tests.States
             handler1.Verify(x => x.Apply(
                 It.Is<ApplyStateContext>(c => 
                     c.JobId == context.JobId 
-                    && c.MethodData == context.MethodData 
+                    && c.Job == context.Job 
                     && c.NewState == _state.Object 
                     && c.OldStateName == OldStateName),
                 It.IsAny<IWriteOnlyTransaction>()));

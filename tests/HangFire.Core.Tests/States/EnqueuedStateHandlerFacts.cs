@@ -19,10 +19,10 @@ namespace HangFire.Core.Tests.States
 
         public EnqueuedStateHandlerFacts()
         {
-            var methodData = MethodData.FromExpression(() => Console.WriteLine());
+            var job = Job.FromExpression(() => Console.WriteLine());
             _context = new ApplyStateContext(
                 new Mock<IStorageConnection>().Object,
-                new StateContext(JobId, methodData), 
+                new StateContext(JobId, job), 
                 new EnqueuedState { Queue = Queue }, 
                 null);
         }
