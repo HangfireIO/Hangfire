@@ -1,6 +1,6 @@
 ﻿<configuration>
   <appSettings>
-    <add key="hangfire:enableRemoteMonitorAccess" value="false"/>
+    <add key="hangfire:EnableRemoteMonitorAccess" value="false"/>
   </appSettings>
   <location path="hangfire.axd" inheritInChildApplications="false">
     <system.web>

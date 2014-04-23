@@ -8,7 +8,7 @@ namespace HangFire.Web.Configuration
         {
             get
             {
-                var configurationValue = ConfigurationManager.AppSettings["hangfire:enableRemoteMonitorAccess"];
+                var configurationValue = ConfigurationManager.AppSettings["hangfire:EnableRemoteMonitorAccess"];
 
                 bool enableAccess;
                 if (!bool.TryParse(configurationValue, out enableAccess))
