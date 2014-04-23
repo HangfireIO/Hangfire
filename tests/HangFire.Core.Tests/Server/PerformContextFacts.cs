@@ -12,29 +12,29 @@ namespace HangFire.Core.Tests.Server
     {
         private const string JobId = "id";
 
-        private WorkerContext _workerContext;
-        private Mock<IStorageConnection> _connection;
-        private MethodData _methodData;
+        private readonly WorkerContext _workerContext;
+        private readonly Mock<IStorageConnection> _connection;
+        private readonly Job _job;
 
         public PerformContextFacts()
         {
             _workerContext = new WorkerContext("Server", new string[0], 1);
             _connection = new Mock<IStorageConnection>();
-            _methodData = MethodData.FromExpression(() => Method());
+            _job = Job.FromExpression(() => Method());
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenWorkerContextIsNull()
         {
             Assert.Throws<NullReferenceException>(
-                () => new PerformContext(null, _connection.Object, JobId, _methodData));
+                () => new PerformContext(null, _connection.Object, JobId, _job));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext, null, JobId, _methodData));
+                () => new PerformContext(_workerContext, null, JobId, _job));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -43,18 +43,18 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext, _connection.Object, null, _methodData));
+                () => new PerformContext(_workerContext, _connection.Object, null, _job));
 
             Assert.Equal("jobId", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenMethodDataIsNull()
+        public void Ctor_ThrowsAnException_WhenJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new PerformContext(_workerContext, _connection.Object, JobId, null));
 
-            Assert.Equal("methodData", exception.ParamName);
+            Assert.Equal("job", exception.ParamName);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace HangFire.Core.Tests.Server
             Assert.NotNull(context.Items);
             Assert.Same(_connection.Object, context.Connection);
             Assert.Equal(JobId, context.JobId);
-            Assert.Same(_methodData, context.MethodData);
+            Assert.Same(_job, context.Job);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Same(context.Items, contextCopy.Items);
             Assert.Same(context.Connection, contextCopy.Connection);
             Assert.Same(context.JobId, contextCopy.JobId);
-            Assert.Same(context.MethodData, contextCopy.MethodData);
+            Assert.Same(context.Job, contextCopy.Job);
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace HangFire.Core.Tests.Server
 
         private PerformContext CreateContext()
         {
-            return new PerformContext(_workerContext, _connection.Object, JobId, _methodData);
+            return new PerformContext(_workerContext, _connection.Object, JobId, _job);
         }
 
         public static void Method() { }

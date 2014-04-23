@@ -72,10 +72,10 @@ namespace HangFire.Server
                 var jobData = _connection.GetJobData(JobId);
                 jobData.EnsureLoaded();
 
-                var performer = new Job(jobData.MethodData, jobData.Arguments);
+                var job = new Job(jobData.MethodData, jobData.Arguments);
+                var performContext = new PerformContext(context, _connection, JobId, job);
 
-                var performContext = new PerformContext(context, _connection, JobId, jobData.MethodData);
-                process.Run(performContext, performer);
+                process.Run(performContext, job);
 
                 state = new SucceededState();
             }

@@ -46,7 +46,7 @@ namespace HangFire.Server.Performing
             if (context == null) throw new ArgumentNullException("context");
             if (performer == null) throw new ArgumentNullException("performer");
 
-            var filterInfo = GetFilters(context.MethodData);
+            var filterInfo = GetFilters(context.Job.MethodData);
 
             try
             {

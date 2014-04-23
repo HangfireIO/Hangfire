@@ -24,9 +24,9 @@ namespace HangFire.Core.Tests.Server
 
             var connection = new Mock<IStorageConnection>();
             const string jobId = "someId";
-            var methodData = MethodData.FromExpression(() => Method());
+            var job = Job.FromExpression(() => Method());
 
-            _context = new PerformContext(workerContext, connection.Object, jobId, methodData);
+            _context = new PerformContext(workerContext, connection.Object, jobId, job);
             _performer = new Mock<IJobPerformer>();
 
             _filters = new List<object>();
