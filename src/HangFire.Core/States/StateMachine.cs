@@ -31,7 +31,7 @@ namespace HangFire.States
 
         private readonly Func<IStorageConnection, IEnumerable<StateHandler>> _getHandlersThunk
             = GetStateHandlers;
-        private readonly Func<MethodData, IEnumerable<JobFilter>> _getFiltersThunk
+        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
         public StateMachine(IStorageConnection connection)
@@ -141,7 +141,7 @@ namespace HangFire.States
         {
             try
             {
-                var filterInfo = GetFilters(context.Job.MethodData);
+                var filterInfo = GetFilters(context.Job);
 
                 var electedState = ElectState(context, toState, oldStateName, filterInfo.ElectStateFilters);
                 ApplyState(context, electedState, oldStateName, filterInfo.ApplyStateFilters);
@@ -189,9 +189,9 @@ namespace HangFire.States
             context.ApplyState(GetHandlers(), filters);
         }
 
-        private JobFilterInfo GetFilters(MethodData methodData)
+        private JobFilterInfo GetFilters(Job job)
         {
-            return new JobFilterInfo(_getFiltersThunk(methodData));
+            return new JobFilterInfo(_getFiltersThunk(job));
         }
 
         private StateHandlerCollection GetHandlers()

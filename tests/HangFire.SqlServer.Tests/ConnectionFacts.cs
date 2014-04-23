@@ -176,11 +176,14 @@ select scope_identity() as Id";
 
             UseConnections((sql, connection) =>
             {
+                var type = typeof (ConnectionFacts);
+                var method = type.GetMethod("SampleMethod");
+
                 var jobId = sql.Query(
                     arrangeSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(MethodData.FromExpression(() => SampleMethod("asf")).Serialize()),
+                        invocationData = JobHelper.ToJson(new MethodData(type, method).Serialize()),
                         stateName = "Succeeded",
                         arguments = "['Arguments']"
                     }).Single();

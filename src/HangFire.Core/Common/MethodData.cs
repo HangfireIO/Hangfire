@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using HangFire.Common.Filters;
 using HangFire.Storage;
@@ -39,7 +38,7 @@ namespace HangFire.Common
     /// </remarks>
     public class MethodData
     {
-        internal MethodData(Type type, MethodInfo method)
+        public MethodData(Type type, MethodInfo method)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
@@ -105,60 +104,6 @@ namespace HangFire.Common
             {
                 throw new JobLoadException("Could not load the job. See inner exception for the details.", ex);
             }
-        }
-
-        public static MethodData FromExpression(Expression<Action> methodCall)
-        {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
-
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
-            }
-
-            // Static methods can not be overridden in the derived classes, 
-            // so we can take the method's declaring type.
-            return new MethodData(callExpression.Method.DeclaringType, callExpression.Method);
-        }
-
-        public static MethodData FromExpression<T>(Expression<Action<T>> methodCall)
-        {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
-
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
-            }
-
-            return new MethodData(typeof(T), callExpression.Method);
-        }
-
-        internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
-        {
-            return useCache
-                ? ReflectedAttributeCache.GetTypeFilterAttributes(Type)
-                : GetFilterAttributes(Type);
-        }
-
-        internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
-        {
-            if (MethodInfo == null)
-            {
-                return Enumerable.Empty<JobFilterAttribute>();
-            }
-
-            return useCache
-                ? ReflectedAttributeCache.GetMethodFilterAttributes(MethodInfo)
-                : GetFilterAttributes(MethodInfo);
-        }
-
-        private IEnumerable<JobFilterAttribute> GetFilterAttributes(MemberInfo memberInfo)
-        {
-            return memberInfo
-                .GetCustomAttributes(typeof(JobFilterAttribute), inherit: true)
-                .Cast<JobFilterAttribute>();
         }
     }
 }

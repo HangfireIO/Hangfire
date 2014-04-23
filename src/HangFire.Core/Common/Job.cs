@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using HangFire.Common.Filters;
 using HangFire.Server;
 using HangFire.Server.Performing;
 
@@ -98,6 +99,33 @@ namespace HangFire.Common
             }
         }
 
+        internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
+        {
+            return useCache
+                ? ReflectedAttributeCache.GetTypeFilterAttributes(MethodData.Type)
+                : GetFilterAttributes(MethodData.Type);
+        }
+
+        internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
+        {
+            // TODO: Check whether MethodInfo can be null now
+            if (MethodData.MethodInfo == null)
+            {
+                return Enumerable.Empty<JobFilterAttribute>();
+            }
+
+            return useCache
+                ? ReflectedAttributeCache.GetMethodFilterAttributes(MethodData.MethodInfo)
+                : GetFilterAttributes(MethodData.MethodInfo);
+        }
+
+        private static IEnumerable<JobFilterAttribute> GetFilterAttributes(MemberInfo memberInfo)
+        {
+            return memberInfo
+                .GetCustomAttributes(typeof(JobFilterAttribute), inherit: true)
+                .Cast<JobFilterAttribute>();
+        }
+
         /// <summary>
         /// Creates a new instance of the <see cref="Job"/> class on a 
         /// basis of the given static method call expression.
@@ -117,7 +145,11 @@ namespace HangFire.Common
 
             // TODO: user can call this method with instance method expression. We need to check for it.
 
-            return new Job(MethodData.FromExpression(methodCall), GetArguments(callExpression));
+            // Static methods can not be overridden in the derived classes, 
+            // so we can take the method's declaring type.
+            return new Job(
+                new MethodData(callExpression.Method.DeclaringType, callExpression.Method), 
+                GetArguments(callExpression));
         }
 
         /// <summary>
@@ -137,7 +169,9 @@ namespace HangFire.Common
                 throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
             }
 
-            return new Job(MethodData.FromExpression(methodCall), GetArguments(callExpression));
+            return new Job(
+                new MethodData(typeof(T), callExpression.Method), 
+                GetArguments(callExpression));
         }
 
         private static void ValidateMethod(MethodBase methodInfo)

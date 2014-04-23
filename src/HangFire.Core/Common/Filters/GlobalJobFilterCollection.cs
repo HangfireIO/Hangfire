@@ -108,7 +108,7 @@ namespace HangFire.Common.Filters
             return _filters.GetEnumerator();
         }
 
-        IEnumerable<JobFilter> IJobFilterProvider.GetFilters(MethodData methodData)
+        IEnumerable<JobFilter> IJobFilterProvider.GetFilters(Job job)
         {
             return this;
         }

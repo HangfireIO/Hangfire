@@ -32,7 +32,7 @@ namespace HangFire.Client
             Instance = new JobCreationProcess();
         }
 
-        private readonly Func<MethodData, IEnumerable<JobFilter>> _getFiltersThunk 
+        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
         public JobCreationProcess()
@@ -52,7 +52,7 @@ namespace HangFire.Client
             if (context == null) throw new ArgumentNullException("context");
             if (creator == null) throw new ArgumentNullException("creator");
 
-            var filterInfo = GetFilters(context.Job.MethodData);
+            var filterInfo = GetFilters(context.Job);
 
             try
             {
@@ -70,9 +70,9 @@ namespace HangFire.Client
             }
         }
 
-        private JobFilterInfo GetFilters(MethodData methodData)
+        private JobFilterInfo GetFilters(Job job)
         {
-            return new JobFilterInfo(_getFiltersThunk(methodData));
+            return new JobFilterInfo(_getFiltersThunk(job));
         }
 
         private static void CreateWithFilters(

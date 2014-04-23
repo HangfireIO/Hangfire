@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using HangFire.Common;
+using HangFire.Common.Filters;
 using HangFire.Server;
 using Moq;
 using Xunit;
@@ -17,7 +19,10 @@ namespace HangFire.Core.Tests.Common
 
         public JobFacts()
         {
-            _methodData = MethodData.FromExpression(() => StaticMethod());
+            var type = typeof (JobFacts);
+            var method = type.GetMethod("StaticMethod");
+
+            _methodData = new MethodData(typeof(JobFacts), method);
             _arguments = new string[0];
 
             _activator = new Mock<JobActivator>
@@ -73,7 +78,8 @@ namespace HangFire.Core.Tests.Common
         {
             var job = Job.FromExpression(() => Console.WriteLine());
 
-            Assert.NotNull(job);
+            Assert.Equal(typeof(Console), job.MethodData.Type);
+            Assert.Equal("WriteLine", job.MethodData.MethodInfo.Name);
         }
 
         [Fact]
@@ -88,10 +94,10 @@ namespace HangFire.Core.Tests.Common
         [Fact]
         public void FromInstanceExpression_ShouldReturnCorrectResult()
         {
-            // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-            var method = Job.FromExpression<Instance>(x => x.Method());
+            var job = Job.FromExpression<Instance>(x => x.Method());
 
-            Assert.NotNull(method);
+            Assert.Equal(typeof(Instance), job.MethodData.Type);
+            Assert.Equal("Method", job.MethodData.MethodInfo.Name);
         }
 
         [Fact]
@@ -224,6 +230,34 @@ namespace HangFire.Core.Tests.Common
             Assert.NotNull(exception.InnerException);
         }
 
+        [Fact]
+        public void GetTypeFilterAttributes_ReturnsCorrectAttributes()
+        {
+            var job = Job.FromExpression<Instance>(x => x.Method());
+            var nonCachedAttributes = job.GetTypeFilterAttributes(false).ToArray();
+            var cachedAttributes = job.GetTypeFilterAttributes(true).ToArray();
+
+            Assert.Equal(1, nonCachedAttributes.Length);
+            Assert.Equal(1, cachedAttributes.Length);
+
+            Assert.True(nonCachedAttributes[0] is TestTypeAttribute);
+            Assert.True(cachedAttributes[0] is TestTypeAttribute);
+        }
+
+        [Fact]
+        public void GetMethodFilterAttributes_ReturnsCorrectAttributes()
+        {
+            var job = Job.FromExpression<Instance>(x => x.Method());
+            var nonCachedAttributes = job.GetMethodFilterAttributes(false).ToArray();
+            var cachedAttributes = job.GetMethodFilterAttributes(true).ToArray();
+
+            Assert.Equal(1, nonCachedAttributes.Length);
+            Assert.Equal(1, cachedAttributes.Length);
+
+            Assert.True(nonCachedAttributes[0] is TestMethodAttribute);
+            Assert.True(cachedAttributes[0] is TestMethodAttribute);
+        }
+
         private static void PrivateMethod()
         {
         }
@@ -261,8 +295,10 @@ namespace HangFire.Core.Tests.Common
         {
         }
 
+        [TestType]
         public class Instance : IDisposable
         {
+            [TestMethod]
             public void Method()
             {
                 _methodInvoked = true;
@@ -285,6 +321,14 @@ namespace HangFire.Core.Tests.Common
             {
                 throw new InvalidOperationException();
             }
+        }
+
+        public class TestTypeAttribute : JobFilterAttribute
+        {
+        }
+
+        public class TestMethodAttribute : JobFilterAttribute
+        {
         }
     }
 }

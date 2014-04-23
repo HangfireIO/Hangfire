@@ -25,7 +25,7 @@ namespace HangFire.Server.Performing
 {
     internal class JobPerformanceProcess : IJobPerformanceProcess
     {
-        private readonly Func<MethodData, IEnumerable<JobFilter>> _getFiltersThunk 
+        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
         public JobPerformanceProcess()
@@ -46,7 +46,7 @@ namespace HangFire.Server.Performing
             if (context == null) throw new ArgumentNullException("context");
             if (performer == null) throw new ArgumentNullException("performer");
 
-            var filterInfo = GetFilters(context.Job.MethodData);
+            var filterInfo = GetFilters(context.Job);
 
             try
             {
@@ -64,9 +64,9 @@ namespace HangFire.Server.Performing
             }
         }
 
-        private JobFilterInfo GetFilters(MethodData methodData)
+        private JobFilterInfo GetFilters(Job job)
         {
-            return new JobFilterInfo(_getFiltersThunk(methodData));
+            return new JobFilterInfo(_getFiltersThunk(job));
         }
 
         private static void PerformJobWithFilters(
