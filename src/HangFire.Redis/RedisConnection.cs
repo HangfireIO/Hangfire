@@ -196,7 +196,6 @@ namespace HangFire.Redis
                 MethodData = methodData,
                 State = storedData.ContainsKey("State") ? storedData["State"] : null,
                 Arguments = JobHelper.FromJson<string[]>(storedData.ContainsKey("Arguments") ? storedData["Arguments"] : null),
-                Args = JobHelper.FromJson<Dictionary<string, string>>(storedData.ContainsKey("Args") ? storedData["Args"] : null),
                 LoadException = loadException
             };
         }

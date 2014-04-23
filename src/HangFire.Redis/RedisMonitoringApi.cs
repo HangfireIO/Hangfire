@@ -344,7 +344,7 @@ namespace HangFire.Redis
             if (job.Count == 0) return null;
 
             var hiddenProperties = new[]
-            { "Type", "Method", "ParameterTypes", "Arguments", "Args", "State", "CreatedAt" };
+            { "Type", "Method", "ParameterTypes", "Arguments", "State", "CreatedAt" };
 
             var historyList = _redis.GetAllItemsFromList(
                 String.Format("hangfire:job:{0}:history", jobId));
@@ -383,8 +383,6 @@ namespace HangFire.Redis
             {
                 MethodData = TryToGetMethod(job["Type"], job["Method"], job["ParameterTypes"]),
                 Arguments = job.ContainsKey("Arguments") ? JobHelper.FromJson<string[]>(job["Arguments"]) : null,
-                OldFormatArguments =
-                    job.ContainsKey("Args") ? JobHelper.FromJson<Dictionary<string, string>>(job["Args"]) : null,
                 CreatedAt =
                     job.ContainsKey("CreatedAt") ? JobHelper.FromStringTimestamp(job["CreatedAt"]) : (DateTime?) null,
                 Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),

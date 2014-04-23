@@ -25,7 +25,7 @@ namespace HangFire.Web
     internal static class JobMethodCallRenderer
     {
         public static IHtmlString Render(
-            MethodData methodData, string[] arguments, IDictionary<string, string> oldArguments)
+            MethodData methodData, string[] arguments)
         {
             var builder = new StringBuilder();
 

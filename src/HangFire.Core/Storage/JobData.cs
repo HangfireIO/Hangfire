@@ -25,7 +25,6 @@ namespace HangFire.Storage
         public string State { get; set; }
         public MethodData MethodData { get; set; }
         public string[] Arguments { get; set; }
-        public Dictionary<string, string> Args { get; set; }
 
         public JobLoadException LoadException { get; set; }
 

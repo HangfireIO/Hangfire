@@ -203,7 +203,7 @@ WriteLiteral("                <pre><code>");
 
             
             #line 50 "..\..\Pages\JobDetailsPage.cshtml"
-                      Write(JobMethodCallRenderer.Render(job.MethodData, job.Arguments, job.OldFormatArguments));
+                      Write(JobMethodCallRenderer.Render(job.MethodData, job.Arguments));
 
             
             #line default
