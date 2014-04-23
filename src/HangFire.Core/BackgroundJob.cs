@@ -31,7 +31,7 @@ namespace HangFire
             () => new BackgroundJobClient(JobStorage.Current);
         private static readonly object ClientFactoryLock = new object();
 
-        public static Func<IBackgroundJobClient> ClientFactory
+        internal static Func<IBackgroundJobClient> ClientFactory
         {
             get
             {
