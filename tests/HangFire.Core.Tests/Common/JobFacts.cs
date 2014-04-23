@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using HangFire.Common;
 using HangFire.Common.Filters;
 using HangFire.Server;
@@ -13,16 +14,15 @@ namespace HangFire.Core.Tests.Common
         private static bool _methodInvoked;
         private static bool _disposed;
 
-        private readonly MethodData _methodData;
+        private Type _type;
+        private MethodInfo _method;
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
-
+        
         public JobFacts()
         {
-            var type = typeof (JobFacts);
-            var method = type.GetMethod("StaticMethod");
-
-            _methodData = new MethodData(typeof(JobFacts), method);
+            _type = typeof (JobFacts);
+            _method = _type.GetMethod("StaticMethod");
             _arguments = new string[0];
 
             _activator = new Mock<JobActivator>
@@ -32,25 +32,40 @@ namespace HangFire.Core.Tests.Common
         }
 
         [Fact]
-        public void Ctor_ShouldThrowAnException_WhenMethodDataIsNull()
+        public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new Job(null, new string[0]));
+                () => new Job(null, _method, _arguments));
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new Job(_type, null, _arguments));
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenTheTypeDoesNotContainTheGivenMethod()
+        {
+            Assert.Throws<ArgumentException>(
+                () => new Job(typeof(Job), _method, _arguments));
         }
 
         [Fact]
         public void Ctor_ShouldThrowAnException_WhenArgumentsArrayIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new Job(_methodData, null));
+                () => new Job(_type, _method, null));
         }
 
         [Fact]
         public void Ctor_ShouldInitializeAllProperties()
         {
-            var job = new Job(_methodData, _arguments);
+            var job = new Job(_type, _method, _arguments);
 
-            Assert.Same(_methodData, job.MethodData);
+            Assert.Same(_type, job.Type);
+            Assert.Same(_method, job.Method);
             Assert.Same(_arguments, job.Arguments);
         }
 
@@ -58,7 +73,7 @@ namespace HangFire.Core.Tests.Common
         public void Ctor_ShouldThrowAnException_WhenArgumentCountIsNotEqualToParameterCount()
         {
             var exception = Assert.Throws<ArgumentException>(
-                () => new Job(_methodData, new[] { "hello!" }));
+                () => new Job(_type, _method, new[] { "hello!" }));
 
             Assert.Equal("arguments", exception.ParamName);
             Assert.Contains("count", exception.Message);
@@ -78,8 +93,8 @@ namespace HangFire.Core.Tests.Common
         {
             var job = Job.FromExpression(() => Console.WriteLine());
 
-            Assert.Equal(typeof(Console), job.MethodData.Type);
-            Assert.Equal("WriteLine", job.MethodData.MethodInfo.Name);
+            Assert.Equal(typeof(Console), job.Type);
+            Assert.Equal("WriteLine", job.Method.Name);
         }
 
         [Fact]
@@ -96,8 +111,8 @@ namespace HangFire.Core.Tests.Common
         {
             var job = Job.FromExpression<Instance>(x => x.Method());
 
-            Assert.Equal(typeof(Instance), job.MethodData.Type);
-            Assert.Equal("Method", job.MethodData.MethodInfo.Name);
+            Assert.Equal(typeof(Instance), job.Type);
+            Assert.Equal("Method", job.Method.Name);
         }
 
         [Fact]

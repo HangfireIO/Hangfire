@@ -221,7 +221,7 @@ WriteLiteral("</span>\r\n                    </td>\r\n                    <td>\r
 
             
             #line 75 "..\..\Pages\FetchedJobsPage.cshtml"
-                                Write(HtmlHelper.DisplayMethodHint(job.Value.MethodData));
+                                Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
             #line default
@@ -231,7 +231,7 @@ WriteLiteral("\">\r\n                            ");
 
             
             #line 76 "..\..\Pages\FetchedJobsPage.cshtml"
-                       Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
+                       Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default

@@ -59,8 +59,8 @@ else
                 </td>
                 <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueueAt)">@job.Value.EnqueueAt</td>
                 <td>
-                    <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
-                        @HtmlHelper.DisplayMethod(job.Value.MethodData)
+                    <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                        @HtmlHelper.DisplayMethod(job.Value.Job)
                     </span>
                 </td>
                 <td>

@@ -71,8 +71,8 @@ else
                     </td>
                     <td class="@(job.Value.InFailedState ? "expander" : null)">
                         <div>
-                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.MethodData)">
-                                @HtmlHelper.DisplayMethod(job.Value.MethodData)
+                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                                @HtmlHelper.DisplayMethod(job.Value.Job)
                             </span>
                         </div>
                         @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))

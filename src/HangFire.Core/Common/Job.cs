@@ -43,31 +43,23 @@ namespace HangFire.Common
         /// a corresponding <see cref="TypeConverter"/> instance.
         /// </remarks>
         /// 
-        /// <param name="methodData">Method that will be called during the performance of the job.</param>
-        /// <param name="arguments">Serialized arguments that will be passed to a <paramref name="methodData"/>.</param>
-        /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodData"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
-        public Job(MethodData methodData, string[] arguments)
+        internal Job(Type type, MethodInfo method, string[] arguments)
         {
-            if (methodData == null) throw new ArgumentNullException("methodData");
+            if (type == null) throw new ArgumentNullException("type");
+            if (method == null) throw new ArgumentNullException("method");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
-            ValidateMethod(methodData.MethodInfo);
-
-            if (methodData.MethodInfo.GetParameters().Length != arguments.Length)
-            {
-                throw new ArgumentException("Argument count must be equal to method parameter count.", "arguments");
-            }
-
-            MethodData = methodData;
+            Type = type;
+            Method = method;
             Arguments = arguments;
+
+            Validate();
         }
 
-        /// <summary>
-        /// Gets the information about a method that will be performed in background.
-        /// </summary>
-        public MethodData MethodData { get; private set; }
+        public Type Type { get; private set; }
+        public MethodInfo Method { get; private set; }
 
         /// <summary>
         /// Gets arguments array that will be passed to the method during its invocation.
@@ -85,7 +77,7 @@ namespace HangFire.Common
 
             try
             {
-                if (!MethodData.MethodInfo.IsStatic)
+                if (!Method.IsStatic)
                 {
                     instance = Activate(activator);
                 }
@@ -102,21 +94,21 @@ namespace HangFire.Common
         internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
         {
             return useCache
-                ? ReflectedAttributeCache.GetTypeFilterAttributes(MethodData.Type)
-                : GetFilterAttributes(MethodData.Type);
+                ? ReflectedAttributeCache.GetTypeFilterAttributes(Type)
+                : GetFilterAttributes(Type);
         }
 
         internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
         {
             // TODO: Check whether MethodInfo can be null now
-            if (MethodData.MethodInfo == null)
+            if (Method == null)
             {
                 return Enumerable.Empty<JobFilterAttribute>();
             }
 
             return useCache
-                ? ReflectedAttributeCache.GetMethodFilterAttributes(MethodData.MethodInfo)
-                : GetFilterAttributes(MethodData.MethodInfo);
+                ? ReflectedAttributeCache.GetMethodFilterAttributes(Method)
+                : GetFilterAttributes(Method);
         }
 
         private static IEnumerable<JobFilterAttribute> GetFilterAttributes(MemberInfo memberInfo)
@@ -148,7 +140,8 @@ namespace HangFire.Common
             // Static methods can not be overridden in the derived classes, 
             // so we can take the method's declaring type.
             return new Job(
-                new MethodData(callExpression.Method.DeclaringType, callExpression.Method), 
+                callExpression.Method.DeclaringType, 
+                callExpression.Method, 
                 GetArguments(callExpression));
         }
 
@@ -170,18 +163,37 @@ namespace HangFire.Common
             }
 
             return new Job(
-                new MethodData(typeof(T), callExpression.Method), 
+                typeof(T), 
+                callExpression.Method, 
                 GetArguments(callExpression));
         }
 
-        private static void ValidateMethod(MethodBase methodInfo)
+        private void Validate()
         {
-            if (!methodInfo.IsPublic)
+            if (Method.DeclaringType == null)
+            {
+                throw new NotSupportedException("Global methods are not supported. Use class methods instead.");
+            }
+
+            if (!Method.DeclaringType.IsAssignableFrom(Type))
+            {
+                throw new ArgumentException(String.Format(
+                    "The type `{0}` must be derived from the `{1}` type.",
+                    Method.DeclaringType,
+                    Type));
+            }
+
+            if (!Method.IsPublic)
             {
                 throw new NotSupportedException("Only public methods can be invoked in the background.");
             }
 
-            var parameters = methodInfo.GetParameters();
+            var parameters = Method.GetParameters();
+
+            if (parameters.Length != Arguments.Length)
+            {
+                throw new ArgumentException("Argument count must be equal to method parameter count.", "arguments");
+            }
 
             foreach (var parameter in parameters)
             {
@@ -207,12 +219,12 @@ namespace HangFire.Common
         {
             try
             {
-                var instance = activator.ActivateJob(MethodData.Type);
+                var instance = activator.ActivateJob(Type);
 
                 if (instance == null)
                 {
                     throw new InvalidOperationException(
-                        String.Format("JobActivator returned NULL instance of the '{0}' type.", MethodData.Type));
+                        String.Format("JobActivator returned NULL instance of the '{0}' type.", Type));
                 }
 
                 return instance;
@@ -229,7 +241,7 @@ namespace HangFire.Common
         {
             try
             {
-                var parameters = MethodData.MethodInfo.GetParameters();
+                var parameters = Method.GetParameters();
                 var result = new List<object>(Arguments.Length);
 
                 for (var i = 0; i < parameters.Length; i++)
@@ -268,7 +280,7 @@ namespace HangFire.Common
         {
             try
             {
-                MethodData.MethodInfo.Invoke(instance, deserializedArguments);
+                Method.Invoke(instance, deserializedArguments);
             }
             catch (TargetInvocationException ex)
             {

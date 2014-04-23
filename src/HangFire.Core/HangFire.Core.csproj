@@ -65,7 +65,6 @@
     <Compile Include="Client\JobCreationProcess.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Common\Job.cs" />
-    <Compile Include="Common\MethodData.cs" />
     <Compile Include="Common\JobLoadException.cs" />
     <Compile Include="Common\ExpressionUtil\BinaryExpressionFingerprint.cs" />
     <Compile Include="Common\ExpressionUtil\CachedExpressionCompiler.cs" />

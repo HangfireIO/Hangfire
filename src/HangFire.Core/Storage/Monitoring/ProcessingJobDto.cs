@@ -26,7 +26,7 @@ namespace HangFire.Storage.Monitoring
             InProcessingState = true;
         }
 
-        public MethodData MethodData { get; set; }
+        public Job Job { get; set; }
         public bool InProcessingState { get; set; }
         public string ServerName { get; set; }
         public DateTime? StartedAt { get; set; }

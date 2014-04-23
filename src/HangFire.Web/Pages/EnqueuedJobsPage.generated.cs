@@ -220,7 +220,7 @@ WriteLiteral("                    </td> \r\n                    <td>\r\n        
 
             
             #line 71 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                                Write(HtmlHelper.DisplayMethodHint(job.Value.MethodData));
+                                Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
             #line default
@@ -230,7 +230,7 @@ WriteLiteral("\">\r\n                            ");
 
             
             #line 72 "..\..\Pages\EnqueuedJobsPage.cshtml"
-                       Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
+                       Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default

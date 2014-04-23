@@ -25,26 +25,26 @@ namespace HangFire.Web
     internal static class JobMethodCallRenderer
     {
         public static IHtmlString Render(
-            MethodData methodData, string[] arguments)
+            Job job)
         {
             var builder = new StringBuilder();
 
             builder.Append(WrapKeyword("using"));
             builder.Append(" ");
-            builder.Append(Encode(methodData.Type.Namespace));
+            builder.Append(Encode(job.Type.Namespace));
             builder.Append(";");
             builder.AppendLine();
             builder.AppendLine();
 
-            if (!methodData.MethodInfo.IsStatic)
+            if (!job.Method.IsStatic)
             {
-                var serviceName = Char.ToLower(methodData.Type.Name[0]) + methodData.Type.Name.Substring(1);
+                var serviceName = Char.ToLower(job.Type.Name[0]) + job.Type.Name.Substring(1);
 
-                builder.Append(WrapType(methodData.Type.Name));
+                builder.Append(WrapType(job.Type.Name));
                 builder.AppendFormat(
                     " {0} = Activate<{1}>();",
                     Encode(serviceName),
-                    WrapType(Encode(methodData.Type.Name)));
+                    WrapType(Encode(job.Type.Name)));
 
                 builder.AppendLine();
 
@@ -52,14 +52,14 @@ namespace HangFire.Web
             }
             else
             {
-                builder.Append(WrapType(Encode(methodData.Type.Name)));
+                builder.Append(WrapType(Encode(job.Type.Name)));
             }
 
             builder.Append(".");
-            builder.Append(Encode(methodData.MethodInfo.Name));
+            builder.Append(Encode(job.Method.Name));
             builder.Append("(");
 
-            var parameters = methodData.MethodInfo.GetParameters();
+            var parameters = job.Method.GetParameters();
             var renderedArguments = new List<string>(parameters.Length);
             var renderedArgumentsTotalLength = 0;
 
@@ -69,9 +69,9 @@ namespace HangFire.Web
             {
                 var parameter = parameters[i];
 
-                if (i < arguments.Length)
+                if (i < job.Arguments.Length)
                 {
-                    var argument = arguments[i]; // TODO: check bounds
+                    var argument = job.Arguments[i]; // TODO: check bounds
 
                     var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
 

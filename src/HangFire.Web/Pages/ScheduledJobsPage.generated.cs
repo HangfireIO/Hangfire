@@ -203,7 +203,7 @@ WriteLiteral("\">");
 
             
             #line 60 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                                                                 Write(job.Value.EnqueueAt);
+                                                                               Write(job.Value.EnqueueAt);
 
             
             #line default
@@ -213,7 +213,7 @@ WriteLiteral("</td>\r\n                <td>\r\n                    <span title=\
 
             
             #line 62 "..\..\Pages\ScheduledJobsPage.cshtml"
-                            Write(HtmlHelper.DisplayMethodHint(job.Value.MethodData));
+                            Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
             #line default
@@ -223,7 +223,7 @@ WriteLiteral("\">\r\n                        ");
 
             
             #line 63 "..\..\Pages\ScheduledJobsPage.cshtml"
-                   Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
+                   Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default

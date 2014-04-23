@@ -27,20 +27,20 @@ namespace HangFire.Web
 {
     internal static class HtmlHelper
     {
-        public static string DisplayMethod(MethodData methodData)
+        public static string DisplayMethod(Job job)
         {
-            if (methodData == null)
+            if (job == null)
             {
                 return null;
             }
 
-            var separator = methodData.MethodInfo.IsStatic ? "." : "::";
-            return String.Format("{0}{1}{2}", methodData.Type.Name, separator, methodData.MethodInfo.Name);
+            var separator = job.Method.IsStatic ? "." : "::";
+            return String.Format("{0}{1}{2}", job.Type.Name, separator, job.Method.Name);
         }
 
-        public static string DisplayMethodHint(MethodData methodData)
+        public static string DisplayMethodHint(Job job)
         {
-            return methodData == null ? null : methodData.Type.FullName;
+            return job == null ? null : job.Type.FullName;
         }
 
         public static IHtmlString Raw(string value)
@@ -56,14 +56,14 @@ namespace HangFire.Web
                 : "#" + jobId);
         }
 
-        public static string JobType(MethodData methodData)
+        public static string JobType(Job job)
         {
-            if (methodData == null)
+            if (job == null)
             {
                 return "Could not find the target method.";
             }
 
-            return methodData.Type.FullName;
+            return job.Type.FullName;
         }
 
         public static string JobType(string typeName)

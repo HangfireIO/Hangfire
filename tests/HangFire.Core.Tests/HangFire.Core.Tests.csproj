@@ -67,7 +67,6 @@
     <Compile Include="Client\CreatingContextFacts.cs" />
     <Compile Include="Client\JobCreationProcessFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
-    <Compile Include="Common\MethodDataFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
@@ -90,6 +89,7 @@
     <Compile Include="States\StateMachineFacts.cs" />
     <Compile Include="States\SucceededStateFacts.cs" />
     <Compile Include="States\SucceededStateHandlerFacts.cs" />
+    <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Utils\DictionaryAssert.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
     <Compile Include="Utils\StaticLockAttribute.cs" />

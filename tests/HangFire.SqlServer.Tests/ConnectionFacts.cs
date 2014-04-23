@@ -68,34 +68,17 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void CreateExpiredJob_ThrowsAnException_WhenInvocationDataIsNull()
+        public void CreateExpiredJob_ThrowsAnException_WhenJobIsNull()
         {
             UseConnection(connection =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => connection.CreateExpiredJob(
                         null,
-                        new string[0],
                         new Dictionary<string, string>(),
                         TimeSpan.Zero));
 
-                Assert.Equal("invocationData", exception.ParamName);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void CreateExpiredJob_ThrowsAnException_WhenArgumentsIsNull()
-        {
-            UseConnection(connection =>
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => connection.CreateExpiredJob(
-                        new InvocationData(null, null, null),
-                        null,
-                        new Dictionary<string, string>(),
-                        TimeSpan.Zero));
-
-                Assert.Equal("arguments", exception.ParamName);
+                Assert.Equal("job", exception.ParamName);
             });
         }
 
@@ -106,8 +89,7 @@ namespace HangFire.SqlServer.Tests
             {
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => connection.CreateExpiredJob(
-                        new InvocationData(null, null, null),
-                        new string[0],
+                        Job.FromExpression(() => SampleMethod("hello")),
                         null,
                         TimeSpan.Zero));
 
@@ -121,23 +103,27 @@ namespace HangFire.SqlServer.Tests
             UseConnections((sql, connection) =>
             {
                 var jobId = connection.CreateExpiredJob(
-                    new InvocationData("Type", "Method", "Parameters"),
-                    new[] { "one", "two" },
+                    Job.FromExpression(() => SampleMethod("Hello")),
                     new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" } },
                     TimeSpan.FromDays(1));
 
                 Assert.NotNull(jobId);
                 Assert.NotEmpty(jobId);
 
-                var job = sql.Query("select * from HangFire.Job").Single();
-                Assert.Equal(jobId, job.Id.ToString());
-                Assert.Equal(null, (int?) job.StateId);
-                Assert.Equal(null, (string) job.StateName);
-                Assert.Equal(
-                    "{\"Type\":\"Type\",\"Method\":\"Method\",\"ParameterTypes\":\"Parameters\"}",
-                    job.InvocationData);
-                Assert.Equal("[\"one\",\"two\"]", job.Arguments);
-                Assert.True(DateTime.UtcNow < job.ExpireAt && job.ExpireAt < DateTime.UtcNow.AddDays(1));
+                var sqlJob = sql.Query("select * from HangFire.Job").Single();
+                Assert.Equal(jobId, sqlJob.Id.ToString());
+                Assert.Equal(null, (int?) sqlJob.StateId);
+                Assert.Equal(null, (string) sqlJob.StateName);
+
+                var invocationData = JobHelper.FromJson<InvocationData>((string)sqlJob.InvocationData);
+                invocationData.Arguments = sqlJob.Arguments;
+
+                var job = invocationData.Deserialize();
+                Assert.Equal(typeof(ConnectionFacts), job.Type);
+                Assert.Equal("SampleMethod", job.Method.Name);
+                Assert.Equal("Hello", job.Arguments[0]);
+
+                Assert.True(DateTime.UtcNow < sqlJob.ExpireAt && sqlJob.ExpireAt < DateTime.UtcNow.AddDays(1));
 
                 var parameters = sql.Query(
                     "select * from HangFire.JobParameter where JobId = @id",
@@ -176,14 +162,13 @@ select scope_identity() as Id";
 
             UseConnections((sql, connection) =>
             {
-                var type = typeof (ConnectionFacts);
-                var method = type.GetMethod("SampleMethod");
+                var job = Job.FromExpression(() => SampleMethod("wrong"));
 
                 var jobId = sql.Query(
                     arrangeSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(new MethodData(type, method).Serialize()),
+                        invocationData = JobHelper.ToJson(InvocationData.Serialize(job)),
                         stateName = "Succeeded",
                         arguments = "['Arguments']"
                     }).Single();

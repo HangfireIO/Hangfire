@@ -63,11 +63,8 @@ namespace HangFire.States
             if (parameters == null) throw new ArgumentNullException("parameters");
             if (state == null) throw new ArgumentNullException("state");
 
-            var invocationData = job.MethodData.Serialize();
-
             var jobId = _connection.CreateExpiredJob(
-                invocationData, 
-                job.Arguments.ToArray(),
+                job,
                 parameters,
                 TimeSpan.FromHours(1));
 

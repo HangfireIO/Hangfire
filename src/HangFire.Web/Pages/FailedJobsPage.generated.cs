@@ -270,7 +270,7 @@ WriteLiteral("\">\r\n                        <div>\r\n                          
 
             
             #line 74 "..\..\Pages\FailedJobsPage.cshtml"
-                                    Write(HtmlHelper.DisplayMethodHint(job.Value.MethodData));
+                                    Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
             #line default
@@ -280,7 +280,7 @@ WriteLiteral("\">\r\n                                ");
 
             
             #line 75 "..\..\Pages\FailedJobsPage.cshtml"
-                           Write(HtmlHelper.DisplayMethod(job.Value.MethodData));
+                           Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default

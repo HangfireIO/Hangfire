@@ -117,13 +117,11 @@ and Queue in @queues";
         }
 
         public string CreateExpiredJob(
-            InvocationData invocationData,
-            string[] arguments,
+            Job job,
             IDictionary<string, string> parameters, 
             TimeSpan expireIn)
         {
-            if (invocationData == null) throw new ArgumentNullException("invocationData");
-            if (arguments == null) throw new ArgumentNullException("arguments");
+            if (job == null) throw new ArgumentNullException("job");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
             const string createJobSql = @"
@@ -131,12 +129,14 @@ insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 values (@invocationData, @arguments, @createdAt, @expireAt);
 SELECT CAST(SCOPE_IDENTITY() as int)";
 
+            var invocationData = InvocationData.Serialize(job);
+
             var jobId = _connection.Query<int>(
                 createJobSql,
                 new
                 {
                     invocationData = JobHelper.ToJson(invocationData),
-                    arguments = JobHelper.ToJson(arguments),
+                    arguments = invocationData.Arguments,
                     createdAt = DateTime.UtcNow,
                     expireAt = DateTime.UtcNow.Add(expireIn)
                 }).Single().ToString();
@@ -179,15 +179,14 @@ values (@jobId, @name, @value)";
 
             // TODO: conversion exception could be thrown.
             var invocationData = JobHelper.FromJson<InvocationData>(jobData.InvocationData);
+            invocationData.Arguments = jobData.Arguments;
 
             Job job = null;
             JobLoadException loadException = null;
 
             try
             {
-                var methodData = MethodData.Deserialize(invocationData);
-                var arguments = JobHelper.FromJson<string[]>(jobData.Arguments);
-                job = new Job(methodData, arguments);
+                job = invocationData.Deserialize();
             }
             catch (JobLoadException ex)
             {

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using HangFire.Common;
 using HangFire.Server;
 using HangFire.States;
 
@@ -30,8 +31,7 @@ namespace HangFire.Storage
         IWriteOnlyTransaction CreateWriteTransaction();
 
         string CreateExpiredJob(
-            InvocationData invocationData,
-            string[] arguments,
+            Job job,
             IDictionary<string, string> parameters,
             TimeSpan expireIn);
 

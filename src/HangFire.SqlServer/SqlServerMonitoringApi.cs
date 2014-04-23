@@ -99,9 +99,9 @@ select count(Id) from HangFire.Job where StateName = @state";
             return GetJobs(
                 from, count,
                 ProcessingState.StateName,
-                (job, method, stateData) => new ProcessingJobDto
+                (sqlJob, job, stateData) => new ProcessingJobDto
                 {
-                    MethodData = method,
+                    Job = job,
                     ServerName = stateData["ServerName"],
                     StartedAt = JobHelper.FromStringTimestamp(stateData["StartedAt"]),
                 });
@@ -111,7 +111,7 @@ select count(Id) from HangFire.Job where StateName = @state";
             int from,
             int count,
             string stateName,
-            Func<SqlJob, MethodData, Dictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
             const string jobsSql = @"
 select * from (
@@ -132,14 +132,14 @@ select * from (
 
         private static JobList<TDto> DeserializeJobs<TDto>(
             ICollection<SqlJob> jobs,
-            Func<SqlJob, MethodData, Dictionary<string, string>, TDto> selector)
+            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
 
             foreach (var job in jobs)
             {
                 var stateData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
-                var dto = selector(job, DeserializeMethodData(job.InvocationData), stateData);
+                var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
 
                 result.Add(new KeyValuePair<string, TDto>(
                     job.Id.ToString(), dto));
@@ -148,13 +148,14 @@ select * from (
             return new JobList<TDto>(result);
         }
 
-        private static MethodData DeserializeMethodData(string invocationData)
+        private static Job DeserializeJob(string invocationData, string arguments)
         {
             var data = JobHelper.FromJson<InvocationData>(invocationData);
+            data.Arguments = arguments;
 
             try
             {
-                return MethodData.Deserialize(data);
+                return data.Deserialize();
             }
             catch (JobLoadException)
             {
@@ -167,9 +168,9 @@ select * from (
             return GetJobs(
                 from, count,
                 ScheduledState.StateName,
-                (job, method, stateData) => new ScheduleDto
+                (sqlJob, job, stateData) => new ScheduleDto
                 {
-                    MethodData = method,
+                    Job = job,
                     EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"])
                 });
         }
@@ -215,10 +216,10 @@ select * from (
                 from,
                 count,
                 FailedState.StateName,
-                (job, method, stateData) => new FailedJobDto
+                (sqlJob, job, stateData) => new FailedJobDto
                 {
-                    MethodData = method,
-                    Reason = job.StateReason,
+                    Job = job,
+                    Reason = sqlJob.StateReason,
                     ExceptionDetails = stateData["ExceptionDetails"],
                     ExceptionMessage = stateData["ExceptionMessage"],
                     ExceptionType = stateData["ExceptionType"],
@@ -232,9 +233,9 @@ select * from (
                 from,
                 count,
                 SucceededState.StateName,
-                (job, method, stateData) => new SucceededJobDto
+                (sqlJob, job, stateData) => new SucceededJobDto
                 {
-                    MethodData = method,
+                    Job = job,
                     SucceededAt = JobHelper.FromNullableStringTimestamp(stateData["SucceededAt"])
                 });
         }
@@ -291,9 +292,9 @@ where r.row_num between @start and @end";
 
             return DeserializeJobs(
                 jobs,
-                (job, method, stateData) => new EnqueuedJobDto
+                (sqlJob, job, stateData) => new EnqueuedJobDto
                 {
-                    MethodData = method,
+                    Job = job,
                     EnqueuedAt = JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
                 });
         }
@@ -322,7 +323,7 @@ where r.row_num between @start and @end";
                     job.Id.ToString(),
                     new FetchedJobDto
                     {
-                        MethodData = DeserializeMethodData(job.InvocationData),
+                        Job = DeserializeJob(job.InvocationData, job.Arguments),
                         State = job.StateName,
                         CreatedAt = job.CreatedAt,
                         FetchedAt = job.FetchedAt
@@ -369,9 +370,8 @@ select * from HangFire.State where JobId = @id order by Id desc";
 
                 return new JobDetailsDto
                 {
-                    Arguments = JobHelper.FromJson<string[]>(job.Arguments),
                     CreatedAt = job.CreatedAt,
-                    MethodData = DeserializeMethodData(job.InvocationData),
+                    Job = DeserializeJob(job.InvocationData, job.Arguments),
                     History = history,
                     Properties = parameters
                 };

@@ -121,19 +121,20 @@ namespace HangFire.Redis
         }
 
         public string CreateExpiredJob(
-            InvocationData invocationData,
-            string[] arguments,
+            Job job,
             IDictionary<string, string> parameters, 
             TimeSpan expireIn)
         {
             var jobId = Guid.NewGuid().ToString();
+
+            var invocationData = InvocationData.Serialize(job);
 
             // Do not modify the original parameters.
             var storedParameters = new Dictionary<string, string>(parameters);
             storedParameters.Add("Type", invocationData.Type);
             storedParameters.Add("Method", invocationData.Method);
             storedParameters.Add("ParameterTypes", invocationData.ParameterTypes);
-            storedParameters.Add("Arguments", JobHelper.ToJson(arguments));
+            storedParameters.Add("Arguments", invocationData.Arguments);
             storedParameters.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
 
             using (var transaction = _redis.CreateTransaction())
@@ -180,13 +181,11 @@ namespace HangFire.Redis
             Job job = null;
             JobLoadException loadException = null;
 
-            var invocationData = new InvocationData(type, method, parameterTypes);
+            var invocationData = new InvocationData(type, method, parameterTypes, storedData["Arguments"]);
 
             try
             {
-                var methodData = MethodData.Deserialize(invocationData);
-                var arguments = JobHelper.FromJson<string[]>(storedData["Arguments"]);
-                job = new Job(methodData, arguments);
+                job = invocationData.Deserialize();
             }
             catch (JobLoadException ex)
             {

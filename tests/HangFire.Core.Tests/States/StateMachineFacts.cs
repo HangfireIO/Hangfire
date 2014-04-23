@@ -37,8 +37,7 @@ namespace HangFire.Core.Tests.States
             _connection.Setup(x => x.CreateWriteTransaction())
                 .Returns(_transaction.Object);
             _connection.Setup(x => x.CreateExpiredJob(
-                It.IsAny<InvocationData>(),
-                It.IsAny<string[]>(),
+                It.IsAny<Job>(),
                 It.IsAny<IDictionary<string, string>>(),
                 It.IsAny<TimeSpan>())).Returns(JobId);
         }
@@ -96,8 +95,7 @@ namespace HangFire.Core.Tests.States
             stateMachine.CreateInState(job, _parameters, _state.Object);
 
             _connection.Verify(x => x.CreateExpiredJob(
-                It.Is<InvocationData>(d => d.Type == typeof(Console).AssemblyQualifiedName),
-                new [] { "SomeString" },
+                It.Is<Job>(j => j.Type == typeof(Console) && j.Arguments[0] == "SomeString"),
                 It.Is<Dictionary<string, string>>(d => d["Name"] == "Value"),
                 It.IsAny<TimeSpan>()));
         }
@@ -259,7 +257,7 @@ namespace HangFire.Core.Tests.States
 
             // Assert
             stateMachine.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == "1" && sc.Job.MethodData.Type.Name.Equals("Console")),
+                It.Is<StateContext>(sc => sc.JobId == "1" && sc.Job.Type.Name.Equals("Console")),
                 _state.Object,
                 "Old"));
 

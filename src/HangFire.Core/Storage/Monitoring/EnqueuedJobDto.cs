@@ -26,7 +26,7 @@ namespace HangFire.Storage.Monitoring
             InEnqueuedState = true;
         }
 
-        public MethodData MethodData { get; set; }
+        public Job Job { get; set; }
         public DateTime? EnqueuedAt { get; set; }
         public bool InEnqueuedState { get; set; }
     }
