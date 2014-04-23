@@ -40,5 +40,32 @@
     <script src="~/Scripts/jquery-1.10.2.min.js"></script>
     <script src="~/Scripts/bootstrap.min.js"></script>
     @StackExchange.Profiling.MiniProfiler.RenderIncludes()
+    
+    <script src="~/Scripts/jquery.signalR-2.0.3.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script>
+        $(function () {
+            var snippetsToHighlight = $('.source-code[data-subscribe="True"]').map(function() {
+                return $(this).data('snippet-id');
+            }).get();
+
+            if (snippetsToHighlight.length > 0) {
+                var snippet = $.connection.snippetHub;
+
+                snippet.client.highlight = function (snippetId, highlightedCode) {
+                    console.log('Highlighting snippet #' + snippetId);
+                    $('.source-code[data-snippet-id="' + snippetId + '"]').html(highlightedCode);
+                };
+
+                console.log('Connecting to the SnippetHub');
+
+                $.connection.hub.start().done(function () {
+                    console.log('Subscribing to snippets:', snippetsToHighlight);
+                    snippet.server.subscribe(snippetsToHighlight);
+                });
+            }
+        });
+</script>
+
 </body>
 </html>

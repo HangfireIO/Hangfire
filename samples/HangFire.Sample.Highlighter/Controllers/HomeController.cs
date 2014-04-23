@@ -6,7 +6,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using HangFire.Sample.Highlighter.Hubs;
 using HangFire.Sample.Highlighter.Models;
+using Microsoft.AspNet.SignalR;
 using PagedList;
 using StackExchange.Profiling;
 
@@ -163,6 +165,10 @@ public ActionResult Details(int? id)
                 snippet.HighlightedAt = DateTime.UtcNow;
 
                 context.SaveChanges();
+
+                var hubContext = GlobalHost.ConnectionManager.GetHubContext<SnippetHub>();
+                hubContext.Clients.Group(SnippetHub.GetGroup(snippet.Id))
+                    .highlight(snippet.Id, snippet.HighlightedSource);
             }
         }
 

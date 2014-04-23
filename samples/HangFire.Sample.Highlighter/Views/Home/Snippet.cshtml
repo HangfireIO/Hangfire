@@ -17,21 +17,4 @@
     <div class="clearfix"></div>
 </div>
 
-<div>
-    @if (Model.HighlightedSource == null)
-    {
-        <div class="alert alert-info">
-            <h4>Highlighted code is not available yet.</h4>
-            <p>Don't worry, it will be highlighted even in case of a disaster
-                (if we implement failover strategies for our job storage).</p>
-            <p><a href="javascript:window.location.reload()">Reload the page</a>
-                manually to ensure your code is highlighted.</p>
-        </div>
-
-        <pre>@Model.Source</pre>
-    }
-    else
-    {
-        @Html.Raw(Model.HighlightedSource)
-    }
-</div>
+@Html.Partial("_Source", Model)

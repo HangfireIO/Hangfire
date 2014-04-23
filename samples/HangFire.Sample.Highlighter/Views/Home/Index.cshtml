@@ -39,16 +39,7 @@ else
                 </td>
                 <td class="source">
                     <a href="@Url.Action("Snippet", new { id = item.Id })">
-                        @if (item.HighlightedSource != null)
-                        {
-                            @Html.Raw(item.HighlightedSource)
-                        }
-                        else
-                        {
-                            <div>
-                                <pre><code>@item.Source</code></pre>
-                            </div>
-                        }
+                        @Html.Partial("_Source", item)
                     </a>
                 </td>
                 <td>
