@@ -97,12 +97,6 @@ namespace ConsoleSample
                         BackgroundJob.Schedule<Services>(x => x.Random(number), TimeSpan.FromSeconds(seconds));
                     }
 
-                    if (command.StartsWith("recurring", StringComparison.OrdinalIgnoreCase))
-                    {
-                        BackgroundJob.Enqueue<Services>(x => x.Recurring());
-                        Console.WriteLine("Recurring job added");
-                    }
-
                     if (command.StartsWith("fast", StringComparison.OrdinalIgnoreCase))
                     {
                         try

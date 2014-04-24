@@ -26,12 +26,6 @@ namespace ConsoleSample
             throw new InvalidOperationException(null, new FileLoadException());
         }
 
-        [Queue("critical"), Recurring(intervalInSeconds: 30)]
-        public void Recurring()
-        {
-            Console.WriteLine("Performing recurring task...");
-        }
-
         [Queue("critical")]
         public void Random(int number)
         {
