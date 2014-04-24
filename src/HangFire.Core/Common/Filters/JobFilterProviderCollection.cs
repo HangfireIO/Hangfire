@@ -36,30 +36,9 @@ namespace HangFire.Common.Filters
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobFilterProviderCollection"/> 
-        /// class using the filter providers collection.
-        /// </summary>
-        /// <param name="providers"></param>
-        public JobFilterProviderCollection(IList<IJobFilterProvider> providers)
-            : base(providers)
-        {
-        }
-
         internal JobFilterProviderCollection(params IJobFilterProvider[] providers)
             : base(providers)
         {
-        }
-
-        private static bool AllowMultiple(object filterInstance)
-        {
-            var mvcFilter = filterInstance as IJobFilter;
-            if (mvcFilter == null)
-            {
-                return true;
-            }
-
-            return mvcFilter.AllowMultiple;
         }
 
         /// <summary>
@@ -98,6 +77,17 @@ namespace HangFire.Common.Filters
                     visitedTypes.Add(filterInstanceType);
                 }
             }
+        }
+
+        private static bool AllowMultiple(object filterInstance)
+        {
+            var mvcFilter = filterInstance as IJobFilter;
+            if (mvcFilter == null)
+            {
+                return true;
+            }
+
+            return mvcFilter.AllowMultiple;
         }
 
         private class FilterComparer : IComparer<JobFilter>

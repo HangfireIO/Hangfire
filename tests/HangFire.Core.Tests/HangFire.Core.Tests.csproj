@@ -68,6 +68,7 @@
     <Compile Include="Client\CreatingContextFacts.cs" />
     <Compile Include="Client\JobCreationProcessFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
+    <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
