@@ -34,7 +34,7 @@ namespace HangFire.Core.Tests.States
                     { "ExceptionMessage", "Message" },
                     { "ExceptionDetails", "<Non-empty>" }
                 }, 
-                state.Serialize());
+                state.SerializeData());
         }
     }
 }

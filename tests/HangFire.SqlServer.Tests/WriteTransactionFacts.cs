@@ -80,7 +80,7 @@ select scope_identity() as Id";
 
                 var state = new Mock<State>();
                 state.Setup(x => x.Name).Returns("State");
-                state.Setup(x => x.Serialize())
+                state.Setup(x => x.SerializeData())
                     .Returns(new Dictionary<string, string> { { "Name", "Value" } });
                 state.Object.Reason = "Reason";
 
@@ -117,7 +117,7 @@ select scope_identity() as Id";
 
                 var state = new Mock<State>();
                 state.Setup(x => x.Name).Returns("State");
-                state.Setup(x => x.Serialize())
+                state.Setup(x => x.SerializeData())
                     .Returns(new Dictionary<string, string> { { "Name", "Value" } });
                 state.Object.Reason = "Reason";
 

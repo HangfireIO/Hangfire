@@ -99,7 +99,7 @@ namespace HangFire.Redis
             // so job state might be changed between reads of the job
             // state itself and a data of the state. In monitoring API
             // we don't show state data when data.State !== job.State.
-            var storedData = new Dictionary<string, string>(state.Serialize());
+            var storedData = new Dictionary<string, string>(state.SerializeData());
             storedData.Add("State", state.Name);
 
             if (state.Reason != null)
@@ -118,7 +118,7 @@ namespace HangFire.Redis
         {
             // We are storing some more information in the same key,
             // let's add it.
-            var storedData = new Dictionary<string, string>(state.Serialize());
+            var storedData = new Dictionary<string, string>(state.SerializeData());
             storedData.Add("State", state.Name);
             storedData.Add("Reason", state.Reason);
             storedData.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));

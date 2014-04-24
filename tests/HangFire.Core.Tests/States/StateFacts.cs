@@ -21,7 +21,7 @@ namespace HangFire.Core.Tests.States
             var stateMock = new Mock<State>();
             stateMock.CallBase = true;
 
-            Assert.Empty(stateMock.Object.Serialize());
+            Assert.Empty(stateMock.Object.SerializeData());
         }
     }
 }

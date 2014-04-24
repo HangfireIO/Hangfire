@@ -23,7 +23,7 @@ namespace HangFire.Core.Tests.States
                 {
                     { "SucceededAt", "<UtcNow timestamp>" },
                 },
-                state.Serialize());
+                state.SerializeData());
         }
 
         [Fact]

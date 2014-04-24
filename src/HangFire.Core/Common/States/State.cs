@@ -25,7 +25,7 @@ namespace HangFire.Common.States
         public abstract string Name { get; }
         public virtual bool ExpireJobOnApply { get { return false; } }
 
-        public virtual Dictionary<string, string> Serialize()
+        public virtual Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>();
         }

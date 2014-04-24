@@ -89,7 +89,7 @@ update HangFire.Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id =
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow,
-                    data = JobHelper.ToJson(state.Serialize()),
+                    data = JobHelper.ToJson(state.SerializeData()),
                     id = jobId
                 }));
         }
@@ -108,7 +108,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                     name = state.Name,
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow, 
-                    data = JobHelper.ToJson(state.Serialize())
+                    data = JobHelper.ToJson(state.SerializeData())
                 }));
         }
 

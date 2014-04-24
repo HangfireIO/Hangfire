@@ -33,7 +33,7 @@ namespace HangFire.Core.Tests.States
                     { "ScheduledAt", "<UtcNow timestamp>" },
                     { "EnqueueAt", "<Tomorrow timestamp>" },
                 },
-                state.Serialize());
+                state.SerializeData());
         }
     }
 }

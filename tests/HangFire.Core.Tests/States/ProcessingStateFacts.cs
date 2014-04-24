@@ -39,7 +39,7 @@ namespace HangFire.Core.Tests.States
                     { "StartedAt", "<UtcNow timestamp>" },
                     { "ServerName", "Server1" },
                 },
-                state.Serialize());
+                state.SerializeData());
         }
     }
 }

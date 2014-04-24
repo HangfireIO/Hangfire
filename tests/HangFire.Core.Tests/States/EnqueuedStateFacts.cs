@@ -25,13 +25,15 @@ namespace HangFire.Core.Tests.States
         {
             var state = new EnqueuedState();
 
+            var serializedData = state.SerializeData();
+
             DictionaryAssert.ContainsFollowingItems(
                 new Dictionary<string, string>
                 {
                     { "EnqueuedAt", "<UtcNow timestamp>" },
                     { "Queue", "default" }
                 },
-                state.Serialize());
+                state.SerializeData());
         }
     }
 }

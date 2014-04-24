@@ -67,7 +67,7 @@ namespace HangFire.States
 
         public override string Name { get { return StateName; } }
 
-        public override Dictionary<string, string> Serialize()
+        public override Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {
