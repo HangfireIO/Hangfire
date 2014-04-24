@@ -30,7 +30,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
         }
 
-        [Fact]
+        [Fact, StaticLock(IsGlobal = true)]
         public void EnqueueGeneric_CreatesAJobInEnqueuedState()
         {
             Initialize();
@@ -40,7 +40,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
         }
 
-        [Fact]
+        [Fact, StaticLock(IsGlobal = true)]
         public void Enqueue_WithQueue_CreatesAJobInEnqueuedState_WithCorrespondingQueue()
         {
             Initialize();
@@ -52,7 +52,7 @@ namespace HangFire.Core.Tests
                 It.Is<EnqueuedState>(state => state.Queue == "queue")));
         }
 
-        [Fact]
+        [Fact, StaticLock(IsGlobal = true)]
         public void EnqueueGeneric_WithQueue_CreatesAJobInEnqueuedState_WithCorrespondingQueue()
         {
             Initialize();
@@ -64,7 +64,7 @@ namespace HangFire.Core.Tests
                 It.Is<EnqueuedState>(state => state.Queue == "queue")));
         }
 
-        [Fact]
+        [Fact, StaticLock(IsGlobal = true)]
         public void Schedule_WithTimeSpan_CreatesAJobInScheduledState()
         {
             Initialize();
@@ -76,7 +76,7 @@ namespace HangFire.Core.Tests
                 It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
         }
 
-        [Fact]
+        [Fact, StaticLock(IsGlobal = true)]
         public void ScheduleGeneric_WithTimeSpan_CreatesAJobInScheduledState()
         {
             Initialize();
