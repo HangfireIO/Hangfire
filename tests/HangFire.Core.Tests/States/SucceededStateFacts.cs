@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using HangFire.Common;
 using HangFire.States;
 using Xunit;
 
@@ -14,16 +15,13 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void GetStateData_ReturnsCorrectData()
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = new SucceededState();
 
-            DictionaryAssert.ContainsFollowingItems(
-                new Dictionary<string, string>
-                {
-                    { "SucceededAt", "<UtcNow timestamp>" },
-                },
-                state.SerializeData());
+            var data = state.SerializeData();
+
+            Assert.Equal(JobHelper.ToStringTimestamp(state.SucceededAt), data["SucceededAt"]);
         }
 
         [Fact]

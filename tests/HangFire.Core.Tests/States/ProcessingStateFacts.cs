@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using HangFire.Common;
 using HangFire.States;
 using Xunit;
 
@@ -29,17 +29,14 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void GetStateData_ReturnsCorrectData()
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = new ProcessingState("Server1");
 
-            DictionaryAssert.ContainsFollowingItems(
-                new Dictionary<string, string>
-                {
-                    { "StartedAt", "<UtcNow timestamp>" },
-                    { "ServerName", "Server1" },
-                },
-                state.SerializeData());
+            var data = state.SerializeData();
+
+            Assert.Equal(JobHelper.ToStringTimestamp(state.StartedAt), data["StartedAt"]);
+            Assert.Equal("Server1", state.ServerName);
         }
     }
 }

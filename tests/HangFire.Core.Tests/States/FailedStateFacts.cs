@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Common;
 using HangFire.States;
 using Xunit;
 
@@ -22,19 +23,16 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void GetStateData_ReturnsCorrectData()
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = new FailedState(new Exception("Message"));
 
-            DictionaryAssert.ContainsFollowingItems(
-                new Dictionary<string, string>
-                {
-                    { "FailedAt", "<UtcNow timestamp>" },
-                    { "ExceptionType", "System.Exception" },
-                    { "ExceptionMessage", "Message" },
-                    { "ExceptionDetails", "<Non-empty>" }
-                }, 
-                state.SerializeData());
+            var serializedData = state.SerializeData();
+
+            Assert.Equal(JobHelper.ToStringTimestamp(state.FailedAt), serializedData["FailedAt"]);
+            Assert.Equal("System.Exception", serializedData["ExceptionType"]);
+            Assert.Equal("Message", serializedData["ExceptionMessage"]);
+            Assert.Equal(state.Exception.ToString(), serializedData["ExceptionDetails"]);
         }
     }
 }

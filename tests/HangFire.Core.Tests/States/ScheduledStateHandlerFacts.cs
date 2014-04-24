@@ -11,18 +11,23 @@ namespace HangFire.Core.Tests.States
     public class ScheduledStateHandlerFacts
     {
         private readonly ApplyStateContext _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction
-            = new Mock<IWriteOnlyTransaction>();
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         private const string JobId = "1";
         private readonly DateTime EnqueueAt = DateTime.UtcNow.AddDays(1);
+        private readonly Mock<IStorageConnection> _connection;
+        private readonly StateContext _stateContext;
 
         public ScheduledStateHandlerFacts()
         {
             var job = Job.FromExpression(() => Console.WriteLine());
+
+            _transaction = new Mock<IWriteOnlyTransaction>();
+            _connection = new Mock<IStorageConnection>();
+            _stateContext = new StateContext(JobId, job);
             _context = new ApplyStateContext(
-                new Mock<IStorageConnection>().Object,
-                new StateContext(JobId, job), 
+                _connection.Object,
+                _stateContext, 
                 new ScheduledState(EnqueueAt), 
                 null);
         }
@@ -51,6 +56,17 @@ namespace HangFire.Core.Tests.States
             handler.Unapply(_context, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+        }
+
+        [Fact]
+        public void Apply_ThrowsAnException_WhenGivenStateIsNotScheduledState()
+        {
+            var handler = new ScheduledState.Handler();
+            var context = new ApplyStateContext(
+                _connection.Object, _stateContext, new Mock<State>().Object, null);
+
+            Assert.Throws<InvalidOperationException>(
+                () => handler.Apply(context, _transaction.Object));
         }
     }
 }

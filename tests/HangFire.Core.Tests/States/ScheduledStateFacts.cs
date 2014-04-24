@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HangFire.Common;
 using HangFire.States;
 using Xunit;
 
@@ -15,6 +16,14 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_SetsTheCorrectData_WhenDateIsPassed()
+        {
+            var date = new DateTime(2012, 12, 12);
+            var state = new ScheduledState(date);
+            Assert.Equal(date, state.EnqueueAt);
+        }
+
+        [Fact]
         public void Ctor_SetsTheCorrectDate_WhenTimeSpanIsPassed()
         {
             var state = new ScheduledState(TimeSpan.FromDays(1));
@@ -23,17 +32,14 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void GetStateData_ReturnsCorrectData()
+        public void SerializeData_ReturnsCorrectData()
         {
-            var state = new ScheduledState(DateTime.UtcNow.AddDays(1));
+            var state = new ScheduledState(new DateTime(2012, 12, 12));
 
-            DictionaryAssert.ContainsFollowingItems(
-                new Dictionary<string, string>
-                {
-                    { "ScheduledAt", "<UtcNow timestamp>" },
-                    { "EnqueueAt", "<Tomorrow timestamp>" },
-                },
-                state.SerializeData());
+            var data = state.SerializeData();
+
+            Assert.Equal(JobHelper.ToStringTimestamp(state.EnqueueAt), data["EnqueueAt"]);
+            Assert.Equal(JobHelper.ToStringTimestamp(state.ScheduledAt), data["ScheduledAt"]);
         }
     }
 }

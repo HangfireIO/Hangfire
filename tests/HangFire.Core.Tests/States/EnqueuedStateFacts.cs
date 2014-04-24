@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using HangFire.Common;
 using HangFire.States;
 using Xunit;
 
@@ -21,19 +22,41 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void GetStateData_ReturnsCorrectData()
+        public void SetQueue_ThrowsAnException_WhenQueueValueIsEmpty()
+        {
+            var state = new EnqueuedState();
+            Assert.Throws<ArgumentNullException>(() => state.Queue = String.Empty);
+        }
+
+        [Fact]
+        public void SetQueue_ThrowsAnException_WhenValueIsNotInAGivenFormat()
+        {
+            var state = new EnqueuedState();
+
+            Assert.Throws<ArgumentException>(() => state.Queue = "UppercaseLetters");
+            Assert.Throws<ArgumentException>(() => state.Queue = "punctuation:un-allowed");
+            Assert.Throws<ArgumentException>(() => state.Queue = "моя_твоя_непонимать");
+        }
+
+        [Fact]
+        public void SetQueue_DoesNotThrowException_WhenValueIsInACorrectFormat()
+        {
+            var state = new EnqueuedState();
+
+            Assert.DoesNotThrow(() => state.Queue = "lowercasedcharacters");
+            Assert.DoesNotThrow(() => state.Queue = "underscores_allowed");
+            Assert.DoesNotThrow(() => state.Queue = "1234567890_allowed");
+        }
+
+        [Fact]
+        public void SerializeData_ReturnsCorrectData()
         {
             var state = new EnqueuedState();
 
             var serializedData = state.SerializeData();
 
-            DictionaryAssert.ContainsFollowingItems(
-                new Dictionary<string, string>
-                {
-                    { "EnqueuedAt", "<UtcNow timestamp>" },
-                    { "Queue", "default" }
-                },
-                state.SerializeData());
+            Assert.Equal(state.Queue, serializedData["Queue"]);
+            Assert.Equal(JobHelper.ToStringTimestamp(state.EnqueuedAt), serializedData["EnqueuedAt"]);
         }
     }
 }
