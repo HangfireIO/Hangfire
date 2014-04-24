@@ -23,20 +23,21 @@ namespace HangFire
         private static JobActivator _current = new JobActivator();
 
         /// <summary>
-        /// Gets the current <see cref="JobActivator"/> instance.
+        /// Gets or sets the current <see cref="JobActivator"/> instance 
+        /// that will be used to activate jobs during performance.
         /// </summary>
-        public static JobActivator Current { get { return _current; } }
-
-        /// <summary>
-        /// Sets the current <see cref="JobActivator"/> instance that will
-        /// be used to activate jobs.
-        /// </summary>
-        /// <param name="activator"></param>
-        public static void SetCurrent(JobActivator activator)
+        public static JobActivator Current
         {
-            if (activator == null) throw new ArgumentNullException("activator");
+            get { return _current; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException("value");
+                }
 
-            _current = activator;
+                _current = value;
+            }
         }
 
         public virtual object ActivateJob(Type jobType)
