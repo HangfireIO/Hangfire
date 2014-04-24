@@ -27,8 +27,13 @@ namespace HangFire.Filters
         private const int DefaultRetryAttempts = 10;
 
         public RetryAttribute()
+            : this(DefaultRetryAttempts)
         {
-            Attempts = DefaultRetryAttempts;
+        }
+
+        public RetryAttribute(int attempts)
+        {
+            Attempts = attempts;
         }
 
         public int Attempts
@@ -56,7 +61,7 @@ namespace HangFire.Filters
             
             if (retryCount < Attempts)
             {
-                var delay = DateTime.UtcNow.AddSeconds(SecondsToDelay(retryCount));
+                var delay = TimeSpan.FromSeconds(SecondsToDelay(retryCount));
 
                 context.SetJobParameter("RetryCount", retryCount + 1);
 
