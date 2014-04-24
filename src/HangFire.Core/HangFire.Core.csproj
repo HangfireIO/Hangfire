@@ -114,7 +114,6 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="Common\States\IApplyStateFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Filters\RecurringAttribute.cs" />
     <Compile Include="Filters\RetryAttribute.cs" />
     <Compile Include="Server\DisposableCollection.cs" />
     <Compile Include="Server\IStoppable.cs" />
