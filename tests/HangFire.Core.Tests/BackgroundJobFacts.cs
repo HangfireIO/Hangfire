@@ -20,7 +20,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Dispose());
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void Enqueue_CreatesAJobInEnqueuedState()
         {
             Initialize();
@@ -30,7 +30,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void EnqueueGeneric_CreatesAJobInEnqueuedState()
         {
             Initialize();
@@ -40,7 +40,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void Enqueue_WithQueue_CreatesAJobInEnqueuedState_WithCorrespondingQueue()
         {
             Initialize();
@@ -52,7 +52,7 @@ namespace HangFire.Core.Tests
                 It.Is<EnqueuedState>(state => state.Queue == "queue")));
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void EnqueueGeneric_WithQueue_CreatesAJobInEnqueuedState_WithCorrespondingQueue()
         {
             Initialize();
@@ -64,7 +64,7 @@ namespace HangFire.Core.Tests
                 It.Is<EnqueuedState>(state => state.Queue == "queue")));
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void Schedule_WithTimeSpan_CreatesAJobInScheduledState()
         {
             Initialize();
@@ -76,7 +76,7 @@ namespace HangFire.Core.Tests
                 It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void ScheduleGeneric_WithTimeSpan_CreatesAJobInScheduledState()
         {
             Initialize();

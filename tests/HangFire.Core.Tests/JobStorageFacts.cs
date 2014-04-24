@@ -13,13 +13,13 @@ namespace HangFire.Core.Tests
             _storage = new Mock<JobStorage>() { CallBase = true };
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]
         public void SetCurrent_DoesNotThrowAnException_WhenValueIsNull()
         {
             Assert.DoesNotThrow(() => JobStorage.Current = null);
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]
         public void GetCurrent_ThrowsAnException_OnUninitializedValue()
         {
             JobStorage.Current = null;
@@ -27,7 +27,7 @@ namespace HangFire.Core.Tests
             Assert.Throws<InvalidOperationException>(() => JobStorage.Current);
         }
 
-        [Fact, StaticLock(IsGlobal = true)]
+        [Fact, GlobalLock(Reason = "Access static JobStorage.Current member")]
         public void GetCurrent_ReturnsCurrentValue_WhenInitialized()
         {
             var storage = new Mock<JobStorage>();
