@@ -17,7 +17,7 @@ namespace HangFire.Core.Tests
         {
             _stateContext = new StateContext("id", Job.FromExpression(() => Sample()));
             _connection = new Mock<IStorageConnection>();
-            var enqueuedState = new EnqueuedState("override");
+            var enqueuedState = new EnqueuedState("queue");
 
             _context = new ElectStateContext(_stateContext, enqueuedState, null, _connection.Object);
         }
@@ -32,7 +32,7 @@ namespace HangFire.Core.Tests
         [Fact]
         public void OnStateElection_OverridesTheQueue_OfTheCandidateState()
         {
-            var filter = new QueueAttribute("queue");
+            var filter = new QueueAttribute("override");
             filter.OnStateElection(_context);
 
             Assert.Equal("override", ((EnqueuedState)_context.CandidateState).Queue);
@@ -41,7 +41,7 @@ namespace HangFire.Core.Tests
         [Fact]
         public void OnStateElection_DoesNotDoAnything_IfStateIsNotEnqueuedState()
         {
-            var filter = new QueueAttribute("queue");
+            var filter = new QueueAttribute("override");
             var context = new ElectStateContext(_context, new Mock<State>().Object, null, _connection.Object);
 
             Assert.DoesNotThrow(() => filter.OnStateElection(context));
