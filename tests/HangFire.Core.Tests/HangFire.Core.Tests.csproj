@@ -67,6 +67,7 @@
     <Compile Include="Client\CreatingContextFacts.cs" />
     <Compile Include="Client\JobCreationProcessFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
+    <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
