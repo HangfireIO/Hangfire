@@ -47,11 +47,6 @@ namespace HangFire
             {
                 lock (LockObject)
                 {
-                    if (value == null)
-                    {
-                        throw new ArgumentNullException("value");
-                    }
-
                     _current = value;
                 }
             }
