@@ -19,7 +19,7 @@ namespace HangFire.Server
             get { return _maxRetryAttempts; }
             set
             {
-                if (_maxRetryAttempts < 0)
+                if (value < 0)
                 {
                     throw new ArgumentOutOfRangeException(
                         "value",
@@ -35,7 +35,7 @@ namespace HangFire.Server
             get { return _shutdownTimeout; }
             set
             {
-                if (ShutdownTimeout != TimeSpan.Zero && ShutdownTimeout.Duration().Negate() == ShutdownTimeout)
+                if (value != TimeSpan.Zero && value == value.Duration().Negate())
                 {
                     throw new ArgumentOutOfRangeException(
                         "value",
