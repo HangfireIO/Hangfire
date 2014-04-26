@@ -35,7 +35,7 @@ namespace HangFire.Server
             get { return _shutdownTimeout; }
             set
             {
-                if (ShutdownTimeout.Duration().Negate() == ShutdownTimeout)
+                if (ShutdownTimeout != TimeSpan.Zero && ShutdownTimeout.Duration().Negate() == ShutdownTimeout)
                 {
                     throw new ArgumentOutOfRangeException(
                         "value",
