@@ -187,7 +187,7 @@ namespace HangFire.Server
                         "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
                         ex,
                         _component,
-                        i,
+                        i + 1,
                         _options.MaxRetryAttempts,
                         nextTry);
 
