@@ -38,7 +38,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Equal("options", exception.ParamName);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Ctor_UsesDefaultOptions_IfTheyWereNoProvided()
         {
             Assert.DoesNotThrow(() => new ServerComponentRunner(_component.Object));
