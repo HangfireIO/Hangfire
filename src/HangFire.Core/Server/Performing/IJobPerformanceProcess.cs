@@ -16,7 +16,7 @@
 
 namespace HangFire.Server.Performing
 {
-    internal interface IJobPerformanceProcess
+    public interface IJobPerformanceProcess
     {
         void Run(PerformContext context, IJobPerformer performer);
     }

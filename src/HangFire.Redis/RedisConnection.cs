@@ -55,7 +55,7 @@ namespace HangFire.Redis
             return new RedisWriteOnlyTransaction(_redis.CreateTransaction());
         }
 
-        public ProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             string jobId;
             string queueName;

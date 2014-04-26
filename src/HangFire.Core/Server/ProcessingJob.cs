@@ -15,7 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Server.Performing;
 using HangFire.States;
@@ -23,7 +22,7 @@ using HangFire.Storage;
 
 namespace HangFire.Server
 {
-    public class ProcessingJob : IDisposable
+    public class ProcessingJob : IProcessingJob
     {
         private readonly IStorageConnection _connection;
 
@@ -44,7 +43,7 @@ namespace HangFire.Server
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
-        internal virtual void Process(WorkerContext context, IJobPerformanceProcess process)
+        public void Process(WorkerContext context, IJobPerformanceProcess process)
         {
             if (context == null) throw new ArgumentNullException("context");
             if (process == null) throw new ArgumentNullException("process");

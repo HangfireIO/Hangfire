@@ -80,7 +80,9 @@
     <Compile Include="Server\ProcessingJobFacts.cs" />
     <Compile Include="Server\ServerComponentRunnerCollectionFacts.cs" />
     <Compile Include="Server\ServerComponentRunnerFacts.cs" />
+    <Compile Include="Server\ServerComponentRunnerOptionsFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
+    <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="Server\WorkerSmokeTest.cs" />
     <Compile Include="Server\WorkerManagerSmokeTest.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />

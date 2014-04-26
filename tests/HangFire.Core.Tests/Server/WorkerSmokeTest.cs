@@ -18,7 +18,7 @@ namespace HangFire.Core.Tests.Server
         private readonly WorkerContext _context;
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IJobPerformanceProcess> _process;
-        private readonly Mock<ProcessingJob> _processingJob;
+        private readonly Mock<IProcessingJob> _processingJob;
 
         public WorkerSmokeTest()
         {
@@ -29,10 +29,7 @@ namespace HangFire.Core.Tests.Server
             _storage.Setup(x => x.GetConnection()).Returns(connection.Object);
             _process = new Mock<IJobPerformanceProcess>();
 
-            _processingJob = new Mock<ProcessingJob>(connection.Object, "1", "default")
-            {
-                CallBase = false
-            };
+            _processingJob = new Mock<IProcessingJob>();
 
             connection
                 .Setup(x => x.FetchNextJob(Queues, It.IsAny<CancellationToken>()))
