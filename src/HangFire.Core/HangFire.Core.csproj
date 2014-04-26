@@ -101,6 +101,8 @@
     <Compile Include="Common\States\StateHandlerCollection.cs" />
     <Compile Include="Server\Components\SchedulePoller.cs" />
     <Compile Include="Server\Components\ServerWatchdog.cs" />
+    <Compile Include="Server\Components\ServerWatchdog2.cs" />
+    <Compile Include="Server\Components\ServerWatchdogOptions.cs" />
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
     <Compile Include="Client\Filters\CreatedContext.cs" />
     <Compile Include="Client\Filters\CreatingContext.cs" />
