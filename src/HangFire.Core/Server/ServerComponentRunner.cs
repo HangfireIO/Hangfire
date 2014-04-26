@@ -65,7 +65,7 @@ namespace HangFire.Server
         {
             if (_disposed) return;
 
-            _logger.TraceFormat("Initiating shutdown for server component '{0}'...", _component);
+            _logger.TraceFormat("Shutdown requested for server component '{0}'...", _component);
 
             Stop();
 
@@ -130,7 +130,7 @@ namespace HangFire.Server
             catch (Exception ex)
             {
                 _logger.FatalFormat(
-                    "Fatal error occured during execution of '{0}' component. It will be stopped. See the exception for details.",
+                    "Fatal error occurred during execution of '{0}' component. It will be stopped. See the exception for details.",
                     ex,
                     _component);
             }
@@ -176,13 +176,23 @@ namespace HangFire.Server
                 {
                     throw;
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Break the loop after the retry attempts number exceeded.
                     if (i >= _options.MaxRetryAttempts - 1) throw;
 
+                    var nextTry = GetBackOffMultiplier(i);
+
+                    _logger.ErrorFormat(
+                        "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
+                        ex,
+                        _component,
+                        i,
+                        _options.MaxRetryAttempts,
+                        nextTry);
+
                     // Break the loop when the wait handle was signaled.
-                    if (SleepBackOffMultiplier(i, cancellationToken.WaitHandle))
+                    if (cancellationToken.WaitHandle.WaitOne(nextTry))
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                     }
@@ -190,14 +200,14 @@ namespace HangFire.Server
             }
         }
 
-        private static bool SleepBackOffMultiplier(int i, WaitHandle waitHandle)
+        private static TimeSpan GetBackOffMultiplier(int retryAttemptNumber)
         {
             //exponential/random retry back-off.
             var rand = new Random(Guid.NewGuid().GetHashCode());
             var nextTry = rand.Next(
-                (int)Math.Pow(i, 2), (int)Math.Pow(i + 1, 2) + 1);
+                (int)Math.Pow(retryAttemptNumber, 2), (int)Math.Pow(retryAttemptNumber + 1, 2) + 1);
 
-            return waitHandle.WaitOne(TimeSpan.FromSeconds(nextTry));
+            return TimeSpan.FromSeconds(nextTry);
         }
 
         private void LogComponentStarted()
