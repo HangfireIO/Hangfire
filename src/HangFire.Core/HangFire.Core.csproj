@@ -104,6 +104,8 @@
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
     <Compile Include="Client\Filters\CreatedContext.cs" />
     <Compile Include="Client\Filters\CreatingContext.cs" />
+    <Compile Include="Server\IServerComponent.cs" />
+    <Compile Include="Server\IServerComponentRunner.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
     <Compile Include="Server\Performing\IJobPerformanceProcess.cs" />
     <Compile Include="Server\Performing\PerformContext.cs" />
@@ -119,6 +121,9 @@
     <Compile Include="Server\IStoppable.cs" />
     <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
+    <Compile Include="Server\ServerComponentRunner.cs" />
+    <Compile Include="Server\ServerComponentRunnerCollection.cs" />
+    <Compile Include="Server\ServerComponentRunnerOptions.cs" />
     <Compile Include="States\IStateMachine.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\Monitoring\IMonitoringApi.cs" />
