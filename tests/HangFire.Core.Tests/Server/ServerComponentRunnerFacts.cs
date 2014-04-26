@@ -44,7 +44,7 @@ namespace HangFire.Core.Tests.Server
             Assert.DoesNotThrow(() => new ServerComponentRunner(_component.Object));
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Dispose_OnJustCreatedRunner_DoNotLeadToComponentExecution()
         {
             var runner = CreateRunner();
@@ -55,7 +55,7 @@ namespace HangFire.Core.Tests.Server
             _component.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Never);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Dispose_CanBeCalledMultipleTimes()
         {
             var runner = CreateRunner();
@@ -64,7 +64,7 @@ namespace HangFire.Core.Tests.Server
             Assert.DoesNotThrow(runner.Dispose);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Start_LeadsToLoopedComponentExecution()
         {
             var runner = CreateRunner();
@@ -77,7 +77,7 @@ namespace HangFire.Core.Tests.Server
                 Times.AtLeast(2));
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Start_OnDisposedObject_ThrowsAnException()
         {
             var runner = CreateRunner();
@@ -86,7 +86,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Throws<ObjectDisposedException>(() => runner.Start());
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Stop_LeadsToStoppedComponentExecution()
         {
             // Arrange
@@ -107,7 +107,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Equal(0, timesExecuted);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Stop_OnDisposedObject_ThrowsAnException()
         {
             var runner = CreateRunner();
@@ -116,7 +116,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Throws<ObjectDisposedException>(() => runner.Stop());
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Start_CanRestartStoppedComponent()
         {
             // Arrange
@@ -138,7 +138,7 @@ namespace HangFire.Core.Tests.Server
             Assert.True(timesExecuted > 0);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Stop_CanBeCalledMultipleTimesInARow()
         {
             var runner = CreateRunner();
@@ -148,7 +148,7 @@ namespace HangFire.Core.Tests.Server
             Assert.DoesNotThrow(runner.Stop);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Dispose_StopsExecutionAutomatically()
         {
             var runner = CreateRunner();
@@ -157,7 +157,7 @@ namespace HangFire.Core.Tests.Server
             Assert.DoesNotThrow(runner.Dispose);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Dispose_CanBeCalled_AfterStop()
         {
             var runner = CreateRunner();
@@ -167,7 +167,7 @@ namespace HangFire.Core.Tests.Server
             Assert.DoesNotThrow(runner.Dispose);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void Dispose_ShouldDisposeDisposableComponent()
         {
             // Arrange
@@ -188,7 +188,7 @@ namespace HangFire.Core.Tests.Server
             Assert.True(component.Disposed);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void FailingComponent_ShouldNotBeRetried_IfMaxRetryAttemptsIsZero()
         {
             // Arrange
@@ -207,7 +207,7 @@ namespace HangFire.Core.Tests.Server
                 Times.Once);
         }
 
-        [Fact]
+        [PossibleHangingFact]
         public void FailingComponent_ShouldBeExecutedSeveralTimes_Automatically()
         {
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();

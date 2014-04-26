@@ -81,6 +81,7 @@
     <Compile Include="Server\ServerComponentRunnerCollectionFacts.cs" />
     <Compile Include="Server\ServerComponentRunnerFacts.cs" />
     <Compile Include="Server\ServerComponentRunnerOptionsFacts.cs" />
+    <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="Server\WorkerSmokeTest.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="States\SucceededStateHandlerFacts.cs" />
     <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
+    <Compile Include="Utils\PossibleHangingFactAttribute.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
     <Compile Include="Utils\StaticLockAttribute.cs" />
   </ItemGroup>
