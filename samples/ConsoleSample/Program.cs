@@ -13,13 +13,13 @@ namespace ConsoleSample
         public static void Main()
         {
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
-                LogLevel.All, false, false, true, "");
+                LogLevel.Trace, false, false, true, "");
 
             JobStorage.Current = 
                 new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
                 //new RedisStorage("localhost:6379", 3);
             
-            using (var server = new BackgroundJobServer("critical", "default"))
+            using (var server = new BackgroundJobServer2("critical", "default"))
             {
                 var count = 1;
 

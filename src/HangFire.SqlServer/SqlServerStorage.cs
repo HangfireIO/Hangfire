@@ -73,6 +73,13 @@ namespace HangFire.SqlServer
             yield return new ExpirationManager(this);
         }
 
+        public override IEnumerable<IServerComponent> GetComponents2()
+        {
+            yield return new SchedulePoller2(this, _stateMachineFactory, _options.QueuePollInterval);
+            yield return new ServerWatchdog2(this);
+            yield return new ExpirationManager2(this);
+        }
+
         internal SqlConnection CreateAndOpenConnection()
         {
             var connection = new SqlConnection(_connectionString);

@@ -43,6 +43,12 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void GetComponents2_ReturnsEmptyCollectionByDefault()
+        {
+            Assert.Empty(_storage.Object.GetComponents2());
+        }
+
+        [Fact]
         public void GetStateHandlers_ReturnsEmptyCollectionByDefault()
         {
             Assert.Empty(_storage.Object.GetStateHandlers());

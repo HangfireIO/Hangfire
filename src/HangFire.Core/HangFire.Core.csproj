@@ -56,6 +56,7 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="BackgroundJobServer2.cs" />
     <Compile Include="Client\IJobCreationProcess.cs" />
     <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Client\IJobCreator.cs" />
