@@ -18,6 +18,11 @@ namespace HangFire.Redis.Tests
             return new RedisClient(GetHost(), GetPort(), db: GetDb());
         }
 
+        public static string GetHostAndPort()
+        {
+            return String.Format("{0}:{1}", GetHost(), GetPort());
+        }
+
         public static string GetHost()
         {
             return Environment.GetEnvironmentVariable(HostVariable)

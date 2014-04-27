@@ -95,7 +95,7 @@ namespace HangFire.Redis
         {
             yield return new SchedulePoller2(this, _stateMachineFactory, Options.PollInterval);
             yield return new ServerWatchdog2(this);
-            // TODO: yield return new FetchedJobsWatcher();
+            yield return new FetchedJobsWatcher2(this, _stateMachineFactory);
         }
 
         public override IEnumerable<StateHandler> GetStateHandlers()
