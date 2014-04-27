@@ -78,6 +78,7 @@
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\ProcessingJobFacts.cs" />
+    <Compile Include="Server\SchedulePollerFacts.cs" />
     <Compile Include="Server\ServerComponentRunnerCollectionFacts.cs" />
     <Compile Include="Server\ServerComponentRunnerFacts.cs" />
     <Compile Include="Server\ServerComponentRunnerOptionsFacts.cs" />

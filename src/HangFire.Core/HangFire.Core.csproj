@@ -100,6 +100,7 @@
     <Compile Include="Common\States\StateHandlerProviders.cs" />
     <Compile Include="Common\States\StateHandlerCollection.cs" />
     <Compile Include="Server\Components\SchedulePoller.cs" />
+    <Compile Include="Server\Components\SchedulePoller2.cs" />
     <Compile Include="Server\Components\ServerWatchdog.cs" />
     <Compile Include="Server\Components\ServerWatchdog2.cs" />
     <Compile Include="Server\Components\ServerWatchdogOptions.cs" />
