@@ -13,15 +13,17 @@ namespace HangFire.Core.Tests.Server
 
         private readonly ServerContext _context;
         private readonly Mock<JobStorage> _storage;
-        private readonly Mock<IServerComponentRunner> _runner;
+        private readonly Lazy<IServerComponentRunner> _lazyRunner;
         private readonly Mock<IStorageConnection> _connection;
         private readonly CancellationToken _token;
+        private readonly Mock<IServerComponentRunner> _runner;
 
         public JobServerFacts()
         {
             _context = new ServerContext();
             _storage = new Mock<JobStorage>();
             _runner = new Mock<IServerComponentRunner>();
+            _lazyRunner = new Lazy<IServerComponentRunner>(() => _runner.Object);
             _connection = new Mock<IStorageConnection>();
             _token = new CancellationToken(true);
 
@@ -32,7 +34,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenServerIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobServer2(null, _context, _storage.Object, _runner.Object));
+                () => new JobServer2(null, _context, _storage.Object, _lazyRunner));
 
             Assert.Equal("serverId", exception.ParamName);
         }
@@ -41,7 +43,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobServer2(ServerId, null, _storage.Object, _runner.Object));
+                () => new JobServer2(ServerId, null, _storage.Object, _lazyRunner));
 
             Assert.Equal("context", exception.ParamName);
         }
@@ -50,7 +52,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobServer2(ServerId, _context, null, _runner.Object));
+                () => new JobServer2(ServerId, _context, null, _lazyRunner));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -65,99 +67,69 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Ctor_CreatesConnection_AnnouncesServer_AndClosesConnection()
+        public void Execute_AnnouncesServer()
         {
-            CreateServer();
+            var server = CreateServer();
+
+            server.Execute(_token);
 
             _connection.Verify(x => x.AnnounceServer(ServerId, _context));
-            _storage.Verify(x => x.GetConnection(), Times.Once);
-            _connection.Verify(x => x.Dispose(), Times.Once);
         }
 
         [Fact]
-        public void Start_StartsTheRunner()
+        public void Execute_GetsExactlyTwoConnections_AndClosesThem()
         {
             var server = CreateServer();
-            server.Start();
+            
+            server.Execute(_token);
+
+            _storage.Verify(x => x.GetConnection(), Times.Exactly(2));
+            _connection.Verify(x => x.Dispose(), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void Execute_StartsTheRunner()
+        {
+            var server = CreateServer();
+            server.Execute(_token);
 
             _runner.Verify(x => x.Start());
         }
 
         [Fact]
-        public void Stop_StopsTheRunner()
-        {
-            var server = CreateServer();
-            server.Stop();
-
-            _runner.Verify(x => x.Stop());
-        }
-
-        [Fact]
-        public void Execute_TakesAConnection_AndDisposesIt()
+        public void Execute_DisposesTheRunner()
         {
             var server = CreateServer();
 
             server.Execute(_token);
-
-            _storage.Verify(x => x.GetConnection(), Times.Exactly(2)); // Ctor: 1, Execute: 1
-            _connection.Verify(x => x.Dispose(), Times.Exactly(2));
-        }
-
-        [Fact]
-        public void Execute_UpdateServerHeartbeat()
-        {
-            var server = CreateServer();
-
-            server.Execute(_token);
-
-            _connection.Verify(x => x.Heartbeat(ServerId));
-        }
-
-        [Fact]
-        public void Dispose_DisposesTheRunner()
-        {
-            var server = CreateServer();
-
-            server.Dispose();
 
             _runner.Verify(x => x.Dispose());
         }
 
         [Fact]
-        public void Dispose_TakesAConnectionAndDisposesIt()
-        {
-            var server = CreateServer();
-
-            server.Dispose();
-
-            _storage.Verify(x => x.GetConnection(), Times.Exactly(2)); // Ctor: 1, Dispose: 1
-            _connection.Verify(x => x.Dispose(), Times.Exactly(2));
-        }
-
-        [Fact]
-        public void Dispose_RemovesServerFromServersList()
+        public void Execute_RemovesServerFromServersList()
         {
             var server = CreateServer();
             
-            server.Dispose();
+            server.Execute(_token);
 
             _connection.Verify(x => x.RemoveServer(ServerId));
         }
 
         [Fact]
-        public void Dispose_RemovesServer_EvenWhenRunnerThrowsAnException()
+        public void Execute_RemovesServer_EvenWhenRunnerThrowsAnException()
         {
             _runner.Setup(x => x.Dispose()).Throws<InvalidOperationException>();
             var server = CreateServer();
 
-            Assert.Throws<InvalidOperationException>(() => server.Dispose());
+            Assert.Throws<InvalidOperationException>(() => server.Execute(_token));
 
             _connection.Verify(x => x.RemoveServer(It.IsAny<string>()));
         }
 
         private JobServer2 CreateServer()
         {
-            return new JobServer2(ServerId, _context, _storage.Object, _runner.Object);
+            return new JobServer2(ServerId, _context, _storage.Object, _lazyRunner);
         }
     }
 }

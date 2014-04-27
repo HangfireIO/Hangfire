@@ -10,11 +10,12 @@ namespace HangFire
 {
     public class BackgroundJobServer2 : IDisposable
     {
+        private static readonly TimeSpan ServerShutdownTimeout = TimeSpan.FromSeconds(15);
         private static readonly int DefaultWorkerCount = Environment.ProcessorCount * 5;
 
         private readonly JobStorage _storage;
         private readonly string _serverId;
-        private JobServer2 _server;
+        private readonly IServerComponentRunner _serverRunner;
 
         public BackgroundJobServer2(params string[] queues)
             : this(DefaultWorkerCount, queues)
@@ -37,6 +38,8 @@ namespace HangFire
 
             WorkerCount = workerCount;
             Queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
+
+            _serverRunner = GetServerRunner();
         }
 
         public string[] Queues { get; private set; }
@@ -44,19 +47,36 @@ namespace HangFire
 
         public virtual void Start()
         {
+            _serverRunner.Start();
+        }
+
+        public virtual void Stop()
+        {
+            _serverRunner.Stop();
+        }
+
+        public void Dispose()
+        {
+            _serverRunner.Dispose();
+        }
+
+        private IServerComponentRunner GetServerRunner()
+        {
             var context = new ServerContext
             {
                 Queues = Queues,
                 WorkerCount = WorkerCount
             };
 
-            _server = new JobServer2(_serverId, context, _storage, GetServerComponentsRunner());
-            _server.Start();
-        }
+            var server = new JobServer2(
+                _serverId, 
+                context, 
+                _storage, 
+                new Lazy<IServerComponentRunner>(GetServerComponentsRunner));
 
-        private IServerComponentRunner GetServerRunner()
-        {
-            
+            return new ServerComponentRunner(
+                server, 
+                new ServerComponentRunnerOptions { ShutdownTimeout = ServerShutdownTimeout });
         }
 
         private IServerComponentRunner GetServerComponentsRunner()
@@ -73,7 +93,7 @@ namespace HangFire
 
             var workerRunners = workers.Select(worker => new ServerComponentRunner(
                 worker,
-                new ServerComponentRunnerOptions { MinimumLogVerbosity = true }));
+                new ServerComponentRunnerOptions { MinimumLogVerbosity = true })).ToArray();
 
             var workerRunnerCollection = new ServerComponentRunnerCollection(workerRunners);
 
@@ -81,19 +101,10 @@ namespace HangFire
 
             var runners = new List<IServerComponentRunner>();
             runners.Add(workerRunnerCollection);
-            runners.AddRange(components.Select(component => new ServerComponentRunner(component)));
+            runners.AddRange(components.Select(component => new ServerComponentRunner(component)).ToArray());
+            runners.Add(new ServerComponentRunner(new ServerHeartbeat(_storage, _serverId)));
 
             return new ServerComponentRunnerCollection(runners);
-        }
-
-        public virtual void Stop()
-        {
-            _server.Stop();
-        }
-
-        public void Dispose()
-        {
-            _server.Dispose();
         }
     }
 }

@@ -131,6 +131,7 @@
     <Compile Include="Server\ServerComponentRunnerCollection.cs" />
     <Compile Include="Server\ServerComponentRunnerOptions.cs" />
     <Compile Include="Server\ServerContext.cs" />
+    <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\Worker2.cs" />
     <Compile Include="States\IStateMachine.cs" />
     <Compile Include="States\StateMachineFactory.cs" />

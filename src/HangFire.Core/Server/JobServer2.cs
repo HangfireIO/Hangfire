@@ -3,19 +3,18 @@ using System.Threading;
 
 namespace HangFire.Server
 {
-    public class JobServer2 : IServerComponent, IServerComponentRunner
+    public class JobServer2 : IServerComponent
     {
-        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
-
         private readonly JobStorage _storage;
         private readonly string _serverId;
-        private readonly IServerComponentRunner _runner;
+        private readonly ServerContext _context;
+        private readonly Lazy<IServerComponentRunner> _runner;
 
         public JobServer2(
             string serverId,
             ServerContext context,
-            JobStorage storage, 
-            IServerComponentRunner runner)
+            JobStorage storage,
+            Lazy<IServerComponentRunner> runner)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (serverId == null) throw new ArgumentNullException("serverId");
@@ -24,41 +23,27 @@ namespace HangFire.Server
 
             _storage = storage;
             _serverId = serverId;
+            _context = context;
             _runner = runner;
-
-            using (var connection = _storage.GetConnection())
-            {
-                connection.AnnounceServer(serverId, context);
-            }
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
             using (var connection = _storage.GetConnection())
             {
-                connection.Heartbeat(_serverId);
+                connection.AnnounceServer(_serverId, _context);
             }
 
-            cancellationToken.WaitHandle.WaitOne(HeartbeatInterval);
-        }
-
-        public void Start()
-        {
-            _runner.Start();
-        }
-
-        public void Stop()
-        {
-            _runner.Stop();
-        }
-
-        public void Dispose()
-        {
             try
             {
-                _runner.Dispose();
+                using (_runner.Value)
+                {
+                    _runner.Value.Start();
+
+                    cancellationToken.WaitHandle.WaitOne();
+                }
             }
-            finally 
+            finally
             {
                 using (var connection = _storage.GetConnection())
                 {
