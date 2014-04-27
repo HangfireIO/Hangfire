@@ -73,7 +73,7 @@ namespace HangFire.Redis.Tests
             }
         }
 
-        [Fact]
+        [Fact, CleanRedis]
         public void Execute_MarksDequeuedJobAsChecked_IfItHasNoFetchedFlagSet()
         {
             using (var redis = RedisUtils.CreateClient())
@@ -92,7 +92,7 @@ namespace HangFire.Redis.Tests
             }
         }
 
-        [Fact]
+        [Fact, CleanRedis]
         public void Execute_EnqueuesCheckedAndTimedOutJob_IfNoFetchedFlagSet()
         {
             using (var redis = RedisUtils.CreateClient())
@@ -114,7 +114,7 @@ namespace HangFire.Redis.Tests
             }
         }
 
-        [Fact]
+        [Fact, CleanRedis]
         public void Execute_DoesNotEnqueueTimedOutByCheckedFlagJob_IfFetchedFlagSet()
         {
             using (var redis = RedisUtils.CreateClient())
