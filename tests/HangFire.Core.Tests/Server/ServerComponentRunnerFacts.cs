@@ -91,9 +91,11 @@ namespace HangFire.Core.Tests.Server
         {
             // Arrange
             int timesExecuted = 0;
-            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Callback(() => timesExecuted++);
-
+            
             var runner = CreateRunner();
+            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
+                .Callback(() => { timesExecuted++; Thread.Yield(); });
+
             runner.Start();
 
             // Act
@@ -121,10 +123,11 @@ namespace HangFire.Core.Tests.Server
         {
             // Arrange
             int timesExecuted = 0;
-            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback(() => timesExecuted++);
-
+            
             var runner = CreateRunner();
+            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
+                .Callback(() => { timesExecuted++; Thread.Yield(); });
+
             runner.Start();
             runner.Stop();
             Thread.Sleep(TimeSpan.FromMilliseconds(100));
@@ -192,10 +195,11 @@ namespace HangFire.Core.Tests.Server
         public void FailingComponent_ShouldNotBeRetried_IfMaxRetryAttemptsIsZero()
         {
             // Arrange
-            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
             _options.MaxRetryAttempts = 0;
 
             var runner = CreateRunner();
+            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
+
             runner.Start();
             Thread.Sleep(500);
 
@@ -210,11 +214,11 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void FailingComponent_ShouldBeExecutedSeveralTimes_Automatically()
         {
-            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
             var runner = CreateRunner();
+            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
             runner.Start();
 
-            Thread.Sleep(500);
+            Thread.Sleep(5000);
             runner.Dispose();
 
             _component.Verify(x => x.Execute(
@@ -224,6 +228,8 @@ namespace HangFire.Core.Tests.Server
 
         private ServerComponentRunner CreateRunner()
         {
+            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
+                .Callback(() => Thread.Yield());
             return new ServerComponentRunner(_component.Object, _options);
         }
 
@@ -233,6 +239,7 @@ namespace HangFire.Core.Tests.Server
 
             public void Execute(CancellationToken cancellationToken)
             {
+                Thread.Yield();
             }
 
             public void Dispose()
