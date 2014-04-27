@@ -160,8 +160,6 @@ namespace HangFire.Server
                     _cts.Dispose();
                     _cts = new CancellationTokenSource();
                 }
-
-                throw;
             }
         }
 

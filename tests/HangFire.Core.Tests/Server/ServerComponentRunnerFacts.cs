@@ -214,7 +214,7 @@ namespace HangFire.Core.Tests.Server
             var runner = CreateRunner();
             runner.Start();
 
-            Thread.Sleep(5000);
+            Thread.Sleep(500);
             runner.Dispose();
 
             _component.Verify(x => x.Execute(
