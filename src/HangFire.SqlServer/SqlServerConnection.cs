@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
@@ -33,27 +32,23 @@ namespace HangFire.SqlServer
     internal class SqlServerConnection : IStorageConnection
     {
         private static readonly TimeSpan JobInvisibilityTimeOut = TimeSpan.FromMinutes(30);
+        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly SqlConnection _connection;
 
-        public SqlServerConnection(JobStorage storage, SqlConnection connection)
+        public SqlServerConnection(
+            IStateMachineFactory stateMachineFactory, 
+            SqlConnection connection)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (connection == null) throw new ArgumentNullException("connection");
 
+            _stateMachineFactory = stateMachineFactory;
             _connection = connection;
-            Storage = storage;
         }
-
-        public JobStorage Storage { get; private set; }
 
         public void Dispose()
         {
             _connection.Dispose();
-        }
-
-        public IStateMachine CreateStateMachine()
-        {
-            return new StateMachine(this);
         }
 
         public IWriteOnlyTransaction CreateWriteTransaction()
@@ -112,6 +107,7 @@ and Queue in @queues";
 
             return new ProcessingJob(
                 this,
+                _stateMachineFactory,
                 idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
                 idAndQueue.Queue);
         }

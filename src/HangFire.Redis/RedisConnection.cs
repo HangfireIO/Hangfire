@@ -30,29 +30,24 @@ namespace HangFire.Redis
     internal class RedisConnection : IStorageConnection
     {
         private static readonly TimeSpan FetchTimeout = TimeSpan.FromSeconds(1);
-        private readonly IRedisClient _redis;
+        private readonly IStateMachineFactory _stateMachineFactory;
 
-        public RedisConnection(JobStorage storage, IRedisClient redis)
+        public RedisConnection(IStateMachineFactory stateMachineFactory, IRedisClient redis)
         {
-            _redis = redis;
-            Storage = storage;
+            _stateMachineFactory = stateMachineFactory;
+            Redis = redis;
         }
 
-        public JobStorage Storage { get; private set; }
+        public IRedisClient Redis { get; private set; }
 
         public void Dispose()
         {
-            _redis.Dispose();
-        }
-
-        public IStateMachine CreateStateMachine()
-        {
-            return new StateMachine(this);
+            Redis.Dispose();
         }
 
         public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new RedisWriteOnlyTransaction(_redis.CreateTransaction());
+            return new RedisWriteOnlyTransaction(Redis.CreateTransaction());
         }
 
         public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
@@ -73,14 +68,14 @@ namespace HangFire.Redis
 
                 if (queueIndex == 0)
                 {
-                    jobId = _redis.BlockingPopAndPushItemBetweenLists(
+                    jobId = Redis.BlockingPopAndPushItemBetweenLists(
                         queueKey,
                         fetchedKey,
                         FetchTimeout);
                 }
                 else
                 {
-                    jobId = _redis.PopAndPushItemBetweenLists(
+                    jobId = Redis.PopAndPushItemBetweenLists(
                         queueKey, fetchedKey);
                 }
 
@@ -101,7 +96,7 @@ namespace HangFire.Redis
             // that is being inspected by the FetchedJobsWatcher instance.
             // Job's has the implicit 'Fetched' state.
 
-            _redis.SetEntryInHash(
+            Redis.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                 "Fetched",
                 JobHelper.ToStringTimestamp(DateTime.UtcNow));
@@ -110,12 +105,12 @@ namespace HangFire.Redis
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new ProcessingJob(this, jobId, queueName);
+            return new ProcessingJob(this, _stateMachineFactory, jobId, queueName);
         }
 
         public IDisposable AcquireJobLock(string jobId)
         {
-            return _redis.AcquireLock(
+            return Redis.AcquireLock(
                 RedisStorage.Prefix + String.Format("job:{0}:state-lock", jobId),
                 TimeSpan.FromMinutes(1));
         }
@@ -137,7 +132,7 @@ namespace HangFire.Redis
             storedParameters.Add("Arguments", invocationData.Arguments);
             storedParameters.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
 
-            using (var transaction = _redis.CreateTransaction())
+            using (var transaction = Redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.SetRangeInHash(
                     String.Format(RedisStorage.Prefix + "job:{0}", jobId),
@@ -156,7 +151,7 @@ namespace HangFire.Redis
 
         public JobData GetJobData(string id)
         {
-            var storedData = _redis.GetAllEntriesFromHash(
+            var storedData = Redis.GetAllEntriesFromHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", id));
 
             if (storedData.Count == 0) return null;
@@ -202,7 +197,7 @@ namespace HangFire.Redis
 
         public void SetJobParameter(string id, string name, string value)
         {
-            _redis.SetEntryInHash(
+            Redis.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", id),
                 name,
                 value);
@@ -210,26 +205,41 @@ namespace HangFire.Redis
 
         public string GetJobParameter(string id, string name)
         {
-            return _redis.GetValueFromHash(
+            return Redis.GetValueFromHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", id),
                 name);
         }
 
         public void DeleteJobFromQueue(string id, string queue)
         {
-            RemoveFromFetchedList(_redis, queue, id);
+            using (var transaction = Redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromList(
+                    String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", queue),
+                    id,
+                    -1));
+
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format(RedisStorage.Prefix + "job:{0}", id),
+                    "Fetched"));
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format(RedisStorage.Prefix + "job:{0}", id),
+                    "Checked"));
+
+                transaction.Commit();
+            }
         }
 
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
-            return _redis.GetRangeFromSortedSetByLowestScore(
+            return Redis.GetRangeFromSortedSetByLowestScore(
                 RedisStorage.Prefix + key, fromScore, toScore, 0, 1)
                 .FirstOrDefault();
         }
 
         public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
         {
-            using (var transaction = _redis.CreateTransaction())
+            using (var transaction = Redis.CreateTransaction())
             {
                 transaction.QueueCommand(x => x.AddItemToSet(
                     RedisStorage.Prefix + "servers", serverId));
@@ -256,7 +266,7 @@ namespace HangFire.Redis
 
         public void RemoveServer(string serverId)
         {
-            RemoveServer(_redis, serverId);
+            RemoveServer(Redis, serverId);
         }
 
         public static void RemoveServer(IRedisClient redis, string serverId)
@@ -277,7 +287,7 @@ namespace HangFire.Redis
 
         public void Heartbeat(string serverId)
         {
-            _redis.SetEntryInHash(
+            Redis.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "server:{0}", serverId),
                 "Heartbeat",
                 JobHelper.ToStringTimestamp(DateTime.UtcNow));
@@ -285,12 +295,12 @@ namespace HangFire.Redis
 
         public int RemoveTimedOutServers(TimeSpan timeOut)
         {
-            var serverNames = _redis.GetAllItemsFromSet(RedisStorage.Prefix + "servers");
+            var serverNames = Redis.GetAllItemsFromSet(RedisStorage.Prefix + "servers");
             var heartbeats = new Dictionary<string, Tuple<DateTime, DateTime?>>();
 
             var utcNow = DateTime.UtcNow;
 
-            using (var pipeline = _redis.CreatePipeline())
+            using (var pipeline = Redis.CreatePipeline())
             {
                 foreach (var serverName in serverNames)
                 {
@@ -318,35 +328,12 @@ namespace HangFire.Redis
 
                 if (utcNow > maxTime.Add(timeOut))
                 {
-                    RemoveServer(_redis, heartbeat.Key);
+                    RemoveServer(Redis, heartbeat.Key);
                     removedServerCount++;
                 }
             }
 
             return removedServerCount;
-        }
-
-        public static void RemoveFromFetchedList(
-            IRedisClient redis,
-            string queue,
-            string jobId)
-        {
-            using (var transaction = redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", queue),
-                    jobId,
-                    -1));
-
-                transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format(RedisStorage.Prefix + "job:{0}", jobId),
-                    "Fetched"));
-                transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format(RedisStorage.Prefix + "job:{0}", jobId),
-                    "Checked"));
-
-                transaction.Commit();
-            }
         }
     }
 }

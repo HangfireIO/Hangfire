@@ -2,6 +2,7 @@
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.States;
 using HangFire.Storage;
 using Moq;
 using Xunit;
@@ -15,12 +16,15 @@ namespace HangFire.Core.Tests
         private readonly Mock<IJobCreationProcess> _process;
         private readonly Mock<State> _state;
         private readonly Job _job;
+        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
 
         public BackgroundJobClientFacts()
         {
             _connection = new Mock<IStorageConnection>();
             _storage = new Mock<JobStorage>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
+
+            _stateMachineFactory = new Mock<IStateMachineFactory>();
 
             _process = new Mock<IJobCreationProcess>();
             _state = new Mock<State>();
@@ -31,16 +35,25 @@ namespace HangFire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(null, _process.Object));
+                () => new BackgroundJobClient(null, _stateMachineFactory.Object, _process.Object));
 
             Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundJobClient(_storage.Object, null, _process.Object));
+
+            Assert.Equal("stateMachineFactory", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenCreationProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(_storage.Object, null));
+                () => new BackgroundJobClient(_storage.Object, _stateMachineFactory.Object, null));
 
             Assert.Equal("process", exception.ParamName);
         }
@@ -113,7 +126,7 @@ namespace HangFire.Core.Tests
 
         private BackgroundJobClient CreateClient()
         {
-            return new BackgroundJobClient(_storage.Object, _process.Object);
+            return new BackgroundJobClient(_storage.Object, _stateMachineFactory.Object, _process.Object);
         }
     }
 }

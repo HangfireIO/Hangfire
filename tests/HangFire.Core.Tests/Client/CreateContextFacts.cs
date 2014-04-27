@@ -16,6 +16,7 @@ namespace HangFire.Core.Tests.Client
         private readonly Mock<State> _state;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
 
         public CreateContextFacts()
         {
@@ -24,23 +25,34 @@ namespace HangFire.Core.Tests.Client
             _connection = new Mock<IStorageConnection>();
             _stateMachine = new Mock<IStateMachine>();
 
-            _connection.Setup(x => x.CreateStateMachine()).Returns(_stateMachine.Object);
+            _stateMachineFactory = new Mock<IStateMachineFactory>();
+            _stateMachineFactory.Setup(x => x.Create(It.IsNotNull<IStorageConnection>()))
+                .Returns(_stateMachine.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(null, _job, _state.Object));
+                () => new CreateContext(null, _stateMachineFactory.Object, _job, _state.Object));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new CreateContext(_connection.Object, null, _job, _state.Object));
+
+            Assert.Equal("stateMachineFactory", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_connection.Object, null, _state.Object));
+                () => new CreateContext(_connection.Object, _stateMachineFactory.Object, null, _state.Object));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -49,7 +61,8 @@ namespace HangFire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenStateIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_connection.Object, _job, null));
+                () => new CreateContext(
+                    _connection.Object, _stateMachineFactory.Object, _job, null));
 
             Assert.Equal("initialState", exception.ParamName);
         }
@@ -57,7 +70,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void Ctor_CorrectlyInitializes_AllProperties()
         {
-            var context = new CreateContext(_connection.Object, _job, _state.Object);
+            var context = CreateContext();
 
             Assert.Same(_connection.Object, context.Connection);
             Assert.Same(_job, context.Job);
@@ -70,7 +83,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void CopyCtor_CopiesItemsDictionary_FromTheGivenContext()
         {
-            var context = new CreateContext(_connection.Object, _job, _state.Object);
+            var context = CreateContext();
             var contextCopy = new CreateContext(context);
 
             Assert.Same(context.Items, contextCopy.Items);
@@ -79,7 +92,7 @@ namespace HangFire.Core.Tests.Client
         [Fact]
         public void CopyCtor_CopiesJobId_FromTheGivenContext()
         {
-            var context = new CreateContext(_connection.Object, _job, _state.Object);
+            var context = CreateContext();
             var contextCopy = new CreateContext(context);
 
             Assert.Same(context.JobId, contextCopy.JobId);
@@ -280,7 +293,8 @@ namespace HangFire.Core.Tests.Client
 
         private CreateContext CreateContext()
         {
-            return new CreateContext(_connection.Object, _job, _state.Object);
+            return new CreateContext(
+                _connection.Object, _stateMachineFactory.Object, _job, _state.Object);
         }
     }
 }

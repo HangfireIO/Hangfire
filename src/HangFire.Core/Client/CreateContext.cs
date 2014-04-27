@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire.Client
@@ -28,13 +29,15 @@ namespace HangFire.Client
     /// </summary>
     public class CreateContext : IJobCreator
     {
+        private readonly IStateMachineFactory _stateMachineFactory;
+
         private readonly IDictionary<string, string> _parameters
             = new Dictionary<string, string>();
 
         private bool _jobWasCreated;
 
         internal CreateContext(CreateContext context)
-            : this(context.Connection, context.Job, context.InitialState)
+            : this(context.Connection, context._stateMachineFactory, context.Job, context.InitialState)
         {
             Items = context.Items;
             JobId = context.JobId;
@@ -44,12 +47,16 @@ namespace HangFire.Client
 
         internal CreateContext(
             IStorageConnection connection,
+            IStateMachineFactory stateMachineFactory,
             Job job,
             State initialState)
         {
             if (connection == null) throw new ArgumentNullException("connection");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (job == null) throw new ArgumentNullException("job");
             if (initialState == null) throw new ArgumentNullException("initialState");
+
+            _stateMachineFactory = stateMachineFactory;
 
             Connection = connection;
             Job = job;
@@ -141,7 +148,7 @@ namespace HangFire.Client
 
         void IJobCreator.Create()
         {
-            var stateMachine = Connection.CreateStateMachine();
+            var stateMachine = _stateMachineFactory.Create(Connection);
 
             JobId = stateMachine.CreateInState(Job, _parameters, InitialState);
             _jobWasCreated = true;

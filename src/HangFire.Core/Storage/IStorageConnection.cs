@@ -19,21 +19,14 @@ using System.Collections.Generic;
 using System.Threading;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.States;
 
 namespace HangFire.Storage
 {
     public interface IStorageConnection : IDisposable
     {
-        JobStorage Storage { get; }
-
-        IStateMachine CreateStateMachine();
         IWriteOnlyTransaction CreateWriteTransaction();
 
-        string CreateExpiredJob(
-            Job job,
-            IDictionary<string, string> parameters,
-            TimeSpan expireIn);
+        string CreateExpiredJob(Job job, IDictionary<string, string> parameters, TimeSpan expireIn);
 
         IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
         void DeleteJobFromQueue(string jobId, string queue);

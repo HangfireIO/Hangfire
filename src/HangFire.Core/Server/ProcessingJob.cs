@@ -25,17 +25,21 @@ namespace HangFire.Server
     public class ProcessingJob : IProcessingJob
     {
         private readonly IStorageConnection _connection;
+        private readonly IStateMachineFactory _stateMachineFactory;
 
         public ProcessingJob(
             IStorageConnection connection,
+            IStateMachineFactory stateMachineFactory,
             string jobId,
             string queue)
         {
             if (connection == null) throw new ArgumentNullException("connection");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
 
             _connection = connection;
+            _stateMachineFactory = stateMachineFactory;
             JobId = jobId;
             Queue = queue;
         }
@@ -48,7 +52,7 @@ namespace HangFire.Server
             if (context == null) throw new ArgumentNullException("context");
             if (process == null) throw new ArgumentNullException("process");
 
-            var stateMachine = _connection.CreateStateMachine();
+            var stateMachine = _stateMachineFactory.Create(_connection);
             var processingState = new ProcessingState(context.ServerName);
 
             if (!stateMachine.TryToChangeState(

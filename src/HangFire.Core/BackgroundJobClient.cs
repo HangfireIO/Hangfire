@@ -18,6 +18,7 @@ using System;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire
@@ -29,6 +30,7 @@ namespace HangFire
     public class BackgroundJobClient : IBackgroundJobClient
     {
         private readonly IStorageConnection _connection;
+        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly IJobCreationProcess _process;
 
         /// <summary>
@@ -47,7 +49,12 @@ namespace HangFire
         /// <see cref="JobCreationProcess"/> instance.
         /// </summary>
         public BackgroundJobClient(JobStorage storage)
-            : this(storage, JobCreationProcess.Instance)
+            : this(storage, new StateMachineFactory(storage))
+        {
+        }
+
+        public BackgroundJobClient(JobStorage storage, IStateMachineFactory stateMachineFactory)
+            : this(storage, stateMachineFactory, JobCreationProcess.Instance)
         {
         }
 
@@ -58,12 +65,17 @@ namespace HangFire
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="process"/> argument is null.</exception>
-        public BackgroundJobClient(JobStorage storage, IJobCreationProcess process)
+        public BackgroundJobClient(
+            JobStorage storage, 
+            IStateMachineFactory stateMachineFactory, 
+            IJobCreationProcess process)
         {
             if (storage == null) throw new ArgumentNullException("storage");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (process == null) throw new ArgumentNullException("process");
 
             _connection = storage.GetConnection();
+            _stateMachineFactory = stateMachineFactory;
             _process = process;
         }
 
@@ -75,7 +87,7 @@ namespace HangFire
 
             try
             {
-                var context = new CreateContext(_connection, job, state);
+                var context = new CreateContext(_connection, _stateMachineFactory, job, state);
                 _process.Run(context, context);
 
                 return context.JobId;

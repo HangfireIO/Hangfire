@@ -21,6 +21,7 @@ using HangFire.Redis.Components;
 using HangFire.Redis.States;
 using HangFire.Server;
 using HangFire.Server.Components;
+using HangFire.States;
 using HangFire.Storage;
 using HangFire.Storage.Monitoring;
 using ServiceStack.Redis;
@@ -32,6 +33,7 @@ namespace HangFire.Redis
         internal static readonly string Prefix = "hangfire:";
 
         private readonly PooledRedisClientManager _pooledManager;
+        private readonly IStateMachineFactory _stateMachineFactory;
 
         public RedisStorage()
             : this(String.Format("{0}:{1}", RedisNativeClient.DefaultHost, RedisNativeClient.DefaultPort))
@@ -62,6 +64,8 @@ namespace HangFire.Redis
                     DefaultDb = Db,
                     MaxWritePoolSize = Options.ConnectionPoolSize
                 });
+
+            _stateMachineFactory = new StateMachineFactory(this);
         }
 
         public string HostAndPort { get; private set; }
@@ -77,7 +81,7 @@ namespace HangFire.Redis
 
         public override IStorageConnection GetConnection()
         {
-            return new RedisConnection(this, _pooledManager.GetClient());
+            return new RedisConnection(_stateMachineFactory, _pooledManager.GetClient());
         }
 
         public override IEnumerable<IThreadWrappable> GetComponents()

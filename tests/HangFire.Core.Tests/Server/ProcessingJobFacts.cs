@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Configuration;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Server;
@@ -21,6 +22,7 @@ namespace HangFire.Core.Tests.Server
         private readonly WorkerContext _context;
         private readonly Mock<IJobPerformanceProcess> _performanceProcess;
         private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
 
         public ProcessingJobFacts()
         {
@@ -29,7 +31,10 @@ namespace HangFire.Core.Tests.Server
             _performanceProcess = new Mock<IJobPerformanceProcess>();
 
             _stateMachine = new Mock<IStateMachine>();
-            _connection.Setup(x => x.CreateStateMachine()).Returns(_stateMachine.Object);
+
+            _stateMachineFactory = new Mock<IStateMachineFactory>();
+            _stateMachineFactory.Setup(x => x.Create(It.IsNotNull<IStorageConnection>()))
+                .Returns(_stateMachine.Object);
 
             _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData
@@ -47,16 +52,23 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ProcessingJob(null, JobId, Queue));
+                () => new ProcessingJob(null, _stateMachineFactory.Object, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ProcessingJob(_connection.Object, null, JobId, Queue));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ProcessingJob(_connection.Object, null, Queue));
+                () => new ProcessingJob(_connection.Object, _stateMachineFactory.Object, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -65,7 +77,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ProcessingJob(_connection.Object, JobId, null));
+                () => new ProcessingJob(_connection.Object, _stateMachineFactory.Object, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -261,7 +273,7 @@ namespace HangFire.Core.Tests.Server
 
         private ProcessingJob CreateProcessingJob()
         {
-            return new ProcessingJob(_connection.Object, JobId, Queue);
+            return new ProcessingJob(_connection.Object, _stateMachineFactory.Object, JobId, Queue);
         }
 
         public static void Method() { }

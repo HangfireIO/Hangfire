@@ -27,31 +27,29 @@ namespace HangFire.States
     public class StateMachine : IStateMachine
     {
         private readonly IStorageConnection _connection;
-        private StateHandlerCollection _handlersCache;
+        private readonly StateHandlerCollection _handlerCollection;
 
-        private readonly Func<IStorageConnection, IEnumerable<StateHandler>> _getHandlersThunk
-            = GetStateHandlers;
         private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
-        public StateMachine(IStorageConnection connection)
+        public StateMachine(IStorageConnection connection, IEnumerable<StateHandler> handlers)
         {
             if (connection == null) throw new ArgumentNullException("connection");
+            if (handlers == null) throw new ArgumentNullException("handlers");
 
             _connection = connection;
+            _handlerCollection = GetHandlerCollection(handlers);
         }
 
         internal StateMachine(
             IStorageConnection connection,
             IEnumerable<StateHandler> handlers,
             IEnumerable<object> filters)
-            : this(connection)
+            : this(connection, handlers)
         {
-            if (handlers == null) throw new ArgumentNullException("handlers");
             if (filters == null) throw new ArgumentNullException("filters");
 
             _getFiltersThunk = md => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
-            _getHandlersThunk = c => handlers;
         }
 
         public string CreateInState(
@@ -183,7 +181,7 @@ namespace HangFire.States
             var context = new ApplyStateContext(
                 _connection, stateContext, electedState, oldStateName);
 
-            context.ApplyState(GetHandlers(), filters);
+            context.ApplyState(_handlerCollection, filters);
         }
 
         private JobFilterInfo GetFilters(Job job)
@@ -191,30 +189,15 @@ namespace HangFire.States
             return new JobFilterInfo(_getFiltersThunk(job));
         }
 
-        private StateHandlerCollection GetHandlers()
+        private static StateHandlerCollection GetHandlerCollection(IEnumerable<StateHandler> handlers)
         {
-            if (_handlersCache == null)
+            var handlerCollection = new StateHandlerCollection();
+            foreach (var handler in handlers)
             {
-                _handlersCache = new StateHandlerCollection();
-
-                var handlers = _getHandlersThunk(_connection);
-                foreach (var handler in handlers)
-                {
-                    _handlersCache.AddHandler(handler);
-                }
+                handlerCollection.AddHandler(handler);
             }
 
-            return _handlersCache;
-        }
-
-        private static IEnumerable<StateHandler> GetStateHandlers(
-            IStorageConnection connection)
-        {
-            var handlers = new List<StateHandler>();
-            handlers.AddRange(GlobalStateHandlers.Handlers);
-            handlers.AddRange(connection.Storage.GetStateHandlers());
-
-            return handlers;
+            return handlerCollection;
         }
     }
 }

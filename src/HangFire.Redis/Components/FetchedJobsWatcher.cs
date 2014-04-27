@@ -36,17 +36,19 @@ namespace HangFire.Redis.Components
         private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
 
         private readonly RedisStorage _storage;
+        private readonly IStateMachineFactory _stateMachineFactory;
 
         public FetchedJobsWatcher(RedisStorage storage)
         {
             _storage = storage;
+            _stateMachineFactory = new StateMachineFactory(storage);
         }
 
         public void FindAndRequeueTimedOutJobs()
         {
-            using (var redis = _storage.PooledManager.GetClient())
+            using (var connection = (RedisConnection)_storage.GetConnection())
             {
-                var queues = redis.GetAllItemsFromSet("hangfire:queues");
+                var queues = connection.Redis.GetAllItemsFromSet("hangfire:queues");
 
                 foreach (var queue in queues)
                 {
@@ -56,21 +58,21 @@ namespace HangFire.Redis.Components
                     Logger.DebugFormat(
                         "Acquiring the lock for the fetched list of the '{0}' queue...", queue);
 
-                    using (redis.AcquireLock(
+                    using (connection.Redis.AcquireLock(
                         String.Format("hangfire:queue:{0}:dequeued:lock", queue),
                         FetchedLockTimeout))
                     {
                         Logger.DebugFormat(
                             "Looking for timed out jobs in the '{0}' queue...", queue);
 
-                        var jobIds = redis.GetAllItemsFromList(
+                        var jobIds = connection.Redis.GetAllItemsFromList(
                             String.Format("hangfire:queue:{0}:dequeued", queue));
 
                         var requeued = 0;
 
                         foreach (var jobId in jobIds)
                         {
-                            if (RequeueJobIfTimedOut(redis, jobId, queue))
+                            if (RequeueJobIfTimedOut(connection, jobId, queue))
                             {
                                 requeued++;
                             }
@@ -92,9 +94,9 @@ namespace HangFire.Redis.Components
             }
         }
 
-        private bool RequeueJobIfTimedOut(IRedisClient redis, string jobId, string queue)
+        private bool RequeueJobIfTimedOut(RedisConnection connection, string jobId, string queue)
         {
-            var flags = redis.GetValuesFromHash(
+            var flags = connection.Redis.GetValuesFromHash(
                 String.Format("hangfire:job:{0}", jobId),
                 "Fetched",
                 "Checked");
@@ -122,7 +124,7 @@ namespace HangFire.Redis.Components
                 // and after the CheckedTimeout expired, then the server
                 // is dead, and we'll re-queue the job.
 
-                redis.SetEntryInHash(
+                connection.Redis.SetEntryInHash(
                     String.Format("hangfire:job:{0}", jobId),
                     "Checked",
                     JobHelper.ToStringTimestamp(DateTime.UtcNow));
@@ -134,7 +136,7 @@ namespace HangFire.Redis.Components
             {
                 if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
-                    var stateMachine = new StateMachine(new RedisConnection(_storage, redis));
+                    var stateMachine = _stateMachineFactory.Create(connection);
                     var state = new EnqueuedState{
                         Reason = "Re-queued due to time out"
                     };
@@ -144,7 +146,7 @@ namespace HangFire.Redis.Components
                         state, 
                         new [] { EnqueuedState.StateName, ProcessingState.StateName });
 
-                    RedisConnection.RemoveFromFetchedList(redis, queue, jobId);
+                    connection.DeleteJobFromQueue(jobId, queue);
 
                     return true;
                 }

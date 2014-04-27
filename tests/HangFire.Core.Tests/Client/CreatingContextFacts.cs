@@ -3,6 +3,7 @@ using HangFire.Client;
 using HangFire.Client.Filters;
 using HangFire.Common;
 using HangFire.Common.States;
+using HangFire.States;
 using HangFire.Storage;
 using Moq;
 using Xunit;
@@ -24,8 +25,10 @@ namespace HangFire.Core.Tests.Client
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<State>();
+            var stateMachineFactory = new Mock<IStateMachineFactory>();
 
-            var createContext = new CreateContext(connection.Object, job, state.Object);
+            var createContext = new CreateContext(
+                connection.Object, stateMachineFactory.Object, job, state.Object);
             var context = new CreatingContext(createContext);
 
             Assert.False(context.Canceled);

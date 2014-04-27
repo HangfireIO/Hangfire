@@ -52,6 +52,15 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenHandlersValueIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new StateMachine(_connection.Object, null, _filters));
+
+            Assert.Equal("handlers", exception.ParamName);
+        }
+
+        [Fact]
         public void CreateInState_ThrowsAnException_WhenJobIsNull()
         {
             var stateMachine = CreateStateMachine();

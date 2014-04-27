@@ -5,7 +5,6 @@ using HangFire.Server.Components;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;
-using Moq.Sequences;
 using Xunit;
 
 namespace HangFire.Core.Tests.Server
@@ -16,6 +15,7 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
         private readonly CancellationToken _token;
 
         public SchedulePollerFacts()
@@ -25,8 +25,11 @@ namespace HangFire.Core.Tests.Server
             _stateMachine = new Mock<IStateMachine>();
             _token = new CancellationToken(true);
 
+            _stateMachineFactory = new Mock<IStateMachineFactory>();
+            _stateMachineFactory.Setup(x => x.Create(It.IsNotNull<IStorageConnection>()))
+                .Returns(_stateMachine.Object);
+
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
-            _connection.Setup(x => x.CreateStateMachine()).Returns(_stateMachine.Object);
             _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
                 "schedule", 0, It.Is<double>(time => time > 0))).Returns(JobId);
         }
@@ -34,8 +37,21 @@ namespace HangFire.Core.Tests.Server
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
-                () => new SchedulePoller2(null, TimeSpan.FromMilliseconds(-1)));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SchedulePoller2(
+                    null, _stateMachineFactory.Object, TimeSpan.FromMilliseconds(-1)));
+
+            Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SchedulePoller2(
+                    _storage.Object, null, TimeSpan.FromMilliseconds(-1)));
+
+            Assert.Equal("stateMachineFactory", exception.ParamName);
         }
 
         [Fact]
@@ -78,7 +94,7 @@ namespace HangFire.Core.Tests.Server
 
         private SchedulePoller2 CreateScheduler()
         {
-            return new SchedulePoller2(_storage.Object, TimeSpan.Zero);
+            return new SchedulePoller2(_storage.Object, _stateMachineFactory.Object, TimeSpan.Zero);
         }
     }
 }

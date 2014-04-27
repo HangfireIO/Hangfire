@@ -28,7 +28,8 @@ namespace HangFire.Web
                 {
                     // TODO: clear retry attempts counter.
 
-                    var stateMachine = new StateMachine(connection);
+                    var factory = new StateMachineFactory(JobStorage.Current);
+                    var stateMachine = factory.Create(connection);
                     var state = new EnqueuedState
                     {
                         Reason = "The job has been retried by a user"
@@ -43,7 +44,8 @@ namespace HangFire.Web
             {
                 using (var connection = JobStorage.Current.GetConnection())
                 {
-                    var stateMachine = new StateMachine(connection);
+                    var factory = new StateMachineFactory(JobStorage.Current);
+                    var stateMachine = factory.Create(connection);
                     var state = new EnqueuedState{
                         Reason = "Scheduled job has been enqueued by a user"
                     };

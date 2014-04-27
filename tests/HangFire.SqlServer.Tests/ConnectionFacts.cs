@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Dapper;
 using HangFire.Common;
+using HangFire.States;
 using HangFire.Storage;
 using Moq;
 using Xunit;
@@ -18,33 +19,6 @@ namespace HangFire.SqlServer.Tests
         public ConnectionFacts()
         {
             _storage = new Mock<JobStorage>();
-        }
-
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
-        {
-            using (var connection = ConnectionUtils.CreateConnection())
-            {
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => new SqlServerConnection(null, connection));
-
-                Assert.Equal("storage", exception.ParamName);
-            }
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(_storage.Object, null));
-
-            Assert.Equal("connection", exception.ParamName);
-        }
-
-        [Fact, CleanDatabase]
-        public void Ctor_CorrectlySets_TheStorageProperty()
-        {
-            UseConnection(connection => Assert.Same(_storage.Object, connection.Storage));
         }
 
         [Fact, CleanDatabase]
@@ -587,8 +561,9 @@ values (@id, '', @heartbeat)";
 
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
+            var stateMachineFactory = new Mock<IStateMachineFactory>();
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(_storage.Object, sqlConnection))
+            using (var connection = new SqlServerConnection(stateMachineFactory.Object, sqlConnection))
             {
                 action(sqlConnection, connection);
             }
@@ -596,8 +571,9 @@ values (@id, '', @heartbeat)";
 
         private void UseConnection(Action<SqlServerConnection> action)
         {
+            var stateMachineFactory = new Mock<IStateMachineFactory>();
             using (var connection = new SqlServerConnection(
-                _storage.Object, ConnectionUtils.CreateConnection()))
+                stateMachineFactory.Object, ConnectionUtils.CreateConnection()))
             {
                 action(connection);
             }

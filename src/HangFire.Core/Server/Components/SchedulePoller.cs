@@ -31,11 +31,13 @@ namespace HangFire.Server.Components
         private readonly TimeSpan _pollInterval;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly IStateMachineFactory _stateMachineFactory;
 
         public SchedulePoller(JobStorage storage, TimeSpan pollInterval)
         {
             _storage = storage;
             _pollInterval = pollInterval;
+            _stateMachineFactory = new StateMachineFactory(storage);
         }
 
         public bool EnqueueNextScheduledJob()
@@ -53,7 +55,7 @@ namespace HangFire.Server.Components
                     return false;
                 }
 
-                var stateMachine = new StateMachine(connection);
+                var stateMachine = _stateMachineFactory.Create(connection);
                 var enqueuedState = new EnqueuedState
                 {
                     Reason = "Enqueued as a scheduled job"
