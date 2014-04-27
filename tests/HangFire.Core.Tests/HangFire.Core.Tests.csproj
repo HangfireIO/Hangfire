@@ -87,6 +87,7 @@
     <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
+    <Compile Include="Server\WorkerManagerFacts.cs" />
     <Compile Include="Server\WorkerSmokeTest.cs" />
     <Compile Include="Server\WorkerManagerSmokeTest.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />

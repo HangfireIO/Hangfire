@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using HangFire.Server;
+using HangFire.Server.Components;
 using HangFire.Server.Performing;
 using HangFire.States;
 
@@ -15,6 +16,8 @@ namespace HangFire
 
         private readonly JobStorage _storage;
         private readonly string _serverId;
+        private readonly int _workerCount;
+        private readonly string[] _queues;
         private readonly IServerComponentRunner _serverRunner;
 
         public BackgroundJobServer2(params string[] queues)
@@ -34,16 +37,14 @@ namespace HangFire
             if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
 
             _storage = storage;
+            _workerCount = workerCount;
+            _queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
+
             _serverId = String.Format("{0}:{1}", Environment.MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
-            WorkerCount = workerCount;
-            Queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
-
+// ReSharper disable once DoNotCallOverridableMethodsInConstructor
             _serverRunner = GetServerRunner();
         }
-
-        public string[] Queues { get; private set; }
-        public int WorkerCount { get; private set; }
 
         public virtual void Start()
         {
@@ -60,12 +61,12 @@ namespace HangFire
             _serverRunner.Dispose();
         }
 
-        private IServerComponentRunner GetServerRunner()
+        internal virtual IServerComponentRunner GetServerRunner()
         {
             var context = new ServerContext
             {
-                Queues = Queues,
-                WorkerCount = WorkerCount
+                Queues = _queues,
+                WorkerCount = _workerCount
             };
 
             var server = new JobServer2(
@@ -79,32 +80,35 @@ namespace HangFire
                 new ServerComponentRunnerOptions { ShutdownTimeout = ServerShutdownTimeout });
         }
 
-        private IServerComponentRunner GetServerComponentsRunner()
+        internal IServerComponentRunner GetServerComponentsRunner()
         {
-            var workers = new List<IServerComponent>(WorkerCount);
-            var performanceProcess = new JobPerformanceProcess();
-            for (var i = 1; i <= WorkerCount; i++)
-            {
-                var workerContext = new WorkerContext(_serverId, Queues, i);
-                var worker = new Worker2(_storage, workerContext, performanceProcess);
+            var componentRunners = new List<IServerComponentRunner>();
 
-                workers.Add(worker);
-            }
+            componentRunners.AddRange(GetCommonComponentRunners());
+            componentRunners.AddRange(GetStorageComponentRunners());
 
-            var workerRunners = workers.Select(worker => new ServerComponentRunner(
-                worker,
-                new ServerComponentRunnerOptions { MinimumLogVerbosity = true })).ToArray();
+            return new ServerComponentRunnerCollection(componentRunners);
+        }
 
-            var workerRunnerCollection = new ServerComponentRunnerCollection(workerRunners);
+        private IEnumerable<IServerComponentRunner> GetCommonComponentRunners()
+        {
+            yield return new ServerComponentRunner(
+                new ServerHeartbeat(_storage, _serverId));
 
+            yield return new WorkerManager2(
+                _serverId, _workerCount, _queues, _storage, new JobPerformanceProcess());
+
+            yield return new ServerComponentRunner(
+                new ServerWatchdog2(_storage));
+        }
+
+        private IEnumerable<IServerComponentRunner> GetStorageComponentRunners()
+        {
             var components = _storage.GetComponents2();
 
-            var runners = new List<IServerComponentRunner>();
-            runners.Add(workerRunnerCollection);
-            runners.AddRange(components.Select(component => new ServerComponentRunner(component)).ToArray());
-            runners.Add(new ServerComponentRunner(new ServerHeartbeat(_storage, _serverId)));
-
-            return new ServerComponentRunnerCollection(runners);
+            return components
+                .Select(component => new ServerComponentRunner(component))
+                .ToArray();
         }
     }
 }
