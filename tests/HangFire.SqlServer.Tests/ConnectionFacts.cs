@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Dapper;
 using HangFire.Common;
 using HangFire.States;
@@ -14,13 +13,6 @@ namespace HangFire.SqlServer.Tests
 {
     public partial class ConnectionFacts
     {
-        private readonly Mock<JobStorage> _storage;
-
-        public ConnectionFacts()
-        {
-            _storage = new Mock<JobStorage>();
-        }
-
         [Fact, CleanDatabase]
         public void CreateWriteTransaction_ReturnsNonNullInstance()
         {
