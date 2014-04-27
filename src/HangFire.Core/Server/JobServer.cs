@@ -102,7 +102,13 @@ namespace HangFire.Server
 
                 using (var connection = _storage.GetConnection())
                 {
-                    connection.AnnounceServer(_serverName, _workerCount, _queues);
+                    var context = new ServerContext
+                    {
+                        WorkerCount = _workerCount,
+                        Queues = _queues,
+                    };
+
+                    connection.AnnounceServer(_serverName, context);
                 }
                 StartServer();
 

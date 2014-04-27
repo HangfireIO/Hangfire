@@ -111,6 +111,7 @@
     <Compile Include="Server\IServerComponent.cs" />
     <Compile Include="Server\IServerComponentRunner.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
+    <Compile Include="Server\JobServer2.cs" />
     <Compile Include="Server\Performing\IJobPerformanceProcess.cs" />
     <Compile Include="Server\Performing\PerformContext.cs" />
     <Compile Include="Server\Filters\ServerExceptionContext.cs" />
@@ -128,6 +129,7 @@
     <Compile Include="Server\ServerComponentRunner.cs" />
     <Compile Include="Server\ServerComponentRunnerCollection.cs" />
     <Compile Include="Server\ServerComponentRunnerOptions.cs" />
+    <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\Worker2.cs" />
     <Compile Include="States\IStateMachine.cs" />
     <Compile Include="States\StateMachineFactory.cs" />

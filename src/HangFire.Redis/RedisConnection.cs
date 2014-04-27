@@ -237,7 +237,7 @@ namespace HangFire.Redis
                 .FirstOrDefault();
         }
 
-        public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
+        public void AnnounceServer(string serverId, ServerContext context)
         {
             using (var transaction = Redis.CreateTransaction())
             {
@@ -248,11 +248,11 @@ namespace HangFire.Redis
                     String.Format(RedisStorage.Prefix + "server:{0}", serverId),
                     new Dictionary<string, string>
                         {
-                            { "WorkerCount", workerCount.ToString(CultureInfo.InvariantCulture) },
+                            { "WorkerCount", context.WorkerCount.ToString(CultureInfo.InvariantCulture) },
                             { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
                         }));
 
-                foreach (var queue in queues)
+                foreach (var queue in context.Queues)
                 {
                     var queue1 = queue;
                     transaction.QueueCommand(x => x.AddItemToList(

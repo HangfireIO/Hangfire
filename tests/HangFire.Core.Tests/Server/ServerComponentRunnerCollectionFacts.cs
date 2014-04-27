@@ -63,6 +63,17 @@ namespace HangFire.Core.Tests.Server
             _runner2.Verify(x => x.Dispose());
         }
 
+        [Fact]
+        public void Dispose_AlsoInvokesStopMethod_OnAllRegisteredComponents()
+        {
+            var collection = CreateCollection();
+
+            collection.Dispose();
+
+            _runner1.Verify(x => x.Stop());
+            _runner2.Verify(x => x.Stop());
+        }
+
         private ServerComponentRunnerCollection CreateCollection()
         {
             return new ServerComponentRunnerCollection(_runners);

@@ -242,15 +242,15 @@ values (@jobId, @name, @value)";
                 .SingleOrDefault();
         }
 
-        public void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues)
+        public void AnnounceServer(string serverId, ServerContext context)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");
-            if (queues == null) throw new ArgumentNullException("queues");
+            if (context == null) throw new ArgumentNullException("context");
 
             var data = new ServerData
             {
-                WorkerCount = workerCount,
-                Queues = queues.ToArray(),
+                WorkerCount = context.WorkerCount,
+                Queues = context.Queues,
                 StartedAt = DateTime.UtcNow,
             };
 

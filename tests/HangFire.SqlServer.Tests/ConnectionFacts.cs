@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
 using HangFire.Common;
+using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;
@@ -424,21 +425,21 @@ values
             UseConnection(connection =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => connection.AnnounceServer(null, 0, new string[0]));
+                    () => connection.AnnounceServer(null, new ServerContext()));
 
                 Assert.Equal("serverId", exception.ParamName);
             });
         }
 
         [Fact, CleanDatabase]
-        public void AnnounceServer_ThrowsAnException_WhenQueuesCollectionIsNull()
+        public void AnnounceServer_ThrowsAnException_WhenContextIsNull()
         {
             UseConnection(connection =>
             {
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => connection.AnnounceServer("server", 0, null));
+                    () => connection.AnnounceServer("server", null));
 
-                Assert.Equal("queues", exception.ParamName);
+                Assert.Equal("context", exception.ParamName);
             });
         }
 
@@ -447,7 +448,12 @@ values
         {
             UseConnections((sql, connection) =>
             {
-                connection.AnnounceServer("server", 4, new [] { "critical", "default" });
+                var context1 = new ServerContext
+                {
+                    Queues = new[] { "critical", "default" },
+                    WorkerCount = 4
+                };
+                connection.AnnounceServer("server", context1);
 
                 var server = sql.Query("select * from HangFire.Server").Single();
                 Assert.Equal("server", server.Id);
@@ -456,7 +462,12 @@ values
                     server.Data);
                 Assert.Null(server.HeartBeat);
 
-                connection.AnnounceServer("server", 1000, new [] { "default" });
+                var context2 = new ServerContext
+                {
+                    Queues = new[] { "default" },
+                    WorkerCount = 1000 
+                };
+                connection.AnnounceServer("server", context2);
                 var sameServer = sql.Query("select * from HangFire.Server").Single();
                 Assert.Equal("server", sameServer.Id);
                 Assert.Contains("1000", sameServer.Data);

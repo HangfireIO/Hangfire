@@ -32,6 +32,8 @@ namespace HangFire.Server
 
         public void Dispose()
         {
+            Stop();
+
             foreach (var runner in _runners)
             {
                 runner.Dispose();

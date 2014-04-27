@@ -39,7 +39,7 @@ namespace HangFire.Storage
 
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 
-        void AnnounceServer(string serverId, int workerCount, IEnumerable<string> queues);
+        void AnnounceServer(string serverId, ServerContext context);
         void RemoveServer(string serverId);
         void Heartbeat(string serverId);
         int RemoveTimedOutServers(TimeSpan timeOut);

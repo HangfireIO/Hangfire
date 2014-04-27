@@ -76,6 +76,7 @@
     <Compile Include="QueueAttributeFacts.cs" />
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\JobServerFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\ProcessingJobFacts.cs" />
     <Compile Include="Server\SchedulePollerFacts.cs" />
