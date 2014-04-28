@@ -42,8 +42,6 @@ namespace HangFire
 
         public void OnPerforming(PerformingContext filterContext)
         {
-            if (filterContext == null) throw new ArgumentNullException("filterContext");
-
             var cultureName = filterContext.GetJobParameter<string>("CurrentCulture");
             var uiCultureName = filterContext.GetJobParameter<string>("CurrentUICulture");
 
