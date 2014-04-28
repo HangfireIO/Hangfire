@@ -62,6 +62,14 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void OnCreated_DoesNotThrowAnException()
+        {
+            var filter = CreateFilter();
+
+            Assert.DoesNotThrow(() => filter.OnCreated(null));
+        }
+
+        [Fact]
         public void OnPerforming_SetsThreadCultures_ToTheSpecifiedOnesInJobParameters()
         {
             _connection.Setup(x => x.GetJobParameter(JobId, "CurrentCulture")).Returns("\"ru-RU\"");
