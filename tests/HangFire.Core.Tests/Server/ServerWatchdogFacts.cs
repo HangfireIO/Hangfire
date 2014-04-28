@@ -54,6 +54,7 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void Execute_DelegatesRemovalToStorageConnection()
         {
+            _connection.Setup(x => x.RemoveTimedOutServers(It.IsAny<TimeSpan>())).Returns(1);
             var watchdog = CreateWatchdog();
 
             watchdog.Execute(_token);
