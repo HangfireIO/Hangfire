@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading;
 using HangFire;
-using HangFire.Filters;
 
 namespace ConsoleSample
 {

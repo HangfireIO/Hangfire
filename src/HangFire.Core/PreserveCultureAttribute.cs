@@ -21,7 +21,7 @@ using HangFire.Client;
 using HangFire.Common.Filters;
 using HangFire.Server;
 
-namespace HangFire.Filters
+namespace HangFire
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class PreserveCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter

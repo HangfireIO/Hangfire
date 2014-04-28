@@ -118,7 +118,7 @@
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="Common\States\IApplyStateFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Filters\RetryAttribute.cs" />
+    <Compile Include="RetryAttribute.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
     <Compile Include="Server\ServerComponentRunner.cs" />
     <Compile Include="Server\ServerComponentRunnerCollection.cs" />
@@ -152,7 +152,7 @@
     <Compile Include="Client\IClientFilter.cs" />
     <Compile Include="Common\Filters\IJobFilter.cs" />
     <Compile Include="Server\IServerFilter.cs" />
-    <Compile Include="Filters\PreserveCultureAttribute.cs" />
+    <Compile Include="PreserveCultureAttribute.cs" />
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />
@@ -169,7 +169,7 @@
     <Compile Include="Common\States\StateContext.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
-    <Compile Include="Filters\StatisticsHistoryFilterAttribute.cs" />
+    <Compile Include="StatisticsHistoryFilterAttribute.cs" />
     <Compile Include="Storage\IWriteOnlyTransaction.cs" />
     <Compile Include="Storage\IStorageConnection.cs" />
     <Compile Include="Storage\JobData.cs" />

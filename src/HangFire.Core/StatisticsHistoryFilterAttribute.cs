@@ -19,7 +19,7 @@ using HangFire.Common.Filters;
 using HangFire.Common.States;
 using HangFire.States;
 
-namespace HangFire.Filters
+namespace HangFire
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class StatisticsHistoryFilterAttribute : JobFilterAttribute, IElectStateFilter

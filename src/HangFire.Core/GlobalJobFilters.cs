@@ -15,7 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using HangFire.Common.Filters;
-using HangFire.Filters;
 
 namespace HangFire
 {
