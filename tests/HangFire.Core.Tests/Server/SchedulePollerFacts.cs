@@ -38,7 +38,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SchedulePoller2(
+                () => new SchedulePoller(
                     null, _stateMachineFactory.Object, TimeSpan.FromMilliseconds(-1)));
 
             Assert.Equal("storage", exception.ParamName);
@@ -48,7 +48,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SchedulePoller2(
+                () => new SchedulePoller(
                     _storage.Object, null, TimeSpan.FromMilliseconds(-1)));
 
             Assert.Equal("stateMachineFactory", exception.ParamName);
@@ -92,9 +92,9 @@ namespace HangFire.Core.Tests.Server
                 Times.Never);
         }
 
-        private SchedulePoller2 CreateScheduler()
+        private SchedulePoller CreateScheduler()
         {
-            return new SchedulePoller2(_storage.Object, _stateMachineFactory.Object, TimeSpan.Zero);
+            return new SchedulePoller(_storage.Object, _stateMachineFactory.Object, TimeSpan.Zero);
         }
     }
 }

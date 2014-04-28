@@ -30,14 +30,14 @@ namespace HangFire.Core.Tests.Server
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new ServerWatchdog2(null));
+            Assert.Throws<ArgumentNullException>(() => new ServerWatchdog(null));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new ServerWatchdog2(_storage.Object, null));
+                () => new ServerWatchdog(_storage.Object, null));
         }
 
         [PossibleHangingFact]
@@ -61,9 +61,9 @@ namespace HangFire.Core.Tests.Server
             _connection.Verify(x => x.RemoveTimedOutServers(_options.ServerTimeout));
         }
 
-        private ServerWatchdog2 CreateWatchdog()
+        private ServerWatchdog CreateWatchdog()
         {
-            return new ServerWatchdog2(_storage.Object, _options);
+            return new ServerWatchdog(_storage.Object, _options);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace HangFire.SqlServer.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new ExpirationManager2(null));
+            Assert.Throws<ArgumentNullException>(() => new ExpirationManager(null));
         }
 
         [Fact, CleanDatabase]
@@ -213,9 +213,9 @@ select scope_identity() as Id";
             return count == 0;
         }
 
-        private ExpirationManager2 CreateManager()
+        private ExpirationManager CreateManager()
         {
-            return new ExpirationManager2(_storage);
+            return new ExpirationManager(_storage);
         }
     }
 }

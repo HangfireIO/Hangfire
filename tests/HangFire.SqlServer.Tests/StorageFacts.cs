@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Transactions;
+using HangFire.SqlServer.Components;
 using Xunit;
 
 namespace HangFire.SqlServer.Tests
@@ -45,10 +47,14 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact]
-        public void GetComponents_ReturnsNonNullInstance()
+        public void GetComponents_ReturnsAllNeededComponents()
         {
             var storage = CreateStorage();
-            Assert.NotEmpty(storage.GetComponents());
+
+            var components = storage.GetComponents();
+
+            var componentTypes = components.Select(x => x.GetType()).ToArray();
+            Assert.Contains(typeof(ExpirationManager), componentTypes);
         }
 
         private static SqlServerStorage CreateStorage()

@@ -56,7 +56,7 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="BackgroundJobServer2.cs" />
+    <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="Client\IJobCreationProcess.cs" />
     <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Client\IJobCreator.cs" />
@@ -101,9 +101,7 @@
     <Compile Include="Common\States\StateHandlerProviders.cs" />
     <Compile Include="Common\States\StateHandlerCollection.cs" />
     <Compile Include="Server\Components\SchedulePoller.cs" />
-    <Compile Include="Server\Components\SchedulePoller2.cs" />
     <Compile Include="Server\Components\ServerWatchdog.cs" />
-    <Compile Include="Server\Components\ServerWatchdog2.cs" />
     <Compile Include="Server\Components\ServerWatchdogOptions.cs" />
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
     <Compile Include="Client\Filters\CreatedContext.cs" />
@@ -112,28 +110,24 @@
     <Compile Include="Server\IServerComponent.cs" />
     <Compile Include="Server\IServerComponentRunner.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
-    <Compile Include="Server\JobServer2.cs" />
+    <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\Performing\IJobPerformanceProcess.cs" />
     <Compile Include="Server\Performing\PerformContext.cs" />
     <Compile Include="Server\Filters\ServerExceptionContext.cs" />
     <Compile Include="Server\Filters\PerformedContext.cs" />
     <Compile Include="Server\Filters\PerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
-    <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="Common\States\IApplyStateFilter.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Filters\RetryAttribute.cs" />
-    <Compile Include="Server\DisposableCollection.cs" />
-    <Compile Include="Server\IStoppable.cs" />
-    <Compile Include="Server\IThreadWrappable.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
     <Compile Include="Server\ServerComponentRunner.cs" />
     <Compile Include="Server\ServerComponentRunnerCollection.cs" />
     <Compile Include="Server\ServerComponentRunnerOptions.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
-    <Compile Include="Server\Worker2.cs" />
-    <Compile Include="Server\WorkerManager2.cs" />
+    <Compile Include="Server\Worker.cs" />
+    <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="States\IStateMachine.cs" />
     <Compile Include="States\StateMachineFactory.cs" />
     <Compile Include="Storage\InvocationData.cs" />
@@ -151,10 +145,8 @@
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
     <Compile Include="Server\Performing\IJobPerformer.cs" />
-    <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="Server\ProcessingJob.cs" />
     <Compile Include="JobStorage.cs" />
-    <Compile Include="Server\ThreadWrapper.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
     <Compile Include="Common\States\State.cs" />
@@ -165,10 +157,8 @@
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />
-    <Compile Include="Server\JobServer.cs" />
     <Compile Include="Server\Performing\JobPerformanceProcess.cs" />
     <Compile Include="BackgroundJobClient.cs" />
-    <Compile Include="Server\Worker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />
     <Compile Include="Server\WorkerContext.cs" />

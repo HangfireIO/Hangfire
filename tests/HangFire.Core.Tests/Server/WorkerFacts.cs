@@ -41,7 +41,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker2(null, _context, _process.Object));
+                () => new Worker(null, _context, _process.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -50,7 +50,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker2(_storage.Object, null, _process.Object));
+                () => new Worker(_storage.Object, null, _process.Object));
 
             Assert.Equal("context", exception.ParamName);
         }
@@ -59,7 +59,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker2(_storage.Object, _context, null));
+                () => new Worker(_storage.Object, _context, null));
 
             Assert.Equal("process", exception.ParamName);
         }
@@ -99,9 +99,9 @@ namespace HangFire.Core.Tests.Server
             _processingJob.Verify(x => x.Process(_context, _process.Object));
         }
 
-        private Worker2 CreateWorker()
+        private Worker CreateWorker()
         {
-            return new Worker2(_storage.Object, _context, _process.Object);
+            return new Worker(_storage.Object, _context, _process.Object);
         }
     }
 }

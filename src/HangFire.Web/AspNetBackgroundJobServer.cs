@@ -53,23 +53,18 @@ namespace HangFire.Web
         /// </summary>
         public override void Start()
         {
-            base.Start();
             HostingEnvironment.RegisterObject(this);
+            base.Start();
         }
 
         /// <summary>
         /// Disposes the server and removes it from the list of registered
         /// objects in the application.
         /// </summary>
-        public override bool Stop()
+        public override void Stop()
         {
-            var wasStopped = base.Stop();
-            if (wasStopped)
-            {
-                HostingEnvironment.UnregisterObject(this);
-            }
-
-            return wasStopped;
+            base.Stop();
+            HostingEnvironment.UnregisterObject(this);
         }
 
         void IRegisteredObject.Stop(bool immediate)

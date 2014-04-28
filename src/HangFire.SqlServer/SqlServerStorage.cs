@@ -66,17 +66,10 @@ namespace HangFire.SqlServer
             return new SqlServerConnection(_stateMachineFactory, CreateAndOpenConnection());
         }
 
-        public override IEnumerable<IThreadWrappable> GetComponents()
+        public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new SchedulePoller(this, _options.QueuePollInterval);
-            yield return new ServerWatchdog(this);
+            yield return new SchedulePoller(this, _stateMachineFactory, _options.QueuePollInterval);
             yield return new ExpirationManager(this);
-        }
-
-        public override IEnumerable<IServerComponent> GetComponents2()
-        {
-            yield return new SchedulePoller2(this, _stateMachineFactory, _options.QueuePollInterval);
-            yield return new ExpirationManager2(this);
         }
 
         internal SqlConnection CreateAndOpenConnection()

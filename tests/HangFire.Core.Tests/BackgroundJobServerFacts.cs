@@ -15,14 +15,14 @@ namespace HangFire.Core.Tests
 
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IServerComponentRunner> _runner;
-        private readonly Mock<BackgroundJobServer2> _serverMock;
+        private readonly Mock<BackgroundJobServer> _serverMock;
 
         public BackgroundJobServerFacts()
         {
             _storage = new Mock<JobStorage>();
 
             _runner = new Mock<IServerComponentRunner>();
-            _serverMock = new Mock<BackgroundJobServer2>(WorkerCount, Queues, _storage.Object)
+            _serverMock = new Mock<BackgroundJobServer>(WorkerCount, Queues, _storage.Object)
             {
                 CallBase = true
             };
@@ -33,7 +33,7 @@ namespace HangFire.Core.Tests
         public void Ctor_ThrowsAnException_WhenWorkerCountIsEqualToZeroOrNegative()
         {
             var exception = Assert.Throws<ArgumentOutOfRangeException>(
-                () => new BackgroundJobServer2(0, Queues, _storage.Object));
+                () => new BackgroundJobServer(0, Queues, _storage.Object));
 
             Assert.Equal("workerCount", exception.ParamName);
         }
@@ -42,7 +42,7 @@ namespace HangFire.Core.Tests
         public void Ctor_ThrowsAnException_WhenQueuesArrayIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobServer2(WorkerCount, null, _storage.Object));
+                () => new BackgroundJobServer(WorkerCount, null, _storage.Object));
 
             Assert.Equal("queues", exception.ParamName);
         }
@@ -51,7 +51,7 @@ namespace HangFire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobServer2(WorkerCount, Queues, null));
+                () => new BackgroundJobServer(WorkerCount, Queues, null));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -88,7 +88,7 @@ namespace HangFire.Core.Tests
             var runner = server.GetServerRunner();
 
             Assert.NotNull(runner);
-            Assert.IsType<JobServer2>(((ServerComponentRunner) runner).Component);
+            Assert.IsType<JobServer>(((ServerComponentRunner) runner).Component);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace HangFire.Core.Tests
             var runners = server.GetServerComponentsRunner();
 
             // Assert
-            Assert.True(runners.Select(x => x.GetType()).Contains(typeof(WorkerManager2)));
+            Assert.True(runners.Select(x => x.GetType()).Contains(typeof(WorkerManager)));
 
             var componentTypes = runners.OfType<ServerComponentRunner>()
                 .Select(x => x.Component)
@@ -109,7 +109,7 @@ namespace HangFire.Core.Tests
                 .ToArray();
 
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
-            Assert.Contains(typeof(ServerWatchdog2), componentTypes);
+            Assert.Contains(typeof(ServerWatchdog), componentTypes);
         }
 
         [Fact]
@@ -117,7 +117,7 @@ namespace HangFire.Core.Tests
         {
             // Arrange
             var storageComponent = new Mock<IServerComponent>();
-            _storage.Setup(x => x.GetComponents2()).Returns(new[] { storageComponent.Object });
+            _storage.Setup(x => x.GetComponents()).Returns(new[] { storageComponent.Object });
 
             var server = CreateServer();
 
@@ -132,9 +132,9 @@ namespace HangFire.Core.Tests
             Assert.Contains(storageComponent.Object, components);
         }
 
-        private BackgroundJobServer2 CreateServer()
+        private BackgroundJobServer CreateServer()
         {
-            return new BackgroundJobServer2(WorkerCount, Queues, _storage.Object);
+            return new BackgroundJobServer(WorkerCount, Queues, _storage.Object);
         }
     }
 }

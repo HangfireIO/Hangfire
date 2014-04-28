@@ -68,7 +68,6 @@
     </Compile>
     <Compile Include="Components\FetchedJobsWatcherOptions.cs" />
     <Compile Include="Components\FetchedJobsWatcher.cs" />
-    <Compile Include="Components\FetchedJobsWatcher2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisWriteOnlyTransaction.cs" />
     <Compile Include="RedisStorage.cs" />

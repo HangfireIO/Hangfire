@@ -34,7 +34,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenServerIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobServer2(null, _context, _storage.Object, _lazyRunner));
+                () => new JobServer(null, _context, _storage.Object, _lazyRunner));
 
             Assert.Equal("serverId", exception.ParamName);
         }
@@ -43,7 +43,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobServer2(ServerId, null, _storage.Object, _lazyRunner));
+                () => new JobServer(ServerId, null, _storage.Object, _lazyRunner));
 
             Assert.Equal("context", exception.ParamName);
         }
@@ -52,7 +52,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobServer2(ServerId, _context, null, _lazyRunner));
+                () => new JobServer(ServerId, _context, null, _lazyRunner));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -61,7 +61,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenRunnerIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobServer2(ServerId, _context, _storage.Object, null));
+                () => new JobServer(ServerId, _context, _storage.Object, null));
 
             Assert.Equal("runner", exception.ParamName);
         }
@@ -127,9 +127,9 @@ namespace HangFire.Core.Tests.Server
             _connection.Verify(x => x.RemoveServer(It.IsAny<string>()));
         }
 
-        private JobServer2 CreateServer()
+        private JobServer CreateServer()
         {
-            return new JobServer2(ServerId, _context, _storage.Object, _lazyRunner);
+            return new JobServer(ServerId, _context, _storage.Object, _lazyRunner);
         }
     }
 }

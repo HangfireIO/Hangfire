@@ -1,83 +1,44 @@
-﻿// This file is part of HangFire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
-// HangFire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
-// of the License, or any later version.
-// 
-// HangFire is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
-// License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
-
-using System;
+﻿using System;
 using System.Threading;
 using Common.Logging;
 
 namespace HangFire.Server.Components
 {
-    public class ServerWatchdog : IThreadWrappable
+    public class ServerWatchdog : IServerComponent
     {
-        private static readonly TimeSpan ServerTimeout = TimeSpan.FromMinutes(1);
-        private static readonly TimeSpan CheckInterval = TimeSpan.FromMinutes(5); 
-
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerWatchdog));
 
-        private readonly ManualResetEvent _stopped = new ManualResetEvent(false);
-
         private readonly JobStorage _storage;
-        
+        private readonly ServerWatchdogOptions _options;
+
         public ServerWatchdog(JobStorage storage)
+            : this(storage, new ServerWatchdogOptions())
         {
-            _storage = storage;
         }
 
-        public void RemoveTimedOutServers(TimeSpan timeout)
+        public ServerWatchdog(JobStorage storage, ServerWatchdogOptions options)
+        {
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (options == null) throw new ArgumentNullException("options");
+
+            _storage = storage;
+            _options = options;
+        }
+
+        public void Execute(CancellationToken cancellationToken)
         {
             using (var connection = _storage.GetConnection())
             {
-                var serversRemoved = connection.RemoveTimedOutServers(timeout);
+                var serversRemoved = connection.RemoveTimedOutServers(_options.ServerTimeout);
                 if (serversRemoved != 0)
                 {
-                    Logger.Info(String.Format("{0} servers were removed due to timeout", serversRemoved));
+                    Logger.Info(String.Format(
+                        "{0} servers were removed due to timeout", 
+                        serversRemoved));
                 }
             }
-        }
 
-        void IThreadWrappable.Work()
-        {
-            try
-            {
-                Logger.Info("Server watchdog has been started.");
-
-                while (true)
-                {
-                    JobServer.RetryOnException(
-                        () => RemoveTimedOutServers(ServerTimeout), 
-                        _stopped);
-
-                    if (_stopped.WaitOne(CheckInterval))
-                    {
-                        break;
-                    }
-                }
-
-                Logger.Info("Server watchdog has been stopped.");
-            }
-            catch (Exception ex)
-            {
-                Logger.Fatal("Unexpected exception caught.", ex);
-            }
-        }
-
-        void IThreadWrappable.Dispose(Thread thread)
-        {
-            _stopped.Set();
-            thread.Join();
+            cancellationToken.WaitHandle.WaitOne(_options.CheckInterval);
         }
     }
 }

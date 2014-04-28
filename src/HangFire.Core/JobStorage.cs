@@ -56,12 +56,7 @@ namespace HangFire
         
         public abstract IStorageConnection GetConnection();
 
-        public virtual IEnumerable<IThreadWrappable> GetComponents()
-        {
-            return Enumerable.Empty<IThreadWrappable>();
-        }
-
-        public virtual IEnumerable<IServerComponent> GetComponents2()
+        public virtual IEnumerable<IServerComponent> GetComponents()
         {
             return Enumerable.Empty<IServerComponent>();
         }

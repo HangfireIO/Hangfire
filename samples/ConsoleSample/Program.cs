@@ -19,7 +19,7 @@ namespace ConsoleSample
                 new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
                 //new RedisStorage("localhost:6379", 3);
             
-            using (var server = new BackgroundJobServer2("critical", "default"))
+            using (var server = new BackgroundJobServer("critical", "default"))
             {
                 var count = 1;
 

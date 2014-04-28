@@ -33,7 +33,7 @@ namespace HangFire.Redis.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FetchedJobsWatcher2(null, _stateMachineFactory.Object));
+                () => new FetchedJobsWatcher(null, _stateMachineFactory.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -42,7 +42,7 @@ namespace HangFire.Redis.Tests
         public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FetchedJobsWatcher2(_storage, null));
+                () => new FetchedJobsWatcher(_storage, null));
 
             Assert.Equal("stateMachineFactory", exception.ParamName);
         }
@@ -139,9 +139,9 @@ namespace HangFire.Redis.Tests
             }
         }
 
-        private FetchedJobsWatcher2 CreateWatcher()
+        private FetchedJobsWatcher CreateWatcher()
         {
-            return new FetchedJobsWatcher2(_storage, _stateMachineFactory.Object);
+            return new FetchedJobsWatcher(_storage, _stateMachineFactory.Object);
         }
     }
 }

@@ -84,17 +84,10 @@ namespace HangFire.Redis
             return new RedisConnection(_stateMachineFactory, _pooledManager.GetClient());
         }
 
-        public override IEnumerable<IThreadWrappable> GetComponents()
+        public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new SchedulePoller(this, Options.PollInterval);
-            yield return new FetchedJobsWatcher(this);
-            yield return new ServerWatchdog(this);
-        }
-
-        public override IEnumerable<IServerComponent> GetComponents2()
-        {
-            yield return new SchedulePoller2(this, _stateMachineFactory, Options.PollInterval);
-            yield return new FetchedJobsWatcher2(this, _stateMachineFactory);
+            yield return new SchedulePoller(this, _stateMachineFactory, Options.PollInterval);
+            yield return new FetchedJobsWatcher(this, _stateMachineFactory);
         }
 
         public override IEnumerable<StateHandler> GetStateHandlers()
