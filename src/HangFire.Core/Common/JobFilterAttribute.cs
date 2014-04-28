@@ -41,7 +41,7 @@ namespace HangFire.Common
             {
                 if (value < JobFilter.DefaultOrder)
                 {
-                    throw new ArgumentOutOfRangeException("value", "The Order value should be more that -1");
+                    throw new ArgumentOutOfRangeException("value", "The Order value should be greater or equal to '-1'");
                 }
                 _order = value;
             }
