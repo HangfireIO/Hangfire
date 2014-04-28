@@ -226,6 +226,14 @@ namespace HangFire.Core.Tests.Server
                 Times.AtLeast(2));
         }
 
+        [Fact]
+        public void Component_ReturnsUnderlyingComponent()
+        {
+            var runner = CreateRunner();
+
+            Assert.Same(_component.Object, runner.Component);
+        }
+
         private ServerComponentRunner CreateRunner()
         {
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))

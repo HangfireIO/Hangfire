@@ -26,15 +26,15 @@ namespace HangFire
         }
 
         public BackgroundJobServer2(int workerCount, params string[] queues)
-            : this(JobStorage.Current, workerCount, queues)
+            : this(workerCount, queues, JobStorage.Current)
         {
         }
 
-        public BackgroundJobServer2(JobStorage storage, int workerCount, params string[] queues)
+        public BackgroundJobServer2(int workerCount, string[] queues, JobStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (queues == null) throw new ArgumentNullException("queues");
             if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
+            if (queues == null) throw new ArgumentNullException("queues");
+            if (storage == null) throw new ArgumentNullException("storage");
 
             _storage = storage;
             _workerCount = workerCount;
@@ -80,7 +80,7 @@ namespace HangFire
                 new ServerComponentRunnerOptions { ShutdownTimeout = ServerShutdownTimeout });
         }
 
-        internal IServerComponentRunner GetServerComponentsRunner()
+        internal ServerComponentRunnerCollection GetServerComponentsRunner()
         {
             var componentRunners = new List<IServerComponentRunner>();
 

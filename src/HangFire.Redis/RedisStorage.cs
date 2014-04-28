@@ -94,7 +94,6 @@ namespace HangFire.Redis
         public override IEnumerable<IServerComponent> GetComponents2()
         {
             yield return new SchedulePoller2(this, _stateMachineFactory, Options.PollInterval);
-            yield return new ServerWatchdog2(this);
             yield return new FetchedJobsWatcher2(this, _stateMachineFactory);
         }
 

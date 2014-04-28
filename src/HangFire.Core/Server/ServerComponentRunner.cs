@@ -38,6 +38,11 @@ namespace HangFire.Server
             _thread.Start();
         }
 
+        public IServerComponent Component
+        {
+            get { return _component; }
+        }
+
         public void Start()
         {
             CheckDisposed();
