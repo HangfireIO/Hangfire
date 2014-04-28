@@ -16,8 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+using HangFire.Storage.Monitoring;
 
-namespace HangFire.Storage.Monitoring
+namespace HangFire.Storage
 {
     public interface IMonitoringApi : IDisposable
     {

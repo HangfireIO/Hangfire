@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;
-using HangFire.Storage.Monitoring;
 using ServiceStack.Redis;
 
 namespace HangFire.Redis

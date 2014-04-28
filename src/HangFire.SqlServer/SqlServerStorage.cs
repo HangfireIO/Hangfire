@@ -20,7 +20,6 @@ using System.Data.SqlClient;
 using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;
-using HangFire.Storage.Monitoring;
 
 namespace HangFire.SqlServer
 {
