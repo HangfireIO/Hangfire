@@ -14,23 +14,23 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Client.Filters
+namespace HangFire.Client
 {
     /// <summary>
-    /// Provides the context for the <see cref="IClientFilter.OnCreating"/>
-    /// method of the <see cref="IClientFilter"/> interface.
+    /// Defines methods that are required for a client filter.
     /// </summary>
-    public class CreatingContext : CreateContext
+    public interface IClientFilter
     {
-        internal CreatingContext(CreateContext context)
-            : base(context)
-        {
-        }
+        /// <summary>
+        /// Called before the creation of the job. 
+        /// </summary>
+        /// <param name="filterContext">The filter context.</param>
+        void OnCreating(CreatingContext filterContext);
 
         /// <summary>
-        /// Gets or sets a value that indicates that this <see cref="CreatingContext"/>
-        /// object was canceled.
+        /// Called after the creation of the job.
         /// </summary>
-        public bool Canceled { get; set; }
+        /// <param name="filterContext">The filter context.</param>
+        void OnCreated(CreatedContext filterContext);
     }
 }

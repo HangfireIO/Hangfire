@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading;
 using HangFire.Client;
-using HangFire.Client.Filters;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Filters;

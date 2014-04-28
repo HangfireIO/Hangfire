@@ -90,9 +90,9 @@
     <Compile Include="Common\Filters\JobFilterProviders.cs" />
     <Compile Include="Common\Filters\JobFilterScope.cs" />
     <Compile Include="Common\Filters\ReflectedAttributeCache.cs" />
-    <Compile Include="Client\Filters\ClientExceptionContext.cs" />
+    <Compile Include="Client\ClientExceptionContext.cs" />
     <Compile Include="Common\Filters\GlobalJobFilterCollection.cs" />
-    <Compile Include="Client\Filters\IClientExceptionFilter.cs" />
+    <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\Filters\IJobFilterProvider.cs" />
     <Compile Include="Common\States\IElectStateFilter.cs" />
     <Compile Include="Common\Filters\JobFilterAttribute.cs" />
@@ -104,8 +104,8 @@
     <Compile Include="Server\ServerWatchdog.cs" />
     <Compile Include="Server\ServerWatchdogOptions.cs" />
     <Compile Include="Server\IServerExceptionFilter.cs" />
-    <Compile Include="Client\Filters\CreatedContext.cs" />
-    <Compile Include="Client\Filters\CreatingContext.cs" />
+    <Compile Include="Client\CreatedContext.cs" />
+    <Compile Include="Client\CreatingContext.cs" />
     <Compile Include="Server\IServerComponent.cs" />
     <Compile Include="Server\IServerComponentRunner.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
@@ -149,7 +149,7 @@
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
     <Compile Include="Common\States\State.cs" />
-    <Compile Include="Client\Filters\IClientFilter.cs" />
+    <Compile Include="Client\IClientFilter.cs" />
     <Compile Include="Common\Filters\IJobFilter.cs" />
     <Compile Include="Server\IServerFilter.cs" />
     <Compile Include="Filters\PreserveCultureAttribute.cs" />

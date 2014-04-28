@@ -14,41 +14,23 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
-namespace HangFire.Client.Filters
+namespace HangFire.Client
 {
     /// <summary>
-    /// Provides the context for the <see cref="IClientFilter.OnCreated"/> 
+    /// Provides the context for the <see cref="IClientFilter.OnCreating"/>
     /// method of the <see cref="IClientFilter"/> interface.
     /// </summary>
-    public class CreatedContext : CreateContext
+    public class CreatingContext : CreateContext
     {
-        internal CreatedContext(
-            CreateContext context, 
-            bool canceled, 
-            Exception exception)
+        internal CreatingContext(CreateContext context)
             : base(context)
         {
-            Canceled = canceled;
-            Exception = exception;
         }
 
         /// <summary>
-        /// Gets an exception that occurred during the creation of the job.
-        /// </summary>
-        public Exception Exception { get; private set; }
-
-        /// <summary>
-        /// Gets a value that indicates that this <see cref="CreatedContext"/>
+        /// Gets or sets a value that indicates that this <see cref="CreatingContext"/>
         /// object was canceled.
         /// </summary>
-        public bool Canceled { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value that indicates that this <see cref="CreatedContext"/>
-        /// object handles an exception occurred during the creation of the job.
-        /// </summary>
-        public bool ExceptionHandled { get; set; }
+        public bool Canceled { get; set; }
     }
 }

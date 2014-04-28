@@ -16,7 +16,7 @@
 
 using System;
 
-namespace HangFire.Client.Filters
+namespace HangFire.Client
 {
     /// <summary>
     /// Provides the context for the <see cref="IClientExceptionFilter.OnClientException"/>

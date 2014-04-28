@@ -14,23 +14,17 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Client.Filters
+namespace HangFire.Client
 {
     /// <summary>
-    /// Defines methods that are required for a client filter.
+    /// Defines methods that are required for the client exception filter.
     /// </summary>
-    public interface IClientFilter
+    public interface IClientExceptionFilter
     {
         /// <summary>
-        /// Called before the creation of the job. 
+        /// Called when an exception occurred during the creation of the job.
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
-        void OnCreating(CreatingContext filterContext);
-
-        /// <summary>
-        /// Called after the creation of the job.
-        /// </summary>
-        /// <param name="filterContext">The filter context.</param>
-        void OnCreated(CreatedContext filterContext);
+        void OnClientException(ClientExceptionContext filterContext);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using HangFire.Client;
-using HangFire.Client.Filters;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;

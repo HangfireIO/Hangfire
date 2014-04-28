@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HangFire.Client.Filters;
 using HangFire.Common;
 using HangFire.Common.Filters;
 
