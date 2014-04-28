@@ -18,11 +18,31 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void StaticCreate_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Create(
+                    null, () => StaticMethod(), _state.Object));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
         public void StaticCreate_ShouldCreateAJobInTheGivenState()
         {
             _client.Object.Create(() => StaticMethod(), _state.Object);
             
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), _state.Object));
+        }
+
+        [Fact]
+        public void InstanceCreate_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Create<BackgroundJobClientExtensionsFacts>(
+                    null, x => x.InstanceMethod(), _state.Object));
+
+            Assert.Equal("client", exception.ParamName);
         }
 
         [Fact]
@@ -34,6 +54,16 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void StaticEnqueue_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Enqueue(
+                    null, () => StaticMethod()));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
         public void StaticEnqueue_ShouldCreateAJobInTheEnqueueState()
         {
             _client.Object.Enqueue(() => StaticMethod());
@@ -42,11 +72,31 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void InstanceEnqueue_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Enqueue<BackgroundJobClientExtensionsFacts>(
+                    null, x => x.InstanceMethod()));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
         public void InstanceEnqueue_ShouldCreateAJobInTheEnqueuedState()
         {
             _client.Object.Enqueue<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod());
 
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+        }
+
+        [Fact]
+        public void StaticEnqueue_WithQueue_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Enqueue(
+                    null, () => StaticMethod(), "critical"));
+
+            Assert.Equal("client", exception.ParamName);
         }
 
         [Fact]
@@ -60,6 +110,16 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void InstanceEnqueue_WithQueue_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Enqueue<BackgroundJobClientExtensionsFacts>(
+                    null, x => x.InstanceMethod(), "critical"));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
         public void InstanceEnqueue_WithQueue_ShouldCreateAJobInTheEnqueuedState()
         {
             _client.Object.Enqueue<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod(), "critical");
@@ -70,6 +130,16 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void StaticSchedule_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Schedule(
+                    null, () => StaticMethod(), TimeSpan.FromDays(1)));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
         public void StaticSchedule_ShouldCreateAJobInTheScheduledState()
         {
             _client.Object.Schedule(() => StaticMethod(), TimeSpan.FromDays(1));
@@ -77,6 +147,16 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
                 It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+        }
+
+        [Fact]
+        public void InstanceSchedule_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Schedule<BackgroundJobClientExtensionsFacts>(
+                    null, x => x.InstanceMethod(), TimeSpan.FromDays(1)));
+
+            Assert.Equal("client", exception.ParamName);
         }
 
         [Fact]

@@ -57,6 +57,26 @@ namespace HangFire.Core.Tests
             Assert.Equal("process", exception.ParamName);
         }
 
+        [Fact, GlobalLock(Reason = "Needs JobStorage.Current instance")]
+        public void Ctor_UsesCurrent_JobStorageInstance_ByDefault()
+        {
+            JobStorage.Current = new Mock<JobStorage>().Object;
+            Assert.DoesNotThrow(() => new BackgroundJobClient());
+        }
+
+        [Fact]
+        public void Ctor_HasDefaultValue_ForStateMachineFactory()
+        {
+            Assert.DoesNotThrow(() => new BackgroundJobClient(_storage.Object));
+        }
+
+        [Fact]
+        public void Ctor_HasDefaultValue_ForCreationProcess()
+        {
+            Assert.DoesNotThrow(
+                () => new BackgroundJobClient(_storage.Object, _stateMachineFactory.Object));
+        }
+
         [Fact]
         public void Ctor_TakesAConnection()
         {
