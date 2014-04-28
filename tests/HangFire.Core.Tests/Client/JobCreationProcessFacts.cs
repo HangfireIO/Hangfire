@@ -102,6 +102,7 @@ namespace HangFire.Core.Tests.Client
         public void Run_EatsException_WhenItWasHandlerByFilter()
         {
             // Arrange
+            _context.Setup(x => x.CreateJob()).Throws<InvalidOperationException>();
             var filter = new Mock<IClientExceptionFilter>();
             filter.Setup(x => x.OnClientException(It.IsAny<ClientExceptionContext>()))
                 .Callback((ClientExceptionContext x) => x.ExceptionHandled = true);
