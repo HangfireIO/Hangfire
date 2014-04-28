@@ -125,6 +125,24 @@ namespace HangFire.Core.Tests.Common
             Assert.Same(_filterInstance, filter.Instance);
         }
 
+        [Fact]
+        public void Count_ReturnsNumberOfElements()
+        {
+            _collection.Add(_filterInstance);
+
+            Assert.Equal(1, _collection.Count);
+        }
+
+        [Fact]
+        public void Clear_RemovesAllElementsFromCollection()
+        {
+            _collection.Add(_filterInstance);
+
+            _collection.Clear();
+            
+            Assert.Equal(0, _collection.Count);
+        }
+
         private static TFilter GetFilterInstance<TFilter>() where TFilter : class
         {
             return new Mock<TFilter>().Object;
