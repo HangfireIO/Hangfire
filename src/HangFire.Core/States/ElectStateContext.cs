@@ -69,6 +69,10 @@ namespace HangFire.States
 
         internal State ElectState(IEnumerable<IElectStateFilter> filters)
         {
+            if (filters == null) throw new ArgumentNullException("filters");
+
+            var statesToAppend = new List<State>();
+
             foreach (var filter in filters)
             {
                 var oldState = CandidateState;
@@ -76,11 +80,20 @@ namespace HangFire.States
 
                 if (oldState != CandidateState)
                 {
-                    using (var transaction = Connection.CreateWriteTransaction())
+                    statesToAppend.Add(oldState);
+                }
+            }
+
+            if (statesToAppend.Count > 0)
+            {
+                using (var transaction = Connection.CreateWriteTransaction())
+                {
+                    foreach (var state in statesToAppend)
                     {
-                        transaction.AddJobState(JobId, oldState);
-                        transaction.Commit();
+                        transaction.AddJobState(JobId, state);
                     }
+
+                    transaction.Commit();
                 }
             }
 

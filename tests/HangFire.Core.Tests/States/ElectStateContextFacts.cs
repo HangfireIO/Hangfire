@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using HangFire.Common;
 using HangFire.States;
 using HangFire.Storage;
@@ -11,15 +12,19 @@ namespace HangFire.Core.Tests.States
     {
         private const string JobId = "1";
         private readonly StateContext _stateContext;
-        private readonly Mock<State> _candidateStateMock;
-        private readonly Mock<IStorageConnection> _connectionMock;
+        private readonly Mock<State> _candidateState;
+        private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public ElectStateContextFacts()
         {
             var job = Job.FromExpression(() => Console.WriteLine());
             _stateContext = new StateContext(JobId, job);
-            _candidateStateMock = new Mock<State>();
-            _connectionMock = new Mock<IStorageConnection>();
+            _candidateState = new Mock<State>();
+            _connection = new Mock<IStorageConnection>();
+            _transaction = new Mock<IWriteOnlyTransaction>();
+
+            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
         }
 
         [Fact]
@@ -30,7 +35,7 @@ namespace HangFire.Core.Tests.States
                     _stateContext,
                     null,
                     null,
-                    _connectionMock.Object));
+                    _connection.Object));
 
             Assert.Equal("candidateState", exception.ParamName);
         }
@@ -41,7 +46,7 @@ namespace HangFire.Core.Tests.States
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ElectStateContext(
                     _stateContext,
-                    _candidateStateMock.Object,
+                    _candidateState.Object,
                     null,
                     null));
 
@@ -56,9 +61,9 @@ namespace HangFire.Core.Tests.States
             Assert.Equal(_stateContext.JobId, context.JobId);
             Assert.Equal(_stateContext.Job, context.Job);
 
-            Assert.Same(_candidateStateMock.Object, context.CandidateState);
+            Assert.Same(_candidateState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
-            Assert.Same(_connectionMock.Object, context.Connection);
+            Assert.Same(_connection.Object, context.Connection);
         }
 
         [Fact]
@@ -87,7 +92,7 @@ namespace HangFire.Core.Tests.States
 
             context.SetJobParameter("Name", "Value");
 
-            _connectionMock.Verify(x => x.SetJobParameter(
+            _connection.Verify(x => x.SetJobParameter(
                 JobId, "Name", JobHelper.ToJson("Value")));
         }
 
@@ -98,7 +103,7 @@ namespace HangFire.Core.Tests.States
 
             context.SetJobParameter("Name", (string)null);
 
-            _connectionMock.Verify(x => x.SetJobParameter(
+            _connection.Verify(x => x.SetJobParameter(
                 JobId, "Name", JobHelper.ToJson(null)));
         }
 
@@ -106,7 +111,7 @@ namespace HangFire.Core.Tests.States
         public void GetJobParameter_CallsTheCorrespondingMethod_WithJsonDecodedValue()
         {
             var context = CreateContext();
-            _connectionMock.Setup(x => x.GetJobParameter("1", "Name"))
+            _connection.Setup(x => x.GetJobParameter("1", "Name"))
                 .Returns(JobHelper.ToJson("Value"));
 
             var value = context.GetJobParameter<string>("Name");
@@ -118,7 +123,7 @@ namespace HangFire.Core.Tests.States
         public void GetJobParameter_ReturnsDefaultValue_WhenNoValueProvided()
         {
             var context = CreateContext();
-            _connectionMock.Setup(x => x.GetJobParameter("1", "Value"))
+            _connection.Setup(x => x.GetJobParameter("1", "Value"))
                 .Returns(JobHelper.ToJson(null));
 
             var value = context.GetJobParameter<int>("Name");
@@ -126,13 +131,54 @@ namespace HangFire.Core.Tests.States
             Assert.Equal(default(int), value);
         }
 
+        [Fact]
+        public void ElectState_ThrowsAnException_WhenFiltersArrayIsNull()
+        {
+            var context = CreateContext();
+
+            Assert.Throws<ArgumentNullException>(() => context.ElectState(null));
+        }
+
+        [Fact]
+        public void ElectState_ReturnsCandidateState_WhenFiltersArrayIsEmpty()
+        {
+            var context = CreateContext();
+
+            var electedState = context.ElectState(Enumerable.Empty<IElectStateFilter>());
+
+            Assert.Same(_candidateState.Object, electedState);
+            _connection.Verify(x => x.CreateWriteTransaction(), Times.Never);
+        }
+
+        [Fact]
+        public void ElectState_AddsJobHistory_WhenAFilterChangesCandidateState()
+        {
+            // Arrange
+            var newState = new Mock<State>();
+
+            var filter = new Mock<IElectStateFilter>();
+            filter.Setup(x => x.OnStateElection(It.IsNotNull<ElectStateContext>()))
+                .Callback((ElectStateContext x) => x.CandidateState = newState.Object);
+
+            var context = CreateContext();
+
+            // Act
+            var electedState = context.ElectState(new[] { filter.Object });
+
+            // Assert
+            Assert.Same(newState.Object, electedState);
+
+            _transaction.Verify(x => x.AddJobState(JobId, _candidateState.Object));
+            _transaction.Verify(x => x.Dispose());
+        }
+
         private ElectStateContext CreateContext()
         {
             return new ElectStateContext(
                 _stateContext,
-                _candidateStateMock.Object,
+                _candidateState.Object,
                 "State",
-                _connectionMock.Object);
+                _connection.Object);
         }
     }
 }
