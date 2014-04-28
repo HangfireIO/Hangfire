@@ -68,6 +68,7 @@
     <Compile Include="Client\CreatedContextFacts.cs" />
     <Compile Include="Client\CreatingContextFacts.cs" />
     <Compile Include="Client\JobCreationProcessFacts.cs" />
+    <Compile Include="Common\GlobalJobFilterCollectionFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />

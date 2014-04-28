@@ -91,7 +91,7 @@ namespace HangFire.Common
         /// <returns>True if the global filter collection contains the filter, otherwise false.</returns>
         public bool Contains(object filter)
         {
-            return _filters.Any(x => x == filter);
+            return _filters.Any(x => x.Instance == filter);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace HangFire.Common
         /// <param name="filter">The filter instance.</param>
         public void Remove(object filter)
         {
-            _filters.RemoveAll(x => x == filter);
+            _filters.RemoveAll(x => x.Instance == filter);
         }
 
         public IEnumerator<JobFilter> GetEnumerator()
