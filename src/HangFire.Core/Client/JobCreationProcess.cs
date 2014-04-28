@@ -40,8 +40,6 @@ namespace HangFire.Client
         internal JobCreationProcess(IEnumerable<object> filters)
             : this()
         {
-            if (filters == null) throw new ArgumentNullException("filters");
-
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
