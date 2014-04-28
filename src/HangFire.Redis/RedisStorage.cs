@@ -17,8 +17,6 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Common.States;
-using HangFire.Redis.Components;
-using HangFire.Redis.States;
 using HangFire.Server;
 using HangFire.Server.Components;
 using HangFire.States;

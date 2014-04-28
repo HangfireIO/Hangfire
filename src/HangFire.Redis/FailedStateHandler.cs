@@ -20,15 +20,15 @@ using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
 
-namespace HangFire.Redis.States
+namespace HangFire.Redis
 {
-    internal class ProcessingStateHandler : StateHandler
+    internal class FailedStateHandler : StateHandler
     {
         public override void Apply(
             ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.AddToSet(
-                "processing",
+                "failed",
                 context.JobId,
                 JobHelper.ToTimestamp(DateTime.UtcNow));
         }
@@ -36,12 +36,12 @@ namespace HangFire.Redis.States
         public override void Unapply(
             ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            transaction.RemoveFromSet("processing", context.JobId);
+            transaction.RemoveFromSet("failed", context.JobId);
         }
 
         public override string StateName
         {
-            get { return ProcessingState.StateName; }
+            get { return FailedState.StateName; }
         }
     }
 }

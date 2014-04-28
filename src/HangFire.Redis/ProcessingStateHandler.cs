@@ -14,30 +14,34 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
 
-namespace HangFire.Redis.States
+namespace HangFire.Redis
 {
-    internal class SucceededStateHandler : StateHandler
+    internal class ProcessingStateHandler : StateHandler
     {
         public override void Apply(
             ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            transaction.InsertToList("succeeded", context.JobId);
-            transaction.TrimList("succeeded", 0, 99);
+            transaction.AddToSet(
+                "processing",
+                context.JobId,
+                JobHelper.ToTimestamp(DateTime.UtcNow));
         }
 
         public override void Unapply(
             ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            transaction.RemoveFromList("succeeded", context.JobId);
+            transaction.RemoveFromSet("processing", context.JobId);
         }
 
         public override string StateName
         {
-            get { return SucceededState.StateName; }
+            get { return ProcessingState.StateName; }
         }
     }
 }

@@ -21,7 +21,7 @@ using HangFire.Common;
 using HangFire.Server;
 using HangFire.States;
 
-namespace HangFire.Redis.Components
+namespace HangFire.Redis
 {
     internal class FetchedJobsWatcher : IServerComponent
     {

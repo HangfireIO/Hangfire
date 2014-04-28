@@ -2,7 +2,6 @@
 using System.Threading;
 using HangFire.Common;
 using HangFire.Common.States;
-using HangFire.Redis.Components;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;

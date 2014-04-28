@@ -66,17 +66,17 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Components\FetchedJobsWatcherOptions.cs" />
-    <Compile Include="Components\FetchedJobsWatcher.cs" />
+    <Compile Include="FetchedJobsWatcherOptions.cs" />
+    <Compile Include="FetchedJobsWatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisWriteOnlyTransaction.cs" />
     <Compile Include="RedisStorage.cs" />
     <Compile Include="RedisMonitoringApi.cs" />
     <Compile Include="RedisConnection.cs" />
     <Compile Include="RedisStorageOptions.cs" />
-    <Compile Include="States\FailedStateHandler.cs" />
-    <Compile Include="States\ProcessingStateHandler.cs" />
-    <Compile Include="States\SucceededStateHandler.cs" />
+    <Compile Include="FailedStateHandler.cs" />
+    <Compile Include="ProcessingStateHandler.cs" />
+    <Compile Include="SucceededStateHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">
