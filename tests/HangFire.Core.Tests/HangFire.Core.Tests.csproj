@@ -73,6 +73,7 @@
     <Compile Include="Common\JobFilterAttributeFilterProviderFacts.cs" />
     <Compile Include="Common\JobFilterFacts.cs" />
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
+    <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
