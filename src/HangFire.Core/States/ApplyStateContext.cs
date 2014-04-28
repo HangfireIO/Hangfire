@@ -32,6 +32,7 @@ namespace HangFire.States
             : base(context)
         {
             if (connection == null) throw new ArgumentNullException("connection");
+            if (newState == null) throw new ArgumentNullException("newState");
 
             _connection = connection;
             OldStateName = oldStateName;

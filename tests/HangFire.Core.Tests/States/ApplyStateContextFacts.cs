@@ -12,24 +12,49 @@ namespace HangFire.Core.Tests.States
     public class ApplyStateContextFacts
     {
         private const string JobId = "1";
-        private readonly Mock<State> _newStateMock;
+        private const string OldState = "SomeState";
+        private const string NewState = "NewState";
+
+        private readonly Mock<State> _newState;
         private readonly Job _job;
         private readonly List<IApplyStateFilter> _filters;
         private readonly StateHandlerCollection _handlers;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        private const string OldState = "SomeState";
-        private const string NewState = "NewState";
+        private readonly StateContext _stateContext;
+        private readonly Mock<IStorageConnection> _connection;
 
         public ApplyStateContextFacts()
         {
             _job = Job.FromExpression(() => Console.WriteLine());
-            _newStateMock = new Mock<State>();
-            _newStateMock.Setup(x => x.Name).Returns(NewState);
+            _newState = new Mock<State>();
+            _newState.Setup(x => x.Name).Returns(NewState);
 
             _transaction = new Mock<IWriteOnlyTransaction>();
             
             _filters = new List<IApplyStateFilter>();
             _handlers = new StateHandlerCollection();
+
+            _stateContext = new StateContext(JobId, _job);
+            _connection = new Mock<IStorageConnection>();
+            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ApplyStateContext(null, _stateContext, _newState.Object, OldState));
+
+            Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenNewStateIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ApplyStateContext(_connection.Object, _stateContext, null, OldState));
+
+            Assert.Equal("newState", exception.ParamName);
         }
 
         [Fact]
@@ -59,7 +84,7 @@ namespace HangFire.Core.Tests.States
         {
             // Arrange
             _transaction.Setup(x => x.SetJobState(
-                JobId, _newStateMock.Object)).InSequence();
+                JobId, _newState.Object)).InSequence();
 
             _transaction.Setup(x => x.Commit()).InSequence();
 
@@ -129,7 +154,7 @@ namespace HangFire.Core.Tests.States
         public void ApplyState_ShouldSetJobExpiration_WhenTheStateSaysToDoSo()
         {
             var context = CreateContext();
-            _newStateMock.Setup(x => x.ExpireJobOnApply).Returns(true);
+            _newState.Setup(x => x.ExpireJobOnApply).Returns(true);
 
             context.ApplyState(_handlers, _filters);
 
@@ -140,7 +165,7 @@ namespace HangFire.Core.Tests.States
         public void ApplyState_ShouldPersistTheJob_WhenTheStateSaysToNotToExpireIt()
         {
             var context = CreateContext();
-            _newStateMock.Setup(x => x.ExpireJobOnApply).Returns(false);
+            _newState.Setup(x => x.ExpireJobOnApply).Returns(false);
 
             context.ApplyState(_handlers, _filters);
 
@@ -202,19 +227,16 @@ namespace HangFire.Core.Tests.States
             var context = CreateContext();
 
             Assert.Equal(OldState, context.OldStateName);
-            Assert.Same(_newStateMock.Object, context.NewState);
+            Assert.Same(_newState.Object, context.NewState);
             Assert.Same(_job, context.Job);
         }
 
         private ApplyStateContext CreateContext()
         {
-            var connectionMock = new Mock<IStorageConnection>();
-            connectionMock.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
-
             return new ApplyStateContext(
-                connectionMock.Object,
-                new StateContext(JobId, _job),
-                _newStateMock.Object,
+                _connection.Object,
+                _stateContext,
+                _newState.Object,
                 OldState);
         }
     }
