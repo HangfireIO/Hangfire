@@ -116,6 +116,8 @@ namespace HangFire.Core.Tests.Server
         public void Run_EatsException_WhenItWasHandlerByFilter()
         {
             // Arrange
+            _performer.Setup(x => x.Perform()).Throws<InvalidOperationException>();
+
             var filter = new Mock<IServerExceptionFilter>();
             filter.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>()))
                 .Callback((ServerExceptionContext x) => x.ExceptionHandled = true);
@@ -319,6 +321,46 @@ namespace HangFire.Core.Tests.Server
 
             // Assert
             outerFilter.Verify(x => x.OnPerformed(It.Is<PerformedContext>(context => context.Exception != null)));
+        }
+
+        [Fact]
+        public void Run_WrapsOnPerformedException_IntoJobPerformanceException()
+        {
+            // Arrange
+            var filter = new Mock<IServerFilter>();
+            filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
+                .Throws<InvalidOperationException>();
+
+            _filters.Add(filter.Object);
+
+            var process = CreateProcess();
+
+            // Act & Assert
+            var exception = Assert.Throws<JobPerformanceException>(() => 
+                process.Run(_context, _performer.Object));
+
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
+        }
+
+        [Fact]
+        public void Run_WrapsOnPerformedException_OccuredAfterAnotherException_IntoJobPerformanceException()
+        {
+            // Arrange
+            var filter = new Mock<IServerFilter>();
+            filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
+                .Throws<InvalidOperationException>();
+
+            _filters.Add(filter.Object);
+
+            _performer.Setup(x => x.Perform()).Throws<ArgumentNullException>();
+
+            var process = CreateProcess();
+
+            // Act & Assert
+            var exception = Assert.Throws<JobPerformanceException>(() =>
+                process.Run(_context, _performer.Object));
+
+            Assert.IsType<InvalidOperationException>(exception.InnerException);
         }
 
         public static void Method()

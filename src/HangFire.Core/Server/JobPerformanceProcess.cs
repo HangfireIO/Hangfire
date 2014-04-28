@@ -138,7 +138,16 @@ namespace HangFire.Server
 
             if (!wasError)
             {
-                filter.OnPerformed(postContext);
+                try
+                {
+                    filter.OnPerformed(postContext);
+                }
+                catch (Exception filterException)
+                {
+                    throw new JobPerformanceException(
+                        "An exception occurred during execution of one of the filters",
+                        filterException);
+                }
             }
 
             return postContext;
