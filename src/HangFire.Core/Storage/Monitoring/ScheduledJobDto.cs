@@ -19,9 +19,9 @@ using HangFire.Common;
 
 namespace HangFire.Storage.Monitoring
 {
-    public class ScheduleDto
+    public class ScheduledJobDto
     {
-        public ScheduleDto()
+        public ScheduledJobDto()
         {
             InScheduledState = true;
         }

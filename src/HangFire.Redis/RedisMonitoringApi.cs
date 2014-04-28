@@ -86,7 +86,7 @@ namespace HangFire.Redis
                 }).OrderBy(x => x.Value.StartedAt).ToList());
         }
 
-        public JobList<ScheduleDto> ScheduledJobs(int from, int count)
+        public JobList<ScheduledJobDto> ScheduledJobs(int from, int count)
         {
             var scheduledJobs = _redis.GetRangeWithScoresFromSortedSet(
                 "hangfire:schedule",
@@ -95,7 +95,7 @@ namespace HangFire.Redis
 
             if (scheduledJobs.Count == 0)
             {
-                return new JobList<ScheduleDto>(new List<KeyValuePair<string, ScheduleDto>>());
+                return new JobList<ScheduledJobDto>(new List<KeyValuePair<string, ScheduledJobDto>>());
             }
 
             var jobs = new Dictionary<string, List<string>>();
@@ -123,10 +123,10 @@ namespace HangFire.Redis
                 pipeline.Flush();
             }
 
-            return new JobList<ScheduleDto>(scheduledJobs
-                .Select(job => new KeyValuePair<string, ScheduleDto>(
+            return new JobList<ScheduledJobDto>(scheduledJobs
+                .Select(job => new KeyValuePair<string, ScheduledJobDto>(
                     job.Key,
-                    new ScheduleDto
+                    new ScheduledJobDto
                     {
                         EnqueueAt = JobHelper.FromTimestamp((long) job.Value),
                         Job = TryToGetJob(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2], jobs[job.Key][3]),

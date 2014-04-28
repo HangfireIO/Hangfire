@@ -137,7 +137,7 @@
     <Compile Include="Storage\Monitoring\JobList.cs" />
     <Compile Include="Storage\Monitoring\ProcessingJobDto.cs" />
     <Compile Include="Storage\Monitoring\QueueWithTopEnqueuedJobsDto.cs" />
-    <Compile Include="Storage\Monitoring\ScheduleDto.cs" />
+    <Compile Include="Storage\Monitoring\ScheduledJobDto.cs" />
     <Compile Include="Storage\Monitoring\ServerDto.cs" />
     <Compile Include="Storage\Monitoring\StateHistoryDto.cs" />
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />

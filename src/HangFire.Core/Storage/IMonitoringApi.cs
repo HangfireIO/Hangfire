@@ -31,7 +31,7 @@ namespace HangFire.Storage
         JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage);
 
         JobList<ProcessingJobDto> ProcessingJobs(int from, int count);
-        JobList<ScheduleDto> ScheduledJobs(int from, int count);
+        JobList<ScheduledJobDto> ScheduledJobs(int from, int count);
         JobList<SucceededJobDto> SucceededJobs(int from, int count);
         JobList<FailedJobDto> FailedJobs(int from, int count);
 

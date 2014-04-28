@@ -68,7 +68,7 @@ WriteLiteral("\r\n");
     int.TryParse(Request.QueryString["count"], out perPage);
 
     Pager pager;
-    JobList<ScheduleDto> scheduledJobs;
+    JobList<ScheduledJobDto> scheduledJobs;
 
     using (var monitor = JobStorage.Current.GetMonitoringApi())
     {

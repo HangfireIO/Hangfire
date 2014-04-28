@@ -163,12 +163,12 @@ select * from (
             }
         }
 
-        public JobList<ScheduleDto> ScheduledJobs(int @from, int count)
+        public JobList<ScheduledJobDto> ScheduledJobs(int @from, int count)
         {
             return GetJobs(
                 from, count,
                 ScheduledState.StateName,
-                (sqlJob, job, stateData) => new ScheduleDto
+                (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
                     EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"])
