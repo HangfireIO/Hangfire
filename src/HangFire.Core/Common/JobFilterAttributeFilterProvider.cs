@@ -57,6 +57,8 @@ namespace HangFire.Common
 
         public virtual IEnumerable<JobFilter> GetFilters(Job job)
         {
+            if (job == null) return Enumerable.Empty<JobFilter>();
+
             var typeFilters = GetTypeAttributes(job)
                 .Select(attr => new JobFilter(attr, JobFilterScope.Type, null));
 

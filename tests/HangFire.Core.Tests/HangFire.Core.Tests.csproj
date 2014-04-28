@@ -70,6 +70,7 @@
     <Compile Include="Client\JobCreationProcessFacts.cs" />
     <Compile Include="Common\GlobalJobFilterCollectionFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
+    <Compile Include="Common\JobFilterAttributeFilterProviderFacts.cs" />
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
