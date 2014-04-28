@@ -35,13 +35,6 @@ namespace HangFire.Common
         private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JobFilterInfo"/> class.
-        /// </summary>
-        public JobFilterInfo()
-        {
-        }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
         /// </summary>
         /// <param name="filters">The filters collection.</param>
