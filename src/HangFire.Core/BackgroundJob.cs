@@ -24,8 +24,10 @@ namespace HangFire
     /// </summary>
     public abstract class BackgroundJob
     {
-        private static Func<IBackgroundJobClient> _clientFactory =
-            () => new BackgroundJobClient(JobStorage.Current);
+        private static readonly Func<IBackgroundJobClient> DefaultFactory
+            = () => new BackgroundJobClient(JobStorage.Current);
+
+        private static Func<IBackgroundJobClient> _clientFactory;
         private static readonly object ClientFactoryLock = new object();
 
         internal static Func<IBackgroundJobClient> ClientFactory
@@ -34,18 +36,13 @@ namespace HangFire
             {
                 lock (ClientFactoryLock)
                 {
-                    return _clientFactory;
+                    return _clientFactory ?? DefaultFactory;
                 }
             }
             set
             {
                 lock (ClientFactoryLock)
                 {
-                    if (value == null)
-                    {
-                        throw new ArgumentNullException();
-                    }
-
                     _clientFactory = value;
                 }
             }

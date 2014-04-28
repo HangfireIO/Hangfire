@@ -6,7 +6,7 @@ using Xunit;
 
 namespace HangFire.Core.Tests
 {
-    public class BackgroundJobFacts : IDisposable
+    public class BackgroundJobFacts
     {
         private readonly Mock<IBackgroundJobClient> _client;
 
@@ -14,12 +14,7 @@ namespace HangFire.Core.Tests
         {
             _client = new Mock<IBackgroundJobClient>();
         }
-
-        public void Dispose()
-        {
-            _client.Verify(x => x.Dispose());
-        }
-
+        
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void Enqueue_CreatesAJobInEnqueuedState()
         {
@@ -28,6 +23,7 @@ namespace HangFire.Core.Tests
             BackgroundJob.Enqueue(() => Method());
 
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _client.Verify(x => x.Dispose());
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -38,6 +34,7 @@ namespace HangFire.Core.Tests
             BackgroundJob.Enqueue<BackgroundJobFacts>(x => x.Method());
 
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _client.Verify(x => x.Dispose());
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -50,6 +47,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(), 
                 It.Is<EnqueuedState>(state => state.Queue == "queue")));
+            _client.Verify(x => x.Dispose());
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -62,6 +60,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
                 It.Is<EnqueuedState>(state => state.Queue == "queue")));
+            _client.Verify(x => x.Dispose());
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -74,6 +73,7 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
                 It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+            _client.Verify(x => x.Dispose());
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -86,6 +86,17 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
                 It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+            _client.Verify(x => x.Dispose());
+        }
+
+        [Fact, GlobalLock(Reason = "Accesses to BJ.ClientFactory, JS.Current")]
+        public void ClientFactory_HasDefaultValue_ThatReturns()
+        {
+            BackgroundJob.ClientFactory = null;
+            JobStorage.Current = new Mock<JobStorage>().Object;
+
+            var client = BackgroundJob.ClientFactory();
+            Assert.NotNull(client);
         }
 
         private void Initialize()
