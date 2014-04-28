@@ -15,7 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using HangFire.Common.Filters;
+using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.States;
 

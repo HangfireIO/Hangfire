@@ -16,7 +16,7 @@
 
 using System.Collections.Generic;
 
-namespace HangFire.Common.Filters
+namespace HangFire.Common
 {
     /// <summary>
     /// Provides an interface for finding filters.

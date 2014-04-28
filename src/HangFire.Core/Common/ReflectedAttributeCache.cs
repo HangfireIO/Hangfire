@@ -21,7 +21,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace HangFire.Common.Filters
+namespace HangFire.Common
 {
     internal static class ReflectedAttributeCache
     {

@@ -20,7 +20,7 @@ using HangFire.Client;
 using HangFire.Common.States;
 using HangFire.Server;
 
-namespace HangFire.Common.Filters
+namespace HangFire.Common
 {
     /// <summary>
     /// Encapsulates information about the available job filters.

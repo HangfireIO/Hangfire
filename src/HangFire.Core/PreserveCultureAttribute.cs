@@ -18,7 +18,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using HangFire.Client;
-using HangFire.Common.Filters;
+using HangFire.Common;
 using HangFire.Server;
 
 namespace HangFire

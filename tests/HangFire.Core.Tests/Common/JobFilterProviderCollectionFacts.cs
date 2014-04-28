@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using HangFire.Common;
-using HangFire.Common.Filters;
 using Moq;
 using Xunit;
 

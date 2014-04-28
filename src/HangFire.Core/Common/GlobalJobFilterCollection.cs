@@ -22,7 +22,7 @@ using HangFire.Client;
 using HangFire.Common.States;
 using HangFire.Server;
 
-namespace HangFire.Common.Filters
+namespace HangFire.Common
 {
     /// <summary>
     /// Represents a class that contains all the global job filters.

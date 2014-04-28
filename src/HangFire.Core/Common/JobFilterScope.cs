@@ -18,7 +18,7 @@ using HangFire.Client;
 using HangFire.Common.States;
 using HangFire.Server;
 
-namespace HangFire.Common.Filters
+namespace HangFire.Common
 {
     /// <summary>
     /// Defines values that specify the order in which HangFire filters 

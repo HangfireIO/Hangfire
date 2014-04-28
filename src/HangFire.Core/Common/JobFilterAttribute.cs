@@ -18,7 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 
-namespace HangFire.Common.Filters
+namespace HangFire.Common
 {
     /// <summary>
     /// Represents the base class for job filter attributes.

@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using HangFire.Common.Filters;
+using HangFire.Common;
 
 namespace HangFire
 {

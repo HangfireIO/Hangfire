@@ -16,7 +16,7 @@
 
 using System;
 
-namespace HangFire.Common.Filters
+namespace HangFire.Common
 {
     /// <summary>
     /// Represents a metadata class that contains a reference to the 
