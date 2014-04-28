@@ -15,6 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
 using HangFire.Common;
 using HangFire.States;
 
@@ -30,6 +31,12 @@ namespace HangFire
 
         public void OnStateElection(ElectStateContext context)
         {
+            if (context.CandidateState.Name != SucceededState.StateName
+                && context.CandidateState.Name != FailedState.StateName)
+            {
+                return;
+            }
+
             using (var transaction = context.Connection.CreateWriteTransaction())
             {
                 if (context.CandidateState.Name == SucceededState.StateName)
@@ -37,7 +44,7 @@ namespace HangFire
                     transaction.IncrementCounter(
                         String.Format(
                             "stats:succeeded:{0}",
-                            DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                            DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
                         DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                     transaction.IncrementCounter(

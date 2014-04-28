@@ -106,6 +106,7 @@
     <Compile Include="States\StateMachineFacts.cs" />
     <Compile Include="States\SucceededStateFacts.cs" />
     <Compile Include="States\SucceededStateHandlerFacts.cs" />
+    <Compile Include="StatisticsHistoryAttributeFacts.cs" />
     <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Storage\MonitoringTypeFacts.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
