@@ -98,12 +98,6 @@ namespace HangFire.Common
 
         internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
         {
-            // TODO: Check whether MethodInfo can be null now
-            if (Method == null)
-            {
-                return Enumerable.Empty<JobFilterAttribute>();
-            }
-
             return useCache
                 ? ReflectedAttributeCache.GetMethodFilterAttributes(Method)
                 : GetFilterAttributes(Method);
