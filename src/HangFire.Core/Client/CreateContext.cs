@@ -26,7 +26,7 @@ namespace HangFire.Client
     /// Provides information about the context in which the job
     /// is being created.
     /// </summary>
-    public class CreateContext : IJobCreator
+    public class CreateContext
     {
         private readonly IStateMachineFactory _stateMachineFactory;
 
@@ -145,7 +145,7 @@ namespace HangFire.Client
             }
         }
 
-        void IJobCreator.Create()
+        internal virtual void CreateJob()
         {
             var stateMachine = _stateMachineFactory.Create(Connection);
 

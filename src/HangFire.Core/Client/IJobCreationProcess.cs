@@ -26,6 +26,6 @@ namespace HangFire.Client
         /// <summary>
         /// Runs the process of job creation with the specified context.
         /// </summary>
-        void Run(CreateContext context, IJobCreator creator);
+        void Run(CreateContext context);
     }
 }
