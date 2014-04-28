@@ -56,7 +56,7 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Components\ExpirationManager.cs" />
+    <Compile Include="ExpirationManager.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\SqlJob.cs" />
     <Compile Include="Entities\SqlState.cs" />

@@ -20,7 +20,7 @@ using Common.Logging;
 using Dapper;
 using HangFire.Server;
 
-namespace HangFire.SqlServer.Components
+namespace HangFire.SqlServer
 {
     internal class ExpirationManager : IServerComponent
     {
