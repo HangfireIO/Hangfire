@@ -12,6 +12,7 @@ namespace HangFire.Common.ExpressionUtil
     // Expression of form "obj is T"
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+    [ExcludeFromCodeCoverage]
     internal sealed class TypeBinaryExpressionFingerprint : ExpressionFingerprint
     {
         public TypeBinaryExpressionFingerprint(ExpressionType nodeType, Type type, Type typeOperand)

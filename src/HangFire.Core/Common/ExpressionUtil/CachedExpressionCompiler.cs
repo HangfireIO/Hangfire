@@ -3,11 +3,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace HangFire.Common.ExpressionUtil
 {
+    [ExcludeFromCodeCoverage]
     internal static class CachedExpressionCompiler
     {
         // This is the entry point to the cached expression compilation system. The system

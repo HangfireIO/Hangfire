@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace HangFire.Common.ExpressionUtil
@@ -8,6 +9,7 @@ namespace HangFire.Common.ExpressionUtil
     // This is a visitor which produces a fingerprint of an expression. It doesn't
     // rewrite the expression in a form which can be compiled and cached.
 
+    [ExcludeFromCodeCoverage]
     internal sealed class FingerprintingExpressionVisitor : ExpressionVisitor
     {
         private readonly List<object> _seenConstants = new List<object>();

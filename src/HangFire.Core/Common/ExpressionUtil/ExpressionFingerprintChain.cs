@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HangFire.Common.ExpressionUtil
 {
@@ -43,6 +44,7 @@ namespace HangFire.Common.ExpressionUtil
     // used to generate them, as the fingerprints will be cached, and caching a fingerprint that references
     // an Expression will root the Expression (and any objects it references).
 
+    [ExcludeFromCodeCoverage]
     internal sealed class ExpressionFingerprintChain : IEquatable<ExpressionFingerprintChain>
     {
         public readonly List<ExpressionFingerprint> Elements = new List<ExpressionFingerprint>();

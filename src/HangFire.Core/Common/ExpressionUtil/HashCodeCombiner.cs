@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HangFire.Common.ExpressionUtil
 {
     // based on System.Web.Util.HashCodeCombiner
+    [ExcludeFromCodeCoverage]
     internal class HashCodeCombiner
     {
         private long _combinedHash64 = 0x1505L;

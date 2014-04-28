@@ -13,6 +13,7 @@ namespace HangFire.Common.ExpressionUtil
     // Useful for things like array[index]
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+    [ExcludeFromCodeCoverage]
     internal sealed class BinaryExpressionFingerprint : ExpressionFingerprint
     {
         public BinaryExpressionFingerprint(ExpressionType nodeType, Type type, MethodInfo method)

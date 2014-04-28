@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace HangFire.Common.ExpressionUtil
@@ -8,6 +9,7 @@ namespace HangFire.Common.ExpressionUtil
     // Serves as the base class for all expression fingerprints. Provides a default implementation
     // of GetHashCode().
 
+    [ExcludeFromCodeCoverage]
     internal abstract class ExpressionFingerprint
     {
         protected ExpressionFingerprint(ExpressionType nodeType, Type type)

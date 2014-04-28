@@ -4,5 +4,5 @@ using System.Collections.Generic;
 
 namespace HangFire.Common.ExpressionUtil
 {
-    internal delegate TValue Hoisted<TModel, TValue>(TModel model, List<object> capturedConstants);
+    internal delegate TValue Hoisted<in TModel, out TValue>(TModel model, List<object> capturedConstants);
 }

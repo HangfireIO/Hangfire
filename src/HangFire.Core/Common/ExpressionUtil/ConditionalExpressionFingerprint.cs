@@ -12,6 +12,7 @@ namespace HangFire.Common.ExpressionUtil
     // Expression of form (test) ? ifTrue : ifFalse
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+    [ExcludeFromCodeCoverage]
     internal sealed class ConditionalExpressionFingerprint : ExpressionFingerprint
     {
         public ConditionalExpressionFingerprint(ExpressionType nodeType, Type type)
