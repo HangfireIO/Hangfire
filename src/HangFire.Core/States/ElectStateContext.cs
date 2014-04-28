@@ -16,9 +16,10 @@
 
 using System;
 using System.Collections.Generic;
+using HangFire.Common;
 using HangFire.Storage;
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
     public class ElectStateContext : StateContext
     {

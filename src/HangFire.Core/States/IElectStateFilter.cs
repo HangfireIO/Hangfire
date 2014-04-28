@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
     /// <summary>
     /// Defines methods that are required for a state changing filter.

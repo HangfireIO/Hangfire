@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Threading;
 using HangFire.Client;
 using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;

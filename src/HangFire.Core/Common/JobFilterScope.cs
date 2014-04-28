@@ -15,8 +15,8 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using HangFire.Client;
-using HangFire.Common.States;
 using HangFire.Server;
+using HangFire.States;
 
 namespace HangFire.Common
 {

@@ -14,22 +14,20 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using HangFire.Storage;
+using System.Collections.Generic;
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
-    public abstract class StateHandler
+    public abstract class State
     {
-        public virtual void Apply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
-        {
-        }
+        public string Reason { get; set; }
 
-        public virtual void Unapply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
-        {
-        }
+        public abstract string Name { get; }
+        public virtual bool ExpireJobOnApply { get { return false; } }
 
-        public abstract string StateName { get; }
+        public virtual Dictionary<string, string> SerializeData()
+        {
+            return new Dictionary<string, string>();
+        }
     }
 }

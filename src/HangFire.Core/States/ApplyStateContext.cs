@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using HangFire.Storage;
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
     public class ApplyStateContext : StateContext
     {

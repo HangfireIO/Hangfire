@@ -16,18 +16,18 @@
 
 using System.Collections.Generic;
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
-    public abstract class State
+    public class StateHandlerProviderCollection
     {
-        public string Reason { get; set; }
-
-        public abstract string Name { get; }
-        public virtual bool ExpireJobOnApply { get { return false; } }
-
-        public virtual Dictionary<string, string> SerializeData()
+        public IEnumerable<StateHandler> GetHandlers()
         {
-            return new Dictionary<string, string>();
+            return null;
         }
+    }
+
+    public static class StateHandlerProviders
+    {
+        public static StateHandlerProviderCollection Providers { get; private set; }
     }
 }

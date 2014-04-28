@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using HangFire.Common;
-using HangFire.Common.States;
+using HangFire.States;
 using HangFire.Storage;
 using Moq;
 using Moq.Sequences;

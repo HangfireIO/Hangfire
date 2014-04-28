@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.Storage;
 
 namespace HangFire.States

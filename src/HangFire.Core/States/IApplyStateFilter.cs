@@ -14,26 +14,27 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using HangFire.Storage;
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
-    public class StateContext
+    /// <summary>
+    /// Provides methods that are required for a state changed filter.
+    /// </summary>
+    public interface IApplyStateFilter
     {
-        public StateContext(string jobId, Job job)
-        {
-            if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
-            
-            JobId = jobId;
-            Job = job;
-        }
+        /// <summary>
+        /// Called after the specified state was applied
+        /// to the job within the given transaction.
+        /// </summary>
+        void OnStateApplied(
+            ApplyStateContext context, IWriteOnlyTransaction transaction);
 
-        internal StateContext(StateContext context)
-            : this(context.JobId, context.Job)
-        {
-        }
-
-        public string JobId { get; private set; }
-        public Job Job { get; private set; }
+        /// <summary>
+        /// Called when the state with specified state was 
+        /// unapplied from the job within the given transaction.
+        /// </summary>
+        void OnStateUnapplied(
+            ApplyStateContext context, IWriteOnlyTransaction transaction);
     }
 }

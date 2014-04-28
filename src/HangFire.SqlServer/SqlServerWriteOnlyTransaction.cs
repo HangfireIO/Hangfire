@@ -20,7 +20,7 @@ using System.Data.SqlClient;
 using System.Transactions;
 using Dapper;
 using HangFire.Common;
-using HangFire.Common.States;
+using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer

@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using HangFire.Common.States;
 using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;

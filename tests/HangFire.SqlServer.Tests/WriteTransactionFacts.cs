@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
-using HangFire.Common.States;
+using HangFire.States;
 using Moq;
 using Xunit;
 

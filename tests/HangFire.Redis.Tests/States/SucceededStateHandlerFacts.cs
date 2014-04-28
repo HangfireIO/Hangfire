@@ -1,6 +1,5 @@
 ﻿using System;
 using HangFire.Common;
-using HangFire.Common.States;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;

@@ -14,20 +14,27 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
+using System;
+using HangFire.Common;
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
-    public class StateHandlerProviderCollection
+    public class StateContext
     {
-        public IEnumerable<StateHandler> GetHandlers()
+        public StateContext(string jobId, Job job)
         {
-            return null;
+            if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
+            
+            JobId = jobId;
+            Job = job;
         }
-    }
 
-    public static class StateHandlerProviders
-    {
-        public static StateHandlerProviderCollection Providers { get; private set; }
+        internal StateContext(StateContext context)
+            : this(context.JobId, context.Job)
+        {
+        }
+
+        public string JobId { get; private set; }
+        public Job Job { get; private set; }
     }
 }

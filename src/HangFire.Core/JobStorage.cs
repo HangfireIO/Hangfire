@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HangFire.Common.States;
 using HangFire.Server;
+using HangFire.States;
 using HangFire.Storage;
 using HangFire.Storage.Monitoring;
 

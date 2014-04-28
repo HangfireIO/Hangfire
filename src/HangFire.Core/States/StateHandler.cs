@@ -16,25 +16,20 @@
 
 using HangFire.Storage;
 
-namespace HangFire.Common.States
+namespace HangFire.States
 {
-    /// <summary>
-    /// Provides methods that are required for a state changed filter.
-    /// </summary>
-    public interface IApplyStateFilter
+    public abstract class StateHandler
     {
-        /// <summary>
-        /// Called after the specified state was applied
-        /// to the job within the given transaction.
-        /// </summary>
-        void OnStateApplied(
-            ApplyStateContext context, IWriteOnlyTransaction transaction);
+        public virtual void Apply(
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+        }
 
-        /// <summary>
-        /// Called when the state with specified state was 
-        /// unapplied from the job within the given transaction.
-        /// </summary>
-        void OnStateUnapplied(
-            ApplyStateContext context, IWriteOnlyTransaction transaction);
+        public virtual void Unapply(
+            ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+        }
+
+        public abstract string StateName { get; }
     }
 }

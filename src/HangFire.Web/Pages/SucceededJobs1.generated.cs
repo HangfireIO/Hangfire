@@ -23,9 +23,7 @@ namespace HangFire.Web.Pages
     #line hidden
     
     #line 3 "..\..\Pages\SucceededJobs.cshtml"
-    using Common.States;
-    
-    #line default
+#line default
     #line hidden
     
     #line 5 "..\..\Pages\SucceededJobs.cshtml"
