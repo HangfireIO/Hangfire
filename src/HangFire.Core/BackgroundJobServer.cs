@@ -40,7 +40,7 @@ namespace HangFire
         }
 
         public BackgroundJobServer(int workerCount, params string[] queues)
-            : this(workerCount, queues, JobStorage.Current)
+            : this(workerCount, queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue }, JobStorage.Current)
         {
         }
 
@@ -48,11 +48,12 @@ namespace HangFire
         {
             if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
             if (queues == null) throw new ArgumentNullException("queues");
+            if (queues.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", "queues");
             if (storage == null) throw new ArgumentNullException("storage");
 
             _storage = storage;
             _workerCount = workerCount;
-            _queues = queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue };
+            _queues = queues;
 
             _serverId = String.Format("{0}:{1}", Environment.MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 

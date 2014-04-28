@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using HangFire.Server;
 using Moq;
@@ -47,12 +46,35 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenQueuesArrayIsEmpty()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => new BackgroundJobServer(WorkerCount, new string[0], _storage.Object));
+
+            Assert.Equal("queues", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new BackgroundJobServer(WorkerCount, Queues, null));
 
             Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact, GlobalLock(Reason = "Uses JobStorage.Current instance")]
+        public void Ctor_HasDefaultValue_ForWorkerCount()
+        {
+            JobStorage.Current = new Mock<JobStorage>().Object;
+            Assert.DoesNotThrow(() => new BackgroundJobServer(Queues));
+        }
+
+        [Fact, GlobalLock(Reason = "Uses JobStorage.Current instance")]
+        public void Ctor_HasDefaultValue_ForQueues()
+        {
+            JobStorage.Current = new Mock<JobStorage>().Object;
+            Assert.DoesNotThrow(() => new BackgroundJobServer(WorkerCount));
         }
 
         [Fact]
