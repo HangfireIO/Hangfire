@@ -159,7 +159,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />
     <Compile Include="Server\WorkerContext.cs" />
-    <Compile Include="States\StateHandler.cs" />
+    <Compile Include="States\IStateHandler.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
     <Compile Include="States\ApplyStateContext.cs" />

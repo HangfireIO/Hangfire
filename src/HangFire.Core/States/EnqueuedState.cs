@@ -75,10 +75,9 @@ namespace HangFire.States
             };
         }
 
-        public class Handler : StateHandler
+        public class Handler : IStateHandler
         {
-            public override void Apply(
-                ApplyStateContext context, IWriteOnlyTransaction transaction)
+            public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 var enqueuedState = context.NewState as EnqueuedState;
                 if (enqueuedState == null)
@@ -91,7 +90,11 @@ namespace HangFire.States
                 transaction.AddToQueue(enqueuedState.Queue, context.JobId);
             }
 
-            public override string StateName
+            public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+            }
+
+            public string StateName
             {
                 get { return EnqueuedState.StateName; }
             }

@@ -15,7 +15,7 @@ namespace HangFire.Core.Tests.States
             = new Mock<IStorageConnection>();
         private readonly Mock<IWriteOnlyTransaction> _transaction
             = new Mock<IWriteOnlyTransaction>();
-        private readonly List<StateHandler> _handlers = new List<StateHandler>();
+        private readonly List<IStateHandler> _handlers = new List<IStateHandler>();
         private readonly List<object> _filters = new List<object>();
 
         private readonly Job _job;
@@ -356,10 +356,10 @@ namespace HangFire.Core.Tests.States
         public void ApplyState_RunsAllHandlers()
         {
             // Arrange
-            var handler1 = new Mock<StateHandler>();
+            var handler1 = new Mock<IStateHandler>();
             handler1.Setup(x => x.StateName).Returns(StateName);
 
-            var handler2 = new Mock<StateHandler>();
+            var handler2 = new Mock<IStateHandler>();
             handler2.Setup(x => x.StateName).Returns(StateName);
 
             _handlers.Add(handler1.Object);

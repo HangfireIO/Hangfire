@@ -59,5 +59,13 @@ namespace HangFire.Core.Tests.States
             Assert.Throws<InvalidOperationException>(
                 () => handler.Apply(context, _transaction.Object));
         }
+
+        [Fact]
+        public void Unapply_DoesNotDoAnything()
+        {
+            var handler = new EnqueuedState.Handler();
+
+            Assert.DoesNotThrow(() => handler.Unapply(null, null));
+        }
     }
 }

@@ -84,7 +84,7 @@ namespace HangFire.Redis
             yield return new FetchedJobsWatcher(this, stateMachineFactory);
         }
 
-        public override IEnumerable<StateHandler> GetStateHandlers()
+        public override IEnumerable<IStateHandler> GetStateHandlers()
         {
             yield return new FailedStateHandler();
             yield return new ProcessingStateHandler();

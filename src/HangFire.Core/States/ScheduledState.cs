@@ -50,10 +50,9 @@ namespace HangFire.States
             };
         }
 
-        public class Handler : StateHandler
+        public class Handler : IStateHandler
         {
-            public override void Apply(
-                ApplyStateContext context, IWriteOnlyTransaction transaction)
+            public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 var scheduledState = context.NewState as ScheduledState;
                 if (scheduledState == null)
@@ -67,13 +66,12 @@ namespace HangFire.States
                 transaction.AddToSet("schedule", context.JobId, timestamp);
             }
 
-            public override void Unapply(
-                ApplyStateContext context, IWriteOnlyTransaction transaction)
+            public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 transaction.RemoveFromSet("schedule", context.JobId);
             }
 
-            public override string StateName
+            public string StateName
             {
                 get { return ScheduledState.StateName; }
             }

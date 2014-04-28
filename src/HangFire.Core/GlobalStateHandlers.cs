@@ -23,12 +23,12 @@ namespace HangFire
     {
         static GlobalStateHandlers()
         {
-            Handlers = new List<StateHandler>();
+            Handlers = new List<IStateHandler>();
             Handlers.Add(new SucceededState.Handler());
             Handlers.Add(new ScheduledState.Handler());
             Handlers.Add(new EnqueuedState.Handler());
         }
 
-        public static ICollection<StateHandler> Handlers { get; private set; }
+        public static ICollection<IStateHandler> Handlers { get; private set; }
     }
 }

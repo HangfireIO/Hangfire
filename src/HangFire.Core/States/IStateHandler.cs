@@ -18,18 +18,11 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public abstract class StateHandler
+    public interface IStateHandler
     {
-        public virtual void Apply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
-        {
-        }
+        string StateName { get; }
 
-        public virtual void Unapply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
-        {
-        }
-
-        public abstract string StateName { get; }
+        void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction);
+        void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction);
     }
 }

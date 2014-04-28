@@ -60,9 +60,9 @@ namespace HangFire
             return Enumerable.Empty<IServerComponent>();
         }
 
-        public virtual IEnumerable<StateHandler> GetStateHandlers()
+        public virtual IEnumerable<IStateHandler> GetStateHandlers()
         {
-            return Enumerable.Empty<StateHandler>();
+            return Enumerable.Empty<IStateHandler>();
         }
     }
 }

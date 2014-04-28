@@ -30,7 +30,7 @@ namespace HangFire.States
         private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
-        public StateMachine(IStorageConnection connection, IEnumerable<StateHandler> handlers)
+        public StateMachine(IStorageConnection connection, IEnumerable<IStateHandler> handlers)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (handlers == null) throw new ArgumentNullException("handlers");
@@ -41,7 +41,7 @@ namespace HangFire.States
 
         internal StateMachine(
             IStorageConnection connection,
-            IEnumerable<StateHandler> handlers,
+            IEnumerable<IStateHandler> handlers,
             IEnumerable<object> filters)
             : this(connection, handlers)
         {
@@ -187,7 +187,7 @@ namespace HangFire.States
             return new JobFilterInfo(_getFiltersThunk(job));
         }
 
-        private static StateHandlerCollection GetHandlerCollection(IEnumerable<StateHandler> handlers)
+        private static StateHandlerCollection GetHandlerCollection(IEnumerable<IStateHandler> handlers)
         {
             var handlerCollection = new StateHandlerCollection();
             foreach (var handler in handlers)

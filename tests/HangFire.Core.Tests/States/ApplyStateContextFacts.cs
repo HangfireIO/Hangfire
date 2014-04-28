@@ -77,10 +77,10 @@ namespace HangFire.Core.Tests.States
             // Arrange
             var context = CreateContext();
 
-            var handler1 = new Mock<StateHandler>();
+            var handler1 = new Mock<IStateHandler>();
             handler1.Setup(x => x.StateName).Returns(OldState);
 
-            var handler2 = new Mock<StateHandler>();
+            var handler2 = new Mock<IStateHandler>();
             handler2.Setup(x => x.StateName).Returns(OldState);
 
             _handlers.AddHandler(handler1.Object);
@@ -103,10 +103,10 @@ namespace HangFire.Core.Tests.States
             // Arrange
             var context = CreateContext();
 
-            var handler1 = new Mock<StateHandler>();
+            var handler1 = new Mock<IStateHandler>();
             handler1.Setup(x => x.StateName).Returns(NewState);
 
-            var handler2 = new Mock<StateHandler>();
+            var handler2 = new Mock<IStateHandler>();
             handler2.Setup(x => x.StateName).Returns(NewState);
 
             _handlers.AddHandler(handler1.Object);

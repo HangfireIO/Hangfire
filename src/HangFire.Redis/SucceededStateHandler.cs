@@ -19,22 +19,20 @@ using HangFire.Storage;
 
 namespace HangFire.Redis
 {
-    internal class SucceededStateHandler : StateHandler
+    internal class SucceededStateHandler : IStateHandler
     {
-        public override void Apply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
+        public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.InsertToList("succeeded", context.JobId);
             transaction.TrimList("succeeded", 0, 99);
         }
 
-        public override void Unapply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
+        public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.RemoveFromList("succeeded", context.JobId);
         }
 
-        public override string StateName
+        public string StateName
         {
             get { return SucceededState.StateName; }
         }

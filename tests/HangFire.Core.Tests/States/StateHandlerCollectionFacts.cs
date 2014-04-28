@@ -25,7 +25,7 @@ namespace HangFire.Core.Tests.States
         [Fact]
         public void AddHandler_ThrowsAnException_WhenStateNameOfTheGivenHandlerIsNull()
         {
-            var handler = new Mock<StateHandler>();
+            var handler = new Mock<IStateHandler>();
             handler.Setup(x => x.StateName).Returns((string)null);
 
             var exception = Assert.Throws<ArgumentException>(
@@ -51,10 +51,10 @@ namespace HangFire.Core.Tests.States
         [Fact]
         public void GetHandlers_ReturnsAllRegisteredHandlersForTheState()
         {
-            var handler1Mock = new Mock<StateHandler>();
+            var handler1Mock = new Mock<IStateHandler>();
             handler1Mock.Setup(x => x.StateName).Returns("State");
 
-            var handler2Mock = new Mock<StateHandler>();
+            var handler2Mock = new Mock<IStateHandler>();
             handler2Mock.Setup(x => x.StateName).Returns("State");
 
             _collection.AddHandler(handler1Mock.Object);
@@ -69,7 +69,7 @@ namespace HangFire.Core.Tests.States
         [Fact]
         public void GetHandlers_ReturnsOnlyHandlersOfASpecifiedState()
         {
-            var anotherStateHandlerMock = new Mock<StateHandler>();
+            var anotherStateHandlerMock = new Mock<IStateHandler>();
             anotherStateHandlerMock.Setup(x => x.StateName).Returns("AnotherState");
 
             _collection.AddHandler(anotherStateHandlerMock.Object);

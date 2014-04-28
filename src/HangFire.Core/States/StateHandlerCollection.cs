@@ -22,27 +22,27 @@ namespace HangFire.States
 {
     public class StateHandlerCollection
     {
-        private readonly Dictionary<string, List<StateHandler>> _handlers = 
-            new Dictionary<string, List<StateHandler>>();
+        private readonly Dictionary<string, List<IStateHandler>> _handlers = 
+            new Dictionary<string, List<IStateHandler>>();
 
-        public void AddHandler(StateHandler handler)
+        public void AddHandler(IStateHandler handler)
         {
             if (handler == null) throw new ArgumentNullException("handler");
             if (handler.StateName == null) throw new ArgumentException("The StateName property of the given state handler must be non null.", "handler");
 
             if (!_handlers.ContainsKey(handler.StateName))
             {
-                _handlers.Add(handler.StateName, new List<StateHandler>());    
+                _handlers.Add(handler.StateName, new List<IStateHandler>());    
             }
 
             _handlers[handler.StateName].Add(handler);
         }
 
-        public IEnumerable<StateHandler> GetHandlers(string stateName)
+        public IEnumerable<IStateHandler> GetHandlers(string stateName)
         {
             if (stateName == null || !_handlers.ContainsKey(stateName))
             {
-                return Enumerable.Empty<StateHandler>();
+                return Enumerable.Empty<IStateHandler>();
             }
 
             return _handlers[stateName].ToArray();

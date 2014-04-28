@@ -11,8 +11,8 @@ namespace HangFire.States
 
     public class StateMachineFactory : IStateMachineFactory
     {
-        private readonly List<StateHandler> _handlers 
-            = new List<StateHandler>();
+        private readonly List<IStateHandler> _handlers 
+            = new List<IStateHandler>();
 
         public StateMachineFactory(JobStorage storage)
         {

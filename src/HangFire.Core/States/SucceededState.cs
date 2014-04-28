@@ -50,21 +50,19 @@ namespace HangFire.States
             };
         }
 
-        public class Handler : StateHandler
+        public class Handler : IStateHandler
         {
-            public override void Apply(
-                ApplyStateContext context, IWriteOnlyTransaction transaction)
+            public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 transaction.IncrementCounter("stats:succeeded");
             }
 
-            public override void Unapply(
-                ApplyStateContext context, IWriteOnlyTransaction transaction)
+            public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
                 transaction.DecrementCounter("stats:succeeded");
             }
 
-            public override string StateName
+            public string StateName
             {
                 get { return SucceededState.StateName; }
             }

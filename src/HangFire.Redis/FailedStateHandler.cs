@@ -21,10 +21,9 @@ using HangFire.Storage;
 
 namespace HangFire.Redis
 {
-    internal class FailedStateHandler : StateHandler
+    internal class FailedStateHandler : IStateHandler
     {
-        public override void Apply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
+        public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.AddToSet(
                 "failed",
@@ -32,13 +31,12 @@ namespace HangFire.Redis
                 JobHelper.ToTimestamp(DateTime.UtcNow));
         }
 
-        public override void Unapply(
-            ApplyStateContext context, IWriteOnlyTransaction transaction)
+        public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
             transaction.RemoveFromSet("failed", context.JobId);
         }
 
-        public override string StateName
+        public string StateName
         {
             get { return FailedState.StateName; }
         }
