@@ -14,14 +14,5 @@ namespace HangFire.Core.Tests.Server
             Assert.Throws<ArgumentOutOfRangeException>(
                 () => options.MaxRetryAttempts = -1);
         }
-
-        [Fact]
-        public void ShutdownTimeout_Set_ThrowsAnException_OnNegativeValues()
-        {
-            var options = new ServerComponentRunnerOptions();
-
-            Assert.Throws<ArgumentOutOfRangeException>(
-                () => options.ShutdownTimeout = TimeSpan.FromSeconds(-1));
-        }
     }
 }

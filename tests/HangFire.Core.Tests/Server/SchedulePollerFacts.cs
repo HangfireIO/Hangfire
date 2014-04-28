@@ -38,7 +38,7 @@ namespace HangFire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SchedulePoller(
-                    null, _stateMachineFactory.Object, TimeSpan.FromMilliseconds(-1)));
+                    null, _stateMachineFactory.Object, Timeout.InfiniteTimeSpan));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -48,7 +48,7 @@ namespace HangFire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SchedulePoller(
-                    _storage.Object, null, TimeSpan.FromMilliseconds(-1)));
+                    _storage.Object, null, Timeout.InfiniteTimeSpan));
 
             Assert.Equal("stateMachineFactory", exception.ParamName);
         }
@@ -93,7 +93,7 @@ namespace HangFire.Core.Tests.Server
 
         private SchedulePoller CreateScheduler()
         {
-            return new SchedulePoller(_storage.Object, _stateMachineFactory.Object, TimeSpan.Zero);
+            return new SchedulePoller(_storage.Object, _stateMachineFactory.Object, Timeout.InfiniteTimeSpan);
         }
     }
 }

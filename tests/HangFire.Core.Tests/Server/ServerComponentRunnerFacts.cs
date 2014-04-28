@@ -16,7 +16,7 @@ namespace HangFire.Core.Tests.Server
             _component = new Mock<IServerComponent>();
             _options = new ServerComponentRunnerOptions
             {
-                ShutdownTimeout = TimeSpan.Zero // Letting tests to timeout
+                ShutdownTimeout = Timeout.InfiniteTimeSpan // Letting tests to timeout
             };
         }
 

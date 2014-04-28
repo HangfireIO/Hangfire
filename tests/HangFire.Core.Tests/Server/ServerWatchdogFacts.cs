@@ -20,7 +20,7 @@ namespace HangFire.Core.Tests.Server
             _connection = new Mock<IStorageConnection>();
             _options = new ServerWatchdogOptions
             {
-                CheckInterval = TimeSpan.FromMilliseconds(-1) // To check that it exits by cancellation token
+                CheckInterval = Timeout.InfiniteTimeSpan // To check that it exits by cancellation token
             };
             _token = new CancellationToken(true);
 

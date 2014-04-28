@@ -21,7 +21,6 @@ namespace HangFire.Server
     internal class ServerComponentRunnerOptions
     {
         private int _maxRetryAttempts;
-        private TimeSpan _shutdownTimeout;
 
         public ServerComponentRunnerOptions()
         {
@@ -46,22 +45,7 @@ namespace HangFire.Server
             }
         }
 
-        public TimeSpan ShutdownTimeout
-        {
-            get { return _shutdownTimeout; }
-            set
-            {
-                if (value != TimeSpan.Zero && value == value.Duration().Negate())
-                {
-                    throw new ArgumentOutOfRangeException(
-                        "value",
-                        "ShutdownTimeout property value must be positive.");    
-                }
-
-                _shutdownTimeout = value;
-            }
-        }
-
+        public TimeSpan ShutdownTimeout { get; set; }
         public bool MinimumLogVerbosity { get; set; }
     }
 }
