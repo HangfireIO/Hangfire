@@ -13,8 +13,8 @@ namespace HangFire.Core.Tests.Common
         private static bool _methodInvoked;
         private static bool _disposed;
 
-        private Type _type;
-        private MethodInfo _method;
+        private readonly Type _type;
+        private readonly MethodInfo _method;
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
         
@@ -88,6 +88,13 @@ namespace HangFire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromStaticExpression_ThrowsAnException_WhenNewExpressionIsGiven()
+        {
+            Assert.Throws<NotSupportedException>(
+                () => Job.FromExpression(() => new JobFacts()));
+        }
+
+        [Fact]
         public void FromStaticExpression_ShouldReturnTheJob()
         {
             var job = Job.FromExpression(() => Console.WriteLine());
@@ -103,6 +110,13 @@ namespace HangFire.Core.Tests.Common
                 () => Job.FromExpression<JobFacts>(null));
 
             Assert.Equal("methodCall", exception.ParamName);
+        }
+
+        [Fact]
+        public void FromInstanceExpression_ThrowsAnException_WhenNewExpressionIsGiven()
+        {
+            Assert.Throws<NotSupportedException>(
+                () => Job.FromExpression<JobFacts>(x => new JobFacts()));
         }
 
         [Fact]
@@ -128,13 +142,6 @@ namespace HangFire.Core.Tests.Common
             string test;
             Assert.Throws<NotSupportedException>(
                 () => Job.FromExpression(() => MethodWithOutputParameter(out test)));
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenNewExpressionIsGiven()
-        {
-            Assert.Throws<NotSupportedException>(
-                () => Job.FromExpression(() => new JobFacts()));
         }
 
         [Fact]
@@ -220,6 +227,18 @@ namespace HangFire.Core.Tests.Common
         }
 
         [Fact]
+        public void Perform_ThrowsPerformanceException_WhenActivatorReturnsNull()
+        {
+            _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
+            var job = Job.FromExpression(() => StaticMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform(_activator.Object));
+
+            Assert.IsType<InvalidOperationException>(thrownException.InnerException);
+        }
+
+        [Fact]
         public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
         {
             var job = Job.FromExpression(() => MethodWithCustomArgument(new Instance()));
@@ -242,6 +261,18 @@ namespace HangFire.Core.Tests.Common
 
             Assert.True(_methodInvoked);
             Assert.NotNull(exception.InnerException);
+        }
+
+        [Fact]
+        public void Perform_ThrowsPerformanceException_WithUnwrappedInnerException()
+        {
+            var job = Job.FromExpression(() => ExceptionMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform());
+
+            Assert.IsType<InvalidOperationException>(thrownException.InnerException);
+            Assert.Equal("exception", thrownException.InnerException.Message);
         }
 
         [Fact]
@@ -307,6 +338,11 @@ namespace HangFire.Core.Tests.Common
 
         public void MethodWithCustomArgument(Instance argument)
         {
+        }
+
+        public static void ExceptionMethod()
+        {
+            throw new InvalidOperationException("exception");
         }
 
         [TestType]
