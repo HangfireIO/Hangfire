@@ -237,15 +237,26 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void OperationCanceledException_DoesNotCauseAutomaticRetry()
         {
-            var runner = CreateRunner();
-            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback((CancellationToken token) => token.WaitHandle.WaitOne(-1));
+            var component = new WaitingComponent();
+            var runner = new ServerComponentRunner(component, _options);
             runner.Start();
 
             Thread.Sleep(500);
             runner.Dispose();
 
-            _component.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Once);
+            Assert.Equal(1, component.CalledTimes);
+        }
+
+        private class WaitingComponent : IServerComponent
+        {
+            public int CalledTimes = 0;
+
+            public void Execute(CancellationToken token)
+            {
+                CalledTimes++;
+                token.WaitHandle.WaitOne(Timeout.Infinite);
+                token.ThrowIfCancellationRequested();
+            }
         }
 
         private ServerComponentRunner CreateRunner()
