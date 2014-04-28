@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using HangFire.Common.States;
-using HangFire.Server.Components;
+using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;

@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Server.Performing
+namespace HangFire.Server
 {
-    public interface IJobPerformanceProcess
+    public interface IJobPerformer
     {
-        void Run(PerformContext context, IJobPerformer performer);
+        void Perform();
     }
 }

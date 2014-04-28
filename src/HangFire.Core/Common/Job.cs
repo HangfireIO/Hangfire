@@ -23,7 +23,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using HangFire.Common.Filters;
 using HangFire.Server;
-using HangFire.Server.Performing;
 
 namespace HangFire.Common
 {

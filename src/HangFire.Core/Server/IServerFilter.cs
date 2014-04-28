@@ -14,17 +14,23 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Server.Filters
+namespace HangFire.Server
 {
     /// <summary>
-    /// Defines methods that are required for the server exception filter.
+    /// Defines methods that are required for a server filter.
     /// </summary>
-    public interface IServerExceptionFilter
+    public interface IServerFilter
     {
         /// <summary>
-        /// Called when an exception occurred during the performance of the job.
+        /// Called before the performance of the job.
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
-        void OnServerException(ServerExceptionContext filterContext);
+        void OnPerforming(PerformingContext filterContext);
+
+        /// <summary>
+        /// Called after the performance of the job.
+        /// </summary>
+        /// <param name="filterContext">The filter context.</param>
+        void OnPerformed(PerformedContext filterContext);
     }
 }

@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using HangFire.Server;
-using HangFire.Server.Components;
 using HangFire.States;
 using HangFire.Storage;
 using HangFire.Storage.Monitoring;

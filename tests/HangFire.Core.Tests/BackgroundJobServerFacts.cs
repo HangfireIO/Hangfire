@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Linq;
 using HangFire.Server;
-using HangFire.Server.Components;
 using Moq;
 using Xunit;
 

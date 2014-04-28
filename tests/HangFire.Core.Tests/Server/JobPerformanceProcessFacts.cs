@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.Server.Filters;
-using HangFire.Server.Performing;
 using HangFire.Storage;
 using Moq;
 using Moq.Sequences;

@@ -1,6 +1,5 @@
 ﻿using System;
 using HangFire.Server;
-using HangFire.Server.Performing;
 using HangFire.States;
 using Moq;
 using Xunit;

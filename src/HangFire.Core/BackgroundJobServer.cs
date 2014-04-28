@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using HangFire.Server;
-using HangFire.Server.Components;
-using HangFire.Server.Performing;
 using HangFire.States;
 
 namespace HangFire

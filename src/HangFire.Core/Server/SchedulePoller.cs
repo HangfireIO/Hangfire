@@ -20,7 +20,7 @@ using Common.Logging;
 using HangFire.Common;
 using HangFire.States;
 
-namespace HangFire.Server.Components
+namespace HangFire.Server
 {
     public class SchedulePoller : IServerComponent
     {

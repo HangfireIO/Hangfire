@@ -7,8 +7,6 @@ using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Filters;
 using HangFire.Server;
-using HangFire.Server.Filters;
-using HangFire.Server.Performing;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;

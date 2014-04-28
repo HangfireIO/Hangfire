@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.Storage;
 
-namespace HangFire.Server.Performing
+namespace HangFire.Server
 {
     /// <summary>
     /// Provides information about the context in which the job

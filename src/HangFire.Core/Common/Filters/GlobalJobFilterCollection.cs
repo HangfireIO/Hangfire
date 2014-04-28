@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HangFire.Client.Filters;
 using HangFire.Common.States;
-using HangFire.Server.Filters;
+using HangFire.Server;
 
 namespace HangFire.Common.Filters
 {

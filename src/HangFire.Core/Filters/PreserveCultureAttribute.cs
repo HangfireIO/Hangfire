@@ -19,7 +19,7 @@ using System.Globalization;
 using System.Threading;
 using HangFire.Client.Filters;
 using HangFire.Common.Filters;
-using HangFire.Server.Filters;
+using HangFire.Server;
 
 namespace HangFire.Filters
 {

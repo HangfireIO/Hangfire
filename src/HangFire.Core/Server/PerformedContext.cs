@@ -15,23 +15,30 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using HangFire.Server.Performing;
 
-namespace HangFire.Server.Filters
+namespace HangFire.Server
 {
     /// <summary>
-    /// Provides the context for the <see cref="IServerExceptionFilter.OnServerException"/>
-    /// method of the <see cref="IServerExceptionFilter"/> interface.
+    /// Provides the context for the <see cref="IServerFilter.OnPerformed"/>
+    /// method of the <see cref="IServerFilter"/> interface.
     /// </summary>
-    public class ServerExceptionContext : PerformContext
+    public class PerformedContext : PerformContext
     {
-        internal ServerExceptionContext(
+        internal PerformedContext(
             PerformContext context, 
+            bool canceled, 
             Exception exception)
             : base(context)
         {
+            Canceled = canceled;
             Exception = exception;
         }
+
+        /// <summary>
+        /// Gets a value that indicates that this <see cref="PerformedContext"/>
+        /// object was canceled.
+        /// </summary>
+        public bool Canceled { get; private set; }
 
         /// <summary>
         /// Gets an exception that occurred during the performance of the job.
@@ -39,7 +46,7 @@ namespace HangFire.Server.Filters
         public Exception Exception { get; private set; }
 
         /// <summary>
-        /// Gets or sets a value that indicates that this <see cref="ServerExceptionContext"/>
+        /// Gets or sets a value that indicates that this <see cref="PerformedContext"/>
         /// object handles an exception occurred during the performance of the job.
         /// </summary>
         public bool ExceptionHandled { get; set; }

@@ -3,7 +3,6 @@ using System.Threading;
 using HangFire.Common;
 using HangFire.Common.States;
 using HangFire.Server;
-using HangFire.Server.Performing;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;

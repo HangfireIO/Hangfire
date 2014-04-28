@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using HangFire.Common;
 using HangFire.Common.Filters;
-using HangFire.Server.Filters;
 
-namespace HangFire.Server.Performing
+namespace HangFire.Server
 {
     internal class JobPerformanceProcess : IJobPerformanceProcess
     {

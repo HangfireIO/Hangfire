@@ -16,9 +16,8 @@
 
 namespace HangFire.Server
 {
-    public class ServerContext
+    public interface IJobPerformanceProcess
     {
-        public int WorkerCount { get; set; }
-        public string[] Queues { get; set; }
+        void Run(PerformContext context, IJobPerformer performer);
     }
 }

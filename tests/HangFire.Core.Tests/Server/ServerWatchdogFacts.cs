@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using HangFire.Server.Components;
+using HangFire.Server;
 using HangFire.Storage;
 using Moq;
 using Xunit;

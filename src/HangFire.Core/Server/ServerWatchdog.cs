@@ -18,7 +18,7 @@ using System;
 using System.Threading;
 using Common.Logging;
 
-namespace HangFire.Server.Components
+namespace HangFire.Server
 {
     public class ServerWatchdog : IServerComponent
     {

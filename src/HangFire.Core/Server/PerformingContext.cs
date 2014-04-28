@@ -1,5 +1,5 @@
-// This file is part of HangFire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of HangFire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,19 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
-namespace HangFire.Server.Components
+namespace HangFire.Server
 {
-    public class ServerWatchdogOptions
+    /// <summary>
+    /// Provides the context for the <see cref="IServerFilter.OnPerforming"/>
+    /// method of the <see cref="IServerFilter"/> interface.
+    /// </summary>
+    public class PerformingContext : PerformContext
     {
-        public ServerWatchdogOptions()
+        internal PerformingContext(
+            PerformContext context)
+            : base(context)
         {
-            ServerTimeout = TimeSpan.FromMinutes(1);
-            CheckInterval = TimeSpan.FromMinutes(5);
         }
 
-        public TimeSpan ServerTimeout { get; set; }
-        public TimeSpan CheckInterval { get; set; }
+        /// <summary>
+        /// Gets or sets a value that indicates that this <see cref="PerformingContext"/>
+        /// object was canceled.
+        /// </summary>
+        public bool Canceled { get; set; }
     }
 }
