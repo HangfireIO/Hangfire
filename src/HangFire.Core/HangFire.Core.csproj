@@ -97,7 +97,6 @@
     <Compile Include="Common\JobFilterAttribute.cs" />
     <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\JobFilterInfo.cs" />
-    <Compile Include="States\StateHandlerProviders.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />
