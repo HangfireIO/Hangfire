@@ -18,21 +18,6 @@ namespace HangFire.Common
         private static readonly ParameterExpression UnusedParameterExpr = Expression.Parameter(typeof(object), "_unused");
 
         /// <summary>
-        /// Implements caching around LambdaExpression.Compile() so that equivalent expression trees only have to be
-        /// compiled once.
-        /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "This is an appropriate nesting of generic types")]
-        public static Func<TModel, TValue> Compile<TModel, TValue>(this Expression<Func<TModel, TValue>> lambdaExpression)
-        {
-            if (lambdaExpression == null)
-            {
-                throw new ArgumentNullException("lambdaExpression");
-            }
-
-            return ExpressionUtil.CachedExpressionCompiler.Process(lambdaExpression);
-        }
-
-        /// <summary>
         /// Evaluates an expression (not a LambdaExpression), e.g. 2 + 2.
         /// </summary>
         /// <param name="arg"></param>
