@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using System;
+using System.Diagnostics;
+using Xunit;
 
 namespace HangFire.Core.Tests
 {
@@ -6,7 +8,7 @@ namespace HangFire.Core.Tests
     {
         public PossibleHangingFactAttribute()
         {
-            Timeout = 30 * 1000;
+            Timeout = Debugger.IsAttached ? Int32.MaxValue : 30 * 1000;
         }
     }
 }
