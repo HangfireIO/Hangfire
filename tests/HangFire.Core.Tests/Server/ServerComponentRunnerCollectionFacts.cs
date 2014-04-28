@@ -74,6 +74,59 @@ namespace HangFire.Core.Tests.Server
             _runner2.Verify(x => x.Stop());
         }
 
+        [Fact]
+        public void Count_ReturnsTheNumberOfElements()
+        {
+            var collection = CreateCollection();
+
+            Assert.Equal(2, collection.Count);
+        }
+
+        [Fact]
+        public void Add_AddsNewElement()
+        {
+            var collection = CreateCollection();
+            
+            collection.Add(new Mock<IServerComponentRunner>().Object);
+
+            Assert.Equal(3, collection.Count);
+        }
+
+        [Fact]
+        public void Clear_RemovesAllElements_FromCollection()
+        {
+            var collection = CreateCollection();
+            
+            collection.Clear();
+            
+            Assert.Equal(0, collection.Count);
+        }
+
+        [Fact]
+        public void Contains_ReturnsWhetherElementIsInCollection()
+        {
+            var element = new Mock<IServerComponentRunner>();
+            var collection = CreateCollection();
+
+            Assert.False(collection.Contains(element.Object));
+
+            collection.Add(element.Object);
+
+            Assert.True(collection.Contains(element.Object));
+        }
+
+        [Fact]
+        public void Remove_RemovesGivenElementFromCollection()
+        {
+            var runner = new Mock<IServerComponentRunner>();
+            var collection = CreateCollection();
+            collection.Add(runner.Object);
+
+            collection.Remove(runner.Object);
+
+            Assert.False(collection.Contains(runner.Object));
+        }
+
         private ServerComponentRunnerCollection CreateCollection()
         {
             return new ServerComponentRunnerCollection(_runners);
