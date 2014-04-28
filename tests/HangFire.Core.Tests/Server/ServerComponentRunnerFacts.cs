@@ -234,6 +234,20 @@ namespace HangFire.Core.Tests.Server
             Assert.Same(_component.Object, runner.Component);
         }
 
+        [PossibleHangingFact]
+        public void OperationCanceledException_DoesNotCauseAutomaticRetry()
+        {
+            var runner = CreateRunner();
+            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
+                .Callback((CancellationToken token) => token.WaitHandle.WaitOne(-1));
+            runner.Start();
+
+            Thread.Sleep(500);
+            runner.Dispose();
+
+            _component.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
         private ServerComponentRunner CreateRunner()
         {
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))

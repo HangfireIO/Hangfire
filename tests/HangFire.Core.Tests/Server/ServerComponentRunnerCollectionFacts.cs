@@ -127,6 +127,26 @@ namespace HangFire.Core.Tests.Server
             Assert.False(collection.Contains(runner.Object));
         }
 
+        [Fact]
+        public void IsReadOnly_ReturnsFalse()
+        {
+            var collection = CreateCollection();
+
+            Assert.False(collection.IsReadOnly);
+        }
+
+        [Fact]
+        public void CopyTo_WorksAsExpected()
+        {
+            var collection = CreateCollection();
+            var array = new IServerComponentRunner[3];
+
+            collection.CopyTo(array, 1);
+
+            Assert.Same(_runner1.Object, array[1]);
+            Assert.Same(_runner2.Object, array[2]);
+        }
+
         private ServerComponentRunnerCollection CreateCollection()
         {
             return new ServerComponentRunnerCollection(_runners);
