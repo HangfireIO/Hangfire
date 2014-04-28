@@ -168,7 +168,7 @@
     <Compile Include="States\StateContext.cs" />
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\SucceededState.cs" />
-    <Compile Include="StatisticsHistoryFilterAttribute.cs" />
+    <Compile Include="StatisticsHistoryAttribute.cs" />
     <Compile Include="Storage\IWriteOnlyTransaction.cs" />
     <Compile Include="Storage\IStorageConnection.cs" />
     <Compile Include="Storage\JobData.cs" />
