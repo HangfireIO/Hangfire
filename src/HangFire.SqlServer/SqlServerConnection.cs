@@ -32,17 +32,12 @@ namespace HangFire.SqlServer
     internal class SqlServerConnection : IStorageConnection
     {
         private static readonly TimeSpan JobInvisibilityTimeOut = TimeSpan.FromMinutes(30);
-        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly SqlConnection _connection;
 
-        public SqlServerConnection(
-            IStateMachineFactory stateMachineFactory, 
-            SqlConnection connection)
+        public SqlServerConnection(SqlConnection connection)
         {
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (connection == null) throw new ArgumentNullException("connection");
 
-            _stateMachineFactory = stateMachineFactory;
             _connection = connection;
         }
 
@@ -63,7 +58,7 @@ namespace HangFire.SqlServer
                 _connection);
         }
 
-        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public ProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
@@ -106,8 +101,6 @@ and Queue in @queues";
             } while (idAndQueue == null);
 
             return new ProcessingJob(
-                this,
-                _stateMachineFactory,
                 idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
                 idAndQueue.Queue);
         }

@@ -33,7 +33,6 @@ namespace HangFire.Redis
         internal static readonly string Prefix = "hangfire:";
 
         private readonly PooledRedisClientManager _pooledManager;
-        private readonly IStateMachineFactory _stateMachineFactory;
 
         public RedisStorage()
             : this(String.Format("{0}:{1}", RedisNativeClient.DefaultHost, RedisNativeClient.DefaultPort))
@@ -64,8 +63,6 @@ namespace HangFire.Redis
                     DefaultDb = Db,
                     MaxWritePoolSize = Options.ConnectionPoolSize
                 });
-
-            _stateMachineFactory = new StateMachineFactory(this);
         }
 
         public string HostAndPort { get; private set; }
@@ -81,13 +78,15 @@ namespace HangFire.Redis
 
         public override IStorageConnection GetConnection()
         {
-            return new RedisConnection(_stateMachineFactory, _pooledManager.GetClient());
+            return new RedisConnection(_pooledManager.GetClient());
         }
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new SchedulePoller(this, _stateMachineFactory, Options.PollInterval);
-            yield return new FetchedJobsWatcher(this, _stateMachineFactory);
+            var stateMachineFactory = new StateMachineFactory(this);
+
+            yield return new SchedulePoller(this, stateMachineFactory, Options.PollInterval);
+            yield return new FetchedJobsWatcher(this, stateMachineFactory);
         }
 
         public override IEnumerable<StateHandler> GetStateHandlers()

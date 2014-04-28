@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Server.Performing;
+using HangFire.States;
 
 namespace HangFire.Server
 {
@@ -24,6 +25,7 @@ namespace HangFire.Server
     {
         private readonly JobStorage _storage;
         private readonly IJobPerformanceProcess _performanceProcess;
+        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly ServerComponentRunnerCollection _workerRunners;
 
         public WorkerManager(
@@ -31,16 +33,19 @@ namespace HangFire.Server
             int workerCount, 
             string[] queues,
             JobStorage storage, 
-            IJobPerformanceProcess performanceProcess)
+            IJobPerformanceProcess performanceProcess,
+            IStateMachineFactory stateMachineFactory)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");
             if (storage == null) throw new ArgumentNullException("storage");
             if (performanceProcess == null) throw new ArgumentNullException("performanceProcess");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (queues == null) throw new ArgumentNullException("queues");
             if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
 
             _storage = storage;
             _performanceProcess = performanceProcess;
+            _stateMachineFactory = stateMachineFactory;
 
             var workerRunners = new List<IServerComponentRunner>(workerCount);
             for (var i = 1; i <= workerCount; i++)
@@ -72,7 +77,7 @@ namespace HangFire.Server
         internal virtual IServerComponentRunner CreateWorkerRunner(WorkerContext context)
         {
             return new ServerComponentRunner(
-                new Worker(_storage, context, _performanceProcess),
+                new Worker(context, _storage, _performanceProcess, _stateMachineFactory),
                 new ServerComponentRunnerOptions { MinimumLogVerbosity = true });
         }
     }

@@ -30,7 +30,6 @@ namespace HangFire.SqlServer
     {
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
-        private readonly IStateMachineFactory _stateMachineFactory;
 
         public SqlServerStorage(string connectionString)
             : this(connectionString, new SqlServerStorageOptions())
@@ -52,8 +51,6 @@ namespace HangFire.SqlServer
                     SqlServerObjectsInstaller.Install(connection);
                 }
             }
-
-            _stateMachineFactory = new StateMachineFactory(this);
         }
 
         public override IMonitoringApi GetMonitoringApi()
@@ -63,12 +60,14 @@ namespace HangFire.SqlServer
 
         public override IStorageConnection GetConnection()
         {
-            return new SqlServerConnection(_stateMachineFactory, CreateAndOpenConnection());
+            return new SqlServerConnection(CreateAndOpenConnection());
         }
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new SchedulePoller(this, _stateMachineFactory, _options.QueuePollInterval);
+            var stateMachineFactory = new StateMachineFactory(this);
+
+            yield return new SchedulePoller(this, stateMachineFactory, _options.QueuePollInterval);
             yield return new ExpirationManager(this);
         }
 

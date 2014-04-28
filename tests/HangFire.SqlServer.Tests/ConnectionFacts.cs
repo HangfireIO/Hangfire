@@ -5,9 +5,7 @@ using System.Linq;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.States;
 using HangFire.Storage;
-using Moq;
 using Xunit;
 
 namespace HangFire.SqlServer.Tests
@@ -564,9 +562,8 @@ values (@id, '', @heartbeat)";
 
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
-            var stateMachineFactory = new Mock<IStateMachineFactory>();
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(stateMachineFactory.Object, sqlConnection))
+            using (var connection = new SqlServerConnection(sqlConnection))
             {
                 action(sqlConnection, connection);
             }
@@ -574,9 +571,7 @@ values (@id, '', @heartbeat)";
 
         private void UseConnection(Action<SqlServerConnection> action)
         {
-            var stateMachineFactory = new Mock<IStateMachineFactory>();
-            using (var connection = new SqlServerConnection(
-                stateMachineFactory.Object, ConnectionUtils.CreateConnection()))
+            using (var connection = new SqlServerConnection(ConnectionUtils.CreateConnection()))
             {
                 action(connection);
             }

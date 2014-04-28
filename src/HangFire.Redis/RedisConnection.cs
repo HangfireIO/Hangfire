@@ -30,11 +30,9 @@ namespace HangFire.Redis
     internal class RedisConnection : IStorageConnection
     {
         private static readonly TimeSpan FetchTimeout = TimeSpan.FromSeconds(1);
-        private readonly IStateMachineFactory _stateMachineFactory;
 
-        public RedisConnection(IStateMachineFactory stateMachineFactory, IRedisClient redis)
+        public RedisConnection(IRedisClient redis)
         {
-            _stateMachineFactory = stateMachineFactory;
             Redis = redis;
         }
 
@@ -50,7 +48,7 @@ namespace HangFire.Redis
             return new RedisWriteOnlyTransaction(Redis.CreateTransaction());
         }
 
-        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public ProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             string jobId;
             string queueName;
@@ -105,7 +103,7 @@ namespace HangFire.Redis
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new ProcessingJob(this, _stateMachineFactory, jobId, queueName);
+            return new ProcessingJob(jobId, queueName);
         }
 
         public IDisposable AcquireJobLock(string jobId)

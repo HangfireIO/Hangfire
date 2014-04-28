@@ -106,7 +106,6 @@
     <Compile Include="Server\Filters\IServerExceptionFilter.cs" />
     <Compile Include="Client\Filters\CreatedContext.cs" />
     <Compile Include="Client\Filters\CreatingContext.cs" />
-    <Compile Include="Server\IProcessingJob.cs" />
     <Compile Include="Server\IServerComponent.cs" />
     <Compile Include="Server\IServerComponentRunner.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
@@ -145,7 +144,7 @@
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
     <Compile Include="Server\Performing\IJobPerformer.cs" />
-    <Compile Include="Server\ProcessingJob.cs" />
+    <Compile Include="Storage\ProcessingJob.cs" />
     <Compile Include="JobStorage.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />

@@ -112,7 +112,7 @@ namespace HangFire
                 new ServerHeartbeat(_storage, _serverId));
 
             yield return new WorkerManager(
-                _serverId, _workerCount, _queues, _storage, new JobPerformanceProcess());
+                _serverId, _workerCount, _queues, _storage, new JobPerformanceProcess(), new StateMachineFactory(_storage));
 
             yield return new ServerComponentRunner(
                 new ServerWatchdog(_storage));

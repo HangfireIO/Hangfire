@@ -1,6 +1,7 @@
 ﻿using System;
 using HangFire.Server;
 using HangFire.Server.Performing;
+using HangFire.States;
 using Moq;
 using Xunit;
 
@@ -16,11 +17,13 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<IJobPerformanceProcess> _process;
         private readonly Mock<WorkerManager> _manager;
         private readonly Mock<IServerComponentRunner>[] _workerRunners;
+        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
 
         public WorkerManagerFacts()
         {
             _storage = new Mock<JobStorage>();
             _process = new Mock<IJobPerformanceProcess>();
+            _stateMachineFactory = new Mock<IStateMachineFactory>();
 
             _workerRunners = new[]
             {
@@ -29,7 +32,7 @@ namespace HangFire.Core.Tests.Server
             };
 
             _manager = new Mock<WorkerManager>(
-                ServerId, WorkerCount, Queues, _storage.Object, _process.Object);
+                ServerId, WorkerCount, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object);
 
             _manager.Setup(x => x.CreateWorkerRunner(It.IsNotNull<WorkerContext>()))
                 .Returns((WorkerContext context) => _workerRunners[context.WorkerNumber - 1].Object);
@@ -39,7 +42,8 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenServerIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(null, WorkerCount, Queues, _storage.Object, _process.Object));
+                () => new WorkerManager(
+                    null, WorkerCount, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object));
 
             Assert.Equal("serverId", exception.ParamName);
         }
@@ -48,7 +52,8 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenWorkerCountLessOrEqualToZero()
         {
             var exception = Assert.Throws<ArgumentOutOfRangeException>(
-                () => new WorkerManager(ServerId, 0, Queues, _storage.Object, _process.Object));
+                () => new WorkerManager(
+                    ServerId, 0, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object));
 
             Assert.Equal("workerCount", exception.ParamName);
         }
@@ -57,7 +62,8 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenQueuesArrayIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(ServerId, WorkerCount, null, _storage.Object, _process.Object));
+                () => new WorkerManager(
+                    ServerId, WorkerCount, null, _storage.Object, _process.Object, _stateMachineFactory.Object));
 
             Assert.Equal("queues", exception.ParamName);
         }
@@ -66,7 +72,8 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(ServerId, WorkerCount, Queues, null, _process.Object));
+                () => new WorkerManager(
+                    ServerId, WorkerCount, Queues, null, _process.Object, _stateMachineFactory.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -75,15 +82,27 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(ServerId, WorkerCount, Queues, _storage.Object, null));
+                () => new WorkerManager(
+                    ServerId, WorkerCount, Queues, _storage.Object, null, _stateMachineFactory.Object));
 
             Assert.Equal("performanceProcess", exception.ParamName);
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new WorkerManager(
+                    ServerId, WorkerCount, Queues, _storage.Object, _process.Object, null));
+
+            Assert.Equal("stateMachineFactory", exception.ParamName);
+        }
+
+        [Fact]
         public void CreateWorkerRunner_CreatesAWorkerRunnerWithGivenParameters()
         {
-            var manager = new WorkerManager(ServerId, WorkerCount, Queues, _storage.Object, _process.Object);
+            var manager = new WorkerManager(
+                ServerId, WorkerCount, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object);
             var context = new WorkerContext(ServerId, Queues, 1);
 
             var worker = manager.CreateWorkerRunner(context);

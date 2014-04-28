@@ -15,15 +15,21 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using HangFire.Server.Performing;
 
-namespace HangFire.Server
+namespace HangFire.Storage
 {
-    public interface IProcessingJob : IDisposable
+    public class ProcessingJob
     {
-        string JobId { get; }
-        string Queue { get; }
+        public ProcessingJob(string jobId, string queue)
+        {
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (queue == null) throw new ArgumentNullException("queue");
 
-        void Process(WorkerContext context, IJobPerformanceProcess process);
+            JobId = jobId;
+            Queue = queue;
+        }
+
+        public string JobId { get; private set; }
+        public string Queue { get; private set; }
     }
 }
