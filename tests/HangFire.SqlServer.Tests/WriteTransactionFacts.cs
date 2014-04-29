@@ -202,6 +202,155 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void DecrementCounter_WithExistingKey_AddsAnotherRecord()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.DecrementCounter("my-key");
+                    x.DecrementCounter("my-key");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.Counter").Single();
+
+                Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_AddsARecord_IfThereIsNo_SuchKeyAndValue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.AddToSet("my-key", "my-value"));
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal("my-value", record.Value);
+                Assert.Equal(0.0, record.Score, 2);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSet("my-key", "my-value");
+                    x.AddToSet("my-key", "another-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
+
+                Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_DoesNotAddARecord_WhenBothKeyAndValueAreExist()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSet("my-key", "my-value");
+                    x.AddToSet("my-key", "my-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
+                
+                Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.AddToSet("my-key", "my-value", 3.2));
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal("my-value", record.Value);
+                Assert.Equal(3.2, record.Score, 3);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToSet_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSet("my-key", "my-value");
+                    x.AddToSet("my-key", "my-value", 3.2);
+                });
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+
+                Assert.Equal(3.2, record.Score, 3);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSet("my-key", "my-value");
+                    x.RemoveFromSet("my-key", "my-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
+
+                Assert.Equal(0, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromSet_DoesNotRemoveRecord_WithSameKey_AndDifferentValue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSet("my-key", "my-value");
+                    x.RemoveFromSet("my-key", "different-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
+
+                Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromSet_DoesNotRemoveRecord_WithSameValue_AndDifferentKey()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.AddToSet("my-key", "my-value");
+                    x.RemoveFromSet("different-key", "my-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
+
+                Assert.Equal(1, recordCount);
+            });
+        }
+
         private void UseConnection(Action<SqlConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
