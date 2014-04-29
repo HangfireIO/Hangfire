@@ -12,6 +12,13 @@ namespace HangFire.SqlServer.Tests
 {
     public partial class ConnectionFacts
     {
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenSqlConnectionIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new SqlServerConnection(null));
+        }
+
         [Fact, CleanDatabase]
         public void CreateWriteTransaction_ReturnsNonNullInstance()
         {
@@ -144,6 +151,32 @@ select scope_identity() as Id";
                 Assert.NotNull(result.Job);
                 Assert.Equal("Succeeded", result.State);
                 Assert.Equal("Arguments", result.Job.Arguments[0]);
+                Assert.Null(result.LoadException);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
+values (@invocationData, @arguments, @stateName, getutcdate())
+select scope_identity() as Id";
+
+            UseConnections((sql, connection) =>
+            {
+                var jobId = sql.Query(
+                    arrangeSql,
+                    new
+                    {
+                        invocationData = JobHelper.ToJson(new InvocationData(null, null, null, null)),
+                        stateName = "Succeeded",
+                        arguments = "['Arguments']"
+                    }).Single();
+
+                var result = connection.GetJobData(((int)jobId.Id).ToString());
+
+                Assert.NotNull(result.LoadException);
             });
         }
 
