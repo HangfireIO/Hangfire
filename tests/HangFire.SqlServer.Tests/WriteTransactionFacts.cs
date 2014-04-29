@@ -351,6 +351,181 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void InsertToList_AddsARecord_WithGivenValues()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.InsertToList("my-key", "my-value"));
+
+                var record = sql.Query("select * from HangFire.List").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal("my-value", record.Value);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void InsertToList_AddsAnotherRecord_WhenBothKeyAndValueAreExist()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "my-value");
+                    x.InsertToList("my-key", "my-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromList_RemovesAllRecords_WithGivenKeyAndValue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "my-value");
+                    x.InsertToList("my-key", "my-value");
+                    x.RemoveFromList("my-key", "my-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(0, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromList_DoesNotRemoveRecords_WithSameKey_ButDifferentValue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "my-value");
+                    x.RemoveFromList("my-key", "different-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveFromList_DoesNotRemoveRecords_WithSameValue_ButDifferentKey()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "my-value");
+                    x.RemoveFromList("different-key", "my-value");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(1, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void TrimList_TrimsAList_ToASpecifiedRange()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "0");
+                    x.InsertToList("my-key", "1");
+                    x.InsertToList("my-key", "2");
+                    x.InsertToList("my-key", "3");
+                    x.TrimList("my-key", 1, 2);
+                });
+
+                var records = sql.Query("select * from HangFire.List").ToArray();
+
+                Assert.Equal(2, records.Length);
+                Assert.Equal("1", records[0].Value);
+                Assert.Equal("2", records[1].Value);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void TrimList_RemovesRecordsToEnd_IfKeepAndingAt_GreaterThanMaxElementIndex()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "0");
+                    x.InsertToList("my-key", "1");
+                    x.InsertToList("my-key", "2");
+                    x.TrimList("my-key", 1, 100);
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void TrimList_RemovesAllRecords_WhenStartingFromValue_GreaterThanMaxElementIndex()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "0");
+                    x.TrimList("my-key", 1, 100);
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(0, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void TrimList_RemovesAllRecords_IfStartFromGreaterThanEndingAt()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "0");
+                    x.TrimList("my-key", 1, 0);
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(0, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void TrimList_RemovesRecords_OnlyOfAGivenKey()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.InsertToList("my-key", "0");
+                    x.TrimList("another-key", 1, 0);
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
+
+                Assert.Equal(1, recordCount);
+            });
+        }
+
         private void UseConnection(Action<SqlConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
