@@ -260,6 +260,10 @@ BEGIN
 		INCLUDE ([Value]);
 		PRINT 'Index [IX_HangFire_Counter_Key] re-created';
 
+		DROP TABLE [HangFire].[Value];
+		DROP TABLE [HangFire].[Hash];
+		PRINT 'Dropped tables [HangFire].[Value] and [HangFire].[Hash]'
+
 		SET @CURRENT_SCHEMA_VERSION = 2;
 	END
 

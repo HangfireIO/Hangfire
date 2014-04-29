@@ -46,11 +46,6 @@ namespace HangFire.Storage
         void RemoveFromList(string key, string value);
         void TrimList(string key, int keepStartingFrom, int keepEndingAt);
 
-        // Value operations
-        void IncrementValue(string key);
-        void DecrementValue(string key);
-        void ExpireValue(string key, TimeSpan expireIn);
-
         void Commit();
     }
 }

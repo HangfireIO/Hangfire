@@ -195,22 +195,5 @@ namespace HangFire.Redis
             _transaction.QueueCommand(x => x.TrimList(
                 RedisStorage.Prefix + key, keepStartingFrom, keepEndingAt));
         }
-
-        public void IncrementValue(string key)
-        {
-            _transaction.QueueCommand(x => x.IncrementValue(
-                RedisStorage.Prefix + key));
-        }
-
-        public void DecrementValue(string key)
-        {
-            _transaction.QueueCommand(x => x.DecrementValue(RedisStorage.Prefix + key));
-        }
-
-        public void ExpireValue(string key, TimeSpan expireIn)
-        {
-            _transaction.QueueCommand(x => x.ExpireEntryIn(
-                RedisStorage.Prefix + key, expireIn));
-        }
     }
 }

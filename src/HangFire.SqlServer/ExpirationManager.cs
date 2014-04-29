@@ -27,12 +27,10 @@ namespace HangFire.SqlServer
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ExpirationManager));
         private static readonly string[] ProcessedTables =
         {
+            "Counter",
             "Job",
-            "Hash",
             "List",
             "Set",
-            "Value",
-            "Counter",
         };
 
         private readonly SqlServerStorage _storage;

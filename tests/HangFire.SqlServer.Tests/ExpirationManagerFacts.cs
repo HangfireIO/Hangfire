@@ -89,27 +89,6 @@ values ('key', 1, @expireAt)";
         }
 
         [Fact, CleanDatabase]
-        public void Execute_Processes_HashTable()
-        {
-            using (var connection = ConnectionUtils.CreateConnection())
-            {
-                // Arrange
-                const string createSql = @"
-insert into HangFire.Hash ([Key], [Name], ExpireAt) 
-values ('key', 'name', @expireAt)";
-                connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
-
-                var manager = CreateManager();
-
-                // Act
-                manager.Execute(_token);
-
-                // Assert
-                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Hash").Single());
-            }
-        }
-
-        [Fact, CleanDatabase]
         public void Execute_Processes_JobTable()
         {
             using (var connection = ConnectionUtils.CreateConnection())
@@ -169,27 +148,6 @@ values ('key', 0, '', @expireAt)";
 
                 // Assert
                 Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.[Set]").Single());
-            }
-        }
-
-        [Fact, CleanDatabase]
-        public void Execute_Processes_ValueTable()
-        {
-            using (var connection = ConnectionUtils.CreateConnection())
-            {
-                // Arrange
-                const string createSql = @"
-insert into HangFire.[Value] ([Key], ExpireAt) 
-values ('key', @expireAt)";
-                connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
-
-                var manager = CreateManager();
-
-                // Act
-                manager.Execute(_token);
-
-                // Assert
-                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.[Value]").Single());
             }
         }
 

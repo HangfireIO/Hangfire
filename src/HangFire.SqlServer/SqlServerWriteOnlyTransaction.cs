@@ -203,57 +203,6 @@ delete from cte where row_num not between @start and @end and [Key] = @key";
                 new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
         }
 
-        public void IncrementValue(string key)
-        {
-            const string insertSql = @"
-begin try 
-    insert into HangFire.Value ([Key], IntValue) values (@key, 0)
-end try
-begin catch
-end catch";
-            const string updateSql = @"
-update HangFire.Value set IntValue = IntValue + 1 where [Key] = @key";
-
-            QueueCommand(x =>
-            {
-                var affectedRows = x.Execute(updateSql, new { key });
-
-                if (affectedRows == 0)
-                {
-                    x.Execute(insertSql + "\n" + updateSql, new { key });
-                }
-            });
-        }
-
-        public void DecrementValue(string key)
-        {
-            const string insertSql = @"
-begin try 
-    insert into HangFire.Value ([Key], IntValue) values (@key, 0)
-end try
-begin catch
-end catch";
-            const string updateSql = @"
-update HangFire.Value set IntValue = IntValue - 1 where [Key] = @key";
-
-            QueueCommand(x =>
-            {
-                var affectedRows = x.Execute(updateSql, new { key });
-
-                if (affectedRows == 0)
-                {
-                    x.Execute(insertSql + "\n" + updateSql, new { key });
-                }
-            });
-        }
-
-        public void ExpireValue(string key, TimeSpan expireIn)
-        {
-            QueueCommand(x => x.Execute(
-                @"update HangFire.Value set ExpireAt = @expireAt where [Key] = @key",
-                new { expireAt = DateTime.UtcNow.Add(expireIn), key = key }));
-        }
-
         private void QueueCommand(Action<SqlConnection> action)
         {
             _commandQueue.Enqueue(action);
