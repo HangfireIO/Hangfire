@@ -89,10 +89,8 @@ and Queue in @queues";
                 {
                     if (currentQueryIndex == fetchConditions.Length - 1)
                     {
-                        if (cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-                        }
+                        cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5));
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
 
