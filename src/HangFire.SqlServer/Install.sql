@@ -15,7 +15,7 @@
 -- License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 1;
+SET @TARGET_SCHEMA_VERSION = 2;
 
 PRINT 'Installing HangFire SQL objects...';
 
@@ -246,13 +246,30 @@ BEGIN
 		SET @CURRENT_SCHEMA_VERSION = 1;
     END
 
-	/*IF @CURRENT_SCHEMA_VERSION = 1
+	IF @CURRENT_SCHEMA_VERSION = 1
 	BEGIN
 		PRINT 'Installing schema version 2';
 
-		-- Insert migration here
+		-- https://github.com/odinserj/HangFire/issues/83
+
+		DROP INDEX [IX_HangFire_Counter_Key] ON [HangFire].[Counter];
+
+		ALTER TABLE [HangFire].[Counter] ALTER COLUMN [Value] SMALLINT NOT NULL;
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Counter_Key] ON [HangFire].[Counter] ([Key] ASC)
+		INCLUDE ([Value]);
+		PRINT 'Index [IX_HangFire_Counter_Key] re-created';
 
 		SET @CURRENT_SCHEMA_VERSION = 2;
+	END
+
+	/*IF @CURRENT_SCHEMA_VERSION = 2
+	BEGIN
+		PRINT 'Installing schema version 3';
+
+		-- Insert migration here
+
+		SET @CURRENT_SCHEMA_VERSION = 3;
 	END*/
 
 	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
