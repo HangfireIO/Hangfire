@@ -16,6 +16,7 @@
 
 using System;
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -24,6 +25,7 @@ using Dapper;
 
 namespace HangFire.SqlServer
 {
+    [ExcludeFromCodeCoverage]
     internal static class SqlServerObjectsInstaller
     {
         private const int RequiredSchemaVersion = 2;

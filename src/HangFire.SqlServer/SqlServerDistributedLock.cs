@@ -37,12 +37,12 @@ namespace HangFire.SqlServer
                 { -999, "Indicates a parameter validation or other call error" }
             };
 
-        private readonly SqlConnection _connection;
+        private readonly IDbConnection _connection;
         private readonly string _resource;
 
         private bool _completed;
 
-        public SqlServerDistributedLock(string resource, SqlConnection connection)
+        public SqlServerDistributedLock(string resource, IDbConnection connection)
         {
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
             if (connection == null) throw new ArgumentNullException("connection");
@@ -52,6 +52,7 @@ namespace HangFire.SqlServer
 
             var parameters = new DynamicParameters();
             parameters.Add("@Resource", _resource);
+            parameters.Add("@DbPrincipal", "public");
             parameters.Add("@LockMode", LockMode);
             parameters.Add("@LockOwner", LockOwner);
             parameters.Add("@LockTimeout", LockTimeout.TotalMilliseconds);
