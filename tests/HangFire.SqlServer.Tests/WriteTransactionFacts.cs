@@ -168,6 +168,27 @@ select scope_identity() as Id";
                 
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(1, record.Value);
+                Assert.Equal((DateTime?)null, record.ExpireAt);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void IncrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.IncrementCounter("my-key", TimeSpan.FromDays(1)));
+
+                var record = sql.Query("select * from HangFire.Counter").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal(1, record.Value);
+                Assert.NotNull(record.ExpireAt);
+
+                var expireAt = (DateTime) record.ExpireAt;
+
+                Assert.True(DateTime.UtcNow.AddHours(23) < expireAt);
+                Assert.True(expireAt < DateTime.UtcNow.AddHours(25));
             });
         }
 
@@ -199,6 +220,27 @@ select scope_identity() as Id";
 
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(-1, record.Value);
+                Assert.Equal((DateTime?)null, record.ExpireAt);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void DecrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.DecrementCounter("my-key", TimeSpan.FromDays(1)));
+
+                var record = sql.Query("select * from HangFire.Counter").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal(-1, record.Value);
+                Assert.NotNull(record.ExpireAt);
+
+                var expireAt = (DateTime)record.ExpireAt;
+
+                Assert.True(DateTime.UtcNow.AddHours(23) < expireAt);
+                Assert.True(expireAt < DateTime.UtcNow.AddHours(25));
             });
         }
 
