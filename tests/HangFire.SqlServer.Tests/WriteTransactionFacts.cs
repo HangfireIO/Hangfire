@@ -157,6 +157,51 @@ select scope_identity() as Id";
                 .Single();
         }
 
+        [Fact, CleanDatabase]
+        public void IncrementCounter_AddsRecordToCounterTable_WithPositiveValue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.IncrementCounter("my-key"));
+
+                var record = sql.Query("select * from HangFire.Counter").Single();
+                
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal(1, record.Value);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void IncrementCounter_WithExistingKey_AddsAnotherRecord()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x =>
+                {
+                    x.IncrementCounter("my-key");
+                    x.IncrementCounter("my-key");
+                });
+
+                var recordCount = sql.Query<int>("select count(*) from HangFire.Counter").Single();
+                
+                Assert.Equal(2, recordCount);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.DecrementCounter("my-key"));
+
+                var record = sql.Query("select * from HangFire.Counter").Single();
+
+                Assert.Equal("my-key", record.Key);
+                Assert.Equal(-1, record.Value);
+            });
+        }
+
         private void UseConnection(Action<SqlConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
