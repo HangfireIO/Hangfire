@@ -5,7 +5,7 @@ using HangFire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Redis.Tests.States
+namespace HangFire.Redis.Tests
 {
     public class ProcessingStateHandlerFacts
     {

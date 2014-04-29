@@ -66,10 +66,10 @@
     <Compile Include="FetchedJobsWatcherFacts.cs" />
     <Compile Include="RedisStorageTests.cs" />
     <Compile Include="RedisTest.cs" />
-    <Compile Include="States\FailedStateHandlerFacts.cs" />
+    <Compile Include="FailedStateHandlerFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="States\ProcessingStateHandlerFacts.cs" />
-    <Compile Include="States\SucceededStateHandlerFacts.cs" />
+    <Compile Include="ProcessingStateHandlerFacts.cs" />
+    <Compile Include="SucceededStateHandlerFacts.cs" />
     <Compile Include="Utils\CleanRedisAttribute.cs" />
     <Compile Include="Utils\RedisUtils.cs" />
   </ItemGroup>
