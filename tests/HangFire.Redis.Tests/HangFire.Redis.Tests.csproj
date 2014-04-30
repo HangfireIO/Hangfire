@@ -69,6 +69,7 @@
     <Compile Include="FailedStateHandlerFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProcessingStateHandlerFacts.cs" />
+    <Compile Include="RedisWriteOnlyTransactionFacts.cs" />
     <Compile Include="SucceededStateHandlerFacts.cs" />
     <Compile Include="Utils\CleanRedisAttribute.cs" />
     <Compile Include="Utils\RedisUtils.cs" />

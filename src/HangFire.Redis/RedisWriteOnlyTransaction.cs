@@ -95,10 +95,6 @@ namespace HangFire.Redis
             _transaction.QueueCommand(x => x.RemoveEntry(
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId)));
 
-            // Redis does not provide repeatable read functionality,
-            // so job state might be changed between reads of the job
-            // state itself and a data of the state. In monitoring API
-            // we don't show state data when data.State !== job.State.
             var storedData = new Dictionary<string, string>(state.SerializeData());
             storedData.Add("State", state.Name);
 
@@ -116,8 +112,6 @@ namespace HangFire.Redis
 
         public void AddJobState(string jobId, State state)
         {
-            // We are storing some more information in the same key,
-            // let's add it.
             var storedData = new Dictionary<string, string>(state.SerializeData());
             storedData.Add("State", state.Name);
             storedData.Add("Reason", state.Reason);
