@@ -48,7 +48,7 @@ namespace HangFire.Server
             _options = options;
 
             _logger = LogManager.GetLogger(_component.GetType());
-            _thread = new Thread(RunComponent) { IsBackground = true };
+            _thread = new Thread(RunComponent) { IsBackground = true, Name = component.ToString() };
 
             _logger.TraceFormat("Starting a new thread for server component '{0}'...", _component);
             _thread.Start();
