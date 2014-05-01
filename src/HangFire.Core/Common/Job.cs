@@ -41,7 +41,7 @@ namespace HangFire.Common
         /// a corresponding <see cref="TypeConverter"/> instance.
         /// </remarks>
         /// 
-        /// <exception cref="ArgumentNullException"><paramref name="methodData"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
         internal Job(Type type, MethodInfo method, string[] arguments)
         {
@@ -181,7 +181,7 @@ namespace HangFire.Common
 
             if (parameters.Length != Arguments.Length)
             {
-                throw new ArgumentException("Argument count must be equal to method parameter count.", "arguments");
+                throw new ArgumentException("Argument count must be equal to method parameter count.");
             }
 
             foreach (var parameter in parameters)
