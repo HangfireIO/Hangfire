@@ -47,7 +47,7 @@ namespace HangFire.Redis.Tests
             UseConnection(redis =>
             {
                 // Arrange
-                var state = new Mock<State>();
+                var state = new Mock<IState>();
                 state.Setup(x => x.SerializeData()).Returns(new Dictionary<string, string>());
                 state.Setup(x => x.Name).Returns("my-state");
 
@@ -68,14 +68,14 @@ namespace HangFire.Redis.Tests
                 // Arrange
                 redis.SetEntryInHash("hangfire:job:my-job:state", "OldName", "OldValue");
 
-                var state = new Mock<State>();
+                var state = new Mock<IState>();
                 state.Setup(x => x.SerializeData()).Returns(
                     new Dictionary<string, string>
                     {
                         { "Name", "Value" }
                     });
                 state.Setup(x => x.Name).Returns("my-state");
-                state.Object.Reason = "my-reason";
+                state.Setup(x => x.Reason).Returns("my-reason");
 
                 // Act
                 Commit(redis, x => x.SetJobState("my-job", state.Object));
@@ -95,7 +95,7 @@ namespace HangFire.Redis.Tests
             UseConnection(redis =>
             {
                 // Arrange
-                var state = new Mock<State>();
+                var state = new Mock<IState>();
                 state.Setup(x => x.Name).Returns("my-state");
                 state.Setup(x => x.SerializeData()).Returns(new Dictionary<string, string>());
 
@@ -133,11 +133,11 @@ namespace HangFire.Redis.Tests
             UseConnection(redis =>
             {
                 // Arrange
-                var state = new Mock<State>();
+                var state = new Mock<IState>();
                 state.Setup(x => x.Name).Returns("my-state");
+                state.Setup(x => x.Reason).Returns("my-reason");
                 state.Setup(x => x.SerializeData()).Returns(
                     new Dictionary<string, string> { { "Name", "Value" } });
-                state.Object.Reason = "my-reason";
 
                 // Act
                 Commit(redis, x => x.AddJobState("my-job", state.Object));

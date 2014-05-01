@@ -79,7 +79,7 @@ namespace HangFire
         }
 
         /// <inheritdoc />
-        public string Create(Job job, State state)
+        public string Create(Job job, IState state)
         {
             if (job == null) throw new ArgumentNullException("job");
             if (state == null) throw new ArgumentNullException("state");

@@ -85,7 +85,7 @@ namespace HangFire.Redis
                 String.Format(RedisStorage.Prefix + "job:{0}:state", jobId)));
         }
 
-        public void SetJobState(string jobId, State state)
+        public void SetJobState(string jobId, IState state)
         {
             _transaction.QueueCommand(x => x.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", jobId),
@@ -110,7 +110,7 @@ namespace HangFire.Redis
             AddJobState(jobId, state);
         }
 
-        public void AddJobState(string jobId, State state)
+        public void AddJobState(string jobId, IState state)
         {
             var storedData = new Dictionary<string, string>(state.SerializeData());
             storedData.Add("State", state.Name);

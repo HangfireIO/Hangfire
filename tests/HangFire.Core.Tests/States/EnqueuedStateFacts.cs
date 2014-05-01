@@ -58,5 +58,13 @@ namespace HangFire.Core.Tests.States
             Assert.Equal(state.Queue, serializedData["Queue"]);
             Assert.Equal(JobHelper.ToStringTimestamp(state.EnqueuedAt), serializedData["EnqueuedAt"]);
         }
+
+        [Fact]
+        public void IsFinal_ReturnsFalse()
+        {
+            var state = new EnqueuedState();
+
+            Assert.False(state.IsFinal);
+        }
     }
 }

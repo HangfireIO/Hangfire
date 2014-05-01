@@ -100,7 +100,6 @@
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
     <Compile Include="States\ScheduledStateHandlerFacts.cs" />
-    <Compile Include="States\StateFacts.cs" />
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\ApplyStateContextFacts.cs" />

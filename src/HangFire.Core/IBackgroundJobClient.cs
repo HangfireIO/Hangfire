@@ -39,6 +39,6 @@ namespace HangFire
         /// <exception cref="ArgumentNullException"><paramref name="job"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="state"/> argument is null.</exception>
         /// <exception cref="CreateJobFailedException">Job creation has been failed due to inner exception.</exception>
-        string Create(Job job, State state);
+        string Create(Job job, IState state);
     }
 }

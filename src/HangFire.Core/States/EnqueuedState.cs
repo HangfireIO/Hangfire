@@ -22,7 +22,7 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class EnqueuedState : State
+    public class EnqueuedState : IState
     {
         public const string DefaultQueue = "default";
         public static readonly string StateName = "Enqueued";
@@ -64,9 +64,11 @@ namespace HangFire.States
 
         public DateTime EnqueuedAt { get; set; }
 
-        public override string Name { get { return StateName; } }
+        public string Name { get { return StateName; } }
+        public string Reason { get; set; }
+        public bool IsFinal { get { return false; } }
 
-        public override Dictionary<string, string> SerializeData()
+        public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {

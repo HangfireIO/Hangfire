@@ -23,11 +23,11 @@ namespace HangFire.States
 {
     public class ElectStateContext : StateContext
     {
-        private State _candidateState;
+        private IState _candidateState;
 
         internal ElectStateContext(
             StateContext context, 
-            State candidateState, 
+            IState candidateState, 
             string currentState, 
             IStorageConnection connection)
             : base(context)
@@ -40,7 +40,7 @@ namespace HangFire.States
             Connection = connection;
         }
 
-        public State CandidateState
+        public IState CandidateState
         {
             get { return _candidateState; }
             set
@@ -67,11 +67,11 @@ namespace HangFire.States
                 JobId, name));
         }
 
-        internal State ElectState(IEnumerable<IElectStateFilter> filters)
+        internal IState ElectState(IEnumerable<IElectStateFilter> filters)
         {
             if (filters == null) throw new ArgumentNullException("filters");
 
-            var statesToAppend = new List<State>();
+            var statesToAppend = new List<IState>();
 
             foreach (var filter in filters)
             {

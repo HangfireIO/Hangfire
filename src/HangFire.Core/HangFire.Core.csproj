@@ -147,7 +147,7 @@
     <Compile Include="JobStorage.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
-    <Compile Include="States\State.cs" />
+    <Compile Include="States\IState.cs" />
     <Compile Include="Client\IClientFilter.cs" />
     <Compile Include="Common\IJobFilter.cs" />
     <Compile Include="Server\IServerFilter.cs" />

@@ -15,7 +15,7 @@ namespace HangFire.Core.Tests.States
         private const string OldState = "SomeState";
         private const string NewState = "NewState";
 
-        private readonly Mock<State> _newState;
+        private readonly Mock<IState> _newState;
         private readonly Job _job;
         private readonly List<IApplyStateFilter> _filters;
         private readonly StateHandlerCollection _handlers;
@@ -26,7 +26,7 @@ namespace HangFire.Core.Tests.States
         public ApplyStateContextFacts()
         {
             _job = Job.FromExpression(() => Console.WriteLine());
-            _newState = new Mock<State>();
+            _newState = new Mock<IState>();
             _newState.Setup(x => x.Name).Returns(NewState);
 
             _transaction = new Mock<IWriteOnlyTransaction>();
@@ -113,7 +113,7 @@ namespace HangFire.Core.Tests.States
 
             handler1.Setup(x => x.Unapply(context, _transaction.Object)).InSequence();
             handler2.Setup(x => x.Unapply(context, _transaction.Object)).InSequence();
-            _transaction.Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<State>()))
+            _transaction.Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<IState>()))
                 .InSequence();
 
             // Act
@@ -138,7 +138,7 @@ namespace HangFire.Core.Tests.States
             _handlers.AddHandler(handler2.Object);
 
             _transaction
-                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<State>()))
+                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<IState>()))
                 .InSequence();
 
             handler1.Setup(x => x.Apply(context, _transaction.Object)).InSequence();
@@ -154,7 +154,7 @@ namespace HangFire.Core.Tests.States
         public void ApplyState_ShouldSetJobExpiration_WhenTheStateSaysToDoSo()
         {
             var context = CreateContext();
-            _newState.Setup(x => x.ExpireJobOnApply).Returns(true);
+            _newState.Setup(x => x.IsFinal).Returns(true);
 
             context.ApplyState(_handlers, _filters);
 
@@ -165,7 +165,7 @@ namespace HangFire.Core.Tests.States
         public void ApplyState_ShouldPersistTheJob_WhenTheStateSaysToNotToExpireIt()
         {
             var context = CreateContext();
-            _newState.Setup(x => x.ExpireJobOnApply).Returns(false);
+            _newState.Setup(x => x.IsFinal).Returns(false);
 
             context.ApplyState(_handlers, _filters);
 
@@ -189,7 +189,7 @@ namespace HangFire.Core.Tests.States
             filter2.Setup(x => x.OnStateUnapplied(context, _transaction.Object))
                 .InSequence();
             _transaction
-                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<State>()))
+                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<IState>()))
                 .InSequence();
 
             // Act

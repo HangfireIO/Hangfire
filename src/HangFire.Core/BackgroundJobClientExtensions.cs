@@ -139,7 +139,7 @@ namespace HangFire
         public static string Create(
             this IBackgroundJobClient client,
             Expression<Action> methodCall,
-            State state)
+            IState state)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -159,7 +159,7 @@ namespace HangFire
         public static string Create<T>(
             this IBackgroundJobClient client,
             Expression<Action<T>> methodCall,
-            State state)
+            IState state)
         {
             if (client == null) throw new ArgumentNullException("client");
 

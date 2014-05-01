@@ -27,7 +27,7 @@ namespace HangFire.States
         public ApplyStateContext(
             IStorageConnection connection,
             StateContext context,
-            State newState,
+            IState newState,
             string oldStateName)
             : base(context)
         {
@@ -41,7 +41,7 @@ namespace HangFire.States
         }
 
         public string OldStateName { get; private set; }
-        public State NewState { get; private set; }
+        public IState NewState { get; private set; }
         public TimeSpan JobExpirationTimeout { get; set; }
 
         internal void ApplyState(
@@ -74,7 +74,7 @@ namespace HangFire.States
                     filter.OnStateApplied(this, transaction);
                 }
 
-                if (NewState.ExpireJobOnApply)
+                if (NewState.IsFinal)
                 {
                     transaction.ExpireJob(JobId, JobExpirationTimeout);
                 }

@@ -12,7 +12,7 @@ namespace HangFire.Core.Tests.Client
     public class CreateContextFacts
     {
         private readonly Job _job;
-        private readonly Mock<State> _state;
+        private readonly Mock<IState> _state;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly Mock<IStateMachineFactory> _stateMachineFactory;
@@ -20,7 +20,7 @@ namespace HangFire.Core.Tests.Client
         public CreateContextFacts()
         {
             _job = Job.FromExpression(() => Method());
-            _state = new Mock<State>();
+            _state = new Mock<IState>();
             _connection = new Mock<IStorageConnection>();
             _stateMachine = new Mock<IStateMachine>();
 
@@ -235,7 +235,7 @@ namespace HangFire.Core.Tests.Client
                 It.IsAny<Job>(),
                 It.Is<Dictionary<string, string>>(
                     d => d.ContainsKey("name") && d["name"] == "{\"key\":\"value\"}"),
-                It.IsAny<State>()));
+                It.IsAny<IState>()));
         }
 
         [Fact]

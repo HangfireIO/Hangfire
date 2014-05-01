@@ -34,5 +34,13 @@ namespace HangFire.Core.Tests.States
             Assert.Equal("Message", serializedData["ExceptionMessage"]);
             Assert.Equal(state.Exception.ToString(), serializedData["ExceptionDetails"]);
         }
+
+        [Fact]
+        public void IsFinal_ReturnsFalse()
+        {
+            var state = new FailedState(new Exception());
+
+            Assert.False(state.IsFinal);
+        }
     }
 }

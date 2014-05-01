@@ -38,5 +38,13 @@ namespace HangFire.Core.Tests.States
             Assert.Equal(JobHelper.ToStringTimestamp(state.StartedAt), data["StartedAt"]);
             Assert.Equal("Server1", state.ServerName);
         }
+
+        [Fact]
+        public void IsFinal_ReturnsFalse()
+        {
+            var state = new ProcessingState("server");
+
+            Assert.False(state.IsFinal);
+        }
     }
 }

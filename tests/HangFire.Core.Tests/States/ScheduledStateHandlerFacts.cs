@@ -62,7 +62,7 @@ namespace HangFire.Core.Tests.States
         {
             var handler = new ScheduledState.Handler();
             var context = new ApplyStateContext(
-                _connection.Object, _stateContext, new Mock<State>().Object, null);
+                _connection.Object, _stateContext, new Mock<IState>().Object, null);
 
             Assert.Throws<InvalidOperationException>(
                 () => handler.Apply(context, _transaction.Object));

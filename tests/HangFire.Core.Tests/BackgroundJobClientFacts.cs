@@ -13,7 +13,7 @@ namespace HangFire.Core.Tests
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IJobCreationProcess> _process;
-        private readonly Mock<State> _state;
+        private readonly Mock<IState> _state;
         private readonly Job _job;
         private readonly Mock<IStateMachineFactory> _stateMachineFactory;
 
@@ -26,7 +26,7 @@ namespace HangFire.Core.Tests
             _stateMachineFactory = new Mock<IStateMachineFactory>();
 
             _process = new Mock<IJobCreationProcess>();
-            _state = new Mock<State>();
+            _state = new Mock<IState>();
             _job = Job.FromExpression(() => Method());
         }
 

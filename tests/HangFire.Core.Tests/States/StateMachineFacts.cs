@@ -20,7 +20,7 @@ namespace HangFire.Core.Tests.States
 
         private readonly Job _job;
         private readonly Dictionary<string, string> _parameters;
-        private readonly Mock<State> _state;
+        private readonly Mock<IState> _state;
         private const string StateName = "State";
         private const string OldStateName = "Old";
 
@@ -30,7 +30,7 @@ namespace HangFire.Core.Tests.States
         {
             _job = Job.FromExpression(() => Console.WriteLine("Hello"));
             _parameters = new Dictionary<string, string>();
-            _state = new Mock<State>();
+            _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
 
             _connection.Setup(x => x.CreateWriteTransaction())
@@ -191,7 +191,7 @@ namespace HangFire.Core.Tests.States
             _connection.Verify(x => x.GetJobData("1"));
 
             stateMachine.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()),
+                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
                 Times.Never);
         }
 
@@ -215,7 +215,7 @@ namespace HangFire.Core.Tests.States
             // Assert
             Assert.False(result);
             stateMachine.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()),
+                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
                 Times.Never);
         }
 
@@ -231,14 +231,14 @@ namespace HangFire.Core.Tests.States
                 });
 
             var stateMachine = CreateStateMachineMock();
-            stateMachine.Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()))
+            stateMachine.Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
                 .Returns(false);
 
             // Act
             var result = stateMachine.Object.TryToChangeState("1", _state.Object, new[] { "Old" });
 
             // Assert
-            stateMachine.Verify(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()));
+            stateMachine.Verify(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()));
             Assert.False(result);
 
         }
@@ -256,7 +256,7 @@ namespace HangFire.Core.Tests.States
 
             var stateMachine = CreateStateMachineMock();
 
-            stateMachine.Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<State>(), It.IsAny<string>()))
+            stateMachine.Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
                 .Returns(true);
 
             // Act
@@ -317,7 +317,7 @@ namespace HangFire.Core.Tests.States
         {
             var stateMachine = CreateStateMachineMock();
             var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
-            var electedState = new Mock<State>();
+            var electedState = new Mock<IState>();
 
             stateMachine
                 .Setup(x => x.ElectState(

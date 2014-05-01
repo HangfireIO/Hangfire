@@ -20,7 +20,7 @@ using HangFire.Common;
 
 namespace HangFire.States
 {
-    public class FailedState : State
+    public class FailedState : IState
     {
         public static readonly string StateName = "Failed";
 
@@ -35,9 +35,11 @@ namespace HangFire.States
         public DateTime FailedAt { get; set; }
         public Exception Exception { get; set; }
 
-        public override string Name { get { return StateName; } }
+        public string Name { get { return StateName; } }
+        public string Reason { get; set; }
+        public bool IsFinal { get { return false; } }
 
-        public override Dictionary<string, string> SerializeData()
+        public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {

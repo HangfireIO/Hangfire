@@ -41,7 +41,7 @@ namespace HangFire.Core.Tests
         public void OnStateElection_DoesNotDoAnything_IfStateIsNotEnqueuedState()
         {
             var filter = new QueueAttribute("override");
-            var context = new ElectStateContext(_context, new Mock<State>().Object, null, _connection.Object);
+            var context = new ElectStateContext(_context, new Mock<IState>().Object, null, _connection.Object);
 
             Assert.DoesNotThrow(() => filter.OnStateElection(context));
         }

@@ -12,7 +12,7 @@ namespace HangFire.Core.Tests.States
     {
         private const string JobId = "1";
         private readonly StateContext _stateContext;
-        private readonly Mock<State> _candidateState;
+        private readonly Mock<IState> _candidateState;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
 
@@ -20,7 +20,7 @@ namespace HangFire.Core.Tests.States
         {
             var job = Job.FromExpression(() => Console.WriteLine());
             _stateContext = new StateContext(JobId, job);
-            _candidateState = new Mock<State>();
+            _candidateState = new Mock<IState>();
             _connection = new Mock<IStorageConnection>();
             _transaction = new Mock<IWriteOnlyTransaction>();
 
@@ -78,7 +78,7 @@ namespace HangFire.Core.Tests.States
         public void SetCandidateState_SetsTheGivenValue()
         {
             var context = CreateContext();
-            var newState = new Mock<State>();
+            var newState = new Mock<IState>();
 
             context.CandidateState = newState.Object;
 
@@ -154,7 +154,7 @@ namespace HangFire.Core.Tests.States
         public void ElectState_AddsJobHistory_WhenAFilterChangesCandidateState()
         {
             // Arrange
-            var newState = new Mock<State>();
+            var newState = new Mock<IState>();
 
             var filter = new Mock<IElectStateFilter>();
             filter.Setup(x => x.OnStateElection(It.IsNotNull<ElectStateContext>()))

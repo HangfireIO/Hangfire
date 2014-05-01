@@ -53,7 +53,7 @@ namespace HangFire.States
         public string CreateInState(
             Job job,
             IDictionary<string, string> parameters,
-            State state)
+            IState state)
         {
             if (job == null) throw new ArgumentNullException("job");
             if (parameters == null) throw new ArgumentNullException("parameters");
@@ -71,7 +71,7 @@ namespace HangFire.States
         }
 
         public bool TryToChangeState(
-            string jobId, State toState, string[] fromStates)
+            string jobId, IState toState, string[] fromStates)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (toState == null) throw new ArgumentNullException("toState");
@@ -130,7 +130,7 @@ namespace HangFire.States
             }
         }
 
-        internal virtual bool ChangeState(StateContext context, State toState, string oldStateName)
+        internal virtual bool ChangeState(StateContext context, IState toState, string oldStateName)
         {
             try
             {
@@ -158,9 +158,9 @@ namespace HangFire.States
             }
         }
 
-        internal virtual State ElectState(
+        internal virtual IState ElectState(
             StateContext stateContext, 
-            State toState,
+            IState toState,
             string fromStateName,
             IEnumerable<IElectStateFilter> filters)
         {
@@ -172,7 +172,7 @@ namespace HangFire.States
 
         internal virtual void ApplyState(
             StateContext stateContext, 
-            State electedState,
+            IState electedState,
             string oldStateName,
             IEnumerable<IApplyStateFilter> filters)
         {

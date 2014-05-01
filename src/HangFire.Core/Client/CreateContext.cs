@@ -48,7 +48,7 @@ namespace HangFire.Client
             IStorageConnection connection,
             IStateMachineFactory stateMachineFactory,
             Job job,
-            State initialState)
+            IState initialState)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
@@ -82,7 +82,7 @@ namespace HangFire.Client
         /// the registered instances of the <see cref="IElectStateFilter"/>
         /// class are doing their job.
         /// </summary>
-        public State InitialState { get; private set; }
+        public IState InitialState { get; private set; }
 
         /// <summary>
         /// Sets the job parameter of the specified <paramref name="name"/>

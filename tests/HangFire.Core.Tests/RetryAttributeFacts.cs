@@ -72,7 +72,7 @@ namespace HangFire.Core.Tests
         public void OnStateElection_DoesNotChangeAnything_IfCandidateStateIsNotFailedState()
         {
             var filter = new RetryAttribute(1);
-            var state = new Mock<State>();
+            var state = new Mock<IState>();
             var context = new ElectStateContext(_stateContext, state.Object, CurrentState, _connection.Object);
 
             filter.OnStateElection(context);

@@ -21,7 +21,7 @@ namespace HangFire.States
 {
     public interface IStateMachine
     {
-        string CreateInState(Job job, IDictionary<string, string> parameters, State state);
-        bool TryToChangeState(string jobId, State toState, string[] fromStates);
+        string CreateInState(Job job, IDictionary<string, string> parameters, IState state);
+        bool TryToChangeState(string jobId, IState toState, string[] fromStates);
     }
 }

@@ -21,7 +21,7 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class ScheduledState : State
+    public class ScheduledState : IState
     {
         public static readonly string StateName = "Scheduled";
 
@@ -39,9 +39,11 @@ namespace HangFire.States
         public DateTime EnqueueAt { get; set; }
         public DateTime ScheduledAt { get; set; }
 
-        public override string Name { get { return StateName; } }
+        public string Name { get { return StateName; } }
+        public string Reason { get; set; }
+        public bool IsFinal { get { return false; } }
 
-        public override Dictionary<string, string> SerializeData()
+        public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {

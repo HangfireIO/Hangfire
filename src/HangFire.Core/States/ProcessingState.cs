@@ -20,7 +20,7 @@ using HangFire.Common;
 
 namespace HangFire.States
 {
-    public class ProcessingState : State
+    public class ProcessingState : IState
     {
         public static readonly string StateName = "Processing";
 
@@ -35,9 +35,11 @@ namespace HangFire.States
         public DateTime StartedAt { get; set; }
         public string ServerName { get; set; }
 
-        public override string Name { get { return StateName; } }
+        public string Name { get { return StateName; } }
+        public string Reason { get; set; }
+        public bool IsFinal { get { return false; } }
 
-        public override Dictionary<string, string> SerializeData()
+        public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {

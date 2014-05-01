@@ -19,7 +19,7 @@ namespace HangFire.Core.Tests.Client
         {
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
-            var state = new Mock<State>();
+            var state = new Mock<IState>();
             var stateMachineFactory = new Mock<IStateMachineFactory>();
 
             _filters = new List<object>();

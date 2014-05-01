@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using HangFire.Common;
+﻿using HangFire.Common;
 using HangFire.States;
 using Xunit;
 
@@ -25,10 +24,10 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
-        public void ShouldExpireJobOnApply()
+        public void IsFinal_ReturnsTrue()
         {
             var state = new SucceededState();
-            Assert.True(state.ExpireJobOnApply);
+            Assert.True(state.IsFinal);
         }
     }
 }

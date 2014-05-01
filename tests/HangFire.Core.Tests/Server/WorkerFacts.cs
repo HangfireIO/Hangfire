@@ -46,7 +46,7 @@ namespace HangFire.Core.Tests.Server
 
             _stateMachine.Setup(x => x.TryToChangeState(
                 It.IsAny<string>(),
-                It.IsAny<State>(),
+                It.IsAny<IState>(),
                 It.IsAny<string[]>())).Returns(true);
 
             _connection.Setup(x => x.GetJobData(_processingJob.JobId))

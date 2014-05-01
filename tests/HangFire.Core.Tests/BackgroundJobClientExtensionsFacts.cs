@@ -9,12 +9,12 @@ namespace HangFire.Core.Tests
     public class BackgroundJobClientExtensionsFacts
     {
         private readonly Mock<IBackgroundJobClient> _client;
-        private readonly Mock<State> _state;
+        private readonly Mock<IState> _state;
 
         public BackgroundJobClientExtensionsFacts()
         {
             _client = new Mock<IBackgroundJobClient>();
-            _state = new Mock<State>();
+            _state = new Mock<IState>();
         }
 
         [Fact]

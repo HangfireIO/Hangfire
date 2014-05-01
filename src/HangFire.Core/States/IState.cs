@@ -18,16 +18,12 @@ using System.Collections.Generic;
 
 namespace HangFire.States
 {
-    public abstract class State
+    public interface IState
     {
-        public string Reason { get; set; }
+        string Reason { get; }
+        string Name { get; }
+        bool IsFinal { get; }
 
-        public abstract string Name { get; }
-        public virtual bool ExpireJobOnApply { get { return false; } }
-
-        public virtual Dictionary<string, string> SerializeData()
-        {
-            return new Dictionary<string, string>();
-        }
+        Dictionary<string, string> SerializeData();
     }
 }

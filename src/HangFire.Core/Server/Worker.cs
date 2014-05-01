@@ -96,7 +96,7 @@ namespace HangFire.Server
             // it was performed to guarantee that it was performed AT LEAST once.
             // It will be re-queued after the JobTimeout was expired.
 
-            State state;
+            IState state;
 
             try
             {

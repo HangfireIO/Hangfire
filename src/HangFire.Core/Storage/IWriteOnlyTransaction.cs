@@ -24,8 +24,8 @@ namespace HangFire.Storage
         // Job operations
         void ExpireJob(string jobId, TimeSpan expireIn);
         void PersistJob(string jobId);
-        void SetJobState(string jobId, State state);
-        void AddJobState(string jobId, State state);
+        void SetJobState(string jobId, IState state);
+        void AddJobState(string jobId, IState state);
 
         // Queue operations
         void AddToQueue(string queue, string jobId);

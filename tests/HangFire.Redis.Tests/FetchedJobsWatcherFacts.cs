@@ -132,7 +132,7 @@ namespace HangFire.Redis.Tests
 
                 // Assert
                 _stateMachine.Verify(
-                    x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<State>(), It.IsAny<string[]>()),
+                    x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()),
                     Times.Never);
             }
         }

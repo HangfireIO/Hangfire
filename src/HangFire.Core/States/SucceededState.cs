@@ -21,7 +21,7 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class SucceededState : State
+    public class SucceededState : IState
     {
         public static readonly string StateName = "Succeeded";
 
@@ -32,17 +32,12 @@ namespace HangFire.States
 
         public DateTime SucceededAt { get; set; }
 
-        public override string Name
-        {
-            get { return StateName; }
-        }
+        public string Name { get { return StateName; } }
+        public string Reason { get; set; }
 
-        public override bool ExpireJobOnApply
-        {
-            get { return true; }
-        }
+        public bool IsFinal { get { return true; } }
 
-        public override Dictionary<string, string> SerializeData()
+        public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {

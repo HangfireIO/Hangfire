@@ -41,5 +41,13 @@ namespace HangFire.Core.Tests.States
             Assert.Equal(JobHelper.ToStringTimestamp(state.EnqueueAt), data["EnqueueAt"]);
             Assert.Equal(JobHelper.ToStringTimestamp(state.ScheduledAt), data["ScheduledAt"]);
         }
+
+        [Fact]
+        public void IsFinal_ReturnsFalse()
+        {
+            var state = new ScheduledState(DateTime.UtcNow);
+
+            Assert.False(state.IsFinal);
+        }
     }
 }

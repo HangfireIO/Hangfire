@@ -78,11 +78,11 @@ select scope_identity() as Id";
                 var jobId = sql.Query(arrangeSql).Single().Id.ToString();
                 var anotherJobId = sql.Query(arrangeSql).Single().Id.ToString();
 
-                var state = new Mock<State>();
+                var state = new Mock<IState>();
                 state.Setup(x => x.Name).Returns("State");
+                state.Setup(x => x.Reason).Returns("Reason");
                 state.Setup(x => x.SerializeData())
                     .Returns(new Dictionary<string, string> { { "Name", "Value" } });
-                state.Object.Reason = "Reason";
 
                 Commit(sql, x => x.SetJobState(jobId, state.Object));
 
@@ -115,11 +115,11 @@ select scope_identity() as Id";
             {
                 var jobId = sql.Query(arrangeSql).Single().Id.ToString();
 
-                var state = new Mock<State>();
+                var state = new Mock<IState>();
                 state.Setup(x => x.Name).Returns("State");
+                state.Setup(x => x.Reason).Returns("Reason");
                 state.Setup(x => x.SerializeData())
                     .Returns(new Dictionary<string, string> { { "Name", "Value" } });
-                state.Object.Reason = "Reason";
 
                 Commit(sql, x => x.AddJobState(jobId, state.Object));
 
