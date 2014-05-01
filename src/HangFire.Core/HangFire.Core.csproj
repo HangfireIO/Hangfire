@@ -57,6 +57,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="BackgroundJobServer.cs" />
+    <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\IJobCreationProcess.cs" />
     <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />

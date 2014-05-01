@@ -26,27 +26,33 @@ namespace HangFire.Web
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AspNetBackgroundJobServer"/>
-        /// class with the number of workers and the list of queues that will 
-        /// be processed by this instance of a server and places it in the list of registered
+        /// class with the default options and places it to the list of registered
         /// objects in the application. .
         /// </summary>
-        /// <param name="workerCount">The number of workers.</param>
-        /// <param name="queues">The list of queues that will be processed.</param>
-        public AspNetBackgroundJobServer(int workerCount, params string[] queues)
-            : base(workerCount, queues)
+        public AspNetBackgroundJobServer()
         {
             HostingEnvironment.RegisterObject(this);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AspNetBackgroundJobServer"/>
-        /// class with the default number of workers and the specified list of
-        /// queues that will be processed by this instance of a server and places it 
-        /// in the list of registered objects in the application. 
+        /// class with the given options and places it to the list of registered 
+        /// objects in the application. 
         /// </summary>
-        /// <param name="queues">The list of queues that will be processed.</param>
-        public AspNetBackgroundJobServer(params string[] queues)
-            : base(queues)
+        public AspNetBackgroundJobServer(BackgroundJobServerOptions options)
+            : base(options)
+        {
+            HostingEnvironment.RegisterObject(this);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AspNetBackgroundJobServer"/>
+        /// class with the given options and job storage, and places it to the list 
+        /// of registered 
+        /// objects in the application. 
+        /// </summary>
+        public AspNetBackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage)
+            : base(options, storage)
         {
             HostingEnvironment.RegisterObject(this);
         }

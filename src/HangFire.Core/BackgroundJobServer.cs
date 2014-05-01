@@ -28,39 +28,33 @@ namespace HangFire
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(BackgroundJobServer));
 
-        private static readonly TimeSpan ServerShutdownTimeout = TimeSpan.FromSeconds(15);
-        private static readonly int DefaultWorkerCount = Environment.ProcessorCount * 5;
-
         private readonly JobStorage _storage;
+        private readonly BackgroundJobServerOptions _options;
+
         private readonly string _serverId;
-        private readonly int _workerCount;
-        private readonly string[] _queues;
         private readonly IServerComponentRunner _serverRunner;
 
-        public BackgroundJobServer(params string[] queues)
-            : this(DefaultWorkerCount, queues)
+        public BackgroundJobServer()
+            : this(new BackgroundJobServerOptions())
         {
         }
 
-        public BackgroundJobServer(int workerCount, params string[] queues)
-            : this(workerCount, queues.Length != 0 ? queues : new[] { EnqueuedState.DefaultQueue }, JobStorage.Current)
+        public BackgroundJobServer(BackgroundJobServerOptions options)
+            : this(options, JobStorage.Current)
         {
         }
 
-        public BackgroundJobServer(int workerCount, string[] queues, JobStorage storage)
+        public BackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage)
         {
-            if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (queues.Length == 0) throw new ArgumentException("You should specify at least one queue to listen.", "queues");
+            if (options == null) throw new ArgumentNullException("options");
             if (storage == null) throw new ArgumentNullException("storage");
 
+            _options = options;
             _storage = storage;
-            _workerCount = workerCount;
-            _queues = queues;
 
-            _serverId = String.Format("{0}:{1}", Environment.MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
+            _serverId = String.Format("{0}:{1}", _options.ServerName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
-// ReSharper disable once DoNotCallOverridableMethodsInConstructor
+            // ReSharper disable once DoNotCallOverridableMethodsInConstructor
             _serverRunner = GetServerRunner();
         }
 
@@ -85,8 +79,8 @@ namespace HangFire
         {
             var context = new ServerContext
             {
-                Queues = _queues,
-                WorkerCount = _workerCount
+                Queues = _options.Queues,
+                WorkerCount = _options.WorkerCount
             };
 
             var server = new ServerCore(
@@ -99,7 +93,7 @@ namespace HangFire
                 server, 
                 new ServerComponentRunnerOptions
                 {
-                    ShutdownTimeout = ServerShutdownTimeout
+                    ShutdownTimeout = _options.ShutdownTimeout
                 });
         }
 
@@ -119,7 +113,7 @@ namespace HangFire
                 new ServerHeartbeat(_storage, _serverId));
 
             yield return new WorkerManager(
-                _serverId, _workerCount, _queues, _storage, new JobPerformanceProcess(), new StateMachineFactory(_storage));
+                _serverId, _options.WorkerCount, _options.Queues, _storage, new JobPerformanceProcess(), new StateMachineFactory(_storage));
 
             yield return new ServerComponentRunner(
                 new ServerWatchdog(_storage));

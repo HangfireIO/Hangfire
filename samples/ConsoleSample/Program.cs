@@ -17,8 +17,13 @@ namespace ConsoleSample
             JobStorage.Current = 
                 new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
                 //new RedisStorage("localhost:6379", 3);
-            
-            using (var server = new BackgroundJobServer("critical", "default"))
+
+            var options = new BackgroundJobServerOptions
+            {
+                Queues = new[] { "critical", "default" }
+            };
+
+            using (var server = new BackgroundJobServer(options))
             {
                 var count = 1;
 

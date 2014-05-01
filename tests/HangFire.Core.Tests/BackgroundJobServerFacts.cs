@@ -8,19 +8,18 @@ namespace HangFire.Core.Tests
 {
     public class BackgroundJobServerFacts
     {
-        private const int WorkerCount = 2;
-        private static readonly string[] Queues = { "default" };
-
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IServerComponentRunner> _runner;
         private readonly Mock<BackgroundJobServer> _serverMock;
+        private readonly BackgroundJobServerOptions _options;
 
         public BackgroundJobServerFacts()
         {
             _storage = new Mock<JobStorage>();
+            _options = new BackgroundJobServerOptions();
 
             _runner = new Mock<IServerComponentRunner>();
-            _serverMock = new Mock<BackgroundJobServer>(WorkerCount, Queues, _storage.Object)
+            _serverMock = new Mock<BackgroundJobServer>(_options, _storage.Object)
             {
                 CallBase = true
             };
@@ -28,53 +27,35 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenWorkerCountIsEqualToZeroOrNegative()
-        {
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(
-                () => new BackgroundJobServer(0, Queues, _storage.Object));
-
-            Assert.Equal("workerCount", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenQueuesArrayIsNull()
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobServer(WorkerCount, null, _storage.Object));
+                () => new BackgroundJobServer(null, _storage.Object));
 
-            Assert.Equal("queues", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenQueuesArrayIsEmpty()
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => new BackgroundJobServer(WorkerCount, new string[0], _storage.Object));
-
-            Assert.Equal("queues", exception.ParamName);
+            Assert.Equal("options", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobServer(WorkerCount, Queues, null));
+                () => new BackgroundJobServer(_options, null));
 
             Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact, GlobalLock(Reason = "Uses JobStorage.Current instance")]
-        public void Ctor_HasDefaultValue_ForWorkerCount()
+        public void Ctor_HasDefaultValue_ForStorage()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
-            Assert.DoesNotThrow(() => new BackgroundJobServer(Queues));
+            Assert.DoesNotThrow(() => new BackgroundJobServer(_options));
         }
 
         [Fact, GlobalLock(Reason = "Uses JobStorage.Current instance")]
-        public void Ctor_HasDefaultValue_ForQueues()
+        public void Ctor_HasDefaultValue_ForOptions()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
-            Assert.DoesNotThrow(() => new BackgroundJobServer(WorkerCount));
+            Assert.DoesNotThrow(() => new BackgroundJobServer());
         }
 
         [Fact]
@@ -155,7 +136,7 @@ namespace HangFire.Core.Tests
 
         private BackgroundJobServer CreateServer()
         {
-            return new BackgroundJobServer(WorkerCount, Queues, _storage.Object);
+            return new BackgroundJobServer(_options, _storage.Object);
         }
     }
 }
