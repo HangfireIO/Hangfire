@@ -157,6 +157,7 @@ namespace HangFire.Redis
             string type = null;
             string method = null;
             string parameterTypes = null;
+            string arguments = null;
 
             if (storedData.ContainsKey("Type"))
             {
@@ -170,11 +171,15 @@ namespace HangFire.Redis
             {
                 parameterTypes = storedData["ParameterTypes"];
             }
+            if (storedData.ContainsKey("Arguments"))
+            {
+                arguments = storedData["Arguments"];
+            }
 
             Job job = null;
             JobLoadException loadException = null;
 
-            var invocationData = new InvocationData(type, method, parameterTypes, storedData["Arguments"]);
+            var invocationData = new InvocationData(type, method, parameterTypes, arguments);
 
             try
             {
