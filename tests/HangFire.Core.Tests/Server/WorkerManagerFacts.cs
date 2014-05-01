@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using HangFire.Server;
 using HangFire.States;
 using Moq;
@@ -67,18 +68,18 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Start_CallsStartMethodOnAllWorkers()
+        public void Execute_CallsStartMethodOnAllWorkers()
         {
-            _manager.Object.Start();
+            _manager.Object.Execute(new CancellationToken(true));
 
             _workerRunners[0].Verify(x => x.Start());
             _workerRunners[1].Verify(x => x.Start());
         }
 
         [Fact]
-        public void Stop_CallsStopMethodOnAllWorkers()
+        public void Execute_CallsStopMethodOnAllWorkers()
         {
-            _manager.Object.Stop();
+            _manager.Object.Execute(new CancellationToken(true));
 
             _workerRunners[0].Verify(x => x.Stop());
             _workerRunners[1].Verify(x => x.Stop());

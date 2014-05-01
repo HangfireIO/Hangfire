@@ -125,12 +125,28 @@ namespace HangFire.Server
                         // the runner can be started, stopped, restarted, etc.
 
                         _starting.Wait(_disposingCts.Token);
+                        _started.Set();
 
-                        _logger.InfoFormat("Server component '{0}' started.", _component);
+                        try
+                        {
+                            const string message = "Server component '{0}' started.";
+                            if (_options.LowerLogVerbosity)
+                            {
+                                _logger.DebugFormat(message, _component);
+                            }
+                            else
+                            {
+                                _logger.InfoFormat(message, _component);    
+                            }
 
-                        ExecuteComponent();
+                            ExecuteComponent();
 
-                        _logger.DebugFormat("Stopping server component '{0}'...", _component);
+                            _logger.DebugFormat("Stopping server component '{0}'...", _component);
+                        }
+                        finally
+                        {
+                            _started.Reset();
+                        }
                     }
                 }
                 finally
@@ -145,7 +161,15 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
-                _logger.InfoFormat("Server component '{0}' stopped.", _component);
+                const string message = "Server component '{0}' stopped.";
+                if (_options.LowerLogVerbosity)
+                {
+                    _logger.DebugFormat(message, _component);
+                }
+                else
+                {
+                    _logger.InfoFormat(message, _component);
+                }
             }
             catch (ThreadAbortException)
             {
@@ -166,8 +190,6 @@ namespace HangFire.Server
         {
             try
             {
-                _started.Set();
-
                 // Each component encapsulates one loop iteration, so
                 // the real infinite loop is going here.
                 while (true)
@@ -188,8 +210,6 @@ namespace HangFire.Server
                     _cts.Dispose();
                     _cts = new CancellationTokenSource();
                 }
-
-                _started.Reset();
             }
         }
 

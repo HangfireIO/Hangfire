@@ -16,11 +16,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Common.Logging;
 
 namespace HangFire.Server
 {
-    internal class WorkerManager : IServerComponentRunner
+    internal class WorkerManager : IServerComponent, IDisposable
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(WorkerManager));
 
@@ -44,14 +45,18 @@ namespace HangFire.Server
             _workerRunners = new ServerComponentRunnerCollection(workerRunners);
         }
 
-        public void Start()
+        public void Execute(CancellationToken cancellationToken)
         {
-            _workerRunners.Start();
-        }
+            try
+            {
+                _workerRunners.Start();
 
-        public void Stop()
-        {
-            _workerRunners.Stop();
+                cancellationToken.WaitHandle.WaitOne();
+            }
+            finally
+            {
+                _workerRunners.Stop();
+            }
         }
 
         public void Dispose()
@@ -59,9 +64,16 @@ namespace HangFire.Server
             _workerRunners.Dispose();
         }
 
+        public override string ToString()
+        {
+            return "Worker Manager";
+        }
+
         internal virtual IServerComponentRunner CreateWorkerRunner(WorkerContext context)
         {
-            return new ServerComponentRunner(new Worker(context));
+            return new ServerComponentRunner(
+                new Worker(context),
+                new ServerComponentRunnerOptions { LowerLogVerbosity = true });
         }
     }
 }

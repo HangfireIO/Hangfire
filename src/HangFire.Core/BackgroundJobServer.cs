@@ -122,7 +122,7 @@ namespace HangFire
                 JobActivator.Current,
                 stateMachineFactory);
 
-            yield return new WorkerManager(sharedWorkerContext, _options.WorkerCount);
+            yield return new ServerComponentRunner(new WorkerManager(sharedWorkerContext, _options.WorkerCount));
             yield return new ServerComponentRunner(new ServerHeartbeat(_storage, _serverId));
             yield return new ServerComponentRunner(new ServerWatchdog(_storage));
 
