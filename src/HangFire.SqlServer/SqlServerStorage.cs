@@ -63,8 +63,7 @@ namespace HangFire.SqlServer
         {
             yield return new ExpirationManager(this);
         }
-
-
+        
         internal SqlConnection CreateAndOpenConnection()
         {
             var connection = new SqlConnection(_connectionString);
