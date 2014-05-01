@@ -23,15 +23,12 @@ namespace HangFire.Server
     internal class ServerComponentRunnerCollection : IServerComponentRunner, ICollection<IServerComponentRunner>
     {
         private readonly List<IServerComponentRunner> _runners;
-        private readonly List<IServerComponentRunner> _reversedRunners;
 
         public ServerComponentRunnerCollection(IEnumerable<IServerComponentRunner> runners)
         {
             if (runners == null) throw new ArgumentNullException("runners");
 
             _runners = new List<IServerComponentRunner>(runners);
-            _reversedRunners = new List<IServerComponentRunner>(_runners);
-            _reversedRunners.Reverse();
         }
 
         public int Count { get { return _runners.Count; } }
@@ -47,7 +44,7 @@ namespace HangFire.Server
 
         public void Stop()
         {
-            foreach (var runner in _reversedRunners)
+            foreach (var runner in _runners)
             {
                 runner.Stop();
             }
@@ -57,7 +54,7 @@ namespace HangFire.Server
         {
             Stop();
 
-            foreach (var runner in _reversedRunners)
+            foreach (var runner in _runners)
             {
                 runner.Dispose();
             }

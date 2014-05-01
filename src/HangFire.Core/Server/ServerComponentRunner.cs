@@ -28,12 +28,11 @@ namespace HangFire.Server
         private readonly ILog _logger;
 
         private readonly ManualResetEventSlim _starting = new ManualResetEventSlim(false);
-        private readonly ManualResetEventSlim _started = new ManualResetEventSlim(false);
         private readonly CancellationTokenSource _disposingCts = new CancellationTokenSource();
         private bool _disposed;
         private CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly object _ctsLock = new object();
-        
+
 
         public ServerComponentRunner(IServerComponent component)
             : this(component, new ServerComponentRunnerOptions())
@@ -67,7 +66,6 @@ namespace HangFire.Server
             _logger.TraceFormat("Sending start request for server component '{0}'...", _component);
 
             _starting.Set();
-            _started.Wait();
         }
 
         public void Stop()
@@ -99,7 +97,6 @@ namespace HangFire.Server
 
             _disposingCts.Dispose();
             _starting.Dispose();
-            _started.Dispose();
             _cts.Dispose();
         }
 
@@ -125,33 +122,25 @@ namespace HangFire.Server
                         // the runner can be started, stopped, restarted, etc.
 
                         _starting.Wait(_disposingCts.Token);
-                        _started.Set();
 
-                        try
+                        const string message = "Server component '{0}' started.";
+                        if (_options.LowerLogVerbosity)
                         {
-                            const string message = "Server component '{0}' started.";
-                            if (_options.LowerLogVerbosity)
-                            {
-                                _logger.DebugFormat(message, _component);
-                            }
-                            else
-                            {
-                                _logger.InfoFormat(message, _component);    
-                            }
-
-                            ExecuteComponent();
-
-                            _logger.DebugFormat("Stopping server component '{0}'...", _component);
+                            _logger.DebugFormat(message, _component);
                         }
-                        finally
+                        else
                         {
-                            _started.Reset();
+                            _logger.InfoFormat(message, _component);
                         }
+
+                        ExecuteComponent();
+
+                        _logger.DebugFormat("Stopping server component '{0}'...", _component);
                     }
                 }
                 finally
                 {
-// ReSharper disable once SuspiciousTypeConversion.Global
+                    // ReSharper disable once SuspiciousTypeConversion.Global
                     var disposable = _component as IDisposable;
                     if (disposable != null)
                     {
