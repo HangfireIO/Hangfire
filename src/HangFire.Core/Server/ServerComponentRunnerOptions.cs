@@ -15,6 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 
 namespace HangFire.Server
 {
@@ -25,7 +26,7 @@ namespace HangFire.Server
         public ServerComponentRunnerOptions()
         {
             MaxRetryAttempts = 10;
-            ShutdownTimeout = TimeSpan.FromSeconds(5);
+            ShutdownTimeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
             LowerLogVerbosity = false;
         }
 
