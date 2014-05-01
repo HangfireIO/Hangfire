@@ -117,6 +117,9 @@ namespace HangFire
 
             yield return new ServerComponentRunner(
                 new ServerWatchdog(_storage));
+
+            yield return new ServerComponentRunner(
+                new SchedulePoller(_storage, new StateMachineFactory(_storage), _options.SchedulePollingInterval));
         }
 
         private IEnumerable<IServerComponentRunner> GetStorageComponentRunners()

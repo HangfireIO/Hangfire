@@ -78,10 +78,7 @@ namespace HangFire.Redis
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            var stateMachineFactory = new StateMachineFactory(this);
-
-            yield return new SchedulePoller(this, stateMachineFactory, Options.PollInterval);
-            yield return new FetchedJobsWatcher(this, stateMachineFactory);
+            yield return new FetchedJobsWatcher(this, new StateMachineFactory(this));
         }
 
         public override IEnumerable<IStateHandler> GetStateHandlers()

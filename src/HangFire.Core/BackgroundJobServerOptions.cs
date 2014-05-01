@@ -15,6 +15,7 @@ namespace HangFire
             ServerName = Environment.MachineName;
             Queues = new[] { EnqueuedState.DefaultQueue };
             ShutdownTimeout = TimeSpan.FromSeconds(15);
+            SchedulePollingInterval = TimeSpan.FromSeconds(15);
         }
 
         public string ServerName
@@ -52,5 +53,6 @@ namespace HangFire
         }
 
         public TimeSpan ShutdownTimeout { get; set; }
+        public TimeSpan SchedulePollingInterval { get; set; }
     }
 }

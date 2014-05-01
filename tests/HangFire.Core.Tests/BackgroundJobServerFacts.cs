@@ -112,6 +112,7 @@ namespace HangFire.Core.Tests
 
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
             Assert.Contains(typeof(ServerWatchdog), componentTypes);
+            Assert.Contains(typeof(SchedulePoller), componentTypes);
         }
 
         [Fact]

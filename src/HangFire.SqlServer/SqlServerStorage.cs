@@ -60,14 +60,6 @@ namespace HangFire.SqlServer
             return new SqlServerConnection(CreateAndOpenConnection());
         }
 
-        public override IEnumerable<IServerComponent> GetComponents()
-        {
-            var stateMachineFactory = new StateMachineFactory(this);
-
-            yield return new SchedulePoller(this, stateMachineFactory, _options.QueuePollInterval);
-            yield return new ExpirationManager(this);
-        }
-
         internal SqlConnection CreateAndOpenConnection()
         {
             var connection = new SqlConnection(_connectionString);

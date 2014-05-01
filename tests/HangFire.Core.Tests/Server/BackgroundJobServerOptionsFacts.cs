@@ -15,6 +15,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Equal(Environment.MachineName, options.ServerName);
             Assert.Equal(EnqueuedState.DefaultQueue, options.Queues[0]);
             Assert.True(options.ShutdownTimeout > TimeSpan.Zero);
+            Assert.True(options.SchedulePollingInterval > TimeSpan.Zero);
         }
 
         [Fact]
