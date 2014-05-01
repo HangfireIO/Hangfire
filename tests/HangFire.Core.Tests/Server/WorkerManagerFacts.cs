@@ -86,9 +86,9 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Dispose_CallsDisposeMethodOnAllWorkers()
+        public void Execute_CallsDisposeMethodOnAllWorkers()
         {
-            _manager.Object.Dispose();
+            _manager.Object.Execute();
 
             _workerRunners[0].Verify(x => x.Dispose());
             _workerRunners[1].Verify(x => x.Dispose());
