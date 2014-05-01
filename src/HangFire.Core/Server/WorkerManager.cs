@@ -21,47 +21,38 @@ using Common.Logging;
 
 namespace HangFire.Server
 {
-    internal class WorkerManager : IServerComponent, IDisposable
+    internal class WorkerManager : IServerComponent
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(WorkerManager));
 
-        private readonly ServerComponentRunnerCollection _workerRunners;
+        private readonly SharedWorkerContext _sharedContext;
+        private readonly int _workerCount;
 
         public WorkerManager(SharedWorkerContext sharedContext, int workerCount)
         {
             if (sharedContext == null) throw new ArgumentNullException("sharedContext");
-
             if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
 
-            var workerRunners = new List<IServerComponentRunner>(workerCount);
-            for (var i = 1; i <= workerCount; i++)
-            {
-                var workerContext = new WorkerContext(sharedContext, i);
-
-// ReSharper disable once DoNotCallOverridableMethodsInConstructor
-                workerRunners.Add(CreateWorkerRunner(workerContext));
-            }
-
-            _workerRunners = new ServerComponentRunnerCollection(workerRunners);
+            _sharedContext = sharedContext;
+            _workerCount = workerCount;
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            try
+            var workerRunners = new List<IServerComponentRunner>(_workerCount);
+            for (var i = 1; i <= _workerCount; i++)
             {
-                _workerRunners.Start();
+                var workerContext = new WorkerContext(_sharedContext, i);
 
+                // ReSharper disable once DoNotCallOverridableMethodsInConstructor
+                workerRunners.Add(CreateWorkerRunner(workerContext));
+            }
+
+            using (var runners = new ServerComponentRunnerCollection(workerRunners))
+            {
+                runners.Start();
                 cancellationToken.WaitHandle.WaitOne();
             }
-            finally
-            {
-                _workerRunners.Stop();
-            }
-        }
-
-        public void Dispose()
-        {
-            _workerRunners.Dispose();
         }
 
         public override string ToString()
