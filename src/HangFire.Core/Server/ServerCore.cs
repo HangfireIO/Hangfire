@@ -16,17 +16,20 @@
 
 using System;
 using System.Threading;
+using Common.Logging;
 
 namespace HangFire.Server
 {
-    public class JobServer : IServerComponent
+    public class ServerCore : IServerComponent
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerCore));
+
         private readonly JobStorage _storage;
         private readonly string _serverId;
         private readonly ServerContext _context;
         private readonly Lazy<IServerComponentRunner> _runner;
 
-        public JobServer(
+        public ServerCore(
             string serverId,
             ServerContext context,
             JobStorage storage,
@@ -49,14 +52,17 @@ namespace HangFire.Server
             {
                 connection.AnnounceServer(_serverId, _context);
             }
-
+            
             try
             {
                 using (_runner.Value)
                 {
+                    Logger.Info("Starting server components...");
                     _runner.Value.Start();
 
                     cancellationToken.WaitHandle.WaitOne();
+
+                    Logger.Info("Stopping server components...");
                 }
             }
             finally
@@ -66,6 +72,11 @@ namespace HangFire.Server
                     connection.RemoveServer(_serverId);
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return "Server Core";
         }
     }
 }

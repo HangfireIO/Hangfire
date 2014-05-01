@@ -67,5 +67,10 @@ delete from HangFire.[{0}] with (tablock) where ExpireAt < @now;", table),
 
             cancellationToken.WaitHandle.WaitOne(_checkInterval);
         }
+
+        public override string ToString()
+        {
+            return "SQL Records Expiration Manager";
+        }
     }
 }

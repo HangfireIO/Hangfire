@@ -56,5 +56,10 @@ namespace HangFire.Server
 
             cancellationToken.WaitHandle.WaitOne(_options.CheckInterval);
         }
+
+        public override string ToString()
+        {
+            return "Server Watchdog";
+        }
     }
 }

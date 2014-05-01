@@ -12,7 +12,7 @@ namespace ConsoleSample
         public static void Main()
         {
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
-                LogLevel.Trace, false, false, true, "");
+                LogLevel.Info, false, false, true, "");
 
             JobStorage.Current = 
                 new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");

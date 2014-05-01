@@ -36,7 +36,7 @@ namespace HangFire.SqlServer
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            Log.Debug("Start installing HangFire SQL objects...");
+            Log.Info("Start installing HangFire SQL objects...");
 
             if (!IsSqlEditionSupported(connection))
             {
@@ -51,7 +51,7 @@ namespace HangFire.SqlServer
 
             connection.Execute(script);
 
-            Log.Debug("HangFire SQL objects installed.");
+            Log.Info("HangFire SQL objects installed.");
         }
 
         private static bool IsSqlEditionSupported(SqlConnection connection)

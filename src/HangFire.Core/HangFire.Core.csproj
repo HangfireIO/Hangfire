@@ -107,7 +107,7 @@
     <Compile Include="Server\IServerComponent.cs" />
     <Compile Include="Server\IServerComponentRunner.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
-    <Compile Include="Server\JobServer.cs" />
+    <Compile Include="Server\ServerCore.cs" />
     <Compile Include="Server\IJobPerformanceProcess.cs" />
     <Compile Include="Server\PerformContext.cs" />
     <Compile Include="Server\ServerExceptionContext.cs" />

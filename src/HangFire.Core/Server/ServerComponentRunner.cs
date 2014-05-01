@@ -63,7 +63,7 @@ namespace HangFire.Server
         {
             CheckDisposed();
 
-            _logger.TraceFormat("Starting server component '{0}'...", _component);
+            _logger.TraceFormat("Sending start request for server component '{0}'...", _component);
 
             _starting.Set();
         }
@@ -72,9 +72,9 @@ namespace HangFire.Server
         {
             CheckDisposed();
 
-            _logger.TraceFormat("Stopping server component '{0}'...", _component);
-
             _starting.Reset();
+
+            _logger.TraceFormat("Sending stop request for server component '{0}'...", _component);
 
             lock (_ctsLock)
             {
@@ -86,13 +86,13 @@ namespace HangFire.Server
         {
             if (_disposed) return;
 
-            _logger.TraceFormat("Shutdown requested for server component '{0}'...", _component);
-
             Stop();
 
             _disposed = true;
-            _disposingCts.Cancel();
 
+            _logger.TraceFormat("Sending shutdown request for server component '{0}'...", _component);
+
+            _disposingCts.Cancel();
             _thread.Join(_options.ShutdownTimeout);
 
             _disposingCts.Dispose();
@@ -112,6 +112,8 @@ namespace HangFire.Server
         {
             try
             {
+                _logger.DebugFormat("Starting server component '{0}'...", _component);
+
                 try
                 {
                     while (true)
@@ -121,11 +123,11 @@ namespace HangFire.Server
 
                         _starting.Wait(_disposingCts.Token);
 
-                        LogComponentStarted();
+                        _logger.InfoFormat("Server component '{0}' started.", _component);
 
                         ExecuteComponent();
 
-                        LogComponentStopped();
+                        _logger.DebugFormat("Stopping server component '{0}'...", _component);
                     }
                 }
                 finally
@@ -140,7 +142,7 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
-                _logger.TraceFormat("Server component '{0}' disposed.", _component);
+                _logger.InfoFormat("Server component '{0}' stopped.", _component);
             }
             catch (ThreadAbortException)
             {
@@ -227,32 +229,6 @@ namespace HangFire.Server
                 (int)Math.Pow(retryAttemptNumber, 2), (int)Math.Pow(retryAttemptNumber + 1, 2) + 1);
 
             return TimeSpan.FromSeconds(nextTry);
-        }
-
-        private void LogComponentStarted()
-        {
-            const string startedMessage = "Server component '{0}' started.";
-            if (_options.MinimumLogVerbosity)
-            {
-                _logger.DebugFormat(startedMessage, _component);
-            }
-            else
-            {
-                _logger.InfoFormat(startedMessage, _component);
-            }
-        }
-
-        private void LogComponentStopped()
-        {
-            const string stoppedMessage = "Server component '{0}' stopped.";
-            if (_options.MinimumLogVerbosity)
-            {
-                _logger.DebugFormat(stoppedMessage, _component);
-            }
-            else
-            {
-                _logger.InfoFormat(stoppedMessage, _component);
-            }
         }
     }
 }

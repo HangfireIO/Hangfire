@@ -64,6 +64,11 @@ namespace HangFire.Server
             }
         }
 
+        public override string ToString()
+        {
+            return "Schedule Poller";
+        }
+
         private bool EnqueueNextScheduledJob()
         {
             using (var connection = _storage.GetConnection())

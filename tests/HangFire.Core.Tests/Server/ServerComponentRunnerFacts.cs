@@ -174,7 +174,6 @@ namespace HangFire.Core.Tests.Server
         public void Dispose_ShouldDisposeDisposableComponent()
         {
             // Arrange
-            _options.MinimumLogVerbosity = true;
             _options.MaxRetryAttempts = 0;
 
             var component = new DisposableComponent();

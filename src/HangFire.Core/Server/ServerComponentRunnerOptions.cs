@@ -26,7 +26,6 @@ namespace HangFire.Server
         {
             MaxRetryAttempts = 10;
             ShutdownTimeout = TimeSpan.FromSeconds(5);
-            MinimumLogVerbosity = false;
         }
 
         public int MaxRetryAttempts
@@ -46,6 +45,5 @@ namespace HangFire.Server
         }
 
         public TimeSpan ShutdownTimeout { get; set; }
-        public bool MinimumLogVerbosity { get; set; }
     }
 }

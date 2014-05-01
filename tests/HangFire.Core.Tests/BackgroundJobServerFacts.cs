@@ -109,7 +109,7 @@ namespace HangFire.Core.Tests
             var runner = server.GetServerRunner();
 
             Assert.NotNull(runner);
-            Assert.IsType<JobServer>(((ServerComponentRunner) runner).Component);
+            Assert.IsType<ServerCore>(((ServerComponentRunner) runner).Component);
         }
 
         [Fact]

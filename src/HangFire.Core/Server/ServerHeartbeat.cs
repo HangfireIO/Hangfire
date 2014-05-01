@@ -44,5 +44,10 @@ namespace HangFire.Server
 
             cancellationToken.WaitHandle.WaitOne(HeartbeatInterval);
         }
+
+        public override string ToString()
+        {
+            return "Server Heartbeat";
+        }
     }
 }

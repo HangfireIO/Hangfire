@@ -70,6 +70,11 @@ namespace HangFire.Server
             }
         }
 
+        public override string ToString()
+        {
+            return "Worker #" + _context.WorkerNumber;
+        }
+
         private void ProcessJob(
             string jobId,
             IStorageConnection connection, 

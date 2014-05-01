@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Common.Logging;
 using HangFire.Server;
 using HangFire.States;
 
@@ -25,6 +26,8 @@ namespace HangFire
 {
     public class BackgroundJobServer : IDisposable
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(BackgroundJobServer));
+
         private static readonly TimeSpan ServerShutdownTimeout = TimeSpan.FromSeconds(15);
         private static readonly int DefaultWorkerCount = Environment.ProcessorCount * 5;
 
@@ -63,6 +66,7 @@ namespace HangFire
 
         public virtual void Start()
         {
+            Logger.Info("Starting HangFire Server...");
             _serverRunner.Start();
         }
 
@@ -74,6 +78,7 @@ namespace HangFire
         public void Dispose()
         {
             _serverRunner.Dispose();
+            Logger.Info("HangFire Server stopped.");
         }
 
         internal virtual IServerComponentRunner GetServerRunner()
@@ -84,7 +89,7 @@ namespace HangFire
                 WorkerCount = _workerCount
             };
 
-            var server = new JobServer(
+            var server = new ServerCore(
                 _serverId, 
                 context, 
                 _storage, 
@@ -92,7 +97,10 @@ namespace HangFire
 
             return new ServerComponentRunner(
                 server, 
-                new ServerComponentRunnerOptions { ShutdownTimeout = ServerShutdownTimeout });
+                new ServerComponentRunnerOptions
+                {
+                    ShutdownTimeout = ServerShutdownTimeout
+                });
         }
 
         internal ServerComponentRunnerCollection GetServerComponentsRunner()

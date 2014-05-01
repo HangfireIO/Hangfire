@@ -16,12 +16,15 @@
 
 using System;
 using System.Collections.Generic;
+using Common.Logging;
 using HangFire.States;
 
 namespace HangFire.Server
 {
     internal class WorkerManager : IServerComponentRunner
     {
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(WorkerManager));
+
         private readonly JobStorage _storage;
         private readonly IJobPerformanceProcess _performanceProcess;
         private readonly IStateMachineFactory _stateMachineFactory;
@@ -76,8 +79,7 @@ namespace HangFire.Server
         internal virtual IServerComponentRunner CreateWorkerRunner(WorkerContext context)
         {
             return new ServerComponentRunner(
-                new Worker(context, _storage, _performanceProcess, _stateMachineFactory),
-                new ServerComponentRunnerOptions { MinimumLogVerbosity = true });
+                new Worker(context, _storage, _performanceProcess, _stateMachineFactory));
         }
     }
 }
