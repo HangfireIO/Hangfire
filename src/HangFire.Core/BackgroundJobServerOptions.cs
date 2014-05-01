@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Common.Logging;
 using HangFire.States;
 
 namespace HangFire
@@ -54,5 +56,14 @@ namespace HangFire
 
         public TimeSpan ShutdownTimeout { get; set; }
         public TimeSpan SchedulePollingInterval { get; set; }
+
+        public void Log(ILog logger)
+        {
+            logger.InfoFormat("Using the following options for HangFire Server:");
+            logger.InfoFormat("    Worker count: {0}.", WorkerCount);
+            logger.InfoFormat("    Listening queues: {0}.", String.Join(", ", Queues.Select(x => "'" + x + "'")));
+            logger.InfoFormat("    Shutdown timeout: {0}.", ShutdownTimeout);
+            logger.InfoFormat("    Schedule polling interval: {0}.", SchedulePollingInterval);
+        }
     }
 }
