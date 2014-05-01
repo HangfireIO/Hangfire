@@ -16,6 +16,18 @@
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>Long-Running AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
+    
+0.8
+* New - New server component subsystem - more reliability, more logging, less blocking on stop.
+* New - Added monitor access authorization using ASP.NET RoleProvider.
+* New - Monitor access restricted to local requests only by default.
+* Changed - Some breaking changes for public API. Please, read GitHub release notes for details.
+* Changed - Changed default automatic retry attempts count to 10.
+* Changed - Namespace optimization to reduce number of needed 'using' statements.
+* Removed - Remove deprecated job format based on classes (was obsolete since 0.6.0).
+* Fixed - PreserveCultureAttribute does not work.
+* Fixed - Rare 'arithmetic overflow error for data type tinyint, value = -1' exception.
+* Fixed - Numerous minor issues catched with new unit tests.
 
 0.7.5
 * Added possibility to change the job expiration time.
@@ -49,11 +61,6 @@
 * Fixed: Some history statistic counters do not expire.
 * Fixed: Use `StatisticsHistoryFilter` by default.
 * Fixed some internal mistakes.
-
-0.6.2
-* This release contains new client API, based on expressions. Please, see https://github.com/odinserj/HangFire/releases/tag/v0.6 for details.
-* Fixed NullReferenceException when trying to create a job using the Old API.
-* Fixes some NuGet package issues.
     </releaseNotes>
     <dependencies>
       <dependency id="HangFire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
