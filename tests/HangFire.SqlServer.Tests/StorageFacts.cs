@@ -56,17 +56,6 @@ namespace HangFire.SqlServer.Tests
             Assert.Contains(typeof(ExpirationManager), componentTypes);
         }
 
-        [Fact]
-        public void ToString_ReturnsOnlyServerAndDatabase()
-        {
-            var storage = new SqlServerStorage(
-                @"Server=.\sqlexpress; Database=HangFire.Sample; Integrated Security=SSPI;");
-
-            var result = storage.ToString();
-
-            Assert.Equal(@"SQL Server: .\sqlexpress@HangFire.Sample", result);
-        }
-
         private static SqlServerStorage CreateStorage()
         {
             return new SqlServerStorage(
