@@ -30,14 +30,16 @@ namespace HangFire.SqlServer
 {
     internal class SqlServerConnection : IStorageConnection
     {
-        private static readonly TimeSpan JobInvisibilityTimeOut = TimeSpan.FromMinutes(30);
         private readonly SqlConnection _connection;
+        private readonly SqlServerStorageOptions _options;
 
-        public SqlServerConnection(SqlConnection connection)
+        public SqlServerConnection(SqlConnection connection, SqlServerStorageOptions options)
         {
             if (connection == null) throw new ArgumentNullException("connection");
+            if (options == null) throw new ArgumentNullException("options");
 
             _connection = connection;
+            _options = options;
         }
 
         public void Dispose()
@@ -82,14 +84,14 @@ and Queue in @queues";
 
                 idAndQueue = _connection.Query(
                     String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
-                    new { queues = queues, timeout = JobInvisibilityTimeOut.Negate().TotalSeconds })
+                    new { queues = queues, timeout = _options.JobInvisibilityTimeOut.Negate().TotalSeconds })
                     .SingleOrDefault();
 
                 if (idAndQueue == null)
                 {
                     if (currentQueryIndex == fetchConditions.Length - 1)
                     {
-                        cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5));
+                        cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
                         cancellationToken.ThrowIfCancellationRequested();
                     }
                 }

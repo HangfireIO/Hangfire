@@ -9,7 +9,9 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_SetsTheDefaultOptions()
         {
             var options = new SqlServerStorageOptions();
-            Assert.NotEqual(0, options.QueuePollInterval.TotalSeconds);
+
+            Assert.True(options.QueuePollInterval > TimeSpan.Zero);
+            Assert.True(options.JobInvisibilityTimeOut > TimeSpan.Zero);
             Assert.True(options.PrepareSchemaIfNecessary);
         }
 

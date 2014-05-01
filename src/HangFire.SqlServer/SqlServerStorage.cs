@@ -15,10 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using HangFire.Server;
-using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
@@ -57,7 +54,7 @@ namespace HangFire.SqlServer
 
         public override IStorageConnection GetConnection()
         {
-            return new SqlServerConnection(CreateAndOpenConnection());
+            return new SqlServerConnection(CreateAndOpenConnection(), _options);
         }
 
         internal SqlConnection CreateAndOpenConnection()

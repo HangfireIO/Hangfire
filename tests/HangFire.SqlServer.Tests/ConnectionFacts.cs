@@ -15,8 +15,19 @@ namespace HangFire.SqlServer.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenSqlConnectionIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerConnection(null, new SqlServerStorageOptions()));
+
+            Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+
+            Assert.Equal("options", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -596,7 +607,7 @@ values (@id, '', @heartbeat)";
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection))
+            using (var connection = new SqlServerConnection(sqlConnection, new SqlServerStorageOptions()))
             {
                 action(sqlConnection, connection);
             }
@@ -604,7 +615,8 @@ values (@id, '', @heartbeat)";
 
         private void UseConnection(Action<SqlServerConnection> action)
         {
-            using (var connection = new SqlServerConnection(ConnectionUtils.CreateConnection()))
+            using (var connection = new SqlServerConnection(
+                ConnectionUtils.CreateConnection(), new SqlServerStorageOptions()))
             {
                 action(connection);
             }
