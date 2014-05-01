@@ -28,6 +28,7 @@ namespace HangFire.Server
         private readonly ILog _logger;
 
         private readonly ManualResetEventSlim _starting = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim _started = new ManualResetEventSlim(false);
         private readonly CancellationTokenSource _disposingCts = new CancellationTokenSource();
         private bool _disposed;
         private CancellationTokenSource _cts = new CancellationTokenSource();
@@ -66,6 +67,7 @@ namespace HangFire.Server
             _logger.TraceFormat("Sending start request for server component '{0}'...", _component);
 
             _starting.Set();
+            _started.Wait();
         }
 
         public void Stop()
@@ -97,6 +99,7 @@ namespace HangFire.Server
 
             _disposingCts.Dispose();
             _starting.Dispose();
+            _started.Dispose();
             _cts.Dispose();
         }
 
@@ -163,6 +166,8 @@ namespace HangFire.Server
         {
             try
             {
+                _started.Set();
+
                 // Each component encapsulates one loop iteration, so
                 // the real infinite loop is going here.
                 while (true)
@@ -183,6 +188,8 @@ namespace HangFire.Server
                     _cts.Dispose();
                     _cts = new CancellationTokenSource();
                 }
+
+                _started.Reset();
             }
         }
 
