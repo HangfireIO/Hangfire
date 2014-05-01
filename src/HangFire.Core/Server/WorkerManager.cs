@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using Common.Logging;
-using HangFire.States;
 
 namespace HangFire.Server
 {
@@ -25,34 +24,18 @@ namespace HangFire.Server
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(WorkerManager));
 
-        private readonly JobStorage _storage;
-        private readonly IJobPerformanceProcess _performanceProcess;
-        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly ServerComponentRunnerCollection _workerRunners;
 
-        public WorkerManager(
-            string serverId,
-            int workerCount, 
-            string[] queues,
-            JobStorage storage, 
-            IJobPerformanceProcess performanceProcess,
-            IStateMachineFactory stateMachineFactory)
+        public WorkerManager(SharedWorkerContext sharedContext, int workerCount)
         {
-            if (serverId == null) throw new ArgumentNullException("serverId");
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (performanceProcess == null) throw new ArgumentNullException("performanceProcess");
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
+            if (sharedContext == null) throw new ArgumentNullException("sharedContext");
 
-            _storage = storage;
-            _performanceProcess = performanceProcess;
-            _stateMachineFactory = stateMachineFactory;
+            if (workerCount <= 0) throw new ArgumentOutOfRangeException("workerCount", "Worker count value must be more than zero.");
 
             var workerRunners = new List<IServerComponentRunner>(workerCount);
             for (var i = 1; i <= workerCount; i++)
             {
-                var workerContext = new WorkerContext(serverId, queues, i);
+                var workerContext = new WorkerContext(sharedContext, i);
 
 // ReSharper disable once DoNotCallOverridableMethodsInConstructor
                 workerRunners.Add(CreateWorkerRunner(workerContext));
@@ -78,8 +61,7 @@ namespace HangFire.Server
 
         internal virtual IServerComponentRunner CreateWorkerRunner(WorkerContext context)
         {
-            return new ServerComponentRunner(
-                new Worker(context, _storage, _performanceProcess, _stateMachineFactory));
+            return new ServerComponentRunner(new Worker(context));
         }
     }
 }

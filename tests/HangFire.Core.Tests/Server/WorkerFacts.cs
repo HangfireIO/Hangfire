@@ -12,42 +12,29 @@ namespace HangFire.Core.Tests.Server
 {
     public class WorkerFacts
     {
-        private readonly Mock<JobStorage> _storage;
-        private readonly string[] _queues;
-        private readonly WorkerContext _context;
-        private readonly Mock<IJobPerformanceProcess> _process;
+        private readonly WorkerContextMock _context;
         private readonly Mock<IStorageConnection> _connection;
         private readonly CancellationToken _token;
-        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly ProcessingJob _processingJob;
+        private readonly Mock<JobStorage> _storage;
+        private readonly Mock<IJobPerformanceProcess> _process;
 
         public WorkerFacts()
         {
-            _queues = new[] { "default" };
-            _context = new WorkerContext("server", _queues, 1);
-            _process = new Mock<IJobPerformanceProcess>();
+            _context = new WorkerContextMock();
+            _storage = _context.SharedContext.Storage;
+            _process = _context.SharedContext.PerformanceProcess;
 
-            _storage = new Mock<JobStorage>();
             _connection = new Mock<IStorageConnection>();
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
             _processingJob = new ProcessingJob("my-job", "my-queue");
 
-            _connection.Setup(x => x.FetchNextJob(_queues, It.IsNotNull<CancellationToken>()))
+            _connection
+                .Setup(x => x.FetchNextJob(_context.SharedContext.Queues, It.IsNotNull<CancellationToken>()))
                 .Returns(_processingJob);
-
-            _stateMachineFactory = new Mock<IStateMachineFactory>();
-            _stateMachine = new Mock<IStateMachine>();
-
-            _stateMachineFactory.Setup(x => x.Create(_connection.Object))
-                .Returns(_stateMachine.Object);
-
-            _stateMachine.Setup(x => x.TryToChangeState(
-                It.IsAny<string>(),
-                It.IsAny<IState>(),
-                It.IsAny<string[]>())).Returns(true);
 
             _connection.Setup(x => x.GetJobData(_processingJob.JobId))
                 .Returns(new JobData
@@ -55,6 +42,16 @@ namespace HangFire.Core.Tests.Server
                     Job = Job.FromExpression(() => Method()),
                 });
 
+            _stateMachine = new Mock<IStateMachine>();
+
+            _context.SharedContext.StateMachineFactory
+                .Setup(x => x.Create(_connection.Object))
+                .Returns(_stateMachine.Object);
+
+            _stateMachine.Setup(x => x.TryToChangeState(
+                It.IsAny<string>(),
+                It.IsAny<IState>(),
+                It.IsAny<string[]>())).Returns(true);
 
             _token = new CancellationToken();
         }
@@ -63,36 +60,9 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(null, _storage.Object, _process.Object, _stateMachineFactory.Object));
+                () => new Worker(null));
 
             Assert.Equal("context", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_context, null, _process.Object, _stateMachineFactory.Object));
-
-            Assert.Equal("storage", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenProcessIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_context, _storage.Object, null, _stateMachineFactory.Object));
-
-            Assert.Equal("process", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_context, _storage.Object, _process.Object, null));
-
-            Assert.Equal("stateMachineFactory", exception.ParamName);
         }
 
         [Fact]
@@ -114,7 +84,7 @@ namespace HangFire.Core.Tests.Server
             worker.Execute(_token);
 
             _connection.Verify(
-                x => x.FetchNextJob(_queues, _token),
+                x => x.FetchNextJob(_context.SharedContext.Queues, _token),
                 Times.Once);
 
             _connection.Verify(x => x.DeleteJobFromQueue(_processingJob.JobId, _processingJob.Queue));
@@ -156,7 +126,7 @@ namespace HangFire.Core.Tests.Server
 
             _stateMachine.Verify(x => x.TryToChangeState(
                 It.IsAny<string>(),
-                It.Is<ProcessingState>(state => state.ServerName == _context.ServerName),
+                It.Is<ProcessingState>(state => state.ServerName == _context.Object.ServerId),
                 It.IsAny<string[]>()));
         }
 
@@ -285,7 +255,7 @@ namespace HangFire.Core.Tests.Server
 
         private Worker CreateWorker()
         {
-            return new Worker(_context, _storage.Object, _process.Object, _stateMachineFactory.Object);
+            return new Worker(_context.Object);
         }
 
         public static void Method() { }

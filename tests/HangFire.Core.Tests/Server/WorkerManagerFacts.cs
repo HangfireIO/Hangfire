@@ -8,21 +8,22 @@ namespace HangFire.Core.Tests.Server
 {
     public class WorkerManagerFacts
     {
-        private const string ServerId = "server";
         private const int WorkerCount = 2;
-        private static readonly string[] Queues = { "default" };
 
-        private readonly Mock<JobStorage> _storage;
-        private readonly Mock<IJobPerformanceProcess> _process;
+        private readonly SharedWorkerContext _sharedContext;
         private readonly Mock<WorkerManager> _manager;
         private readonly Mock<IServerComponentRunner>[] _workerRunners;
-        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
+        
 
         public WorkerManagerFacts()
         {
-            _storage = new Mock<JobStorage>();
-            _process = new Mock<IJobPerformanceProcess>();
-            _stateMachineFactory = new Mock<IStateMachineFactory>();
+            _sharedContext = new SharedWorkerContext(
+                "server",
+                new[] { "default" },
+                new Mock<JobStorage>().Object,
+                new Mock<IJobPerformanceProcess>().Object,
+                new Mock<JobActivator>().Object,
+                new Mock<IStateMachineFactory>().Object);
 
             _workerRunners = new[]
             {
@@ -31,20 +32,17 @@ namespace HangFire.Core.Tests.Server
             };
 
             _manager = new Mock<WorkerManager>(
-                ServerId, WorkerCount, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object);
+                _sharedContext, WorkerCount);
 
             _manager.Setup(x => x.CreateWorkerRunner(It.IsNotNull<WorkerContext>()))
                 .Returns((WorkerContext context) => _workerRunners[context.WorkerNumber - 1].Object);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenServerIdIsNull()
+        public void Ctor_ThrowsAnException_WhenSharedContextIsNull()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(
-                    null, WorkerCount, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object));
-
-            Assert.Equal("serverId", exception.ParamName);
+            Assert.Throws<ArgumentNullException>(
+                () => new WorkerManager(null, WorkerCount));
         }
 
         [Fact]
@@ -52,57 +50,16 @@ namespace HangFire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentOutOfRangeException>(
                 () => new WorkerManager(
-                    ServerId, 0, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object));
+                    _sharedContext, 0));
 
             Assert.Equal("workerCount", exception.ParamName);
         }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenQueuesArrayIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(
-                    ServerId, WorkerCount, null, _storage.Object, _process.Object, _stateMachineFactory.Object));
-
-            Assert.Equal("queues", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(
-                    ServerId, WorkerCount, Queues, null, _process.Object, _stateMachineFactory.Object));
-
-            Assert.Equal("storage", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenProcessIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(
-                    ServerId, WorkerCount, Queues, _storage.Object, null, _stateMachineFactory.Object));
-
-            Assert.Equal("performanceProcess", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerManager(
-                    ServerId, WorkerCount, Queues, _storage.Object, _process.Object, null));
-
-            Assert.Equal("stateMachineFactory", exception.ParamName);
-        }
-
+        
         [Fact]
         public void CreateWorkerRunner_CreatesAWorkerRunnerWithGivenParameters()
         {
-            var manager = new WorkerManager(
-                ServerId, WorkerCount, Queues, _storage.Object, _process.Object, _stateMachineFactory.Object);
-            var context = new WorkerContext(ServerId, Queues, 1);
+            var manager = new WorkerManager(_sharedContext, WorkerCount);
+            var context = new WorkerContext(_sharedContext, 1);
 
             var worker = manager.CreateWorkerRunner(context);
 

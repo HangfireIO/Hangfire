@@ -18,13 +18,13 @@ namespace HangFire.Core.Tests.Server
 
         public JobPerformanceProcessFacts()
         {
-            var workerContext = new WorkerContext("server", new string[0], 1);
+            var workerContext = new WorkerContextMock();
 
             var connection = new Mock<IStorageConnection>();
             const string jobId = "someId";
             var job = Job.FromExpression(() => Method());
 
-            _context = new PerformContext(workerContext, connection.Object, jobId, job);
+            _context = new PerformContext(workerContext.Object, connection.Object, jobId, job);
             _performer = new Mock<IJobPerformer>();
 
             _filters = new List<object>();

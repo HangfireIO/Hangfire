@@ -11,13 +11,13 @@ namespace HangFire.Core.Tests.Server
     {
         private const string JobId = "id";
 
-        private readonly WorkerContext _workerContext;
+        private readonly WorkerContextMock _workerContext;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Job _job;
 
         public PerformContextFacts()
         {
-            _workerContext = new WorkerContext("Server", new string[0], 1);
+            _workerContext = new WorkerContextMock();
             _connection = new Mock<IStorageConnection>();
             _job = Job.FromExpression(() => Method());
         }
@@ -33,7 +33,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext, null, JobId, _job));
+                () => new PerformContext(_workerContext.Object, null, JobId, _job));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -42,7 +42,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext, _connection.Object, null, _job));
+                () => new PerformContext(_workerContext.Object, _connection.Object, null, _job));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -51,7 +51,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext, _connection.Object, JobId, null));
+                () => new PerformContext(_workerContext.Object, _connection.Object, JobId, null));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -128,7 +128,7 @@ namespace HangFire.Core.Tests.Server
 
         private PerformContext CreateContext()
         {
-            return new PerformContext(_workerContext, _connection.Object, JobId, _job);
+            return new PerformContext(_workerContext.Object, _connection.Object, JobId, _job);
         }
 
         public static void Method() { }

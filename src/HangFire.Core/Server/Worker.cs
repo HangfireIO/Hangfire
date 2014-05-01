@@ -23,37 +23,24 @@ namespace HangFire.Server
 {
     internal class Worker : IServerComponent
     {
-        private readonly JobStorage _storage;
         private readonly WorkerContext _context;
-        private readonly IJobPerformanceProcess _process;
-        private readonly IStateMachineFactory _stateMachineFactory;
 
-        public Worker(
-            WorkerContext context,
-            JobStorage storage,  
-            IJobPerformanceProcess process,
-            IStateMachineFactory stateMachineFactory)
+        public Worker(WorkerContext context)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
             if (context == null) throw new ArgumentNullException("context");
-            if (process == null) throw new ArgumentNullException("process");
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
 
-            _storage = storage;
             _context = context;
-            _process = process;
-            _stateMachineFactory = stateMachineFactory;
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            using (var connection = _storage.GetConnection())
+            using (var connection = _context.Storage.GetConnection())
             {
-                var nextJob = connection.FetchNextJob(_context.QueueNames, cancellationToken);
+                var nextJob = connection.FetchNextJob(_context.Queues, cancellationToken);
 
                 try
                 {
-                    ProcessJob(nextJob.JobId, connection, _process);
+                    ProcessJob(nextJob.JobId, connection, _context.PerformanceProcess);
 
                     // Checkpoint #4. The job was performed, and it is in the one
                     // of the explicit states (Succeeded, Scheduled and so on).
@@ -80,8 +67,8 @@ namespace HangFire.Server
             IStorageConnection connection, 
             IJobPerformanceProcess process)
         {
-            var stateMachine = _stateMachineFactory.Create(connection);
-            var processingState = new ProcessingState(_context.ServerName);
+            var stateMachine = _context.StateMachineFactory.Create(connection);
+            var processingState = new ProcessingState(_context.ServerId);
 
             if (!stateMachine.TryToChangeState(
                 jobId,

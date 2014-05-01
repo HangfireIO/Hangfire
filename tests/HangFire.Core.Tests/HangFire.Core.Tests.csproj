@@ -78,6 +78,8 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
+    <Compile Include="Mocks\SharedWorkerContextMock.cs" />
+    <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
@@ -93,6 +95,7 @@
     <Compile Include="Server\ServerComponentRunnerOptionsFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
+    <Compile Include="Server\SharedWorkerContextFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="Server\WorkerManagerFacts.cs" />

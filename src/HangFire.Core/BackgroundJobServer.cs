@@ -109,17 +109,21 @@ namespace HangFire
 
         private IEnumerable<IServerComponentRunner> GetCommonComponentRunners()
         {
-            yield return new ServerComponentRunner(
-                new ServerHeartbeat(_storage, _serverId));
+            var stateMachineFactory = new StateMachineFactory(_storage);
+            var sharedWorkerContext = new SharedWorkerContext(
+                _serverId,
+                _options.Queues,
+                _storage,
+                new JobPerformanceProcess(),
+                JobActivator.Current,
+                stateMachineFactory);
 
-            yield return new WorkerManager(
-                _serverId, _options.WorkerCount, _options.Queues, _storage, new JobPerformanceProcess(), new StateMachineFactory(_storage));
+            yield return new WorkerManager(sharedWorkerContext, _options.WorkerCount);
+            yield return new ServerComponentRunner(new ServerHeartbeat(_storage, _serverId));
+            yield return new ServerComponentRunner(new ServerWatchdog(_storage));
 
             yield return new ServerComponentRunner(
-                new ServerWatchdog(_storage));
-
-            yield return new ServerComponentRunner(
-                new SchedulePoller(_storage, new StateMachineFactory(_storage), _options.SchedulePollingInterval));
+                new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval));
         }
 
         private IEnumerable<IServerComponentRunner> GetStorageComponentRunners()
