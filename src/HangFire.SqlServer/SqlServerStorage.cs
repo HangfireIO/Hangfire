@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
 using HangFire.Server;
 using HangFire.Storage;
 
@@ -63,7 +65,50 @@ namespace HangFire.SqlServer
         {
             yield return new ExpirationManager(this);
         }
-        
+
+        public override string ToString()
+        {
+            const string canNotParseMessage = "<Connection string can not be parsed>";
+
+            try
+            {
+                var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
+                    .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
+                    .ToDictionary(x => x.Key, x => x.Value);
+
+                var builder = new StringBuilder();
+
+                foreach (var alias in new[] { "Data Source", "Server", "Address", "Addr", "Network Address" })
+                {
+                    if (parts.ContainsKey(alias))
+                    {
+                        builder.AppendFormat("{1}", alias, parts[alias]);
+                        break;
+                    }
+                }
+
+                if (builder.Length != 0) builder.Append("@");
+
+                foreach (var alias in new[] { "Database", "Initial Catalog" })
+                {
+                    if (parts.ContainsKey(alias))
+                    {
+                        builder.AppendFormat("{1}", alias, parts[alias]);
+                        break;
+                    }
+                }
+
+                return builder.Length != 0 
+                    ? String.Format("SQL Server: {0}", builder) 
+                    : canNotParseMessage;
+            }
+            catch (Exception)
+            {
+                return canNotParseMessage;
+            }
+        }
+
         internal SqlConnection CreateAndOpenConnection()
         {
             var connection = new SqlConnection(_connectionString);
