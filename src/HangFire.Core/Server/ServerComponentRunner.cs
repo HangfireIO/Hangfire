@@ -93,7 +93,10 @@ namespace HangFire.Server
             _logger.TraceFormat("Sending shutdown request for server component '{0}'...", _component);
 
             _disposingCts.Cancel();
-            _thread.Join(_options.ShutdownTimeout);
+            if (!_thread.Join(_options.ShutdownTimeout))
+            {
+                _thread.Abort();
+            }
 
             _disposingCts.Dispose();
             _starting.Dispose();
