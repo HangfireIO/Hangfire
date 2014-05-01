@@ -84,7 +84,7 @@ and Queue in @queues";
 
                 idAndQueue = _connection.Query(
                     String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
-                    new { queues = queues, timeout = _options.JobInvisibilityTimeOut.Negate().TotalSeconds })
+                    new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds })
                     .SingleOrDefault();
 
                 if (idAndQueue == null)

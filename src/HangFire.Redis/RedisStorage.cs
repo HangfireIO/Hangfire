@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Common.Logging;
 using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;
@@ -46,6 +47,9 @@ namespace HangFire.Redis
 
         public RedisStorage(string hostAndPort, int db, RedisStorageOptions options)
         {
+            if (hostAndPort == null) throw new ArgumentNullException("hostAndPort");
+            if (options == null) throw new ArgumentNullException("options");
+
             HostAndPort = hostAndPort;
             Db = db;
             Options = options;
@@ -86,6 +90,12 @@ namespace HangFire.Redis
             yield return new FailedStateHandler();
             yield return new ProcessingStateHandler();
             yield return new SucceededStateHandler();
+        }
+
+        public override void WriteOptionsToLog(ILog logger)
+        {
+            logger.Info("Using the following options for Redis job storage:");
+            logger.InfoFormat("    Connection pool size: {0}.", Options.ConnectionPoolSize);
         }
 
         public override string ToString()

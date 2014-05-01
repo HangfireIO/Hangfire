@@ -11,7 +11,7 @@ namespace HangFire.SqlServer.Tests
             var options = new SqlServerStorageOptions();
 
             Assert.True(options.QueuePollInterval > TimeSpan.Zero);
-            Assert.True(options.JobInvisibilityTimeOut > TimeSpan.Zero);
+            Assert.True(options.InvisibilityTimeout > TimeSpan.Zero);
             Assert.True(options.PrepareSchemaIfNecessary);
         }
 

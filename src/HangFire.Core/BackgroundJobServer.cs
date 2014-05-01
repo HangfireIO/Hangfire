@@ -62,8 +62,9 @@ namespace HangFire
         {
             Logger.Info("Starting HangFire Server...");
             Logger.InfoFormat("Using job storage: '{0}'.", _storage);
-
-            _options.Log(Logger);
+            
+            _storage.WriteOptionsToLog(Logger);
+            _options.WriteToLog(Logger);
 
             _serverRunner.Start();
         }

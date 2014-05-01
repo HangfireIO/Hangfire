@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Common.Logging;
 using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;
@@ -63,6 +64,10 @@ namespace HangFire
         public virtual IEnumerable<IStateHandler> GetStateHandlers()
         {
             return Enumerable.Empty<IStateHandler>();
+        }
+
+        public virtual void WriteOptionsToLog(ILog logger)
+        {
         }
     }
 }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using Common.Logging;
 using HangFire.Server;
 using HangFire.Storage;
 
@@ -64,6 +65,13 @@ namespace HangFire.SqlServer
         public override IEnumerable<IServerComponent> GetComponents()
         {
             yield return new ExpirationManager(this);
+        }
+
+        public override void WriteOptionsToLog(ILog logger)
+        {
+            logger.Info("Using the following options for SQL Server job storage:");
+            logger.InfoFormat("    Queue poll interval: {0}.", _options.QueuePollInterval);
+            logger.InfoFormat("    Invisibility timeout: {0}.", _options.InvisibilityTimeout);
         }
 
         public override string ToString()

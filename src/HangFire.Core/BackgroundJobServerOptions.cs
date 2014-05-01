@@ -57,7 +57,7 @@ namespace HangFire
         public TimeSpan ShutdownTimeout { get; set; }
         public TimeSpan SchedulePollingInterval { get; set; }
 
-        public void Log(ILog logger)
+        public void WriteToLog(ILog logger)
         {
             logger.InfoFormat("Using the following options for HangFire Server:");
             logger.InfoFormat("    Worker count: {0}.", WorkerCount);
