@@ -59,13 +59,13 @@ namespace HangFire.Core.Tests.Server
 
             process.Run(_context, _performer.Object);
 
-            _performer.Verify(x => x.Perform(), Times.Once);
+            _performer.Verify(x => x.Perform(It.IsNotNull<JobActivator>()), Times.Once);
         }
 
         [Fact]
         public void Run_DoesNotCatchExceptions()
         {
-            _performer.Setup(x => x.Perform()).Throws<InvalidOperationException>();
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws<InvalidOperationException>();
             var process = CreateProcess();
 
             Assert.Throws<InvalidOperationException>(
@@ -78,7 +78,7 @@ namespace HangFire.Core.Tests.Server
             var filter = new Mock<IServerExceptionFilter>();
             _filters.Add(filter.Object);
 
-            _performer.Setup(x => x.Perform()).Throws<InvalidOperationException>();
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws<InvalidOperationException>();
             var process = CreateProcess();
 
             Assert.Throws<InvalidOperationException>(
@@ -101,7 +101,7 @@ namespace HangFire.Core.Tests.Server
             _filters.Add(filter1.Object);
             _filters.Add(filter2.Object);
 
-            _performer.Setup(x => x.Perform()).Throws<InvalidOperationException>();
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws<InvalidOperationException>();
 
             var process = CreateProcess();
 
@@ -116,7 +116,7 @@ namespace HangFire.Core.Tests.Server
         public void Run_EatsException_WhenItWasHandlerByFilter()
         {
             // Arrange
-            _performer.Setup(x => x.Perform()).Throws<InvalidOperationException>();
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws<InvalidOperationException>();
 
             var filter = new Mock<IServerExceptionFilter>();
             filter.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>()))
@@ -138,7 +138,7 @@ namespace HangFire.Core.Tests.Server
             _filters.Add(filter.Object);
 
             filter.Setup(x => x.OnPerforming(It.IsNotNull<PerformingContext>())).InSequence();
-            _performer.Setup(x => x.Perform()).InSequence();
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).InSequence();
             filter.Setup(x => x.OnPerformed(It.IsNotNull<PerformedContext>())).InSequence();
 
             var process = CreateProcess();
@@ -188,7 +188,7 @@ namespace HangFire.Core.Tests.Server
             process.Run(_context, _performer.Object);
 
             // Assert
-            _performer.Verify(x => x.Perform(), Times.Never);
+            _performer.Verify(x => x.Perform(It.IsAny<JobActivator>()), Times.Never);
             filter.Verify(x => x.OnPerformed(It.IsAny<PerformedContext>()), Times.Never);
         }
 
@@ -233,7 +233,7 @@ namespace HangFire.Core.Tests.Server
             // Assert
             Assert.IsType<InvalidOperationException>(exception.InnerException);
 
-            _performer.Verify(x => x.Perform(), Times.Never);
+            _performer.Verify(x => x.Perform(It.IsAny<JobActivator>()), Times.Never);
             filter.Verify(x => x.OnPerformed(It.IsAny<PerformedContext>()), Times.Never);
         }
 
@@ -245,7 +245,7 @@ namespace HangFire.Core.Tests.Server
             _filters.Add(filter.Object);
 
             var exception = new InvalidOperationException();
-            _performer.Setup(x => x.Perform()).Throws(exception);
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws(exception);
 
             var process = CreateProcess();
 
@@ -269,7 +269,7 @@ namespace HangFire.Core.Tests.Server
             _filters.Add(innerFilter.Object);
 
             var exception = new InvalidOperationException();
-            _performer.Setup(x => x.Perform()).Throws(exception);
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws(exception);
 
             var process = CreateProcess();
 
@@ -288,7 +288,7 @@ namespace HangFire.Core.Tests.Server
             _filters.Add(filter.Object);
 
             var exception = new InvalidOperationException();
-            _performer.Setup(x => x.Perform()).Throws(exception);
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws(exception);
 
             filter.Setup(x => x.OnPerformed(It.Is<PerformedContext>(context => context.Exception == exception)))
                 .Callback((PerformedContext x) => x.ExceptionHandled = true);
@@ -309,7 +309,7 @@ namespace HangFire.Core.Tests.Server
             _filters.Add(outerFilter.Object);
             _filters.Add(innerFilter.Object);
 
-            _performer.Setup(x => x.Perform()).Throws<InvalidOperationException>();
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws<InvalidOperationException>();
 
             innerFilter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
                 .Callback((PerformedContext x) => x.ExceptionHandled = true);
@@ -352,7 +352,7 @@ namespace HangFire.Core.Tests.Server
 
             _filters.Add(filter.Object);
 
-            _performer.Setup(x => x.Perform()).Throws<ArgumentNullException>();
+            _performer.Setup(x => x.Perform(It.IsNotNull<JobActivator>())).Throws<ArgumentNullException>();
 
             var process = CreateProcess();
 

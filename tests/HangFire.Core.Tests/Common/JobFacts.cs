@@ -24,10 +24,7 @@ namespace HangFire.Core.Tests.Common
             _method = _type.GetMethod("StaticMethod");
             _arguments = new string[0];
 
-            _activator = new Mock<JobActivator>
-            {
-                CallBase = false
-            };
+            _activator = new Mock<JobActivator> { CallBase = true };
         }
 
         [Fact]
@@ -151,13 +148,21 @@ namespace HangFire.Core.Tests.Common
                 () => Job.FromExpression(() => PrivateMethod()));
         }
 
+        [Fact]
+        public void Perform_ThrowsAnException_WhenActivatorIsNull()
+        {
+            var job = Job.FromExpression(() => StaticMethod());
+
+            Assert.Throws<ArgumentNullException>(() => job.Perform(null));
+        }
+
         [Fact, StaticLock]
         public void Perform_CanInvokeStaticMethods()
         {
             _methodInvoked = false;
             var job = Job.FromExpression(() => StaticMethod());
 
-            job.Perform();
+            job.Perform(_activator.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -168,7 +173,7 @@ namespace HangFire.Core.Tests.Common
             _methodInvoked = false;
             var job = Job.FromExpression<Instance>(x => x.Method());
 
-            job.Perform();
+            job.Perform(_activator.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -179,7 +184,7 @@ namespace HangFire.Core.Tests.Common
             _disposed = false;
             var job = Job.FromExpression<Instance>(x => x.Method());
 
-            job.Perform();
+            job.Perform(_activator.Object);
 
             Assert.True(_disposed);
         }
@@ -192,7 +197,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithArguments("hello", 5));
 
             // Act
-            job.Perform();
+            job.Perform(_activator.Object);
 
             // Assert - see the `MethodWithArguments` method.
             Assert.True(_methodInvoked);
@@ -206,7 +211,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithObjectArgument(5));
 
             // Act
-            job.Perform();
+            job.Perform(_activator.Object);
 
             // Assert - see the `MethodWithObjectArgument` method.
             Assert.True(_methodInvoked);
@@ -244,7 +249,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithCustomArgument(new Instance()));
 
             var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform());
+                () => job.Perform(_activator.Object));
 
             Assert.NotNull(exception.InnerException);
         }
@@ -257,7 +262,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression<BrokenDispose>(x => x.Method());
 
             var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform());
+                () => job.Perform(_activator.Object));
 
             Assert.True(_methodInvoked);
             Assert.NotNull(exception.InnerException);
@@ -269,7 +274,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => ExceptionMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => job.Perform());
+                () => job.Perform(_activator.Object));
 
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
             Assert.Equal("exception", thrownException.InnerException.Message);

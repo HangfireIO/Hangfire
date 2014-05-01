@@ -69,13 +69,13 @@ namespace HangFire.Server
 
         private static void PerformJobWithFilters(
             PerformContext context,
-            IJobPerformer strategy,
+            IJobPerformer performer,
             IEnumerable<IServerFilter> filters)
         {
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                strategy.Perform();
+                performer.Perform(context.Activator);
                 return new PerformedContext(context, false, null);
             };
 

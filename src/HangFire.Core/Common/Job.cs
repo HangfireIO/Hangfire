@@ -64,13 +64,10 @@ namespace HangFire.Common
         /// </summary>
         public string[] Arguments { get; private set; }
 
-        public void Perform()
-        {
-            Perform(JobActivator.Current);
-        }
-
         public void Perform(JobActivator activator)
         {
+            if (activator == null) throw new ArgumentNullException("activator");
+
             object instance = null;
 
             try
