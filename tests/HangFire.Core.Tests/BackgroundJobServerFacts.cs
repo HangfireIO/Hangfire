@@ -103,13 +103,12 @@ namespace HangFire.Core.Tests
             var runners = server.GetServerComponentsRunner();
 
             // Assert
-            Assert.True(runners.Select(x => x.GetType()).Contains(typeof(WorkerManager)));
-
             var componentTypes = runners.OfType<ServerComponentRunner>()
                 .Select(x => x.Component)
                 .Select(x => x.GetType())
                 .ToArray();
 
+            Assert.Contains(typeof(WorkerManager), componentTypes);
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
             Assert.Contains(typeof(ServerWatchdog), componentTypes);
             Assert.Contains(typeof(SchedulePoller), componentTypes);
