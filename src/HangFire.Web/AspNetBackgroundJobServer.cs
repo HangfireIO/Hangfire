@@ -27,49 +27,43 @@ namespace HangFire.Web
         /// <summary>
         /// Initializes a new instance of the <see cref="AspNetBackgroundJobServer"/>
         /// class with the number of workers and the list of queues that will 
-        /// be processed by this instance of a server.
+        /// be processed by this instance of a server and places it in the list of registered
+        /// objects in the application. .
         /// </summary>
         /// <param name="workerCount">The number of workers.</param>
         /// <param name="queues">The list of queues that will be processed.</param>
         public AspNetBackgroundJobServer(int workerCount, params string[] queues)
             : base(workerCount, queues)
         {
+            HostingEnvironment.RegisterObject(this);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AspNetBackgroundJobServer"/>
         /// class with the default number of workers and the specified list of
-        /// queues that will be processed by this instance of a server.
+        /// queues that will be processed by this instance of a server and places it 
+        /// in the list of registered objects in the application. 
         /// </summary>
         /// <param name="queues">The list of queues that will be processed.</param>
         public AspNetBackgroundJobServer(params string[] queues)
             : base(queues)
         {
-        }
-
-        /// <summary>
-        /// Starts the server and places it in the list of registered
-        /// objects in the application. 
-        /// </summary>
-        public override void Start()
-        {
             HostingEnvironment.RegisterObject(this);
-            base.Start();
         }
 
         /// <summary>
         /// Disposes the server and removes it from the list of registered
         /// objects in the application.
         /// </summary>
-        public override void Stop()
+        public override void Dispose()
         {
-            base.Stop();
+            base.Dispose();
             HostingEnvironment.UnregisterObject(this);
         }
 
         void IRegisteredObject.Stop(bool immediate)
         {
-            Stop();
+            Dispose();
         }
     }
 }

@@ -64,18 +64,18 @@ namespace HangFire
             _serverRunner = GetServerRunner();
         }
 
-        public virtual void Start()
+        public void Start()
         {
             Logger.Info("Starting HangFire Server...");
             _serverRunner.Start();
         }
 
-        public virtual void Stop()
+        public void Stop()
         {
             _serverRunner.Stop();
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             _serverRunner.Dispose();
             Logger.Info("HangFire Server stopped.");
