@@ -71,7 +71,6 @@ namespace HangFire.Core.Tests.Common
             var exception = Assert.Throws<ArgumentException>(
                 () => new Job(_type, _method, new[] { "hello!" }));
 
-            Assert.Equal("arguments", exception.ParamName);
             Assert.Contains("count", exception.Message);
         }
 

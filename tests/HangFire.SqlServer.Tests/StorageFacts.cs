@@ -57,16 +57,6 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact]
-        public void ToString_ReturnsMessage_IfConnectionStringCanNotBeParsed()
-        {
-            var storage = new SqlServerStorage(" asLKFJ lafs ");
-
-            var result = storage.ToString();
-
-            Assert.Equal("<Connection string can not be parsed>", result);
-        }
-
-        [Fact]
         public void ToString_ReturnsOnlyServerAndDatabase()
         {
             var storage = new SqlServerStorage(
