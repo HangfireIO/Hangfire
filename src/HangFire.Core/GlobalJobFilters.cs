@@ -26,7 +26,7 @@ namespace HangFire
         static GlobalJobFilters()
         {
             Filters = new GlobalJobFilterCollection();
-            Filters.Add(new PreserveCultureAttribute());
+            Filters.Add(new CaptureCultureAttribute());
             Filters.Add(new RetryAttribute());
             Filters.Add(new StatisticsHistoryAttribute());
         }

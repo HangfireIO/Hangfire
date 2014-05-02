@@ -145,9 +145,9 @@ namespace HangFire.Core.Tests
 
         public static void Sample() { }
 
-        private PreserveCultureAttribute CreateFilter()
+        private CaptureCultureAttribute CreateFilter()
         {
-            return new PreserveCultureAttribute();
+            return new CaptureCultureAttribute();
         }
     }
 }
