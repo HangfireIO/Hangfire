@@ -24,7 +24,7 @@ using HangFire.States;
 
 namespace HangFire
 {
-    public class BackgroundJobServer : IDisposable
+    public class BackgroundJobServer : IServerSupervisor
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(BackgroundJobServer));
 
@@ -32,7 +32,7 @@ namespace HangFire
         private readonly BackgroundJobServerOptions _options;
 
         private readonly string _serverId;
-        private readonly IServerComponentRunner _serverRunner;
+        private readonly IServerSupervisor _bootstrapSupervisor;
 
         public BackgroundJobServer()
             : this(new BackgroundJobServerOptions())
@@ -55,7 +55,7 @@ namespace HangFire
             _serverId = String.Format("{0}:{1}", _options.ServerName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
             // ReSharper disable once DoNotCallOverridableMethodsInConstructor
-            _serverRunner = GetServerRunner();
+            _bootstrapSupervisor = GetBootstrapSupervisor();
         }
 
         public void Start()
@@ -66,21 +66,21 @@ namespace HangFire
             _storage.WriteOptionsToLog(Logger);
             _options.WriteToLog(Logger);
 
-            _serverRunner.Start();
+            _bootstrapSupervisor.Start();
         }
 
         public void Stop()
         {
-            _serverRunner.Stop();
+            _bootstrapSupervisor.Stop();
         }
 
         public virtual void Dispose()
         {
-            _serverRunner.Dispose();
+            _bootstrapSupervisor.Dispose();
             Logger.Info("HangFire Server stopped.");
         }
 
-        internal virtual IServerComponentRunner GetServerRunner()
+        internal virtual IServerSupervisor GetBootstrapSupervisor()
         {
             var context = new ServerContext
             {
@@ -88,31 +88,31 @@ namespace HangFire
                 WorkerCount = _options.WorkerCount
             };
 
-            var server = new ServerCore(
+            var bootstrapper = new ServerBootstrapper(
                 _serverId, 
                 context, 
                 _storage, 
-                new Lazy<IServerComponentRunner>(GetServerComponentsRunner));
+                new Lazy<IServerSupervisor>(GetSupervisors));
 
-            return new ServerComponentRunner(
-                server, 
-                new ServerComponentRunnerOptions
+            return new ServerSupervisor(
+                bootstrapper, 
+                new ServerSupervisorOptions
                 {
                     ShutdownTimeout = _options.ShutdownTimeout
                 });
         }
 
-        internal ServerComponentRunnerCollection GetServerComponentsRunner()
+        internal ServerSupervisorCollection GetSupervisors()
         {
-            var componentRunners = new List<IServerComponentRunner>();
+            var supervisors = new List<IServerSupervisor>();
 
-            componentRunners.AddRange(GetCommonComponentRunners());
-            componentRunners.AddRange(GetStorageComponentRunners());
+            supervisors.AddRange(GetCommonSupervisors());
+            supervisors.AddRange(GetStorageSupervisors());
 
-            return new ServerComponentRunnerCollection(componentRunners);
+            return new ServerSupervisorCollection(supervisors);
         }
 
-        private IEnumerable<IServerComponentRunner> GetCommonComponentRunners()
+        private IEnumerable<IServerSupervisor> GetCommonSupervisors()
         {
             var stateMachineFactory = new StateMachineFactory(_storage);
             var sharedWorkerContext = new SharedWorkerContext(
@@ -123,20 +123,20 @@ namespace HangFire
                 JobActivator.Current,
                 stateMachineFactory);
 
-            yield return new ServerComponentRunner(new WorkerManager(sharedWorkerContext, _options.WorkerCount));
-            yield return new ServerComponentRunner(new ServerHeartbeat(_storage, _serverId));
-            yield return new ServerComponentRunner(new ServerWatchdog(_storage));
+            yield return new ServerSupervisor(new WorkerManager(sharedWorkerContext, _options.WorkerCount));
+            yield return new ServerSupervisor(new ServerHeartbeat(_storage, _serverId));
+            yield return new ServerSupervisor(new ServerWatchdog(_storage));
 
-            yield return new ServerComponentRunner(
+            yield return new ServerSupervisor(
                 new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval));
         }
 
-        private IEnumerable<IServerComponentRunner> GetStorageComponentRunners()
+        private IEnumerable<IServerSupervisor> GetStorageSupervisors()
         {
             var components = _storage.GetComponents();
 
             return components
-                .Select(component => new ServerComponentRunner(component))
+                .Select(component => new ServerSupervisor(component))
                 .ToArray();
         }
     }

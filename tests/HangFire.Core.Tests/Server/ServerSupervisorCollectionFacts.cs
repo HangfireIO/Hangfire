@@ -6,50 +6,50 @@ using Xunit;
 
 namespace HangFire.Core.Tests.Server
 {
-    public class ServerComponentRunnerCollectionFacts
+    public class ServerSupervisorCollectionFacts
     {
-        private readonly Mock<IServerComponentRunner> _runner1;
-        private readonly Mock<IServerComponentRunner> _runner2;
-        private readonly List<IServerComponentRunner> _runners;
+        private readonly Mock<IServerSupervisor> _supervisor1;
+        private readonly Mock<IServerSupervisor> _supervisor2;
+        private readonly List<IServerSupervisor> _supervisors;
 
-        public ServerComponentRunnerCollectionFacts()
+        public ServerSupervisorCollectionFacts()
         {
-            _runner1 = new Mock<IServerComponentRunner>();
-            _runner2 = new Mock<IServerComponentRunner>();
+            _supervisor1 = new Mock<IServerSupervisor>();
+            _supervisor2 = new Mock<IServerSupervisor>();
 
-            _runners = new List<IServerComponentRunner>
+            _supervisors = new List<IServerSupervisor>
             {
-                _runner1.Object,
-                _runner2.Object
+                _supervisor1.Object,
+                _supervisor2.Object
             };
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenRunnersValueIsNull()
+        public void Ctor_ThrowsAnException_WhenSupervisorsValueIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new ServerComponentRunnerCollection(null));
+            Assert.Throws<ArgumentNullException>(() => new ServerSupervisorCollection(null));
         }
 
         [Fact]
-        public void Start_ExecutesStartMethod_OnAllRegisteredComponents()
+        public void Start_ExecutesStartMethod_OnAllRegisteredSupervisors()
         {
             var collection = CreateCollection();
             
             collection.Start();
 
-            _runner1.Verify(x => x.Start());
-            _runner2.Verify(x => x.Start());
+            _supervisor1.Verify(x => x.Start());
+            _supervisor2.Verify(x => x.Start());
         }
 
         [Fact]
-        public void Stop_ExecutesStopMethod_OnAllRegisteredComponents()
+        public void Stop_ExecutesStopMethod_OnAllRegisteredSupervisors()
         {
             var collection = CreateCollection();
 
             collection.Stop();
 
-            _runner1.Verify(x => x.Stop());
-            _runner2.Verify(x => x.Stop());
+            _supervisor1.Verify(x => x.Stop());
+            _supervisor2.Verify(x => x.Stop());
         }
 
         [Fact]
@@ -59,19 +59,19 @@ namespace HangFire.Core.Tests.Server
 
             collection.Dispose();
 
-            _runner1.Verify(x => x.Dispose());
-            _runner2.Verify(x => x.Dispose());
+            _supervisor1.Verify(x => x.Dispose());
+            _supervisor2.Verify(x => x.Dispose());
         }
 
         [Fact]
-        public void Dispose_AlsoInvokesStopMethod_OnAllRegisteredComponents()
+        public void Dispose_AlsoInvokesStopMethod_OnAllRegisteredSupervisors()
         {
             var collection = CreateCollection();
 
             collection.Dispose();
 
-            _runner1.Verify(x => x.Stop());
-            _runner2.Verify(x => x.Stop());
+            _supervisor1.Verify(x => x.Stop());
+            _supervisor2.Verify(x => x.Stop());
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace HangFire.Core.Tests.Server
         {
             var collection = CreateCollection();
             
-            collection.Add(new Mock<IServerComponentRunner>().Object);
+            collection.Add(new Mock<IServerSupervisor>().Object);
 
             Assert.Equal(3, collection.Count);
         }
@@ -105,7 +105,7 @@ namespace HangFire.Core.Tests.Server
         [Fact]
         public void Contains_ReturnsWhetherElementIsInCollection()
         {
-            var element = new Mock<IServerComponentRunner>();
+            var element = new Mock<IServerSupervisor>();
             var collection = CreateCollection();
 
             Assert.False(collection.Contains(element.Object));
@@ -118,13 +118,13 @@ namespace HangFire.Core.Tests.Server
         [Fact]
         public void Remove_RemovesGivenElementFromCollection()
         {
-            var runner = new Mock<IServerComponentRunner>();
+            var supervisor = new Mock<IServerSupervisor>();
             var collection = CreateCollection();
-            collection.Add(runner.Object);
+            collection.Add(supervisor.Object);
 
-            collection.Remove(runner.Object);
+            collection.Remove(supervisor.Object);
 
-            Assert.False(collection.Contains(runner.Object));
+            Assert.False(collection.Contains(supervisor.Object));
         }
 
         [Fact]
@@ -139,17 +139,17 @@ namespace HangFire.Core.Tests.Server
         public void CopyTo_WorksAsExpected()
         {
             var collection = CreateCollection();
-            var array = new IServerComponentRunner[3];
+            var array = new IServerSupervisor[3];
 
             collection.CopyTo(array, 1);
 
-            Assert.Same(_runner1.Object, array[1]);
-            Assert.Same(_runner2.Object, array[2]);
+            Assert.Same(_supervisor1.Object, array[1]);
+            Assert.Same(_supervisor2.Object, array[2]);
         }
 
-        private ServerComponentRunnerCollection CreateCollection()
+        private ServerSupervisorCollection CreateCollection()
         {
-            return new ServerComponentRunnerCollection(_runners);
+            return new ServerSupervisorCollection(_supervisors);
         }
     }
 }

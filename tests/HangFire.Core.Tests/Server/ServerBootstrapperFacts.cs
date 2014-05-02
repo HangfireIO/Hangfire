@@ -7,23 +7,23 @@ using Xunit;
 
 namespace HangFire.Core.Tests.Server
 {
-    public class ServerCoreFacts
+    public class ServerBootstrapperFacts
     {
         private const string ServerId = "server";
 
         private readonly ServerContext _context;
         private readonly Mock<JobStorage> _storage;
-        private readonly Lazy<IServerComponentRunner> _lazyRunner;
+        private readonly Lazy<IServerSupervisor> _supervisorFactory;
         private readonly Mock<IStorageConnection> _connection;
         private readonly CancellationToken _token;
-        private readonly Mock<IServerComponentRunner> _runner;
+        private readonly Mock<IServerSupervisor> _supervisor;
 
-        public ServerCoreFacts()
+        public ServerBootstrapperFacts()
         {
             _context = new ServerContext();
             _storage = new Mock<JobStorage>();
-            _runner = new Mock<IServerComponentRunner>();
-            _lazyRunner = new Lazy<IServerComponentRunner>(() => _runner.Object);
+            _supervisor = new Mock<IServerSupervisor>();
+            _supervisorFactory = new Lazy<IServerSupervisor>(() => _supervisor.Object);
             _connection = new Mock<IStorageConnection>();
             _token = new CancellationToken(true);
 
@@ -34,7 +34,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenServerIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerCore(null, _context, _storage.Object, _lazyRunner));
+                () => new ServerBootstrapper(null, _context, _storage.Object, _supervisorFactory));
 
             Assert.Equal("serverId", exception.ParamName);
         }
@@ -43,7 +43,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerCore(ServerId, null, _storage.Object, _lazyRunner));
+                () => new ServerBootstrapper(ServerId, null, _storage.Object, _supervisorFactory));
 
             Assert.Equal("context", exception.ParamName);
         }
@@ -52,18 +52,18 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerCore(ServerId, _context, null, _lazyRunner));
+                () => new ServerBootstrapper(ServerId, _context, null, _supervisorFactory));
 
             Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenRunnerIsNull()
+        public void Ctor_ThrowsAnException_WhenSupervisorFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerCore(ServerId, _context, _storage.Object, null));
+                () => new ServerBootstrapper(ServerId, _context, _storage.Object, null));
 
-            Assert.Equal("runner", exception.ParamName);
+            Assert.Equal("supervisorFactory", exception.ParamName);
         }
 
         [Fact]
@@ -88,22 +88,22 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_StartsTheRunner()
+        public void Execute_StartsTheSupervisor()
         {
             var server = CreateServer();
             server.Execute(_token);
 
-            _runner.Verify(x => x.Start());
+            _supervisor.Verify(x => x.Start());
         }
 
         [Fact]
-        public void Execute_DisposesTheRunner()
+        public void Execute_DisposesTheSupervisor()
         {
             var server = CreateServer();
 
             server.Execute(_token);
 
-            _runner.Verify(x => x.Dispose());
+            _supervisor.Verify(x => x.Dispose());
         }
 
         [Fact]
@@ -117,9 +117,9 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_RemovesServer_EvenWhenRunnerThrowsAnException()
+        public void Execute_RemovesServer_EvenWhenSupervisorThrowsAnException()
         {
-            _runner.Setup(x => x.Dispose()).Throws<InvalidOperationException>();
+            _supervisor.Setup(x => x.Dispose()).Throws<InvalidOperationException>();
             var server = CreateServer();
 
             Assert.Throws<InvalidOperationException>(() => server.Execute(_token));
@@ -127,9 +127,9 @@ namespace HangFire.Core.Tests.Server
             _connection.Verify(x => x.RemoveServer(It.IsAny<string>()));
         }
 
-        private ServerCore CreateServer()
+        private ServerBootstrapper CreateServer()
         {
-            return new ServerCore(ServerId, _context, _storage.Object, _lazyRunner);
+            return new ServerBootstrapper(ServerId, _context, _storage.Object, _supervisorFactory);
         }
     }
 }

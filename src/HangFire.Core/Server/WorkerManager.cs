@@ -39,18 +39,18 @@ namespace HangFire.Server
 
         public void Execute(CancellationToken cancellationToken)
         {
-            var workerRunners = new List<IServerComponentRunner>(_workerCount);
+            var workerSupervisors = new List<IServerSupervisor>(_workerCount);
             for (var i = 1; i <= _workerCount; i++)
             {
                 var workerContext = new WorkerContext(_sharedContext, i);
 
                 // ReSharper disable once DoNotCallOverridableMethodsInConstructor
-                workerRunners.Add(CreateWorkerRunner(workerContext));
+                workerSupervisors.Add(CreateWorkerSupervisor(workerContext));
             }
 
-            using (var runners = new ServerComponentRunnerCollection(workerRunners))
+            using (var supervisors = new ServerSupervisorCollection(workerSupervisors))
             {
-                runners.Start();
+                supervisors.Start();
                 cancellationToken.WaitHandle.WaitOne();
             }
         }
@@ -60,11 +60,11 @@ namespace HangFire.Server
             return "Worker Manager";
         }
 
-        internal virtual IServerComponentRunner CreateWorkerRunner(WorkerContext context)
+        internal virtual IServerSupervisor CreateWorkerSupervisor(WorkerContext context)
         {
-            return new ServerComponentRunner(
+            return new ServerSupervisor(
                 new Worker(context),
-                new ServerComponentRunnerOptions { LowerLogVerbosity = true });
+                new ServerSupervisorOptions { LowerLogVerbosity = true });
         }
     }
 }

@@ -20,30 +20,30 @@ using Common.Logging;
 
 namespace HangFire.Server
 {
-    public class ServerCore : IServerComponent
+    public class ServerBootstrapper : IServerComponent
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerCore));
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerBootstrapper));
 
         private readonly JobStorage _storage;
         private readonly string _serverId;
         private readonly ServerContext _context;
-        private readonly Lazy<IServerComponentRunner> _runner;
+        private readonly Lazy<IServerSupervisor> _supervisorFactory;
 
-        public ServerCore(
+        public ServerBootstrapper(
             string serverId,
             ServerContext context,
             JobStorage storage,
-            Lazy<IServerComponentRunner> runner)
+            Lazy<IServerSupervisor> supervisorFactory)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (serverId == null) throw new ArgumentNullException("serverId");
             if (context == null) throw new ArgumentNullException("context");
-            if (runner == null) throw new ArgumentNullException("runner");
+            if (supervisorFactory == null) throw new ArgumentNullException("supervisorFactory");
 
             _storage = storage;
             _serverId = serverId;
             _context = context;
-            _runner = runner;
+            _supervisorFactory = supervisorFactory;
         }
 
         public void Execute(CancellationToken cancellationToken)
@@ -55,10 +55,10 @@ namespace HangFire.Server
             
             try
             {
-                using (_runner.Value)
+                using (_supervisorFactory.Value)
                 {
                     Logger.Info("Starting server components...");
-                    _runner.Value.Start();
+                    _supervisorFactory.Value.Start();
 
                     cancellationToken.WaitHandle.WaitOne();
 

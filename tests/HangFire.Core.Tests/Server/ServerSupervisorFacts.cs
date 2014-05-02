@@ -6,15 +6,15 @@ using Xunit;
 
 namespace HangFire.Core.Tests.Server
 {
-    public class ServerComponentRunnerFacts
+    public class ServerSupervisorFacts
     {
         private readonly Mock<IServerComponent> _component;
-        private readonly ServerComponentRunnerOptions _options;
+        private readonly ServerSupervisorOptions _options;
 
-        public ServerComponentRunnerFacts()
+        public ServerSupervisorFacts()
         {
             _component = new Mock<IServerComponent>();
-            _options = new ServerComponentRunnerOptions
+            _options = new ServerSupervisorOptions
             {
                 ShutdownTimeout = Timeout.InfiniteTimeSpan // Letting tests to timeout
             };
@@ -24,7 +24,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenComponentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerComponentRunner(null));
+                () => new ServerSupervisor(null));
 
             Assert.Equal("component", exception.ParamName);
         }
@@ -33,7 +33,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerComponentRunner(_component.Object, null));
+                () => new ServerSupervisor(_component.Object, null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -41,16 +41,16 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void Ctor_UsesDefaultOptions_IfTheyWereNoProvided()
         {
-            Assert.DoesNotThrow(() => new ServerComponentRunner(_component.Object));
+            Assert.DoesNotThrow(() => new ServerSupervisor(_component.Object));
         }
 
         [PossibleHangingFact]
-        public void Dispose_OnJustCreatedRunner_DoNotLeadToComponentExecution()
+        public void Dispose_OnJustCreatedSupervisor_DoNotLeadToComponentExecution()
         {
-            var runner = CreateRunner();
+            var supervisor = CreateSupervisor();
             Thread.Sleep(TimeSpan.FromMilliseconds(100));
 
-            runner.Dispose();
+            supervisor.Dispose();
 
             _component.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -58,18 +58,18 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void Dispose_CanBeCalledMultipleTimes()
         {
-            var runner = CreateRunner();
-            runner.Dispose();
+            var supervisor = CreateSupervisor();
+            supervisor.Dispose();
 
-            Assert.DoesNotThrow(runner.Dispose);
+            Assert.DoesNotThrow(supervisor.Dispose);
         }
 
         [PossibleHangingFact]
         public void Start_LeadsToLoopedComponentExecution()
         {
-            var runner = CreateRunner();
+            var supervisor = CreateSupervisor();
 
-            runner.Start();
+            supervisor.Start();
             Thread.Sleep(TimeSpan.FromMilliseconds(100));
 
             _component.Verify(
@@ -80,10 +80,10 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void Start_OnDisposedObject_ThrowsAnException()
         {
-            var runner = CreateRunner();
-            runner.Dispose();
+            var supervisor = CreateSupervisor();
+            supervisor.Dispose();
 
-            Assert.Throws<ObjectDisposedException>(() => runner.Start());
+            Assert.Throws<ObjectDisposedException>(() => supervisor.Start());
         }
 
         [PossibleHangingFact]
@@ -92,14 +92,14 @@ namespace HangFire.Core.Tests.Server
             // Arrange
             int timesExecuted = 0;
             
-            var runner = CreateRunner();
+            var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
                 .Callback(() => { timesExecuted++; Thread.Yield(); });
 
-            runner.Start();
+            supervisor.Start();
 
             // Act
-            runner.Stop();
+            supervisor.Stop();
             Thread.Sleep(TimeSpan.FromMilliseconds(100));
             timesExecuted = 0;
 
@@ -112,10 +112,10 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void Stop_OnDisposedObject_ThrowsAnException()
         {
-            var runner = CreateRunner();
-            runner.Dispose();
+            var supervisor = CreateSupervisor();
+            supervisor.Dispose();
 
-            Assert.Throws<ObjectDisposedException>(() => runner.Stop());
+            Assert.Throws<ObjectDisposedException>(() => supervisor.Stop());
         }
 
         [PossibleHangingFact]
@@ -124,17 +124,17 @@ namespace HangFire.Core.Tests.Server
             // Arrange
             int timesExecuted = 0;
             
-            var runner = CreateRunner();
+            var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
                 .Callback(() => { timesExecuted++; Thread.Yield(); });
 
-            runner.Start();
-            runner.Stop();
+            supervisor.Start();
+            supervisor.Stop();
             Thread.Sleep(TimeSpan.FromMilliseconds(100));
             timesExecuted = 0;
 
             // Act
-            runner.Start();
+            supervisor.Start();
             Thread.Sleep(TimeSpan.FromMilliseconds(100));
 
             // Assert
@@ -144,30 +144,30 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void Stop_CanBeCalledMultipleTimesInARow()
         {
-            var runner = CreateRunner();
-            runner.Start();
-            runner.Stop();
+            var supervisor = CreateSupervisor();
+            supervisor.Start();
+            supervisor.Stop();
 
-            Assert.DoesNotThrow(runner.Stop);
+            Assert.DoesNotThrow(supervisor.Stop);
         }
 
         [PossibleHangingFact]
         public void Dispose_StopsExecutionAutomatically()
         {
-            var runner = CreateRunner();
-            runner.Start();
+            var supervisor = CreateSupervisor();
+            supervisor.Start();
 
-            Assert.DoesNotThrow(runner.Dispose);
+            Assert.DoesNotThrow(supervisor.Dispose);
         }
 
         [PossibleHangingFact]
         public void Dispose_CanBeCalled_AfterStop()
         {
-            var runner = CreateRunner();
-            runner.Start();
-            runner.Stop();
+            var supervisor = CreateSupervisor();
+            supervisor.Start();
+            supervisor.Stop();
 
-            Assert.DoesNotThrow(runner.Dispose);
+            Assert.DoesNotThrow(supervisor.Dispose);
         }
 
         [PossibleHangingFact]
@@ -177,13 +177,13 @@ namespace HangFire.Core.Tests.Server
             _options.MaxRetryAttempts = 0;
 
             var component = new DisposableComponent();
-            var runner = new ServerComponentRunner(component, _options);
+            var supervisor = new ServerSupervisor(component, _options);
 
-            runner.Start();
+            supervisor.Start();
             Thread.Sleep(100);
 
             // Act
-            runner.Dispose();
+            supervisor.Dispose();
             Thread.Sleep(500);
 
             // Assert
@@ -196,14 +196,14 @@ namespace HangFire.Core.Tests.Server
             // Arrange
             _options.MaxRetryAttempts = 0;
 
-            var runner = CreateRunner();
+            var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
 
-            runner.Start();
+            supervisor.Start();
             Thread.Sleep(500);
 
             // Act
-            runner.Dispose();
+            supervisor.Dispose();
 
             _component.Verify(
                 x => x.Execute(It.IsAny<CancellationToken>()),
@@ -213,12 +213,12 @@ namespace HangFire.Core.Tests.Server
         [PossibleHangingFact]
         public void FailingComponent_ShouldBeExecutedSeveralTimes_Automatically()
         {
-            var runner = CreateRunner();
+            var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
-            runner.Start();
+            supervisor.Start();
 
             Thread.Sleep(5000);
-            runner.Dispose();
+            supervisor.Dispose();
 
             _component.Verify(x => x.Execute(
                 It.IsAny<CancellationToken>()),
@@ -228,20 +228,20 @@ namespace HangFire.Core.Tests.Server
         [Fact]
         public void Component_ReturnsUnderlyingComponent()
         {
-            var runner = CreateRunner();
+            var supervisor = CreateSupervisor();
 
-            Assert.Same(_component.Object, runner.Component);
+            Assert.Same(_component.Object, supervisor.Component);
         }
 
         [PossibleHangingFact]
         public void OperationCanceledException_DoesNotCauseAutomaticRetry()
         {
             var component = new WaitingComponent();
-            var runner = new ServerComponentRunner(component, _options);
-            runner.Start();
+            var supervisor = new ServerSupervisor(component, _options);
+            supervisor.Start();
 
             Thread.Sleep(500);
-            runner.Dispose();
+            supervisor.Dispose();
 
             Assert.Equal(1, component.CalledTimes);
         }
@@ -258,11 +258,11 @@ namespace HangFire.Core.Tests.Server
             }
         }
 
-        private ServerComponentRunner CreateRunner()
+        private ServerSupervisor CreateSupervisor()
         {
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
                 .Callback(() => Thread.Yield());
-            return new ServerComponentRunner(_component.Object, _options);
+            return new ServerSupervisor(_component.Object, _options);
         }
 
         private class DisposableComponent : IServerComponent, IDisposable

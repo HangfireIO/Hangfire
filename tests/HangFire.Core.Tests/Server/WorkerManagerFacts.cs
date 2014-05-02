@@ -13,7 +13,7 @@ namespace HangFire.Core.Tests.Server
 
         private readonly SharedWorkerContext _sharedContext;
         private readonly Mock<WorkerManager> _manager;
-        private readonly Mock<IServerComponentRunner>[] _workerRunners;
+        private readonly Mock<IServerSupervisor>[] _workerSupervisors;
         
 
         public WorkerManagerFacts()
@@ -26,17 +26,17 @@ namespace HangFire.Core.Tests.Server
                 new Mock<JobActivator>().Object,
                 new Mock<IStateMachineFactory>().Object);
 
-            _workerRunners = new[]
+            _workerSupervisors = new[]
             {
-                new Mock<IServerComponentRunner>(), 
-                new Mock<IServerComponentRunner>()
+                new Mock<IServerSupervisor>(), 
+                new Mock<IServerSupervisor>()
             };
 
             _manager = new Mock<WorkerManager>(
                 _sharedContext, WorkerCount);
 
-            _manager.Setup(x => x.CreateWorkerRunner(It.IsNotNull<WorkerContext>()))
-                .Returns((WorkerContext context) => _workerRunners[context.WorkerNumber - 1].Object);
+            _manager.Setup(x => x.CreateWorkerSupervisor(It.IsNotNull<WorkerContext>()))
+                .Returns((WorkerContext context) => _workerSupervisors[context.WorkerNumber - 1].Object);
         }
 
         [Fact]
@@ -57,12 +57,12 @@ namespace HangFire.Core.Tests.Server
         }
         
         [Fact]
-        public void CreateWorkerRunner_CreatesAWorkerRunnerWithGivenParameters()
+        public void CreateWorkerSupervisor_CreatesAWorkerSupervisorWithGivenParameters()
         {
             var manager = new WorkerManager(_sharedContext, WorkerCount);
             var context = new WorkerContext(_sharedContext, 1);
 
-            var worker = manager.CreateWorkerRunner(context);
+            var worker = manager.CreateWorkerSupervisor(context);
 
             Assert.NotNull(worker);
         }
@@ -72,8 +72,8 @@ namespace HangFire.Core.Tests.Server
         {
             _manager.Object.Execute(new CancellationToken(true));
 
-            _workerRunners[0].Verify(x => x.Start());
-            _workerRunners[1].Verify(x => x.Start());
+            _workerSupervisors[0].Verify(x => x.Start());
+            _workerSupervisors[1].Verify(x => x.Start());
         }
 
         [Fact]
@@ -81,8 +81,8 @@ namespace HangFire.Core.Tests.Server
         {
             _manager.Object.Execute(new CancellationToken(true));
 
-            _workerRunners[0].Verify(x => x.Stop());
-            _workerRunners[1].Verify(x => x.Stop());
+            _workerSupervisors[0].Verify(x => x.Stop());
+            _workerSupervisors[1].Verify(x => x.Stop());
         }
 
         [Fact]
@@ -90,8 +90,8 @@ namespace HangFire.Core.Tests.Server
         {
             _manager.Object.Execute(new CancellationToken(true));
 
-            _workerRunners[0].Verify(x => x.Dispose());
-            _workerRunners[1].Verify(x => x.Dispose());
+            _workerSupervisors[0].Verify(x => x.Dispose());
+            _workerSupervisors[1].Verify(x => x.Dispose());
         }
     }
 }

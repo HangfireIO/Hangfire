@@ -19,11 +19,11 @@ using System.Threading;
 
 namespace HangFire.Server
 {
-    internal class ServerComponentRunnerOptions
+    public class ServerSupervisorOptions
     {
         private int _maxRetryAttempts;
 
-        public ServerComponentRunnerOptions()
+        public ServerSupervisorOptions()
         {
             MaxRetryAttempts = 10;
             ShutdownTimeout = TimeSpan.FromMilliseconds(Timeout.Infinite);

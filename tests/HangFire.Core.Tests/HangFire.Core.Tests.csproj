@@ -86,13 +86,13 @@
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
-    <Compile Include="Server\ServerCoreFacts.cs" />
+    <Compile Include="Server\ServerBootstrapperFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\ProcessingJobFacts.cs" />
     <Compile Include="Server\SchedulePollerFacts.cs" />
-    <Compile Include="Server\ServerComponentRunnerCollectionFacts.cs" />
-    <Compile Include="Server\ServerComponentRunnerFacts.cs" />
-    <Compile Include="Server\ServerComponentRunnerOptionsFacts.cs" />
+    <Compile Include="Server\ServerSupervisorCollectionFacts.cs" />
+    <Compile Include="Server\ServerSupervisorFacts.cs" />
+    <Compile Include="Server\ServerSupervisorOptionsFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\SharedWorkerContextFacts.cs" />

@@ -20,10 +20,10 @@ using Common.Logging;
 
 namespace HangFire.Server
 {
-    internal class ServerComponentRunner : IServerComponentRunner
+    internal class ServerSupervisor : IServerSupervisor
     {
         private readonly IServerComponent _component;
-        private readonly ServerComponentRunnerOptions _options;
+        private readonly ServerSupervisorOptions _options;
         private readonly Thread _thread;
         private readonly ILog _logger;
 
@@ -34,12 +34,12 @@ namespace HangFire.Server
         private readonly object _ctsLock = new object();
 
 
-        public ServerComponentRunner(IServerComponent component)
-            : this(component, new ServerComponentRunnerOptions())
+        public ServerSupervisor(IServerComponent component)
+            : this(component, new ServerSupervisorOptions())
         {
         }
 
-        public ServerComponentRunner(IServerComponent component, ServerComponentRunnerOptions options)
+        public ServerSupervisor(IServerComponent component, ServerSupervisorOptions options)
         {
             if (component == null) throw new ArgumentNullException("component");
             if (options == null) throw new ArgumentNullException("options");
@@ -121,8 +121,8 @@ namespace HangFire.Server
                 {
                     while (true)
                     {
-                        // While a runner thread is being in this loop,
-                        // the runner can be started, stopped, restarted, etc.
+                        // While a component thread is being in this loop,
+                        // the supervisor can be started, stopped, restarted, etc.
 
                         _starting.Wait(_disposingCts.Token);
 

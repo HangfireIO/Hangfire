@@ -20,33 +20,33 @@ using System.Collections.Generic;
 
 namespace HangFire.Server
 {
-    internal class ServerComponentRunnerCollection : IServerComponentRunner, ICollection<IServerComponentRunner>
+    internal class ServerSupervisorCollection : IServerSupervisor, ICollection<IServerSupervisor>
     {
-        private readonly List<IServerComponentRunner> _runners;
+        private readonly List<IServerSupervisor> _supervisors;
 
-        public ServerComponentRunnerCollection(IEnumerable<IServerComponentRunner> runners)
+        public ServerSupervisorCollection(IEnumerable<IServerSupervisor> supervisors)
         {
-            if (runners == null) throw new ArgumentNullException("runners");
+            if (supervisors == null) throw new ArgumentNullException("supervisors");
 
-            _runners = new List<IServerComponentRunner>(runners);
+            _supervisors = new List<IServerSupervisor>(supervisors);
         }
 
-        public int Count { get { return _runners.Count; } }
+        public int Count { get { return _supervisors.Count; } }
         public bool IsReadOnly { get { return false; } }
 
         public void Start()
         {
-            foreach (var runner in _runners)
+            foreach (var supervisor in _supervisors)
             {
-                runner.Start();
+                supervisor.Start();
             }
         }
 
         public void Stop()
         {
-            foreach (var runner in _runners)
+            foreach (var supervisor in _supervisors)
             {
-                runner.Stop();
+                supervisor.Stop();
             }
         }
 
@@ -54,45 +54,45 @@ namespace HangFire.Server
         {
             Stop();
 
-            foreach (var runner in _runners)
+            foreach (var supervisor in _supervisors)
             {
-                runner.Dispose();
+                supervisor.Dispose();
             }
         }
 
-        public IEnumerator<IServerComponentRunner> GetEnumerator()
+        public IEnumerator<IServerSupervisor> GetEnumerator()
         {
-            return _runners.GetEnumerator();
+            return _supervisors.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable) _runners).GetEnumerator();
+            return ((IEnumerable) _supervisors).GetEnumerator();
         }
 
-        public void Add(IServerComponentRunner item)
+        public void Add(IServerSupervisor item)
         {
-            _runners.Add(item);
+            _supervisors.Add(item);
         }
 
         public void Clear()
         {
-            _runners.Clear();
+            _supervisors.Clear();
         }
 
-        public bool Contains(IServerComponentRunner item)
+        public bool Contains(IServerSupervisor item)
         {
-            return _runners.Contains(item);
+            return _supervisors.Contains(item);
         }
 
-        public void CopyTo(IServerComponentRunner[] array, int arrayIndex)
+        public void CopyTo(IServerSupervisor[] array, int arrayIndex)
         {
-            _runners.CopyTo(array, arrayIndex);
+            _supervisors.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(IServerComponentRunner item)
+        public bool Remove(IServerSupervisor item)
         {
-            return _runners.Remove(item);
+            return _supervisors.Remove(item);
         }
     }
 }

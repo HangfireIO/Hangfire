@@ -9,7 +9,7 @@ namespace HangFire.Core.Tests
     public class BackgroundJobServerFacts
     {
         private readonly Mock<JobStorage> _storage;
-        private readonly Mock<IServerComponentRunner> _runner;
+        private readonly Mock<IServerSupervisor> _supervisor;
         private readonly Mock<BackgroundJobServer> _serverMock;
         private readonly BackgroundJobServerOptions _options;
 
@@ -18,12 +18,12 @@ namespace HangFire.Core.Tests
             _storage = new Mock<JobStorage>();
             _options = new BackgroundJobServerOptions();
 
-            _runner = new Mock<IServerComponentRunner>();
+            _supervisor = new Mock<IServerSupervisor>();
             _serverMock = new Mock<BackgroundJobServer>(_options, _storage.Object)
             {
                 CallBase = true
             };
-            _serverMock.Setup(x => x.GetServerRunner()).Returns(_runner.Object);
+            _serverMock.Setup(x => x.GetBootstrapSupervisor()).Returns(_supervisor.Object);
         }
 
         [Fact]
@@ -59,51 +59,51 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
-        public void Start_StartsTheServerComponentRunner()
+        public void Start_StartsTheBootstrapSupervisor()
         {
             _serverMock.Object.Start();
 
-            _runner.Verify(x => x.Start());
+            _supervisor.Verify(x => x.Start());
         }
 
         [Fact]
-        public void Stop_StopsTheServerComponentRunner()
+        public void Stop_StopsTheBootstrapSupervisor()
         {
             _serverMock.Object.Stop();
 
-            _runner.Verify(x => x.Stop());
+            _supervisor.Verify(x => x.Stop());
         }
 
         [Fact]
-        public void Dispose_DisposesServerComponentRunner()
+        public void Dispose_DisposesBootstrapSupervisor()
         {
             _serverMock.Object.Dispose();
 
-            _runner.Verify(x => x.Dispose());
+            _supervisor.Verify(x => x.Dispose());
         }
 
         [Fact]
-        public void GetServerRunner_ReturnsNonNullResult()
+        public void GetBootstrapSupervisor_ReturnsNonNullResult()
         {
             var server = CreateServer();
 
-            var runner = server.GetServerRunner();
+            var supervisor = server.GetBootstrapSupervisor();
 
-            Assert.NotNull(runner);
-            Assert.IsType<ServerCore>(((ServerComponentRunner) runner).Component);
+            Assert.NotNull(supervisor);
+            Assert.IsType<ServerBootstrapper>(((ServerSupervisor) supervisor).Component);
         }
 
         [Fact]
-        public void GetServerComponentsRunner_ContainsDefaultComponents()
+        public void GetSupervisors_ContainsDefaultComponents()
         {
             // Arrange
             var server = CreateServer();
 
             // Act
-            var runners = server.GetServerComponentsRunner();
+            var supervisors = server.GetSupervisors();
 
             // Assert
-            var componentTypes = runners.OfType<ServerComponentRunner>()
+            var componentTypes = supervisors.OfType<ServerSupervisor>()
                 .Select(x => x.Component)
                 .Select(x => x.GetType())
                 .ToArray();
@@ -115,7 +115,7 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
-        public void GetServerComponentsRunner_ContainsStorageComponents()
+        public void GetSupervisors_ContainsStorageComponents()
         {
             // Arrange
             var storageComponent = new Mock<IServerComponent>();
@@ -124,10 +124,10 @@ namespace HangFire.Core.Tests
             var server = CreateServer();
 
             // Act
-            var runners = server.GetServerComponentsRunner();
+            var supervisors = server.GetSupervisors();
 
             // Assert
-            var components = runners.OfType<ServerComponentRunner>()
+            var components = supervisors.OfType<ServerSupervisor>()
                 .Select(x => x.Component)
                 .ToArray();
 

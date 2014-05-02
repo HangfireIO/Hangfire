@@ -18,7 +18,7 @@ using System;
 
 namespace HangFire.Server
 {
-    public interface IServerComponentRunner : IDisposable
+    public interface IServerSupervisor : IDisposable
     {
         void Start();
         void Stop();
