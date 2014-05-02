@@ -3,7 +3,7 @@
   <metadata>
     <id>HangFire.Redis</id>
     <version>__HANGFIRE_PACKAGE_VERSION__</version>
-    <title>HangFire.Redis</title>
+    <title>HangFire Redis Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>

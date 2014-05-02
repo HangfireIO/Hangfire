@@ -3,7 +3,7 @@
   <metadata>
     <id>HangFire.SqlServer</id>
     <version>__HANGFIRE_PACKAGE_VERSION__</version>
-    <title>HangFire.SqlServer</title>
+    <title>HangFire SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>
