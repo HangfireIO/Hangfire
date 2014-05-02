@@ -117,7 +117,6 @@
     <Compile Include="Server\PerformingContext.cs" />
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="States\IApplyStateFilter.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="RetryAttribute.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
     <Compile Include="Server\ServerComponentRunner.cs" />
