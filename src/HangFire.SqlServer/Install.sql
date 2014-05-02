@@ -264,6 +264,9 @@ BEGIN
 		DROP TABLE [HangFire].[Hash];
 		PRINT 'Dropped tables [HangFire].[Value] and [HangFire].[Hash]'
 
+		DELETE FROM [HangFire].[Server] WHERE [LastHeartbeat] IS NULL;
+		ALTER TABLE [HangFire].[Server] ALTER COLUMN [LastHeartbeat] DATETIME NOT NULL;
+
 		SET @CURRENT_SCHEMA_VERSION = 2;
 	END
 

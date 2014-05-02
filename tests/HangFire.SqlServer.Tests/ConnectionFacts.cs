@@ -502,7 +502,7 @@ values
                 Assert.True(((string)server.Data).StartsWith(
                     "{\"WorkerCount\":4,\"Queues\":[\"critical\",\"default\"],\"StartedAt\":"),
                     server.Data);
-                Assert.Null(server.HeartBeat);
+                Assert.NotNull(server.LastHeartbeat);
 
                 var context2 = new ServerContext
                 {
@@ -527,10 +527,10 @@ values
         public void RemoveServer_RemovesAServerRecord()
         {
             const string arrangeSql = @"
-insert into HangFire.Server (Id, Data)
+insert into HangFire.Server (Id, Data, LastHeartbeat)
 values 
-('Server1', ''),
-('Server2', '')";
+('Server1', '', getutcdate()),
+('Server2', '', getutcdate())";
 
             UseConnections((sql, connection) =>
             {
@@ -554,10 +554,10 @@ values
         public void Heartbeat_UpdatesLastHeartbeat_OfTheServerWithGivenId()
         {
             const string arrangeSql = @"
-insert into HangFire.Server (Id, Data)
+insert into HangFire.Server (Id, Data, LastHeartbeat)
 values
-('server1', ''),
-('server2', '')";
+('server1', '', '2012-12-12 12:12:12'),
+('server2', '', '2012-12-12 12:12:12')";
 
             UseConnections((sql, connection) =>
             {
@@ -566,10 +566,10 @@ values
                 connection.Heartbeat("server1");
 
                 var servers = sql.Query("select * from HangFire.Server")
-                    .ToDictionary(x => (string)x.Id, x => (DateTime?)x.LastHeartbeat);
+                    .ToDictionary(x => (string)x.Id, x => (DateTime)x.LastHeartbeat);
 
-                Assert.NotNull(servers["server1"]);
-                Assert.Null(servers["server2"]);
+                Assert.NotEqual(2012, servers["server1"].Year);
+                Assert.Equal(2012, servers["server2"].Year);
             });
         }
 

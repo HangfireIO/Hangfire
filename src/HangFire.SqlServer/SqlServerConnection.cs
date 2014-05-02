@@ -246,15 +246,13 @@ values (@jobId, @name, @value)";
                 StartedAt = DateTime.UtcNow,
             };
 
-            // TODO: set the LastHeartbeat column to now, make it non-nullable.
-            
             _connection.Execute(
                 @"merge HangFire.Server as Target "
-                + @"using (VALUES (@id, @data)) as Source (Id, Data) "
+                + @"using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat) "
                 + @"on Target.Id = Source.Id "
-                + @"when matched then update set Data = Source.Data, LastHeartbeat = null "
-                + @"when not matched then insert (Id, Data) values (Source.Id, Source.Data);",
-                new { id = serverId, data = JobHelper.ToJson(data) });
+                + @"when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat "
+                + @"when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
+                new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
         }
 
         public void RemoveServer(string serverId)

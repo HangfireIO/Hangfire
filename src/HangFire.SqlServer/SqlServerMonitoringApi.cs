@@ -195,7 +195,6 @@ select * from (
 
             foreach (var server in servers)
             {
-                // TODO: HangFire.Server.Data column can be null (however it should not be). 
                 var data = JobHelper.FromJson<ServerData>(server.Data);
                 result.Add(new ServerDto
                 {
