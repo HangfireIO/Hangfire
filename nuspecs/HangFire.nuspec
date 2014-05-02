@@ -20,12 +20,13 @@
 0.8
 * New - New server component subsystem - more reliability, more logging, less blocking on stop.
 * New - Added monitor access authorization using ASP.NET RoleProvider.
+* Removed - Deprecated job format based on classes is not supported anymore (obsolete since 0.6.0).
 * Changed - Monitor access restricted to local requests only by default.
 * Changed - Some breaking changes for public API. Please, read GitHub release notes for details.
 * Changed - Default automatic retry attempts count set to 10.
 * Changed - Namespace optimization to reduce number of needed 'using' statements.
-* Removed - Deprecated job format based on classes is not supported anymore (obsolete since 0.6.0).
 * Fixed - PreserveCultureAttribute does not work.
+* Fixed - SqlServerStorageOptions.QueuePollInterval is not working.
 * Fixed - Rare 'arithmetic overflow error for data type tinyint, value = -1' exception.
 * Fixed - Numerous minor issues catched with new unit tests.
 
