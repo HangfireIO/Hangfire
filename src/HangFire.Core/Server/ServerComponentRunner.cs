@@ -126,19 +126,11 @@ namespace HangFire.Server
 
                         _starting.Wait(_disposingCts.Token);
 
-                        const string message = "Server component '{0}' started.";
-                        if (_options.LowerLogVerbosity)
-                        {
-                            _logger.DebugFormat(message, _component);
-                        }
-                        else
-                        {
-                            _logger.InfoFormat(message, _component);
-                        }
+                        LogComponentStarted();
 
                         ExecuteComponent();
 
-                        _logger.DebugFormat("Stopping server component '{0}'...", _component);
+                        LogComponentStopped();
                     }
                 }
                 finally
@@ -153,15 +145,7 @@ namespace HangFire.Server
             }
             catch (OperationCanceledException)
             {
-                const string message = "Server component '{0}' stopped.";
-                if (_options.LowerLogVerbosity)
-                {
-                    _logger.DebugFormat(message, _component);
-                }
-                else
-                {
-                    _logger.InfoFormat(message, _component);
-                }
+                _logger.DebugFormat("Server component '{0}' finished successfully.", _component);
             }
             catch (ThreadAbortException)
             {
@@ -248,6 +232,32 @@ namespace HangFire.Server
                 (int)Math.Pow(retryAttemptNumber, 2), (int)Math.Pow(retryAttemptNumber + 1, 2) + 1);
 
             return TimeSpan.FromSeconds(nextTry);
+        }
+
+        private void LogComponentStopped()
+        {
+            const string message = "Server component '{0}' stopped.";
+            if (_options.LowerLogVerbosity)
+            {
+                _logger.DebugFormat(message, _component);
+            }
+            else
+            {
+                _logger.InfoFormat(message, _component);
+            }
+        }
+
+        private void LogComponentStarted()
+        {
+            const string message = "Server component '{0}' started.";
+            if (_options.LowerLogVerbosity)
+            {
+                _logger.DebugFormat(message, _component);
+            }
+            else
+            {
+                _logger.InfoFormat(message, _component);
+            }
         }
     }
 }
