@@ -14,9 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace HangFire.Storage
 {
-    public interface IProcessingJob
+    public interface IProcessingJob : IDisposable
     {
         string JobId { get; }
         string Queue { get; }

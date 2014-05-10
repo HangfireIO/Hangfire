@@ -103,7 +103,7 @@ namespace HangFire.Redis
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new RedisProcessingJob(jobId, queueName);
+            return new RedisProcessingJob(this, jobId, queueName);
         }
 
         public IDisposable AcquireJobLock(string jobId)

@@ -21,10 +21,15 @@ namespace HangFire.SqlServer
 {
     internal class SqlServerProcessingJob : IProcessingJob
     {
-        public SqlServerProcessingJob(string jobId, string queue)
+        private readonly IStorageConnection _connection;
+
+        public SqlServerProcessingJob(IStorageConnection connection, string jobId, string queue)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
+
+            _connection = connection;
 
             JobId = jobId;
             Queue = queue;
@@ -32,5 +37,10 @@ namespace HangFire.SqlServer
 
         public string JobId { get; private set; }
         public string Queue { get; private set; }
+
+        public void Dispose()
+        {
+            _connection.DeleteJobFromQueue(JobId, Queue);
+        }
     }
 }

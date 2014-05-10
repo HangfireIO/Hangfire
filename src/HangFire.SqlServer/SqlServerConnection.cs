@@ -100,6 +100,7 @@ and Queue in @queues";
             } while (idAndQueue == null);
 
             return new SqlServerProcessingJob(
+                this,
                 idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
                 idAndQueue.Queue);
         }
