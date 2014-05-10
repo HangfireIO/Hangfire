@@ -72,3 +72,5 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
+
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/dd58c8cf730a3ed3675202135bb06025 "githalytics.com")](http://githalytics.com/odinserj/HangFire)
