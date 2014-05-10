@@ -215,11 +215,6 @@ values (@jobId, @name, @value)";
                 .SingleOrDefault();
         }
 
-        [Obsolete("Remove this method, it was changed by SqlProcessingJob.Dispose")]
-        public void DeleteJobFromQueue(string id, string queue)
-        {
-        }
-
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             if (key == null) throw new ArgumentNullException("key");
