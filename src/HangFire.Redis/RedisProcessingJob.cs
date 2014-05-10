@@ -16,20 +16,21 @@
 
 using System;
 using HangFire.Storage;
+using ServiceStack.Redis;
 
 namespace HangFire.Redis
 {
     internal class RedisProcessingJob : IProcessingJob
     {
-        private readonly IStorageConnection _connection;
+        private readonly IRedisClient _redis;
 
-        public RedisProcessingJob(IStorageConnection connection, string jobId, string queue)
+        public RedisProcessingJob(IRedisClient redis, string jobId, string queue)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (redis == null) throw new ArgumentNullException("redis");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
 
-            _connection = connection;
+            _redis = redis;
 
             JobId = jobId;
             Queue = queue;
@@ -40,7 +41,22 @@ namespace HangFire.Redis
 
         public void Dispose()
         {
-            _connection.DeleteJobFromQueue(JobId, Queue);
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.RemoveItemFromList(
+                    String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", Queue),
+                    JobId,
+                    -1));
+
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format(RedisStorage.Prefix + "job:{0}", JobId),
+                    "Fetched"));
+                transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                    String.Format(RedisStorage.Prefix + "job:{0}", JobId),
+                    "Checked"));
+
+                transaction.Commit();
+            }
         }
     }
 }

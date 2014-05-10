@@ -21,7 +21,6 @@ using System.Linq;
 using System.Threading;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.States;
 using HangFire.Storage;
 using ServiceStack.Redis;
 
@@ -103,7 +102,7 @@ namespace HangFire.Redis
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new RedisProcessingJob(this, jobId, queueName);
+            return new RedisProcessingJob(Redis, jobId, queueName);
         }
 
         public IDisposable AcquireJobLock(string jobId)
@@ -213,24 +212,9 @@ namespace HangFire.Redis
                 name);
         }
 
+        [Obsolete("Remove this method. It was changed by RedisProcessingJob.Dispose.")]
         public void DeleteJobFromQueue(string id, string queue)
         {
-            using (var transaction = Redis.CreateTransaction())
-            {
-                transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", queue),
-                    id,
-                    -1));
-
-                transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format(RedisStorage.Prefix + "job:{0}", id),
-                    "Fetched"));
-                transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format(RedisStorage.Prefix + "job:{0}", id),
-                    "Checked"));
-
-                transaction.Commit();
-            }
         }
 
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
