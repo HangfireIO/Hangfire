@@ -15,15 +15,17 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
+using Dapper;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
     internal class SqlServerProcessingJob : IProcessingJob
     {
-        private readonly IStorageConnection _connection;
+        private readonly IDbConnection _connection;
 
-        public SqlServerProcessingJob(IStorageConnection connection, string jobId, string queue)
+        public SqlServerProcessingJob(IDbConnection connection, string jobId, string queue)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (jobId == null) throw new ArgumentNullException("jobId");
@@ -40,7 +42,8 @@ namespace HangFire.SqlServer
 
         public void Dispose()
         {
-            _connection.DeleteJobFromQueue(JobId, Queue);
+            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
+                new { id = JobId, queueName = Queue });
         }
     }
 }

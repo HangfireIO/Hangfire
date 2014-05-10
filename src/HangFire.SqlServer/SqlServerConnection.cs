@@ -100,7 +100,7 @@ and Queue in @queues";
             } while (idAndQueue == null);
 
             return new SqlServerProcessingJob(
-                this,
+                _connection,
                 idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
                 idAndQueue.Queue);
         }
@@ -215,13 +215,9 @@ values (@jobId, @name, @value)";
                 .SingleOrDefault();
         }
 
+        [Obsolete("Remove this method, it was changed by SqlProcessingJob.Dispose")]
         public void DeleteJobFromQueue(string id, string queue)
         {
-            if (id == null) throw new ArgumentNullException("id");
-            if (queue == null) throw new ArgumentNullException("queue");
-
-            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
-                new { id = id, queueName = queue });
         }
 
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)

@@ -1,5 +1,7 @@
 ﻿using System;
-using HangFire.Storage;
+using System.Data;
+using System.Linq;
+using Dapper;
 using Moq;
 using Xunit;
 
@@ -10,11 +12,11 @@ namespace HangFire.SqlServer.Tests
         private const string JobId = "id";
         private const string Queue = "queue";
 
-        private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<IDbConnection> _connection;
 
         public SqlServerProcessingJobFacts()
         {
-            _connection = new Mock<IStorageConnection>();
+            _connection = new Mock<IDbConnection>();
         }
 
         [Fact]
@@ -53,19 +55,68 @@ namespace HangFire.SqlServer.Tests
             Assert.Equal(Queue, processingJob.Queue);
         }
 
-        [Fact]
-        public void Dispose_CallsDeleteFromQueue()
+        [Fact, CleanDatabase]
+        public void DeleteJobFromQueue_ReallyDeletesTheJobFromTheQueue()
         {
-            var processingJob = CreateProcessingJob();
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@id, @queue)";
 
-            processingJob.Dispose();
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new { id = "1", queue = "default" });
+                var processingJob = new SqlServerProcessingJob(sql, "1", "default");
 
-            _connection.Verify(x => x.DeleteJobFromQueue(JobId, Queue));
+                // Act
+                processingJob.Dispose();
+
+                // Assert
+                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                Assert.Equal(0, count);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void DeleteJobFromQueue_DoesNotDelete_UnrelatedJobs()
+        {
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@id, @queue)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(
+                    arrangeSql,
+                    new[]
+                    { 
+                        new { id = "1", queue = "critical" },
+                        new { id = "2", queue = "default" } 
+                    });
+
+                var processingJob = new SqlServerProcessingJob(sql, "1", "default");
+
+                // Act
+                processingJob.Dispose();
+
+                // Assert
+                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                Assert.Equal(2, count);
+            });
         }
 
         private SqlServerProcessingJob CreateProcessingJob()
         {
             return new SqlServerProcessingJob(_connection.Object, JobId, Queue);
+        }
+
+        private static void UseConnection(Action<IDbConnection> action)
+        {
+            using (var connection = ConnectionUtils.CreateConnection())
+            {
+                action(connection);
+            }
         }
     }
 }
