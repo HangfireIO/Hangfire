@@ -144,7 +144,6 @@
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
     <Compile Include="Server\IJobPerformer.cs" />
-    <Compile Include="Storage\ProcessingJob.cs" />
     <Compile Include="JobStorage.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />

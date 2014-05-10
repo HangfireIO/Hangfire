@@ -15,12 +15,13 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using HangFire.Storage;
 
-namespace HangFire.Storage
+namespace HangFire.SqlServer
 {
-    public class ProcessingJob : IProcessingJob
+    internal class SqlServerProcessingJob : IProcessingJob
     {
-        public ProcessingJob(string jobId, string queue)
+        public SqlServerProcessingJob(string jobId, string queue)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");

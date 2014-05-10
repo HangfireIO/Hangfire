@@ -99,7 +99,7 @@ and Queue in @queues";
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
             } while (idAndQueue == null);
 
-            return new ProcessingJob(
+            return new SqlServerProcessingJob(
                 idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
                 idAndQueue.Queue);
         }

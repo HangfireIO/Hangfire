@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FetchedJobsWatcherFacts.cs" />
+    <Compile Include="RedisProcessingJobFacts.cs" />
     <Compile Include="RedisStorageTests.cs" />
     <Compile Include="RedisTest.cs" />
     <Compile Include="FailedStateHandlerFacts.cs" />

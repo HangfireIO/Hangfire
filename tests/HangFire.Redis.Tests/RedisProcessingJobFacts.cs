@@ -1,10 +1,9 @@
 ﻿using System;
-using HangFire.Storage;
 using Xunit;
 
-namespace HangFire.Core.Tests.Server
+namespace HangFire.Redis.Tests
 {
-    public class ProcessingJobFacts
+    public class RedisProcessingJobFacts
     {
         private const string JobId = "id";
         private const string Queue = "queue";
@@ -13,7 +12,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ProcessingJob(null, Queue));
+                () => new RedisProcessingJob(null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -22,7 +21,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ProcessingJob(JobId, null));
+                () => new RedisProcessingJob(JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -30,7 +29,7 @@ namespace HangFire.Core.Tests.Server
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var processingJob = new ProcessingJob(JobId, Queue);
+            var processingJob = new RedisProcessingJob(JobId, Queue);
 
             Assert.Equal(JobId, processingJob.JobId);
             Assert.Equal(Queue, processingJob.Queue);
