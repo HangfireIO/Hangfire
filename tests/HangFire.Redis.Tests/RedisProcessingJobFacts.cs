@@ -1,6 +1,6 @@
 ﻿using System;
+using HangFire.Storage;
 using Moq;
-using ServiceStack.Redis;
 using Xunit;
 
 namespace HangFire.Redis.Tests
@@ -10,31 +10,27 @@ namespace HangFire.Redis.Tests
         private const string JobId = "id";
         private const string Queue = "queue";
 
-        private readonly Mock<IRedisClient> _redis;
-        private readonly Mock<IRedisTransaction> _transaction;
+        private readonly Mock<IStorageConnection> _connection;
 
         public RedisProcessingJobFacts()
         {
-            _redis = new Mock<IRedisClient>();
-            _transaction = new Mock<IRedisTransaction>();
-
-            _redis.Setup(x => x.CreateTransaction()).Returns(_transaction.Object);
+            _connection = new Mock<IStorageConnection>();
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenRedisIsNull()
+        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new RedisProcessingJob(null, JobId, Queue));
 
-            Assert.Equal("redis", exception.ParamName);
+            Assert.Equal("connection", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RedisProcessingJob(_redis.Object, null, Queue));
+                () => new RedisProcessingJob(_connection.Object, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -43,7 +39,7 @@ namespace HangFire.Redis.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RedisProcessingJob(_redis.Object, JobId, null));
+                () => new RedisProcessingJob(_connection.Object, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -58,18 +54,18 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact]
-        public void Dispose_CommitsTheTransaction()
+        public void Dispose_CallsDeleteFromQueue()
         {
             var processingJob = CreateProcessingJob();
 
             processingJob.Dispose();
 
-            _transaction.Verify(x => x.Commit());
+            _connection.Verify(x => x.DeleteJobFromQueue(JobId, Queue));
         }
 
         private RedisProcessingJob CreateProcessingJob()
         {
-            return new RedisProcessingJob(_redis.Object, JobId, Queue);
+            return new RedisProcessingJob(_connection.Object, JobId, Queue);
         }
     }
 }
