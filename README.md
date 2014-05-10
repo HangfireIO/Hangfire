@@ -5,13 +5,6 @@ HangFire
 	<img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4?retina=true" />
 </a>
 
-* [HangFire Site](http://hangfire.io)
-* [HangFire Documentation](http://docs.hangfire.io)
-* [HangFire NuGet Packages](https://www.nuget.org/packages?q=hangfire)
-* [Discussion Forum](https://groups.google.com/forum/?hl=en#!forum/hangfire_net)
-* Join [HangFire](https://jabbr.net/#/rooms/HangFire) room on [JabbR](https://jabbr.net)
-* [@hangfire_net](https://twitter.com/hangfire_net) on Twitter
-
 HangFire gives you a simple way to kick off **long-running processes** from the **ASP.NET request processing pipeline**. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
 
 Improve the responsiveness of your web application. Do not force your users to wait when the application performs the following tasks:
@@ -29,11 +22,23 @@ Just wrap your long-running process to a method and instruct HangFire to create 
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job). 
 
+Project Links
+--------------
+
+* [Project Site](http://hangfire.io)
+* [Blog](http://odinserj.net)
+* [Documentation](http://docs.hangfire.io)
+* [Forum](http://discuss.hangfire.io)
+* [@hangfire_net](https://twitter.com/hangfire_net) on Twitter
+* [Release Notes](https://github.com/odinserj/HangFire/releases)
+* [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
+
 Related Projects
 -----------------
 
 * [HangFire.Autofac](https://github.com/odinserj/HangFire.Autofac)
 * [HangFire.Ninject](https://github.com/odinserj/HangFire.Ninject)
+* [HangFire.SimpleInjector](https://github.com/devmondo/HangFire.SimpleInjector)
 
 Contributing
 -------------
