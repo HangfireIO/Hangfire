@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Threading;
 using HangFire.Storage;
 
@@ -22,5 +25,6 @@ namespace HangFire.SqlServer
     internal interface IPersistentJobQueue
     {
         IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
+        void AddToQueue(Queue<Action<SqlConnection>> actions, string queue, string jobId);
     }
 }

@@ -15,7 +15,9 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -82,6 +84,17 @@ and Queue in @queues";
                 _connection,
                 idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
                 idAndQueue.Queue);
+        }
+
+        public void AddToQueue(Queue<Action<SqlConnection>> actions, string queue, string jobId)
+        {
+            if (actions == null) throw new ArgumentNullException("actions");
+
+            const string enqueueJobSql = @"
+insert into HangFire.JobQueue (JobId, Queue) values (@jobId, @queue)";
+
+            actions.Enqueue(x => x.Execute(
+                enqueueJobSql, new { jobId = jobId, queue = queue }));
         }
     }
 }

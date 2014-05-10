@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -276,6 +277,24 @@ values (scope_identity(), @queue)";
 
                 Assert.NotNull(@default.JobId);
                 Assert.Equal("default", @default.Queue);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToQueue_AddsAJobToTheQueue()
+        {
+            UseConnection(connection =>
+            {
+                var actions = new Queue<Action<SqlConnection>>();
+                var queue = CreateJobQueue(connection);
+
+                queue.AddToQueue(actions, "default", "1");
+                actions.Dequeue()(connection);
+
+                var record = connection.Query("select * from HangFire.JobQueue").Single();
+                Assert.Equal("1", record.JobId.ToString());
+                Assert.Equal("default", record.Queue);
+                Assert.Null(record.FetchedAt);
             });
         }
 

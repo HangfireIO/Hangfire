@@ -10,13 +10,31 @@ using Xunit;
 
 namespace HangFire.SqlServer.Tests
 {
-    public class WriteTransactionFacts
+    public class SqlServerWriteOnlyTransactionFacts
     {
+        private readonly Mock<IPersistentJobQueue> _queue;
+
+        public SqlServerWriteOnlyTransactionFacts()
+        {
+            _queue = new Mock<IPersistentJobQueue>();
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_ThrowsAnException_IfQueueIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerWriteOnlyTransaction(null, ConnectionUtils.CreateConnection()));
+
+            Assert.Equal("queue", exception.ParamName);
+        }
+
         [Fact]
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
-            Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerWriteOnlyTransaction(_queue.Object, null));
+
+            Assert.Equal("connection", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -143,10 +161,8 @@ select scope_identity() as Id";
             {
                 Commit(sql, x => x.AddToQueue("default", "1"));
 
-                var record = sql.Query("select * from HangFire.JobQueue").Single();
-                Assert.Equal("1", record.JobId.ToString());
-                Assert.Equal("default", record.Queue);
-                Assert.Null(record.FetchedAt);
+                _queue.Verify(x => x.AddToQueue(
+                    It.IsNotNull<Queue<Action<SqlConnection>>>(), "default", "1"));
             });
         }
 
@@ -580,7 +596,7 @@ select scope_identity() as Id";
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection))
+            using (var transaction = new SqlServerWriteOnlyTransaction(_queue.Object, connection))
             {
                 action(transaction);
                 transaction.Commit();
