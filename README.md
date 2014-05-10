@@ -1,6 +1,14 @@
 HangFire 
 =========
 
+[Official Site](http://hangfire.io) |
+[Blog](http://odinserj.net) |
+[Documentation](http://docs.hangfire.io) |
+[Forum](http://discuss.hangfire.io) |
+[Twitter](https://twitter.com/hangfire_net) |
+[Release Notes](https://github.com/odinserj/HangFire/releases) |
+[NuGet Packages](https://www.nuget.org/packages?q=hangfire)
+
 <a href="https://ci.appveyor.com/project/odinserj/hangfire">
 	<img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4?retina=true" />
 </a>
@@ -20,18 +28,7 @@ Improve the responsiveness of your web application. Do not force your users to w
 
 Just wrap your long-running process to a method and instruct HangFire to create a **background job** based on this method. All backround jobs are being saved to a **persistent storage** ([SQL Server](http://www.microsoft.com/sql‎) or [Redis](http://redis.io)) and performed on a dedicated **worker thread** in a reliable way inside or outside of your ASP.NET application.
 
-HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job). 
-
-Project Links
---------------
-
-* [Project Site](http://hangfire.io)
-* [Blog](http://odinserj.net)
-* [Documentation](http://docs.hangfire.io)
-* [Forum](http://discuss.hangfire.io)
-* [@hangfire_net](https://twitter.com/hangfire_net) on Twitter
-* [Release Notes](https://github.com/odinserj/HangFire/releases)
-* [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
+HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
 Related Projects
 -----------------
