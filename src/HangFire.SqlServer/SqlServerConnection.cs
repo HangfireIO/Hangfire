@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -30,16 +29,16 @@ namespace HangFire.SqlServer
 {
     internal class SqlServerConnection : IStorageConnection
     {
+        private readonly IPersistentJobQueue _queue;
         private readonly SqlConnection _connection;
-        private readonly SqlServerStorageOptions _options;
 
-        public SqlServerConnection(SqlConnection connection, SqlServerStorageOptions options)
+        public SqlServerConnection(IPersistentJobQueue queue, SqlConnection connection)
         {
+            if (queue == null) throw new ArgumentNullException("queue");
             if (connection == null) throw new ArgumentNullException("connection");
-            if (options == null) throw new ArgumentNullException("options");
 
+            _queue = queue;
             _connection = connection;
-            _options = options;
         }
 
         public void Dispose()
@@ -61,48 +60,7 @@ namespace HangFire.SqlServer
 
         public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
-
-            dynamic idAndQueue;
-
-            const string fetchJobSqlTemplate = @"
-set transaction isolation level read committed
-update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
-output INSERTED.JobId, INSERTED.Queue
-where FetchedAt {0}
-and Queue in @queues";
-
-            // Sql query is splitted to force SQL Server to use 
-            // INDEX SEEK instead of INDEX SCAN operator.
-            var fetchConditions = new[] { "is null", "< DATEADD(second, @timeout, GETUTCDATE())" };
-            var currentQueryIndex = 0;
-
-            do
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                idAndQueue = _connection.Query(
-                    String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
-                    new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds })
-                    .SingleOrDefault();
-
-                if (idAndQueue == null)
-                {
-                    if (currentQueryIndex == fetchConditions.Length - 1)
-                    {
-                        cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                }
-
-                currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
-            } while (idAndQueue == null);
-
-            return new SqlServerProcessingJob(
-                _connection,
-                idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
-                idAndQueue.Queue);
+            return _queue.FetchNextJob(queues, cancellationToken);
         }
 
         public string CreateExpiredJob(

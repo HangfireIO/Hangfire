@@ -2,32 +2,55 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.Storage;
+using Moq;
 using Xunit;
 
 namespace HangFire.SqlServer.Tests
 {
-    public partial class ConnectionFacts
+    public class SqlServerConnectionFacts
     {
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenSqlConnectionIsNull()
+        private readonly Mock<IPersistentJobQueue> _queue;
+
+        public SqlServerConnectionFacts()
+        {
+            _queue = new Mock<IPersistentJobQueue>();
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, new SqlServerStorageOptions()));
+                () => new SqlServerConnection(null, ConnectionUtils.CreateConnection()));
+
+            Assert.Equal("queue", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerConnection(_queue.Object, null));
 
             Assert.Equal("connection", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
+        public void FetchNextJob_DelegatesItsExecution_ToTheQueue()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+            UseConnection(connection =>
+            {
+                var token = new CancellationToken();
+                var queues = new[] { "default" };
 
-            Assert.Equal("options", exception.ParamName);
+                connection.FetchNextJob(queues, token);
+
+                _queue.Verify(x => x.FetchNextJob(queues, token));
+            });
         }
 
         [Fact, CleanDatabase]
@@ -102,7 +125,7 @@ namespace HangFire.SqlServer.Tests
                 invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();
-                Assert.Equal(typeof(ConnectionFacts), job.Type);
+                Assert.Equal(typeof(SqlServerConnectionFacts), job.Type);
                 Assert.Equal("SampleMethod", job.Method.Name);
                 Assert.Equal("Hello", job.Arguments[0]);
 
@@ -541,7 +564,7 @@ values (@id, '', @heartbeat)";
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, new SqlServerStorageOptions()))
+            using (var connection = new SqlServerConnection(_queue.Object, sqlConnection))
             {
                 action(sqlConnection, connection);
             }
@@ -550,7 +573,8 @@ values (@id, '', @heartbeat)";
         private void UseConnection(Action<SqlServerConnection> action)
         {
             using (var connection = new SqlServerConnection(
-                ConnectionUtils.CreateConnection(), new SqlServerStorageOptions()))
+                _queue.Object, 
+                ConnectionUtils.CreateConnection()))
             {
                 action(connection);
             }
