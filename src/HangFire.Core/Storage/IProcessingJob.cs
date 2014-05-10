@@ -14,22 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 namespace HangFire.Storage
 {
-    public class ProcessingJob : IProcessingJob
+    public interface IProcessingJob
     {
-        public ProcessingJob(string jobId, string queue)
-        {
-            if (jobId == null) throw new ArgumentNullException("jobId");
-            if (queue == null) throw new ArgumentNullException("queue");
-
-            JobId = jobId;
-            Queue = queue;
-        }
-
-        public string JobId { get; private set; }
-        public string Queue { get; private set; }
+        string JobId { get; }
+        string Queue { get; }
     }
 }

@@ -59,7 +59,7 @@ namespace HangFire.SqlServer
                 _connection);
         }
 
-        public ProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");

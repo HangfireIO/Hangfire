@@ -12,11 +12,14 @@ namespace HangFire.Core.Tests.Server
 {
     public class WorkerFacts
     {
+        private const string JobId = "my-job";
+        private const string Queue = "my-queue";
+
         private readonly WorkerContextMock _context;
         private readonly Mock<IStorageConnection> _connection;
         private readonly CancellationToken _token;
         private readonly Mock<IStateMachine> _stateMachine;
-        private readonly ProcessingJob _processingJob;
+        private readonly Mock<IProcessingJob> _processingJob;
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IJobPerformanceProcess> _process;
 
@@ -30,13 +33,15 @@ namespace HangFire.Core.Tests.Server
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _processingJob = new ProcessingJob("my-job", "my-queue");
+            _processingJob = new Mock<IProcessingJob>();
+            _processingJob.Setup(x => x.JobId).Returns(JobId);
+            _processingJob.Setup(x => x.Queue).Returns(Queue);
 
             _connection
                 .Setup(x => x.FetchNextJob(_context.SharedContext.Queues, It.IsNotNull<CancellationToken>()))
-                .Returns(_processingJob);
+                .Returns(_processingJob.Object);
 
-            _connection.Setup(x => x.GetJobData(_processingJob.JobId))
+            _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData
                 {
                     Job = Job.FromExpression(() => Method()),
@@ -87,7 +92,7 @@ namespace HangFire.Core.Tests.Server
                 x => x.FetchNextJob(_context.SharedContext.Queues, _token),
                 Times.Once);
 
-            _connection.Verify(x => x.DeleteJobFromQueue(_processingJob.JobId, _processingJob.Queue));
+            _connection.Verify(x => x.DeleteJobFromQueue(JobId, Queue));
         }
 
         [Fact, Sequence]
@@ -96,7 +101,7 @@ namespace HangFire.Core.Tests.Server
             // Arrange
             _stateMachine
                 .Setup(x => x.TryToChangeState(
-                    _processingJob.JobId, It.IsAny<ProcessingState>(), It.IsAny<string[]>()))
+                    JobId, It.IsAny<ProcessingState>(), It.IsAny<string[]>()))
                 .InSequence()
                 .Returns(true);
 
@@ -105,7 +110,7 @@ namespace HangFire.Core.Tests.Server
 
             _stateMachine
                 .Setup(x => x.TryToChangeState(
-                    _processingJob.JobId, It.IsAny<SucceededState>(), It.IsAny<string[]>()))
+                    JobId, It.IsAny<SucceededState>(), It.IsAny<string[]>()))
                 .InSequence()
                 .Returns(true);
 
@@ -208,7 +213,7 @@ namespace HangFire.Core.Tests.Server
 
             // Assert
             _stateMachine.Verify(x => x.TryToChangeState(
-                _processingJob.JobId,
+                JobId,
                 It.Is<FailedState>(state => state.Exception == exception && state.Reason.Contains("Internal")),
                 It.IsAny<string[]>()));
         }
@@ -229,7 +234,7 @@ namespace HangFire.Core.Tests.Server
 
             // Assert
             _stateMachine.Verify(x => x.TryToChangeState(
-                _processingJob.JobId,
+                JobId,
                 It.Is<FailedState>(state => state.Exception == exception && state.Reason == "hello"),
                 It.IsAny<string[]>()));
         }
@@ -238,7 +243,7 @@ namespace HangFire.Core.Tests.Server
         public void Execute_MovesJob_ToFailedState_IfThereWasJobLoadException()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobData(_processingJob.JobId))
+            _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData { LoadException = new JobLoadException() });
 
             var worker = CreateWorker();
@@ -248,7 +253,7 @@ namespace HangFire.Core.Tests.Server
 
             // Assert
             _stateMachine.Verify(x => x.TryToChangeState(
-                _processingJob.JobId,
+                JobId,
                 It.IsAny<FailedState>(),
                 It.IsAny<string[]>()));
         }

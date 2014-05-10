@@ -130,6 +130,7 @@
     <Compile Include="States\StateMachineFactory.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IMonitoringApi.cs" />
+    <Compile Include="Storage\IProcessingJob.cs" />
     <Compile Include="Storage\Monitoring\FetchedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FailedJobDto.cs" />
