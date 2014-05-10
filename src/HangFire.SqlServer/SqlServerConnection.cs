@@ -60,7 +60,7 @@ namespace HangFire.SqlServer
 
         public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            return _queue.FetchNextJob(queues, cancellationToken);
+            return _queue.Dequeue(queues, cancellationToken);
         }
 
         public string CreateExpiredJob(

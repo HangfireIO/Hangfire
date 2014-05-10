@@ -161,7 +161,7 @@ select scope_identity() as Id";
             {
                 Commit(sql, x => x.AddToQueue("default", "1"));
 
-                _queue.Verify(x => x.AddToQueue(
+                _queue.Verify(x => x.Enqueue(
                     It.IsNotNull<Queue<Action<SqlConnection>>>(), "default", "1"));
             });
         }

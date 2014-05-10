@@ -40,7 +40,7 @@ namespace HangFire.SqlServer
             _connection = connection;
         }
 
-        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public IProcessingJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
@@ -86,7 +86,7 @@ and Queue in @queues";
                 idAndQueue.Queue);
         }
 
-        public void AddToQueue(Queue<Action<SqlConnection>> actions, string queue, string jobId)
+        public void Enqueue(Queue<Action<SqlConnection>> actions, string queue, string jobId)
         {
             if (actions == null) throw new ArgumentNullException("actions");
 

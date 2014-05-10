@@ -49,7 +49,7 @@ namespace HangFire.SqlServer.Tests
 
                 connection.FetchNextJob(queues, token);
 
-                _queue.Verify(x => x.FetchNextJob(queues, token));
+                _queue.Verify(x => x.Dequeue(queues, token));
             });
         }
 

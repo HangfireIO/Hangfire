@@ -24,7 +24,7 @@ namespace HangFire.SqlServer
 {
     internal interface IPersistentJobQueue
     {
-        IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
-        void AddToQueue(Queue<Action<SqlConnection>> actions, string queue, string jobId);
+        IProcessingJob Dequeue(string[] queues, CancellationToken cancellationToken);
+        void Enqueue(Queue<Action<SqlConnection>> actions, string queue, string jobId);
     }
 }

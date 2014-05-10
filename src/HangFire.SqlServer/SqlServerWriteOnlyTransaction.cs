@@ -117,7 +117,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public void AddToQueue(string queue, string jobId)
         {
-            _queue.AddToQueue(_commandQueue, queue, jobId);
+            _queue.Enqueue(_commandQueue, queue, jobId);
         }
 
         public void IncrementCounter(string key)

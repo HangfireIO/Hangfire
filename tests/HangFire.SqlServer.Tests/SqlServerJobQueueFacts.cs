@@ -33,35 +33,35 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldThrowAnException_WhenQueuesCollectionIsNull()
+        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsNull()
         {
             UseConnection(connection =>
             {
                 var queue = CreateJobQueue(connection);
 
                 var exception = Assert.Throws<ArgumentNullException>(
-                    () => queue.FetchNextJob(null, CreateTimingOutCancellationToken()));
+                    () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
 
                 Assert.Equal("queues", exception.ParamName);
             });
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldThrowAnException_WhenQueuesCollectionIsEmpty()
+        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsEmpty()
         {
             UseConnection(connection =>
             {
                 var queue = CreateJobQueue(connection);
 
                 var exception = Assert.Throws<ArgumentException>(
-                    () => queue.FetchNextJob(new string[0], CreateTimingOutCancellationToken()));
+                    () => queue.Dequeue(new string[0], CreateTimingOutCancellationToken()));
 
                 Assert.Equal("queues", exception.ParamName);
             });
         }
 
         [Fact]
-        public void FetchNextJob_ThrowsOperationCanceled_WhenCancellationTokenIsSetAtTheBeginning()
+        public void Dequeue_ThrowsOperationCanceled_WhenCancellationTokenIsSetAtTheBeginning()
         {
             UseConnection(connection =>
             {
@@ -70,12 +70,12 @@ namespace HangFire.SqlServer.Tests
                 var queue = CreateJobQueue(connection);
 
                 Assert.Throws<OperationCanceledException>(
-                    () => queue.FetchNextJob(DefaultQueues, cts.Token));
+                    () => queue.Dequeue(DefaultQueues, cts.Token));
             });
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldWaitIndefinitely_WhenThereAreNoJobs()
+        public void Dequeue_ShouldWaitIndefinitely_WhenThereAreNoJobs()
         {
             UseConnection(connection =>
             {
@@ -83,12 +83,12 @@ namespace HangFire.SqlServer.Tests
                 var queue = CreateJobQueue(connection);
 
                 Assert.Throws<OperationCanceledException>(
-                    () => queue.FetchNextJob(DefaultQueues, cts.Token));
+                    () => queue.Dequeue(DefaultQueues, cts.Token));
             });
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldFetchAJob_FromTheSpecifiedQueue()
+        public void Dequeue_ShouldFetchAJob_FromTheSpecifiedQueue()
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
@@ -107,7 +107,7 @@ values (@jobId, @queue)";
                 var queue = CreateJobQueue(connection);
 
                 // Act
-                var payload = queue.FetchNextJob(
+                var payload = queue.Dequeue(
                     DefaultQueues,
                     CreateTimingOutCancellationToken());
 
@@ -118,7 +118,7 @@ values (@jobId, @queue)";
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue()
+        public void Dequeue_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue()
         {
             const string arrangeSql = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
@@ -135,7 +135,7 @@ values (scope_identity(), @queue)";
                 var queue = CreateJobQueue(connection);
 
                 // Act
-                var payload = queue.FetchNextJob(
+                var payload = queue.Dequeue(
                     DefaultQueues,
                     CreateTimingOutCancellationToken());
 
@@ -152,7 +152,7 @@ values (scope_identity(), @queue)";
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldFetchATimedOutJobs_FromTheSpecifiedQueue()
+        public void Dequeue_ShouldFetchATimedOutJobs_FromTheSpecifiedQueue()
         {
             const string arrangeSql = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
@@ -175,7 +175,7 @@ values (scope_identity(), @queue, @fetchedAt)";
                 var queue = CreateJobQueue(connection);
 
                 // Act
-                var payload = queue.FetchNextJob(
+                var payload = queue.Dequeue(
                     DefaultQueues,
                     CreateTimingOutCancellationToken());
 
@@ -185,7 +185,7 @@ values (scope_identity(), @queue, @fetchedAt)";
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldSetFetchedAt_OnlyForTheFetchedJob()
+        public void Dequeue_ShouldSetFetchedAt_OnlyForTheFetchedJob()
         {
             const string arrangeSql = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
@@ -206,7 +206,7 @@ values (scope_identity(), @queue)";
                 var queue = CreateJobQueue(connection);
 
                 // Act
-                var payload = queue.FetchNextJob(
+                var payload = queue.Dequeue(
                     DefaultQueues,
                     CreateTimingOutCancellationToken());
 
@@ -220,7 +220,7 @@ values (scope_identity(), @queue)";
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldFetchJobs_OnlyFromSpecifiedQueues()
+        public void Dequeue_ShouldFetchJobs_OnlyFromSpecifiedQueues()
         {
             const string arrangeSql = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
@@ -237,14 +237,14 @@ values (scope_identity(), @queue)";
                     new { queue = "critical", invocationData = "", arguments = "" });
                 
                 Assert.Throws<OperationCanceledException>(
-                    () => queue.FetchNextJob(
+                    () => queue.Dequeue(
                         DefaultQueues,
                         CreateTimingOutCancellationToken()));
             });
         }
 
         [Fact, CleanDatabase]
-        public void FetchNextJob_ShouldFetchJobs_FromMultipleQueues()
+        public void Dequeue_ShouldFetchJobs_FromMultipleQueues()
         {
             const string arrangeSql = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
@@ -264,14 +264,14 @@ values (scope_identity(), @queue)";
 
                 var queue = CreateJobQueue(connection);
 
-                var critical = queue.FetchNextJob(
+                var critical = queue.Dequeue(
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 
                 Assert.NotNull(critical.JobId);
                 Assert.Equal("critical", critical.Queue);
 
-                var @default = queue.FetchNextJob(
+                var @default = queue.Dequeue(
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 
@@ -281,14 +281,14 @@ values (scope_identity(), @queue)";
         }
 
         [Fact, CleanDatabase]
-        public void AddToQueue_AddsAJobToTheQueue()
+        public void Enqueue_AddsAJobToTheQueue()
         {
             UseConnection(connection =>
             {
                 var actions = new Queue<Action<SqlConnection>>();
                 var queue = CreateJobQueue(connection);
 
-                queue.AddToQueue(actions, "default", "1");
+                queue.Enqueue(actions, "default", "1");
                 actions.Dequeue()(connection);
 
                 var record = connection.Query("select * from HangFire.JobQueue").Single();
