@@ -82,7 +82,7 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_FetchesAJobAndDeletesItFromQueue()
+        public void Execute_FetchesAJobAndDisposesIt()
         {
             var worker = CreateWorker();
 
@@ -92,7 +92,7 @@ namespace HangFire.Core.Tests.Server
                 x => x.FetchNextJob(_context.SharedContext.Queues, _token),
                 Times.Once);
 
-            _connection.Verify(x => x.DeleteJobFromQueue(JobId, Queue));
+            _processingJob.Verify(x => x.Dispose());
         }
 
         [Fact, Sequence]
