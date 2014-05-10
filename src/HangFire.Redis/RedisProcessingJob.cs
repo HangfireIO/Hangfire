@@ -21,9 +21,9 @@ namespace HangFire.Redis
 {
     internal class RedisProcessingJob : IProcessingJob
     {
-        private readonly IStorageConnection _connection;
+        private readonly RedisConnection _connection;
 
-        public RedisProcessingJob(IStorageConnection connection, string jobId, string queue)
+        public RedisProcessingJob(RedisConnection connection, string jobId, string queue)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (jobId == null) throw new ArgumentNullException("jobId");
