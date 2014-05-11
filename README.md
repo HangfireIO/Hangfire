@@ -37,6 +37,16 @@ Related Projects
 * [HangFire.Ninject](https://github.com/odinserj/HangFire.Ninject)
 * [HangFire.SimpleInjector](https://github.com/devmondo/HangFire.SimpleInjector)
 
+Roadmap
+--------
+
+* Full documentation for product and its API.
+* More tutorials and articles that describe the features and use cases.
+* Recurring jobs support to fully cover all background needs.
+* Support for other job storages, including Microsoft Azure Storage.
+* Make it easier to maintain jobs, even on large-scale systems.
+* Deliver the solution to the 90% of ASP.NET developers smile
+
 Contributing
 -------------
 
