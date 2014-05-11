@@ -119,7 +119,7 @@ namespace ConsoleSample
                                 }
                                 else
                                 {
-                                    BackgroundJob.Enqueue<Services>(x => x.EmptyCritical());
+                                    BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
                                 }
                             });
                             Console.WriteLine("Jobs enqueued.");
