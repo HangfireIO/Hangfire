@@ -35,7 +35,7 @@ Roadmap
 * Recurring jobs support to fully cover all background needs.
 * Support for other job storages, including Microsoft Azure Storage.
 * Make it easier to maintain jobs, even on large-scale systems.
-* Deliver the solution to the 90% of ASP.NET developers smile
+* Deliver the solution to the 90% of ASP.NET developers :smile:.
 
 Contributing
 -------------
