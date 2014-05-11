@@ -36,7 +36,6 @@ namespace HangFire.SqlServer
         }
 
         public string JobId { get; private set; }
-        public string Queue { get; private set; }
 
         public void Dispose()
         {

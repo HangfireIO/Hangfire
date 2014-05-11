@@ -35,7 +35,6 @@ namespace HangFire.Core.Tests.Server
 
             _processingJob = new Mock<IProcessingJob>();
             _processingJob.Setup(x => x.JobId).Returns(JobId);
-            _processingJob.Setup(x => x.Queue).Returns(Queue);
 
             _connection
                 .Setup(x => x.FetchNextJob(_context.SharedContext.Queues, It.IsNotNull<CancellationToken>()))

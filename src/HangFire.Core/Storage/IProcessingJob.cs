@@ -21,6 +21,5 @@ namespace HangFire.Storage
     public interface IProcessingJob : IDisposable
     {
         string JobId { get; }
-        string Queue { get; }
     }
 }
