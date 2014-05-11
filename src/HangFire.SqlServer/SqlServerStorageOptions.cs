@@ -30,6 +30,8 @@ namespace HangFire.SqlServer
             PrepareSchemaIfNecessary = true;
         }
 
+        public string MessageQueuePathPattern { get; set; }
+
         public TimeSpan QueuePollInterval
         {
             get { return _queuePollInterval; }

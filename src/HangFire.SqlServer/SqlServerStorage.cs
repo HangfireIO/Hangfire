@@ -60,7 +60,9 @@ namespace HangFire.SqlServer
         public override IStorageConnection GetConnection()
         {
             var connection = CreateAndOpenConnection();
-            var queue = new SqlServerJobQueue(_options, connection);
+            var queue = _options.MessageQueuePathPattern != null
+                ? (IPersistentJobQueue)new MessageQueueJobQueue(_options.MessageQueuePathPattern)
+                : new SqlServerJobQueue(_options, connection);
 
             return new SqlServerConnection(queue, connection);
         }

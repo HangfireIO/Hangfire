@@ -14,8 +14,13 @@ namespace ConsoleSample
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
                 LogLevel.Info, false, false, true, "");
 
+            var sqlOptions = new SqlServerStorageOptions
+            {
+                MessageQueuePathPattern = @"FormatName:DIRECT=OS:.\PRIVATE$\hangfire{0}"
+            };
+
             JobStorage.Current = 
-                new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
+                new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;", sqlOptions);
                 //new RedisStorage("localhost:6379", 3);
 
             var options = new BackgroundJobServerOptions
@@ -114,7 +119,7 @@ namespace ConsoleSample
                                 }
                                 else
                                 {
-                                    BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
+                                    BackgroundJob.Enqueue<Services>(x => x.EmptyCritical());
                                 }
                             });
                             Console.WriteLine("Jobs enqueued.");
