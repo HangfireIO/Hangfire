@@ -20,10 +20,10 @@ Just wrap your long-running process to a method and instruct HangFire to create 
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
-Usage
-------
+Installation
+-------------
 
-**1. Install the package**
+See the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide to learn how to install and use HangFire for the first time.
 
 HangFire is available as a NuGet package. So, install it using the NuGet Package Console window:
 
@@ -31,7 +31,17 @@ HangFire is available as a NuGet package. So, install it using the NuGet Package
 PM> Install-Package HangFire
 ```
 
-**2. Enqueue a background job**
+After installing, open the `~/App_Start/HangFireConfig.cs` file and modify the connection string:
+
+```csharp
+JobStorage.Current = new SqlServerStorage(
+    @"Server=.\sqlexpress; Database=MyDatabase; Trusted_Connection=True;");
+```
+
+Usage
+------
+
+**1. Enqueue a background job**
 
 You can run in background regular static or instance methods, just do the following:
 
@@ -39,7 +49,7 @@ You can run in background regular static or instance methods, just do the follow
 BackgroundJob.Enqueue(() => Console.WriteLine("Hello, world!"));
 ```
 
-**3. Process it in background**
+**2. Process it in background**
 
 Processing is made inside a different worker thread. To start the worker pool, call:
 
@@ -48,7 +58,9 @@ var server = new AspNetBackgroundJobServer();
 server.Start();
 ```
 
-This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io). For more instructions, see the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide.
+Please note, that **these lines already added** in the `~/App_Start/HangFireConfig.cs` file for you. 
+
+This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io). 
 
 Related Projects
 -----------------
