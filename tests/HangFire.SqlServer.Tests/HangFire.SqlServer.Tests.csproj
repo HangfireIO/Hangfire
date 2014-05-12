@@ -40,6 +40,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -51,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageQueueJobQueueFacts.cs" />
     <Compile Include="SqlServerConnectionFacts.cs" />
     <Compile Include="ExpirationManagerFacts.cs" />
     <Compile Include="SqlServerJobQueueFacts.cs" />
@@ -59,6 +61,7 @@
     <Compile Include="SqlServerDistributedLockFacts.cs" />
     <Compile Include="StorageFacts.cs" />
     <Compile Include="StorageOptionsFacts.cs" />
+    <Compile Include="Utils\CleanMsmqQueueAttribute.cs" />
     <Compile Include="Utils\ConnectionUtils.cs" />
     <Compile Include="Utils\CleanDatabaseAttribute.cs" />
     <Compile Include="SqlServerWriteOnlyTransactionFacts.cs" />

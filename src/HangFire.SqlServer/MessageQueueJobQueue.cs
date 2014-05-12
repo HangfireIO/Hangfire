@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Messaging;
 using System.Threading;
@@ -27,14 +28,14 @@ namespace HangFire.SqlServer
     {
         private static readonly TimeSpan SyncReceiveTimeout = TimeSpan.FromSeconds(5);
 
-        private readonly string _messageQueuePathPattern;
+        private readonly string _pathPattern;
         private readonly IMessageFormatter _formatter;
 
-        public MessageQueueJobQueue(string messageQueuePathPattern)
+        public MessageQueueJobQueue(string pathPattern)
         {
-            if (messageQueuePathPattern == null) throw new ArgumentNullException("messageQueuePathPattern");
+            if (pathPattern == null) throw new ArgumentNullException("pathPattern");
 
-            _messageQueuePathPattern = messageQueuePathPattern;
+            _pathPattern = pathPattern;
             _formatter = new BinaryMessageFormatter();
         }
 
@@ -101,7 +102,7 @@ namespace HangFire.SqlServer
 
         private MessageQueue GetMessageQueue(string queue)
         {
-            var queuePath = String.Format(_messageQueuePathPattern, queue);
+            var queuePath = String.Format(_pathPattern, queue);
 
             return new MessageQueue(queuePath);
         }
