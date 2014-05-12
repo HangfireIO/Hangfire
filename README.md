@@ -20,6 +20,36 @@ Just wrap your long-running process to a method and instruct HangFire to create 
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
+Usage
+------
+
+**1. Install the package**
+
+HangFire is available as a NuGet package. So, install it using the NuGet Package Console window:
+
+```
+PM> Install-Package HangFire
+```
+
+**2. Enqueue a background job**
+
+You can run in background regular static or instance methods, just do the following:
+
+```csharp
+BackgroundJob.Enqueue(() => Console.WriteLine("Hello, world!"));
+```
+
+**3. Process it in background**
+
+Processing is made inside a different worker thread. To start the worker pool, call:
+
+```csharp
+var server = new AspNetBackgroundJobServer();
+server.Start();
+```
+
+This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io). For more instructions, see the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide.
+
 Related Projects
 -----------------
 
