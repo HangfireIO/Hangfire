@@ -283,11 +283,10 @@ BEGIN
 		);
 		PRINT 'Created table [HangFire].[Queue]';
 
-		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Queue_TypeAndName] ON [HangFire].[Queue] (
-		    [Type] ASC,
+		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Queue_Name] ON [HangFire].[Queue] (
             [Name] ASC
         );
-        PRINT 'Created index [UX_HangFire_Queue_TypeAndName]';
+        PRINT 'Created index [UX_HangFire_Queue_Name]';
 
 		SET @CURRENT_SCHEMA_VERSION = 3;
 	END

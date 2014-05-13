@@ -40,6 +40,11 @@ namespace HangFire.SqlServer
             _connection = connection;
         }
 
+        public string QueueType
+        {
+            get { return "SQLTable"; }
+        }
+
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException("queues");

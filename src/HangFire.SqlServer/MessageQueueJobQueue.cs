@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Messaging;
 using System.Threading;
@@ -38,6 +37,11 @@ namespace HangFire.SqlServer
 
             _pathPattern = pathPattern;
             _formatter = new BinaryMessageFormatter();
+        }
+
+        public string QueueType
+        {
+            get { return "MSMQ"; }
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
@@ -88,18 +92,8 @@ namespace HangFire.SqlServer
 
         public void Enqueue(Queue<Action<SqlConnection>> actions, string queue, string jobId)
         {
-            const string appendQueueSql = @"
-begin try
-insert into [HangFire].[Queue] ([Type], [Name])
-values (@type, @name)
-end try
-begin catch
-end catch";
-
             actions.Enqueue(sqlConnection =>
             {
-                sqlConnection.Execute(appendQueueSql, new { type = "MSMQ", name = queue });
-
                 using (var messageQueue = GetMessageQueue(queue))
                 using (var message = new Message { Body = jobId, Label = jobId, Formatter = _formatter })
                 using (var transaction = new MessageQueueTransaction())

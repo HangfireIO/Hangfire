@@ -61,34 +61,6 @@ namespace HangFire.SqlServer.Tests
             }
         }
 
-        [Fact, CleanMsmqQueue("my-queue"), CleanDatabase]
-        public void Enqueue_AddsAction_ThatAppends_MsmqQueuesTable()
-        {
-            // Arrange
-            var actions = new Queue<Action<SqlConnection>>();
-            var queue = CreateQueue();
-
-            // Act
-            queue.Enqueue(actions, "my-queue", "job-id");
-            queue.Enqueue(actions, "my-queue", "another-job-id");
-
-            foreach (var action in actions)
-            {
-                using (var connection = ConnectionUtils.CreateConnection())
-                {
-                    action(connection);
-                }
-            }
-
-            // Assert
-            using (var connection = ConnectionUtils.CreateConnection())
-            {
-                var queueRecord = connection.Query("select * from HangFire.Queue").Single();
-                Assert.Equal("MSMQ", queueRecord.Type);
-                Assert.Equal("my-queue", queueRecord.Name);
-            }
-        }
-
         [Fact, CleanMsmqQueue("my-queue")]
         public void Dequeue_ReturnsFetchedJob_WithJobId()
         {

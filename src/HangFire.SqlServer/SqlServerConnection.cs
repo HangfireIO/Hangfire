@@ -48,7 +48,7 @@ namespace HangFire.SqlServer
 
         public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlServerWriteOnlyTransaction(_queue, _connection);
+            return new SqlServerWriteOnlyTransaction(_queue, _connection, true);
         }
 
         public IDisposable AcquireJobLock(string jobId)

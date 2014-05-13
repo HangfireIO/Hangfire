@@ -15,6 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Transactions;
@@ -30,16 +31,24 @@ namespace HangFire.SqlServer
         private readonly Queue<Action<SqlConnection>> _commandQueue
             = new Queue<Action<SqlConnection>>();
 
+        private readonly ConcurrentDictionary<string, byte> _registeredQueues
+            = new ConcurrentDictionary<string, byte>();
+
         private readonly IPersistentJobQueue _queue;
         private readonly SqlConnection _connection;
+        private readonly bool _cacheQueueRegistration;
 
-        public SqlServerWriteOnlyTransaction(IPersistentJobQueue queue, SqlConnection connection)
+        public SqlServerWriteOnlyTransaction(
+            IPersistentJobQueue queue, 
+            SqlConnection connection,
+            bool cacheQueueRegistration)
         {
             if (queue == null) throw new ArgumentNullException("queue");
             if (connection == null) throw new ArgumentNullException("connection");
 
             _queue = queue;
             _connection = connection;
+            _cacheQueueRegistration = cacheQueueRegistration;
         }
 
         public void Dispose()
@@ -117,6 +126,34 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public void AddToQueue(string queue, string jobId)
         {
+            if (!_cacheQueueRegistration || !_registeredQueues.ContainsKey(queue))
+            {
+                QueueCommand(connection =>
+                {
+                    const string appendQueueSql = @"
+merge HangFire.[Queue] as Target
+using (VALUES (@type, @name)) as Source ([Type], Name)
+on Target.[Type] = Source.[Type] and Target.Name = Source.Name
+when not matched then insert ([Type], Name) values (Source.[Type], Source.Name);";
+
+                    try
+                    {
+                        connection.Execute(appendQueueSql, new { type = _queue.QueueType, name = queue });
+                    }
+                    catch (SqlException ex)
+                    {
+                        if (ex.Message.Contains("UX_HangFire_Queue_Name"))
+                        {
+                            throw new InvalidOperationException(
+                                String.Format("The queue '{0}' has been already registered with the different type. Please, use the different queue name.", queue),
+                                ex);
+                        }
+                    }
+                });
+
+                _registeredQueues.AddOrUpdate(queue, 0, (s, b) => b);
+            }
+
             _queue.Enqueue(_commandQueue, queue, jobId);
         }
 

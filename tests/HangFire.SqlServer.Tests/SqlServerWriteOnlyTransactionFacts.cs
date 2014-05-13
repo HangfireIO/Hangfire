@@ -12,18 +12,21 @@ namespace HangFire.SqlServer.Tests
 {
     public class SqlServerWriteOnlyTransactionFacts
     {
+        private const string QueueType = "Sql";
+
         private readonly Mock<IPersistentJobQueue> _queue;
 
         public SqlServerWriteOnlyTransactionFacts()
         {
             _queue = new Mock<IPersistentJobQueue>();
+            _queue.Setup(x => x.QueueType).Returns(QueueType);
         }
 
         [Fact, CleanDatabase]
         public void Ctor_ThrowsAnException_IfQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, ConnectionUtils.CreateConnection()));
+                () => new SqlServerWriteOnlyTransaction(null, ConnectionUtils.CreateConnection(), false));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -32,7 +35,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(_queue.Object, null));
+                () => new SqlServerWriteOnlyTransaction(_queue.Object, null, false));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -163,6 +166,36 @@ select scope_identity() as Id";
 
                 _queue.Verify(x => x.Enqueue(
                     It.IsNotNull<Queue<Action<SqlConnection>>>(), "default", "1"));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToQueue_RegistersTheQueue()
+        {
+            UseConnection(sql =>
+            {
+                Commit(sql, x => x.AddToQueue("default", "1"));
+
+                _queue.Verify(x => x.Enqueue(
+                    It.IsNotNull<Queue<Action<SqlConnection>>>(), "default", "1"));
+
+                var queueRecord = sql.Query("select * from HangFire.Queue").Single();
+                Assert.Equal(QueueType, queueRecord.Type);
+                Assert.Equal("default", queueRecord.Name);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToQueue_ThrowsIfTheQueueAlreadyRegisteredWithDifferentType()
+        {
+            UseConnection(sql =>
+            {
+                sql.Execute(
+                    "insert into HangFire.Queue (Name, Type) values (@name, @type)",
+                    new { name = "default", type = "azure" });
+
+                Assert.Throws<InvalidOperationException>(
+                    () => Commit(sql, x => x.AddToQueue("default", "1")));
             });
         }
 
@@ -596,7 +629,7 @@ select scope_identity() as Id";
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(_queue.Object, connection))
+            using (var transaction = new SqlServerWriteOnlyTransaction(_queue.Object, connection, false))
             {
                 action(transaction);
                 transaction.Commit();
