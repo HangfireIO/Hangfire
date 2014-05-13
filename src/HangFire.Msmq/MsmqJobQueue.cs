@@ -17,9 +17,10 @@
 using System;
 using System.Messaging;
 using System.Threading;
+using HangFire.SqlServer;
 using HangFire.Storage;
 
-namespace HangFire.SqlServer
+namespace HangFire.Msmq
 {
     internal class MsmqJobQueue : IPersistentJobQueue
     {

@@ -18,7 +18,7 @@ using System;
 using System.Messaging;
 using HangFire.Storage;
 
-namespace HangFire.SqlServer
+namespace HangFire.Msmq
 {
     internal class MsmqFetchedJob : IFetchedJob
     {

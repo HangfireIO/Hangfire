@@ -3,7 +3,7 @@ using System.Messaging;
 using System.Threading;
 using Xunit;
 
-namespace HangFire.SqlServer.Tests
+namespace HangFire.Msmq.Tests
 {
     public class MsmqJobQueueFacts
     {
@@ -23,7 +23,7 @@ namespace HangFire.SqlServer.Tests
             Assert.Equal("pathPattern", exception.ParamName);
         }
 
-        [Fact, CleanMsmqQueue("my-queue"), CleanDatabase]
+        [Fact, CleanMsmqQueue("my-queue")]
         public void Enqueue_SendsTheJobId()
         {
             // Arrange

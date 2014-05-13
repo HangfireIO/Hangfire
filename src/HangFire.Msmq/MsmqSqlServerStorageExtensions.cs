@@ -15,8 +15,9 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using HangFire.SqlServer;
 
-namespace HangFire.SqlServer
+namespace HangFire.Msmq
 {
     public static class MsmqSqlServerStorageExtensions
     {

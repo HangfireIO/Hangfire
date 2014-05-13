@@ -45,7 +45,6 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Messaging" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -67,11 +66,6 @@
     <Compile Include="IPersistentJobQueue.cs" />
     <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="IPersistentJobQueueProvider.cs" />
-    <Compile Include="MsmqJobQueue.cs" />
-    <Compile Include="MsmqFetchedJob.cs" />
-    <Compile Include="MsmqJobQueueMonitoringApi.cs" />
-    <Compile Include="MsmqJobQueueProvider.cs" />
-    <Compile Include="MsmqSqlServerStorageExtensions.cs" />
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerFetchedJob.cs" />

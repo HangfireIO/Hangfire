@@ -4,15 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6DFFA275-C483-4501-823A-741AC9EC0846}</ProjectGuid>
+    <ProjectGuid>{762BE479-0AEC-47E0-8F9C-34FA54641749}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.SqlServer.Tests</RootNamespace>
-    <AssemblyName>HangFire.SqlServer.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>HangFire.Msmq</RootNamespace>
+    <AssemblyName>HangFire.Msmq</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,61 +31,38 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dapper">
-      <HintPath>..\..\packages\Dapper.1.13\lib\net45\Dapper.dll</HintPath>
-    </Reference>
-    <Reference Include="Moq">
-      <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Messaging" />
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="xunit">
-      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PersistentJobQueueProviderCollectionFacts.cs" />
-    <Compile Include="SqlServerConnectionFacts.cs" />
-    <Compile Include="ExpirationManagerFacts.cs" />
-    <Compile Include="SqlServerJobQueueFacts.cs" />
-    <Compile Include="SqlServerFetchedJobFacts.cs" />
+    <Compile Include="..\Common\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="MsmqFetchedJob.cs" />
+    <Compile Include="MsmqJobQueue.cs" />
+    <Compile Include="MsmqJobQueueMonitoringApi.cs" />
+    <Compile Include="MsmqJobQueueProvider.cs" />
+    <Compile Include="MsmqSqlServerStorageExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlServerDistributedLockFacts.cs" />
-    <Compile Include="StorageFacts.cs" />
-    <Compile Include="StorageOptionsFacts.cs" />
-    <Compile Include="Utils\ConnectionUtils.cs" />
-    <Compile Include="Utils\CleanDatabaseAttribute.cs" />
-    <Compile Include="SqlServerWriteOnlyTransactionFacts.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\HangFire.Core\HangFire.Core.csproj">
+    <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
       <Name>HangFire.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.SqlServer\HangFire.SqlServer.csproj">
+    <ProjectReference Include="..\HangFire.SqlServer\HangFire.SqlServer.csproj">
       <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
       <Name>HangFire.SqlServer</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\..\src\Common\HangFire.targets" />
+  <Import Project="..\Common\HangFire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
