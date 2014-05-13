@@ -23,7 +23,6 @@ namespace HangFire.SqlServer
     internal class MessageQueueFetchedJob : IFetchedJob
     {
         private readonly MessageQueueTransaction _transaction;
-        private bool _disposed;
 
         public MessageQueueFetchedJob(MessageQueueTransaction transaction, string jobId)
         {
@@ -37,13 +36,13 @@ namespace HangFire.SqlServer
 
         public string JobId { get; private set; }
 
+        public void RemoveFromQueue()
+        {
+            _transaction.Commit();
+        }
+
         public void Dispose()
         {
-            if (_disposed) return;
-
-            _disposed = true;
-
-            _transaction.Commit();
             _transaction.Dispose();
         }
     }

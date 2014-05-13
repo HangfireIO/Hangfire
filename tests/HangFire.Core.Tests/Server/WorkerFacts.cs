@@ -81,7 +81,7 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_FetchesAJobAndDisposesIt()
+        public void Execute_FetchesAJobAndRemovesItFromQueue()
         {
             var worker = CreateWorker();
 
@@ -91,6 +91,22 @@ namespace HangFire.Core.Tests.Server
                 x => x.FetchNextJob(_context.SharedContext.Queues, _token),
                 Times.Once);
 
+            _fetchedJob.Verify(x => x.RemoveFromQueue());
+        }
+
+        [Fact]
+        public void Execute_DoesNotRemoveJobFromQueue_WhenThereIsAnException()
+        {
+            _stateMachine
+                .Setup(x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()))
+                .Throws<InvalidOperationException>();
+
+            var worker = CreateWorker();
+
+            Assert.Throws<InvalidOperationException>(
+                () => worker.Execute(_token));
+
+            _fetchedJob.Verify(x => x.RemoveFromQueue(), Times.Never);
             _fetchedJob.Verify(x => x.Dispose());
         }
 

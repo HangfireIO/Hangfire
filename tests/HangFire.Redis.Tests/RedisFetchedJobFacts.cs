@@ -54,23 +54,33 @@ namespace HangFire.Redis.Tests
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var processingJob = CreateProcessingJob();
+            var fetchedJob = CreateFetchedJob();
 
-            Assert.Equal(JobId, processingJob.JobId);
-            Assert.Equal(Queue, processingJob.Queue);
+            Assert.Equal(JobId, fetchedJob.JobId);
+            Assert.Equal(Queue, fetchedJob.Queue);
         }
 
         [Fact]
-        public void Dispose_CommitsTransaction()
+        public void RemoveFromQueue_CommitsTransaction()
         {
-            var processingJob = CreateProcessingJob();
+            var fetchedJob = CreateFetchedJob();
 
-            processingJob.Dispose();
+            fetchedJob.RemoveFromQueue();
 
             _transaction.Verify(x => x.Commit());
         }
 
-        private RedisFetchedJob CreateProcessingJob()
+        [Fact]
+        public void Dispose_DoesNotCommitTransaction()
+        {
+            var fetchedJob = CreateFetchedJob();
+
+            fetchedJob.Dispose();
+
+            _transaction.Verify(x => x.Commit(), Times.Never);
+        }
+
+        private RedisFetchedJob CreateFetchedJob()
         {
             return new RedisFetchedJob(_redisConnection, JobId, Queue);
         }

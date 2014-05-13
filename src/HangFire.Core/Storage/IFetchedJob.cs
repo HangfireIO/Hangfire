@@ -21,5 +21,7 @@ namespace HangFire.Storage
     public interface IFetchedJob : IDisposable
     {
         string JobId { get; }
+
+        void RemoveFromQueue();
     }
 }

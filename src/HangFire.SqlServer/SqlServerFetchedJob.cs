@@ -40,10 +40,14 @@ namespace HangFire.SqlServer
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
-        public void Dispose()
+        public void RemoveFromQueue()
         {
             _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
                 new { id = JobId, queueName = Queue });
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

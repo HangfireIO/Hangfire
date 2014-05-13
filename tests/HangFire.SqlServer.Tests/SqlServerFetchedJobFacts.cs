@@ -49,14 +49,14 @@ namespace HangFire.SqlServer.Tests
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var processingJob = CreateProcessingJob();
+            var fetchedJob = CreateFetchedJob();
 
-            Assert.Equal(JobId, processingJob.JobId);
-            Assert.Equal(Queue, processingJob.Queue);
+            Assert.Equal(JobId, fetchedJob.JobId);
+            Assert.Equal(Queue, fetchedJob.Queue);
         }
 
         [Fact, CleanDatabase]
-        public void DeleteJobFromQueue_ReallyDeletesTheJobFromTheQueue()
+        public void RemoveFromQueue_ReallyDeletesTheJobFromTheQueue()
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
@@ -69,7 +69,7 @@ values (@id, @queue)";
                 var processingJob = new SqlServerFetchedJob(sql, "1", "default");
 
                 // Act
-                processingJob.Dispose();
+                processingJob.RemoveFromQueue();
 
                 // Assert
                 var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
@@ -78,7 +78,7 @@ values (@id, @queue)";
         }
 
         [Fact, CleanDatabase]
-        public void DeleteJobFromQueue_DoesNotDelete_UnrelatedJobs()
+        public void RemoveFromQueue_DoesNotDelete_UnrelatedJobs()
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
@@ -95,10 +95,10 @@ values (@id, @queue)";
                         new { id = "2", queue = "default" } 
                     });
 
-                var processingJob = new SqlServerFetchedJob(sql, "1", "default");
+                var fetchedJob = new SqlServerFetchedJob(sql, "1", "default");
 
                 // Act
-                processingJob.Dispose();
+                fetchedJob.RemoveFromQueue();
 
                 // Assert
                 var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
@@ -106,7 +106,29 @@ values (@id, @queue)";
             });
         }
 
-        private SqlServerFetchedJob CreateProcessingJob()
+        [Fact, CleanDatabase]
+        public void Dispose_DoesNotRemoveTheJobFromTheQueue()
+        {
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@id, @queue)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new { id = "1", queue = "default" });
+                var processingJob = new SqlServerFetchedJob(sql, "1", "default");
+
+                // Act
+                processingJob.Dispose();
+
+                // Assert
+                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                Assert.Equal(1, count);
+            });
+        }
+
+        private SqlServerFetchedJob CreateFetchedJob()
         {
             return new SqlServerFetchedJob(_connection.Object, JobId, Queue);
         }
