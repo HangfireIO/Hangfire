@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Dapper;
+using HangFire.SqlServer.Entities;
+using HangFire.Storage.Monitoring;
 
 namespace HangFire.SqlServer
 {
@@ -47,6 +49,25 @@ where r.row_num between @start and @end";
 
             return _connection.Query<JobIdDto>(
                 sqlQuery,
+                new { queue = queue, start = from + 1, end = @from + perPage })
+                .ToList()
+                .Select(x => x.Id)
+                .ToList();
+        }
+
+        public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
+        {
+            const string fetchedJobsSql = @"
+select r.Id from (
+  select j.Id, jq.FetchedAt, row_number() over (order by j.Id) as row_num 
+  from HangFire.JobQueue jq
+  left join HangFire.Job j on jq.JobId = j.Id
+  where jq.Queue = @queue and jq.FetchedAt is not null
+) as r
+where r.row_num between @start and @end";
+
+            return _connection.Query<JobIdDto>(
+                fetchedJobsSql,
                 new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList()
                 .Select(x => x.Id)

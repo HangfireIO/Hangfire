@@ -32,6 +32,7 @@ namespace HangFire.SqlServer
     {
         private readonly SqlConnection _connection;
         private readonly TransactionScope _transaction;
+        private Dictionary<string, IPersistentJobQueueMonitoringApi> _queueApis;
 
         public SqlServerMonitoringApi(SqlServerStorageOptions options, SqlConnection connection)
         {
@@ -42,14 +43,14 @@ namespace HangFire.SqlServer
 
             _connection.EnlistTransaction(Transaction.Current);
 
-            var queueApis = new Dictionary<string, IPersistentJobQueueMonitoringApi>(StringComparer.OrdinalIgnoreCase)
+            _queueApis = new Dictionary<string, IPersistentJobQueueMonitoringApi>(StringComparer.OrdinalIgnoreCase)
             {
                 { "SQLTable", new SqlServerJobQueueMonitoringApi(_connection) },
             };
 
             if (options.MessageQueuePathPattern != null)
             {
-                queueApis.Add("MSMQ", new MsmqJobQueueMonitoringApi(options.MessageQueuePathPattern));
+                _queueApis.Add("MSMQ", new MsmqJobQueueMonitoringApi(options.MessageQueuePathPattern));
             }
         }
 
@@ -275,9 +276,9 @@ select [Name] as [Queue], [Type], 0 as Enqueued, NULL as Fetched from HangFire.Q
 
             foreach (var queue in queues)
             {
-                queue.EnqueuedJobIds = queueApis[queue.Type].GetEnqueuedJobIds(queue.Queue, 0, 5);
+                queue.EnqueuedJobIds = _queueApis[queue.Type].GetEnqueuedJobIds(queue.Queue, 0, 5);
 
-                var enqueuedAndFetched = queueApis[queue.Type].GetEnqueuedAndFetchedCount(queue.Queue);
+                var enqueuedAndFetched = _queueApis[queue.Type].GetEnqueuedAndFetchedCount(queue.Queue);
                 queue.Enqueued = enqueuedAndFetched.EnqueuedCount ?? 0;
                 queue.Fetched = enqueuedAndFetched.FetchedCount;
             }
@@ -358,6 +359,38 @@ where r.row_num between @start and @end";
             var jobs = _connection.Query<SqlJob>(
                 fetchedJobsSql,
                 new { queue = queue, start = from + 1, end = @from + perPage })
+                .ToList();
+
+            var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);
+
+            foreach (var job in jobs)
+            {
+                result.Add(new KeyValuePair<string, FetchedJobDto>(
+                    job.Id.ToString(),
+                    new FetchedJobDto
+                    {
+                        Job = DeserializeJob(job.InvocationData, job.Arguments),
+                        State = job.StateName,
+                        CreatedAt = job.CreatedAt,
+                        FetchedAt = job.FetchedAt
+                    }));
+            }
+
+            return new JobList<FetchedJobDto>(result);
+        }
+
+        public JobList<FetchedJobDto> FetchedJobs(IEnumerable<int> jobIds)
+        {
+            const string fetchedJobsSql = @"
+select j.*, jq.FetchedAt, s.Reason as StateReason, s.Data as StateData 
+from HangFire.Job j
+left join HangFire.State s on s.Id = j.StateId
+left join HangFire.JobQueue jq on jq.JobId = j.Id
+where j.Id in @jobIds";
+
+            var jobs = _connection.Query<SqlJob>(
+                fetchedJobsSql,
+                new { jobIds = jobIds })
                 .ToList();
 
             var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);

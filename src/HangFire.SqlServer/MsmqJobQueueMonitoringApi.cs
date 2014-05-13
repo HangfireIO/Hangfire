@@ -61,6 +61,11 @@ namespace HangFire.SqlServer
             return result;
         }
 
+        public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
+        {
+            return Enumerable.Empty<int>();
+        }
+
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
             using (var messageQueue = new MessageQueue(String.Format(_pathPattern, queue)))
