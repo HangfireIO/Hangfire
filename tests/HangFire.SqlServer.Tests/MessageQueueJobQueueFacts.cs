@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Messaging;
 using System.Threading;
+using Dapper;
 using Xunit;
 
 namespace HangFire.SqlServer.Tests
@@ -37,7 +39,10 @@ namespace HangFire.SqlServer.Tests
 
             foreach (var action in actions)
             {
-                action(ConnectionUtils.CreateConnection());
+                using (var connection = ConnectionUtils.CreateConnection())
+                {
+                    action(connection);
+                }
             }
 
             // Assert
@@ -53,6 +58,34 @@ namespace HangFire.SqlServer.Tests
                 Assert.Equal("job-id", message.Label);
 
                 transaction.Commit();
+            }
+        }
+
+        [Fact, CleanMsmqQueue("my-queue"), CleanDatabase]
+        public void Enqueue_AddsAction_ThatAppends_MsmqQueuesTable()
+        {
+            // Arrange
+            var actions = new Queue<Action<SqlConnection>>();
+            var queue = CreateQueue();
+
+            // Act
+            queue.Enqueue(actions, "my-queue", "job-id");
+            queue.Enqueue(actions, "my-queue", "another-job-id");
+
+            foreach (var action in actions)
+            {
+                using (var connection = ConnectionUtils.CreateConnection())
+                {
+                    action(connection);
+                }
+            }
+
+            // Assert
+            using (var connection = ConnectionUtils.CreateConnection())
+            {
+                var queueRecord = connection.Query("select * from HangFire.Queue").Single();
+                Assert.Equal("MSMQ", queueRecord.Type);
+                Assert.Equal("my-queue", queueRecord.Name);
             }
         }
 

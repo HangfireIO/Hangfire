@@ -274,18 +274,20 @@ BEGIN
 	BEGIN
 		PRINT 'Installing schema version 3';
 
-		CREATE TABLE [HangFire].[MsmqQueue](
+		CREATE TABLE [HangFire].[Queue] (
 			[Id] INT IDENTITY(1,1) NOT NULL,
+			[Type] NVARCHAR(20) NOT NULL,
 			[Name] NVARCHAR(20) NOT NULL,
 
-			CONSTRAINT [PK_HangFire_MsmqQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
+			CONSTRAINT [PK_HangFire_Queue] PRIMARY KEY CLUSTERED ([Id] ASC)
 		);
-		PRINT 'Created table [HangFire].[MsmqQueue]';
+		PRINT 'Created table [HangFire].[Queue]';
 
-		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_MsmqQueue_Name] ON [HangFire].[MsmqQueue] (
+		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Queue_TypeAndName] ON [HangFire].[Queue] (
+		    [Type] ASC,
             [Name] ASC
         );
-        PRINT 'Created index [UX_HangFire_MsmqQueue_Name]';
+        PRINT 'Created index [UX_HangFire_Queue_TypeAndName]';
 
 		SET @CURRENT_SCHEMA_VERSION = 3;
 	END
