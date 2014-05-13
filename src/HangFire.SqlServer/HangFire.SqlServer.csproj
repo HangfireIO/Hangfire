@@ -57,6 +57,7 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="EnqueuedAndFetchedCountDto.cs" />
     <Compile Include="ExpirationManager.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\SqlJob.cs" />
@@ -64,8 +65,10 @@
     <Compile Include="Entities\Server.cs" />
     <Compile Include="Entities\ServerData.cs" />
     <Compile Include="IPersistentJobQueue.cs" />
+    <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="MessageQueueJobQueue.cs" />
     <Compile Include="MessageQueueFetchedJob.cs" />
+    <Compile Include="MsmqJobQueueMonitoringApi.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerFetchedJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -73,6 +76,7 @@
     <Compile Include="SqlServerDistributedLockException.cs" />
     <Compile Include="SqlServerMonitoringApi.cs" />
     <Compile Include="SqlServerObjectsInstaller.cs" />
+    <Compile Include="SqlServerJobQueueMonitoringApi.cs" />
     <Compile Include="SqlServerStorage.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
     <Compile Include="SqlServerConnection.cs" />

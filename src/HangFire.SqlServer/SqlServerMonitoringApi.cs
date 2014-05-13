@@ -33,7 +33,7 @@ namespace HangFire.SqlServer
         private readonly SqlConnection _connection;
         private readonly TransactionScope _transaction;
 
-        public SqlServerMonitoringApi(SqlConnection connection)
+        public SqlServerMonitoringApi(SqlServerStorageOptions options, SqlConnection connection)
         {
             _connection = connection;
             _transaction = new TransactionScope(
@@ -41,6 +41,16 @@ namespace HangFire.SqlServer
                 new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted });
 
             _connection.EnlistTransaction(Transaction.Current);
+
+            var queueApis = new Dictionary<string, IPersistentJobQueueMonitoringApi>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "SQLTable", new SqlServerJobQueueMonitoringApi(_connection) },
+            };
+
+            if (options.MessageQueuePathPattern != null)
+            {
+                queueApis.Add("MSMQ", new MsmqJobQueueMonitoringApi(options.MessageQueuePathPattern));
+            }
         }
 
         public void Dispose()
@@ -242,21 +252,35 @@ select * from (
         class QueueStatusDto
         {
             public string Queue { get; set; }
+            public string Type { get; set; }
             public int Enqueued { get; set; }
-            public int Fetched { get; set; }
+            public int? Fetched { get; set; }
+            public IEnumerable<int> EnqueuedJobIds { get; set; } 
         }
 
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            const string queuesAndStatusSql = @"
+            const string tableQueuesWithStatus = @"
 select distinct [Queue],
-	(select count(JobId) from HangFire.JobQueue as a where q.Queue = a.Queue and a.FetchedAt is null) as Enqueued,
-	(select count(JobId) from HangFire.JobQueue as b where q.Queue = b.Queue and b.FetchedAt is not null) as Fetched
-from HangFire.[JobQueue] as q
+    N'SQLTable' as [Type],
+	(select count(JobId) from HangFire.JobQueue as a where q1.Queue = a.Queue and a.FetchedAt is null) as Enqueued,
+	(select count(JobId) from HangFire.JobQueue as b where q1.Queue = b.Queue and b.FetchedAt is not null) as Fetched
+from HangFire.[JobQueue] as q1
+union all
+select [Name] as [Queue], [Type], 0 as Enqueued, NULL as Fetched from HangFire.Queue as q2
 ";
 
-            var queues = _connection.Query<QueueStatusDto>(queuesAndStatusSql).ToList();
+            var queues = _connection.Query<QueueStatusDto>(tableQueuesWithStatus).ToList();
             var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
+
+            foreach (var queue in queues)
+            {
+                queue.EnqueuedJobIds = queueApis[queue.Type].GetEnqueuedJobIds(queue.Queue, 0, 5);
+
+                var enqueuedAndFetched = queueApis[queue.Type].GetEnqueuedAndFetchedCount(queue.Queue);
+                queue.Enqueued = enqueuedAndFetched.EnqueuedCount ?? 0;
+                queue.Fetched = enqueuedAndFetched.FetchedCount;
+            }
 
             foreach (var queue in queues)
             {
@@ -265,7 +289,7 @@ from HangFire.[JobQueue] as q
                     Name = queue.Queue,
                     Length = queue.Enqueued,
                     Fetched = queue.Fetched,
-                    FirstJobs = EnqueuedJobs(queue.Queue, 0, 5)
+                    FirstJobs = EnqueuedJobs(queue.EnqueuedJobIds)
                 });
             }
 
@@ -287,6 +311,28 @@ where r.row_num between @start and @end";
             var jobs = _connection.Query<SqlJob>(
                 enqueuedJobsSql,
                 new { queue = queue, start = from + 1, end = @from + perPage })
+                .ToList();
+
+            return DeserializeJobs(
+                jobs,
+                (sqlJob, job, stateData) => new EnqueuedJobDto
+                {
+                    Job = job,
+                    EnqueuedAt = JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                });
+        }
+
+        public JobList<EnqueuedJobDto> EnqueuedJobs(IEnumerable<int> jobIds)
+        {
+            const string enqueuedJobsSql = @"
+select j.*, s.Reason as StateReason, s.Data as StateData 
+from HangFire.Job j
+left join HangFire.State s on s.Id = j.StateId
+where j.Id in @jobIds";
+
+            var jobs = _connection.Query<SqlJob>(
+                enqueuedJobsSql,
+                new { jobIds = jobIds })
                 .ToList();
 
             return DeserializeJobs(
@@ -391,7 +437,11 @@ select StateName as [State], count(id) as [Count] From HangFire.Job
 group by StateName
 having StateName is not null;
 select count(Id) from HangFire.Server;
-select count(distinct Queue) from HangFire.JobQueue;
+select sum(QueueCount) from (
+    select count(distinct Queue) as QueueCount from HangFire.JobQueue
+    union all
+    select count(Id) as QueueCount from HangFire.Queue
+) a;
 select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
 ";
 
