@@ -15,8 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Messaging;
 using System.Threading;
 using HangFire.Storage;
@@ -89,19 +87,16 @@ namespace HangFire.SqlServer
             return new MessageQueueFetchedJob(transaction, jobId);
         }
 
-        public void Enqueue(Queue<Action<SqlConnection>> actions, string queue, string jobId)
+        public void Enqueue(string queue, string jobId)
         {
-            actions.Enqueue(sqlConnection =>
+            using (var messageQueue = GetMessageQueue(queue))
+            using (var message = new Message { Body = jobId, Label = jobId, Formatter = _formatter })
+            using (var transaction = new MessageQueueTransaction())
             {
-                using (var messageQueue = GetMessageQueue(queue))
-                using (var message = new Message { Body = jobId, Label = jobId, Formatter = _formatter })
-                using (var transaction = new MessageQueueTransaction())
-                {
-                    transaction.Begin();
-                    messageQueue.Send(message, transaction);
-                    transaction.Commit();
-                }
-            });
+                transaction.Begin();
+                messageQueue.Send(message, transaction);
+                transaction.Commit();
+            }
         }
 
         private MessageQueue GetMessageQueue(string queue)

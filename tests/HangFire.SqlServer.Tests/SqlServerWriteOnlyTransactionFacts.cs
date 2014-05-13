@@ -28,7 +28,7 @@ namespace HangFire.SqlServer.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlServerWriteOnlyTransaction(null, ConnectionUtils.CreateConnection(), false));
 
-            Assert.Equal("queue", exception.ParamName);
+            Assert.Equal("persistentQueue", exception.ParamName);
         }
 
         [Fact]
@@ -164,8 +164,7 @@ select scope_identity() as Id";
             {
                 Commit(sql, x => x.AddToQueue("default", "1"));
 
-                _queue.Verify(x => x.Enqueue(
-                    It.IsNotNull<Queue<Action<SqlConnection>>>(), "default", "1"));
+                _queue.Verify(x => x.Enqueue("default", "1"));
             });
         }
 
@@ -176,8 +175,7 @@ select scope_identity() as Id";
             {
                 Commit(sql, x => x.AddToQueue("default", "1"));
 
-                _queue.Verify(x => x.Enqueue(
-                    It.IsNotNull<Queue<Action<SqlConnection>>>(), "default", "1"));
+                _queue.Verify(x => x.Enqueue("default", "1"));
 
                 var queueRecord = sql.Query("select * from HangFire.Queue").Single();
                 Assert.Equal(QueueType, queueRecord.Type);

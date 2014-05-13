@@ -34,19 +34,19 @@ namespace HangFire.SqlServer
         private readonly ConcurrentDictionary<string, byte> _registeredQueues
             = new ConcurrentDictionary<string, byte>();
 
-        private readonly IPersistentJobQueue _queue;
+        private readonly IPersistentJobQueue _persistentQueue;
         private readonly SqlConnection _connection;
         private readonly bool _cacheQueueRegistration;
 
         public SqlServerWriteOnlyTransaction(
-            IPersistentJobQueue queue, 
+            IPersistentJobQueue persistentQueue, 
             SqlConnection connection,
             bool cacheQueueRegistration)
         {
-            if (queue == null) throw new ArgumentNullException("queue");
+            if (persistentQueue == null) throw new ArgumentNullException("persistentQueue");
             if (connection == null) throw new ArgumentNullException("connection");
 
-            _queue = queue;
+            _persistentQueue = persistentQueue;
             _connection = connection;
             _cacheQueueRegistration = cacheQueueRegistration;
         }
@@ -138,7 +138,7 @@ when not matched then insert ([Type], Name) values (Source.[Type], Source.Name);
 
                     try
                     {
-                        connection.Execute(appendQueueSql, new { type = _queue.QueueType, name = queue });
+                        connection.Execute(appendQueueSql, new { type = _persistentQueue.QueueType, name = queue });
                     }
                     catch (SqlException ex)
                     {
@@ -154,7 +154,7 @@ when not matched then insert ([Type], Name) values (Source.[Type], Source.Name);
                 _registeredQueues.AddOrUpdate(queue, 0, (s, b) => b);
             }
 
-            _queue.Enqueue(_commandQueue, queue, jobId);
+            QueueCommand(_ => _persistentQueue.Enqueue(queue, jobId));
         }
 
         public void IncrementCounter(string key)

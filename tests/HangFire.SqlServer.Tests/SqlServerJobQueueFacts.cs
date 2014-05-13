@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -285,11 +284,9 @@ values (scope_identity(), @queue)";
         {
             UseConnection(connection =>
             {
-                var actions = new Queue<Action<SqlConnection>>();
                 var queue = CreateJobQueue(connection);
 
-                queue.Enqueue(actions, "default", "1");
-                actions.Dequeue()(connection);
+                queue.Enqueue("default", "1");
 
                 var record = connection.Query("select * from HangFire.JobQueue").Single();
                 Assert.Equal("1", record.JobId.ToString());

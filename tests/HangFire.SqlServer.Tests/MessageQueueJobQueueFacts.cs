@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
 using System.Messaging;
 using System.Threading;
-using Dapper;
 using Xunit;
 
 namespace HangFire.SqlServer.Tests
@@ -28,22 +24,13 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanMsmqQueue("my-queue"), CleanDatabase]
-        public void Enqueue_AddsAction_ThatSendsTheJobId()
+        public void Enqueue_SendsTheJobId()
         {
             // Arrange
-            var actions = new Queue<Action<SqlConnection>>();
             var queue = CreateQueue();
 
             // Act
-            queue.Enqueue(actions, "my-queue", "job-id");
-
-            foreach (var action in actions)
-            {
-                using (var connection = ConnectionUtils.CreateConnection())
-                {
-                    action(connection);
-                }
-            }
+            queue.Enqueue("my-queue", "job-id");
 
             // Assert
             using (var messageQueue = CleanMsmqQueueAttribute.GetMessageQueue("my-queue"))

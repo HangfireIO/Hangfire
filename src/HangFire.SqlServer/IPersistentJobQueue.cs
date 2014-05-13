@@ -14,9 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Threading;
 using HangFire.Storage;
 
@@ -27,6 +24,6 @@ namespace HangFire.SqlServer
         string QueueType { get; }
 
         IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken);
-        void Enqueue(Queue<Action<SqlConnection>> actions, string queue, string jobId);
+        void Enqueue(string queue, string jobId);
     }
 }
