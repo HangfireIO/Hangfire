@@ -14,21 +14,21 @@ namespace HangFire.SqlServer.Tests
         private static readonly string[] DefaultQueues = { "default" };
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerJobQueue(null, new Mock<IDbConnection>().Object));
-
-            Assert.Equal("options", exception.ParamName);
-        }
-
-        [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerJobQueue(new SqlServerStorageOptions(), null));
+                () => new SqlServerJobQueue(null, new SqlServerStorageOptions()));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerJobQueue(new Mock<IDbConnection>().Object, null));
+
+            Assert.Equal("options", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -303,9 +303,9 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private SqlServerJobQueue CreateJobQueue(IDbConnection connection)
+        private static SqlServerJobQueue CreateJobQueue(IDbConnection connection)
         {
-            return new SqlServerJobQueue(new SqlServerStorageOptions(), connection);
+            return new SqlServerJobQueue(connection, new SqlServerStorageOptions());
         }
 
         private static void UseConnection(Action<SqlConnection> action)

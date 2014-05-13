@@ -24,10 +24,20 @@ namespace HangFire.SqlServer
     internal class MsmqJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
     {
         private readonly string _pathPattern;
+        private readonly IEnumerable<string> _queues;
 
-        public MsmqJobQueueMonitoringApi(string pathPattern)
+        public MsmqJobQueueMonitoringApi(string pathPattern, IEnumerable<string> queues)
         {
+            if (pathPattern == null) throw new ArgumentNullException("pathPattern");
+            if (queues == null) throw new ArgumentNullException("queues");
+
             _pathPattern = pathPattern;
+            _queues = queues;
+        }
+
+        public IEnumerable<string> GetQueues()
+        {
+            return _queues;
         }
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)

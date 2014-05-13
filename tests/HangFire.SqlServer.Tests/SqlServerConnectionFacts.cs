@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -15,28 +16,36 @@ namespace HangFire.SqlServer.Tests
     public class SqlServerConnectionFacts
     {
         private readonly Mock<IPersistentJobQueue> _queue;
+        private readonly Mock<IPersistentJobQueueProvider> _provider;
+        private readonly PersistentJobQueueProviderCollection _providers;
 
         public SqlServerConnectionFacts()
         {
             _queue = new Mock<IPersistentJobQueue>();
-        }
 
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenQueueIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, ConnectionUtils.CreateConnection()));
+            _provider = new Mock<IPersistentJobQueueProvider>();
+            _provider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+                .Returns(_queue.Object);
 
-            Assert.Equal("queue", exception.ParamName);
+            _providers = new PersistentJobQueueProviderCollection(_provider.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(_queue.Object, null));
+                () => new SqlServerConnection(null, _providers));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+
+            Assert.Equal("queueProviders", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -50,6 +59,20 @@ namespace HangFire.SqlServer.Tests
                 connection.FetchNextJob(queues, token);
 
                 _queue.Verify(x => x.Dequeue(queues, token));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void FetchNextJob_Throws_IfMultipleProvidersResolved()
+        {
+            UseConnection(connection =>
+            {
+                var token = new CancellationToken();
+                var anotherProvider = new Mock<IPersistentJobQueueProvider>();
+                _providers.Add(anotherProvider.Object, new [] { "critical" });
+
+                Assert.Throws<InvalidOperationException>(
+                    () => connection.FetchNextJob(new[] { "critical", "default" }, token));
             });
         }
 
@@ -564,7 +587,7 @@ values (@id, '', @heartbeat)";
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(_queue.Object, sqlConnection))
+            using (var connection = new SqlServerConnection(sqlConnection, _providers))
             {
                 action(sqlConnection, connection);
             }
@@ -572,9 +595,9 @@ values (@id, '', @heartbeat)";
 
         private void UseConnection(Action<SqlServerConnection> action)
         {
-            using (var connection = new SqlServerConnection(
-                _queue.Object, 
-                ConnectionUtils.CreateConnection()))
+            using (var connection = new SqlServerConnection( 
+                ConnectionUtils.CreateConnection(),
+                _providers))
             {
                 action(connection);
             }

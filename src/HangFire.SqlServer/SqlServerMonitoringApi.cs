@@ -31,27 +31,20 @@ namespace HangFire.SqlServer
     internal class SqlServerMonitoringApi : IMonitoringApi
     {
         private readonly SqlConnection _connection;
+        private readonly PersistentJobQueueProviderCollection _queueProviders;
         private readonly TransactionScope _transaction;
-        private Dictionary<string, IPersistentJobQueueMonitoringApi> _queueApis;
 
-        public SqlServerMonitoringApi(SqlServerStorageOptions options, SqlConnection connection)
+        public SqlServerMonitoringApi(
+            SqlConnection connection,
+            PersistentJobQueueProviderCollection queueProviders)
         {
             _connection = connection;
+            _queueProviders = queueProviders;
             _transaction = new TransactionScope(
                 TransactionScopeOption.Required,
                 new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted });
 
             _connection.EnlistTransaction(Transaction.Current);
-
-            _queueApis = new Dictionary<string, IPersistentJobQueueMonitoringApi>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "SQLTable", new SqlServerJobQueueMonitoringApi(_connection) },
-            };
-
-            if (options.MessageQueuePathPattern != null)
-            {
-                _queueApis.Add("MSMQ", new MsmqJobQueueMonitoringApi(options.MessageQueuePathPattern));
-            }
         }
 
         public void Dispose()
@@ -248,42 +241,27 @@ select * from (
                 });
         }
 
-        class QueueStatusDto
-        {
-            public string Queue { get; set; }
-            public string Type { get; set; }
-            public int Enqueued { get; set; }
-            public int? Fetched { get; set; }
-            public IEnumerable<int> EnqueuedJobIds { get; set; } 
-        }
-
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            const string tableQueuesWithStatus = @"
-select [Name] as [Queue], [Type] from HangFire.Queue";
+            var tuples = _queueProviders
+                .Select(x => x.GetJobQueueMonitoringApi(_connection))
+                .SelectMany(x => x.GetQueues(), (monitoring, queue) => new { Monitoring = monitoring, Queue = queue })
+                .OrderBy(x => x.Queue)
+                .ToArray();
 
-            var queues = _connection.Query<QueueStatusDto>(tableQueuesWithStatus).ToList();
-            var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
+            var result = new List<QueueWithTopEnqueuedJobsDto>(tuples.Length);
 
-            foreach (var queue in queues)
+            foreach (var tuple in tuples)
             {
-                var queueApi = GetQueueApiByType(queue.Type);
+                var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
+                var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
 
-                queue.EnqueuedJobIds = queueApi.GetEnqueuedJobIds(queue.Queue, 0, 5);
-
-                var enqueuedAndFetched = queueApi.GetEnqueuedAndFetchedCount(queue.Queue);
-                queue.Enqueued = enqueuedAndFetched.EnqueuedCount ?? 0;
-                queue.Fetched = enqueuedAndFetched.FetchedCount;
-            }
-
-            foreach (var queue in queues)
-            {
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
-                    Name = queue.Queue,
-                    Length = queue.Enqueued,
-                    Fetched = queue.Fetched,
-                    FirstJobs = EnqueuedJobs(queue.EnqueuedJobIds)
+                    Name = tuple.Queue,
+                    Length = counters.EnqueuedCount ?? 0,
+                    Fetched = counters.FetchedCount,
+                    FirstJobs = EnqueuedJobs(enqueuedJobIds)
                 });
             }
 
@@ -419,7 +397,6 @@ select StateName as [State], count(id) as [Count] From HangFire.Job
 group by StateName
 having StateName is not null;
 select count(Id) from HangFire.Server;
-select count(Id) as QueueCount from HangFire.Queue;
 select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
 ";
 
@@ -435,10 +412,13 @@ select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
                 stats.Scheduled = getCountIfExists(ScheduledState.StateName);
                 
                 stats.Servers = multi.Read<int>().Single();
-                stats.Queues = multi.Read<int>().Single();
 
                 stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
             }
+
+            stats.Queues = _queueProviders
+                .SelectMany(x => x.GetJobQueueMonitoringApi(_connection).GetQueues())
+                .Count();
 
             return stats;
         }
@@ -522,33 +502,10 @@ having [Key] in @keys";
 
         private IPersistentJobQueueMonitoringApi GetQueueApi(string queueName)
         {
-            var queue = _connection.Query<QueueDto>(
-                @"select * from HangFire.Queue where Name = @queueName",
-                new { queueName = queueName }).SingleOrDefault();
+            var provider = _queueProviders.GetProvider(queueName);
+            var monitoringApi = provider.GetJobQueueMonitoringApi(_connection);
 
-            if (queue == null)
-            {
-                throw new InvalidOperationException(String.Format("Queue '{0}' is not exists or was not registered.", queueName));
-            }
-
-            return GetQueueApiByType(queue.Type);
-        }
-
-        private IPersistentJobQueueMonitoringApi GetQueueApiByType(string queueType)
-        {
-            if (!_queueApis.ContainsKey(queueType))
-            {
-                throw new InvalidOperationException(
-                    String.Format("Monitoring API for queue type '{0}' was not registered.", queueType));
-            }
-            
-            return _queueApis[queueType];
-        }
-
-        private class QueueDto
-        {
-            public string Name { get; set; }
-            public string Type { get; set; }
+            return monitoringApi;
         }
     }
 }

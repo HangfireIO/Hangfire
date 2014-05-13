@@ -18,7 +18,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenPathPatternIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new MessageQueueJobQueue(null));
+                () => new MsmqJobQueue(null));
 
             Assert.Equal("pathPattern", exception.ParamName);
         }
@@ -164,9 +164,9 @@ namespace HangFire.SqlServer.Tests
             }
         }
 
-        private static MessageQueueJobQueue CreateQueue()
+        private static MsmqJobQueue CreateQueue()
         {
-            return new MessageQueueJobQueue(CleanMsmqQueueAttribute.PathPattern);
+            return new MsmqJobQueue(CleanMsmqQueueAttribute.PathPattern);
         }
     }
 }

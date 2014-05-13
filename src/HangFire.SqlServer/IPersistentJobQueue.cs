@@ -19,10 +19,8 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    internal interface IPersistentJobQueue
+    public interface IPersistentJobQueue
     {
-        string QueueType { get; }
-
         IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken);
         void Enqueue(string queue, string jobId);
     }

@@ -1,5 +1,5 @@
-// This file is part of HangFire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of HangFire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,11 +14,18 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace HangFire.SqlServer
 {
-    public class EnqueuedAndFetchedCountDto
+    public static class MsmqSqlServerStorageExtensions
     {
-        public int? EnqueuedCount { get; set; }
-        public int? FetchedCount { get; set; }
+        public static void UseMsmqQueues(this SqlServerStorage storage, string pathPattern, params string[] queues)
+        {
+            if (storage == null) throw new ArgumentNullException("storage");
+
+            var provider = new MsmqJobQueueProvider(pathPattern, queues);
+            storage.QueueProviders.Add(provider, queues);
+        }
     }
 }

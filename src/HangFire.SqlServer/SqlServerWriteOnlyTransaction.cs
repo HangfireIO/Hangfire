@@ -15,7 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Transactions;
@@ -31,24 +30,18 @@ namespace HangFire.SqlServer
         private readonly Queue<Action<SqlConnection>> _commandQueue
             = new Queue<Action<SqlConnection>>();
 
-        private readonly ConcurrentDictionary<string, byte> _registeredQueues
-            = new ConcurrentDictionary<string, byte>();
-
-        private readonly IPersistentJobQueue _persistentQueue;
         private readonly SqlConnection _connection;
-        private readonly bool _cacheQueueRegistration;
+        private readonly PersistentJobQueueProviderCollection _queueProviders;
 
-        public SqlServerWriteOnlyTransaction(
-            IPersistentJobQueue persistentQueue, 
+        public SqlServerWriteOnlyTransaction( 
             SqlConnection connection,
-            bool cacheQueueRegistration)
+            PersistentJobQueueProviderCollection queueProviders)
         {
-            if (persistentQueue == null) throw new ArgumentNullException("persistentQueue");
             if (connection == null) throw new ArgumentNullException("connection");
+            if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
-            _persistentQueue = persistentQueue;
             _connection = connection;
-            _cacheQueueRegistration = cacheQueueRegistration;
+            _queueProviders = queueProviders;
         }
 
         public void Dispose()
@@ -126,35 +119,10 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public void AddToQueue(string queue, string jobId)
         {
-            if (!_cacheQueueRegistration || !_registeredQueues.ContainsKey(queue))
-            {
-                QueueCommand(connection =>
-                {
-                    const string appendQueueSql = @"
-merge HangFire.[Queue] as Target
-using (VALUES (@type, @name)) as Source ([Type], Name)
-on Target.[Type] = Source.[Type] and Target.Name = Source.Name
-when not matched then insert ([Type], Name) values (Source.[Type], Source.Name);";
+            var provider = _queueProviders.GetProvider(queue);
+            var persistentQueue = provider.GetJobQueue(_connection);
 
-                    try
-                    {
-                        connection.Execute(appendQueueSql, new { type = _persistentQueue.QueueType, name = queue });
-                    }
-                    catch (SqlException ex)
-                    {
-                        if (ex.Message.Contains("UX_HangFire_Queue_Name"))
-                        {
-                            throw new InvalidOperationException(
-                                String.Format("The queue '{0}' has been already registered with the different type. Please, use the different queue name.", queue),
-                                ex);
-                        }
-                    }
-                });
-
-                _registeredQueues.AddOrUpdate(queue, 0, (s, b) => b);
-            }
-
-            QueueCommand(_ => _persistentQueue.Enqueue(queue, jobId));
+            QueueCommand(_ => persistentQueue.Enqueue(queue, jobId));
         }
 
         public void IncrementCounter(string key)

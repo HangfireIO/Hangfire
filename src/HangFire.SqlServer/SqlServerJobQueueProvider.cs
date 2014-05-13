@@ -1,5 +1,5 @@
-// This file is part of HangFire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of HangFire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,35 +15,29 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Messaging;
-using HangFire.Storage;
+using System.Data;
 
 namespace HangFire.SqlServer
 {
-    internal class MessageQueueFetchedJob : IFetchedJob
+    internal class SqlServerJobQueueProvider : IPersistentJobQueueProvider
     {
-        private readonly MessageQueueTransaction _transaction;
+        private readonly SqlServerStorageOptions _options;
 
-        public MessageQueueFetchedJob(MessageQueueTransaction transaction, string jobId)
+        public SqlServerJobQueueProvider(SqlServerStorageOptions options)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (options == null) throw new ArgumentNullException("options");
 
-            _transaction = transaction;
-
-            JobId = jobId;
+            _options = options;
         }
 
-        public string JobId { get; private set; }
-
-        public void RemoveFromQueue()
+        public IPersistentJobQueue GetJobQueue(IDbConnection connection)
         {
-            _transaction.Commit();
+            return new SqlServerJobQueue(connection, _options);
         }
 
-        public void Dispose()
+        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
         {
-            _transaction.Dispose();
+            return new SqlServerJobQueueMonitoringApi(connection);
         }
     }
 }

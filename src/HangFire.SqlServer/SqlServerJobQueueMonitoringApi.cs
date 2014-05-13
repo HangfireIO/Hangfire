@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using Dapper;
-using HangFire.SqlServer.Entities;
-using HangFire.Storage.Monitoring;
 
 namespace HangFire.SqlServer
 {
@@ -33,6 +31,12 @@ namespace HangFire.SqlServer
             if (connection == null) throw new ArgumentNullException("connection");
 
             _connection = connection;
+        }
+
+        public IEnumerable<string> GetQueues()
+        {
+            const string sqlQuery = @"select distinct(Queue) from HangFire.JobQueue";
+            return _connection.Query(sqlQuery).Select(x => (string)x.Queue).ToList();
         }
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)

@@ -270,34 +270,13 @@ BEGIN
 		SET @CURRENT_SCHEMA_VERSION = 2;
 	END
 
-	IF @CURRENT_SCHEMA_VERSION = 2
+	/*IF @CURRENT_SCHEMA_VERSION = 2
 	BEGIN
 		PRINT 'Installing schema version 3';
 
-		CREATE TABLE [HangFire].[Queue] (
-			[Id] INT IDENTITY(1,1) NOT NULL,
-			[Type] NVARCHAR(20) NOT NULL,
-			[Name] NVARCHAR(20) NOT NULL,
-
-			CONSTRAINT [PK_HangFire_Queue] PRIMARY KEY CLUSTERED ([Id] ASC)
-		);
-		PRINT 'Created table [HangFire].[Queue]';
-
-		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Queue_Name] ON [HangFire].[Queue] (
-            [Name] ASC
-        );
-        PRINT 'Created index [UX_HangFire_Queue_Name]';
-
-		SET @CURRENT_SCHEMA_VERSION = 3;
-	END
-
-	/*IF @CURRENT_SCHEMA_VERSION = 3
-	BEGIN
-		PRINT 'Installing schema version 4';
-
 		-- Insert migration here
 
-		SET @CURRENT_SCHEMA_VERSION = 4;
+		SET @CURRENT_SCHEMA_VERSION = 3;
 	END*/
 
 	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

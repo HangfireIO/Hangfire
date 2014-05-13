@@ -14,11 +14,36 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Messaging;
+using HangFire.Storage;
+
 namespace HangFire.SqlServer
 {
-    public class EnqueuedAndFetchedCountDto
+    internal class MsmqFetchedJob : IFetchedJob
     {
-        public int? EnqueuedCount { get; set; }
-        public int? FetchedCount { get; set; }
+        private readonly MessageQueueTransaction _transaction;
+
+        public MsmqFetchedJob(MessageQueueTransaction transaction, string jobId)
+        {
+            if (transaction == null) throw new ArgumentNullException("transaction");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+
+            _transaction = transaction;
+
+            JobId = jobId;
+        }
+
+        public string JobId { get; private set; }
+
+        public void RemoveFromQueue()
+        {
+            _transaction.Commit();
+        }
+
+        public void Dispose()
+        {
+            _transaction.Dispose();
+        }
     }
 }

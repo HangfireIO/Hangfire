@@ -12,32 +12,33 @@ namespace HangFire.SqlServer.Tests
 {
     public class SqlServerWriteOnlyTransactionFacts
     {
-        private const string QueueType = "Sql";
-
-        private readonly Mock<IPersistentJobQueue> _queue;
+        private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerWriteOnlyTransactionFacts()
         {
-            _queue = new Mock<IPersistentJobQueue>();
-            _queue.Setup(x => x.QueueType).Returns(QueueType);
-        }
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            defaultProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+                .Returns(new Mock<IPersistentJobQueue>().Object);
 
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_IfQueueIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, ConnectionUtils.CreateConnection(), false));
-
-            Assert.Equal("persistentQueue", exception.ParamName);
+            _queueProviders = new PersistentJobQueueProviderCollection(defaultProvider.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(_queue.Object, null, false));
+                () => new SqlServerWriteOnlyTransaction(null, _queueProviders));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null));
+
+            Assert.Equal("queueProviders", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -158,42 +159,20 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToQueue_AddsAJobToTheQueue()
+        public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
         {
             UseConnection(sql =>
             {
+                var correctJobQueue = new Mock<IPersistentJobQueue>();
+                var correctProvider = new Mock<IPersistentJobQueueProvider>();
+                correctProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+                    .Returns(correctJobQueue.Object);
+
+                _queueProviders.Add(correctProvider.Object, new [] { "default" });
+
                 Commit(sql, x => x.AddToQueue("default", "1"));
 
-                _queue.Verify(x => x.Enqueue("default", "1"));
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void AddToQueue_RegistersTheQueue()
-        {
-            UseConnection(sql =>
-            {
-                Commit(sql, x => x.AddToQueue("default", "1"));
-
-                _queue.Verify(x => x.Enqueue("default", "1"));
-
-                var queueRecord = sql.Query("select * from HangFire.Queue").Single();
-                Assert.Equal(QueueType, queueRecord.Type);
-                Assert.Equal("default", queueRecord.Name);
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void AddToQueue_ThrowsIfTheQueueAlreadyRegisteredWithDifferentType()
-        {
-            UseConnection(sql =>
-            {
-                sql.Execute(
-                    "insert into HangFire.Queue (Name, Type) values (@name, @type)",
-                    new { name = "default", type = "azure" });
-
-                Assert.Throws<InvalidOperationException>(
-                    () => Commit(sql, x => x.AddToQueue("default", "1")));
+                correctJobQueue.Verify(x => x.Enqueue("default", "1"));
             });
         }
 
@@ -627,7 +606,7 @@ select scope_identity() as Id";
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(_queue.Object, connection, false))
+            using (var transaction = new SqlServerWriteOnlyTransaction(connection, _queueProviders))
             {
                 action(transaction);
                 transaction.Commit();

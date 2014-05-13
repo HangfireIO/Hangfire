@@ -50,21 +50,23 @@ namespace HangFire.SqlServer
                     SqlServerObjectsInstaller.Install(connection);
                 }
             }
+
+            var defaultQueueProvider = new SqlServerJobQueueProvider(options);
+            QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
+
+        public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
         public override IMonitoringApi GetMonitoringApi()
         {
-            return new SqlServerMonitoringApi(_options, CreateAndOpenConnection());
+            return new SqlServerMonitoringApi(CreateAndOpenConnection(), QueueProviders);
         }
 
         public override IStorageConnection GetConnection()
         {
             var connection = CreateAndOpenConnection();
-            var queue = _options.MessageQueuePathPattern != null
-                ? (IPersistentJobQueue)new MessageQueueJobQueue(_options.MessageQueuePathPattern)
-                : new SqlServerJobQueue(_options, connection);
 
-            return new SqlServerConnection(queue, connection);
+            return new SqlServerConnection(connection, QueueProviders);
         }
 
         public override IEnumerable<IServerComponent> GetComponents()

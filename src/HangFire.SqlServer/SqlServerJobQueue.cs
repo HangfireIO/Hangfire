@@ -29,18 +29,13 @@ namespace HangFire.SqlServer
         private readonly SqlServerStorageOptions _options;
         private readonly IDbConnection _connection;
 
-        public SqlServerJobQueue(SqlServerStorageOptions options, IDbConnection connection)
+        public SqlServerJobQueue(IDbConnection connection, SqlServerStorageOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");
             if (connection == null) throw new ArgumentNullException("connection");
 
             _options = options;
             _connection = connection;
-        }
-
-        public string QueueType
-        {
-            get { return "SQLTable"; }
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)

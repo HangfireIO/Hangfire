@@ -21,24 +21,19 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    internal class MessageQueueJobQueue : IPersistentJobQueue
+    internal class MsmqJobQueue : IPersistentJobQueue
     {
         private static readonly TimeSpan SyncReceiveTimeout = TimeSpan.FromSeconds(5);
 
         private readonly string _pathPattern;
         private readonly IMessageFormatter _formatter;
 
-        public MessageQueueJobQueue(string pathPattern)
+        public MsmqJobQueue(string pathPattern)
         {
             if (pathPattern == null) throw new ArgumentNullException("pathPattern");
 
             _pathPattern = pathPattern;
             _formatter = new BinaryMessageFormatter();
-        }
-
-        public string QueueType
-        {
-            get { return "MSMQ"; }
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
@@ -84,7 +79,7 @@ namespace HangFire.SqlServer
                 }
             } while (jobId == null);
 
-            return new MessageQueueFetchedJob(transaction, jobId);
+            return new MsmqFetchedJob(transaction, jobId);
         }
 
         public void Enqueue(string queue, string jobId)

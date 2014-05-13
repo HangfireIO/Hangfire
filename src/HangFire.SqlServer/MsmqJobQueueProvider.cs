@@ -15,14 +15,29 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Data;
 
 namespace HangFire.SqlServer
 {
-    public interface IPersistentJobQueueMonitoringApi
+    internal class MsmqJobQueueProvider : IPersistentJobQueueProvider
     {
-        IEnumerable<string> GetQueues();
-        IEnumerable<int> GetEnqueuedJobIds(string queue, int from, int perPage);
-        IEnumerable<int> GetFetchedJobIds(string queue, int from, int perPage);
-        EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue);
+        private readonly MsmqJobQueue _jobQueue;
+        private readonly MsmqJobQueueMonitoringApi _monitoringApi;
+
+        public MsmqJobQueueProvider(string pathPattern, IEnumerable<string> queues)
+        {
+            _jobQueue = new MsmqJobQueue(pathPattern);
+            _monitoringApi = new MsmqJobQueueMonitoringApi(pathPattern, queues);
+        }
+
+        public IPersistentJobQueue GetJobQueue(IDbConnection connection)
+        {
+            return _jobQueue;
+        }
+
+        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
+        {
+            return _monitoringApi;
+        }
     }
 }

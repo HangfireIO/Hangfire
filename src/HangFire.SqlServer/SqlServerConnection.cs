@@ -29,16 +29,18 @@ namespace HangFire.SqlServer
 {
     internal class SqlServerConnection : IStorageConnection
     {
-        private readonly IPersistentJobQueue _queue;
         private readonly SqlConnection _connection;
+        private readonly PersistentJobQueueProviderCollection _queueProviders;
 
-        public SqlServerConnection(IPersistentJobQueue queue, SqlConnection connection)
+        public SqlServerConnection(
+            SqlConnection connection, 
+            PersistentJobQueueProviderCollection queueProviders)
         {
-            if (queue == null) throw new ArgumentNullException("queue");
             if (connection == null) throw new ArgumentNullException("connection");
+            if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
-            _queue = queue;
             _connection = connection;
+            _queueProviders = queueProviders;
         }
 
         public void Dispose()
@@ -48,7 +50,7 @@ namespace HangFire.SqlServer
 
         public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlServerWriteOnlyTransaction(_queue, _connection, true);
+            return new SqlServerWriteOnlyTransaction(_connection, _queueProviders);
         }
 
         public IDisposable AcquireJobLock(string jobId)
@@ -60,7 +62,22 @@ namespace HangFire.SqlServer
 
         public IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            return _queue.Dequeue(queues, cancellationToken);
+            if (queues == null || queues.Length == 0) throw new ArgumentNullException("queues");
+
+            var providers = queues
+                .Select(queue => _queueProviders.GetProvider(queue))
+                .Distinct()
+                .ToArray();
+
+            if (providers.Length != 1)
+            {
+                throw new InvalidOperationException(String.Format(
+                    "Multiple provider instances registered for queues: {0}. You should choose only one type of persistent queues per server instance.",
+                    String.Join(", ", queues)));
+            }
+
+            var persistentQueue = providers[0].GetJobQueue(_connection);
+            return persistentQueue.Dequeue(queues, cancellationToken);
         }
 
         public string CreateExpiredJob(
