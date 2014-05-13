@@ -52,7 +52,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MessageQueueJobQueueFacts.cs" />
+    <Compile Include="MsmqJobQueueFacts.cs" />
+    <Compile Include="PersistentJobQueueProviderCollectionFacts.cs" />
     <Compile Include="SqlServerConnectionFacts.cs" />
     <Compile Include="ExpirationManagerFacts.cs" />
     <Compile Include="SqlServerJobQueueFacts.cs" />

@@ -5,11 +5,11 @@ using Xunit;
 
 namespace HangFire.SqlServer.Tests
 {
-    public class MessageQueueJobQueueFacts
+    public class MsmqJobQueueFacts
     {
         private readonly CancellationToken _token;
 
-        public MessageQueueJobQueueFacts()
+        public MsmqJobQueueFacts()
         {
             _token = new CancellationToken();
         }
