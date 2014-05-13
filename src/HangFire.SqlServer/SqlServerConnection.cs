@@ -58,7 +58,7 @@ namespace HangFire.SqlServer
                 _connection);
         }
 
-        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             return _queue.Dequeue(queues, cancellationToken);
         }

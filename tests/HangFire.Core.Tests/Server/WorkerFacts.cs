@@ -19,7 +19,7 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<IStorageConnection> _connection;
         private readonly CancellationToken _token;
         private readonly Mock<IStateMachine> _stateMachine;
-        private readonly Mock<IProcessingJob> _processingJob;
+        private readonly Mock<IFetchedJob> _fetchedJob;
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IJobPerformanceProcess> _process;
 
@@ -33,12 +33,12 @@ namespace HangFire.Core.Tests.Server
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _processingJob = new Mock<IProcessingJob>();
-            _processingJob.Setup(x => x.JobId).Returns(JobId);
+            _fetchedJob = new Mock<IFetchedJob>();
+            _fetchedJob.Setup(x => x.JobId).Returns(JobId);
 
             _connection
                 .Setup(x => x.FetchNextJob(_context.SharedContext.Queues, It.IsNotNull<CancellationToken>()))
-                .Returns(_processingJob.Object);
+                .Returns(_fetchedJob.Object);
 
             _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData
@@ -91,7 +91,7 @@ namespace HangFire.Core.Tests.Server
                 x => x.FetchNextJob(_context.SharedContext.Queues, _token),
                 Times.Once);
 
-            _processingJob.Verify(x => x.Dispose());
+            _fetchedJob.Verify(x => x.Dispose());
         }
 
         [Fact, Sequence]

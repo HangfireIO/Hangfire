@@ -28,7 +28,7 @@ namespace HangFire.Storage
 
         string CreateExpiredJob(Job job, IDictionary<string, string> parameters, TimeSpan expireIn);
 
-        IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
+        IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
 
         void SetJobParameter(string id, string name, string value);
         string GetJobParameter(string id, string name);

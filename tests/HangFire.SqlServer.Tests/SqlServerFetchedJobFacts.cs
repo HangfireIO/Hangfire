@@ -7,14 +7,14 @@ using Xunit;
 
 namespace HangFire.SqlServer.Tests
 {
-    public class SqlServerProcessingJobFacts
+    public class SqlServerFetchedJobFacts
     {
         private const string JobId = "id";
         private const string Queue = "queue";
 
         private readonly Mock<IDbConnection> _connection;
 
-        public SqlServerProcessingJobFacts()
+        public SqlServerFetchedJobFacts()
         {
             _connection = new Mock<IDbConnection>();
         }
@@ -23,7 +23,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerProcessingJob(null, JobId, Queue));
+                () => new SqlServerFetchedJob(null, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -32,7 +32,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerProcessingJob(_connection.Object, null, Queue));
+                () => new SqlServerFetchedJob(_connection.Object, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -41,7 +41,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerProcessingJob(_connection.Object, JobId, null));
+                () => new SqlServerFetchedJob(_connection.Object, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -66,7 +66,7 @@ values (@id, @queue)";
             {
                 // Arrange
                 sql.Execute(arrangeSql, new { id = "1", queue = "default" });
-                var processingJob = new SqlServerProcessingJob(sql, "1", "default");
+                var processingJob = new SqlServerFetchedJob(sql, "1", "default");
 
                 // Act
                 processingJob.Dispose();
@@ -95,7 +95,7 @@ values (@id, @queue)";
                         new { id = "2", queue = "default" } 
                     });
 
-                var processingJob = new SqlServerProcessingJob(sql, "1", "default");
+                var processingJob = new SqlServerFetchedJob(sql, "1", "default");
 
                 // Act
                 processingJob.Dispose();
@@ -106,9 +106,9 @@ values (@id, @queue)";
             });
         }
 
-        private SqlServerProcessingJob CreateProcessingJob()
+        private SqlServerFetchedJob CreateProcessingJob()
         {
-            return new SqlServerProcessingJob(_connection.Object, JobId, Queue);
+            return new SqlServerFetchedJob(_connection.Object, JobId, Queue);
         }
 
         private static void UseConnection(Action<IDbConnection> action)

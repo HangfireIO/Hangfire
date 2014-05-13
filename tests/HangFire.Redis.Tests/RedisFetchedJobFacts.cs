@@ -5,7 +5,7 @@ using Xunit;
 
 namespace HangFire.Redis.Tests
 {
-    public class RedisProcessingJobFacts
+    public class RedisFetchedJobFacts
     {
         private const string JobId = "id";
         private const string Queue = "queue";
@@ -14,7 +14,7 @@ namespace HangFire.Redis.Tests
         private readonly Mock<IRedisTransaction> _transaction;
         private readonly RedisConnection _redisConnection;
 
-        public RedisProcessingJobFacts()
+        public RedisFetchedJobFacts()
         {
             _redis = new Mock<IRedisClient>();
             _transaction = new Mock<IRedisTransaction>();
@@ -28,7 +28,7 @@ namespace HangFire.Redis.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RedisProcessingJob(null, JobId, Queue));
+                () => new RedisFetchedJob(null, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -37,7 +37,7 @@ namespace HangFire.Redis.Tests
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RedisProcessingJob(_redisConnection, null, Queue));
+                () => new RedisFetchedJob(_redisConnection, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -46,7 +46,7 @@ namespace HangFire.Redis.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RedisProcessingJob(_redisConnection, JobId, null));
+                () => new RedisFetchedJob(_redisConnection, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -70,9 +70,9 @@ namespace HangFire.Redis.Tests
             _transaction.Verify(x => x.Commit());
         }
 
-        private RedisProcessingJob CreateProcessingJob()
+        private RedisFetchedJob CreateProcessingJob()
         {
-            return new RedisProcessingJob(_redisConnection, JobId, Queue);
+            return new RedisFetchedJob(_redisConnection, JobId, Queue);
         }
     }
 }

@@ -50,15 +50,15 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanMsmqQueue("my-queue")]
-        public void Dequeue_ReturnsProcessingJob_WithJobId()
+        public void Dequeue_ReturnsFetchedJob_WithJobId()
         {
             EnqueueJobId("my-queue", "job-id");
             var queue = CreateQueue();
             var token = new CancellationToken();
 
-            var processingJob = queue.Dequeue(new[] { "my-queue" }, token);
+            var fetchedJob = queue.Dequeue(new[] { "my-queue" }, token);
 
-            Assert.Equal("job-id", processingJob.JobId);
+            Assert.Equal("job-id", fetchedJob.JobId);
         }
 
         private static void EnqueueJobId(string queue, string jobId)

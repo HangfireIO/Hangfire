@@ -107,7 +107,7 @@ values (@jobId, @queue)";
                 var queue = CreateJobQueue(connection);
 
                 // Act
-                var payload = (SqlServerProcessingJob)queue.Dequeue(
+                var payload = (SqlServerFetchedJob)queue.Dequeue(
                     DefaultQueues,
                     CreateTimingOutCancellationToken());
 
@@ -264,14 +264,14 @@ values (scope_identity(), @queue)";
 
                 var queue = CreateJobQueue(connection);
 
-                var critical = (SqlServerProcessingJob)queue.Dequeue(
+                var critical = (SqlServerFetchedJob)queue.Dequeue(
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 
                 Assert.NotNull(critical.JobId);
                 Assert.Equal("critical", critical.Queue);
 
-                var @default = (SqlServerProcessingJob)queue.Dequeue(
+                var @default = (SqlServerFetchedJob)queue.Dequeue(
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 

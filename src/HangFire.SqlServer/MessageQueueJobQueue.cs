@@ -39,7 +39,7 @@ namespace HangFire.SqlServer
             _formatter = new BinaryMessageFormatter();
         }
 
-        public IProcessingJob Dequeue(string[] queues, CancellationToken cancellationToken)
+        public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             string jobId = null;
             MessageQueueTransaction transaction;
@@ -82,7 +82,7 @@ namespace HangFire.SqlServer
                 }
             } while (jobId == null);
 
-            return new MessageQueueProcessingJob(transaction, jobId);
+            return new MessageQueueFetchedJob(transaction, jobId);
         }
 
         public void Enqueue(Queue<Action<SqlConnection>> actions, string queue, string jobId)

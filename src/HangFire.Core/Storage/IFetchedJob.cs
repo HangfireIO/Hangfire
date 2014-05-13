@@ -18,7 +18,7 @@ using System;
 
 namespace HangFire.Storage
 {
-    public interface IProcessingJob : IDisposable
+    public interface IFetchedJob : IDisposable
     {
         string JobId { get; }
     }

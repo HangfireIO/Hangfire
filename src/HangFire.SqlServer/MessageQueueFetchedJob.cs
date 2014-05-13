@@ -20,12 +20,12 @@ using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    internal class MessageQueueProcessingJob : IProcessingJob
+    internal class MessageQueueFetchedJob : IFetchedJob
     {
         private readonly MessageQueueTransaction _transaction;
         private bool _disposed;
 
-        public MessageQueueProcessingJob(MessageQueueTransaction transaction, string jobId)
+        public MessageQueueFetchedJob(MessageQueueTransaction transaction, string jobId)
         {
             if (transaction == null) throw new ArgumentNullException("transaction");
             if (jobId == null) throw new ArgumentNullException("jobId");

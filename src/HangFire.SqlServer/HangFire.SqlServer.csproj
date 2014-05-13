@@ -65,9 +65,9 @@
     <Compile Include="Entities\ServerData.cs" />
     <Compile Include="IPersistentJobQueue.cs" />
     <Compile Include="MessageQueueJobQueue.cs" />
-    <Compile Include="MessageQueueProcessingJob.cs" />
+    <Compile Include="MessageQueueFetchedJob.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
-    <Compile Include="SqlServerProcessingJob.cs" />
+    <Compile Include="SqlServerFetchedJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlServerDistributedLock.cs" />
     <Compile Include="SqlServerDistributedLockException.cs" />

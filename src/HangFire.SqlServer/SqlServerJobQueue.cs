@@ -40,7 +40,7 @@ namespace HangFire.SqlServer
             _connection = connection;
         }
 
-        public IProcessingJob Dequeue(string[] queues, CancellationToken cancellationToken)
+        public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
@@ -80,7 +80,7 @@ and Queue in @queues";
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
             } while (idAndQueue == null);
 
-            return new SqlServerProcessingJob(
+            return new SqlServerFetchedJob(
                 _connection,
                 idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
                 idAndQueue.Queue);
