@@ -39,6 +39,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E687025-A525-4534-8869-CB685C7B11C4}"
 	ProjectSection(SolutionItems) = preProject
 		nuspecs\HangFire.Core.nuspec = nuspecs\HangFire.Core.nuspec
+		nuspecs\HangFire.MSMQ.nuspec = nuspecs\HangFire.MSMQ.nuspec
 		nuspecs\HangFire.nuspec = nuspecs\HangFire.nuspec
 		nuspecs\HangFire.Redis.nuspec = nuspecs\HangFire.Redis.nuspec
 		nuspecs\HangFire.SqlServer.nuspec = nuspecs\HangFire.SqlServer.nuspec
