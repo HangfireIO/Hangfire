@@ -15,7 +15,7 @@
 -- License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 3;
+SET @TARGET_SCHEMA_VERSION = 2;
 
 PRINT 'Installing HangFire SQL objects...';
 
