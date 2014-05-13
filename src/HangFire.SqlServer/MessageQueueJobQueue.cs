@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Messaging;
 using System.Threading;
-using Dapper;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
