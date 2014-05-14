@@ -27,14 +27,16 @@ namespace HangFire.Msmq
         private static readonly TimeSpan SyncReceiveTimeout = TimeSpan.FromSeconds(5);
 
         private readonly string _pathPattern;
-        private readonly IMessageFormatter _formatter;
+        private readonly ThreadLocal<IMessageFormatter> _formatter;
 
         public MsmqJobQueue(string pathPattern)
         {
             if (pathPattern == null) throw new ArgumentNullException("pathPattern");
 
             _pathPattern = pathPattern;
-            _formatter = new BinaryMessageFormatter();
+
+            _formatter = new ThreadLocal<IMessageFormatter>(
+                () => new BinaryMessageFormatter());
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
@@ -62,7 +64,7 @@ namespace HangFire.Msmq
                             ? messageQueue.Receive(SyncReceiveTimeout, transaction)
                             : messageQueue.Receive(new TimeSpan(1), transaction);
 
-                        message.Formatter = _formatter;
+                        message.Formatter = _formatter.Value;
 
                         jobId = (string)message.Body;
 
@@ -86,7 +88,7 @@ namespace HangFire.Msmq
         public void Enqueue(string queue, string jobId)
         {
             using (var messageQueue = GetMessageQueue(queue))
-            using (var message = new Message { Body = jobId, Label = jobId, Formatter = _formatter })
+            using (var message = new Message { Body = jobId, Label = jobId, Formatter = _formatter.Value })
             using (var transaction = new MessageQueueTransaction())
             {
                 transaction.Begin();
