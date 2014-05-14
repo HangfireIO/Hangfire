@@ -1,5 +1,5 @@
-﻿using System.Web.Mvc;
-using HangFire;
+﻿using HangFire;
+using HangFire.Msmq;
 using HangFire.Redis;
 using HangFire.SqlServer;
 using HangFire.Web;
@@ -24,9 +24,12 @@ namespace MvcSample
             // Default implementation uses SQL Server as a storage. You only
             // need to provide connection string to start using HangFire -
             // all database objects will be installed automatically.
-            
-            JobStorage.Current = new SqlServerStorage(
+
+            var storage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
+            storage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+
+            JobStorage.Current = storage;
             
             // If your project infrastructure contains Redis server, you may
             // choose Redis job storage implementation (it is much faster).

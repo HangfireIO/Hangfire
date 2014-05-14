@@ -14,13 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Storage.Monitoring
+using System.Collections.Generic;
+
+namespace HangFire.SqlServer
 {
-    public class QueueWithTopEnqueuedJobsDto
+    public interface IPersistentJobQueueMonitoringApi
     {
-        public string Name { get; set; }
-        public long Length { get; set; }
-        public long? Fetched { get; set; }
-        public JobList<EnqueuedJobDto> FirstJobs { get; set; }
+        IEnumerable<string> GetQueues();
+        IEnumerable<int> GetEnqueuedJobIds(string queue, int from, int perPage);
+        IEnumerable<int> GetFetchedJobIds(string queue, int from, int perPage);
+        EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue);
     }
 }

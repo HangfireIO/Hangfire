@@ -1,5 +1,5 @@
-﻿// This file is part of HangFire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of HangFire.
+// Copyright � 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Storage.Monitoring
+using System.Threading;
+using HangFire.Storage;
+
+namespace HangFire.SqlServer
 {
-    public class QueueWithTopEnqueuedJobsDto
+    public interface IPersistentJobQueue
     {
-        public string Name { get; set; }
-        public long Length { get; set; }
-        public long? Fetched { get; set; }
-        public JobList<EnqueuedJobDto> FirstJobs { get; set; }
+        IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken);
+        void Enqueue(string queue, string jobId);
     }
 }

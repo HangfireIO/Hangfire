@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -31,15 +30,17 @@ namespace HangFire.SqlServer
     internal class SqlServerConnection : IStorageConnection
     {
         private readonly SqlConnection _connection;
-        private readonly SqlServerStorageOptions _options;
+        private readonly PersistentJobQueueProviderCollection _queueProviders;
 
-        public SqlServerConnection(SqlConnection connection, SqlServerStorageOptions options)
+        public SqlServerConnection(
+            SqlConnection connection, 
+            PersistentJobQueueProviderCollection queueProviders)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (options == null) throw new ArgumentNullException("options");
+            if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             _connection = connection;
-            _options = options;
+            _queueProviders = queueProviders;
         }
 
         public void Dispose()
@@ -49,7 +50,7 @@ namespace HangFire.SqlServer
 
         public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlServerWriteOnlyTransaction(_connection);
+            return new SqlServerWriteOnlyTransaction(_connection, _queueProviders);
         }
 
         public IDisposable AcquireJobLock(string jobId)
@@ -59,49 +60,24 @@ namespace HangFire.SqlServer
                 _connection);
         }
 
-        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
+            if (queues == null || queues.Length == 0) throw new ArgumentNullException("queues");
 
-            dynamic idAndQueue;
+            var providers = queues
+                .Select(queue => _queueProviders.GetProvider(queue))
+                .Distinct()
+                .ToArray();
 
-            const string fetchJobSqlTemplate = @"
-set transaction isolation level read committed
-update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
-output INSERTED.JobId, INSERTED.Queue
-where FetchedAt {0}
-and Queue in @queues";
-
-            // Sql query is splitted to force SQL Server to use 
-            // INDEX SEEK instead of INDEX SCAN operator.
-            var fetchConditions = new[] { "is null", "< DATEADD(second, @timeout, GETUTCDATE())" };
-            var currentQueryIndex = 0;
-
-            do
+            if (providers.Length != 1)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                throw new InvalidOperationException(String.Format(
+                    "Multiple provider instances registered for queues: {0}. You should choose only one type of persistent queues per server instance.",
+                    String.Join(", ", queues)));
+            }
 
-                idAndQueue = _connection.Query(
-                    String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
-                    new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds })
-                    .SingleOrDefault();
-
-                if (idAndQueue == null)
-                {
-                    if (currentQueryIndex == fetchConditions.Length - 1)
-                    {
-                        cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                }
-
-                currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
-            } while (idAndQueue == null);
-
-            return new SqlServerProcessingJob(
-                idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
-                idAndQueue.Queue);
+            var persistentQueue = providers[0].GetJobQueue(_connection);
+            return persistentQueue.Dequeue(queues, cancellationToken);
         }
 
         public string CreateExpiredJob(
@@ -212,15 +188,6 @@ values (@jobId, @name, @value)";
                 @"select Value from HangFire.JobParameter where JobId = @id and Name = @name",
                 new { id = id, name = name })
                 .SingleOrDefault();
-        }
-
-        public void DeleteJobFromQueue(string id, string queue)
-        {
-            if (id == null) throw new ArgumentNullException("id");
-            if (queue == null) throw new ArgumentNullException("queue");
-
-            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
-                new { id = id, queueName = queue });
         }
 
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
