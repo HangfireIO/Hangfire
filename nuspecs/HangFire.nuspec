@@ -16,7 +16,10 @@
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>Long-Running AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
-    
+
+0.8.1
+New - MSMQ queues support for SQL Server job storage.
+
 0.8
 * New - New server component subsystem - more reliability, more logging, less blocking on stop.
 * New - Added monitor access authorization using ASP.NET RoleProvider.
@@ -29,39 +32,6 @@
 * Fixed - SqlServerStorageOptions.QueuePollInterval is not working.
 * Fixed - Rare 'arithmetic overflow error for data type tinyint, value = -1' exception.
 * Fixed - Numerous minor issues catched with new unit tests.
-
-0.7.5
-* Added possibility to change the job expiration time.
-* Clarified common exception message.
-0.7.4
-* Removed `BackgroundJobServer.MachineName` validation. It caused exceptions with valid NetBIOS names.
-* Ability to specify target queue in `BackgroundJob.Enqueue` method.
-* Opened `IBackgroundJobClient` and `BackgroundJobClient` types. You can use them instead of static `BackgroundJob` class.
-* Fixed theoretical IClientFilter issue (CreateContext ctor did not copy the JobId).
-0.7.3
-* Fixed TypeLoadException: Method 'get_Db' not found in HangFire.Redis.
-* Added RedisStorage ctor overloads with default host, port and db.
-0.7.1
-* HangFire.Autofac package.
-* HangFire.Ninject package.
-* Added some Sphinx-based docs.
-* New project site and docs site.
-* Some minor fixes.
-0.7
-* Changed NuGet package structure. See the Upgrading Guide on GitHub!
-* Job storage abstraction.
-* SQL Server job storage implementation.
-* Using Common.Logging for logging and Json.NET for json encoding.
-* Short exception stack traces, they contain only your code.
-* Improved job fetching implementation.
-* Removed obsolete `Perform` class.
-* Increased default worker number.
-* Clarified some type names, state subsystem was greatly simplified.
-* Fixed: empty MVC 5 project Internal Server Error.
-* Fixed: Apply the Failed state when state filters/handlers cause an exception.
-* Fixed: Some history statistic counters do not expire.
-* Fixed: Use `StatisticsHistoryFilter` by default.
-* Fixed some internal mistakes.
     </releaseNotes>
     <dependencies>
       <dependency id="HangFire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
