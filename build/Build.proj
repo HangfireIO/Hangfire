@@ -70,6 +70,7 @@
   <ItemGroup>
     <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.Redis.Tests\HangFire.Redis.Tests.csproj"></IntegrationTestProjects>
     <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.csproj"></IntegrationTestProjects>
+    <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.Msmq.Tests\HangFire.Msmq.Tests.csproj"></IntegrationTestProjects>
   </ItemGroup>
 
   <ItemGroup>
@@ -179,6 +180,18 @@
   
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
           Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll&quot; /appveyor"
+          LogStandardErrorAsError="true">
+    </Exec>
+
+    <!-- MSMQ integration tests -->
+
+    <xunit Condition=" '$(BuildEnvironment)' == 'local' "
+           Assembly="$(ProjectArtifactsDir)\HangFire.Msmq.Tests\HangFire.Msmq.Tests.dll"
+           Xml="$(TestResultsPath)\HangFire.Msmq.Tests.XunitResults.xml"
+           Verbose="true" />
+
+    <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
+          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Msmq.Tests\HangFire.Msmq.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
   </Target>

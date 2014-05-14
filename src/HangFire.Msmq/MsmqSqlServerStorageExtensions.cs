@@ -14,11 +14,25 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Storage
+using System;
+using HangFire.SqlServer;
+using HangFire.States;
+
+namespace HangFire.Msmq
 {
-    public interface IProcessingJob
+    public static class MsmqSqlServerStorageExtensions
     {
-        string JobId { get; }
-        string Queue { get; }
+        public static void UseMsmqQueues(this SqlServerStorage storage, string pathPattern)
+        {
+            UseMsmqQueues(storage, pathPattern, new []{ EnqueuedState.DefaultQueue });
+        }
+
+        public static void UseMsmqQueues(this SqlServerStorage storage, string pathPattern, params string[] queues)
+        {
+            if (storage == null) throw new ArgumentNullException("storage");
+
+            var provider = new MsmqJobQueueProvider(pathPattern, queues);
+            storage.QueueProviders.Add(provider, queues);
+        }
     }
 }

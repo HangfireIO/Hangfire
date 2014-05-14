@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
 using HangFire;
+using HangFire.Msmq;
 using HangFire.SqlServer;
 
 namespace ConsoleSample
@@ -14,8 +15,12 @@ namespace ConsoleSample
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
                 LogLevel.Info, false, false, true, "");
 
-            JobStorage.Current = 
-                new SqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
+            var sqlServerStorage = new SqlServerStorage(
+                @"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
+            sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+
+            JobStorage.Current =
+                sqlServerStorage;
                 //new RedisStorage("localhost:6379", 3);
 
             var options = new BackgroundJobServerOptions
