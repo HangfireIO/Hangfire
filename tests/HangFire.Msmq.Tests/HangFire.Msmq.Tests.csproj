@@ -50,8 +50,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MsmqJobQueueFacts.cs" />
+    <Compile Include="MsmqJobQueueMonitoringApiFacts.cs" />
+    <Compile Include="MsmqJobQueueProviderFacts.cs" />
+    <Compile Include="MsmqSqlServerStorageExtensionsFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CleanMsmqQueueAttribute.cs" />
+    <Compile Include="Utils\MsmqUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

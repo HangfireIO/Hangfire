@@ -16,11 +16,17 @@
 
 using System;
 using HangFire.SqlServer;
+using HangFire.States;
 
 namespace HangFire.Msmq
 {
     public static class MsmqSqlServerStorageExtensions
     {
+        public static void UseMsmqQueues(this SqlServerStorage storage, string pathPattern)
+        {
+            UseMsmqQueues(storage, pathPattern, new []{ EnqueuedState.DefaultQueue });
+        }
+
         public static void UseMsmqQueues(this SqlServerStorage storage, string pathPattern, params string[] queues)
         {
             if (storage == null) throw new ArgumentNullException("storage");

@@ -51,7 +51,7 @@ namespace HangFire.Msmq.Tests
         [Fact, CleanMsmqQueue("my-queue")]
         public void Dequeue_ReturnsFetchedJob_WithJobId()
         {
-            EnqueueJobId("my-queue", "job-id");
+            MsmqUtils.EnqueueJobId("my-queue", "job-id");
             var queue = CreateQueue();
 
             var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
@@ -72,7 +72,7 @@ namespace HangFire.Msmq.Tests
         [Fact, CleanMsmqQueue("queue-1", "queue-2")]
         public void Dequeue_ReturnsFetchedJob_FromOtherQueues_IfFirstAreEmpty()
         {
-            EnqueueJobId("queue-2", "job-id");
+            MsmqUtils.EnqueueJobId("queue-2", "job-id");
             var queue = CreateQueue();
 
             var fetchedJob = queue.Dequeue(new[] { "queue-1", "queue-2" }, _token);
@@ -84,7 +84,7 @@ namespace HangFire.Msmq.Tests
         public void Dequeue_MakesJobInvisibleForOtherFetchers()
         {
             // Arrange
-            EnqueueJobId("my-queue", "job-id");
+            MsmqUtils.EnqueueJobId("my-queue", "job-id");
             var queue = CreateQueue();
 
             // Act
@@ -94,7 +94,7 @@ namespace HangFire.Msmq.Tests
             Assert.NotNull(fetchedJob);
 
             var exception = Assert.Throws<MessageQueueException>(
-                () => DequeueJob("my-queue", TimeSpan.FromSeconds(1)));
+                () => MsmqUtils.DequeueJobId("my-queue", TimeSpan.FromSeconds(1)));
 
             Assert.Equal(MessageQueueErrorCode.IOTimeout, exception.MessageQueueErrorCode);
         }
@@ -103,7 +103,7 @@ namespace HangFire.Msmq.Tests
         public void RemoveFromQueue_OnFetchedJob_RemovesTheJobCompletely()
         {
             // Arrange
-            EnqueueJobId("my-queue", "job-id");
+            MsmqUtils.EnqueueJobId("my-queue", "job-id");
             var queue = CreateQueue();
 
             // Act
@@ -114,7 +114,7 @@ namespace HangFire.Msmq.Tests
 
             // Assert
             var exception = Assert.Throws<MessageQueueException>(
-                () => DequeueJob("my-queue", TimeSpan.FromSeconds(5)));
+                () => MsmqUtils.DequeueJobId("my-queue", TimeSpan.FromSeconds(5)));
 
             Assert.Equal(MessageQueueErrorCode.IOTimeout, exception.MessageQueueErrorCode);
         }
@@ -123,7 +123,7 @@ namespace HangFire.Msmq.Tests
         public void DisposeWithoutRemoval_OnFetchedJob_ReturnsTheJobToTheQueue()
         {
             // Arrange
-            EnqueueJobId("my-queue", "job-id");
+            MsmqUtils.EnqueueJobId("my-queue", "job-id");
             var queue = CreateQueue();
 
             // Act
@@ -131,37 +131,8 @@ namespace HangFire.Msmq.Tests
             fetchedJob.Dispose();
 
             // Assert
-            var jobId = DequeueJob("my-queue", TimeSpan.FromSeconds(5));
+            var jobId = MsmqUtils.DequeueJobId("my-queue", TimeSpan.FromSeconds(5));
             Assert.Equal("job-id", jobId);
-        }
-
-        private static void EnqueueJobId(string queue, string jobId)
-        {
-            using (var messageQueue = CleanMsmqQueueAttribute.GetMessageQueue(queue))
-            using (var message = new Message { Body = jobId, Label = jobId, Formatter = new BinaryMessageFormatter() })
-            using (var transaction = new MessageQueueTransaction())
-            {
-                transaction.Begin();
-                messageQueue.Send(message, transaction);
-                transaction.Commit();
-            }
-        }
-
-        private static string DequeueJob(string queue, TimeSpan timeout)
-        {
-            using (var messageQueue = CleanMsmqQueueAttribute.GetMessageQueue(queue))
-            using (var transaction = new MessageQueueTransaction())
-            {
-                transaction.Begin();
-                
-                using (var message = messageQueue.Receive(timeout, transaction))
-                {
-                    message.Formatter = new BinaryMessageFormatter();
-                    transaction.Commit();
-
-                    return (string) message.Body;
-                }
-            }
         }
 
         private static MsmqJobQueue CreateQueue()
