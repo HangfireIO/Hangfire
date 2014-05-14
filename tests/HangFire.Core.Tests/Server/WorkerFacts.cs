@@ -19,7 +19,7 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<IStorageConnection> _connection;
         private readonly CancellationToken _token;
         private readonly Mock<IStateMachine> _stateMachine;
-        private readonly Mock<IFetchedJob> _fetchedJob;
+        private readonly Mock<IProcessingJob> _processingJob;
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IJobPerformanceProcess> _process;
 
@@ -33,12 +33,13 @@ namespace HangFire.Core.Tests.Server
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _fetchedJob = new Mock<IFetchedJob>();
-            _fetchedJob.Setup(x => x.JobId).Returns(JobId);
+            _processingJob = new Mock<IProcessingJob>();
+            _processingJob.Setup(x => x.JobId).Returns(JobId);
+            _processingJob.Setup(x => x.Queue).Returns(Queue);
 
             _connection
                 .Setup(x => x.FetchNextJob(_context.SharedContext.Queues, It.IsNotNull<CancellationToken>()))
-                .Returns(_fetchedJob.Object);
+                .Returns(_processingJob.Object);
 
             _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData
@@ -81,7 +82,7 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_FetchesAJobAndRemovesItFromQueue()
+        public void Execute_FetchesAJobAndDeletesItFromQueue()
         {
             var worker = CreateWorker();
 
@@ -91,23 +92,7 @@ namespace HangFire.Core.Tests.Server
                 x => x.FetchNextJob(_context.SharedContext.Queues, _token),
                 Times.Once);
 
-            _fetchedJob.Verify(x => x.RemoveFromQueue());
-        }
-
-        [Fact]
-        public void Execute_DoesNotRemoveJobFromQueue_WhenThereIsAnException()
-        {
-            _stateMachine
-                .Setup(x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()))
-                .Throws<InvalidOperationException>();
-
-            var worker = CreateWorker();
-
-            Assert.Throws<InvalidOperationException>(
-                () => worker.Execute(_token));
-
-            _fetchedJob.Verify(x => x.RemoveFromQueue(), Times.Never);
-            _fetchedJob.Verify(x => x.Dispose());
+            _connection.Verify(x => x.DeleteJobFromQueue(JobId, Queue));
         }
 
         [Fact, Sequence]

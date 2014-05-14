@@ -1,5 +1,5 @@
-// This file is part of HangFire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of HangFire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,11 +14,23 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.SqlServer
+using System;
+using HangFire.Storage;
+
+namespace HangFire.Redis
 {
-    public class EnqueuedAndFetchedCountDto
+    internal class RedisProcessingJob : IProcessingJob
     {
-        public int? EnqueuedCount { get; set; }
-        public int? FetchedCount { get; set; }
+        public RedisProcessingJob(string jobId, string queue)
+        {
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (queue == null) throw new ArgumentNullException("queue");
+
+            JobId = jobId;
+            Queue = queue;
+        }
+
+        public string JobId { get; private set; }
+        public string Queue { get; private set; }
     }
 }

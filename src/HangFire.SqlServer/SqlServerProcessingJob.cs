@@ -15,29 +15,22 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Data;
+using HangFire.Storage;
 
 namespace HangFire.SqlServer
 {
-    internal class SqlServerJobQueueProvider : IPersistentJobQueueProvider
+    internal class SqlServerProcessingJob : IProcessingJob
     {
-        private readonly SqlServerStorageOptions _options;
-
-        public SqlServerJobQueueProvider(SqlServerStorageOptions options)
+        public SqlServerProcessingJob(string jobId, string queue)
         {
-            if (options == null) throw new ArgumentNullException("options");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (queue == null) throw new ArgumentNullException("queue");
 
-            _options = options;
+            JobId = jobId;
+            Queue = queue;
         }
 
-        public IPersistentJobQueue GetJobQueue(IDbConnection connection)
-        {
-            return new SqlServerJobQueue(connection, _options);
-        }
-
-        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
-        {
-            return new SqlServerJobQueueMonitoringApi(connection);
-        }
+        public string JobId { get; private set; }
+        public string Queue { get; private set; }
     }
 }

@@ -10,35 +10,13 @@ using Xunit;
 
 namespace HangFire.SqlServer.Tests
 {
-    public class SqlServerWriteOnlyTransactionFacts
+    public class WriteTransactionFacts
     {
-        private readonly PersistentJobQueueProviderCollection _queueProviders;
-
-        public SqlServerWriteOnlyTransactionFacts()
-        {
-            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
-            defaultProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
-                .Returns(new Mock<IPersistentJobQueue>().Object);
-
-            _queueProviders = new PersistentJobQueueProviderCollection(defaultProvider.Object);
-        }
-
         [Fact]
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, _queueProviders));
-
-            Assert.Equal("connection", exception.ParamName);
-        }
-
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null));
-
-            Assert.Equal("queueProviders", exception.ParamName);
+            Assert.Throws<ArgumentNullException>(
+                () => new SqlServerWriteOnlyTransaction(null));
         }
 
         [Fact, CleanDatabase]
@@ -159,20 +137,16 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
-        public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
+        public void AddToQueue_AddsAJobToTheQueue()
         {
             UseConnection(sql =>
             {
-                var correctJobQueue = new Mock<IPersistentJobQueue>();
-                var correctProvider = new Mock<IPersistentJobQueueProvider>();
-                correctProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
-                    .Returns(correctJobQueue.Object);
-
-                _queueProviders.Add(correctProvider.Object, new [] { "default" });
-
                 Commit(sql, x => x.AddToQueue("default", "1"));
 
-                correctJobQueue.Verify(x => x.Enqueue("default", "1"));
+                var record = sql.Query("select * from HangFire.JobQueue").Single();
+                Assert.Equal("1", record.JobId.ToString());
+                Assert.Equal("default", record.Queue);
+                Assert.Null(record.FetchedAt);
             });
         }
 
@@ -606,7 +580,7 @@ select scope_identity() as Id";
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection, _queueProviders))
+            using (var transaction = new SqlServerWriteOnlyTransaction(connection))
             {
                 action(transaction);
                 transaction.Commit();

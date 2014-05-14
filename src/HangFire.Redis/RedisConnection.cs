@@ -48,7 +48,7 @@ namespace HangFire.Redis
             return new RedisWriteOnlyTransaction(Redis.CreateTransaction());
         }
 
-        public IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public IProcessingJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             string jobId;
             string queueName;
@@ -103,7 +103,7 @@ namespace HangFire.Redis
             // This state stores information about fetched time. The job will
             // be re-queued when the JobTimeout will be expired.
 
-            return new RedisFetchedJob(this, jobId, queueName);
+            return new RedisProcessingJob(jobId, queueName);
         }
 
         public IDisposable AcquireJobLock(string jobId)

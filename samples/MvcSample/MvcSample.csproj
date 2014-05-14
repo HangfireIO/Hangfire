@@ -150,10 +150,6 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HangFire.Msmq\HangFire.Msmq.csproj">
-      <Project>{762be479-0aec-47e0-8f9c-34fa54641749}</Project>
-      <Name>HangFire.Msmq</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\HangFire.Redis\HangFire.Redis.csproj">
       <Project>{8f46f57b-3247-4aa7-b330-57ac088547eb}</Project>
       <Name>HangFire.Redis</Name>

@@ -45,16 +45,9 @@ else
                     </td>
                     <td>@queue.Length</td>
                     <td>
-                        @if (queue.Fetched.HasValue)
-                        {
-                            <a href="@Request.LinkTo("/queues/fetched/" + queue.Name)">
-                                @queue.Fetched    
-                            </a>
-                        }
-                        else
-                        {
-                            <em>N/A</em>
-                        }
+                        <a href="@Request.LinkTo("/queues/fetched/" + queue.Name)">
+                            @queue.Fetched    
+                        </a>
                     </td>
                     <td>@if (queue.FirstJobs.Count == 0)
                         {

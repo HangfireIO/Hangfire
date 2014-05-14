@@ -31,17 +31,12 @@ namespace HangFire.SqlServer
             = new Queue<Action<SqlConnection>>();
 
         private readonly SqlConnection _connection;
-        private readonly PersistentJobQueueProviderCollection _queueProviders;
 
-        public SqlServerWriteOnlyTransaction( 
-            SqlConnection connection,
-            PersistentJobQueueProviderCollection queueProviders)
+        public SqlServerWriteOnlyTransaction(SqlConnection connection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             _connection = connection;
-            _queueProviders = queueProviders;
         }
 
         public void Dispose()
@@ -119,10 +114,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public void AddToQueue(string queue, string jobId)
         {
-            var provider = _queueProviders.GetProvider(queue);
-            var persistentQueue = provider.GetJobQueue(_connection);
+            const string enqueueJobSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@jobId, @queue)";
 
-            QueueCommand(_ => persistentQueue.Enqueue(queue, jobId));
+            QueueCommand(x => x.Execute(
+                enqueueJobSql,
+                new { jobId = jobId, queue = queue }));
         }
 
         public void IncrementCounter(string key)
@@ -205,7 +203,7 @@ delete from cte where row_num not between @start and @end and [Key] = @key";
                 new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
         }
 
-        internal void QueueCommand(Action<SqlConnection> action)
+        private void QueueCommand(Action<SqlConnection> action)
         {
             _commandQueue.Enqueue(action);
         }

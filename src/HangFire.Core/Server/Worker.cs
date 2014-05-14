@@ -35,19 +35,25 @@ namespace HangFire.Server
         public void Execute(CancellationToken cancellationToken)
         {
             using (var connection = _context.Storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_context.Queues, cancellationToken))
             {
-                ProcessJob(fetchedJob.JobId, connection, _context.PerformanceProcess);
+                var nextJob = connection.FetchNextJob(_context.Queues, cancellationToken);
 
-                // Checkpoint #4. The job was performed, and it is in the one
-                // of the explicit states (Succeeded, Scheduled and so on).
-                // It should not be re-queued, but we still need to remove its
-                // processing information.
+                try
+                {
+                    ProcessJob(nextJob.JobId, connection, _context.PerformanceProcess);
 
-                fetchedJob.RemoveFromQueue();
+                    // Checkpoint #4. The job was performed, and it is in the one
+                    // of the explicit states (Succeeded, Scheduled and so on).
+                    // It should not be re-queued, but we still need to remove its
+                    // processing information.
+                }
+                finally
+                {
+                    connection.DeleteJobFromQueue(nextJob.JobId, nextJob.Queue);
 
-                // Success point. No things must be done after previous command
-                // was succeeded.
+                    // Success point. No things must be done after previous command
+                    // was succeeded.
+                }
             }
         }
 

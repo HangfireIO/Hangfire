@@ -39,7 +39,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E687025-A525-4534-8869-CB685C7B11C4}"
 	ProjectSection(SolutionItems) = preProject
 		nuspecs\HangFire.Core.nuspec = nuspecs\HangFire.Core.nuspec
-		nuspecs\HangFire.MSMQ.nuspec = nuspecs\HangFire.MSMQ.nuspec
 		nuspecs\HangFire.nuspec = nuspecs\HangFire.nuspec
 		nuspecs\HangFire.Redis.nuspec = nuspecs\HangFire.Redis.nuspec
 		nuspecs\HangFire.SqlServer.nuspec = nuspecs\HangFire.SqlServer.nuspec
@@ -59,10 +58,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer.Tests", "tests\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.csproj", "{6DFFA275-C483-4501-823A-741AC9EC0846}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Sample.Highlighter", "samples\HangFire.Sample.Highlighter\HangFire.Sample.Highlighter.csproj", "{B5476D92-46B1-4A65-A1FD-675342B7BB64}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Msmq", "src\HangFire.Msmq\HangFire.Msmq.csproj", "{762BE479-0AEC-47E0-8F9C-34FA54641749}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Msmq.Tests", "tests\HangFire.Msmq.Tests\HangFire.Msmq.Tests.csproj", "{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,14 +105,6 @@ Global
 		{B5476D92-46B1-4A65-A1FD-675342B7BB64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5476D92-46B1-4A65-A1FD-675342B7BB64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B5476D92-46B1-4A65-A1FD-675342B7BB64}.Release|Any CPU.Build.0 = Release|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{762BE479-0AEC-47E0-8F9C-34FA54641749}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,6 +116,5 @@ Global
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{25909EE6-2A56-4EAC-9D0E-436FF2435E88} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
-		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 	EndGlobalSection
 EndGlobal

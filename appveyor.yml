@@ -18,7 +18,6 @@ environment:
 # enable service required for tests
 services:
   - mssql2008r2sp2
-  - msmq
 
 #---------------------------------#
 #       build configuration       #

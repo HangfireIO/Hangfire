@@ -1,79 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Threading;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
 using HangFire.Storage;
-using Moq;
 using Xunit;
 
 namespace HangFire.SqlServer.Tests
 {
-    public class SqlServerConnectionFacts
+    public partial class ConnectionFacts
     {
-        private readonly Mock<IPersistentJobQueue> _queue;
-        private readonly Mock<IPersistentJobQueueProvider> _provider;
-        private readonly PersistentJobQueueProviderCollection _providers;
-
-        public SqlServerConnectionFacts()
-        {
-            _queue = new Mock<IPersistentJobQueue>();
-
-            _provider = new Mock<IPersistentJobQueueProvider>();
-            _provider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
-                .Returns(_queue.Object);
-
-            _providers = new PersistentJobQueueProviderCollection(_provider.Object);
-        }
-
         [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        public void Ctor_ThrowsAnException_WhenSqlConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, _providers));
+                () => new SqlServerConnection(null, new SqlServerStorageOptions()));
 
             Assert.Equal("connection", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
+        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
 
-            Assert.Equal("queueProviders", exception.ParamName);
-        }
-
-        [Fact, CleanDatabase]
-        public void FetchNextJob_DelegatesItsExecution_ToTheQueue()
-        {
-            UseConnection(connection =>
-            {
-                var token = new CancellationToken();
-                var queues = new[] { "default" };
-
-                connection.FetchNextJob(queues, token);
-
-                _queue.Verify(x => x.Dequeue(queues, token));
-            });
-        }
-
-        [Fact, CleanDatabase]
-        public void FetchNextJob_Throws_IfMultipleProvidersResolved()
-        {
-            UseConnection(connection =>
-            {
-                var token = new CancellationToken();
-                var anotherProvider = new Mock<IPersistentJobQueueProvider>();
-                _providers.Add(anotherProvider.Object, new [] { "critical" });
-
-                Assert.Throws<InvalidOperationException>(
-                    () => connection.FetchNextJob(new[] { "critical", "default" }, token));
-            });
+            Assert.Equal("options", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -148,7 +102,7 @@ namespace HangFire.SqlServer.Tests
                 invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();
-                Assert.Equal(typeof(SqlServerConnectionFacts), job.Type);
+                Assert.Equal(typeof(ConnectionFacts), job.Type);
                 Assert.Equal("SampleMethod", job.Method.Name);
                 Assert.Equal("Hello", job.Arguments[0]);
 
@@ -390,6 +344,72 @@ select @id";
         }
 
         [Fact, CleanDatabase]
+        public void DeleteJobFromQueue_ThrowsAnException_WhenIdIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.DeleteJobFromQueue(null, "default"));
+
+                Assert.Equal("id", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void DeleteJobFromQueue_ThrowsAnException_WhenQueueIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.DeleteJobFromQueue("1", null));
+
+                Assert.Equal("queue", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void DeleteJobFromQueue_ReallyDeletesTheJobFromTheQueue()
+        {
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@id, @queue)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new { id = "1", queue = "default" });
+
+                connection.DeleteJobFromQueue("1", "default");
+
+                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                Assert.Equal(0, count);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void DeleteJobFromQueue_DoesNotDelete_UnrelatedJobs()
+        {
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue)
+values (@id, @queue)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(
+                    arrangeSql,
+                    new[]
+                    { 
+                        new { id = "1", queue = "critical" },
+                        new { id = "2", queue = "default" } 
+                    }); 
+
+                connection.DeleteJobFromQueue("1", "default");
+
+                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
+                Assert.Equal(2, count);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void GetFirstByLowestScoreFromSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection =>
@@ -587,7 +607,7 @@ values (@id, '', @heartbeat)";
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, _providers))
+            using (var connection = new SqlServerConnection(sqlConnection, new SqlServerStorageOptions()))
             {
                 action(sqlConnection, connection);
             }
@@ -595,9 +615,8 @@ values (@id, '', @heartbeat)";
 
         private void UseConnection(Action<SqlServerConnection> action)
         {
-            using (var connection = new SqlServerConnection( 
-                ConnectionUtils.CreateConnection(),
-                _providers))
+            using (var connection = new SqlServerConnection(
+                ConnectionUtils.CreateConnection(), new SqlServerStorageOptions()))
             {
                 action(connection);
             }
