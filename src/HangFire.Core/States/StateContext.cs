@@ -16,25 +16,30 @@
 
 using System;
 using HangFire.Common;
+using HangFire.Storage;
 
 namespace HangFire.States
 {
     public class StateContext
     {
-        public StateContext(string jobId, Job job)
+        public StateContext(string jobId, Job job, IStorageConnection connection)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
             if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
             
             JobId = jobId;
             Job = job;
+            Connection = connection;
         }
 
         internal StateContext(StateContext context)
-            : this(context.JobId, context.Job)
+            : this(context.JobId, context.Job, context.Connection)
         {
         }
 
         public string JobId { get; private set; }
         public Job Job { get; private set; }
+
+        public IStorageConnection Connection { get; private set; }
     }
 }

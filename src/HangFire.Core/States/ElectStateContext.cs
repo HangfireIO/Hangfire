@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Common;
-using HangFire.Storage;
 
 namespace HangFire.States
 {
@@ -28,16 +27,13 @@ namespace HangFire.States
         internal ElectStateContext(
             StateContext context, 
             IState candidateState, 
-            string currentState, 
-            IStorageConnection connection)
+            string currentState)
             : base(context)
         {
             if (candidateState == null) throw new ArgumentNullException("candidateState");
-            if (connection == null) throw new ArgumentNullException("connection");
 
             CandidateState = candidateState;
             CurrentState = currentState;
-            Connection = connection;
         }
 
         public IState CandidateState
@@ -54,7 +50,6 @@ namespace HangFire.States
         }
 
         public string CurrentState { get; private set; }
-        public IStorageConnection Connection { get; private set; }
 
         public void SetJobParameter<T>(string name, T value)
         {

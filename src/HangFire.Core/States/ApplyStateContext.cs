@@ -22,23 +22,22 @@ namespace HangFire.States
 {
     public class ApplyStateContext : StateContext
     {
-        private readonly IStorageConnection _connection;
-
         public ApplyStateContext(
-            IStorageConnection connection,
             StateContext context,
             IState newState,
             string oldStateName)
             : base(context)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
             if (newState == null) throw new ArgumentNullException("newState");
 
-            _connection = connection;
             OldStateName = oldStateName;
             NewState = newState;
             JobExpirationTimeout = TimeSpan.FromDays(1);
         }
+        
+        // Hiding the connection from filters, because their methods are being 
+        // executed inside a transaction. This property can break them.
+        private new IStorageConnection Connection { get { return base.Connection; } }
 
         public string OldStateName { get; private set; }
         public IState NewState { get; private set; }
@@ -50,7 +49,7 @@ namespace HangFire.States
             if (handlers == null) throw new ArgumentNullException("handlers");
             if (filters == null) throw new ArgumentNullException("filters");
 
-            using (var transaction = _connection.CreateWriteTransaction())
+            using (var transaction = Connection.CreateWriteTransaction())
             {
                 foreach (var handler in handlers.GetHandlers(OldStateName))
                 {

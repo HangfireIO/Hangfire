@@ -11,22 +11,22 @@ namespace HangFire.Core.Tests
 {
     public class StatisticsHistoryAttributeFacts
     {
-        private const string JobId = "my-job";
         private const string CurrentState = "my-state";
 
         private readonly Mock<IStorageConnection> _connection;
-        private readonly StateContext _stateContext;
         private readonly StatisticsHistoryAttribute _filter;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly ElectStateContextMock _context;
 
         public StatisticsHistoryAttributeFacts()
         {
-            var job = Job.FromExpression(() => Method());
-
-            _stateContext = new StateContext(JobId, job);
             _connection = new Mock<IStorageConnection>();
-            _transaction = new Mock<IWriteOnlyTransaction>();
 
+            _context = new ElectStateContextMock();
+            _context.StateContextValue.ConnectionValue = _connection;
+            _context.CandidateStateValue = new SucceededState();
+            
+            _transaction = new Mock<IWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
             _filter = new StatisticsHistoryAttribute();
@@ -44,27 +44,17 @@ namespace HangFire.Core.Tests
         [Fact]
         public void OnStateElection_IncrementsCounters_WithinTransaction()
         {
-            // Arrange
-            var context = new ElectStateContext(
-                _stateContext, new SucceededState(), CurrentState, _connection.Object);
-            
-            // Act
-            _filter.OnStateElection(context);
+            _filter.OnStateElection(_context.Object);
 
-            // Assert
             _connection.Verify(x => x.CreateWriteTransaction(), Times.Once);
             _transaction.Verify(x => x.Dispose(), Times.Once);
-
             _transaction.Verify(x => x.Commit());
         }
 
         [Fact]
         public void OnStateElection_IncrementsCounters_ForSucceededState()
         {
-            var context = new ElectStateContext(
-                _stateContext, new SucceededState(), CurrentState, _connection.Object);
-
-            _filter.OnStateElection(context);
+            _filter.OnStateElection(_context.Object);
 
             VerifyCountersIncremented("stats:succeeded:");
         }
@@ -72,10 +62,9 @@ namespace HangFire.Core.Tests
         [Fact]
         public void OnStateElection_IncrementsCounters_ForFailedState()
         {
-            var context = new ElectStateContext(
-                _stateContext, new FailedState(new AbandonedMutexException()), CurrentState, _connection.Object);
+            _context.CandidateStateValue = new FailedState(new InvalidOperationException());
 
-            _filter.OnStateElection(context);
+            _filter.OnStateElection(_context.Object);
 
             VerifyCountersIncremented("stats:failed:");
         }
@@ -83,10 +72,9 @@ namespace HangFire.Core.Tests
         [Fact]
         public void OnStateElection_DoesNotCreateTransaction_ForUnsuitableState()
         {
-            var context = new ElectStateContext(
-                _stateContext, new ProcessingState("server"), CurrentState, _connection.Object);
+            _context.CandidateStateValue = new ProcessingState("server");
 
-            _filter.OnStateElection(context);
+            _filter.OnStateElection(_context.Object);
 
             _connection.Verify(x => x.CreateWriteTransaction(), Times.Never);
         }
@@ -107,7 +95,5 @@ namespace HangFire.Core.Tests
                 It.Is<string>(date => date == prefix + thisHour || date == prefix + prevHour),
                 TimeSpan.FromDays(1)));
         }
-
-        public static void Method() { }
     }
 }

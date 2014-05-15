@@ -11,20 +11,17 @@ namespace HangFire.Core.Tests
 
         public ApplyStateContextMock()
         {
-            ConnectionValue = new Mock<IStorageConnection>();
             StateContextValue = new StateContextMock();
             NewStateValue = new Mock<IState>().Object;
             OldStateValue = null;
 
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
-                    ConnectionValue.Object,
                     StateContextValue.Object,
                     NewStateValue,
                     OldStateValue));
         }
 
-        public Mock<IStorageConnection> ConnectionValue { get; set; }
         public StateContextMock StateContextValue { get; set; }
         public IState NewStateValue { get; set; }
         public string OldStateValue { get; set; }

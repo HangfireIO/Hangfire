@@ -302,7 +302,7 @@ namespace HangFire.Core.Tests.States
         public void ChangeState_AppliesState_AndReturnsTrue()
         {
             var stateMachine = CreateStateMachineMock();
-            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()), _connection.Object);
             
             var result = stateMachine.Object.ChangeState(
                 context, _state.Object, OldStateName);
@@ -316,7 +316,7 @@ namespace HangFire.Core.Tests.States
         public void ChangeState_AppliesOnlyElectedState()
         {
             var stateMachine = CreateStateMachineMock();
-            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()), _connection.Object);
             var electedState = new Mock<IState>();
 
             stateMachine
@@ -334,7 +334,7 @@ namespace HangFire.Core.Tests.States
         public void ChangeState_AppliesFailedState_WhenThereIsAnException()
         {
             var stateMachine = CreateStateMachineMock();
-            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()), _connection.Object);
             var exception = new NotSupportedException();
 
             stateMachine.Setup(x => x.ApplyState(
@@ -366,7 +366,7 @@ namespace HangFire.Core.Tests.States
             _handlers.Add(handler2.Object);
 
             var stateMachine = CreateStateMachine();
-            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()));
+            var context = new StateContext("1", Job.FromExpression(() => Console.WriteLine()), _connection.Object);
 
             // Act
             stateMachine.ApplyState(

@@ -21,7 +21,7 @@ namespace HangFire.Core.Tests
 
             _context = new ElectStateContextMock();
             _context.StateContextValue.JobIdValue = JobId;
-            _context.ConnectionValue = _connection;
+            _context.StateContextValue.ConnectionValue = _connection;
             _context.CandidateStateValue = _failedState;
         }
 

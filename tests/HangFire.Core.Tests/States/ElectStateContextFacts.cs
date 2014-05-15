@@ -18,13 +18,15 @@ namespace HangFire.Core.Tests.States
 
         public ElectStateContextFacts()
         {
+            _connection = new Mock<IStorageConnection>();
+
             _stateContext = new StateContextMock();
             _stateContext.JobIdValue = JobId;
+            _stateContext.ConnectionValue = _connection;
 
             _candidateState = new Mock<IState>();
-            _connection = new Mock<IStorageConnection>();
+            
             _transaction = new Mock<IWriteOnlyTransaction>();
-
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
         }
 
@@ -35,23 +37,9 @@ namespace HangFire.Core.Tests.States
                 () => new ElectStateContext(
                     _stateContext.Object,
                     null,
-                    null,
-                    _connection.Object));
-
-            Assert.Equal("candidateState", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ElectStateContext(
-                    _stateContext.Object,
-                    _candidateState.Object,
-                    null,
                     null));
 
-            Assert.Equal("connection", exception.ParamName);
+            Assert.Equal("candidateState", exception.ParamName);
         }
 
         [Fact]
@@ -178,8 +166,7 @@ namespace HangFire.Core.Tests.States
             return new ElectStateContext(
                 _stateContext.Object,
                 _candidateState.Object,
-                "State",
-                _connection.Object);
+                "State");
         }
     }
 }
