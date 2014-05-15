@@ -80,6 +80,7 @@ namespace HangFire
             Storage = storage;
         }
 
+        /// <inheritdoc />
         public JobStorage Storage { get; private set; }
 
         /// <inheritdoc />
