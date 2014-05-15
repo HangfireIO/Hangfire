@@ -1,5 +1,4 @@
 ﻿using System;
-using HangFire.Common;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;
@@ -10,20 +9,20 @@ namespace HangFire.Core.Tests
     public class RetryAttributeFacts
     {
         private const string JobId = "id";
-        private const string CurrentState = "State";
 
-        private readonly StateContext _stateContext;
         private readonly FailedState _failedState;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly ElectStateContext _context;
+        private readonly ElectStateContextMock _context;
 
         public RetryAttributeFacts()
         {
-            var job = Job.FromExpression(() => Sample());
-            _stateContext = new StateContext(JobId, job);
             _failedState = new FailedState(new InvalidOperationException());
             _connection = new Mock<IStorageConnection>();
-            _context = new ElectStateContext(_stateContext, _failedState, CurrentState, _connection.Object);
+
+            _context = new ElectStateContextMock();
+            _context.StateContextValue.JobIdValue = JobId;
+            _context.ConnectionValue = _connection;
+            _context.CandidateStateValue = _failedState;
         }
 
         [Fact]
@@ -50,20 +49,20 @@ namespace HangFire.Core.Tests
         public void OnStateElection_DoesNotChangeState_IfRetryAttemptsIsSetToZero()
         {
             var filter = new RetryAttribute(0);
-            filter.OnStateElection(_context);
+            filter.OnStateElection(_context.Object);
 
-            Assert.Same(_failedState, _context.CandidateState);
+            Assert.Same(_failedState, _context.Object.CandidateState);
         }
 
         [Fact]
         public void OnStateElection_ChangeStateToScheduled_IfRetryAttemptsWereNotExceeded()
         {
             var filter = new RetryAttribute(1);
-            filter.OnStateElection(_context);
+            filter.OnStateElection(_context.Object);
 
-            Assert.IsType<ScheduledState>(_context.CandidateState);
-            Assert.True(((ScheduledState)_context.CandidateState).EnqueueAt > DateTime.UtcNow);
-            Assert.Contains("1 of 1", _context.CandidateState.Reason);
+            Assert.IsType<ScheduledState>(_context.Object.CandidateState);
+            Assert.True(((ScheduledState)_context.Object.CandidateState).EnqueueAt > DateTime.UtcNow);
+            Assert.Contains("1 of 1", _context.Object.CandidateState.Reason);
 
             _connection.Verify(x => x.SetJobParameter(JobId, "RetryCount", "1"));
         }
@@ -73,11 +72,11 @@ namespace HangFire.Core.Tests
         {
             var filter = new RetryAttribute(1);
             var state = new Mock<IState>();
-            var context = new ElectStateContext(_stateContext, state.Object, CurrentState, _connection.Object);
+            _context.CandidateStateValue = state.Object;
 
-            filter.OnStateElection(context);
+            filter.OnStateElection(_context.Object);
             
-            Assert.Same(state.Object, context.CandidateState);
+            Assert.Same(state.Object, _context.Object.CandidateState);
         }
 
         [Fact]
@@ -86,11 +85,9 @@ namespace HangFire.Core.Tests
             _connection.Setup(x => x.GetJobParameter(JobId, "RetryCount")).Returns("1");
             var filter = new RetryAttribute(1);
 
-            filter.OnStateElection(_context);
+            filter.OnStateElection(_context.Object);
 
-            Assert.Same(_failedState, _context.CandidateState);
+            Assert.Same(_failedState, _context.Object.CandidateState);
         }
-
-        public static void Sample() { }
     }
 }

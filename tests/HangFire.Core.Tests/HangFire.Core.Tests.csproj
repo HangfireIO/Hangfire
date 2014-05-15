@@ -78,7 +78,10 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
+    <Compile Include="Mocks\ApplyStateContextMock.cs" />
+    <Compile Include="Mocks\ElectStateContextMock.cs" />
     <Compile Include="Mocks\SharedWorkerContextMock.cs" />
+    <Compile Include="Mocks\StateContextMock.cs" />
     <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

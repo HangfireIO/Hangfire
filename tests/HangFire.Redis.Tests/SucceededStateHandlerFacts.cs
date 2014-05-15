@@ -1,5 +1,4 @@
-﻿using System;
-using HangFire.Common;
+﻿using HangFire.Core.Tests;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;
@@ -9,19 +8,18 @@ namespace HangFire.Redis.Tests
 {
     public class SucceededStateHandlerFacts
     {
-        private readonly ApplyStateContext _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction
-            = new Mock<IWriteOnlyTransaction>();
         private const string JobId = "1";
 
+        private readonly ApplyStateContextMock _context;
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        
         public SucceededStateHandlerFacts()
         {
-            var job = Job.FromExpression(() => Console.WriteLine());
-            _context = new ApplyStateContext(
-                new Mock<IStorageConnection>().Object,
-                new StateContext(JobId, job),
-                new SucceededState(),
-                null);
+            _context = new ApplyStateContextMock();
+            _context.StateContextValue.JobIdValue = JobId;
+            _context.NewStateValue = new SucceededState();
+
+            _transaction = new Mock<IWriteOnlyTransaction>();
         }
 
         [Fact]
@@ -35,7 +33,7 @@ namespace HangFire.Redis.Tests
         public void Apply_ShouldInsertTheJob_ToTheBeginningOfTheSucceededList_AndTrimIt()
         {
             var handler = new SucceededStateHandler();
-            handler.Apply(_context, _transaction.Object);
+            handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.InsertToList(
                 "succeeded", JobId));
@@ -47,7 +45,7 @@ namespace HangFire.Redis.Tests
         public void Unapply_ShouldRemoveTheJob_FromTheSucceededList()
         {
             var handler = new SucceededStateHandler();
-            handler.Unapply(_context, _transaction.Object);
+            handler.Unapply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromList("succeeded", JobId));
         }

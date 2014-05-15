@@ -1,5 +1,5 @@
 ﻿using System;
-using HangFire.Common;
+using HangFire.Core.Tests;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;
@@ -9,19 +9,18 @@ namespace HangFire.Redis.Tests
 {
     public class FailedStateHandlerFacts
     {
-        private readonly ApplyStateContext _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction
-            = new Mock<IWriteOnlyTransaction>();
         private const string JobId = "1";
+
+        private readonly ApplyStateContextMock _context;
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public FailedStateHandlerFacts()
         {
-            var job = Job.FromExpression(() => Console.WriteLine());
-            _context = new ApplyStateContext(
-                new Mock<IStorageConnection>().Object,
-                new StateContext(JobId, job),
-                new FailedState(new Exception()),
-                null);
+            _context = new ApplyStateContextMock();
+            _context.StateContextValue.JobIdValue = JobId;
+            _context.NewStateValue = new FailedState(new InvalidOperationException());
+
+            _transaction = new Mock<IWriteOnlyTransaction>();
         }
 
         [Fact]
@@ -35,7 +34,7 @@ namespace HangFire.Redis.Tests
         public void Apply_ShouldAddTheJob_ToTheFailedSet()
         {
             var handler = new FailedStateHandler();
-            handler.Apply(_context, _transaction.Object);
+            handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.AddToSet(
                 "failed", JobId, It.IsAny<double>()));
@@ -45,7 +44,7 @@ namespace HangFire.Redis.Tests
         public void Unapply_ShouldRemoveTheJob_FromTheFailedSet()
         {
             var handler = new FailedStateHandler();
-            handler.Unapply(_context, _transaction.Object);
+            handler.Unapply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("failed", JobId));
         }

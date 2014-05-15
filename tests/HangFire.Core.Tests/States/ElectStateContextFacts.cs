@@ -11,15 +11,16 @@ namespace HangFire.Core.Tests.States
     public class ElectStateContextFacts
     {
         private const string JobId = "1";
-        private readonly StateContext _stateContext;
+        private readonly StateContextMock _stateContext;
         private readonly Mock<IState> _candidateState;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public ElectStateContextFacts()
         {
-            var job = Job.FromExpression(() => Console.WriteLine());
-            _stateContext = new StateContext(JobId, job);
+            _stateContext = new StateContextMock();
+            _stateContext.JobIdValue = JobId;
+
             _candidateState = new Mock<IState>();
             _connection = new Mock<IStorageConnection>();
             _transaction = new Mock<IWriteOnlyTransaction>();
@@ -32,7 +33,7 @@ namespace HangFire.Core.Tests.States
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ElectStateContext(
-                    _stateContext,
+                    _stateContext.Object,
                     null,
                     null,
                     _connection.Object));
@@ -45,7 +46,7 @@ namespace HangFire.Core.Tests.States
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ElectStateContext(
-                    _stateContext,
+                    _stateContext.Object,
                     _candidateState.Object,
                     null,
                     null));
@@ -58,8 +59,8 @@ namespace HangFire.Core.Tests.States
         {
             var context = CreateContext();
 
-            Assert.Equal(_stateContext.JobId, context.JobId);
-            Assert.Equal(_stateContext.Job, context.Job);
+            Assert.Equal(_stateContext.Object.JobId, context.JobId);
+            Assert.Equal(_stateContext.Object.Job, context.Job);
 
             Assert.Same(_candidateState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
@@ -175,7 +176,7 @@ namespace HangFire.Core.Tests.States
         private ElectStateContext CreateContext()
         {
             return new ElectStateContext(
-                _stateContext,
+                _stateContext.Object,
                 _candidateState.Object,
                 "State",
                 _connection.Object);

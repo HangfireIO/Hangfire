@@ -16,16 +16,21 @@ namespace HangFire.Core.Tests.States
         private const string NewState = "NewState";
 
         private readonly Mock<IState> _newState;
-        private readonly Job _job;
         private readonly List<IApplyStateFilter> _filters;
         private readonly StateHandlerCollection _handlers;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        private readonly StateContext _stateContext;
+        private readonly StateContextMock _stateContext;
         private readonly Mock<IStorageConnection> _connection;
+        private readonly Job _job;
 
         public ApplyStateContextFacts()
         {
             _job = Job.FromExpression(() => Console.WriteLine());
+
+            _stateContext = new StateContextMock();
+            _stateContext.JobIdValue = JobId;
+            _stateContext.JobValue = _job;
+
             _newState = new Mock<IState>();
             _newState.Setup(x => x.Name).Returns(NewState);
 
@@ -34,7 +39,6 @@ namespace HangFire.Core.Tests.States
             _filters = new List<IApplyStateFilter>();
             _handlers = new StateHandlerCollection();
 
-            _stateContext = new StateContext(JobId, _job);
             _connection = new Mock<IStorageConnection>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
         }
@@ -43,7 +47,7 @@ namespace HangFire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ApplyStateContext(null, _stateContext, _newState.Object, OldState));
+                () => new ApplyStateContext(null, _stateContext.Object, _newState.Object, OldState));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -52,7 +56,7 @@ namespace HangFire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenNewStateIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ApplyStateContext(_connection.Object, _stateContext, null, OldState));
+                () => new ApplyStateContext(_connection.Object, _stateContext.Object, null, OldState));
 
             Assert.Equal("newState", exception.ParamName);
         }
@@ -235,7 +239,7 @@ namespace HangFire.Core.Tests.States
         {
             return new ApplyStateContext(
                 _connection.Object,
-                _stateContext,
+                _stateContext.Object,
                 _newState.Object,
                 OldState);
         }

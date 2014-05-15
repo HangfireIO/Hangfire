@@ -1,6 +1,4 @@
-﻿using HangFire.Common;
-using HangFire.States;
-using HangFire.Storage;
+﻿using HangFire.States;
 using Moq;
 using Xunit;
 
@@ -8,17 +6,12 @@ namespace HangFire.Core.Tests
 {
     public class QueueAttributeFacts
     {
-        private readonly StateContext _stateContext;
-        private readonly Mock<IStorageConnection> _connection;
-        private readonly ElectStateContext _context;
+        private readonly ElectStateContextMock _context;
 
         public QueueAttributeFacts()
         {
-            _stateContext = new StateContext("id", Job.FromExpression(() => Sample()));
-            _connection = new Mock<IStorageConnection>();
-            var enqueuedState = new EnqueuedState("queue");
-
-            _context = new ElectStateContext(_stateContext, enqueuedState, null, _connection.Object);
+            _context = new ElectStateContextMock();
+            _context.CandidateStateValue = new EnqueuedState("queue");
         }
 
         [Fact]
@@ -32,20 +25,19 @@ namespace HangFire.Core.Tests
         public void OnStateElection_OverridesTheQueue_OfTheCandidateState()
         {
             var filter = new QueueAttribute("override");
-            filter.OnStateElection(_context);
+            filter.OnStateElection(_context.Object);
 
-            Assert.Equal("override", ((EnqueuedState)_context.CandidateState).Queue);
+            Assert.Equal("override", ((EnqueuedState)_context.Object.CandidateState).Queue);
         }
 
         [Fact]
         public void OnStateElection_DoesNotDoAnything_IfStateIsNotEnqueuedState()
         {
             var filter = new QueueAttribute("override");
-            var context = new ElectStateContext(_context, new Mock<IState>().Object, null, _connection.Object);
+            var context = new ElectStateContextMock();
+            context.CandidateStateValue = new Mock<IState>().Object;
 
-            Assert.DoesNotThrow(() => filter.OnStateElection(context));
+            Assert.DoesNotThrow(() => filter.OnStateElection(context.Object));
         }
-
-        public static void Sample() { }
     }
 }
