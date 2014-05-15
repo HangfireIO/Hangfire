@@ -22,7 +22,7 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class StateMachine : IStateMachine
+    internal class StateMachine : IStateMachine
     {
         private readonly IStorageConnection _connection;
         private readonly IStateChangeProcess _stateChangeProcess;
