@@ -25,6 +25,16 @@ namespace HangFire.States
         private readonly Dictionary<string, List<IStateHandler>> _handlers = 
             new Dictionary<string, List<IStateHandler>>();
 
+        public void AddRange(IEnumerable<IStateHandler> handlers)
+        {
+            if (handlers == null) throw new ArgumentNullException("handlers");
+
+            foreach (var handler in handlers)
+            {
+                AddHandler(handler);
+            }
+        }
+
         public void AddHandler(IStateHandler handler)
         {
             if (handler == null) throw new ArgumentNullException("handler");

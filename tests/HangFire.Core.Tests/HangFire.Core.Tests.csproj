@@ -110,6 +110,7 @@
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\ApplyStateContextFacts.cs" />
     <Compile Include="States\ElectStateContextFacts.cs" />
+    <Compile Include="States\StateChangeProcessFacts.cs" />
     <Compile Include="States\StateContextFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
     <Compile Include="States\StateMachineFactoryFacts.cs" />

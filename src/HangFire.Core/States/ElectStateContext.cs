@@ -15,7 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using HangFire.Common;
 
 namespace HangFire.States
@@ -24,10 +23,7 @@ namespace HangFire.States
     {
         private IState _candidateState;
 
-        internal ElectStateContext(
-            StateContext context, 
-            IState candidateState, 
-            string currentState)
+        internal ElectStateContext(StateContext context, IState candidateState, string currentState)
             : base(context)
         {
             if (candidateState == null) throw new ArgumentNullException("candidateState");
@@ -60,39 +56,6 @@ namespace HangFire.States
         {
             return JobHelper.FromJson<T>(Connection.GetJobParameter(
                 JobId, name));
-        }
-
-        internal IState ElectState(IEnumerable<IElectStateFilter> filters)
-        {
-            if (filters == null) throw new ArgumentNullException("filters");
-
-            var statesToAppend = new List<IState>();
-
-            foreach (var filter in filters)
-            {
-                var oldState = CandidateState;
-                filter.OnStateElection(this);
-
-                if (oldState != CandidateState)
-                {
-                    statesToAppend.Add(oldState);
-                }
-            }
-
-            if (statesToAppend.Count > 0)
-            {
-                using (var transaction = Connection.CreateWriteTransaction())
-                {
-                    foreach (var state in statesToAppend)
-                    {
-                        transaction.AddJobState(JobId, state);
-                    }
-
-                    transaction.Commit();
-                }
-            }
-
-            return CandidateState;
         }
     }
 }

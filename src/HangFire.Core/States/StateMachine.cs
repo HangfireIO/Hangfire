@@ -25,29 +25,15 @@ namespace HangFire.States
     public class StateMachine : IStateMachine
     {
         private readonly IStorageConnection _connection;
-        private readonly StateHandlerCollection _handlerCollection;
+        private readonly IStateChangeProcess _stateChangeProcess;
 
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
-            = JobFilterProviders.Providers.GetFilters;
-
-        public StateMachine(IStorageConnection connection, IEnumerable<IStateHandler> handlers)
+        public StateMachine(IStorageConnection connection, IStateChangeProcess stateChangeProcess)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (handlers == null) throw new ArgumentNullException("handlers");
+            if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
 
             _connection = connection;
-            _handlerCollection = GetHandlerCollection(handlers);
-        }
-
-        internal StateMachine(
-            IStorageConnection connection,
-            IEnumerable<IStateHandler> handlers,
-            IEnumerable<object> filters)
-            : this(connection, handlers)
-        {
-            if (filters == null) throw new ArgumentNullException("filters");
-
-            _getFiltersThunk = md => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
+            _stateChangeProcess = stateChangeProcess;
         }
 
         public string CreateInState(
@@ -65,7 +51,7 @@ namespace HangFire.States
                 TimeSpan.FromHours(1));
 
             var context = new StateContext(jobId, job, _connection);
-            ChangeState(context, state, null);
+            _stateChangeProcess.ChangeState(context, state, null);
 
             return jobId;
         }
@@ -124,77 +110,10 @@ namespace HangFire.States
                 }
 
                 var context = new StateContext(jobId, jobData.Job, _connection);
-                var stateChanged = ChangeState(context, toState, jobData.State);
+                var stateChanged = _stateChangeProcess.ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;
             }
-        }
-
-        internal virtual bool ChangeState(StateContext context, IState toState, string oldStateName)
-        {
-            try
-            {
-                var filterInfo = GetFilters(context.Job);
-
-                var electedState = ElectState(context, toState, oldStateName, filterInfo.ElectStateFilters);
-                ApplyState(context, electedState, oldStateName, filterInfo.ApplyStateFilters);
-
-                // State transition was succeeded.
-                return true;
-            }
-            catch (Exception ex)
-            {
-                var failedState = new FailedState(ex)
-                {
-                    Reason = "An exception occurred during the transition of job's state"
-                };
-
-                // We should not use any state changed filters, because
-                // some of the could cause an exception.
-                ApplyState(context, failedState, oldStateName, Enumerable.Empty<IApplyStateFilter>());
-
-                // State transition was failed due to exception.
-                return false;
-            }
-        }
-
-        internal virtual IState ElectState(
-            StateContext stateContext, 
-            IState toState,
-            string fromStateName,
-            IEnumerable<IElectStateFilter> filters)
-        {
-            var context = new ElectStateContext(stateContext, toState, fromStateName);
-
-            return context.ElectState(filters);
-        }
-
-        internal virtual void ApplyState(
-            StateContext stateContext, 
-            IState electedState,
-            string oldStateName,
-            IEnumerable<IApplyStateFilter> filters)
-        {
-            var context = new ApplyStateContext(
-                stateContext, electedState, oldStateName);
-
-            context.ApplyState(_handlerCollection, filters);
-        }
-
-        private JobFilterInfo GetFilters(Job job)
-        {
-            return new JobFilterInfo(_getFiltersThunk(job));
-        }
-
-        private static StateHandlerCollection GetHandlerCollection(IEnumerable<IStateHandler> handlers)
-        {
-            var handlerCollection = new StateHandlerCollection();
-            foreach (var handler in handlers)
-            {
-                handlerCollection.AddHandler(handler);
-            }
-
-            return handlerCollection;
         }
     }
 }

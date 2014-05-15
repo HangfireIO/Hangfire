@@ -15,17 +15,13 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using HangFire.Storage;
 
 namespace HangFire.States
 {
     public class ApplyStateContext : StateContext
     {
-        public ApplyStateContext(
-            StateContext context,
-            IState newState,
-            string oldStateName)
+        public ApplyStateContext(StateContext context, IState newState, string oldStateName)
             : base(context)
         {
             if (newState == null) throw new ArgumentNullException("newState");
@@ -42,48 +38,5 @@ namespace HangFire.States
         public string OldStateName { get; private set; }
         public IState NewState { get; private set; }
         public TimeSpan JobExpirationTimeout { get; set; }
-
-        internal void ApplyState(
-            StateHandlerCollection handlers, IEnumerable<IApplyStateFilter> filters)
-        {
-            if (handlers == null) throw new ArgumentNullException("handlers");
-            if (filters == null) throw new ArgumentNullException("filters");
-
-            using (var transaction = Connection.CreateWriteTransaction())
-            {
-                foreach (var handler in handlers.GetHandlers(OldStateName))
-                {
-                    handler.Unapply(this, transaction);
-                }
-
-                foreach (var filter in filters)
-                {
-                    filter.OnStateUnapplied(this, transaction);
-                }
-
-                transaction.SetJobState(JobId, NewState);
-
-                foreach (var handler in handlers.GetHandlers(NewState.Name))
-                {
-                    handler.Apply(this, transaction);
-                }
-
-                foreach (var filter in filters)
-                {
-                    filter.OnStateApplied(this, transaction);
-                }
-
-                if (NewState.IsFinal)
-                {
-                    transaction.ExpireJob(JobId, JobExpirationTimeout);
-                }
-                else
-                {
-                    transaction.PersistJob(JobId);
-                }
-
-                transaction.Commit();
-            }
-        }
     }
 }
