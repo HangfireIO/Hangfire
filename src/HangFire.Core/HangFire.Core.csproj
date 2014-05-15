@@ -95,6 +95,7 @@
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\IJobFilterProvider.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
+    <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
     <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
