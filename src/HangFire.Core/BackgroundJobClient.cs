@@ -76,7 +76,11 @@ namespace HangFire
             _connection = storage.GetConnection();
             _stateMachineFactory = stateMachineFactory;
             _process = process;
+
+            Storage = storage;
         }
+
+        public JobStorage Storage { get; private set; }
 
         /// <inheritdoc />
         public string Create(Job job, IState state)

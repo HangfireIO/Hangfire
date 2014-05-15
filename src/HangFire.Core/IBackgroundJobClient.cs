@@ -40,5 +40,11 @@ namespace HangFire
         /// <exception cref="ArgumentNullException"><paramref name="state"/> argument is null.</exception>
         /// <exception cref="CreateJobFailedException">Job creation has been failed due to inner exception.</exception>
         string Create(Job job, IState state);
+
+        /// <summary>
+        /// Gets the current job storage that is being used by this 
+        /// <see cref="IBackgroundJobClient"/> instance.
+        /// </summary>
+        JobStorage Storage { get; }
     }
 }
