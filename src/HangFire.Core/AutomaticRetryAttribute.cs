@@ -44,7 +44,7 @@ namespace HangFire
 
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
             
-            if (retryAttempt < Attempts)
+            if (retryAttempt <= Attempts)
             {
                 var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
 
