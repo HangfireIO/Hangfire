@@ -20,7 +20,6 @@ using HangFire.States;
 
 namespace HangFire
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class RetryAttribute : JobFilterAttribute, IElectStateFilter
     {
         private int _attempts;
