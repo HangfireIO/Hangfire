@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
 using HangFire;
-using HangFire.Msmq;
 using HangFire.SqlServer;
+using HangFire.SqlServer.Msmq;
 
 namespace ConsoleSample
 {

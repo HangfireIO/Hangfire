@@ -16,9 +16,8 @@
 
 using System.Collections.Generic;
 using System.Data;
-using HangFire.SqlServer;
 
-namespace HangFire.Msmq
+namespace HangFire.SqlServer.Msmq
 {
     internal class MsmqJobQueueProvider : IPersistentJobQueueProvider
     {

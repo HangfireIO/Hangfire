@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Messaging;
-using HangFire.SqlServer;
 
-namespace HangFire.Msmq
+namespace HangFire.SqlServer.Msmq
 {
     internal class MsmqJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
     {

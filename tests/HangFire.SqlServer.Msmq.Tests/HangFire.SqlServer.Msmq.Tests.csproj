@@ -7,8 +7,8 @@
     <ProjectGuid>{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.Msmq.Tests</RootNamespace>
-    <AssemblyName>HangFire.Msmq.Tests</AssemblyName>
+    <RootNamespace>HangFire.SqlServer.Msmq.Tests</RootNamespace>
+    <AssemblyName>HangFire.SqlServer.Msmq.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -65,9 +65,9 @@
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
       <Name>HangFire.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.Msmq\HangFire.Msmq.csproj">
+    <ProjectReference Include="..\..\src\HangFire.SqlServer.Msmq\HangFire.SqlServer.Msmq.csproj">
       <Project>{762be479-0aec-47e0-8f9c-34fa54641749}</Project>
-      <Name>HangFire.Msmq</Name>
+      <Name>HangFire.SqlServer.Msmq</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\HangFire.SqlServer\HangFire.SqlServer.csproj">
       <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>

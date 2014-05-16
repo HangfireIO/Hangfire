@@ -1,7 +1,7 @@
 ﻿using HangFire;
-using HangFire.Msmq;
 using HangFire.Redis;
 using HangFire.SqlServer;
+using HangFire.SqlServer.Msmq;
 using HangFire.Web;
 
 [assembly: WebActivatorEx.PostApplicationStartMethod(

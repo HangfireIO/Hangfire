@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using HangFire.SqlServer;
+using HangFire.SqlServer.Msmq;
 using HangFire.States;
 using Xunit;
 

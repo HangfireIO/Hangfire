@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Messaging;
 using System.Threading;
+using HangFire.SqlServer.Msmq;
 using Xunit;
 
 namespace HangFire.Msmq.Tests

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>HangFire.MSMQ</id>
+    <id>HangFire.SqlServer.MSMQ</id>
     <version>__HANGFIRE_PACKAGE_VERSION__</version>
     <title>HangFire MSMQ Queues for SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
@@ -19,7 +19,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Net40\HangFire.Msmq.dll" target="lib\net40" />
-    <file src="Net40\HangFire.Msmq.xml" target="lib\net40" />
+    <file src="Net40\HangFire.SqlServer.Msmq.dll" target="lib\net40" />
+    <file src="Net40\HangFire.SqlServer.Msmq.xml" target="lib\net40" />
   </files>
 </package>
