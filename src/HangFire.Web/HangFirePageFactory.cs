@@ -58,6 +58,10 @@ namespace HangFire.Web
                 "/schedule/enqueue/(?<JobId>.+)",
                 x => new CommandHandler(() => Command.EnqueueScheduled(x.Groups["JobId"].Value)));
 
+            RegisterPathHandlerFactory(
+                "/schedule/delete/(?<JobId>.+)",
+                x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value)));
+
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
