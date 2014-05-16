@@ -53,13 +53,13 @@ html, body {
 
 .btn-death {
     background-color: #777;
-    border-color: #555;
+    border-color: #666;
     color: #fff;
 }
 
 .btn-death:hover {
     background-color: #666;
-    border-color: #444;
+    border-color: #555;
     color: #fff;
 }
 

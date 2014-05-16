@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
+using HangFire.States;
 using HangFire.Web.Configuration;
 using HangFire.Web.Pages;
 
@@ -65,6 +66,10 @@ namespace HangFire.Web
             RegisterPathHandlerFactory(
                 "/failed/retry/(?<JobId>.+)", 
                 x => new CommandHandler(() => Command.Retry(x.Groups["JobId"].Value)));
+
+            RegisterPathHandlerFactory(
+                "/failed/delete/(?<JobId>.+)",
+                x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value, FailedState.StateName)));
 
             RegisterPathHandlerFactory(
                 "/actions/delete/(?<JobId>.+)",

@@ -90,6 +90,11 @@ else
                                     <span class="glyphicon glyphicon-repeat"></span>
                                     Retry
                                 </button>
+                                
+                                <button class="btn btn-death btn-sm" data-ajax="@Request.LinkTo("/failed/delete/" + job.Key)" data-loading-text="Deleting...">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                    Delete
+                                </button>
                             </div>
                         }
                     </td>
