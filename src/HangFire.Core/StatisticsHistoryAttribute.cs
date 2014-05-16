@@ -21,7 +21,6 @@ using HangFire.States;
 
 namespace HangFire
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class StatisticsHistoryAttribute : JobFilterAttribute, IElectStateFilter
     {
         public StatisticsHistoryAttribute()
