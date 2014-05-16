@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq.Expressions;
+using HangFire.States;
 
 namespace HangFire
 {
@@ -150,6 +151,22 @@ namespace HangFire
             using (var client = ClientFactory())
             {
                 return client.Schedule(methodCall, delay);
+            }
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="DeletedState"/>. 
+        /// <seealso cref="BackgroundJobClientExtensions.Delete"/>
+        /// </summary>
+        /// 
+        /// <param name="jobId">An identifier, that will be used to find a job.</param>
+        /// <returns>True on a successfull state transition, false otherwise.</returns>
+        public static bool Delete(string jobId)
+        {
+            using (var client = ClientFactory())
+            {
+                return client.Delete(jobId);
             }
         }
     }

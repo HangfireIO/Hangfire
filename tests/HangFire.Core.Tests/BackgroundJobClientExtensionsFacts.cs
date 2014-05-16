@@ -1,6 +1,7 @@
 ﻿using System;
 using HangFire.Common;
 using HangFire.States;
+using HangFire.Storage;
 using Moq;
 using Xunit;
 
@@ -8,13 +9,26 @@ namespace HangFire.Core.Tests
 {
     public class BackgroundJobClientExtensionsFacts
     {
+        private const string JobId = "job-id";
+
         private readonly Mock<IBackgroundJobClient> _client;
         private readonly Mock<IState> _state;
+        private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<IStorageConnection> _connection;
 
         public BackgroundJobClientExtensionsFacts()
         {
             _client = new Mock<IBackgroundJobClient>();
             _state = new Mock<IState>();
+
+            _stateMachine = new Mock<IStateMachine>();
+            _connection = new Mock<IStorageConnection>();
+
+            var factory = new Mock<IStateMachineFactory>();
+            factory.Setup(x => x.Create(_connection.Object)).Returns(_stateMachine.Object);
+
+            _client.Setup(x => x.StateMachineFactory).Returns(factory.Object);
+            _client.Setup(x => x.Connection).Returns(_connection.Object);
         }
 
         [Fact]
@@ -168,6 +182,35 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
                 It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+        }
+
+        [Fact]
+        public void Delete_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Delete(null, JobId));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void Delete_ThrowsAnException_WhenJobIdIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => _client.Object.Delete(null));
+
+            Assert.Equal("jobId", exception.ParamName);
+        }
+
+        [Fact]
+        public void Delete_ChangesTheStateOfAJob_ToDeleted()
+        {
+            _client.Object.Delete(JobId);
+
+            _stateMachine.Verify(x => x.TryToChangeState(
+                JobId,
+                It.IsAny<DeletedState>(),
+                null));
         }
 
         public static void StaticMethod()
