@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HangFire.States;
 using Moq;
@@ -76,6 +77,33 @@ namespace HangFire.Core.Tests.States
             var handlers = _collection.GetHandlers("State");
 
             Assert.Empty(handlers);
+        }
+
+        [Fact]
+        public void AddRange_ThrowsAnException_WhenEnumerationIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => _collection.AddRange(null));
+        }
+
+        [Fact]
+        public void AddRange_AddsHandlers_FromEnumeration()
+        {
+            // Arrange
+            var handler1 = new Mock<IStateHandler>();
+            handler1.Setup(x => x.StateName).Returns("State1");
+
+            var handler2 = new Mock<IStateHandler>();
+            handler2.Setup(x => x.StateName).Returns("State2");
+
+            var handlers = new List<IStateHandler> { handler1.Object, handler2.Object };
+
+            // Act
+            _collection.AddRange(handlers);
+
+            // Assert
+            Assert.Same(handler1.Object, _collection.GetHandlers("State1").Single());
+            Assert.Same(handler2.Object, _collection.GetHandlers("State2").Single());
         }
     }
 }

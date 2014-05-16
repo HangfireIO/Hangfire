@@ -111,8 +111,13 @@
                             </span>
                             Failed
                         </a>
-
-
+                        <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/deleted") ? "active" : null)"
+                           href="@Request.LinkTo("/deleted")">
+                            <span id="stats-deleted" class="label label-default pull-right">
+                                @statistics.Deleted
+                            </span>
+                            Deleted
+                        </a>
                     </div>
                 </div>
                 <div class="col-md-9">

@@ -28,8 +28,6 @@ namespace HangFire
     /// </summary>
     public class BackgroundJobClient : IBackgroundJobClient
     {
-        private readonly IStorageConnection _connection;
-        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly IJobCreationProcess _process;
 
         /// <summary>
@@ -73,10 +71,21 @@ namespace HangFire
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (process == null) throw new ArgumentNullException("process");
 
-            _connection = storage.GetConnection();
-            _stateMachineFactory = stateMachineFactory;
+            Storage = storage;
+            Connection = storage.GetConnection();
+            StateMachineFactory = stateMachineFactory;
+
             _process = process;
         }
+
+        /// <inheritdoc />
+        public JobStorage Storage { get; private set; }
+
+        /// <inheritdoc />
+        public IStorageConnection Connection { get; private set; }
+
+        /// <inheritdoc />
+        public IStateMachineFactory StateMachineFactory { get; private set; }
 
         /// <inheritdoc />
         public string Create(Job job, IState state)
@@ -86,7 +95,7 @@ namespace HangFire
 
             try
             {
-                var context = new CreateContext(_connection, _stateMachineFactory, job, state);
+                var context = new CreateContext(Connection, StateMachineFactory, job, state);
                 _process.Run(context);
 
                 return context.JobId;
@@ -103,7 +112,7 @@ namespace HangFire
         /// </summary>
         public virtual void Dispose()
         {
-            _connection.Dispose();
+            Connection.Dispose();
         }
     }
 }

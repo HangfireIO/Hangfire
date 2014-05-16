@@ -25,5 +25,6 @@ namespace HangFire.Storage.Monitoring
         public long Processing { get; set; }
         public long Succeeded { get; set; }
         public long Failed { get; set; }
+        public long Deleted { get; set; }
     }
 }

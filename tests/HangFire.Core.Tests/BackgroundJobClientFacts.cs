@@ -85,6 +85,16 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void Ctor_SetsAllProperties()
+        {
+            var client = CreateClient();
+
+            Assert.Same(_storage.Object, client.Storage);
+            Assert.Same(_connection.Object, client.Connection);
+            Assert.Same(_stateMachineFactory.Object, client.StateMachineFactory);
+        }
+
+        [Fact]
         public void Dispose_DisposesTheConnection()
         {
             var client = CreateClient();

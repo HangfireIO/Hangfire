@@ -1,5 +1,5 @@
-// This file is part of HangFire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of HangFire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,22 +14,27 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
 using HangFire.States;
+using HangFire.Storage;
 
-namespace HangFire
+namespace HangFire.Redis
 {
-    public static class GlobalStateHandlers
+    internal class DeletedStateHandler : IStateHandler
     {
-        static GlobalStateHandlers()
+        public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            Handlers = new List<IStateHandler>();
-            Handlers.Add(new SucceededState.Handler());
-            Handlers.Add(new ScheduledState.Handler());
-            Handlers.Add(new EnqueuedState.Handler());
-            Handlers.Add(new DeletedState.Handler());
+            transaction.InsertToList("deleted", context.JobId);
+            transaction.TrimList("deleted", 0, 99);
         }
 
-        public static ICollection<IStateHandler> Handlers { get; private set; }
+        public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            transaction.RemoveFromList("deleted", context.JobId);
+        }
+
+        public string StateName
+        {
+            get { return DeletedState.StateName; }
+        }
     }
 }

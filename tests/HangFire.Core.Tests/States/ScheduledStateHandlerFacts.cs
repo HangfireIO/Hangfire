@@ -9,26 +9,19 @@ namespace HangFire.Core.Tests.States
 {
     public class ScheduledStateHandlerFacts
     {
-        private readonly ApplyStateContext _context;
+        private readonly ApplyStateContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         private const string JobId = "1";
-        private readonly DateTime EnqueueAt = DateTime.UtcNow.AddDays(1);
-        private readonly Mock<IStorageConnection> _connection;
-        private readonly StateContext _stateContext;
+        private readonly DateTime _enqueueAt = DateTime.UtcNow.AddDays(1);
 
         public ScheduledStateHandlerFacts()
         {
-            var job = Job.FromExpression(() => Console.WriteLine());
+            _context = new ApplyStateContextMock();
+            _context.StateContextValue.JobIdValue = JobId;
+            _context.NewStateValue = new ScheduledState(_enqueueAt);
 
             _transaction = new Mock<IWriteOnlyTransaction>();
-            _connection = new Mock<IStorageConnection>();
-            _stateContext = new StateContext(JobId, job);
-            _context = new ApplyStateContext(
-                _connection.Object,
-                _stateContext, 
-                new ScheduledState(EnqueueAt), 
-                null);
         }
 
         [Fact]
@@ -42,17 +35,17 @@ namespace HangFire.Core.Tests.States
         public void Apply_ShouldAddTheJob_ToTheScheduleSet_WithTheCorrectScore()
         {
             var handler = new ScheduledState.Handler();
-            handler.Apply(_context, _transaction.Object);
+            handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.AddToSet(
-                "schedule", JobId, JobHelper.ToTimestamp(EnqueueAt)));
+                "schedule", JobId, JobHelper.ToTimestamp(_enqueueAt)));
         }
 
         [Fact]
         public void Unapply_ShouldRemoveTheJob_FromTheScheduledSet()
         {
             var handler = new ScheduledState.Handler();
-            handler.Unapply(_context, _transaction.Object);
+            handler.Unapply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
         }
@@ -61,11 +54,10 @@ namespace HangFire.Core.Tests.States
         public void Apply_ThrowsAnException_WhenGivenStateIsNotScheduledState()
         {
             var handler = new ScheduledState.Handler();
-            var context = new ApplyStateContext(
-                _connection.Object, _stateContext, new Mock<IState>().Object, null);
+            _context.NewStateValue = new Mock<IState>().Object;
 
             Assert.Throws<InvalidOperationException>(
-                () => handler.Apply(context, _transaction.Object));
+                () => handler.Apply(_context.Object, _transaction.Object));
         }
     }
 }

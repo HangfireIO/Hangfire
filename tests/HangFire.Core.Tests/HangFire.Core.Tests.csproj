@@ -76,9 +76,13 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
+    <Compile Include="Mocks\ApplyStateContextMock.cs" />
+    <Compile Include="Mocks\ElectStateContextMock.cs" />
     <Compile Include="Mocks\SharedWorkerContextMock.cs" />
+    <Compile Include="Mocks\StateContextMock.cs" />
     <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -98,6 +102,8 @@
     <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="Server\WorkerManagerFacts.cs" />
+    <Compile Include="States\DeletedStateFacts.cs" />
+    <Compile Include="States\DeletedStateHandlerFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
@@ -106,6 +112,7 @@
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\ApplyStateContextFacts.cs" />
     <Compile Include="States\ElectStateContextFacts.cs" />
+    <Compile Include="States\StateChangeProcessFacts.cs" />
     <Compile Include="States\StateContextFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
     <Compile Include="States\StateMachineFactoryFacts.cs" />
@@ -130,7 +137,9 @@
       <Name>HangFire.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
   <Import Project="..\..\src\Common\HangFire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

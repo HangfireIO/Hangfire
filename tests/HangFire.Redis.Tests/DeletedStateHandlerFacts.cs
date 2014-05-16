@@ -6,18 +6,18 @@ using Xunit;
 
 namespace HangFire.Redis.Tests
 {
-    public class SucceededStateHandlerFacts
+    public class DeletedStateHandlerFacts
     {
         private const string JobId = "1";
 
         private readonly ApplyStateContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        
-        public SucceededStateHandlerFacts()
+
+        public DeletedStateHandlerFacts()
         {
             _context = new ApplyStateContextMock();
             _context.StateContextValue.JobIdValue = JobId;
-            _context.NewStateValue = new SucceededState();
+            _context.NewStateValue = new DeletedState();
 
             _transaction = new Mock<IWriteOnlyTransaction>();
         }
@@ -25,29 +25,29 @@ namespace HangFire.Redis.Tests
         [Fact]
         public void StateName_ShouldBeEqualToSucceededState()
         {
-            var handler = new SucceededStateHandler();
-            Assert.Equal(SucceededState.StateName, handler.StateName);
+            var handler = new DeletedStateHandler();
+            Assert.Equal(DeletedState.StateName, handler.StateName);
         }
 
         [Fact]
         public void Apply_ShouldInsertTheJob_ToTheBeginningOfTheSucceededList_AndTrimIt()
         {
-            var handler = new SucceededStateHandler();
+            var handler = new DeletedStateHandler();
             handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.InsertToList(
-                "succeeded", JobId));
+                "deleted", JobId));
             _transaction.Verify(x => x.TrimList(
-                "succeeded", 0, 99));
+                "deleted", 0, 99));
         }
 
         [Fact]
         public void Unapply_ShouldRemoveTheJob_FromTheSucceededList()
         {
-            var handler = new SucceededStateHandler();
+            var handler = new DeletedStateHandler();
             handler.Unapply(_context.Object, _transaction.Object);
 
-            _transaction.Verify(x => x.RemoveFromList("succeeded", JobId));
+            _transaction.Verify(x => x.RemoveFromList("deleted", JobId));
         }
     }
 }

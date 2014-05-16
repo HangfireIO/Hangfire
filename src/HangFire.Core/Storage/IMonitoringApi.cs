@@ -34,6 +34,7 @@ namespace HangFire.Storage
         JobList<ScheduledJobDto> ScheduledJobs(int from, int count);
         JobList<SucceededJobDto> SucceededJobs(int from, int count);
         JobList<FailedJobDto> FailedJobs(int from, int count);
+        JobList<DeletedJobDto> DeletedJobs(int from, int count);
 
         long ScheduledCount();
         long EnqueuedCount(string queue);
@@ -42,6 +43,7 @@ namespace HangFire.Storage
         long ProcessingCount();
 
         long SucceededListCount();
+        long DeletedListCount();
         
         IDictionary<DateTime, long> SucceededByDatesCount();
         IDictionary<DateTime, long> FailedByDatesCount();

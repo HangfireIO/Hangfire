@@ -1,5 +1,6 @@
 ﻿using System;
 using HangFire.Common;
+using HangFire.Core.Tests;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;
@@ -9,19 +10,18 @@ namespace HangFire.Redis.Tests
 {
     public class ProcessingStateHandlerFacts
     {
-        private readonly ApplyStateContext _context;
-        private readonly Mock<IWriteOnlyTransaction> _transaction
-            = new Mock<IWriteOnlyTransaction>();
         private const string JobId = "1";
 
+        private readonly ApplyStateContextMock _context;
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        
         public ProcessingStateHandlerFacts()
         {
-            var job = Job.FromExpression(() => Console.WriteLine());
-            _context = new ApplyStateContext(
-                new Mock<IStorageConnection>().Object,
-                new StateContext(JobId, job),
-                new ProcessingState("SomeServer"), 
-                null);
+            _context = new ApplyStateContextMock();
+            _context.StateContextValue.JobIdValue = JobId;
+            _context.NewStateValue = new ProcessingState("server");
+
+            _transaction = new Mock<IWriteOnlyTransaction>();
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace HangFire.Redis.Tests
         public void Apply_ShouldAddTheJob_ToTheProcessingSet()
         {
             var handler = new ProcessingStateHandler();
-            handler.Apply(_context, _transaction.Object);
+            handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.AddToSet(
                 "processing", JobId, It.IsAny<double>()));
@@ -45,7 +45,7 @@ namespace HangFire.Redis.Tests
         public void Unapply_ShouldRemoveTheJob_FromTheProcessingSet()
         {
             var handler = new ProcessingStateHandler();
-            handler.Unapply(_context, _transaction.Object);
+            handler.Unapply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.RemoveFromSet("processing", JobId));
         }

@@ -12,24 +12,18 @@ namespace HangFire.Core.Tests.States
         private const string JobId = "1";
         private const string Queue = "critical";
 
-        private readonly ApplyStateContext _context;
+        private readonly ApplyStateContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        private readonly StateContext _stateContext;
         private readonly Mock<IStorageConnection> _connection;
 
         public EnqueuedStateHandlerFacts()
         {
-            var job = Job.FromExpression(() => Console.WriteLine());
+            _context = new ApplyStateContextMock();
+            _context.StateContextValue.JobIdValue = JobId;
+            _context.NewStateValue = new EnqueuedState { Queue = Queue };
 
             _transaction = new Mock<IWriteOnlyTransaction>();
             _connection = new Mock<IStorageConnection>();
-            _stateContext = new StateContext(JobId, job);
-
-            _context = new ApplyStateContext(
-                _connection.Object,
-                _stateContext, 
-                new EnqueuedState { Queue = Queue }, 
-                null);
         }
 
         [Fact]
@@ -44,7 +38,7 @@ namespace HangFire.Core.Tests.States
         {
             var handler = new EnqueuedState.Handler();
 
-            handler.Apply(_context, _transaction.Object);
+            handler.Apply(_context.Object, _transaction.Object);
 
             _transaction.Verify(x => x.AddToQueue(Queue, JobId));
         }
@@ -53,11 +47,10 @@ namespace HangFire.Core.Tests.States
         public void Apply_ThrowsAnException_WhenOtherThanEnqueuedStateGiven()
         {
             var handler = new EnqueuedState.Handler();
-            var context = new ApplyStateContext(
-                _connection.Object, _stateContext, new Mock<IState>().Object, null);
+            _context.NewStateValue = new Mock<IState>().Object;
 
             Assert.Throws<InvalidOperationException>(
-                () => handler.Apply(context, _transaction.Object));
+                () => handler.Apply(_context.Object, _transaction.Object));
         }
 
         [Fact]

@@ -241,6 +241,19 @@ select * from (
                 });
         }
 
+        public JobList<DeletedJobDto> DeletedJobs(int @from, int count)
+        {
+            return GetJobs(
+                from,
+                count,
+                DeletedState.StateName,
+                (sqlJob, job, stateData) => new DeletedJobDto
+                {
+                    Job = job,
+                    DeletedAt = JobHelper.FromNullableStringTimestamp(stateData["DeletedAt"])
+                });
+        }
+
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
             var tuples = _queueProviders
@@ -294,7 +307,10 @@ where j.Id in @jobIds";
                 (sqlJob, job, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
-                    EnqueuedAt = JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                    InEnqueuedState = sqlJob.StateName == EnqueuedState.StateName,
+                    EnqueuedAt = sqlJob.StateName == EnqueuedState.StateName 
+                        ? JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                        : null
                 });
         }
 
@@ -388,6 +404,11 @@ select * from HangFire.State where JobId = @id order by Id desc";
             return GetNumberOfJobsByStateName(SucceededState.StateName);
         }
 
+        public long DeletedListCount()
+        {
+            return GetNumberOfJobsByStateName(DeletedState.StateName);
+        }
+
         public StatisticsDto GetStatistics()
         {
             var stats = new StatisticsDto();
@@ -397,7 +418,8 @@ select StateName as [State], count(id) as [Count] From HangFire.Job
 group by StateName
 having StateName is not null;
 select count(Id) from HangFire.Server;
-select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
+select sum([Value]) from HangFire.Counter where [Key] = N'stats:succeeded';
+select sum([Value]) from HangFire.Counter where [Key] = N'stats:deleted';
 ";
 
             using (var multi = _connection.QueryMultiple(sql))
@@ -414,6 +436,7 @@ select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
                 stats.Servers = multi.Read<int>().Single();
 
                 stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
+                stats.Deleted = multi.Read<int?>().SingleOrDefault() ?? 0;
             }
 
             stats.Queues = _queueProviders

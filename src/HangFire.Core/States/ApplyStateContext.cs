@@ -15,76 +15,28 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using HangFire.Storage;
 
 namespace HangFire.States
 {
     public class ApplyStateContext : StateContext
     {
-        private readonly IStorageConnection _connection;
-
-        public ApplyStateContext(
-            IStorageConnection connection,
-            StateContext context,
-            IState newState,
-            string oldStateName)
+        public ApplyStateContext(StateContext context, IState newState, string oldStateName)
             : base(context)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
             if (newState == null) throw new ArgumentNullException("newState");
 
-            _connection = connection;
             OldStateName = oldStateName;
             NewState = newState;
             JobExpirationTimeout = TimeSpan.FromDays(1);
         }
+        
+        // Hiding the connection from filters, because their methods are being 
+        // executed inside a transaction. This property can break them.
+        private new IStorageConnection Connection { get { return base.Connection; } }
 
         public string OldStateName { get; private set; }
         public IState NewState { get; private set; }
         public TimeSpan JobExpirationTimeout { get; set; }
-
-        internal void ApplyState(
-            StateHandlerCollection handlers, IEnumerable<IApplyStateFilter> filters)
-        {
-            if (handlers == null) throw new ArgumentNullException("handlers");
-            if (filters == null) throw new ArgumentNullException("filters");
-
-            using (var transaction = _connection.CreateWriteTransaction())
-            {
-                foreach (var handler in handlers.GetHandlers(OldStateName))
-                {
-                    handler.Unapply(this, transaction);
-                }
-
-                foreach (var filter in filters)
-                {
-                    filter.OnStateUnapplied(this, transaction);
-                }
-
-                transaction.SetJobState(JobId, NewState);
-
-                foreach (var handler in handlers.GetHandlers(NewState.Name))
-                {
-                    handler.Apply(this, transaction);
-                }
-
-                foreach (var filter in filters)
-                {
-                    filter.OnStateApplied(this, transaction);
-                }
-
-                if (NewState.IsFinal)
-                {
-                    transaction.ExpireJob(JobId, JobExpirationTimeout);
-                }
-                else
-                {
-                    transaction.PersistJob(JobId);
-                }
-
-                transaction.Commit();
-            }
-        }
     }
 }

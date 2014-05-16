@@ -106,6 +106,16 @@ namespace ConsoleSample
                         BackgroundJob.Schedule<Services>(x => x.Random(number), TimeSpan.FromSeconds(seconds));
                     }
 
+                    if (command.StartsWith("delete", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var workCount = int.Parse(command.Substring(7));
+                        for (var i = 0; i < workCount; i++)
+                        {
+                            var jobId = BackgroundJob.Enqueue<Services>(x => x.EmptyDefault());
+                            BackgroundJob.Delete(jobId);
+                        }
+                    }
+
                     if (command.StartsWith("fast", StringComparison.OrdinalIgnoreCase))
                     {
                         try

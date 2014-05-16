@@ -21,34 +21,34 @@ using HangFire.Storage;
 
 namespace HangFire.States
 {
-    public class ScheduledState : IState
+    public class DeletedState : IState
     {
-        public static readonly string StateName = "Scheduled";
+        public static readonly string StateName = "Deleted";
 
-        public ScheduledState(TimeSpan enqueueIn)
-            : this(DateTime.UtcNow.Add(enqueueIn))
+        public DeletedState()
         {
-        }
-        
-        public ScheduledState(DateTime enqueueAt)
-        {
-            EnqueueAt = enqueueAt;
-            ScheduledAt = DateTime.UtcNow;
+            DeletedAt = DateTime.UtcNow;
         }
 
-        public DateTime EnqueueAt { get; set; }
-        public DateTime ScheduledAt { get; set; }
+        public string Name
+        {
+            get { return StateName; }
+        }
 
-        public string Name { get { return StateName; } }
         public string Reason { get; set; }
-        public bool IsFinal { get { return false; } }
+
+        public bool IsFinal
+        {
+            get { return true; }
+        }
+
+        public DateTime DeletedAt { get; private set; }
 
         public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {
-                { "EnqueueAt", JobHelper.ToStringTimestamp(EnqueueAt) },
-                { "ScheduledAt", JobHelper.ToStringTimestamp(ScheduledAt) }
+                { "DeletedAt", JobHelper.ToStringTimestamp(DeletedAt) }
             };
         }
 
@@ -56,26 +56,17 @@ namespace HangFire.States
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                var scheduledState = context.NewState as ScheduledState;
-                if (scheduledState == null)
-                {
-                    throw new InvalidOperationException(String.Format(
-                        "`{0}` state handler can be registered only for the Scheduled state.",
-                        typeof(Handler).FullName));
-                }
-
-                var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
-                transaction.AddToSet("schedule", context.JobId, timestamp);
+                transaction.IncrementCounter("stats:deleted");
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.RemoveFromSet("schedule", context.JobId);
+                transaction.DecrementCounter("stats:deleted");
             }
 
             public string StateName
             {
-                get { return ScheduledState.StateName; }
+                get { return DeletedState.StateName; }
             }
         }
     }

@@ -252,16 +252,19 @@
 
             $(document).on('click', '*[data-ajax]', function (e) {
                 var $this = $(this);
+                var confirmText = $this.data('confirm');
 
-                var loadingDelay = setTimeout(function () {
-                    $this.button('loading');
-                }, 100);
+                if (!confirmText || confirm(confirmText)) {
+                    var loadingDelay = setTimeout(function() {
+                        $this.button('loading');
+                    }, 100);
 
-                $.post($this.data('ajax'), function () {
-                    clearTimeout(loadingDelay);
-                    $this.button('reset');
-                    window.location.reload();
-                });
+                    $.post($this.data('ajax'), function() {
+                        clearTimeout(loadingDelay);
+                        $this.button('reset');
+                        window.location.reload();
+                    });
+                }
 
                 e.preventDefault();
             });

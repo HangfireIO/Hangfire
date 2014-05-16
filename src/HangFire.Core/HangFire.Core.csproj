@@ -95,10 +95,14 @@
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\IJobFilterProvider.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
+    <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
     <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\JobFilterInfo.cs" />
+    <Compile Include="States\IStateChangeProcess.cs" />
+    <Compile Include="States\IStateMachineFactory.cs" />
+    <Compile Include="States\StateChangeProcess.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />
@@ -131,6 +135,7 @@
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IMonitoringApi.cs" />
     <Compile Include="Storage\IFetchedJob.cs" />
+    <Compile Include="Storage\Monitoring\DeletedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FetchedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FailedJobDto.cs" />

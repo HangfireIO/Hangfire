@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using HangFire.Common;
 using HangFire.States;
 using HangFire.Storage;
@@ -11,20 +10,19 @@ namespace HangFire.Core.Tests.States
     public class ElectStateContextFacts
     {
         private const string JobId = "1";
-        private readonly StateContext _stateContext;
+        private readonly StateContextMock _stateContext;
         private readonly Mock<IState> _candidateState;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public ElectStateContextFacts()
         {
-            var job = Job.FromExpression(() => Console.WriteLine());
-            _stateContext = new StateContext(JobId, job);
-            _candidateState = new Mock<IState>();
             _connection = new Mock<IStorageConnection>();
-            _transaction = new Mock<IWriteOnlyTransaction>();
 
-            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
+            _stateContext = new StateContextMock();
+            _stateContext.JobIdValue = JobId;
+            _stateContext.ConnectionValue = _connection;
+
+            _candidateState = new Mock<IState>();
         }
 
         [Fact]
@@ -32,25 +30,11 @@ namespace HangFire.Core.Tests.States
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ElectStateContext(
-                    _stateContext,
-                    null,
-                    null,
-                    _connection.Object));
-
-            Assert.Equal("candidateState", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ElectStateContext(
-                    _stateContext,
-                    _candidateState.Object,
+                    _stateContext.Object,
                     null,
                     null));
 
-            Assert.Equal("connection", exception.ParamName);
+            Assert.Equal("candidateState", exception.ParamName);
         }
 
         [Fact]
@@ -58,8 +42,8 @@ namespace HangFire.Core.Tests.States
         {
             var context = CreateContext();
 
-            Assert.Equal(_stateContext.JobId, context.JobId);
-            Assert.Equal(_stateContext.Job, context.Job);
+            Assert.Equal(_stateContext.Object.JobId, context.JobId);
+            Assert.Equal(_stateContext.Object.Job, context.Job);
 
             Assert.Same(_candidateState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
@@ -131,54 +115,12 @@ namespace HangFire.Core.Tests.States
             Assert.Equal(default(int), value);
         }
 
-        [Fact]
-        public void ElectState_ThrowsAnException_WhenFiltersArrayIsNull()
-        {
-            var context = CreateContext();
-
-            Assert.Throws<ArgumentNullException>(() => context.ElectState(null));
-        }
-
-        [Fact]
-        public void ElectState_ReturnsCandidateState_WhenFiltersArrayIsEmpty()
-        {
-            var context = CreateContext();
-
-            var electedState = context.ElectState(Enumerable.Empty<IElectStateFilter>());
-
-            Assert.Same(_candidateState.Object, electedState);
-            _connection.Verify(x => x.CreateWriteTransaction(), Times.Never);
-        }
-
-        [Fact]
-        public void ElectState_AddsJobHistory_WhenAFilterChangesCandidateState()
-        {
-            // Arrange
-            var newState = new Mock<IState>();
-
-            var filter = new Mock<IElectStateFilter>();
-            filter.Setup(x => x.OnStateElection(It.IsNotNull<ElectStateContext>()))
-                .Callback((ElectStateContext x) => x.CandidateState = newState.Object);
-
-            var context = CreateContext();
-
-            // Act
-            var electedState = context.ElectState(new[] { filter.Object });
-
-            // Assert
-            Assert.Same(newState.Object, electedState);
-
-            _transaction.Verify(x => x.AddJobState(JobId, _candidateState.Object));
-            _transaction.Verify(x => x.Dispose());
-        }
-
         private ElectStateContext CreateContext()
         {
             return new ElectStateContext(
-                _stateContext,
+                _stateContext.Object,
                 _candidateState.Object,
-                "State",
-                _connection.Object);
+                "State");
         }
     }
 }

@@ -1,5 +1,5 @@
-// This file is part of HangFire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of HangFire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,22 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using HangFire.States;
-
-namespace HangFire
+namespace HangFire.States
 {
-    public static class GlobalStateHandlers
+    public interface IStateChangeProcess
     {
-        static GlobalStateHandlers()
-        {
-            Handlers = new List<IStateHandler>();
-            Handlers.Add(new SucceededState.Handler());
-            Handlers.Add(new ScheduledState.Handler());
-            Handlers.Add(new EnqueuedState.Handler());
-            Handlers.Add(new DeletedState.Handler());
-        }
-
-        public static ICollection<IStateHandler> Handlers { get; private set; }
+        bool ChangeState(StateContext context, IState toState, string oldStateName);
     }
 }

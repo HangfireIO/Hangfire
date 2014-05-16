@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
+using HangFire.States;
 using HangFire.Web.Configuration;
 using HangFire.Web.Pages;
 
@@ -57,13 +58,26 @@ namespace HangFire.Web
                 "/schedule/enqueue/(?<JobId>.+)",
                 x => new CommandHandler(() => Command.EnqueueScheduled(x.Groups["JobId"].Value)));
 
+            RegisterPathHandlerFactory(
+                "/schedule/delete/(?<JobId>.+)",
+                x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value)));
+
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
+            RegisterPathHandlerFactory("/deleted", x => new DeletedJobsPage());
 
             RegisterPathHandlerFactory(
                 "/failed/retry/(?<JobId>.+)", 
                 x => new CommandHandler(() => Command.Retry(x.Groups["JobId"].Value)));
+
+            RegisterPathHandlerFactory(
+                "/failed/delete/(?<JobId>.+)",
+                x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value, FailedState.StateName)));
+
+            RegisterPathHandlerFactory(
+                "/actions/delete/(?<JobId>.+)",
+                x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value)));
 
             RegisterPathHandlerFactory("/js/scripts.js",  x => new JavaScriptHandler());
             RegisterPathHandlerFactory("/css/styles.css", x => new StyleSheetHandler());

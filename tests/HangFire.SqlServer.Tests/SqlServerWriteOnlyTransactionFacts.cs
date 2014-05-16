@@ -57,7 +57,7 @@ select scope_identity() as Id";
                 Commit(sql, x => x.ExpireJob(jobId, TimeSpan.FromDays(1)));
 
                 var job = GetTestJob(sql, jobId);
-                Assert.True(DateTime.UtcNow < job.ExpireAt && job.ExpireAt < DateTime.UtcNow.AddDays(1));
+                Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(1));
 
                 var anotherJob = GetTestJob(sql, anotherJobId);
                 Assert.Null(anotherJob.ExpireAt);

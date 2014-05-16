@@ -13,7 +13,7 @@
     int.TryParse(Request.QueryString["count"], out perPage);
 
     Pager pager;
-    JobList<ScheduleDto> scheduledJobs;
+    JobList<ScheduledJobDto> scheduledJobs;
 
     using (var monitor = JobStorage.Current.GetMonitoringApi())
     {
@@ -35,7 +35,7 @@
 else
 {
     @RenderPartial(new PerPageSelector(pager))
-    
+
     <table class="table">
         <thead>
             <tr>
@@ -66,15 +66,22 @@ else
                 <td>
                     @if (job.Value.InScheduledState)
                     {
-                        <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Key)" data-loading-text="Enqueueing...">
-                            <span class="glyphicon glyphicon-play"></span>
-                            Enqueue now
-                        </button>
+                        <div class="pull-right">
+                            <button class="btn btn-default btn-sm" data-ajax="@Request.LinkTo("/schedule/enqueue/" + job.Key)" data-loading-text="Enqueueing...">
+                                <span class="glyphicon glyphicon-play"></span>
+                                Enqueue now
+                            </button>
+
+                            <button class="btn btn-death btn-sm" data-ajax="@Request.LinkTo("/schedule/delete/" + job.Key)" data-loading-text="Deleting..." data-confirm="Do you really want to delete a scheduled job?">
+                                <span class="glyphicon glyphicon-remove"></span>
+                                Delete
+                            </button>
+                        </div>
                     }
                 </td>
             </tr>
         }
     </table>
-    
+
     @RenderPartial(new Paginator(pager))
 }
