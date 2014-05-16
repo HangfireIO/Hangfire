@@ -113,6 +113,19 @@ namespace HangFire.Core.Tests
                 It.IsAny<string[]>()));
         }
 
+        [Fact, GlobalLock]
+        public void Delete_WithFromState_ChangesStateOfAJobToDeleted_WithFromStateArray()
+        {
+            Initialize();
+
+            BackgroundJob.Delete("job-id", FailedState.StateName);
+
+            _stateMachine.Verify(x => x.TryToChangeState(
+                "job-id",
+                It.IsAny<DeletedState>(),
+                new[] { FailedState.StateName }));
+        }
+
         [Fact, GlobalLock(Reason = "Accesses to BJ.ClientFactory, JS.Current")]
         public void ClientFactory_HasDefaultValue_ThatReturns()
         {

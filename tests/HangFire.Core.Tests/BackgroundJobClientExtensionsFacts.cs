@@ -213,6 +213,17 @@ namespace HangFire.Core.Tests
                 null));
         }
 
+        [Fact]
+        public void Delete_WithFromState_ChangesTheStateOfAJob_ToDeletedWithFromStateValue()
+        {
+            _client.Object.Delete(JobId, FailedState.StateName);
+
+            _stateMachine.Verify(x => x.TryToChangeState(
+                JobId,
+                It.IsAny<DeletedState>(),
+                new []{ FailedState.StateName }));
+        }
+
         public static void StaticMethod()
         {
         }

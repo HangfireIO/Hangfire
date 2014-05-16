@@ -189,13 +189,41 @@ namespace HangFire
         /// <returns>True on a successfull state transition, false otherwise.</returns>
         public static bool Delete(this IBackgroundJobClient client, string jobId)
         {
+            return Delete(client, jobId, null);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="DeletedState"/>. State change is being only performed
+        /// if current job state is equal to the <paramref name="fromState"/> value.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// The job is not actually being deleted, this method changes only
+        /// its state.
+        /// 
+        /// This operation does not provides guarantee that the job will not be 
+        /// performed. If you deleting a job that is performing right now, it 
+        /// will be performed anyway, despite of this call.
+        /// 
+        /// The method returns result of a state transition. It can be false
+        /// if a job was expired, its method does not exist or there was an
+        /// exception during the state change process.
+        /// </remarks>
+        /// 
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
+        /// <param name="jobId">An identifier, that will be used to find a job.</param>
+        /// <param name="fromState">Chang</param>
+        /// <returns>True on a successfull state transition, false otherwise.</returns>
+        public static bool Delete(this IBackgroundJobClient client, string jobId, string fromState)
+        {
             if (client == null) throw new ArgumentNullException("client");
             if (jobId == null) throw new ArgumentNullException("jobId");
 
             var state = new DeletedState();
 
             var stateMachine = client.StateMachineFactory.Create(client.Connection);
-            return stateMachine.TryToChangeState(jobId, state, null);
+            return stateMachine.TryToChangeState(jobId, state, fromState != null ? new []{ fromState } : null);
         }
     }
 }

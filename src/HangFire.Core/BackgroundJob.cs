@@ -157,7 +157,7 @@ namespace HangFire
         /// <summary>
         /// Changes state of a job with the specified <paramref name="jobId"/>
         /// to the <see cref="DeletedState"/>. 
-        /// <seealso cref="BackgroundJobClientExtensions.Delete"/>
+        /// <seealso cref="BackgroundJobClientExtensions.Delete(IBackgroundJobClient, string)"/>
         /// </summary>
         /// 
         /// <param name="jobId">An identifier, that will be used to find a job.</param>
@@ -167,6 +167,24 @@ namespace HangFire
             using (var client = ClientFactory())
             {
                 return client.Delete(jobId);
+            }
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="DeletedState"/>. State change is being only performed
+        /// if current job state is equal to the <paramref name="fromState"/> value.
+        /// <seealso cref="BackgroundJobClientExtensions.Delete(IBackgroundJobClient, string, string)"/>
+        /// </summary>
+        /// 
+        /// <param name="jobId">An identifier, that will be used to find a job.</param>
+        /// <param name="fromState">Chang</param>
+        /// <returns>True on a successfull state transition, false otherwise.</returns>
+        public static bool Delete(string jobId, string fromState)
+        {
+            using (var client = ClientFactory())
+            {
+                return client.Delete(jobId, fromState);
             }
         }
     }
