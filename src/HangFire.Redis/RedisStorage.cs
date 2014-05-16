@@ -90,6 +90,7 @@ namespace HangFire.Redis
             yield return new FailedStateHandler();
             yield return new ProcessingStateHandler();
             yield return new SucceededStateHandler();
+            yield return new DeletedStateHandler();
         }
 
         public override void WriteOptionsToLog(ILog logger)

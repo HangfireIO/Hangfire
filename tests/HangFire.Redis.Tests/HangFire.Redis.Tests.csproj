@@ -65,12 +65,13 @@
   <ItemGroup>
     <Compile Include="FetchedJobsWatcherFacts.cs" />
     <Compile Include="RedisFetchedJobFacts.cs" />
-    <Compile Include="RedisStorageTests.cs" />
+    <Compile Include="RedisStorageFacts.cs" />
     <Compile Include="RedisTest.cs" />
     <Compile Include="FailedStateHandlerFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProcessingStateHandlerFacts.cs" />
     <Compile Include="RedisWriteOnlyTransactionFacts.cs" />
+    <Compile Include="DeletedStateHandlerFacts.cs" />
     <Compile Include="SucceededStateHandlerFacts.cs" />
     <Compile Include="Utils\CleanRedisAttribute.cs" />
     <Compile Include="Utils\RedisUtils.cs" />

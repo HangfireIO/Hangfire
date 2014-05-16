@@ -66,6 +66,7 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DeletedStateHandler.cs" />
     <Compile Include="FetchedJobsWatcherOptions.cs" />
     <Compile Include="FetchedJobsWatcher.cs" />
     <Compile Include="RedisFetchedJob.cs" />
