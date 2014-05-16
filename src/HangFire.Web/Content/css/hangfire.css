@@ -51,6 +51,18 @@ html, body {
     top: 1px;
 }
 
+.btn-death {
+    background-color: #777;
+    border-color: #555;
+    color: #fff;
+}
+
+.btn-death:hover {
+    background-color: #666;
+    border-color: #444;
+    color: #fff;
+}
+
 .list-group .list-group-item .glyphicon {
     margin-right: 3px;
 }
@@ -211,6 +223,18 @@ html, body {
 /* Job Snippet styles */
 
 .job-snippet-header {
+    margin-bottom: -1px;
+    height: 29px;
+}
+
+.job-snippet-header .btn-xs {
+    margin-top: 3px;
+    padding: 0 10px;
+    font-size: 14px;
+    border-color: transparent;
+}
+
+.job-snippet-tab {
     display: inline-block;
     background-color: #eee;
     border: solid 1px #eee;
@@ -221,7 +245,6 @@ html, body {
     border-top-left-radius: 4px;
     -ms-border-top-right-radius: 4px;
     border-top-right-radius: 4px;
-    margin-bottom: -1px;
 }
 
 .job-snippet-header .job-snippet-id {

@@ -34,7 +34,15 @@
 else
 {
     <div class="job-snippet-header">
-        Job ID: <span class="job-snippet-id">@HtmlHelper.JobId(JobId.ToString(), false)</span>
+        <span class="job-snippet-tab">
+            Job ID: <span class="job-snippet-id">@HtmlHelper.JobId(JobId.ToString(), false)</span>
+        </span>
+        
+        <span class="job-snippet-buttons pull-right">
+            <button class="btn btn-xs btn-death" data-ajax="@Request.LinkTo("/actions/delete/" + JobId)" data-loading-text="Deleting...">Delete</button>
+        </span>
+        
+        <div class="clearfix"></div>
     </div>
     <div class="job-snippet">
         <div class="job-snippet-code">
