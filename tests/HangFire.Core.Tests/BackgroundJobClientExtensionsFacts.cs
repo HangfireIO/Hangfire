@@ -220,6 +220,31 @@ namespace HangFire.Core.Tests
                 FailedState.StateName));
         }
 
+        [Fact]
+        public void Requeue_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Requeue(null, JobId, FailedState.StateName));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void Requeue_ChangesTheStateOfAJob_ToEnqueued()
+        {
+            _client.Object.Requeue(JobId);
+
+            _client.Verify(x => x.ChangeState(JobId, It.IsAny<EnqueuedState>(), null));
+        }
+
+        [Fact]
+        public void Requeue_WithFromState_ChangesTheStateOfAJob_ToEnqueued_FromTheGivenState()
+        {
+            _client.Object.Requeue(JobId, FailedState.StateName);
+
+            _client.Verify(x => x.ChangeState(JobId, It.IsAny<EnqueuedState>(), FailedState.StateName));
+        }
+
         public static void StaticMethod()
         {
         }

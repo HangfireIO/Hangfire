@@ -200,8 +200,8 @@ namespace HangFire
         /// </remarks>
         /// 
         /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
-        /// <param name="jobId">An identifier, that will be used to find a job.</param>
-        /// <returns>True on a successfull state transition, false otherwise.</returns>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Delete(this IBackgroundJobClient client, string jobId)
         {
             return Delete(client, jobId, null);
@@ -209,8 +209,9 @@ namespace HangFire
 
         /// <summary>
         /// Changes state of a job with the specified <paramref name="jobId"/>
-        /// to the <see cref="DeletedState"/>. State change is being only performed
-        /// if current job state is equal to the <paramref name="fromState"/> value.
+        /// to the <see cref="DeletedState"/>. If <paramref name="fromState"/> value 
+        /// is not null, state change will be performed only if the current state name 
+        /// of a job equal to the given value.
         /// </summary>
         /// 
         /// <remarks>
@@ -227,14 +228,46 @@ namespace HangFire
         /// </remarks>
         /// 
         /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
-        /// <param name="jobId">An identifier, that will be used to find a job.</param>
-        /// <param name="fromState">Chang</param>
-        /// <returns>True on a successfull state transition, false otherwise.</returns>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Delete(this IBackgroundJobClient client, string jobId, string fromState)
         {
             if (client == null) throw new ArgumentNullException("client");
 
             var state = new DeletedState();
+            return client.ChangeState(jobId, state, fromState);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="EnqueuedState"/>.
+        /// </summary>
+        /// 
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Requeue(this IBackgroundJobClient client, string jobId)
+        {
+            return Requeue(client, jobId, null);
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="EnqueuedState"/>. If <paramref name="fromState"/> value 
+        /// is not null, state change will be performed only if the current state name 
+        /// of a job equal to the given value.
+        /// </summary>
+        /// 
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Requeue(this IBackgroundJobClient client, string jobId, string fromState)
+        {
+            if (client == null) throw new ArgumentNullException("client");
+
+            var state = new EnqueuedState();
             return client.ChangeState(jobId, state, fromState);
         }
     }

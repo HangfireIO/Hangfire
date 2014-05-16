@@ -103,7 +103,7 @@ namespace HangFire.Core.Tests
         }
 
         [Fact, GlobalLock]
-        public void Delete_WithFromState_ChangesStateOfAJobToDeleted_WithFromStateArray()
+        public void Delete_WithFromState_ChangesStateOfAJobToDeleted_WithFromState()
         {
             Initialize();
 
@@ -112,6 +112,32 @@ namespace HangFire.Core.Tests
             _client.Verify(x => x.ChangeState(
                 "job-id",
                 It.IsAny<DeletedState>(),
+                FailedState.StateName));
+        }
+
+        [Fact, GlobalLock]
+        public void Requeue_ChangesStateOfAJobToEnqueued()
+        {
+            Initialize();
+
+            BackgroundJob.Requeue("job-id");
+
+            _client.Verify(x => x.ChangeState(
+                "job-id",
+                It.IsAny<EnqueuedState>(),
+                null));
+        }
+
+        [Fact, GlobalLock]
+        public void Requeue_WithFromState_ChangesStateOfAJobToEnqueued_WithFromState()
+        {
+            Initialize();
+
+            BackgroundJob.Requeue("job-id", FailedState.StateName);
+
+            _client.Verify(x => x.ChangeState(
+                "job-id",
+                It.IsAny<EnqueuedState>(),
                 FailedState.StateName));
         }
 

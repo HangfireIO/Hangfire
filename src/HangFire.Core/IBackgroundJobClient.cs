@@ -45,11 +45,11 @@ namespace HangFire
         /// <summary>
         /// Changes state of a job with the given <paramref name="jobId"/> to
         /// the specified one. If <paramref name="fromState"/> value is not null,
-        /// State change will be performed only if the current state name of a job equal 
+        /// state change will be performed only if the current state name of a job equal 
         /// to the given value.
         /// </summary>
         /// 
-        /// <param name="jobId">A job, whose state is being changed.</param>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="state">New state for a job.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>

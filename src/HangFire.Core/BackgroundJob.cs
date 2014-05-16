@@ -177,14 +177,47 @@ namespace HangFire
         /// <seealso cref="BackgroundJobClientExtensions.Delete(IBackgroundJobClient, string, string)"/>
         /// </summary>
         /// 
-        /// <param name="jobId">An identifier, that will be used to find a job.</param>
-        /// <param name="fromState">Chang</param>
-        /// <returns>True on a successfull state transition, false otherwise.</returns>
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Delete(string jobId, string fromState)
         {
             using (var client = ClientFactory())
             {
                 return client.Delete(jobId, fromState);
+            }
+        }
+        
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="EnqueuedState"/>.
+        /// </summary>
+        /// 
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Requeue(string jobId)
+        {
+            using (var client = ClientFactory())
+            {
+                return client.Requeue(jobId);
+            }
+        }
+
+        /// <summary>
+        /// Changes state of a job with the specified <paramref name="jobId"/>
+        /// to the <see cref="EnqueuedState"/>. If <paramref name="fromState"/> value 
+        /// is not null, state change will be performed only if the current state name 
+        /// of a job equal to the given value.
+        /// </summary>
+        /// 
+        /// <param name="jobId">Identifier of job, whose state is being changed.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool Requeue(string jobId, string fromState)
+        {
+            using (var client = ClientFactory())
+            {
+                return client.Requeue(jobId, fromState);
             }
         }
     }
