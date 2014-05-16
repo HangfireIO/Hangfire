@@ -265,9 +265,12 @@ WriteLiteral(@""" data-loading-text=""Enqueueing..."">
             
             #line default
             #line hidden
-WriteLiteral("\" data-loading-text=\"Deleting...\">\r\n                                <span class=\"" +
-"glyphicon glyphicon-remove\"></span>\r\n                                Delete\r\n   " +
-"                         </button>\r\n                        </div>\r\n");
+WriteLiteral(@""" data-loading-text=""Deleting..."" data-confirm=""Do you really want to delete a scheduled job?"">
+                                <span class=""glyphicon glyphicon-remove""></span>
+                                Delete
+                            </button>
+                        </div>
+");
 
 
             

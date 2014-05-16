@@ -72,7 +72,7 @@ else
                                 Enqueue now
                             </button>
 
-                            <button class="btn btn-death btn-sm" data-ajax="@Request.LinkTo("/schedule/delete/" + job.Key)" data-loading-text="Deleting...">
+                            <button class="btn btn-death btn-sm" data-ajax="@Request.LinkTo("/schedule/delete/" + job.Key)" data-loading-text="Deleting..." data-confirm="Do you really want to delete a scheduled job?">
                                 <span class="glyphicon glyphicon-remove"></span>
                                 Delete
                             </button>

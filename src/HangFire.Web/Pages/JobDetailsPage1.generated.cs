@@ -164,8 +164,9 @@ WriteLiteral("</span>\r\n        </span>\r\n        \r\n        <span class=\"jo
             
             #line default
             #line hidden
-WriteLiteral("\" data-loading-text=\"Deleting...\">Delete</button>\r\n        </span>\r\n        \r\n   " +
-"     <div class=\"clearfix\"></div>\r\n    </div>\r\n");
+WriteLiteral("\" data-loading-text=\"Deleting...\" data-confirm=\"Do you really want to delete this" +
+" job?\">Delete</button>\r\n        </span>\r\n        \r\n        <div class=\"clearfix\"" +
+"></div>\r\n    </div>\r\n");
 
 
 
