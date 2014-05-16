@@ -7,6 +7,7 @@ namespace HangFire
 {
     public class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
     {
+        private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
         private const int DefaultRetryAttempts = 10;
 
         private int _attempts;
@@ -14,6 +15,7 @@ namespace HangFire
         public AutomaticRetryAttribute()
         {
             Attempts = DefaultRetryAttempts;
+            LogEvents = true;
         }
 
         public int Attempts
@@ -28,6 +30,8 @@ namespace HangFire
                 _attempts = value;
             }
         }
+
+        public bool LogEvents { get; set; }
 
         public void OnStateElection(ElectStateContext context)
         {
@@ -52,6 +56,27 @@ namespace HangFire
                 {
                     Reason = String.Format("Retry attempt {0} of {1}", retryAttempt, Attempts)
                 };
+
+                if (LogEvents)
+                {
+                    Logger.WarnFormat(
+                        "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
+                        failedState.Exception,
+                        context.JobId,
+                        retryAttempt,
+                        Attempts,
+                        delay);
+                }
+            }
+            else
+            {
+                if (LogEvents)
+                {
+                    Logger.ErrorFormat(
+                        "Failed to process the job '{0}': an exception occurred.",
+                        failedState.Exception,
+                        context.JobId);
+                }
             }
         }
 
