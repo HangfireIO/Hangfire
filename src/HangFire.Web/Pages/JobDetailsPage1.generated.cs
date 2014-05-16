@@ -154,11 +154,22 @@ WriteLiteral("    <div class=\"job-snippet-header\">\r\n        <span class=\"jo
             #line default
             #line hidden
 WriteLiteral("</span>\r\n        </span>\r\n        \r\n        <span class=\"job-snippet-buttons pull" +
-"-right\">\r\n            <button class=\"btn btn-xs btn-death\" data-ajax=\"");
+"-right\">\r\n            <button class=\"btn btn-xs btn-default\" data-ajax=\"");
 
 
             
             #line 42 "..\..\Pages\JobDetailsPage.cshtml"
+                                                         Write(Request.LinkTo("/actions/requeue/" + JobId));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" data-loading-text=\"Enqueueing...\">Requeue</button>\r\n            <button class=\"" +
+"btn btn-xs btn-death\" data-ajax=\"");
+
+
+            
+            #line 43 "..\..\Pages\JobDetailsPage.cshtml"
                                                        Write(Request.LinkTo("/actions/delete/" + JobId));
 
             
@@ -174,7 +185,7 @@ WriteLiteral("    <div class=\"job-snippet\">\r\n        <div class=\"job-snippe
 
 
             
-            #line 49 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 50 "..\..\Pages\JobDetailsPage.cshtml"
              if (job.CreatedAt.HasValue)
             {
 
@@ -186,7 +197,7 @@ WriteLiteral("                <div class=\"pull-right job-creation-date\">\r\n  
 
 
             
-            #line 53 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 54 "..\..\Pages\JobDetailsPage.cshtml"
                                   Write(JobHelper.ToStringTimestamp(job.CreatedAt.Value));
 
             
@@ -196,7 +207,7 @@ WriteLiteral("\"></span>\r\n                </div>\r\n");
 
 
             
-            #line 55 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 56 "..\..\Pages\JobDetailsPage.cshtml"
             }
 
             
@@ -204,7 +215,7 @@ WriteLiteral("\"></span>\r\n                </div>\r\n");
             #line hidden
 
             
-            #line 56 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 57 "..\..\Pages\JobDetailsPage.cshtml"
              if (job != null)
             {
 
@@ -215,7 +226,7 @@ WriteLiteral("                <pre><code>");
 
 
             
-            #line 58 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 59 "..\..\Pages\JobDetailsPage.cshtml"
                       Write(JobMethodCallRenderer.Render(job.Job));
 
             
@@ -225,7 +236,7 @@ WriteLiteral("</code></pre>\r\n");
 
 
             
-            #line 59 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 60 "..\..\Pages\JobDetailsPage.cshtml"
             }
 
             
@@ -235,7 +246,7 @@ WriteLiteral("            <div class=\"clearfix\"></div>\r\n        </div>\r\n\r
 
 
             
-            #line 63 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 64 "..\..\Pages\JobDetailsPage.cshtml"
          if (job.Properties.Count > 0)
         {
 
@@ -246,7 +257,7 @@ WriteLiteral("            <div class=\"job-snippet-properties\">\r\n            
 
 
             
-            #line 67 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 68 "..\..\Pages\JobDetailsPage.cshtml"
                      foreach (var property in job.Properties)
                     {
 
@@ -257,7 +268,7 @@ WriteLiteral("                        <dt>");
 
 
             
-            #line 69 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 70 "..\..\Pages\JobDetailsPage.cshtml"
                        Write(property.Key);
 
             
@@ -271,7 +282,7 @@ WriteLiteral("                        <dd>\r\n                            <pre>"
 
 
             
-            #line 71 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 72 "..\..\Pages\JobDetailsPage.cshtml"
                             Write(property.Value);
 
             
@@ -281,7 +292,7 @@ WriteLiteral("</pre>\r\n                        </dd>\r\n");
 
 
             
-            #line 73 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 74 "..\..\Pages\JobDetailsPage.cshtml"
                     }
 
             
@@ -291,7 +302,7 @@ WriteLiteral("                </dl>\r\n            </div>\r\n");
 
 
             
-            #line 76 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 77 "..\..\Pages\JobDetailsPage.cshtml"
         }
 
             
@@ -301,7 +312,7 @@ WriteLiteral("    </div>\r\n");
 
 
             
-            #line 78 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 79 "..\..\Pages\JobDetailsPage.cshtml"
 
         if (job.History.Count > 0)
         {
@@ -313,7 +324,7 @@ WriteLiteral("    <h3>History</h3>\r\n");
 
 
             
-            #line 82 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 83 "..\..\Pages\JobDetailsPage.cshtml"
             var index = 0;
             foreach (var entry in job.History)
             {
@@ -336,7 +347,7 @@ WriteLiteral("    <div class=\"job-history ");
 
 
             
-            #line 96 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 97 "..\..\Pages\JobDetailsPage.cshtml"
                         Write(index == 0 ? "job-history-current" : null);
 
             
@@ -346,7 +357,7 @@ WriteLiteral("\">\r\n        <div class=\"job-history-heading\" style=\"");
 
 
             
-            #line 97 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 98 "..\..\Pages\JobDetailsPage.cshtml"
                                             Write(background != null ? String.Format("background-color: {0};", background) : null);
 
             
@@ -356,7 +367,7 @@ WriteLiteral("\">\r\n            <span class=\"pull-right\" data-moment=\"");
 
 
             
-            #line 98 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 99 "..\..\Pages\JobDetailsPage.cshtml"
                                              Write(JobHelper.ToStringTimestamp(entry.CreatedAt));
 
             
@@ -366,7 +377,7 @@ WriteLiteral("\">");
 
 
             
-            #line 98 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 99 "..\..\Pages\JobDetailsPage.cshtml"
                                                                                             Write(entry.CreatedAt);
 
             
@@ -376,7 +387,7 @@ WriteLiteral("</span>\r\n            <h4 class=\"job-history-title\">\r\n       
 
 
             
-            #line 100 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 101 "..\..\Pages\JobDetailsPage.cshtml"
            Write(entry.StateName);
 
             
@@ -386,7 +397,7 @@ WriteLiteral("\r\n\r\n");
 
 
             
-            #line 102 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 103 "..\..\Pages\JobDetailsPage.cshtml"
                  if (!String.IsNullOrWhiteSpace(entry.Reason))
                 {
 
@@ -397,7 +408,7 @@ WriteLiteral("                    <small>");
 
 
             
-            #line 104 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 105 "..\..\Pages\JobDetailsPage.cshtml"
                       Write(entry.Reason);
 
             
@@ -407,7 +418,7 @@ WriteLiteral("</small>\r\n");
 
 
             
-            #line 105 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 106 "..\..\Pages\JobDetailsPage.cshtml"
                 }
 
             
@@ -417,7 +428,7 @@ WriteLiteral("            </h4>\r\n        </div>\r\n\r\n");
 
 
             
-            #line 109 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 110 "..\..\Pages\JobDetailsPage.cshtml"
          if (JobHistoryRenderer.Exists(entry.StateName))
         {
             var rendered = JobHistoryRenderer.Render(entry.StateName, entry.Data);
@@ -431,7 +442,7 @@ WriteLiteral("            <div class=\"job-history-body\">\r\n                ")
 
 
             
-            #line 115 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 116 "..\..\Pages\JobDetailsPage.cshtml"
            Write(rendered);
 
             
@@ -441,7 +452,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 117 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 118 "..\..\Pages\JobDetailsPage.cshtml"
             }
         }
         else
@@ -455,7 +466,7 @@ WriteLiteral("            <div class=\"job-history-body\">\r\n                <d
 
 
             
-            #line 123 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 124 "..\..\Pages\JobDetailsPage.cshtml"
                      foreach (var item in entry.Data)
                     {
 
@@ -466,7 +477,7 @@ WriteLiteral("                        <dt>");
 
 
             
-            #line 125 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 126 "..\..\Pages\JobDetailsPage.cshtml"
                        Write(item.Key);
 
             
@@ -480,7 +491,7 @@ WriteLiteral("                        <dd>");
 
 
             
-            #line 126 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 127 "..\..\Pages\JobDetailsPage.cshtml"
                        Write(item.Value);
 
             
@@ -490,7 +501,7 @@ WriteLiteral("</dd>\r\n");
 
 
             
-            #line 127 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 128 "..\..\Pages\JobDetailsPage.cshtml"
                     }
 
             
@@ -500,7 +511,7 @@ WriteLiteral("                </dl>\r\n            </div>\r\n");
 
 
             
-            #line 130 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 131 "..\..\Pages\JobDetailsPage.cshtml"
         }
 
             
@@ -510,7 +521,7 @@ WriteLiteral("    </div>\r\n");
 
 
             
-            #line 132 "..\..\Pages\JobDetailsPage.cshtml"
+            #line 133 "..\..\Pages\JobDetailsPage.cshtml"
 
         index++;
             }

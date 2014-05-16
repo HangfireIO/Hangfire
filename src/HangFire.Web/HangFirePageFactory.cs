@@ -76,6 +76,10 @@ namespace HangFire.Web
                 x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value, FailedState.StateName)));
 
             RegisterPathHandlerFactory(
+                "/actions/requeue/(?<JobId>.+)",
+                x => new CommandHandler(() => BackgroundJob.Requeue(x.Groups["JobId"].Value)));
+
+            RegisterPathHandlerFactory(
                 "/actions/delete/(?<JobId>.+)",
                 x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value)));
 
