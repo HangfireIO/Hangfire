@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
     <description>
-      Background job system for ASP.NET – a reliable way to kick off long-running tasks from the request processing pipeline as fire-and-forget jobs. No Windows service / Task Scheduler required. Even ASP.NET is not required. Backed by SQL Server or Redis.
+      Background job system for ASP.NET – a reliable way to kick off long-running tasks from the request processing pipeline as fire-and-forget jobs. No Windows service / Task Scheduler required. Even ASP.NET is not required. Backed by Redis, SQL Server or MSMQ.
       http://hangfire.io/
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
