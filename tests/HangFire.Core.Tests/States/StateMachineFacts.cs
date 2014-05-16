@@ -12,18 +12,21 @@ namespace HangFire.Core.Tests.States
     {
         private const string StateName = "State";
         private const string JobId = "1";
+        private const string OldStateName = "Old";
+        private static readonly string[] FromOldState = { OldStateName };
 
         private readonly Mock<IStorageConnection> _connection;
         private readonly Job _job;
         private readonly Dictionary<string, string> _parameters;
         private readonly Mock<IState> _state;
         private readonly Mock<IStateChangeProcess> _stateChangeProcess;
-        
+        private readonly Mock<IDisposable> _distributedLock;
+
         public StateMachineFacts()
         {
             _stateChangeProcess = new Mock<IStateChangeProcess>();
 
-            _job = Job.FromExpression(() => Console.WriteLine("Hello"));
+            _job = Job.FromExpression(() => Console.WriteLine());
             _parameters = new Dictionary<string, string>();
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
@@ -34,6 +37,16 @@ namespace HangFire.Core.Tests.States
                 It.IsAny<Job>(),
                 It.IsAny<IDictionary<string, string>>(),
                 It.IsAny<TimeSpan>())).Returns(JobId);
+
+            _connection.Setup(x => x.GetJobData(JobId))
+                .Returns(new JobData
+                {
+                    State = OldStateName,
+                    Job = Job.FromExpression(() => Console.WriteLine())
+                });
+
+            _distributedLock = new Mock<IDisposable>();
+            _connection.Setup(x => x.AcquireJobLock(JobId)).Returns(_distributedLock.Object);
         }
 
         [Fact]
@@ -129,7 +142,7 @@ namespace HangFire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.TryToChangeState(null, _state.Object, new[] { "Old" }));
+                () => stateMachine.TryToChangeState(null, _state.Object, FromOldState));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -140,7 +153,7 @@ namespace HangFire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.TryToChangeState("1", null, new[] { "Old" }));
+                () => stateMachine.TryToChangeState(JobId, null, FromOldState));
 
             Assert.Equal("toState", exception.ParamName);
         }
@@ -151,7 +164,7 @@ namespace HangFire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.TryToChangeState("1", _state.Object, null));
+                () => stateMachine.TryToChangeState(JobId, _state.Object, null));
 
             Assert.Equal("fromStates", exception.ParamName);
         }
@@ -159,14 +172,11 @@ namespace HangFire.Core.Tests.States
         [Fact]
         public void TryToChangeState_WorksWithinAJobLock()
         {
-            var disposableMock = new Mock<IDisposable>();
-            _connection.Setup(x => x.AcquireJobLock("1")).Returns(disposableMock.Object);
-
             var stateMachine = CreateStateMachine();
 
-            stateMachine.TryToChangeState("1", _state.Object, new[] { "Old" });
+            stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
 
-            disposableMock.Verify(x => x.Dispose());
+            _distributedLock.Verify(x => x.Dispose());
         }
 
         [Fact]
@@ -179,11 +189,11 @@ namespace HangFire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState("1", _state.Object, new [] { "Old" });
+            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             Assert.False(result);
-            _connection.Verify(x => x.GetJobData("1"));
+            _connection.Verify(x => x.GetJobData(JobId));
 
             _stateChangeProcess.Verify(
                 x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
@@ -194,20 +204,15 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_ReturnsFalse_WhenFromStatesArgumentDoesNotContainCurrentState()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobData("1"))
-                .Returns(new JobData
-                {
-                    State = "Old",
-                    Job = Job.FromExpression(() => Console.WriteLine())
-                });
-
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState("1", _state.Object, new [] { "AnotherState" });
+            var result = stateMachine.TryToChangeState(
+                JobId, _state.Object, new [] { "AnotherState" });
 
             // Assert
             Assert.False(result);
+
             _stateChangeProcess.Verify(
                 x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
                 Times.Never);
@@ -217,20 +222,14 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_ReturnsFalse_WhenStateChangeReturnsFalse()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobData("1"))
-                .Returns(new JobData
-                {
-                    State = "Old",
-                    Job = Job.FromExpression(() => Console.WriteLine())
-                });
-
-            _stateChangeProcess.Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
+            _stateChangeProcess
+                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
                 .Returns(false);
 
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState("1", _state.Object, new[] { "Old" });
+            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             _stateChangeProcess.Verify(
@@ -243,26 +242,20 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_MoveJobToTheSpecifiedState_WhenMethodDataCouldBeFound()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobData("1"))
-                .Returns(new JobData
-                {
-                    State = "Old",
-                    Job = Job.FromExpression(() => Console.WriteLine())
-                });
-
-            _stateChangeProcess.Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
+            _stateChangeProcess
+                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
                 .Returns(true);
 
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState("1", _state.Object, new[] { "Old" });
+            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             _stateChangeProcess.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == "1" && sc.Job.Type.Name.Equals("Console")),
+                It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job.Type.Name.Equals("Console")),
                 _state.Object,
-                "Old"));
+                OldStateName));
 
             Assert.True(result);
         }
@@ -271,10 +264,10 @@ namespace HangFire.Core.Tests.States
         public void TryToChangeState_MoveJobToTheFailedState_IfMethodDataCouldNotBeResolved()
         {
             // Arrange
-            _connection.Setup(x => x.GetJobData("1"))
+            _connection.Setup(x => x.GetJobData(JobId))
                 .Returns(new JobData
                 {
-                    State = "Old",
+                    State = OldStateName,
                     Job = null,
                     LoadException = new JobLoadException()
                 });
@@ -282,13 +275,13 @@ namespace HangFire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState("1", _state.Object, new[] { "Old" });
+            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             _stateChangeProcess.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == "1" && sc.Job == null),
+                It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job == null),
                 It.Is<FailedState>(s => s.Exception != null),
-                "Old"));
+                OldStateName));
 
             Assert.False(result);
         }
