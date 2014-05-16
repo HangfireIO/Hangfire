@@ -45,6 +45,7 @@ namespace HangFire
     /// BackgroundJob.Enqueue<ErrorService>(x => x.ReportFatal("Really bad thing!"));
     /// 
     /// ]]></example>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class QueueAttribute : JobFilterAttribute, IElectStateFilter
     {
         /// <summary>

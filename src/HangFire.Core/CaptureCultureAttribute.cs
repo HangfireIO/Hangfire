@@ -23,6 +23,7 @@ using HangFire.Server;
 
 namespace HangFire
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class CaptureCultureAttribute : JobFilterAttribute, IClientFilter, IServerFilter
     {
         public void OnCreating(CreatingContext filterContext)

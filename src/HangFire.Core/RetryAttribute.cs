@@ -15,16 +15,14 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using Common.Logging;
 using HangFire.Common;
 using HangFire.States;
 
 namespace HangFire
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class RetryAttribute : JobFilterAttribute, IElectStateFilter
     {
-        private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
-
         private int _attempts;
         private const int DefaultRetryAttempts = 10;
 
@@ -36,7 +34,6 @@ namespace HangFire
         public RetryAttribute(int attempts)
         {
             Attempts = attempts;
-            LogEvents = true;
         }
 
         public int Attempts
@@ -52,17 +49,14 @@ namespace HangFire
             }
         }
 
-        public bool LogEvents { get; set; }
-
         public void OnStateElection(ElectStateContext context)
         {
-            var failedState = context.CandidateState as FailedState;
-            if (failedState == null)
+            if (context.CandidateState.Name != FailedState.StateName)
             {
                 // This filter accepts only failed job state.
                 return;
             }
-            
+
             var retryCount = context.GetJobParameter<int>("RetryCount");
             
             if (retryCount < Attempts)
@@ -71,27 +65,12 @@ namespace HangFire
 
                 context.SetJobParameter("RetryCount", retryCount + 1);
 
-                if (LogEvents)
-                {
-                    Logger.WarnFormat(
-                        "", 
-                        failedState.Exception, 
-                        "");
-                }
-
                 // If attempt number is less than max attempts, we should
                 // schedule the job to run again later.
                 context.CandidateState = new ScheduledState(delay)
                 {
                     Reason = String.Format("Retry attempt {0} of {1}", retryCount + 1, Attempts)
                 };
-            }
-            else
-            {
-                if (LogEvents)
-                {
-                    Logger.ErrorFormat("", failedState.Exception, "");
-                }
             }
         }
 
