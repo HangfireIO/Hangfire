@@ -21,7 +21,7 @@ using HangFire.States;
 
 namespace HangFire
 {
-    public class StatisticsHistoryAttribute : JobFilterAttribute, IElectStateFilter
+    public sealed class StatisticsHistoryAttribute : JobFilterAttribute, IElectStateFilter
     {
         public StatisticsHistoryAttribute()
         {
