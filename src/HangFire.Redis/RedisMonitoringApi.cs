@@ -39,11 +39,6 @@ namespace HangFire.Redis
             _redis.Dispose();
         }
 
-        public JobList<DeletedJobDto> DeletedJobs(int @from, int count)
-        {
-            throw new NotImplementedException();
-        }
-
         public long ScheduledCount()
         {
             return _redis.GetSortedSetCount("hangfire:schedule");
@@ -67,6 +62,11 @@ namespace HangFire.Redis
         public long ProcessingCount()
         {
             return _redis.GetSortedSetCount("hangfire:processing");
+        }
+
+        public long DeletedListCount()
+        {
+            return _redis.GetListCount("hangfire:deleted");
         }
 
         public JobList<ProcessingJobDto> ProcessingJobs(
@@ -139,11 +139,6 @@ namespace HangFire.Redis
                             ScheduledState.StateName.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
                     }))
                 .ToList());
-        }
-
-        public long DeletedListCount()
-        {
-            throw new NotImplementedException();
         }
 
         public IDictionary<DateTime, long> SucceededByDatesCount()
@@ -240,6 +235,26 @@ namespace HangFire.Redis
                     Job = job,
                     SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
                     InSucceededState = SucceededState.StateName.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                });
+        }
+
+        public JobList<DeletedJobDto> DeletedJobs(int @from, int count)
+        {
+            var deletedJobIds = _redis.GetRangeFromList(
+                "hangfire:deleted",
+                from,
+                from + count - 1);
+
+            return GetJobsWithProperties(
+                _redis,
+                deletedJobIds,
+                null,
+                new[] { "DeletedAt", "State" },
+                (job, jobData, state) => new DeletedJobDto
+                {
+                    Job = job,
+                    DeletedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                    InDeletedState = DeletedState.StateName.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                 });
         }
 
@@ -553,6 +568,10 @@ namespace HangFire.Redis
                 pipeline.QueueCommand(
                     x => x.GetSortedSetCount("hangfire:failed"),
                     x => stats.Failed = x);
+
+                pipeline.QueueCommand(
+                    x => x.GetValue("hangfire:stats:deleted"),
+                    x => stats.Deleted = long.Parse(x ?? "0"));
 
                 foreach (var queue in queues)
                 {
