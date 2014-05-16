@@ -52,7 +52,7 @@ namespace HangFire.States
             };
         }
 
-        public class Handler : IStateHandler
+        internal class Handler : IStateHandler
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
