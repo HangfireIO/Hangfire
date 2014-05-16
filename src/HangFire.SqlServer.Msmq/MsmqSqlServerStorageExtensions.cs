@@ -21,17 +21,19 @@ namespace HangFire.SqlServer.Msmq
 {
     public static class MsmqSqlServerStorageExtensions
     {
-        public static void UseMsmqQueues(this SqlServerStorage storage, string pathPattern)
+        public static SqlServerStorage UseMsmqQueues(this SqlServerStorage storage, string pathPattern)
         {
-            UseMsmqQueues(storage, pathPattern, new []{ EnqueuedState.DefaultQueue });
+            return UseMsmqQueues(storage, pathPattern, new []{ EnqueuedState.DefaultQueue });
         }
 
-        public static void UseMsmqQueues(this SqlServerStorage storage, string pathPattern, params string[] queues)
+        public static SqlServerStorage UseMsmqQueues(this SqlServerStorage storage, string pathPattern, params string[] queues)
         {
             if (storage == null) throw new ArgumentNullException("storage");
 
             var provider = new MsmqJobQueueProvider(pathPattern, queues);
             storage.QueueProviders.Add(provider, queues);
+
+            return storage;
         }
     }
 }
