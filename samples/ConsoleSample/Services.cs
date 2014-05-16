@@ -18,7 +18,7 @@ namespace ConsoleSample
         {
         }
 
-        [Retry(Attempts = 0)]
+        [AutomaticRetry(Attempts = 0)]
         public void Error()
         {
             Console.WriteLine("Beginning error task...");

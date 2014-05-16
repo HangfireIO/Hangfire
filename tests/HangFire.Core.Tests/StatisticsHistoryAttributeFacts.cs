@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Threading;
-using HangFire.Common;
 using HangFire.States;
 using HangFire.Storage;
 using Moq;
@@ -11,8 +8,6 @@ namespace HangFire.Core.Tests
 {
     public class StatisticsHistoryAttributeFacts
     {
-        private const string CurrentState = "my-state";
-
         private readonly Mock<IStorageConnection> _connection;
         private readonly StatisticsHistoryAttribute _filter;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
@@ -36,7 +31,7 @@ namespace HangFire.Core.Tests
         public void StatisticsHistoryFilter_ActsBefore_RetryFilter()
         {
             var statisticsHistoryFilter = new StatisticsHistoryAttribute();
-            var retryFilter = new RetryAttribute();
+            var retryFilter = new AutomaticRetryAttribute();
 
             Assert.True(statisticsHistoryFilter.Order > retryFilter.Order);
         }

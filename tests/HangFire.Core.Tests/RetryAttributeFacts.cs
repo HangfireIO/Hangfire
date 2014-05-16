@@ -28,27 +28,21 @@ namespace HangFire.Core.Tests
         [Fact]
         public void Ctor_SetsPositiveRetryAttemptsNumber_ByDefault()
         {
-            var filter = new RetryAttribute();
+            var filter = new AutomaticRetryAttribute();
             Assert.Equal(10, filter.Attempts);
-        }
-
-        [Fact]
-        public void Ctor_SetsAllPropertyValuesCorrectly()
-        {
-            var filter = new RetryAttribute(175);
-            Assert.Equal(175, filter.Attempts);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenAttemptsValueIsNegative()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new RetryAttribute(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => new AutomaticRetryAttribute { Attempts = -1 });
         }
 
         [Fact]
         public void OnStateElection_DoesNotChangeState_IfRetryAttemptsIsSetToZero()
         {
-            var filter = new RetryAttribute(0);
+            var filter = new AutomaticRetryAttribute { Attempts = 0 };
             filter.OnStateElection(_context.Object);
 
             Assert.Same(_failedState, _context.Object.CandidateState);
@@ -57,7 +51,7 @@ namespace HangFire.Core.Tests
         [Fact]
         public void OnStateElection_ChangeStateToScheduled_IfRetryAttemptsWereNotExceeded()
         {
-            var filter = new RetryAttribute(1);
+            var filter = CreateFilter();
             filter.OnStateElection(_context.Object);
 
             Assert.IsType<ScheduledState>(_context.Object.CandidateState);
@@ -70,7 +64,7 @@ namespace HangFire.Core.Tests
         [Fact]
         public void OnStateElection_DoesNotChangeAnything_IfCandidateStateIsNotFailedState()
         {
-            var filter = new RetryAttribute(1);
+            var filter = CreateFilter();
             var state = new Mock<IState>();
             _context.CandidateStateValue = state.Object;
 
@@ -83,11 +77,16 @@ namespace HangFire.Core.Tests
         public void OnStateElection_DoesNotChangeState_IfRetryAttemptsNumberExceeded()
         {
             _connection.Setup(x => x.GetJobParameter(JobId, "RetryCount")).Returns("1");
-            var filter = new RetryAttribute(1);
+            var filter = CreateFilter();
 
             filter.OnStateElection(_context.Object);
 
             Assert.Same(_failedState, _context.Object.CandidateState);
+        }
+
+        private static AutomaticRetryAttribute CreateFilter()
+        {
+            return new AutomaticRetryAttribute { Attempts = 1 };
         }
     }
 }
