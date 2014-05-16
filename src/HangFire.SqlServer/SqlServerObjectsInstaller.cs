@@ -57,7 +57,7 @@ namespace HangFire.SqlServer
         private static bool IsSqlEditionSupported(SqlConnection connection)
         {
             var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
-            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.Express;
+            return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)
