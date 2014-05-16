@@ -18,6 +18,7 @@ using System;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.States;
+using HangFire.Storage;
 
 namespace HangFire
 {
@@ -46,5 +47,17 @@ namespace HangFire
         /// <see cref="IBackgroundJobClient"/> instance.
         /// </summary>
         JobStorage Storage { get; }
+
+        /// <summary>
+        /// Gets the connection associated with the current instance
+        /// of the <see cref="IBackgroundJobClient"/> instance.
+        /// </summary>
+        IStorageConnection Connection { get; }
+
+        /// <summary>
+        /// Gets state machine factory instance that is used
+        /// to create <see cref="IStateMachine"/> instances.
+        /// </summary>
+        IStateMachineFactory StateMachineFactory { get; }
     }
 }
