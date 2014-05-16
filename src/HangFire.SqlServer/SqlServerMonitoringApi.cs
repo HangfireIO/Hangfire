@@ -307,7 +307,10 @@ where j.Id in @jobIds";
                 (sqlJob, job, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
-                    EnqueuedAt = JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                    InEnqueuedState = sqlJob.StateName == EnqueuedState.StateName,
+                    EnqueuedAt = sqlJob.StateName == EnqueuedState.StateName 
+                        ? JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                        : null
                 });
         }
 
