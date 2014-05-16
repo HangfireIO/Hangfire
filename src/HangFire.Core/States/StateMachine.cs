@@ -61,7 +61,10 @@ namespace HangFire.States
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (toState == null) throw new ArgumentNullException("toState");
-            if (fromStates == null) throw new ArgumentNullException("fromStates");
+            if (fromStates != null && fromStates.Length == 0)
+            {
+                throw new ArgumentException("From states array should be null or non-empty.", "fromStates");
+            }
 
             // To ensure that job state will be changed only from one of the
             // specified states, we need to ensure that other users/workers
@@ -82,7 +85,7 @@ namespace HangFire.States
                     return false;
                 }
 
-                if (!fromStates.Contains(jobData.State, StringComparer.OrdinalIgnoreCase))
+                if (fromStates != null && !fromStates.Contains(jobData.State, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
