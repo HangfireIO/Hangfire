@@ -25,7 +25,7 @@ namespace HangFire.SqlServer
         public SqlServerStorageOptions()
         {
             QueuePollInterval = TimeSpan.FromSeconds(15);
-            InvisibilityTimeout = TimeSpan.FromMinutes(5);
+            InvisibilityTimeout = TimeSpan.FromMinutes(30);
 
             PrepareSchemaIfNecessary = true;
         }
