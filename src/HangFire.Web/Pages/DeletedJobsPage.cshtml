@@ -1,0 +1,89 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using Common
+@using Pages
+@using HangFire.Storage
+@using States
+@using Storage.Monitoring
+@inherits RazorPage
+@{
+    Layout = new LayoutPage { Title = "Deleted Jobs" };
+
+    int from, perPage;
+
+    int.TryParse(Request.QueryString["from"], out from);
+    int.TryParse(Request.QueryString["count"], out perPage);
+
+    Pager pager;
+    JobList<DeletedJobDto> jobs;
+
+    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    {
+        pager = new Pager(from, perPage, monitor.DeletedListCount())
+        {
+            BasePageUrl = Request.LinkTo("/deleted")
+        };
+
+        jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
+    }
+}
+
+@if (pager.TotalPageCount == 0)
+{
+    <div class="alert alert-info">
+        No deleted jobs found.
+    </div>
+}
+else
+{
+    @RenderPartial(new PerPageSelector(pager))
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Job</th>
+                <th>Deleted</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var job in jobs)
+            {
+                <tr class="@(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null)">
+                    <td>
+                        <a href="@Request.LinkTo("/job/" + job.Key)">
+                            @HtmlHelper.JobId(job.Key)
+                        </a>
+                        @if (job.Value != null && !job.Value.InDeletedState)
+                        {
+                            <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                        }
+                    </td>
+
+                    @if (job.Value == null)
+                    {
+                        <td colspan="3"><em>Job was expired.</em>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                                @HtmlHelper.DisplayMethod(job.Value.Job)    
+                            </span>
+                        </td>
+                        <td>
+                            @if (job.Value.DeletedAt.HasValue)
+                            {
+                                <span  data-moment="@JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value)">
+                                    @job.Value.DeletedAt
+                                </span>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    @RenderPartial(new Paginator(pager))
+}

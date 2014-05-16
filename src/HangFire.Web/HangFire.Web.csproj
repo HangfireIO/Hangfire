@@ -74,6 +74,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>FetchedJobsPage.generated.cs</LastGenOutput>
     </None>
+    <None Include="Pages\DeletedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>DeletedJobsPage.generated.cs</LastGenOutput>
+    </None>
     <None Include="Pages\_PerPageSelector.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_PerPageSelector.generated.cs</LastGenOutput>
@@ -113,6 +117,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\DeletedJobsPage.generated.cs">
+      <DependentUpon>DeletedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Pages\SucceededJobs1.generated.cs">
       <AutoGen>True</AutoGen>

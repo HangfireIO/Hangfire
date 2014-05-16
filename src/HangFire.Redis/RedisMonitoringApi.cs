@@ -39,6 +39,11 @@ namespace HangFire.Redis
             _redis.Dispose();
         }
 
+        public JobList<DeletedJobDto> DeletedJobs(int @from, int count)
+        {
+            throw new NotImplementedException();
+        }
+
         public long ScheduledCount()
         {
             return _redis.GetSortedSetCount("hangfire:schedule");
@@ -134,6 +139,11 @@ namespace HangFire.Redis
                             ScheduledState.StateName.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
                     }))
                 .ToList());
+        }
+
+        public long DeletedListCount()
+        {
+            throw new NotImplementedException();
         }
 
         public IDictionary<DateTime, long> SucceededByDatesCount()

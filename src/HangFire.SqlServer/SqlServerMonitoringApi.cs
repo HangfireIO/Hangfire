@@ -241,6 +241,19 @@ select * from (
                 });
         }
 
+        public JobList<DeletedJobDto> DeletedJobs(int @from, int count)
+        {
+            return GetJobs(
+                from,
+                count,
+                DeletedState.StateName,
+                (sqlJob, job, stateData) => new DeletedJobDto
+                {
+                    Job = job,
+                    DeletedAt = JobHelper.FromNullableStringTimestamp(stateData["DeletedAt"])
+                });
+        }
+
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
             var tuples = _queueProviders
@@ -388,6 +401,11 @@ select * from HangFire.State where JobId = @id order by Id desc";
             return GetNumberOfJobsByStateName(SucceededState.StateName);
         }
 
+        public long DeletedListCount()
+        {
+            return GetNumberOfJobsByStateName(DeletedState.StateName);
+        }
+
         public StatisticsDto GetStatistics()
         {
             var stats = new StatisticsDto();
@@ -410,6 +428,7 @@ select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
                 stats.Failed = getCountIfExists(FailedState.StateName);
                 stats.Processing = getCountIfExists(ProcessingState.StateName);
                 stats.Scheduled = getCountIfExists(ScheduledState.StateName);
+                stats.Deleted = getCountIfExists(DeletedState.StateName);
                 
                 stats.Servers = multi.Read<int>().Single();
 

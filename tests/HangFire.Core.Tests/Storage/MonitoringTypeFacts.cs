@@ -37,6 +37,12 @@ namespace HangFire.Core.Tests.Storage
         }
 
         [Fact]
+        public void DeletedJobDto_Ctor_SetsInDeletedState()
+        {
+            Assert.True(new DeletedJobDto().InDeletedState);
+        }
+
+        [Fact]
         public void JobList_Ctor_ShouldInitializeCollection()
         {
             var list = new JobList<int>(new Dictionary<string, int> { { "1", 2 } });

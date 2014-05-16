@@ -60,6 +60,7 @@ namespace HangFire.Web
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
+            RegisterPathHandlerFactory("/deleted", x => new DeletedJobsPage());
 
             RegisterPathHandlerFactory(
                 "/failed/retry/(?<JobId>.+)", 
