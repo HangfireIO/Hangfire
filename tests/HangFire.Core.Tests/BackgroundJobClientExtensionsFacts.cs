@@ -1,7 +1,6 @@
 ﻿using System;
 using HangFire.Common;
 using HangFire.States;
-using HangFire.Storage;
 using Moq;
 using Xunit;
 
@@ -13,22 +12,11 @@ namespace HangFire.Core.Tests
 
         private readonly Mock<IBackgroundJobClient> _client;
         private readonly Mock<IState> _state;
-        private readonly Mock<IStateMachine> _stateMachine;
-        private readonly Mock<IStorageConnection> _connection;
 
         public BackgroundJobClientExtensionsFacts()
         {
             _client = new Mock<IBackgroundJobClient>();
             _state = new Mock<IState>();
-
-            _stateMachine = new Mock<IStateMachine>();
-            _connection = new Mock<IStorageConnection>();
-
-            var factory = new Mock<IStateMachineFactory>();
-            factory.Setup(x => x.Create(_connection.Object)).Returns(_stateMachine.Object);
-
-            _client.Setup(x => x.StateMachineFactory).Returns(factory.Object);
-            _client.Setup(x => x.Connection).Returns(_connection.Object);
         }
 
         [Fact]
@@ -185,6 +173,23 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
+        public void ChangeState_WithoutFromState_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.ChangeState(null, "job-id", _state.Object));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void ChangeState_WithoutFromState_CallsItsOverload()
+        {
+            _client.Object.ChangeState("job-id", _state.Object);
+
+            _client.Verify(x => x.ChangeState("job-id", _state.Object, null));
+        }
+
+        [Fact]
         public void Delete_ThrowsAnException_WhenClientIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -194,20 +199,11 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
-        public void Delete_ThrowsAnException_WhenJobIdIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => _client.Object.Delete(null));
-
-            Assert.Equal("jobId", exception.ParamName);
-        }
-
-        [Fact]
         public void Delete_ChangesTheStateOfAJob_ToDeleted()
         {
             _client.Object.Delete(JobId);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _client.Verify(x => x.ChangeState(
                 JobId,
                 It.IsAny<DeletedState>(),
                 null));
@@ -218,10 +214,10 @@ namespace HangFire.Core.Tests
         {
             _client.Object.Delete(JobId, FailedState.StateName);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _client.Verify(x => x.ChangeState(
                 JobId,
                 It.IsAny<DeletedState>(),
-                new []{ FailedState.StateName }));
+                FailedState.StateName));
         }
 
         public static void StaticMethod()

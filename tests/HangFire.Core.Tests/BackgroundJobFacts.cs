@@ -1,7 +1,6 @@
 ﻿using System;
 using HangFire.Common;
 using HangFire.States;
-using HangFire.Storage;
 using Moq;
 using Xunit;
 
@@ -10,20 +9,10 @@ namespace HangFire.Core.Tests
     public class BackgroundJobFacts
     {
         private readonly Mock<IBackgroundJobClient> _client;
-        private readonly Mock<IStateMachine> _stateMachine;
-        private readonly Mock<IStorageConnection> _connection;
 
         public BackgroundJobFacts()
         {
             _client = new Mock<IBackgroundJobClient>();
-            _stateMachine = new Mock<IStateMachine>();
-            _connection = new Mock<IStorageConnection>();
-
-            var factory = new Mock<IStateMachineFactory>();
-            factory.Setup(x => x.Create(_connection.Object)).Returns(_stateMachine.Object);
-
-            _client.Setup(x => x.StateMachineFactory).Returns(factory.Object);
-            _client.Setup(x => x.Connection).Returns(_connection.Object);
         }
         
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
@@ -107,10 +96,10 @@ namespace HangFire.Core.Tests
 
             BackgroundJob.Delete("job-id");
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _client.Verify(x => x.ChangeState(
                 "job-id",
                 It.IsAny<DeletedState>(),
-                It.IsAny<string[]>()));
+                null));
         }
 
         [Fact, GlobalLock]
@@ -120,10 +109,10 @@ namespace HangFire.Core.Tests
 
             BackgroundJob.Delete("job-id", FailedState.StateName);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _client.Verify(x => x.ChangeState(
                 "job-id",
                 It.IsAny<DeletedState>(),
-                new[] { FailedState.StateName }));
+                FailedState.StateName));
         }
 
         [Fact, GlobalLock(Reason = "Accesses to BJ.ClientFactory, JS.Current")]

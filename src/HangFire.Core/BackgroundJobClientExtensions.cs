@@ -167,6 +167,21 @@ namespace HangFire
         }
 
         /// <summary>
+        /// Changes state of a job with the given <paramref name="jobId"/> to
+        /// the specified one. 
+        /// </summary>
+        /// 
+        /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
+        /// <param name="jobId">A job, whose state is being changed.</param>
+        /// <param name="state">New state for a job.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        public static bool ChangeState(this IBackgroundJobClient client, string jobId, IState state)
+        {
+            if (client == null) throw new ArgumentNullException("client");
+            return client.ChangeState(jobId, state, null);
+        }
+
+        /// <summary>
         /// Changes state of a job with the specified <paramref name="jobId"/>
         /// to the <see cref="DeletedState"/>.
         /// </summary>
@@ -218,12 +233,9 @@ namespace HangFire
         public static bool Delete(this IBackgroundJobClient client, string jobId, string fromState)
         {
             if (client == null) throw new ArgumentNullException("client");
-            if (jobId == null) throw new ArgumentNullException("jobId");
 
             var state = new DeletedState();
-
-            var stateMachine = client.StateMachineFactory.Create(client.Connection);
-            return stateMachine.TryToChangeState(jobId, state, fromState != null ? new []{ fromState } : null);
+            return client.ChangeState(jobId, state, fromState);
         }
     }
 }

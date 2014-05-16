@@ -43,21 +43,16 @@ namespace HangFire
         string Create(Job job, IState state);
 
         /// <summary>
-        /// Gets the current job storage that is being used by this 
-        /// <see cref="IBackgroundJobClient"/> instance.
+        /// Changes state of a job with the given <paramref name="jobId"/> to
+        /// the specified one. If <paramref name="fromState"/> value is not null,
+        /// State change will be performed only if the current state name of a job equal 
+        /// to the given value.
         /// </summary>
-        JobStorage Storage { get; }
-
-        /// <summary>
-        /// Gets the connection associated with the current instance
-        /// of the <see cref="IBackgroundJobClient"/> instance.
-        /// </summary>
-        IStorageConnection Connection { get; }
-
-        /// <summary>
-        /// Gets state machine factory instance that is used
-        /// to create <see cref="IStateMachine"/> instances.
-        /// </summary>
-        IStateMachineFactory StateMachineFactory { get; }
+        /// 
+        /// <param name="jobId">A job, whose state is being changed.</param>
+        /// <param name="state">New state for a job.</param>
+        /// <param name="fromState">Current state assertion, or null if unneeded.</param>
+        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        bool ChangeState(string jobId, IState state, string fromState);
     }
 }

@@ -29,6 +29,8 @@ namespace HangFire
     public class BackgroundJobClient : IBackgroundJobClient
     {
         private readonly IJobCreationProcess _process;
+        private readonly IStorageConnection _connection;
+        private readonly IStateMachineFactory _stateMachineFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
@@ -70,22 +72,11 @@ namespace HangFire
             if (storage == null) throw new ArgumentNullException("storage");
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (process == null) throw new ArgumentNullException("process");
-
-            Storage = storage;
-            Connection = storage.GetConnection();
-            StateMachineFactory = stateMachineFactory;
-
+            
+            _connection = storage.GetConnection();
+            _stateMachineFactory = stateMachineFactory;
             _process = process;
         }
-
-        /// <inheritdoc />
-        public JobStorage Storage { get; private set; }
-
-        /// <inheritdoc />
-        public IStorageConnection Connection { get; private set; }
-
-        /// <inheritdoc />
-        public IStateMachineFactory StateMachineFactory { get; private set; }
 
         /// <inheritdoc />
         public string Create(Job job, IState state)
@@ -95,7 +86,7 @@ namespace HangFire
 
             try
             {
-                var context = new CreateContext(Connection, StateMachineFactory, job, state);
+                var context = new CreateContext(_connection, _stateMachineFactory, job, state);
                 _process.Run(context);
 
                 return context.JobId;
@@ -106,13 +97,23 @@ namespace HangFire
             }
         }
 
+        /// <inheritdoc />
+        public bool ChangeState(string jobId, IState state, string fromState)
+        {
+            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (state == null) throw new ArgumentNullException("state");
+
+            var stateMachine = _stateMachineFactory.Create(_connection);
+            return stateMachine.TryToChangeState(jobId, state, fromState != null ? new[] { fromState } : null);
+        }
+
         /// <summary>
         /// Releases all resources used by the current instance
         /// of the <see cref="BackgroundJobClient"/> class.
         /// </summary>
         public virtual void Dispose()
         {
-            Connection.Dispose();
+            _connection.Dispose();
         }
     }
 }
