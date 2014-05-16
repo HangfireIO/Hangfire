@@ -76,6 +76,7 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="Server\WorkerManagerFacts.cs" />
     <Compile Include="States\DeletedStateFacts.cs" />
+    <Compile Include="States\DeletedStateHandlerFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />

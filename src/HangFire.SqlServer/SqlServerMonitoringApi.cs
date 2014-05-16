@@ -418,7 +418,8 @@ select StateName as [State], count(id) as [Count] From HangFire.Job
 group by StateName
 having StateName is not null;
 select count(Id) from HangFire.Server;
-select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
+select sum([Value]) from HangFire.Counter where [Key] = N'stats:succeeded';
+select sum([Value]) from HangFire.Counter where [Key] = N'stats:deleted';
 ";
 
             using (var multi = _connection.QueryMultiple(sql))
@@ -431,11 +432,11 @@ select sum([Value]) from HangFire.Counter where [Key] = 'stats:succeeded';
                 stats.Failed = getCountIfExists(FailedState.StateName);
                 stats.Processing = getCountIfExists(ProcessingState.StateName);
                 stats.Scheduled = getCountIfExists(ScheduledState.StateName);
-                stats.Deleted = getCountIfExists(DeletedState.StateName);
                 
                 stats.Servers = multi.Read<int>().Single();
 
                 stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
+                stats.Deleted = multi.Read<int?>().SingleOrDefault() ?? 0;
             }
 
             stats.Queues = _queueProviders

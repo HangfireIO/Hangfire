@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using HangFire.Common;
+using HangFire.Storage;
 
 namespace HangFire.States
 {
@@ -49,6 +50,24 @@ namespace HangFire.States
             {
                 { "DeletedAt", JobHelper.ToStringTimestamp(DeletedAt) }
             };
+        }
+
+        internal class Handler : IStateHandler
+        {
+            public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+                transaction.IncrementCounter("stats:deleted");
+            }
+
+            public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
+            {
+                transaction.DecrementCounter("stats:deleted");
+            }
+
+            public string StateName
+            {
+                get { return DeletedState.StateName; }
+            }
         }
     }
 }
