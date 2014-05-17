@@ -16,7 +16,7 @@ Improve the responsiveness of your web application. Do not force your users to w
 - image processing;
 - *…and so on.*
 
-Just wrap your long-running process to a method and instruct HangFire to create a **background job** based on this method. All backround jobs are being saved to a **persistent storage** ([SQL Server](http://www.microsoft.com/sql‎) or [Redis](http://redis.io)) and performed on a dedicated **worker thread** in a reliable way inside or outside of your ASP.NET application.
+Just wrap your long-running process to a method and instruct HangFire to create a **background job** based on this method. All backround jobs are being saved to a **persistent storage** ([Redis](http://redis.io), [SQL Server](http://www.microsoft.com/sql) or SQL Server + MSMQ) and performed on a dedicated **worker thread** in a reliable way inside or outside of your ASP.NET application.
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
