@@ -271,8 +271,7 @@
 
             $(document).on('click', '.expander', function (e) {
                 $(this).closest('tr').next().find('.expandable').slideToggle(150);
-                e.stopPropagation();
-
+                e.preventDefault();
             });
 
             $('.js-jobs-list').each(function () {
