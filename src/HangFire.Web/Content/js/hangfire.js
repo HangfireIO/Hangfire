@@ -284,8 +284,11 @@
                 };
 
                 var toggleRowSelection = function(row) {
-                    var isSelected = $('.js-jobs-list-checkbox', row).is(':checked');
-                    selectRow(row, !isSelected);
+                    var $checkbox = $('.js-jobs-list-checkbox', row);
+                    if ($checkbox.length > 0) {
+                        var isSelected = $checkbox.is(':checked');
+                        selectRow(row, !isSelected);
+                    }
                 };
 
                 var setListState = function (state) {

@@ -73,7 +73,10 @@ else
                 {
                     <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null)">
                         <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                            @if (job.Value.InFailedState)
+                            {
+                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                            }
                         </td>
                         <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
                             <a href="@Request.LinkTo("/job/" + job.Key)">

@@ -69,7 +69,10 @@ else
             {
                 <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null)">
                     <td>
-                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                        @if (job.Value.InScheduledState)
+                        {
+                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                        }
                     </td>
                     <td>
                         <a href="@Request.LinkTo("/job/" + job.Key)">
