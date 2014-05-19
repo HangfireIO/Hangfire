@@ -65,8 +65,7 @@ namespace HangFire.Web
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
-            RegisterPathHandlerFactory("/deleted", x => new DeletedJobsPage());
-
+            
             RegisterPathHandlerFactory(
                 "/failed/retry/(?<JobId>.+)", 
                 x => new CommandHandler(() => Command.Retry(x.Groups["JobId"].Value)));
@@ -74,6 +73,25 @@ namespace HangFire.Web
             RegisterPathHandlerFactory(
                 "/failed/delete/(?<JobId>.+)",
                 x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value, FailedState.StateName)));
+
+            RegisterPathHandlerFactory("/deleted", x => new DeletedJobsPage());
+
+            RegisterPathHandlerFactory(
+                "/deleted/requeue", 
+                x => new CommandHandler(() =>
+                {
+                    var request = HttpContext.Current.Request;
+                    var jobIds = request.Form.GetValues("jobs[]");
+
+                    if (jobIds == null) return false;
+
+                    foreach (var jobId in jobIds)
+                    {
+                        BackgroundJob.Requeue(jobId, DeletedState.StateName);
+                    }
+
+                    return true;
+                }));
 
             RegisterPathHandlerFactory(
                 "/actions/requeue/(?<JobId>.+)",

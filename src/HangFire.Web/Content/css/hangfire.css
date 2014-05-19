@@ -121,8 +121,8 @@ html, body {
     font-size: 90%;
 }
 
-.table-inner td {
-    background-color: white;
+.min-width {
+    width: 1%;
 }
 
 /* Statistics widget

@@ -272,6 +272,99 @@
             $(document).on('click', '.expander', function () {
                 $(this).closest('tr').next().find('.expandable').slideToggle(150);
             });
+
+            $('.js-selectable-jobs').each(function () {
+                var container = this;
+
+                var selectRow = function(row, isSelected) {
+                    $('.js-jobs-list-checkbox', row).prop('checked', isSelected);
+                    $(row).toggleClass('warning', isSelected);
+                };
+
+                var toggleRowSelection = function(row) {
+                    var isSelected = $('.js-jobs-list-checkbox', row).is(':checked');
+                    selectRow(row, !isSelected);
+                };
+
+                var setListState = function (state) {
+                    $('.js-jobs-list-select-all', container)
+                        .prop('checked', state === 'all-selected')
+                        .prop('indeterminate', state === 'some-selected');
+                    
+                    $('.js-jobs-list-command', container)
+                        .prop('disabled', state === 'none-selected');
+                };
+
+                var updateListState = function() {
+                    var selectedRows = $('.js-jobs-list-checkbox', container).map(function() {
+                        return $(this).prop('checked');
+                    }).get();
+
+                    var state = 'some-selected';
+
+                    if ($.inArray(false, selectedRows) === -1) {
+                        state = 'all-selected';
+                    } else if ($.inArray(true, selectedRows) === -1) {
+                        state = 'none-selected';
+                    }
+
+                    setListState(state);
+                };
+
+                $(this).on('click', '.js-jobs-list-checkbox', function(e) {
+                    selectRow(
+                        $(this).closest('.js-jobs-list-row').first(),
+                        $(this).is(':checked'));
+
+                    updateListState();
+
+                    e.stopPropagation();
+                });
+
+                $(this).on('click', 'a', function() {
+                    e.stopPropagation();
+                });
+
+                $(this).on('click', '.js-jobs-list-row', function () {
+                    toggleRowSelection(this);
+                    updateListState();
+                });
+
+                $(this).on('click', '.js-jobs-list-select-all', function() {
+                    var selectRows = $(this).is(':checked');
+
+                    $('.js-jobs-list-row', container).each(function() {
+                        selectRow(this, selectRows);
+                    });
+
+                    updateListState();
+                });
+
+                $(this).on('click', '.js-jobs-list-command', function(e) {
+                    var $this = $(this);
+                    var confirmText = $this.data('confirm');
+
+                    var jobs = $("input[name='jobs[]']:checked", container).map(function() {
+                        return $(this).val();
+                    }).get();
+
+                    if (!confirmText || confirm(confirmText)) {
+                        var loadingDelay = setTimeout(function () {
+                            $this.button('loading');
+                        }, 100);
+
+                        $.post($this.data('url'), { 'jobs[]': jobs }, function () {
+                            clearTimeout(loadingDelay);
+                            $this.button('reset');
+                            window.location.reload();
+                        });
+                    }
+
+                    e.preventDefault();
+                });
+
+                updateListState();
+            });
         };
 
         return Page;
