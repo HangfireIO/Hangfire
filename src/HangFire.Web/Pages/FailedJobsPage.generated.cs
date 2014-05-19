@@ -340,18 +340,8 @@ WriteLiteral("\r\n                                </span>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                        <td class=\"");
-
-
-            
-            #line 98 "..\..\Pages\FailedJobsPage.cshtml"
-                               Write(job.Value.InFailedState ? "expander" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <div>\r\n                                <span titl" +
-"e=\"");
+WriteLiteral("                        </td>\r\n                        <td>\r\n                    " +
+"        <div>\r\n                                <span title=\"");
 
 
             
@@ -393,7 +383,8 @@ WriteLiteral("                                <div style=\"color: #888;\">\r\n  
             
             #line default
             #line hidden
-WriteLiteral(" <span class=\"caret\"></span>\r\n                                </div>\r\n");
+WriteLiteral(" <a class=\"expander\" href=\"#\">More details...</a>\r\n                              " +
+"  </div>\r\n");
 
 
             
