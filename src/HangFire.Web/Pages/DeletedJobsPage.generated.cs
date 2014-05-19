@@ -259,7 +259,7 @@ WriteLiteral("                        </td>\r\n\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                            <td colspan=\"3\">\r\n                                <em" +
+WriteLiteral("                            <td colspan=\"2\">\r\n                                <em" +
 ">Job was expired.</em>\r\n                            </td>\r\n");
 
 
