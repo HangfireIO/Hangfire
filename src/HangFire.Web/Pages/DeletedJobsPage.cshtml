@@ -61,7 +61,7 @@ else
                 {
                     <tr class="js-jobs-list-row @(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null)">
                         <td>
-                            @if (job.Value.InDeletedState)
+                            @if (job.Value.InDeletedState && job.Value != null)
                             {
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                             }
