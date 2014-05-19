@@ -123,6 +123,11 @@ html, body {
 
 .min-width {
     width: 1%;
+    white-space: nowrap;
+}
+
+.align-right {
+    text-align: right;
 }
 
 .table-hover>tbody>tr:hover>td, .table-hover>tbody>tr:hover>th {

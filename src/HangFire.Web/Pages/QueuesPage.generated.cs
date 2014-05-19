@@ -246,9 +246,9 @@ WriteLiteral("                        <em>No jobs queued.</em>\r\n");
 WriteLiteral(@"                        <table class=""table table-condensed table-bordered table-inner"">
                             <thead>
                                 <tr>
-                                    <th>Id</th>
+                                    <th class=""min-width"">Id</th>
                                     <th>Job</th>
-                                    <th>Enqueued</th>
+                                    <th class=""align-right min-width"">Enqueued</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -273,8 +273,8 @@ WriteLiteral("                                    <tr class=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                        <td>\r\n                               " +
-"             <a href=\"");
+WriteLiteral("\">\r\n                                        <td class=\"min-width\">\r\n             " +
+"                               <a href=\"");
 
 
             
@@ -339,7 +339,8 @@ WriteLiteral("\">\r\n                                                ");
             #line default
             #line hidden
 WriteLiteral("\r\n                                            </span>\r\n                          " +
-"              </td>\r\n                                        <td>\r\n");
+"              </td>\r\n                                        <td class=\"align-ri" +
+"ght min-width\">\r\n");
 
 
             

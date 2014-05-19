@@ -40,17 +40,17 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
+                <th class="min-width">Id</th>
+                <th class="min-width">Server</th>
                 <th>Job</th>
-                <th>Server</th>
-                <th>Started</th>
+                <th class="align-right">Started</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var job in processingJobs)
             {
                 <tr class="@(!job.Value.InProcessingState ? "obsolete-data" : null)">
-                    <td>
+                    <td class="min-width">
                         <a href="@Request.LinkTo("/job/" + job.Key)">
                             @HtmlHelper.JobId(job.Key)
                         </a>
@@ -59,15 +59,15 @@ else
                             <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                         }
                     </td>
+                    <td class="min-width">
+                        @job.Value.ServerName.ToUpperInvariant()
+                    </td>
                     <td>
                         <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
                             @HtmlHelper.DisplayMethod(job.Value.Job)
                         </span>
                     </td>
-                    <td>
-                        @job.Value.ServerName
-                    </td>
-                    <td>
+                    <td class="align-right">
                         @if (job.Value.StartedAt.HasValue)
                         {
                             <span data-moment="@JobHelper.ToStringTimestamp(job.Value.StartedAt.Value)">

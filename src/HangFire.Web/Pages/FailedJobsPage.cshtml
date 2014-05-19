@@ -78,7 +78,7 @@ else
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                             }
                         </td>
-                        <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
+                        <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
                             <a href="@Request.LinkTo("/job/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>

@@ -53,7 +53,7 @@ else
                     </th>
                     <th class="min-width">Id</th>
                     <th>Job</th>
-                    <th>Deleted</th>
+                    <th class="align-right">Deleted</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,7 +66,7 @@ else
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                             }
                         </td>
-                        <td>
+                        <td class="min-width">
                             <a href="@Request.LinkTo("/job/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>
@@ -89,7 +89,7 @@ else
                                     @HtmlHelper.DisplayMethod(job.Value.Job)
                                 </span>
                             </td>
-                            <td>
+                            <td class="align-right">
                                 @if (job.Value.DeletedAt.HasValue)
                                 {
                                     <span data-moment="@JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value)">

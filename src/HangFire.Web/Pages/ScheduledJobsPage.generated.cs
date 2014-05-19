@@ -165,7 +165,7 @@ WriteLiteral(@"
                     </th>
                     <th class=""min-width"">Id</th>
                     <th>Enqueue</th>
-                    <th>Job</th>
+                    <th style=""width:99%;"">Job</th>
                 </tr>
             </thead>
 ");
@@ -221,8 +221,8 @@ WriteLiteral("\" />\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                    </td>\r\n                    <td>\r\n                        <a h" +
-"ref=\"");
+WriteLiteral("                    </td>\r\n                    <td class=\"min-width\">\r\n          " +
+"              <a href=\"");
 
 
             
@@ -264,31 +264,33 @@ WriteLiteral("                            <span title=\"Job\'s state has been ch
             
             #line default
             #line hidden
-WriteLiteral("                    </td>\r\n                    <td data-moment=\"");
+WriteLiteral("                    </td>\r\n                    <td class=\"min-width\">\r\n          " +
+"              <span data-moment=\"");
 
 
             
-            #line 86 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                Write(JobHelper.ToStringTimestamp(job.Value.EnqueueAt));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">");
-
-
-            
-            #line 86 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                                                                   Write(job.Value.EnqueueAt);
+            #line 87 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                      Write(JobHelper.ToStringTimestamp(job.Value.EnqueueAt));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td>\r\n                        <span title=\"");
+WriteLiteral("\">\r\n                            ");
 
 
             
             #line 88 "..\..\Pages\ScheduledJobsPage.cshtml"
+                       Write(job.Value.EnqueueAt);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </span>\r\n                    </td>\r\n                   " +
+" <td>\r\n                        <span title=\"");
+
+
+            
+            #line 92 "..\..\Pages\ScheduledJobsPage.cshtml"
                                 Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
@@ -298,7 +300,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 89 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 93 "..\..\Pages\ScheduledJobsPage.cshtml"
                        Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
@@ -309,7 +311,7 @@ WriteLiteral("\r\n                        </span>\r\n                    </td>\r
 
 
             
-            #line 93 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 97 "..\..\Pages\ScheduledJobsPage.cshtml"
             }
 
             
@@ -319,21 +321,21 @@ WriteLiteral("        </table>\r\n    </div>\r\n");
 
 
             
-            #line 96 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 100 "..\..\Pages\ScheduledJobsPage.cshtml"
 
     
             
             #line default
             #line hidden
             
-            #line 97 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 101 "..\..\Pages\ScheduledJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 97 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 101 "..\..\Pages\ScheduledJobsPage.cshtml"
                                         
 }
 

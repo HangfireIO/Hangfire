@@ -247,12 +247,13 @@ WriteLiteral("\" />\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                        <td rowspan=\"");
+WriteLiteral("                        </td>\r\n                        <td class=\"min-width\" rows" +
+"pan=\"");
 
 
             
             #line 81 "..\..\Pages\FailedJobsPage.cshtml"
-                                 Write(job.Value.InFailedState ? "2" : "1");
+                                                   Write(job.Value.InFailedState ? "2" : "1");
 
             
             #line default

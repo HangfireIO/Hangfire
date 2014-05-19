@@ -62,7 +62,7 @@ else
                     </th>
                     <th class="min-width">Id</th>
                     <th>Enqueue</th>
-                    <th>Job</th>
+                    <th style="width:99%;">Job</th>
                 </tr>
             </thead>
             @foreach (var job in scheduledJobs)
@@ -74,7 +74,7 @@ else
                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                         }
                     </td>
-                    <td>
+                    <td class="min-width">
                         <a href="@Request.LinkTo("/job/" + job.Key)">
                             @HtmlHelper.JobId(job.Key)
                         </a>
@@ -83,7 +83,11 @@ else
                             <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                         }
                     </td>
-                    <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueueAt)">@job.Value.EnqueueAt</td>
+                    <td class="min-width">
+                        <span data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueueAt)">
+                            @job.Value.EnqueueAt
+                        </span>
+                    </td>
                     <td>
                         <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
                             @HtmlHelper.DisplayMethod(job.Value.Job)

@@ -148,7 +148,7 @@ WriteLiteral(@"
                     </th>
                     <th class=""min-width"">Id</th>
                     <th>Job</th>
-                    <th>Deleted</th>
+                    <th class=""align-right"">Deleted</th>
                 </tr>
             </thead>
             <tbody>
@@ -205,8 +205,8 @@ WriteLiteral("\" />\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                        <td>\r\n                    " +
-"        <a href=\"");
+WriteLiteral("                        </td>\r\n                        <td class=\"min-width\">\r\n  " +
+"                          <a href=\"");
 
 
             
@@ -296,7 +296,7 @@ WriteLiteral("\r\n                                </span>\r\n                   
 
 
 
-WriteLiteral("                            <td>\r\n");
+WriteLiteral("                            <td class=\"align-right\">\r\n");
 
 
             

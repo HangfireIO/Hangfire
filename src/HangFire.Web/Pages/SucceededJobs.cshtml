@@ -1,6 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using Common
-@using Common.States
 @using Pages
 @using HangFire.Storage
 @using States
@@ -42,16 +41,16 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
+                <th class="min-width">Id</th>
                 <th>Job</th>
-                <th>Succeeded</th>
+                <th class="align-right">Succeeded</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var job in succeededJobs)
             {
                 <tr class="@(job.Value != null && !job.Value.InSucceededState ? "obsolete-data" : null)">
-                    <td>
+                    <td class="min-width">
                         <a href="@Request.LinkTo("/job/" + job.Key)">
                             @HtmlHelper.JobId(job.Key)
                         </a>
@@ -73,7 +72,7 @@ else
                                 @HtmlHelper.DisplayMethod(job.Value.Job)    
                             </span>
                         </td>
-                        <td>
+                        <td class="align-right">
                             @if (job.Value.SucceededAt.HasValue)
                             {
                                 <span  data-moment="@JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value)">
