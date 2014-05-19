@@ -273,7 +273,7 @@
                 $(this).closest('tr').next().find('.expandable').slideToggle(150);
             });
 
-            $('.js-selectable-jobs').each(function () {
+            $('.js-jobs-list').each(function () {
                 var container = this;
 
                 var selectRow = function(row, isSelected) {

@@ -114,9 +114,9 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"js-selectable-jobs\">\r\n        <div class=\"btn-toolbar btn-toolbar" +
-"-top\">\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\" " +
-"\r\n                    data-url=\"");
+WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolbar btn-toolbar-top\">" +
+"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\" \r\n    " +
+"                data-url=\"");
 
 
             
