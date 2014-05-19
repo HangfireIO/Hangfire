@@ -54,7 +54,6 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Command.cs" />
     <Compile Include="Configuration\HangFireConfiguration.cs" />
     <Compile Include="Handlers\BatchCommandHandler.cs" />
     <Compile Include="Handlers\CommandHandler.cs" />
