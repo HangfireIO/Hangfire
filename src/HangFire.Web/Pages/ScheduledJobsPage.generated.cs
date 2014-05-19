@@ -104,96 +104,172 @@ WriteLiteral("    <div class=\"alert alert-info\">\r\n        There are no sched
 }
 else
 {
-    
-            
-            #line default
-            #line hidden
-            
-            #line 37 "..\..\Pages\ScheduledJobsPage.cshtml"
-Write(RenderPartial(new PerPageSelector(pager)));
 
             
             #line default
             #line hidden
-            
-            #line 37 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                              
+WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolbar btn-toolbar-top\">" +
+"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\"\r\n     " +
+"               data-url=\"");
 
 
             
-            #line default
-            #line hidden
-WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Id</th>\r\n                <th>Enqueue</th>\r\n                <th>Job</th>\r\n      " +
-"          <th></th>\r\n            </tr>\r\n        </thead>\r\n");
-
-
-            
-            #line 48 "..\..\Pages\ScheduledJobsPage.cshtml"
-         foreach (var job in scheduledJobs)
-        {
+            #line 40 "..\..\Pages\ScheduledJobsPage.cshtml"
+                         Write(Request.LinkTo("/scheduled/enqueue"));
 
             
             #line default
             #line hidden
-WriteLiteral("            <tr class=\"");
+WriteLiteral(@"""
+                    data-loading-text=""Enqueueing..."">
+                <span class=""glyphicon glyphicon-play""></span>
+                Enqueue now
+            </button>
+
+            <button class=""js-jobs-list-command btn btn-sm btn-default""
+                    data-url=""");
 
 
             
-            #line 50 "..\..\Pages\ScheduledJobsPage.cshtml"
-                   Write(!job.Value.InScheduledState ? "obsolete-data" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                <td>\r\n                    <a href=\"");
-
-
-            
-            #line 52 "..\..\Pages\ScheduledJobsPage.cshtml"
-                        Write(Request.LinkTo("/job/" + job.Key));
+            #line 47 "..\..\Pages\ScheduledJobsPage.cshtml"
+                         Write(Request.LinkTo("/scheduled/delete"));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                        ");
+WriteLiteral(@"""
+                    data-loading-text=""Deleting...""
+                    data-confirm=""Do you really want to DELETE ALL selected jobs?"">
+                <span class=""glyphicon glyphicon-remove""></span>
+                Delete selected
+            </button>
+
+            ");
 
 
             
-            #line 53 "..\..\Pages\ScheduledJobsPage.cshtml"
-                   Write(HtmlHelper.JobId(job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                    </a>\r\n");
-
-
-            
-            #line 55 "..\..\Pages\ScheduledJobsPage.cshtml"
-                     if (!job.Value.InScheduledState)
-                    {
+            #line 54 "..\..\Pages\ScheduledJobsPage.cshtml"
+       Write(RenderPartial(new PerPageSelector(pager)));
 
             
             #line default
             #line hidden
-WriteLiteral("                        <span title=\"Job\'s state has been changed while fetching " +
-"data.\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
+WriteLiteral(@"
+        </div>
+
+        <table class=""table table-hover"">
+            <thead>
+                <tr>
+                    <th class=""min-width"">
+                        <input type=""checkbox"" class=""js-jobs-list-select-all"" />
+                    </th>
+                    <th class=""min-width"">Id</th>
+                    <th>Enqueue</th>
+                    <th>Job</th>
+                </tr>
+            </thead>
+");
 
 
             
-            #line 58 "..\..\Pages\ScheduledJobsPage.cshtml"
-                    }
+            #line 68 "..\..\Pages\ScheduledJobsPage.cshtml"
+             foreach (var job in scheduledJobs)
+            {
 
             
             #line default
             #line hidden
-WriteLiteral("                </td>\r\n                <td data-moment=\"");
+WriteLiteral("                <tr class=\"js-jobs-list-row ");
 
 
             
-            #line 60 "..\..\Pages\ScheduledJobsPage.cshtml"
-                            Write(JobHelper.ToStringTimestamp(job.Value.EnqueueAt));
+            #line 70 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                        Write(!job.Value.InScheduledState ? "obsolete-data" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                    <td>\r\n");
+
+
+            
+            #line 72 "..\..\Pages\ScheduledJobsPage.cshtml"
+                         if (job.Value.InScheduledState)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <input type=\"checkbox\" class=\"js-jobs-list-checkbox\" " +
+"name=\"jobs[]\" value=\"");
+
+
+            
+            #line 74 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                                                                                 Write(job.Key);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" />\r\n");
+
+
+            
+            #line 75 "..\..\Pages\ScheduledJobsPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </td>\r\n                    <td>\r\n                        <a h" +
+"ref=\"");
+
+
+            
+            #line 78 "..\..\Pages\ScheduledJobsPage.cshtml"
+                            Write(Request.LinkTo("/job/" + job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            ");
+
+
+            
+            #line 79 "..\..\Pages\ScheduledJobsPage.cshtml"
+                       Write(HtmlHelper.JobId(job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </a>\r\n");
+
+
+            
+            #line 81 "..\..\Pages\ScheduledJobsPage.cshtml"
+                         if (!job.Value.InScheduledState)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <span title=\"Job\'s state has been changed while fetch" +
+"ing data.\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
+
+
+            
+            #line 84 "..\..\Pages\ScheduledJobsPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </td>\r\n                    <td data-moment=\"");
+
+
+            
+            #line 86 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                Write(JobHelper.ToStringTimestamp(job.Value.EnqueueAt));
 
             
             #line default
@@ -202,115 +278,65 @@ WriteLiteral("\">");
 
 
             
-            #line 60 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                                                               Write(job.Value.EnqueueAt);
+            #line 86 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                                                                   Write(job.Value.EnqueueAt);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                <td>\r\n                    <span title=\"");
+WriteLiteral("</td>\r\n                    <td>\r\n                        <span title=\"");
 
 
             
-            #line 62 "..\..\Pages\ScheduledJobsPage.cshtml"
-                            Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                        ");
-
-
-            
-            #line 63 "..\..\Pages\ScheduledJobsPage.cshtml"
-                   Write(HtmlHelper.DisplayMethod(job.Value.Job));
+            #line 88 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    </span>\r\n                </td>\r\n                <td>\r\n");
+WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 67 "..\..\Pages\ScheduledJobsPage.cshtml"
-                     if (job.Value.InScheduledState)
-                    {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                        <div class=\"pull-right\">\r\n                            <bu" +
-"tton class=\"btn btn-default btn-sm\" data-ajax=\"");
-
-
-            
-            #line 70 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                                                         Write(Request.LinkTo("/schedule/enqueue/" + job.Key));
+            #line 89 "..\..\Pages\ScheduledJobsPage.cshtml"
+                       Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default
             #line hidden
-WriteLiteral(@""" data-loading-text=""Enqueueing..."">
-                                <span class=""glyphicon glyphicon-play""></span>
-                                Enqueue now
-                            </button>
-
-                            <button class=""btn btn-death btn-sm"" data-ajax=""");
+WriteLiteral("\r\n                        </span>\r\n                    </td>\r\n                </t" +
+"r>\r\n");
 
 
             
-            #line 75 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                                                       Write(Request.LinkTo("/schedule/delete/" + job.Key));
+            #line 93 "..\..\Pages\ScheduledJobsPage.cshtml"
+            }
 
             
             #line default
             #line hidden
-WriteLiteral(@""" data-loading-text=""Deleting..."" data-confirm=""Do you really want to delete a scheduled job?"">
-                                <span class=""glyphicon glyphicon-remove""></span>
-                                Delete
-                            </button>
-                        </div>
-");
+WriteLiteral("        </table>\r\n    </div>\r\n");
 
 
             
-            #line 80 "..\..\Pages\ScheduledJobsPage.cshtml"
-                    }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                </td>\r\n            </tr>\r\n");
-
-
-            
-            #line 83 "..\..\Pages\ScheduledJobsPage.cshtml"
-        }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("    </table>\r\n");
-
-
-            
-            #line 85 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 96 "..\..\Pages\ScheduledJobsPage.cshtml"
 
     
             
             #line default
             #line hidden
             
-            #line 86 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 97 "..\..\Pages\ScheduledJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 86 "..\..\Pages\ScheduledJobsPage.cshtml"
+            #line 97 "..\..\Pages\ScheduledJobsPage.cshtml"
                                         
 }
+
             
             #line default
             #line hidden

@@ -110,120 +110,108 @@ WriteLiteral("    <div class=\"alert alert-info\">\r\n        No deleted jobs fo
 }
 else
 {
-    
-            
-            #line default
-            #line hidden
-            
-            #line 38 "..\..\Pages\DeletedJobsPage.cshtml"
-Write(RenderPartial(new PerPageSelector(pager)));
 
             
             #line default
             #line hidden
-            
-            #line 38 "..\..\Pages\DeletedJobsPage.cshtml"
-                                              
-    
-
-            
-            #line default
-            #line hidden
-WriteLiteral("    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th" +
-">Id</th>\r\n                <th>Job</th>\r\n                <th>Deleted</th>\r\n      " +
-"      </tr>\r\n        </thead>\r\n        <tbody>\r\n");
+WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolbar btn-toolbar-top\">" +
+"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\" \r\n    " +
+"                data-url=\"");
 
 
             
-            #line 49 "..\..\Pages\DeletedJobsPage.cshtml"
-             foreach (var job in jobs)
-            {
+            #line 41 "..\..\Pages\DeletedJobsPage.cshtml"
+                         Write(Request.LinkTo("/deleted/requeue"));
 
             
             #line default
             #line hidden
-WriteLiteral("                <tr class=\"");
+WriteLiteral("\" \r\n                    data-loading-text=\"Enqueueing...\">\r\n                <span" +
+" class=\"glyphicon glyphicon-repeat\"></span>\r\n                Requeue jobs\r\n     " +
+"       </button>\r\n            ");
 
 
             
-            #line 51 "..\..\Pages\DeletedJobsPage.cshtml"
-                       Write(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                    <td>\r\n                        <a href=\"");
-
-
-            
-            #line 53 "..\..\Pages\DeletedJobsPage.cshtml"
-                            Write(Request.LinkTo("/job/" + job.Key));
+            #line 46 "..\..\Pages\DeletedJobsPage.cshtml"
+       Write(RenderPartial(new PerPageSelector(pager)));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                            ");
+WriteLiteral(@"
+        </div>
+        <table class=""table table-hover"">
+            <thead>
+                <tr>
+                    <th class=""min-width"">
+                        <input type=""checkbox"" class=""js-jobs-list-select-all"" />
+                    </th>
+                    <th class=""min-width"">Id</th>
+                    <th>Job</th>
+                    <th>Deleted</th>
+                </tr>
+            </thead>
+            <tbody>
+");
 
 
             
-            #line 54 "..\..\Pages\DeletedJobsPage.cshtml"
-                       Write(HtmlHelper.JobId(job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                        </a>\r\n");
-
-
-            
-            #line 56 "..\..\Pages\DeletedJobsPage.cshtml"
-                         if (job.Value != null && !job.Value.InDeletedState)
-                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                            <span title=\"Job\'s state has been changed while fetch" +
-"ing data.\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
-
-
-            
-            #line 59 "..\..\Pages\DeletedJobsPage.cshtml"
-                        }
+            #line 60 "..\..\Pages\DeletedJobsPage.cshtml"
+                 foreach (var job in jobs)
+                {
 
             
             #line default
             #line hidden
-WriteLiteral("                    </td>\r\n\r\n");
+WriteLiteral("                    <tr class=\"js-jobs-list-row ");
 
 
             
             #line 62 "..\..\Pages\DeletedJobsPage.cshtml"
-                     if (job.Value == null)
-                    {
+                                            Write(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("                        <td colspan=\"3\"><em>Job was expired.</em>\r\n              " +
-"          </td>\r\n");
+WriteLiteral("\">\r\n                        <td>\r\n");
+
+
+            
+            #line 64 "..\..\Pages\DeletedJobsPage.cshtml"
+                             if (job.Value.InDeletedState)
+                            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                <input type=\"checkbox\" class=\"js-jobs-list-checkb" +
+"ox\" name=\"jobs[]\" value=\"");
 
 
             
             #line 66 "..\..\Pages\DeletedJobsPage.cshtml"
-                    }
-                    else
-                    {
+                                                                                                     Write(job.Key);
 
             
             #line default
             #line hidden
-WriteLiteral("                        <td>\r\n                            <span title=\"");
+WriteLiteral("\" />\r\n");
+
+
+            
+            #line 67 "..\..\Pages\DeletedJobsPage.cshtml"
+                            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        </td>\r\n                        <td>\r\n                    " +
+"        <a href=\"");
 
 
             
             #line 70 "..\..\Pages\DeletedJobsPage.cshtml"
-                                    Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
+                                Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
@@ -233,32 +221,63 @@ WriteLiteral("\">\r\n                                ");
 
             
             #line 71 "..\..\Pages\DeletedJobsPage.cshtml"
-                           Write(HtmlHelper.DisplayMethod(job.Value.Job));
+                           Write(HtmlHelper.JobId(job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("    \r\n                            </span>\r\n                        </td>\r\n");
-
-
-
-WriteLiteral("                        <td>\r\n");
+WriteLiteral("\r\n                            </a>\r\n");
 
 
             
-            #line 75 "..\..\Pages\DeletedJobsPage.cshtml"
-                             if (job.Value.DeletedAt.HasValue)
+            #line 73 "..\..\Pages\DeletedJobsPage.cshtml"
+                             if (job.Value != null && !job.Value.InDeletedState)
                             {
 
             
             #line default
             #line hidden
-WriteLiteral("                                <span  data-moment=\"");
+WriteLiteral("                                <span title=\"Job\'s state has been changed while f" +
+"etching data.\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
 
 
             
-            #line 77 "..\..\Pages\DeletedJobsPage.cshtml"
-                                               Write(JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value));
+            #line 76 "..\..\Pages\DeletedJobsPage.cshtml"
+                            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        </td>\r\n\r\n");
+
+
+            
+            #line 79 "..\..\Pages\DeletedJobsPage.cshtml"
+                         if (job.Value == null)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <td colspan=\"3\">\r\n                                <em" +
+">Job was expired.</em>\r\n                            </td>\r\n");
+
+
+            
+            #line 84 "..\..\Pages\DeletedJobsPage.cshtml"
+                        }
+                        else
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <td>\r\n                                <span title=\"");
+
+
+            
+            #line 88 "..\..\Pages\DeletedJobsPage.cshtml"
+                                        Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
             #line default
@@ -267,63 +286,98 @@ WriteLiteral("\">\r\n                                    ");
 
 
             
-            #line 78 "..\..\Pages\DeletedJobsPage.cshtml"
-                               Write(job.Value.DeletedAt);
+            #line 89 "..\..\Pages\DeletedJobsPage.cshtml"
+                               Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </span>\r\n");
+WriteLiteral("\r\n                                </span>\r\n                            </td>\r\n");
+
+
+
+WriteLiteral("                            <td>\r\n");
 
 
             
-            #line 80 "..\..\Pages\DeletedJobsPage.cshtml"
-                            }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                        </td>\r\n");
-
-
-            
-            #line 82 "..\..\Pages\DeletedJobsPage.cshtml"
-                    }
+            #line 93 "..\..\Pages\DeletedJobsPage.cshtml"
+                                 if (job.Value.DeletedAt.HasValue)
+                                {
 
             
             #line default
             #line hidden
-WriteLiteral("                </tr>\r\n");
+WriteLiteral("                                    <span data-moment=\"");
 
 
             
-            #line 84 "..\..\Pages\DeletedJobsPage.cshtml"
-            }
+            #line 95 "..\..\Pages\DeletedJobsPage.cshtml"
+                                                  Write(JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("        </tbody>\r\n    </table>\r\n");
+WriteLiteral("\">\r\n                                        ");
 
 
             
-            #line 87 "..\..\Pages\DeletedJobsPage.cshtml"
+            #line 96 "..\..\Pages\DeletedJobsPage.cshtml"
+                                   Write(job.Value.DeletedAt);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                    </span>\r\n");
+
+
+            
+            #line 98 "..\..\Pages\DeletedJobsPage.cshtml"
+                                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            </td>\r\n");
+
+
+            
+            #line 100 "..\..\Pages\DeletedJobsPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </tr>\r\n");
+
+
+            
+            #line 102 "..\..\Pages\DeletedJobsPage.cshtml"
+                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("            </tbody>\r\n        </table>\r\n    </div>\r\n");
+
+
+            
+            #line 106 "..\..\Pages\DeletedJobsPage.cshtml"
     
-    
             
             #line default
             #line hidden
             
-            #line 88 "..\..\Pages\DeletedJobsPage.cshtml"
+            #line 106 "..\..\Pages\DeletedJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 88 "..\..\Pages\DeletedJobsPage.cshtml"
+            #line 106 "..\..\Pages\DeletedJobsPage.cshtml"
                                         
 }
+
             
             #line default
             #line hidden

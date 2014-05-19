@@ -35,55 +35,73 @@
 }
 else
 {
-    @RenderPartial(new PerPageSelector(pager))
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Job</th>
-                <th>Deleted</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var job in jobs)
-            {
-                <tr class="@(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null)">
-                    <td>
-                        <a href="@Request.LinkTo("/job/" + job.Key)">
-                            @HtmlHelper.JobId(job.Key)
-                        </a>
-                        @if (job.Value != null && !job.Value.InDeletedState)
-                        {
-                            <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
-                        }
-                    </td>
-
-                    @if (job.Value == null)
-                    {
-                        <td colspan="3"><em>Job was expired.</em>
-                        </td>
-                    }
-                    else
-                    {
+    <div class="js-jobs-list">
+        <div class="btn-toolbar btn-toolbar-top">
+            <button class="js-jobs-list-command btn btn-sm btn-primary" 
+                    data-url="@Request.LinkTo("/deleted/requeue")" 
+                    data-loading-text="Enqueueing...">
+                <span class="glyphicon glyphicon-repeat"></span>
+                Requeue jobs
+            </button>
+            @RenderPartial(new PerPageSelector(pager))
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="min-width">
+                        <input type="checkbox" class="js-jobs-list-select-all" />
+                    </th>
+                    <th class="min-width">Id</th>
+                    <th>Job</th>
+                    <th>Deleted</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var job in jobs)
+                {
+                    <tr class="js-jobs-list-row @(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null)">
                         <td>
-                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
-                                @HtmlHelper.DisplayMethod(job.Value.Job)    
-                            </span>
-                        </td>
-                        <td>
-                            @if (job.Value.DeletedAt.HasValue)
+                            @if (job.Value.InDeletedState)
                             {
-                                <span  data-moment="@JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value)">
-                                    @job.Value.DeletedAt
-                                </span>
+                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                             }
                         </td>
-                    }
-                </tr>
-            }
-        </tbody>
-    </table>
-    
+                        <td>
+                            <a href="@Request.LinkTo("/job/" + job.Key)">
+                                @HtmlHelper.JobId(job.Key)
+                            </a>
+                            @if (job.Value != null && !job.Value.InDeletedState)
+                            {
+                                <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                            }
+                        </td>
+
+                        @if (job.Value == null)
+                        {
+                            <td colspan="3">
+                                <em>Job was expired.</em>
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                                    @HtmlHelper.DisplayMethod(job.Value.Job)
+                                </span>
+                            </td>
+                            <td>
+                                @if (job.Value.DeletedAt.HasValue)
+                                {
+                                    <span data-moment="@JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value)">
+                                        @job.Value.DeletedAt
+                                    </span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
     @RenderPartial(new Paginator(pager))
 }

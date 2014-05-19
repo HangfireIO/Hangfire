@@ -54,26 +54,26 @@ namespace HangFire.Web
             RegisterPathHandlerFactory("/processing", x => new ProcessingJobsPage());
             RegisterPathHandlerFactory("/scheduled", x => new ScheduledJobsPage());
 
-            RegisterPathHandlerFactory(
-                "/schedule/enqueue/(?<JobId>.+)",
-                x => new CommandHandler(() => Command.EnqueueScheduled(x.Groups["JobId"].Value)));
+            RegisterPathHandlerFactory("/scheduled/enqueue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId, ScheduledState.StateName)));
 
-            RegisterPathHandlerFactory(
-                "/schedule/delete/(?<JobId>.+)",
-                x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value)));
+            RegisterPathHandlerFactory("/scheduled/delete", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Delete(jobId, ScheduledState.StateName)));
 
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
+
+            RegisterPathHandlerFactory("/failed/requeue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId, FailedState.StateName)));
+            
+            RegisterPathHandlerFactory("/failed/delete", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Delete(jobId, FailedState.StateName)));
+
             RegisterPathHandlerFactory("/deleted", x => new DeletedJobsPage());
 
-            RegisterPathHandlerFactory(
-                "/failed/retry/(?<JobId>.+)", 
-                x => new CommandHandler(() => Command.Retry(x.Groups["JobId"].Value)));
-
-            RegisterPathHandlerFactory(
-                "/failed/delete/(?<JobId>.+)",
-                x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value, FailedState.StateName)));
+            RegisterPathHandlerFactory("/deleted/requeue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId, DeletedState.StateName)));
 
             RegisterPathHandlerFactory(
                 "/actions/requeue/(?<JobId>.+)",
