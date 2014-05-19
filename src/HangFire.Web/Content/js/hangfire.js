@@ -269,8 +269,10 @@
                 e.preventDefault();
             });
 
-            $(document).on('click', '.expander', function () {
+            $(document).on('click', '.expander', function (e) {
                 $(this).closest('tr').next().find('.expandable').slideToggle(150);
+                e.stopPropagation();
+
             });
 
             $('.js-jobs-list').each(function () {
