@@ -125,6 +125,16 @@ html, body {
     width: 1%;
 }
 
+.table-hover>tbody>tr:hover>td, .table-hover>tbody>tr:hover>th {
+    background-color: #f9f9f9;
+}
+
+ 
+.table>tbody>tr.highlight>td, .table>tbody>tr.highlight>th {
+    background-color: #fcf8e3;
+    border-color: #fbeed5;
+}
+
 /* Statistics widget
 -------------------------------------------------- */
 

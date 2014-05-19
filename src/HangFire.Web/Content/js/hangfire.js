@@ -280,7 +280,7 @@
 
                 var selectRow = function(row, isSelected) {
                     $('.js-jobs-list-checkbox', row).prop('checked', isSelected);
-                    $(row).toggleClass('warning', isSelected);
+                    $(row).toggleClass('highlight', isSelected);
                 };
 
                 var toggleRowSelection = function(row) {
