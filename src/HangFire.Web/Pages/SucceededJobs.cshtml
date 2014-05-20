@@ -1,4 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
 @using Common
 @using Pages
 @using HangFire.Storage
@@ -56,6 +57,7 @@ else
                     </th>
                     <th class="min-width">Id</th>
                     <th>Job</th>
+                    <th class="min-width">Duration</th>
                     <th class="align-right">Succeeded</th>
                 </tr>
             </thead>
@@ -92,7 +94,13 @@ else
                                     @HtmlHelper.DisplayMethod(job.Value.Job)
                                 </a>
                             </td>
-                            <td class="align-right">
+                            <td class="min-width align-right">
+                                @if (job.Value.Duration.HasValue)
+                                {
+                                    @: @HtmlHelper.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.Duration.Value) , false)
+                                }
+                            </td>
+                            <td class="min-width align-right">
                                 @if (job.Value.SucceededAt.HasValue)
                                 {
                                     <span data-moment="@JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value)">
