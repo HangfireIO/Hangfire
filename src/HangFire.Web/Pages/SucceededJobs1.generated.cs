@@ -285,12 +285,13 @@ WriteLiteral("                            <td colspan=\"3\">\r\n                
             
             #line default
             #line hidden
-WriteLiteral("                            <td>\r\n                                <span title=\"");
+WriteLiteral("                            <td>\r\n                                <a class=\"job-m" +
+"ethod\" href=\"");
 
 
             
             #line 91 "..\..\Pages\SucceededJobs.cshtml"
-                                        Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
+                                                       Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
@@ -305,7 +306,7 @@ WriteLiteral("\">\r\n                                    ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </span>\r\n                            </td>\r\n");
+WriteLiteral("\r\n                                </a>\r\n                            </td>\r\n");
 
 
 

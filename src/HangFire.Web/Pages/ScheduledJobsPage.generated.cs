@@ -297,12 +297,12 @@ WriteLiteral("\">\r\n                            ");
             #line default
             #line hidden
 WriteLiteral("\r\n                        </span>\r\n                    </td>\r\n                   " +
-" <td>\r\n                        <span title=\"");
+" <td>\r\n                        <a class=\"job-method\" href=\"");
 
 
             
             #line 93 "..\..\Pages\ScheduledJobsPage.cshtml"
-                                Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
+                                               Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
@@ -317,8 +317,8 @@ WriteLiteral("\">\r\n                            ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </span>\r\n                    </td>\r\n                   " +
-" <td class=\"align-right\">\r\n");
+WriteLiteral("\r\n                        </a>\r\n                    </td>\r\n                    <t" +
+"d class=\"align-right\">\r\n");
 
 
             

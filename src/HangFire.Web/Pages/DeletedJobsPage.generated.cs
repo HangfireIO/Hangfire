@@ -115,8 +115,8 @@ else
             #line default
             #line hidden
 WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolbar btn-toolbar-top\">" +
-"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\" \r\n    " +
-"                data-url=\"");
+"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\"\r\n     " +
+"               data-url=\"");
 
 
             
@@ -126,9 +126,9 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
             
             #line default
             #line hidden
-WriteLiteral("\" \r\n                    data-loading-text=\"Enqueueing...\">\r\n                <span" +
-" class=\"glyphicon glyphicon-repeat\"></span>\r\n                Requeue jobs\r\n     " +
-"       </button>\r\n            ");
+WriteLiteral("\"\r\n                    data-loading-text=\"Enqueueing...\">\r\n                <span " +
+"class=\"glyphicon glyphicon-repeat\"></span>\r\n                Requeue jobs\r\n      " +
+"      </button>\r\n            ");
 
 
             
@@ -282,12 +282,13 @@ WriteLiteral("                            <td colspan=\"2\">\r\n                
             
             #line default
             #line hidden
-WriteLiteral("                            <td>\r\n                                <span title=\"");
+WriteLiteral("                            <td>\r\n                                <a class=\"job-m" +
+"ethod\" href=\"");
 
 
             
             #line 88 "..\..\Pages\DeletedJobsPage.cshtml"
-                                        Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
+                                                       Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
@@ -302,7 +303,7 @@ WriteLiteral("\">\r\n                                    ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </span>\r\n                            </td>\r\n");
+WriteLiteral("\r\n                                </a>\r\n                            </td>\r\n");
 
 
 

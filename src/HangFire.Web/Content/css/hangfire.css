@@ -422,3 +422,7 @@ html, body {
 .job-history-current small {
     color: white;
 }
+
+a.job-method {
+    color: inherit;    
+}

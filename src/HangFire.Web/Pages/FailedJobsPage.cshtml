@@ -44,7 +44,7 @@ else
                 <span class="glyphicon glyphicon-repeat"></span>
                 Requeue jobs
             </button>
-            
+
             <button class="js-jobs-list-command btn btn-sm btn-default"
                     data-url="@Request.LinkTo("/failed/delete")"
                     data-loading-text="Deleting..."
@@ -97,9 +97,9 @@ else
                         </td>
                         <td>
                             <div>
-                                <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                                <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
                                     @HtmlHelper.DisplayMethod(job.Value.Job)
-                                </span>
+                                </a>
                             </div>
                             @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                             {

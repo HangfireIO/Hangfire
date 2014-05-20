@@ -93,9 +93,9 @@ else
                             </span>
                         </td>
                         <td>
-                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                            <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
                                 @HtmlHelper.DisplayMethod(job.Value.Job)
-                            </span>
+                            </a>
                         </td>
                         <td class="align-right">
                             @if (job.Value.EnqueuedAt.HasValue)

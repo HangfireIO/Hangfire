@@ -37,11 +37,6 @@ namespace HangFire.Web
             return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
         }
 
-        public static string DisplayMethodHint(Job job)
-        {
-            return job == null ? null : job.Type.FullName;
-        }
-
         public static IHtmlString Raw(string value)
         {
             return new HtmlString(value);

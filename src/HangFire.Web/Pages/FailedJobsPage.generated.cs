@@ -132,7 +132,7 @@ WriteLiteral(@"""
                 <span class=""glyphicon glyphicon-repeat""></span>
                 Requeue jobs
             </button>
-            
+
             <button class=""js-jobs-list-command btn btn-sm btn-default""
                     data-url=""");
 
@@ -352,12 +352,12 @@ WriteLiteral("\r\n                                </span>\r\n");
             #line default
             #line hidden
 WriteLiteral("                        </td>\r\n                        <td>\r\n                    " +
-"        <div>\r\n                                <span title=\"");
+"        <div>\r\n                                <a class=\"job-method\" href=\"");
 
 
             
             #line 100 "..\..\Pages\FailedJobsPage.cshtml"
-                                        Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
+                                                       Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
@@ -372,7 +372,7 @@ WriteLiteral("\">\r\n                                    ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </span>\r\n                            </div>\r\n");
+WriteLiteral("\r\n                                </a>\r\n                            </div>\r\n");
 
 
             
