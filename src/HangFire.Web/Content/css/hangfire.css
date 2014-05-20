@@ -373,6 +373,11 @@ html, body {
 
 .job-history {
     margin-bottom: 10px;
+    opacity: 0.8;
+}
+
+.job-history.job-history-current {
+    opacity: 1.0;
 }
 
 .job-history-heading {
