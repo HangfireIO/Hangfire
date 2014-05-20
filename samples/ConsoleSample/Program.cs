@@ -17,7 +17,7 @@ namespace ConsoleSample
 
             var sqlServerStorage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
-            //sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+            sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
             JobStorage.Current =
                 sqlServerStorage;
