@@ -102,25 +102,12 @@ namespace HangFire.Web
 
             if (duration.Value.Seconds > 0)
             {
-                builder.Append(duration.Value.Seconds);
-                if (duration.Value.Milliseconds > 0)
-                {
-                    builder.AppendFormat(".{0}", duration.Value.Milliseconds);
-                }
-
-                builder.Append("s ");
-            }
-            else
-            {
-                if (duration.Value.Milliseconds > 0)
-                {
-                    builder.AppendFormat("{0}ms ", duration.Value.Milliseconds);
-                }
+                builder.AppendFormat("{0}s ", duration.Value.Seconds);
             }
 
             if (builder.Length <= 1)
             {
-                builder.Append(" <1ms ");
+                builder.Append(" <1s ");
             }
 
             builder.Remove(builder.Length - 1, 1);
