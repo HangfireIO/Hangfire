@@ -16,15 +16,22 @@
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>Long-Running AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
+    
+0.8.2
+* Added - Batch operations on jobs for HangFire Monitor.
+* Added - Retry and delete buttons for almost every page of HangFire Monitor.
+* Added - Duration and latency metrics for succeeded jobs.
+* Added - DisableConcurrentExecution filter.
+* Misc - Tables in HangFire Monitor received some love.
 
 0.8.1
-Added - MSMQ queues support for SQL Server job storage.
-Added - "Deleted" state for jobs, when we don't want to process them anymore.
-Added - "Requeue" and "Delete" buttons on a job page in HF Monitor.
-Added - Logging job failures: warning - there is a retry, error - no attempts left.
-Added - BackgroundJob.Requeue and BackgroundJob.Delete methods.
-Change - Set InvisibleTimeout back from 5 to 30 minutes.
-Change - RetryAttribute is deprecated. Use AutomaticRetryAttribute instead.
+* Added - MSMQ queues support for SQL Server job storage.
+* Added - "Deleted" state for jobs, when we don't want to process them anymore.
+* Added - "Requeue" and "Delete" buttons on a job page in HF Monitor.
+* Added - Logging job failures: warning - there is a retry, error - no attempts left.
+* Added - BackgroundJob.Requeue and BackgroundJob.Delete methods.
+* Changed - Set InvisibleTimeout back from 5 to 30 minutes.
+* Changed - RetryAttribute is deprecated. Use AutomaticRetryAttribute instead.
 
 0.8
 * Added - New server component subsystem - more reliability, more logging, less blocking on stop.
