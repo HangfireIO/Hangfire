@@ -24,7 +24,6 @@ namespace HangFire.SqlServer
 {
     internal class SqlServerDistributedLock : IDisposable
     {
-        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(5);
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
 
@@ -42,7 +41,7 @@ namespace HangFire.SqlServer
 
         private bool _completed;
 
-        public SqlServerDistributedLock(string resource, IDbConnection connection)
+        public SqlServerDistributedLock(string resource, TimeSpan timeout, IDbConnection connection)
         {
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
             if (connection == null) throw new ArgumentNullException("connection");
@@ -55,7 +54,7 @@ namespace HangFire.SqlServer
             parameters.Add("@DbPrincipal", "public");
             parameters.Add("@LockMode", LockMode);
             parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@LockTimeout", LockTimeout.TotalMilliseconds);
+            parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
             connection.Execute(

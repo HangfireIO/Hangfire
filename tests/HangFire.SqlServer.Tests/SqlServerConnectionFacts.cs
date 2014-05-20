@@ -91,7 +91,7 @@ namespace HangFire.SqlServer.Tests
         {
             UseConnection(connection =>
             {
-                var @lock = connection.AcquireDistributedLock("1");
+                var @lock = connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1));
                 Assert.NotNull(@lock);
             });
         }

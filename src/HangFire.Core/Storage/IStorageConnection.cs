@@ -38,7 +38,7 @@ namespace HangFire.Storage
         void SetJobParameter(string id, string name, string value);
         string GetJobParameter(string id, string name);
 
-        IDisposable AcquireDistributedLock(string resource);
+        IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
         JobData GetJobData(string id);
 
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);

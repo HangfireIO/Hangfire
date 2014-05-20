@@ -47,7 +47,8 @@ namespace HangFire.Core.Tests.States
                 });
 
             _distributedLock = new Mock<IDisposable>();
-            _connection.Setup(x => x.AcquireDistributedLock(String.Format("job:{0}:state-lock", JobId)))
+            _connection
+                .Setup(x => x.AcquireDistributedLock(String.Format("job:{0}:state-lock", JobId), It.IsAny<TimeSpan>()))
                 .Returns(_distributedLock.Object);
 
             _stateChangeProcess

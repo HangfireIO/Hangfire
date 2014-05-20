@@ -27,7 +27,7 @@ namespace MvcSample
 
             var storage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
-            //storage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+            storage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
             JobStorage.Current = storage;
             

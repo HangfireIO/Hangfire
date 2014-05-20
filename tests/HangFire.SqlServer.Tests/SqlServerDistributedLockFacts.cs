@@ -11,11 +11,13 @@ namespace HangFire.SqlServer.Tests
 {
     public class SqlServerDistributedLockFacts
     {
+        private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
+
         [Fact]
         public void Ctor_ThrowsAnException_WhenResourceIsNullOrEmpty()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerDistributedLock("", new Mock<IDbConnection>().Object));
+                () => new SqlServerDistributedLock("", _timeout, new Mock<IDbConnection>().Object));
 
             Assert.Equal("resource", exception.ParamName);
         }
@@ -24,7 +26,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerDistributedLock("hello", null));
+                () => new SqlServerDistributedLock("hello", _timeout, null));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -35,7 +37,7 @@ namespace HangFire.SqlServer.Tests
             UseConnection(sql =>
             {
                 // ReSharper disable once UnusedVariable
-                var distributedLock = new SqlServerDistributedLock("hello", sql);
+                var distributedLock = new SqlServerDistributedLock("hello", _timeout, sql);
 
                 var lockMode = sql.Query<string>(
                     "select applock_mode('public', 'hello', 'session')").Single();
@@ -55,7 +57,7 @@ namespace HangFire.SqlServer.Tests
             var thread = new Thread(
                 () => UseConnection(connection1 =>
                 {
-                    using (new SqlServerDistributedLock("exclusive", connection1))
+                    using (new SqlServerDistributedLock("exclusive", _timeout, connection1))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -67,7 +69,7 @@ namespace HangFire.SqlServer.Tests
 
             UseConnection(connection2 => 
                 Assert.Throws<SqlServerDistributedLockException>(
-                    () => new SqlServerDistributedLock("exclusive", connection2)));
+                    () => new SqlServerDistributedLock("exclusive", _timeout, connection2)));
 
             releaseLock.Set();
             thread.Join();
@@ -78,7 +80,7 @@ namespace HangFire.SqlServer.Tests
         {
             UseConnection(sql =>
             {
-                var distributedLock = new SqlServerDistributedLock("hello", sql);
+                var distributedLock = new SqlServerDistributedLock("hello", _timeout, sql);
                 distributedLock.Dispose();
 
                 var lockMode = sql.Query<string>(

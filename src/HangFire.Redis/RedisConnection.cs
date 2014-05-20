@@ -106,11 +106,9 @@ namespace HangFire.Redis
             return new RedisFetchedJob(this, jobId, queueName);
         }
 
-        public IDisposable AcquireDistributedLock(string resource)
+        public IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
-            return Redis.AcquireLock(
-                RedisStorage.Prefix + resource,
-                TimeSpan.FromMinutes(1));
+            return Redis.AcquireLock(RedisStorage.Prefix + resource, timeout);
         }
 
         public string CreateExpiredJob(

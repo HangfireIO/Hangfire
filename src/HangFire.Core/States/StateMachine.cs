@@ -24,6 +24,8 @@ namespace HangFire.States
 {
     internal class StateMachine : IStateMachine
     {
+        private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
+
         private readonly IStorageConnection _connection;
         private readonly IStateChangeProcess _stateChangeProcess;
 
@@ -74,7 +76,9 @@ namespace HangFire.States
             // execution of this method. To guarantee this behavior, we are
             // using distributed application locks and rely on fact, that
             // any state transitions will be made only within a such lock.
-            using (_connection.AcquireDistributedLock(String.Format("job:{0}:state-lock", jobId)))
+            using (_connection.AcquireDistributedLock(
+                String.Format("job:{0}:state-lock", jobId),
+                JobLockTimeout))
             {
                 bool loadSucceeded;
 

@@ -22,6 +22,15 @@ namespace HangFire
 {
     public class DisableConcurrentExecutionAttribute : JobFilterAttribute, IServerFilter
     {
+        private readonly int _timeoutInSeconds;
+
+        public DisableConcurrentExecutionAttribute(int timeoutInSeconds)
+        {
+            if (timeoutInSeconds < 0) throw new ArgumentException("Timeout argument value should be greater that zero.");
+
+            _timeoutInSeconds = timeoutInSeconds;
+        }
+
         public void OnPerforming(PerformingContext filterContext)
         {
             var resource = String.Format(
@@ -29,7 +38,9 @@ namespace HangFire
                 filterContext.Job.Type.FullName,
                 filterContext.Job.Method.Name);
 
-            var distributedLock = filterContext.Connection.AcquireDistributedLock(resource);
+            var timeout = TimeSpan.FromSeconds(_timeoutInSeconds);
+
+            var distributedLock = filterContext.Connection.AcquireDistributedLock(resource, timeout);
             filterContext.Items["DistributedLock"] = distributedLock;
         }
 
