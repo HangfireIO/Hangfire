@@ -344,14 +344,13 @@ namespace HangFire.Redis
             return GetJobsWithProperties(
                 _redis,
                 jobIds,
-                new[] { "State", "CreatedAt", "Fetched" },
+                new[] { "State", "Fetched" },
                 null,
                 (job, jobData, state) => new FetchedJobDto
                 {
                     Job = job,
                     State = jobData[0],
-                    CreatedAt = JobHelper.FromNullableStringTimestamp(jobData[1]),
-                    FetchedAt = JobHelper.FromNullableStringTimestamp(jobData[2])
+                    FetchedAt = JobHelper.FromNullableStringTimestamp(jobData[1])
                 });
         }
 

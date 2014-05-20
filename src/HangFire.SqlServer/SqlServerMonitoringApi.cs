@@ -347,7 +347,6 @@ where j.Id in @jobIds";
                     {
                         Job = DeserializeJob(job.InvocationData, job.Arguments),
                         State = job.StateName,
-                        CreatedAt = job.CreatedAt,
                         FetchedAt = job.FetchedAt
                     }));
             }

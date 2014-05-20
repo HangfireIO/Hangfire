@@ -157,7 +157,6 @@ WriteLiteral(@"    <table class=""table"">
                 <th class=""min-width"">Id</th>
                 <th class=""min-width"">State</th>
                 <th>Job</th>
-                <th>Created</th>
                 <th class=""align-right"">Fetched</th>
             </tr>
         </thead>
@@ -166,7 +165,7 @@ WriteLiteral(@"    <table class=""table"">
 
 
             
-            #line 64 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 63 "..\..\Pages\FetchedJobsPage.cshtml"
              foreach (var job in fetchedJobs)
             {
 
@@ -178,7 +177,7 @@ WriteLiteral("                <tr>\r\n                    <td class=\"min-width\
 
 
             
-            #line 68 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 67 "..\..\Pages\FetchedJobsPage.cshtml"
                             Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -188,7 +187,7 @@ WriteLiteral("\">");
 
 
             
-            #line 68 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 67 "..\..\Pages\FetchedJobsPage.cshtml"
                                                                 Write(HtmlHelper.JobId(job.Key));
 
             
@@ -199,7 +198,7 @@ WriteLiteral("</a>\r\n                    </td>\r\n                    <td class
 
 
             
-            #line 71 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 70 "..\..\Pages\FetchedJobsPage.cshtml"
                                                              Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null);
 
             
@@ -209,7 +208,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 72 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 71 "..\..\Pages\FetchedJobsPage.cshtml"
                        Write(job.Value.State);
 
             
@@ -220,7 +219,7 @@ WriteLiteral("</span>\r\n                    </td>\r\n                    <td>\r
 
 
             
-            #line 75 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 74 "..\..\Pages\FetchedJobsPage.cshtml"
                                 Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
 
             
@@ -230,59 +229,18 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 76 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 75 "..\..\Pages\FetchedJobsPage.cshtml"
                        Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default
             #line hidden
 WriteLiteral("\r\n                        </span>\r\n                    </td>\r\n                   " +
-" <td>\r\n");
+" <td class=\"align-right\">\r\n");
 
 
             
-            #line 80 "..\..\Pages\FetchedJobsPage.cshtml"
-                         if (job.Value.CreatedAt.HasValue)
-                        {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                            <span data-moment=\"");
-
-
-            
-            #line 82 "..\..\Pages\FetchedJobsPage.cshtml"
-                                          Write(JobHelper.ToStringTimestamp(job.Value.CreatedAt.Value));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                                ");
-
-
-            
-            #line 83 "..\..\Pages\FetchedJobsPage.cshtml"
-                           Write(job.Value.CreatedAt);
-
-            
-            #line default
-            #line hidden
-WriteLiteral(" \r\n                            </span>\r\n");
-
-
-            
-            #line 85 "..\..\Pages\FetchedJobsPage.cshtml"
-                        }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                    </td>\r\n                    <td class=\"align-right\">\r\n");
-
-
-            
-            #line 88 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 79 "..\..\Pages\FetchedJobsPage.cshtml"
                          if (job.Value.FetchedAt.HasValue)
                         {
 
@@ -293,7 +251,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 90 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 81 "..\..\Pages\FetchedJobsPage.cshtml"
                                           Write(JobHelper.ToStringTimestamp(job.Value.FetchedAt.Value));
 
             
@@ -303,7 +261,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 91 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 82 "..\..\Pages\FetchedJobsPage.cshtml"
                            Write(job.Value.FetchedAt);
 
             
@@ -313,7 +271,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 93 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 84 "..\..\Pages\FetchedJobsPage.cshtml"
                         }
 
             
@@ -323,7 +281,7 @@ WriteLiteral("                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 96 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 87 "..\..\Pages\FetchedJobsPage.cshtml"
             }
 
             
@@ -333,21 +291,21 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 99 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 90 "..\..\Pages\FetchedJobsPage.cshtml"
     
     
             
             #line default
             #line hidden
             
-            #line 100 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 91 "..\..\Pages\FetchedJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 100 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 91 "..\..\Pages\FetchedJobsPage.cshtml"
                                         
 }
             

@@ -56,7 +56,6 @@ else
                 <th class="min-width">Id</th>
                 <th class="min-width">State</th>
                 <th>Job</th>
-                <th>Created</th>
                 <th class="align-right">Fetched</th>
             </tr>
         </thead>
@@ -75,14 +74,6 @@ else
                         <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
                             @HtmlHelper.DisplayMethod(job.Value.Job)
                         </span>
-                    </td>
-                    <td>
-                        @if (job.Value.CreatedAt.HasValue)
-                        {
-                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.CreatedAt.Value)">
-                                @job.Value.CreatedAt 
-                            </span>
-                        }
                     </td>
                     <td class="align-right">
                         @if (job.Value.FetchedAt.HasValue)
