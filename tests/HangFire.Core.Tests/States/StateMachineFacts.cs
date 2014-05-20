@@ -36,6 +36,7 @@ namespace HangFire.Core.Tests.States
             _connection.Setup(x => x.CreateExpiredJob(
                 It.IsAny<Job>(),
                 It.IsAny<IDictionary<string, string>>(),
+                It.IsAny<DateTime>(),
                 It.IsAny<TimeSpan>())).Returns(JobId);
 
             _connection.Setup(x => x.GetJobData(JobId))
@@ -120,6 +121,7 @@ namespace HangFire.Core.Tests.States
             _connection.Verify(x => x.CreateExpiredJob(
                 It.Is<Job>(j => j.Type == typeof(Console) && j.Arguments[0] == "SomeString"),
                 It.Is<Dictionary<string, string>>(d => d["Name"] == "Value"),
+                It.IsAny<DateTime>(),
                 It.IsAny<TimeSpan>()));
         }
 

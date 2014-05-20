@@ -116,6 +116,7 @@ namespace HangFire.Redis
         public string CreateExpiredJob(
             Job job,
             IDictionary<string, string> parameters, 
+            DateTime createdAt,
             TimeSpan expireIn)
         {
             var jobId = Guid.NewGuid().ToString();
@@ -128,7 +129,7 @@ namespace HangFire.Redis
             storedParameters.Add("Method", invocationData.Method);
             storedParameters.Add("ParameterTypes", invocationData.ParameterTypes);
             storedParameters.Add("Arguments", invocationData.Arguments);
-            storedParameters.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
+            storedParameters.Add("CreatedAt", JobHelper.ToStringTimestamp(createdAt));
 
             using (var transaction = Redis.CreateTransaction())
             {
@@ -158,6 +159,7 @@ namespace HangFire.Redis
             string method = null;
             string parameterTypes = null;
             string arguments = null;
+            string createdAt = null;
 
             if (storedData.ContainsKey("Type"))
             {
@@ -174,6 +176,10 @@ namespace HangFire.Redis
             if (storedData.ContainsKey("Arguments"))
             {
                 arguments = storedData["Arguments"];
+            }
+            if (storedData.ContainsKey("CreatedAt"))
+            {
+                createdAt = storedData["CreatedAt"];
             }
 
             Job job = null;
@@ -194,6 +200,7 @@ namespace HangFire.Redis
             {
                 Job = job,
                 State = storedData.ContainsKey("State") ? storedData["State"] : null,
+                CreatedAt = JobHelper.FromNullableStringTimestamp(createdAt) ?? DateTime.MinValue,
                 LoadException = loadException
             };
         }

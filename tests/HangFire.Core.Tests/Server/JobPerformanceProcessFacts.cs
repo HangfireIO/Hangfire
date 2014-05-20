@@ -13,7 +13,6 @@ namespace HangFire.Core.Tests.Server
     {
         private readonly PerformContext _context;
         private readonly Mock<IJobPerformer> _performer;
-
         private readonly IList<object> _filters; 
 
         public JobPerformanceProcessFacts()
@@ -24,7 +23,7 @@ namespace HangFire.Core.Tests.Server
             const string jobId = "someId";
             var job = Job.FromExpression(() => Method());
 
-            _context = new PerformContext(workerContext.Object, connection.Object, jobId, job);
+            _context = new PerformContext(workerContext.Object, connection.Object, jobId, job, DateTime.UtcNow);
             _performer = new Mock<IJobPerformer>();
 
             _filters = new List<object>();

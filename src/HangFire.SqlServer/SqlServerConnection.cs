@@ -83,6 +83,7 @@ namespace HangFire.SqlServer
         public string CreateExpiredJob(
             Job job,
             IDictionary<string, string> parameters, 
+            DateTime createdAt,
             TimeSpan expireIn)
         {
             if (job == null) throw new ArgumentNullException("job");
@@ -101,8 +102,8 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
                 {
                     invocationData = JobHelper.ToJson(invocationData),
                     arguments = invocationData.Arguments,
-                    createdAt = DateTime.UtcNow,
-                    expireAt = DateTime.UtcNow.Add(expireIn)
+                    createdAt = createdAt,
+                    expireAt = createdAt.Add(expireIn)
                 }).Single().ToString();
 
             if (parameters.Count > 0)
@@ -134,7 +135,7 @@ values (@jobId, @name, @value)";
             if (id == null) throw new ArgumentNullException("id");
 
             const string sql = 
-                @"select InvocationData, StateName, Arguments from HangFire.Job where id = @id";
+                @"select InvocationData, StateName, Arguments, CreatedAt from HangFire.Job where id = @id";
 
             var jobData = _connection.Query<SqlJob>(sql, new { id = id })
                 .SingleOrDefault();
@@ -161,6 +162,7 @@ values (@jobId, @name, @value)";
             {
                 Job = job,
                 State = jobData.StateName,
+                CreatedAt = jobData.CreatedAt,
                 LoadException = loadException
             };
         }

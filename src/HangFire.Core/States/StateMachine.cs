@@ -45,12 +45,14 @@ namespace HangFire.States
             if (parameters == null) throw new ArgumentNullException("parameters");
             if (state == null) throw new ArgumentNullException("state");
 
+            var createdAt = DateTime.UtcNow;
             var jobId = _connection.CreateExpiredJob(
                 job,
                 parameters,
+                createdAt,
                 TimeSpan.FromHours(1));
 
-            var context = new StateContext(jobId, job, _connection);
+            var context = new StateContext(jobId, job, createdAt, _connection);
             _stateChangeProcess.ChangeState(context, state, null);
 
             return jobId;
@@ -112,7 +114,7 @@ namespace HangFire.States
                     loadSucceeded = false;
                 }
 
-                var context = new StateContext(jobId, jobData.Job, _connection);
+                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt, _connection);
                 var stateChanged = _stateChangeProcess.ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;

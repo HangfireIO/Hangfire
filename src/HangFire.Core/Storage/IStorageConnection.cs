@@ -26,7 +26,11 @@ namespace HangFire.Storage
     {
         IWriteOnlyTransaction CreateWriteTransaction();
 
-        string CreateExpiredJob(Job job, IDictionary<string, string> parameters, TimeSpan expireIn);
+        string CreateExpiredJob(
+            Job job, 
+            IDictionary<string, string> parameters, 
+            DateTime createdAt,
+            TimeSpan expireIn);
 
         IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
 

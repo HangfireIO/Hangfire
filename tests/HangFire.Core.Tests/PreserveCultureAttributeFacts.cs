@@ -34,7 +34,7 @@ namespace HangFire.Core.Tests
 
             var workerContext = new WorkerContextMock();
 
-            var performContext = new PerformContext(workerContext.Object, _connection.Object, JobId, job);
+            var performContext = new PerformContext(workerContext.Object, _connection.Object, JobId, job, DateTime.UtcNow);
             _performingContext = new PerformingContext(performContext);
             _performedContext = new PerformedContext(performContext, false, null);
         }

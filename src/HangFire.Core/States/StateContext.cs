@@ -22,23 +22,26 @@ namespace HangFire.States
 {
     public class StateContext
     {
-        public StateContext(string jobId, Job job, IStorageConnection connection)
+        public StateContext(string jobId, Job job, DateTime createdAt, IStorageConnection connection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
             
             JobId = jobId;
             Job = job;
+            CreatedAt = createdAt;
+
             Connection = connection;
         }
 
         internal StateContext(StateContext context)
-            : this(context.JobId, context.Job, context.Connection)
+            : this(context.JobId, context.Job, context.CreatedAt, context.Connection)
         {
         }
 
         public string JobId { get; private set; }
         public Job Job { get; private set; }
+        public DateTime CreatedAt { get; private set; }
 
         public IStorageConnection Connection { get; private set; }
     }

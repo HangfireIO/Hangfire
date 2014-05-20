@@ -85,7 +85,7 @@ namespace HangFire.Server
                 var jobData = connection.GetJobData(jobId);
                 jobData.EnsureLoaded();
 
-                var performContext = new PerformContext(_context, connection, jobId, jobData.Job);
+                var performContext = new PerformContext(_context, connection, jobId, jobData.Job, jobData.CreatedAt);
                 var duration = Stopwatch.StartNew();
 
                 process.Run(performContext, jobData.Job);

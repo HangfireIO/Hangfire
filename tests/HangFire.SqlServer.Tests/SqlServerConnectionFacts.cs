@@ -105,6 +105,7 @@ namespace HangFire.SqlServer.Tests
                     () => connection.CreateExpiredJob(
                         null,
                         new Dictionary<string, string>(),
+                        DateTime.UtcNow,
                         TimeSpan.Zero));
 
                 Assert.Equal("job", exception.ParamName);
@@ -112,7 +113,7 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void CreateExpiredJob_ThrowsANException_WhenParametersCollectionIsNull()
+        public void CreateExpiredJob_ThrowsAnException_WhenParametersCollectionIsNull()
         {
             UseConnection(connection =>
             {
@@ -120,6 +121,7 @@ namespace HangFire.SqlServer.Tests
                     () => connection.CreateExpiredJob(
                         Job.FromExpression(() => SampleMethod("hello")),
                         null,
+                        DateTime.UtcNow,
                         TimeSpan.Zero));
 
                 Assert.Equal("parameters", exception.ParamName);
@@ -131,9 +133,11 @@ namespace HangFire.SqlServer.Tests
         {
             UseConnections((sql, connection) =>
             {
+                var createdAt = new DateTime(2012, 12, 12);
                 var jobId = connection.CreateExpiredJob(
                     Job.FromExpression(() => SampleMethod("Hello")),
                     new Dictionary<string, string> { { "Key1", "Value1" }, { "Key2", "Value2" } },
+                    createdAt,
                     TimeSpan.FromDays(1));
 
                 Assert.NotNull(jobId);
@@ -141,6 +145,7 @@ namespace HangFire.SqlServer.Tests
 
                 var sqlJob = sql.Query("select * from HangFire.Job").Single();
                 Assert.Equal(jobId, sqlJob.Id.ToString());
+                Assert.Equal(createdAt, sqlJob.CreatedAt);
                 Assert.Equal(null, (int?) sqlJob.StateId);
                 Assert.Equal(null, (string) sqlJob.StateName);
 
@@ -152,7 +157,8 @@ namespace HangFire.SqlServer.Tests
                 Assert.Equal("SampleMethod", job.Method.Name);
                 Assert.Equal("Hello", job.Arguments[0]);
 
-                Assert.True(DateTime.UtcNow < sqlJob.ExpireAt && sqlJob.ExpireAt < DateTime.UtcNow.AddDays(1));
+                Assert.True(createdAt.AddDays(1).AddMinutes(-1) < sqlJob.ExpireAt);
+                Assert.True(sqlJob.ExpireAt < createdAt.AddDays(1).AddMinutes(1));
 
                 var parameters = sql.Query(
                     "select * from HangFire.JobParameter where JobId = @id",
@@ -209,6 +215,8 @@ select scope_identity() as Id";
                 Assert.Equal("Succeeded", result.State);
                 Assert.Equal("Arguments", result.Job.Arguments[0]);
                 Assert.Null(result.LoadException);
+                Assert.True(DateTime.UtcNow.AddMinutes(-1) < result.CreatedAt);
+                Assert.True(result.CreatedAt < DateTime.UtcNow.AddMinutes(1));
             });
         }
 
