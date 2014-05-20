@@ -15,6 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using HangFire.States;
 using HangFire.Storage;
@@ -85,10 +86,12 @@ namespace HangFire.Server
                 jobData.EnsureLoaded();
 
                 var performContext = new PerformContext(_context, connection, jobId, jobData.Job);
+                var duration = Stopwatch.StartNew();
 
                 process.Run(performContext, jobData.Job);
+                duration.Stop();
 
-                state = new SucceededState();
+                state = new SucceededState(duration.ElapsedMilliseconds);
             }
             catch (JobPerformanceException ex)
             {

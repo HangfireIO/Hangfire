@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using HangFire.Common;
 using HangFire.Storage;
 
@@ -25,12 +26,14 @@ namespace HangFire.States
     {
         public static readonly string StateName = "Succeeded";
 
-        public SucceededState()
+        public SucceededState(long performanceDuration)
         {
+            PerformanceDuration = performanceDuration;
             SucceededAt = DateTime.UtcNow;
         }
 
-        public DateTime SucceededAt { get; set; }
+        public DateTime SucceededAt { get; private set; }
+        public long PerformanceDuration { get; private set; }
 
         public string Name { get { return StateName; } }
         public string Reason { get; set; }
@@ -41,7 +44,8 @@ namespace HangFire.States
         {
             return new Dictionary<string, string>
             {
-                { "SucceededAt",  JobHelper.ToStringTimestamp(SucceededAt)}
+                { "SucceededAt",  JobHelper.ToStringTimestamp(SucceededAt) },
+                { "PerformanceDuration", PerformanceDuration.ToString(CultureInfo.InvariantCulture) }
             };
         }
 

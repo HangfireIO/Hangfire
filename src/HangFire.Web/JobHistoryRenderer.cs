@@ -34,7 +34,7 @@ namespace HangFire.Web
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
         static JobHistoryRenderer()
         {
-            Register(SucceededState.StateName, NullRenderer);
+            Register(SucceededState.StateName, SucceededRenderer);
             Register(FailedState.StateName, FailedRenderer);
             Register(ProcessingState.StateName, ProcessingRenderer);
             Register(EnqueuedState.StateName, EnqueuedRenderer);
@@ -83,35 +83,49 @@ namespace HangFire.Web
             return null;
         }
 
-        private static IHtmlString FailedRenderer(IDictionary<string, string> properties)
+        public static IHtmlString SucceededRenderer(IDictionary<string, string> stateData)
         {
-            var stackTrace = HtmlHelper.MarkupStackTrace(properties["ExceptionDetails"]).ToHtmlString();
+            if (stateData.ContainsKey("PerformanceDuration"))
+            {
+                var duration = TimeSpan.FromMilliseconds(int.Parse(stateData["PerformanceDuration"]));
+
+                return new HtmlString(String.Format(
+                    "<dl class=\"dl-horizontal\"><dt>Duration:</dt><dd>{0}</dd></dl>",
+                    HtmlHelper.ToHumanDuration(duration, false)));
+            }
+
+            return null;
+        }
+
+        private static IHtmlString FailedRenderer(IDictionary<string, string> stateData)
+        {
+            var stackTrace = HtmlHelper.MarkupStackTrace(stateData["ExceptionDetails"]).ToHtmlString();
             return new HtmlString(String.Format(
                 "<h4 class=\"exception-type\">{0}</h4><p>{1}</p>{2}",
-                properties["ExceptionType"],
-                properties["ExceptionMessage"],
+                stateData["ExceptionType"],
+                stateData["ExceptionMessage"],
                 stackTrace != null ? "<pre class=\"stack-trace\">" + stackTrace + "</pre>" : null));
         }
 
-        private static IHtmlString ProcessingRenderer(IDictionary<string, string> properties)
+        private static IHtmlString ProcessingRenderer(IDictionary<string, string> stateData)
         {
             return new HtmlString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Server:</dt><dd><span class=\"label label-default\">{0}</span></dd></dl>", properties["ServerName"].ToUpperInvariant()));
+                "<dl class=\"dl-horizontal\"><dt>Server:</dt><dd><span class=\"label label-default\">{0}</span></dd></dl>", stateData["ServerName"].ToUpperInvariant()));
         }
 
-        private static IHtmlString EnqueuedRenderer(IDictionary<string, string> properties)
+        private static IHtmlString EnqueuedRenderer(IDictionary<string, string> stateData)
         {
             return new HtmlString(String.Format(
                 "<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-queue label-primary\">{0}</span></dd></dl>",
-                properties["Queue"]));
+                stateData["Queue"]));
         }
 
-        private static IHtmlString ScheduledRenderer(IDictionary<string, string> properties)
+        private static IHtmlString ScheduledRenderer(IDictionary<string, string> stateData)
         {
             return new HtmlString(String.Format(
                 "<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{0}\">{1}</dd></dl>",
-                properties["EnqueueAt"],
-                JobHelper.FromStringTimestamp(properties["EnqueueAt"])));
+                stateData["EnqueueAt"],
+                JobHelper.FromStringTimestamp(stateData["EnqueueAt"])));
         }
     }
 }
