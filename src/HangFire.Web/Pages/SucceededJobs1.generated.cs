@@ -181,7 +181,7 @@ WriteLiteral(" ");
 
             
             #line 65 "..\..\Pages\SucceededJobs.cshtml"
-                                                                                                                         Write(job.Value.InSucceededState ? "hover" : null);
+                                                                                                                         Write(job.Value != null && job.Value.InSucceededState ? "hover" : null);
 
             
             #line default
@@ -191,7 +191,7 @@ WriteLiteral("\">\r\n                        <td>\r\n");
 
             
             #line 67 "..\..\Pages\SucceededJobs.cshtml"
-                             if (job.Value.InSucceededState)
+                             if (job.Value != null && job.Value.InSucceededState)
                             {
 
             

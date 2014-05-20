@@ -243,6 +243,17 @@
                             .attr('data-container', 'body');
                     }
                 });
+
+                $('*[data-moment-title]').each(function () {
+                    var $this = $(this);
+                    var timestamp = $this.data('moment-title');
+
+                    if (timestamp) {
+                        var time = moment(timestamp, 'X');
+                        $this.prop('title', time.format('llll'))
+                            .attr('data-container', 'body');
+                    }
+                });
             };
 
             updateRelativeDates();
@@ -278,8 +289,11 @@
                 var container = this;
 
                 var selectRow = function(row, isSelected) {
-                    $('.js-jobs-list-checkbox', row).prop('checked', isSelected);
-                    $(row).toggleClass('highlight', isSelected);
+                    var $checkbox = $('.js-jobs-list-checkbox', row);
+                    if ($checkbox.length > 0) {
+                        $checkbox.prop('checked', isSelected);
+                        $(row).toggleClass('highlight', isSelected);
+                    }
                 };
 
                 var toggleRowSelection = function(row) {
@@ -304,12 +318,16 @@
                         return $(this).prop('checked');
                     }).get();
 
-                    var state = 'some-selected';
+                    var state = 'none-selected';
 
-                    if ($.inArray(false, selectedRows) === -1) {
-                        state = 'all-selected';
-                    } else if ($.inArray(true, selectedRows) === -1) {
-                        state = 'none-selected';
+                    if (selectedRows.length > 0) {
+                        state = 'some-selected';
+
+                        if ($.inArray(false, selectedRows) === -1) {
+                            state = 'all-selected';
+                        } else if ($.inArray(true, selectedRows) === -1) {
+                            state = 'none-selected';
+                        }
                     }
 
                     setListState(state);

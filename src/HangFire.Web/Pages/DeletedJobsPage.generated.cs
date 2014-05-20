@@ -178,7 +178,7 @@ WriteLiteral(" ");
 
             
             #line 62 "..\..\Pages\DeletedJobsPage.cshtml"
-                                                                                                                       Write(job.Value.InDeletedState && job.Value != null ? "hover" : null);
+                                                                                                                       Write(job.Value != null && job.Value.InDeletedState && job.Value != null ? "hover" : null);
 
             
             #line default
