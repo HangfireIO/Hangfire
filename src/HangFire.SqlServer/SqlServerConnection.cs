@@ -53,10 +53,10 @@ namespace HangFire.SqlServer
             return new SqlServerWriteOnlyTransaction(_connection, _queueProviders);
         }
 
-        public IDisposable AcquireJobLock(string jobId)
+        public IDisposable AcquireDistributedLock(string resource)
         {
             return new SqlServerDistributedLock(
-                String.Format("HangFire:Job:{0}", jobId), 
+                String.Format("HangFire:{0}", resource),
                 _connection);
         }
 

@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using HangFire.Common;
 using HangFire.Server;
@@ -37,7 +38,7 @@ namespace HangFire.Storage
         void SetJobParameter(string id, string name, string value);
         string GetJobParameter(string id, string name);
 
-        IDisposable AcquireJobLock(string jobId);
+        IDisposable AcquireDistributedLock(string resource);
         JobData GetJobData(string id);
 
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);

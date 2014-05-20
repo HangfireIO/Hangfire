@@ -87,11 +87,11 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void AcquireJobLock_ReturnsNonNullInstance()
+        public void AcquireLock_ReturnsNonNullInstance()
         {
             UseConnection(connection =>
             {
-                var @lock = connection.AcquireJobLock("1");
+                var @lock = connection.AcquireDistributedLock("1");
                 Assert.NotNull(@lock);
             });
         }

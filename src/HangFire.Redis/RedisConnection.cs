@@ -106,10 +106,10 @@ namespace HangFire.Redis
             return new RedisFetchedJob(this, jobId, queueName);
         }
 
-        public IDisposable AcquireJobLock(string jobId)
+        public IDisposable AcquireDistributedLock(string resource)
         {
             return Redis.AcquireLock(
-                RedisStorage.Prefix + String.Format("job:{0}:state-lock", jobId),
+                RedisStorage.Prefix + resource,
                 TimeSpan.FromMinutes(1));
         }
 
