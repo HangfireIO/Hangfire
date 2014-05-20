@@ -157,7 +157,7 @@ WriteLiteral(@"
                     </th>
                     <th class=""min-width"">Id</th>
                     <th>Job</th>
-                    <th class=""min-width"">Duration</th>
+                    <th class=""min-width"">Total Duration</th>
                     <th class=""align-right"">Succeeded</th>
                 </tr>
             </thead>
@@ -322,7 +322,7 @@ WriteLiteral("                            <td class=\"min-width align-right\">\r
 
             
             #line 98 "..\..\Pages\SucceededJobs.cshtml"
-                                 if (job.Value.Duration.HasValue)
+                                 if (job.Value.TotalDuration.HasValue)
                                 {
 
             
@@ -335,7 +335,7 @@ WriteLiteral(" ");
 
             
             #line 100 "..\..\Pages\SucceededJobs.cshtml"
-                                  Write(HtmlHelper.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.Duration.Value) , false));
+                                  Write(HtmlHelper.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value) , false));
 
             
             #line default

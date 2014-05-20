@@ -27,7 +27,7 @@ namespace HangFire.Storage.Monitoring
         }
 
         public Job Job { get; set; }
-        public long? Duration { get; set; }
+        public long? TotalDuration { get; set; }
         public DateTime? SucceededAt { get; set; }
         public bool InSucceededState { get; set; }
     }

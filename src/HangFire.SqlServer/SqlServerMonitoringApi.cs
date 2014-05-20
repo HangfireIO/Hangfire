@@ -238,7 +238,9 @@ select * from (
                 (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
-                    Duration = stateData.ContainsKey("PerformanceDuration") ? (long?)long.Parse(stateData["PerformanceDuration"]) : null,
+                    TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
+                        ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
+                        : null,
                     SucceededAt = JobHelper.FromNullableStringTimestamp(stateData["SucceededAt"])
                 });
         }

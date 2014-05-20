@@ -230,13 +230,15 @@ namespace HangFire.Redis
                 _redis,
                 succeededJobIds,
                 null,
-                new[] { "SucceededAt", "PerformanceDuration", "State" },
+                new[] { "SucceededAt", "PerformanceDuration", "Latency", "State" },
                 (job, jobData, state) => new SucceededJobDto
                 {
                     Job = job,
                     SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                    Duration = state[1] != null ? (long?)long.Parse(state[1]) : null,
-                    InSucceededState = SucceededState.StateName.Equals(state[2], StringComparison.OrdinalIgnoreCase)
+                    TotalDuration = state[1] != null && state[2] != null
+                        ? (long?)long.Parse(state[1]) + (long?)long.Parse(state[2])
+                        : null,
+                    InSucceededState = SucceededState.StateName.Equals(state[3], StringComparison.OrdinalIgnoreCase)
                 });
         }
 

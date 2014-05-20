@@ -57,7 +57,7 @@ else
                     </th>
                     <th class="min-width">Id</th>
                     <th>Job</th>
-                    <th class="min-width">Duration</th>
+                    <th class="min-width">Total Duration</th>
                     <th class="align-right">Succeeded</th>
                 </tr>
             </thead>
@@ -95,9 +95,9 @@ else
                                 </a>
                             </td>
                             <td class="min-width align-right">
-                                @if (job.Value.Duration.HasValue)
+                                @if (job.Value.TotalDuration.HasValue)
                                 {
-                                    @: @HtmlHelper.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.Duration.Value) , false)
+                                    @: @HtmlHelper.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value) , false)
                                 }
                             </td>
                             <td class="min-width align-right">
