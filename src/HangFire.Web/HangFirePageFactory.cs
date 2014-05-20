@@ -74,6 +74,9 @@ namespace HangFire.Web
 
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
+            RegisterPathHandlerFactory("/succeeded/requeue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId, SucceededState.StateName)));
+
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
 
             RegisterPathHandlerFactory("/failed/requeue", x => new BatchCommandHandler(
