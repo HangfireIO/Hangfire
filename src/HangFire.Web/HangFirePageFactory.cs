@@ -51,7 +51,19 @@ namespace HangFire.Web
                 "/queues/(?<Queue>.+)",
                 x => new EnqueuedJobsPage(x.Groups["Queue"].Value));
 
+            RegisterPathHandlerFactory("/enqueued/delete", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Delete(jobId)));
+
+            RegisterPathHandlerFactory("/enqueued/requeue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId)));
+
             RegisterPathHandlerFactory("/processing", x => new ProcessingJobsPage());
+            RegisterPathHandlerFactory("/processing/delete", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Delete(jobId, ProcessingState.StateName)));
+
+            RegisterPathHandlerFactory("/processing/requeue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId, ProcessingState.StateName)));
+
             RegisterPathHandlerFactory("/scheduled", x => new ScheduledJobsPage());
 
             RegisterPathHandlerFactory("/scheduled/enqueue", x => new BatchCommandHandler(
@@ -62,6 +74,9 @@ namespace HangFire.Web
 
             RegisterPathHandlerFactory("/servers", x => new ServersPage());
             RegisterPathHandlerFactory("/succeeded", x => new SucceededJobs());
+            RegisterPathHandlerFactory("/succeeded/requeue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId, SucceededState.StateName)));
+
             RegisterPathHandlerFactory("/failed", x => new FailedJobsPage());
 
             RegisterPathHandlerFactory("/failed/requeue", x => new BatchCommandHandler(

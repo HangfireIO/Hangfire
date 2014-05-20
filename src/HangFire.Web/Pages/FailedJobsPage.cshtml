@@ -44,7 +44,7 @@ else
                 <span class="glyphicon glyphicon-repeat"></span>
                 Requeue jobs
             </button>
-            
+
             <button class="js-jobs-list-command btn btn-sm btn-default"
                     data-url="@Request.LinkTo("/failed/delete")"
                     data-loading-text="Deleting..."
@@ -56,7 +56,7 @@ else
             @RenderPartial(new PerPageSelector(pager))
         </div>
 
-        <table class="table failed-table table-hover">
+        <table class="table failed-table">
             <thead>
                 <tr>
                     <th class="min-width">
@@ -71,14 +71,14 @@ else
                 @{ var index = 0; }
                 @foreach (var job in failedJobs)
                 {
-                    <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null)">
+                    <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
                         <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
                             @if (job.Value.InFailedState)
                             {
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                             }
                         </td>
-                        <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
+                        <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
                             <a href="@Request.LinkTo("/job/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>
@@ -87,7 +87,7 @@ else
                                 <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                             }
                         </td>
-                        <td>
+                        <td class="min-width">
                             @if (job.Value.FailedAt.HasValue)
                             {
                                 <span data-moment="@JobHelper.ToStringTimestamp(job.Value.FailedAt.Value)">
@@ -97,14 +97,14 @@ else
                         </td>
                         <td>
                             <div>
-                                <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                                <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
                                     @HtmlHelper.DisplayMethod(job.Value.Job)
-                                </span>
+                                </a>
                             </div>
                             @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                             {
                                 <div style="color: #888;">
-                                    @job.Value.Reason <a class="expander" href="#">More details...</a>
+                                    @job.Value.Reason <a class="expander" href="#">More&nbsp;details...</a>
                                 </div>
                             }
                         </td>

@@ -54,7 +54,7 @@ else
             @RenderPartial(new PerPageSelector(pager))
         </div>
 
-        <table class="table table-hover">
+        <table class="table">
             <thead>
                 <tr>
                     <th class="min-width">
@@ -63,18 +63,19 @@ else
                     <th class="min-width">Id</th>
                     <th>Enqueue</th>
                     <th>Job</th>
+                    <th class="align-right">Scheduled</th>
                 </tr>
             </thead>
             @foreach (var job in scheduledJobs)
             {
-                <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null)">
+                <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
                     <td>
                         @if (job.Value.InScheduledState)
                         {
                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                         }
                     </td>
-                    <td>
+                    <td class="min-width">
                         <a href="@Request.LinkTo("/job/" + job.Key)">
                             @HtmlHelper.JobId(job.Key)
                         </a>
@@ -83,11 +84,23 @@ else
                             <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                         }
                     </td>
-                    <td data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueueAt)">@job.Value.EnqueueAt</td>
-                    <td>
-                        <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
-                            @HtmlHelper.DisplayMethod(job.Value.Job)
+                    <td class="min-width">
+                        <span data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueueAt)">
+                            @job.Value.EnqueueAt
                         </span>
+                    </td>
+                    <td>
+                        <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
+                            @HtmlHelper.DisplayMethod(job.Value.Job)
+                        </a>
+                    </td>
+                    <td class="align-right">
+                        @if (job.Value.ScheduledAt != null)
+                        {
+                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt.Value)">
+                                @job.Value.ScheduledAt
+                            </span>
+                        }
                     </td>
                 </tr>
             }

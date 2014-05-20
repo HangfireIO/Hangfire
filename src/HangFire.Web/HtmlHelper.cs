@@ -34,13 +34,7 @@ namespace HangFire.Web
                 return null;
             }
 
-            var separator = job.Method.IsStatic ? "." : "::";
-            return String.Format("{0}{1}{2}", job.Type.Name, separator, job.Method.Name);
-        }
-
-        public static string DisplayMethodHint(Job job)
-        {
-            return job == null ? null : job.Type.FullName;
+            return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
         }
 
         public static IHtmlString Raw(string value)

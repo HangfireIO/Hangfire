@@ -173,7 +173,8 @@ select * from (
                 (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
-                    EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"])
+                    EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"]),
+                    ScheduledAt = JobHelper.FromStringTimestamp(stateData["ScheduledAt"])
                 });
         }
 
@@ -295,7 +296,8 @@ select * from (
 select j.*, s.Reason as StateReason, s.Data as StateData 
 from HangFire.Job j
 left join HangFire.State s on s.Id = j.StateId
-where j.Id in @jobIds";
+left join HangFire.JobQueue jq on jq.JobId = j.Id
+where j.Id in @jobIds and jq.FetchedAt is null";
 
             var jobs = _connection.Query<SqlJob>(
                 enqueuedJobsSql,
@@ -307,7 +309,7 @@ where j.Id in @jobIds";
                 (sqlJob, job, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
-                    InEnqueuedState = sqlJob.StateName == EnqueuedState.StateName,
+                    State = sqlJob.StateName,
                     EnqueuedAt = sqlJob.StateName == EnqueuedState.StateName 
                         ? JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
                         : null
@@ -329,7 +331,7 @@ select j.*, jq.FetchedAt, s.Reason as StateReason, s.Data as StateData
 from HangFire.Job j
 left join HangFire.State s on s.Id = j.StateId
 left join HangFire.JobQueue jq on jq.JobId = j.Id
-where j.Id in @jobIds";
+where j.Id in @jobIds and jq.FetchedAt is not null";
 
             var jobs = _connection.Query<SqlJob>(
                 fetchedJobsSql,
@@ -346,7 +348,6 @@ where j.Id in @jobIds";
                     {
                         Job = DeserializeJob(job.InvocationData, job.Arguments),
                         State = job.StateName,
-                        CreatedAt = job.CreatedAt,
                         FetchedAt = job.FetchedAt
                     }));
             }

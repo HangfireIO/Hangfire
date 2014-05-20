@@ -115,8 +115,8 @@ else
             #line default
             #line hidden
 WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolbar btn-toolbar-top\">" +
-"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\" \r\n    " +
-"                data-url=\"");
+"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\"\r\n     " +
+"               data-url=\"");
 
 
             
@@ -126,9 +126,9 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
             
             #line default
             #line hidden
-WriteLiteral("\" \r\n                    data-loading-text=\"Enqueueing...\">\r\n                <span" +
-" class=\"glyphicon glyphicon-repeat\"></span>\r\n                Requeue jobs\r\n     " +
-"       </button>\r\n            ");
+WriteLiteral("\"\r\n                    data-loading-text=\"Enqueueing...\">\r\n                <span " +
+"class=\"glyphicon glyphicon-repeat\"></span>\r\n                Requeue jobs\r\n      " +
+"      </button>\r\n            ");
 
 
             
@@ -140,7 +140,7 @@ WriteLiteral("\" \r\n                    data-loading-text=\"Enqueueing...\">\r\
             #line hidden
 WriteLiteral(@"
         </div>
-        <table class=""table table-hover"">
+        <table class=""table"">
             <thead>
                 <tr>
                     <th class=""min-width"">
@@ -148,7 +148,7 @@ WriteLiteral(@"
                     </th>
                     <th class=""min-width"">Id</th>
                     <th>Job</th>
-                    <th>Deleted</th>
+                    <th class=""align-right"">Deleted</th>
                 </tr>
             </thead>
             <tbody>
@@ -173,12 +173,22 @@ WriteLiteral("                    <tr class=\"js-jobs-list-row ");
             
             #line default
             #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 62 "..\..\Pages\DeletedJobsPage.cshtml"
+                                                                                                                       Write(job.Value.InDeletedState && job.Value != null ? "hover" : null);
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\">\r\n                        <td>\r\n");
 
 
             
             #line 64 "..\..\Pages\DeletedJobsPage.cshtml"
-                             if (job.Value.InDeletedState && job.Value != null)
+                             if (job.Value != null && job.Value.InDeletedState)
                             {
 
             
@@ -205,8 +215,8 @@ WriteLiteral("\" />\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                        <td>\r\n                    " +
-"        <a href=\"");
+WriteLiteral("                        </td>\r\n                        <td class=\"min-width\">\r\n  " +
+"                          <a href=\"");
 
 
             
@@ -272,12 +282,13 @@ WriteLiteral("                            <td colspan=\"2\">\r\n                
             
             #line default
             #line hidden
-WriteLiteral("                            <td>\r\n                                <span title=\"");
+WriteLiteral("                            <td>\r\n                                <a class=\"job-m" +
+"ethod\" href=\"");
 
 
             
             #line 88 "..\..\Pages\DeletedJobsPage.cshtml"
-                                        Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
+                                                       Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
@@ -292,11 +303,11 @@ WriteLiteral("\">\r\n                                    ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </span>\r\n                            </td>\r\n");
+WriteLiteral("\r\n                                </a>\r\n                            </td>\r\n");
 
 
 
-WriteLiteral("                            <td>\r\n");
+WriteLiteral("                            <td class=\"align-right\">\r\n");
 
 
             

@@ -132,7 +132,7 @@ WriteLiteral(@"""
                 <span class=""glyphicon glyphicon-repeat""></span>
                 Requeue jobs
             </button>
-            
+
             <button class=""js-jobs-list-command btn btn-sm btn-default""
                     data-url=""");
 
@@ -164,7 +164,7 @@ WriteLiteral(@"""
 WriteLiteral(@"
         </div>
 
-        <table class=""table failed-table table-hover"">
+        <table class=""table failed-table"">
             <thead>
                 <tr>
                     <th class=""min-width"">
@@ -201,6 +201,16 @@ WriteLiteral("                    <tr class=\"js-jobs-list-row ");
             
             #line 74 "..\..\Pages\FailedJobsPage.cshtml"
                                             Write(!job.Value.InFailedState ? "obsolete-data" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 74 "..\..\Pages\FailedJobsPage.cshtml"
+                                                                                                 Write(job.Value.InFailedState ? "hover" : null);
 
             
             #line default
@@ -247,12 +257,13 @@ WriteLiteral("\" />\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                        <td rowspan=\"");
+WriteLiteral("                        </td>\r\n                        <td class=\"min-width\" rows" +
+"pan=\"");
 
 
             
             #line 81 "..\..\Pages\FailedJobsPage.cshtml"
-                                 Write(job.Value.InFailedState ? "2" : "1");
+                                                   Write(job.Value.InFailedState ? "2" : "1");
 
             
             #line default
@@ -299,7 +310,7 @@ WriteLiteral("                                <span title=\"Job\'s state has bee
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                        <td>\r\n");
+WriteLiteral("                        </td>\r\n                        <td class=\"min-width\">\r\n");
 
 
             
@@ -341,12 +352,12 @@ WriteLiteral("\r\n                                </span>\r\n");
             #line default
             #line hidden
 WriteLiteral("                        </td>\r\n                        <td>\r\n                    " +
-"        <div>\r\n                                <span title=\"");
+"        <div>\r\n                                <a class=\"job-method\" href=\"");
 
 
             
             #line 100 "..\..\Pages\FailedJobsPage.cshtml"
-                                        Write(HtmlHelper.DisplayMethodHint(job.Value.Job));
+                                                       Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
@@ -361,7 +372,7 @@ WriteLiteral("\">\r\n                                    ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </span>\r\n                            </div>\r\n");
+WriteLiteral("\r\n                                </a>\r\n                            </div>\r\n");
 
 
             
@@ -383,8 +394,8 @@ WriteLiteral("                                <div style=\"color: #888;\">\r\n  
             
             #line default
             #line hidden
-WriteLiteral(" <a class=\"expander\" href=\"#\">More details...</a>\r\n                              " +
-"  </div>\r\n");
+WriteLiteral(" <a class=\"expander\" href=\"#\">More&nbsp;details...</a>\r\n                         " +
+"       </div>\r\n");
 
 
             

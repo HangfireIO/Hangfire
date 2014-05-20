@@ -37,15 +37,15 @@ else
 {
     <div class="js-jobs-list">
         <div class="btn-toolbar btn-toolbar-top">
-            <button class="js-jobs-list-command btn btn-sm btn-primary" 
-                    data-url="@Request.LinkTo("/deleted/requeue")" 
+            <button class="js-jobs-list-command btn btn-sm btn-primary"
+                    data-url="@Request.LinkTo("/deleted/requeue")"
                     data-loading-text="Enqueueing...">
                 <span class="glyphicon glyphicon-repeat"></span>
                 Requeue jobs
             </button>
             @RenderPartial(new PerPageSelector(pager))
         </div>
-        <table class="table table-hover">
+        <table class="table">
             <thead>
                 <tr>
                     <th class="min-width">
@@ -53,20 +53,20 @@ else
                     </th>
                     <th class="min-width">Id</th>
                     <th>Job</th>
-                    <th>Deleted</th>
+                    <th class="align-right">Deleted</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var job in jobs)
                 {
-                    <tr class="js-jobs-list-row @(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null)">
+                    <tr class="js-jobs-list-row @(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null) @(job.Value.InDeletedState && job.Value != null ? "hover" : null)">
                         <td>
-                            @if (job.Value.InDeletedState && job.Value != null)
+                            @if (job.Value != null && job.Value.InDeletedState)
                             {
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                             }
                         </td>
-                        <td>
+                        <td class="min-width">
                             <a href="@Request.LinkTo("/job/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>
@@ -85,11 +85,11 @@ else
                         else
                         {
                             <td>
-                                <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                                <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
                                     @HtmlHelper.DisplayMethod(job.Value.Job)
-                                </span>
+                                </a>
                             </td>
-                            <td>
+                            <td class="align-right">
                                 @if (job.Value.DeletedAt.HasValue)
                                 {
                                     <span data-moment="@JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value)">
