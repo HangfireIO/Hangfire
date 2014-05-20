@@ -130,14 +130,18 @@ html, body {
     text-align: right;
 }
 
-.table-hover>tbody>tr:hover>td, .table-hover>tbody>tr:hover>th {
+.table>tbody>tr.hover:hover>td, .table>tbody>tr.hover:hover>th {
     background-color: #f9f9f9;
 }
 
- 
 .table>tbody>tr.highlight>td, .table>tbody>tr.highlight>th {
     background-color: #fcf8e3;
     border-color: #fbeed5;
+}
+
+.table>tbody>tr.highlight:hover>td, .table>tbody>tr.highlight:hover>th {
+    background-color: #f6f2dd;
+    border-color: #f5e8ce;
 }
 
 /* Statistics widget

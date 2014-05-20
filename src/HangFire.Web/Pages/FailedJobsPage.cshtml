@@ -56,7 +56,7 @@ else
             @RenderPartial(new PerPageSelector(pager))
         </div>
 
-        <table class="table failed-table table-hover">
+        <table class="table failed-table">
             <thead>
                 <tr>
                     <th class="min-width">
@@ -71,7 +71,7 @@ else
                 @{ var index = 0; }
                 @foreach (var job in failedJobs)
                 {
-                    <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null)">
+                    <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
                         <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
                             @if (job.Value.InFailedState)
                             {

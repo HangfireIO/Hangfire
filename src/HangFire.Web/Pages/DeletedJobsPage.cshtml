@@ -45,7 +45,7 @@ else
             </button>
             @RenderPartial(new PerPageSelector(pager))
         </div>
-        <table class="table table-hover">
+        <table class="table">
             <thead>
                 <tr>
                     <th class="min-width">
@@ -59,9 +59,9 @@ else
             <tbody>
                 @foreach (var job in jobs)
                 {
-                    <tr class="js-jobs-list-row @(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null)">
+                    <tr class="js-jobs-list-row @(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null) @(job.Value.InDeletedState && job.Value != null ? "hover" : null)">
                         <td>
-                            @if (job.Value.InDeletedState && job.Value != null)
+                            @if (job.Value != null && job.Value.InDeletedState)
                             {
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                             }

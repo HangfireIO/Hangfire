@@ -164,7 +164,7 @@ WriteLiteral(@"""
 WriteLiteral(@"
         </div>
 
-        <table class=""table failed-table table-hover"">
+        <table class=""table failed-table"">
             <thead>
                 <tr>
                     <th class=""min-width"">
@@ -201,6 +201,16 @@ WriteLiteral("                    <tr class=\"js-jobs-list-row ");
             
             #line 74 "..\..\Pages\FailedJobsPage.cshtml"
                                             Write(!job.Value.InFailedState ? "obsolete-data" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 74 "..\..\Pages\FailedJobsPage.cshtml"
+                                                                                                 Write(job.Value.InFailedState ? "hover" : null);
 
             
             #line default

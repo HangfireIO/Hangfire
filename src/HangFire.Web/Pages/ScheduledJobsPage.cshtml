@@ -68,7 +68,7 @@ else
             </thead>
             @foreach (var job in scheduledJobs)
             {
-                <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null)">
+                <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
                     <td>
                         @if (job.Value.InScheduledState)
                         {

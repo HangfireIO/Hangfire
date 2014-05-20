@@ -190,6 +190,16 @@ WriteLiteral("                <tr class=\"js-jobs-list-row ");
             
             #line default
             #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 71 "..\..\Pages\ScheduledJobsPage.cshtml"
+                                                                                                Write(job.Value.InScheduledState ? "hover" : null);
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\">\r\n                    <td>\r\n");
 
 

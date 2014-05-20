@@ -140,7 +140,7 @@ WriteLiteral("\" \r\n                    data-loading-text=\"Enqueueing...\">\r\
             #line hidden
 WriteLiteral(@"
         </div>
-        <table class=""table table-hover"">
+        <table class=""table"">
             <thead>
                 <tr>
                     <th class=""min-width"">
@@ -173,12 +173,22 @@ WriteLiteral("                    <tr class=\"js-jobs-list-row ");
             
             #line default
             #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 62 "..\..\Pages\DeletedJobsPage.cshtml"
+                                                                                                                       Write(job.Value.InDeletedState && job.Value != null ? "hover" : null);
+
+            
+            #line default
+            #line hidden
 WriteLiteral("\">\r\n                        <td>\r\n");
 
 
             
             #line 64 "..\..\Pages\DeletedJobsPage.cshtml"
-                             if (job.Value.InDeletedState && job.Value != null)
+                             if (job.Value != null && job.Value.InDeletedState)
                             {
 
             
