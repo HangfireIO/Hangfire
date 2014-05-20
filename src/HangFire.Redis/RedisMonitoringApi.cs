@@ -104,7 +104,7 @@ namespace HangFire.Redis
             }
 
             var jobs = new Dictionary<string, List<string>>();
-            var states = new Dictionary<string, string>();
+            var states = new Dictionary<string, List<String>>();
 
             using (var pipeline = _redis.CreatePipeline())
             {
@@ -119,9 +119,9 @@ namespace HangFire.Redis
                         x => jobs.Add(job.Key, x));
 
                     pipeline.QueueCommand(
-                        x => x.GetValueFromHash(
+                        x => x.GetValuesFromHash(
                             String.Format("hangfire:job:{0}:state", job.Key),
-                            "State"),
+                            new [] { "State", "ScheduledAt" }),
                         x => states.Add(job.Key, x));
                 }
 
@@ -135,8 +135,9 @@ namespace HangFire.Redis
                     {
                         EnqueueAt = JobHelper.FromTimestamp((long) job.Value),
                         Job = TryToGetJob(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2], jobs[job.Key][3]),
+                        ScheduledAt = states[job.Key].Count > 1 ? JobHelper.FromNullableStringTimestamp(states[job.Key][1]) : null,
                         InScheduledState =
-                            ScheduledState.StateName.Equals(states[job.Key], StringComparison.OrdinalIgnoreCase)
+                            ScheduledState.StateName.Equals(states[job.Key][0], StringComparison.OrdinalIgnoreCase)
                     }))
                 .ToList());
         }

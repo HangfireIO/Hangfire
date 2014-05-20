@@ -173,7 +173,8 @@ select * from (
                 (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
-                    EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"])
+                    EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"]),
+                    ScheduledAt = JobHelper.FromStringTimestamp(stateData["ScheduledAt"])
                 });
         }
 

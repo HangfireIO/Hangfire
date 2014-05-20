@@ -62,7 +62,8 @@ else
                     </th>
                     <th class="min-width">Id</th>
                     <th>Enqueue</th>
-                    <th style="width:99%;">Job</th>
+                    <th>Job</th>
+                    <th class="align-right">Scheduled</th>
                 </tr>
             </thead>
             @foreach (var job in scheduledJobs)
@@ -92,6 +93,14 @@ else
                         <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
                             @HtmlHelper.DisplayMethod(job.Value.Job)
                         </span>
+                    </td>
+                    <td class="align-right">
+                        @if (job.Value.ScheduledAt != null)
+                        {
+                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt.Value)">
+                                @job.Value.ScheduledAt
+                            </span>
+                        }
                     </td>
                 </tr>
             }
