@@ -26,13 +26,15 @@ namespace HangFire.States
     {
         public static readonly string StateName = "Succeeded";
 
-        public SucceededState(long performanceDuration)
+        public SucceededState(long latency, long performanceDuration)
         {
+            Latency = latency;
             PerformanceDuration = performanceDuration;
             SucceededAt = DateTime.UtcNow;
         }
 
         public DateTime SucceededAt { get; private set; }
+        public long Latency { get; private set; }
         public long PerformanceDuration { get; private set; }
 
         public string Name { get { return StateName; } }
@@ -45,7 +47,8 @@ namespace HangFire.States
             return new Dictionary<string, string>
             {
                 { "SucceededAt",  JobHelper.ToStringTimestamp(SucceededAt) },
-                { "PerformanceDuration", PerformanceDuration.ToString(CultureInfo.InvariantCulture) }
+                { "PerformanceDuration", PerformanceDuration.ToString(CultureInfo.InvariantCulture) },
+                { "Latency", Latency.ToString(CultureInfo.InvariantCulture) }
             };
         }
 

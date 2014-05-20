@@ -28,6 +28,7 @@ namespace HangFire.Core.Tests.States
 
             Assert.Equal(JobHelper.ToStringTimestamp(state.SucceededAt), data["SucceededAt"]);
             Assert.Equal("123", data["PerformanceDuration"]);
+            Assert.Equal("11", data["Latency"]);
         }
 
         [Fact]
@@ -39,7 +40,7 @@ namespace HangFire.Core.Tests.States
 
         private static SucceededState CreateState()
         {
-            return new SucceededState(123);
+            return new SucceededState(11, 123);
         }
     }
 }

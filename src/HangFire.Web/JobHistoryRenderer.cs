@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Web;
 using HangFire.Common;
 using HangFire.States;
@@ -85,16 +86,32 @@ namespace HangFire.Web
 
         public static IHtmlString SucceededRenderer(IDictionary<string, string> stateData)
         {
+            var builder = new StringBuilder();
+            builder.Append("<dl class=\"dl-horizontal\">");
+
+            var itemsAdded = false;
+
+            if (stateData.ContainsKey("Latency"))
+            {
+                var latency = TimeSpan.FromMilliseconds(int.Parse(stateData["Latency"]));
+                builder.AppendFormat("<dt>Latency:</dt><dd>{0}</dd>", HtmlHelper.ToHumanDuration(latency, false));
+
+                itemsAdded = true;
+            }
+
             if (stateData.ContainsKey("PerformanceDuration"))
             {
                 var duration = TimeSpan.FromMilliseconds(int.Parse(stateData["PerformanceDuration"]));
+                builder.AppendFormat("<dt>Duration:</dt><dd>{0}</dd>", HtmlHelper.ToHumanDuration(duration, false));
 
-                return new HtmlString(String.Format(
-                    "<dl class=\"dl-horizontal\"><dt>Duration:</dt><dd>{0}</dd></dl>",
-                    HtmlHelper.ToHumanDuration(duration, false)));
+                itemsAdded = true;
             }
 
-            return null;
+            builder.Append("</dl>");
+
+            if (!itemsAdded) return null;
+
+            return new HtmlString(builder.ToString());
         }
 
         private static IHtmlString FailedRenderer(IDictionary<string, string> stateData)

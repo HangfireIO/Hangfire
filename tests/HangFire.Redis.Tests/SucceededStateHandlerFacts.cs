@@ -17,7 +17,7 @@ namespace HangFire.Redis.Tests
         {
             _context = new ApplyStateContextMock();
             _context.StateContextValue.JobIdValue = JobId;
-            _context.NewStateValue = new SucceededState(123);
+            _context.NewStateValue = new SucceededState(11, 123);
 
             _transaction = new Mock<IWriteOnlyTransaction>();
         }

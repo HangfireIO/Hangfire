@@ -86,12 +86,13 @@ namespace HangFire.Server
                 jobData.EnsureLoaded();
 
                 var performContext = new PerformContext(_context, connection, jobId, jobData.Job, jobData.CreatedAt);
+                var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
                 process.Run(performContext, jobData.Job);
                 duration.Stop();
 
-                state = new SucceededState(duration.ElapsedMilliseconds);
+                state = new SucceededState((long)latency, duration.ElapsedMilliseconds);
             }
             catch (JobPerformanceException ex)
             {
