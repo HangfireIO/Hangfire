@@ -21,6 +21,7 @@
 * Added - Batch operations on jobs for HangFire Monitor.
 * Added - Retry and delete buttons for almost every page of HangFire Monitor.
 * Added - Duration and latency metrics for succeeded jobs.
+* Added - Display state transition latencies on job details page.
 * Added - DisableConcurrentExecution filter.
 * Misc - Tables in HangFire Monitor received some love.
 
