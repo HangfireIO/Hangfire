@@ -10,7 +10,7 @@
 @{
     Layout = new LayoutPage
         {
-            Title = Queue.ToUpperInvariant(), 
+            Title = Queue.ToUpperInvariant(),
             Subtitle = "Enqueued jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {
@@ -46,56 +46,73 @@
 }
 else
 {
-    @RenderPartial(new PerPageSelector(pager))
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th class="min-width">Id</th>
-                <th class="min-width">State</th>
-                <th>Job</th>
-                <th class="align-right">Enqueued</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var job in enqueuedJobs)
-            {
-                <tr class="@(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
-                    <td class="min-width">
-                        <a href="@Request.LinkTo("/job/" + job.Key)">
-                            @HtmlHelper.JobId(job.Key)
-                        </a>
-                        @if (!job.Value.InEnqueuedState)
-                        {
-                            <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
-                        }
-                    </td>
-                    <td class="min-width">
-                        <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
-                            @job.Value.State
-                        </span>
-                    </td>
-                    <td>
-                        <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
-                            @HtmlHelper.DisplayMethod(job.Value.Job)
-                        </span>
-                    </td>
-                    <td class="align-right">
-                        @if (job.Value.EnqueuedAt.HasValue)
-                        {
-                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt.Value)">
-                                @job.Value.EnqueuedAt        
-                            </span>
-                        }
-                        else
-                        {
-                            <em>n/a</em>
-                        }
-                    </td>
+    <div class="js-jobs-list">
+        <div class="btn-toolbar btn-toolbar-top">
+            <button class="js-jobs-list-command btn btn-sm btn-default"
+                    data-url="@Request.LinkTo("/enqueued/delete")"
+                    data-loading-text="Deleting..."
+                    data-confirm="Do you really want to DELETE ALL selected jobs?">
+                <span class="glyphicon glyphicon-remove"></span>
+                Delete selected
+            </button>
+
+            @RenderPartial(new PerPageSelector(pager))
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="min-width">
+                        <input type="checkbox" class="js-jobs-list-select-all" />
+                    </th>
+                    <th class="min-width">Id</th>
+                    <th class="min-width">State</th>
+                    <th>Job</th>
+                    <th class="align-right">Enqueued</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    
+            </thead>
+            <tbody>
+                @foreach (var job in enqueuedJobs)
+                {
+                    <tr class="js-jobs-list-row hover @(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
+                        <td>
+                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                        </td>
+                        <td class="min-width">
+                            <a href="@Request.LinkTo("/job/" + job.Key)">
+                                @HtmlHelper.JobId(job.Key)
+                            </a>
+                            @if (!job.Value.InEnqueuedState)
+                            {
+                                <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                            }
+                        </td>
+                        <td class="min-width">
+                            <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
+                                @job.Value.State
+                            </span>
+                        </td>
+                        <td>
+                            <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
+                                @HtmlHelper.DisplayMethod(job.Value.Job)
+                            </span>
+                        </td>
+                        <td class="align-right">
+                            @if (job.Value.EnqueuedAt.HasValue)
+                            {
+                                <span data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt.Value)">
+                                    @job.Value.EnqueuedAt
+                                </span>
+                            }
+                            else
+                            {
+                                <em>n/a</em>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
     @RenderPartial(new Paginator(pager))
 }
