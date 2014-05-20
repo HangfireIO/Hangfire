@@ -66,6 +66,7 @@ else
                             <thead>
                                 <tr>
                                     <th class="min-width">Id</th>
+                                    <th class="min-width">State</th>
                                     <th>Job</th>
                                     <th class="align-right min-width">Enqueued</th>
                                 </tr>
@@ -81,6 +82,11 @@ else
                                                 <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                                             }
                                         </td>
+                                        <td class="min-width">
+                                            <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
+                                                @job.Value.State
+                                            </span>
+                                        </td>
                                         <td>
                                             <span title="@HtmlHelper.DisplayMethodHint(job.Value.Job)">
                                                 @HtmlHelper.DisplayMethod(job.Value.Job)
@@ -92,6 +98,10 @@ else
                                                 <span data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt.Value)">
                                                     @job.Value.EnqueuedAt
                                                 </span>
+                                            }
+                                            else
+                                            {
+                                                <em>n/a</em>
                                             }
                                         </td>
                                     </tr>

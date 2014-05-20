@@ -322,13 +322,14 @@ namespace HangFire.Redis
             return GetJobsWithProperties(
                 _redis,
                 jobIds,
-                null,
+                new[] { "State" },
                 new[] { "EnqueuedAt", "State" },
                 (job, jobData, state) => new EnqueuedJobDto
                 {
                     Job = job,
+                    State = jobData[0],
                     EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
-                    InEnqueuedState = EnqueuedState.StateName.Equals(state[1], StringComparison.OrdinalIgnoreCase)
+                    InEnqueuedState = jobData[0].Equals(state[1], StringComparison.OrdinalIgnoreCase)
                 });
         }
 

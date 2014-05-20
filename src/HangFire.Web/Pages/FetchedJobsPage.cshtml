@@ -54,7 +54,7 @@ else
         <thead>
             <tr>
                 <th class="min-width">Id</th>
-                <th>State</th>
+                <th class="min-width">State</th>
                 <th>Job</th>
                 <th>Created</th>
                 <th class="align-right">Fetched</th>
@@ -67,7 +67,7 @@ else
                     <td class="min-width">
                         <a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
                     </td>
-                    <td>
+                    <td class="min-width">
                         <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
                             @job.Value.State</span>
                     </td>

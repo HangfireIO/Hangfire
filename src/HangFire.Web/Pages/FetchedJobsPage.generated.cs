@@ -155,7 +155,7 @@ WriteLiteral(@"    <table class=""table"">
         <thead>
             <tr>
                 <th class=""min-width"">Id</th>
-                <th>State</th>
+                <th class=""min-width"">State</th>
                 <th>Job</th>
                 <th>Created</th>
                 <th class=""align-right"">Fetched</th>
@@ -194,8 +194,8 @@ WriteLiteral("\">");
             
             #line default
             #line hidden
-WriteLiteral("</a>\r\n                    </td>\r\n                    <td>\r\n                      " +
-"  <span class=\"label label-default\" style=\"");
+WriteLiteral("</a>\r\n                    </td>\r\n                    <td class=\"min-width\">\r\n    " +
+"                    <span class=\"label label-default\" style=\"");
 
 
             
