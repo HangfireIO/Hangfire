@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using HangFire.Common;
@@ -70,6 +71,61 @@ namespace HangFire.Web
             }
 
             return type.FullName;
+        }
+
+        public static string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
+        {
+            if (duration == null) return null;
+
+            var builder = new StringBuilder();
+            if (displaySign)
+            {
+                builder.Append(duration.Value.TotalMilliseconds < 0 ? "-" : "+");
+            }
+
+            duration = duration.Value.Duration();
+
+            if (duration.Value.Days > 0)
+            {
+                builder.AppendFormat("{0}d ", duration.Value.Days);
+            }
+
+            if (duration.Value.Hours > 0)
+            {
+                builder.AppendFormat("{0}h ", duration.Value.Hours);
+            }
+
+            if (duration.Value.Minutes > 0)
+            {
+                builder.AppendFormat("{0}m ", duration.Value.Minutes);
+            }
+
+            if (duration.Value.Seconds > 0)
+            {
+                builder.Append(duration.Value.Seconds);
+                if (duration.Value.Milliseconds > 0)
+                {
+                    builder.AppendFormat(".{0}", duration.Value.Milliseconds);
+                }
+
+                builder.Append("s ");
+            }
+            else
+            {
+                if (duration.Value.Milliseconds > 0)
+                {
+                    builder.AppendFormat("{0}ms ", duration.Value.Milliseconds);
+                }
+            }
+
+            if (builder.Length <= 1)
+            {
+                builder.Append(" <1ms ");
+            }
+
+            builder.Remove(builder.Length - 1, 1);
+
+            return builder.ToString();
         }
 
         public static string FormatProperties(IDictionary<string, string> properties)
