@@ -310,7 +310,7 @@ WriteLiteral("                                <span title=\"Job\'s state has bee
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                        <td>\r\n");
+WriteLiteral("                        </td>\r\n                        <td class=\"min-width\">\r\n");
 
 
             
@@ -394,8 +394,8 @@ WriteLiteral("                                <div style=\"color: #888;\">\r\n  
             
             #line default
             #line hidden
-WriteLiteral(" <a class=\"expander\" href=\"#\">More details...</a>\r\n                              " +
-"  </div>\r\n");
+WriteLiteral(" <a class=\"expander\" href=\"#\">More&nbsp;details...</a>\r\n                         " +
+"       </div>\r\n");
 
 
             

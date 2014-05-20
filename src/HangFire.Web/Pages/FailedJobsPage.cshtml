@@ -87,7 +87,7 @@ else
                                 <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                             }
                         </td>
-                        <td>
+                        <td class="min-width">
                             @if (job.Value.FailedAt.HasValue)
                             {
                                 <span data-moment="@JobHelper.ToStringTimestamp(job.Value.FailedAt.Value)">
@@ -104,7 +104,7 @@ else
                             @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                             {
                                 <div style="color: #888;">
-                                    @job.Value.Reason <a class="expander" href="#">More details...</a>
+                                    @job.Value.Reason <a class="expander" href="#">More&nbsp;details...</a>
                                 </div>
                             }
                         </td>
