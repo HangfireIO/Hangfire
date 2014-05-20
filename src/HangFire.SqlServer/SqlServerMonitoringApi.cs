@@ -296,7 +296,8 @@ select * from (
 select j.*, s.Reason as StateReason, s.Data as StateData 
 from HangFire.Job j
 left join HangFire.State s on s.Id = j.StateId
-where j.Id in @jobIds";
+left join HangFire.JobQueue jq on jq.JobId = j.Id
+where j.Id in @jobIds and jq.FetchedAt is null";
 
             var jobs = _connection.Query<SqlJob>(
                 enqueuedJobsSql,
@@ -330,7 +331,7 @@ select j.*, jq.FetchedAt, s.Reason as StateReason, s.Data as StateData
 from HangFire.Job j
 left join HangFire.State s on s.Id = j.StateId
 left join HangFire.JobQueue jq on jq.JobId = j.Id
-where j.Id in @jobIds";
+where j.Id in @jobIds and jq.FetchedAt is not null";
 
             var jobs = _connection.Query<SqlJob>(
                 fetchedJobsSql,

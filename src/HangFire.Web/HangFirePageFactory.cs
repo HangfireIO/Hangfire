@@ -54,6 +54,9 @@ namespace HangFire.Web
             RegisterPathHandlerFactory("/enqueued/delete", x => new BatchCommandHandler(
                 jobId => BackgroundJob.Delete(jobId)));
 
+            RegisterPathHandlerFactory("/enqueued/requeue", x => new BatchCommandHandler(
+                jobId => BackgroundJob.Requeue(jobId)));
+
             RegisterPathHandlerFactory("/processing", x => new ProcessingJobsPage());
             RegisterPathHandlerFactory("/scheduled", x => new ScheduledJobsPage());
 
