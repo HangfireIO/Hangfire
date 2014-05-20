@@ -63,6 +63,7 @@
     <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
+    <Compile Include="DisableConcurrentExecutionAttribute.cs" />
     <Compile Include="IBackgroundJobClient.cs" />
     <Compile Include="Client\JobCreationProcess.cs" />
     <Compile Include="Client\CreateContext.cs" />
