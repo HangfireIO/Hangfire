@@ -274,6 +274,11 @@ BEGIN
 	BEGIN
 		PRINT 'Installing schema version 3';
 
+		-- Drop unused index. It is commented, because I don't want to add a
+		-- migration only to drop one index. But in a future migration it should
+		-- be uncommented.
+		DROP INDEX [IX_HangFire_JobQueue_JobIdAndQueue] ON [HangFire].[JobQueue];
+
 		-- Insert migration here
 
 		SET @CURRENT_SCHEMA_VERSION = 3;

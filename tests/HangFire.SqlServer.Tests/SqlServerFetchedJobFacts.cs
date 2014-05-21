@@ -23,7 +23,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(null, JobId, Queue));
+                () => new SqlServerFetchedJob(null, 1, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -32,7 +32,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_connection.Object, null, Queue));
+                () => new SqlServerFetchedJob(_connection.Object, 1, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -41,7 +41,7 @@ namespace HangFire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_connection.Object, JobId, null));
+                () => new SqlServerFetchedJob(_connection.Object, 1, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -60,13 +60,14 @@ namespace HangFire.SqlServer.Tests
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
-values (@id, @queue)";
+values (@id, @queue);
+select scope_identity() as Id;";
 
             UseConnection(sql =>
             {
                 // Arrange
-                sql.Execute(arrangeSql, new { id = "1", queue = "default" });
-                var processingJob = new SqlServerFetchedJob(sql, "1", "default");
+                var id = (int)sql.Query(arrangeSql, new { id = "1", queue = "default" }).Single().Id;
+                var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
 
                 // Act
                 processingJob.RemoveFromQueue();
@@ -91,18 +92,19 @@ values (@id, @queue)";
                     arrangeSql,
                     new[]
                     { 
+                        new { id = "1", queue = "default" },
                         new { id = "1", queue = "critical" },
                         new { id = "2", queue = "default" } 
                     });
 
-                var fetchedJob = new SqlServerFetchedJob(sql, "1", "default");
+                var fetchedJob = new SqlServerFetchedJob(sql, 999, "1", "default");
 
                 // Act
                 fetchedJob.RemoveFromQueue();
 
                 // Assert
                 var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
-                Assert.Equal(2, count);
+                Assert.Equal(3, count);
             });
         }
 
@@ -111,13 +113,14 @@ values (@id, @queue)";
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
-values (@id, @queue)";
+values (@id, @queue);
+select scope_identity() as Id";
 
             UseConnection(sql =>
             {
                 // Arrange
-                sql.Execute(arrangeSql, new { id = "1", queue = "default" });
-                var processingJob = new SqlServerFetchedJob(sql, "1", "default");
+                var id = (int)sql.Query(arrangeSql, new { id = "1", queue = "default" }).Single().Id;
+                var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
 
                 // Act
                 processingJob.Dispose();
@@ -130,7 +133,7 @@ values (@id, @queue)";
 
         private SqlServerFetchedJob CreateFetchedJob()
         {
-            return new SqlServerFetchedJob(_connection.Object, JobId, Queue);
+            return new SqlServerFetchedJob(_connection.Object, 1, JobId, Queue);
         }
 
         private static void UseConnection(Action<IDbConnection> action)

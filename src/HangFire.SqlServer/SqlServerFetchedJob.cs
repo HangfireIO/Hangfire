@@ -25,7 +25,11 @@ namespace HangFire.SqlServer
     {
         private readonly IDbConnection _connection;
 
-        public SqlServerFetchedJob(IDbConnection connection, string jobId, string queue)
+        public SqlServerFetchedJob(
+            IDbConnection connection, 
+            int id, 
+            string jobId, 
+            string queue)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (jobId == null) throw new ArgumentNullException("jobId");
@@ -33,17 +37,20 @@ namespace HangFire.SqlServer
 
             _connection = connection;
 
+            Id = id;
             JobId = jobId;
             Queue = queue;
         }
 
+        public int Id { get; private set; }
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
         public void RemoveFromQueue()
         {
-            _connection.Execute("delete from HangFire.JobQueue where JobId = @id and Queue = @queueName",
-                new { id = JobId, queueName = Queue });
+            _connection.Execute(
+                "delete from HangFire.JobQueue where Id = @id",
+                new { id = Id });
         }
 
         public void Dispose()

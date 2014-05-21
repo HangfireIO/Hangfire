@@ -20,6 +20,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
+using HangFire.SqlServer.Annotations;
 using HangFire.Storage;
 
 namespace HangFire.SqlServer
@@ -38,17 +39,18 @@ namespace HangFire.SqlServer
             _connection = connection;
         }
 
+        [NotNull]
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null) throw new ArgumentNullException("queues");
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
 
-            dynamic idAndQueue;
+            FetchedJob fetchedJob;
 
             const string fetchJobSqlTemplate = @"
 set transaction isolation level read committed
 update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
-output INSERTED.JobId, INSERTED.Queue
+output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
 where FetchedAt {0}
 and Queue in @queues";
 
@@ -61,12 +63,12 @@ and Queue in @queues";
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                idAndQueue = _connection.Query(
+                fetchedJob = _connection.Query<FetchedJob>(
                     String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
                     new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds })
                     .SingleOrDefault();
 
-                if (idAndQueue == null)
+                if (fetchedJob == null)
                 {
                     if (currentQueryIndex == fetchConditions.Length - 1)
                     {
@@ -76,12 +78,13 @@ and Queue in @queues";
                 }
 
                 currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
-            } while (idAndQueue == null);
+            } while (fetchedJob == null);
 
             return new SqlServerFetchedJob(
                 _connection,
-                idAndQueue.JobId.ToString(CultureInfo.InvariantCulture),
-                idAndQueue.Queue);
+                fetchedJob.Id,
+                fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
+                fetchedJob.Queue);
         }
 
         public void Enqueue(string queue, string jobId)
@@ -90,6 +93,14 @@ and Queue in @queues";
 insert into HangFire.JobQueue (JobId, Queue) values (@jobId, @queue)";
 
             _connection.Execute(enqueueJobSql, new { jobId = jobId, queue = queue });
+        }
+
+        [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+        private class FetchedJob
+        {
+            public int Id { get; set; }
+            public int JobId { get; set; }
+            public string Queue { get; set; }
         }
     }
 }

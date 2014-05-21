@@ -91,18 +91,15 @@ namespace HangFire.SqlServer.Tests
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
-values (@jobId, @queue)";
+values (@jobId, @queue);
+select scope_identity() as Id;";
 
             // Arrange
             UseConnection(connection =>
             {
-                connection.Execute(
+                var id = (int)connection.Query(
                     arrangeSql,
-                    new
-                    {
-                        jobId = 1,
-                        queue = "default"
-                    });
+                    new { jobId = 1, queue = "default" }).Single().Id;
                 var queue = CreateJobQueue(connection);
 
                 // Act
@@ -111,6 +108,7 @@ values (@jobId, @queue)";
                     CreateTimingOutCancellationToken());
 
                 // Assert
+                Assert.Equal(id, payload.Id);
                 Assert.Equal("1", payload.JobId);
                 Assert.Equal("default", payload.Queue);
             });
