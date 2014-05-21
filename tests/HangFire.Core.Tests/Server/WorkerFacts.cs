@@ -95,7 +95,7 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_DoesNotRemoveJobFromQueue_WhenThereIsAnException()
+        public void Execute_DoesNotCompletesAJob_WhenThereIsAnException()
         {
             _stateMachine
                 .Setup(x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()))
