@@ -25,6 +25,9 @@ namespace HangFire.SqlServer
     {
         private readonly IDbConnection _connection;
 
+        private bool _disposed;
+        private bool _completed;
+
         public SqlServerFetchedJob(
             IDbConnection connection, 
             int id, 
@@ -51,10 +54,22 @@ namespace HangFire.SqlServer
             _connection.Execute(
                 "delete from HangFire.JobQueue where Id = @id",
                 new { id = Id });
+
+            _completed = true;
         }
 
         public void Dispose()
         {
+            if (_disposed) return;
+
+            if (!_completed)
+            {
+                _connection.Execute(
+                    "update HangFire.JobQueue set FetchedAt = null where Id = @id",
+                    new { id = Id });
+            }
+
+            _disposed = true;
         }
     }
 }

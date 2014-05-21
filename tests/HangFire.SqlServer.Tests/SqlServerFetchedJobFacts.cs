@@ -49,8 +49,9 @@ namespace HangFire.SqlServer.Tests
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var fetchedJob = CreateFetchedJob();
+            var fetchedJob = new SqlServerFetchedJob(_connection.Object, 1, JobId, Queue);
 
+            Assert.Equal(1, fetchedJob.Id);
             Assert.Equal(JobId, fetchedJob.JobId);
             Assert.Equal(Queue, fetchedJob.Queue);
         }
@@ -58,15 +59,10 @@ namespace HangFire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void Complete_ReallyDeletesTheJobFromTheQueue()
         {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue)
-values (@id, @queue);
-select scope_identity() as Id;";
-
             UseConnection(sql =>
             {
                 // Arrange
-                var id = (int)sql.Query(arrangeSql, new { id = "1", queue = "default" }).Single().Id;
+                var id = CreateJobQueueRecord(sql, "1", "default");
                 var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
 
                 // Act
@@ -81,21 +77,12 @@ select scope_identity() as Id;";
         [Fact, CleanDatabase]
         public void Complete_DoesNotDelete_UnrelatedJobs()
         {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue)
-values (@id, @queue)";
-
             UseConnection(sql =>
             {
                 // Arrange
-                sql.Execute(
-                    arrangeSql,
-                    new[]
-                    { 
-                        new { id = "1", queue = "default" },
-                        new { id = "1", queue = "critical" },
-                        new { id = "2", queue = "default" } 
-                    });
+                CreateJobQueueRecord(sql, "1", "default");
+                CreateJobQueueRecord(sql, "1", "critical");
+                CreateJobQueueRecord(sql, "2", "default");
 
                 var fetchedJob = new SqlServerFetchedJob(sql, 999, "1", "default");
 
@@ -111,15 +98,10 @@ values (@id, @queue)";
         [Fact, CleanDatabase]
         public void Dispose_DoesNotRemoveTheJobFromTheQueue()
         {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue)
-values (@id, @queue);
-select scope_identity() as Id";
-
             UseConnection(sql =>
             {
                 // Arrange
-                var id = (int)sql.Query(arrangeSql, new { id = "1", queue = "default" }).Single().Id;
+                var id = CreateJobQueueRecord(sql, "1", "default");
                 var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
 
                 // Act
@@ -131,9 +113,32 @@ select scope_identity() as Id";
             });
         }
 
-        private SqlServerFetchedJob CreateFetchedJob()
+        [Fact, CleanDatabase]
+        public void Dispose_SetsFetchedAtValueToNull_IfThereWereNoCallsToComplete()
         {
-            return new SqlServerFetchedJob(_connection.Object, 1, JobId, Queue);
+            UseConnection(sql =>
+            {
+                // Arrange
+                var id = CreateJobQueueRecord(sql, "1", "default");
+                var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
+
+                // Act
+                processingJob.Dispose();
+
+                // Assert
+                var record = sql.Query("select * from HangFire.JobQueue").Single();
+                Assert.Null(record.FetchedAt);
+            });
+        }
+
+        private static int CreateJobQueueRecord(IDbConnection connection, string jobId, string queue)
+        {
+            const string arrangeSql = @"
+insert into HangFire.JobQueue (JobId, Queue, FetchedAt)
+values (@id, @queue, getutcdate());
+select scope_identity() as Id";
+
+            return (int)connection.Query(arrangeSql, new { id = jobId, queue = queue }).Single().Id;
         }
 
         private static void UseConnection(Action<IDbConnection> action)
