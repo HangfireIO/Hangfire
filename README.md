@@ -60,7 +60,16 @@ server.Start();
 
 Please note, that **these lines already added** in the `~/App_Start/HangFireConfig.cs` file for you. 
 
-This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io). 
+This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io).
+
+Questions? Problems?
+---------------------
+
+Open-source project are developing more smoothly, when all discussions are held in public.
+
+If you have any questions, problems related to the HangFire usage or want to discuss new features, please visit the [discussion forum](http://discuss.hangfire.io). You can sign in there using your existing Google or GitHub account, so it's very simple to start using it.
+
+If you've discovered a bug, please report it to the [HangFire GitHub Issues](https://github.com/odinserj/HangFire/issues?state=open). Detailed reports with stack traces, actual and expected behavours are welcome. 
 
 Related Projects
 -----------------
@@ -80,21 +89,6 @@ Roadmap
 * Support for other job storages, including Microsoft Azure Storage.
 * Make it easier to maintain jobs, even on large-scale systems.
 * Deliver the solution to the 90% of ASP.NET developers :smile:.
-
-Contributing
--------------
-
-Open-source projects are developing more smoothly when all discussions are held in public. If you have **any** questions or suggestions, please open GitHub [issues](https://github.com/odinserj/HangFire/issues), mention [@hangfire_net](https://twitter.com/hangfire_net) on Twitter or simple ask a question on a documentation page.
-
-Unfortunately, I can't do all the things at a time. And I appreciate any help related to the project:
-
-* Code contributions, bug fixes.
-* Spelling and grammar errors fixes.
-* Web interface improvements.
-* Documentation clarification.
-* Code review.
-
-To make a contribution, please fork a project, do the work and make a [pull-request](https://github.com/odinserj/HangFire/pulls).
 
 License
 --------
