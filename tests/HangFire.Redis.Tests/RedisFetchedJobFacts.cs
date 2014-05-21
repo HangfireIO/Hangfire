@@ -61,11 +61,11 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact]
-        public void RemoveFromQueue_CommitsTransaction()
+        public void Complete_CommitsTransaction()
         {
             var fetchedJob = CreateFetchedJob();
 
-            fetchedJob.RemoveFromQueue();
+            fetchedJob.Complete();
 
             _transaction.Verify(x => x.Commit());
         }

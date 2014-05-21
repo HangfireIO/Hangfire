@@ -36,7 +36,7 @@ namespace HangFire.SqlServer.Msmq
 
         public string JobId { get; private set; }
 
-        public void RemoveFromQueue()
+        public void Complete()
         {
             _transaction.Commit();
         }

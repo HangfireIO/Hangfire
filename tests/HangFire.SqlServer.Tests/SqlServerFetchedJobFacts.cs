@@ -56,7 +56,7 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void RemoveFromQueue_ReallyDeletesTheJobFromTheQueue()
+        public void Complete_ReallyDeletesTheJobFromTheQueue()
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
@@ -70,7 +70,7 @@ select scope_identity() as Id;";
                 var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
 
                 // Act
-                processingJob.RemoveFromQueue();
+                processingJob.Complete();
 
                 // Assert
                 var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
@@ -79,7 +79,7 @@ select scope_identity() as Id;";
         }
 
         [Fact, CleanDatabase]
-        public void RemoveFromQueue_DoesNotDelete_UnrelatedJobs()
+        public void Complete_DoesNotDelete_UnrelatedJobs()
         {
             const string arrangeSql = @"
 insert into HangFire.JobQueue (JobId, Queue)
@@ -100,7 +100,7 @@ values (@id, @queue)";
                 var fetchedJob = new SqlServerFetchedJob(sql, 999, "1", "default");
 
                 // Act
-                fetchedJob.RemoveFromQueue();
+                fetchedJob.Complete();
 
                 // Assert
                 var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();

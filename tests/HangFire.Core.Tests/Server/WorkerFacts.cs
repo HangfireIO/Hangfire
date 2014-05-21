@@ -91,7 +91,7 @@ namespace HangFire.Core.Tests.Server
                 x => x.FetchNextJob(_context.SharedContext.Queues, _token),
                 Times.Once);
 
-            _fetchedJob.Verify(x => x.RemoveFromQueue());
+            _fetchedJob.Verify(x => x.Complete());
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Throws<InvalidOperationException>(
                 () => worker.Execute(_token));
 
-            _fetchedJob.Verify(x => x.RemoveFromQueue(), Times.Never);
+            _fetchedJob.Verify(x => x.Complete(), Times.Never);
             _fetchedJob.Verify(x => x.Dispose());
         }
 

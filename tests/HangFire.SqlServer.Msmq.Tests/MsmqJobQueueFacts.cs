@@ -110,7 +110,7 @@ namespace HangFire.Msmq.Tests
             // Act
             using (var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token))
             {
-                fetchedJob.RemoveFromQueue();
+                fetchedJob.Complete();
             }
 
             // Assert

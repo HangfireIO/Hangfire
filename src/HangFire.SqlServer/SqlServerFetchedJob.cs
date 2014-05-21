@@ -46,7 +46,7 @@ namespace HangFire.SqlServer
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
-        public void RemoveFromQueue()
+        public void Complete()
         {
             _connection.Execute(
                 "delete from HangFire.JobQueue where Id = @id",

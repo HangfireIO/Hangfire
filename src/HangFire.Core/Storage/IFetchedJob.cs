@@ -22,6 +22,6 @@ namespace HangFire.Storage
     {
         string JobId { get; }
 
-        void RemoveFromQueue();
+        void Complete();
     }
 }

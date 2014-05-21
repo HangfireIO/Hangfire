@@ -38,7 +38,7 @@ namespace HangFire.Redis
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
-        public void RemoveFromQueue()
+        public void Complete()
         {
             _connection.DeleteJobFromQueue(JobId, Queue);
         }
