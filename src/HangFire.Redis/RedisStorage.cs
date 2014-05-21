@@ -82,7 +82,7 @@ namespace HangFire.Redis
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new FetchedJobsWatcher(this, new StateMachineFactory(this));
+            yield return new FetchedJobsWatcher(this);
         }
 
         public override IEnumerable<IStateHandler> GetStateHandlers()

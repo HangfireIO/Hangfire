@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Threading;
 using HangFire.Common;
-using HangFire.States;
-using HangFire.Storage;
-using Moq;
 using Xunit;
 
 namespace HangFire.Redis.Tests
@@ -11,38 +8,21 @@ namespace HangFire.Redis.Tests
     public class FetchedJobsWatcherFacts
     {
         private readonly RedisStorage _storage;
-        private readonly Mock<IStateMachine> _stateMachine;
-        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
         private readonly CancellationToken _token;
 
         public FetchedJobsWatcherFacts()
         {
             _storage = new RedisStorage(RedisUtils.GetHostAndPort(), RedisUtils.GetDb());
             _token = new CancellationToken(true);
-
-            _stateMachine = new Mock<IStateMachine>();
-            _stateMachineFactory = new Mock<IStateMachineFactory>();
-
-            _stateMachineFactory.Setup(x => x.Create(It.IsNotNull<IStorageConnection>()))
-                .Returns(_stateMachine.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FetchedJobsWatcher(null, _stateMachineFactory.Object));
+                () => new FetchedJobsWatcher(null));
 
             Assert.Equal("storage", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new FetchedJobsWatcher(_storage, null));
-
-            Assert.Equal("stateMachineFactory", exception.ParamName);
         }
 
         [Fact, CleanRedis]
@@ -62,12 +42,13 @@ namespace HangFire.Redis.Tests
                 watcher.Execute(_token);
 
                 // Assert
-                _stateMachine.Verify(x => x.TryToChangeState(
-                    "my-job", 
-                    It.IsAny<EnqueuedState>(),
-                    new[] { EnqueuedState.StateName, ProcessingState.StateName }));
-
                 Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
+
+                var listEntry = redis.DequeueItemFromList("hangfire:queue:my-queue");
+                Assert.Equal("my-job", listEntry);
+
+                var job = redis.GetAllEntriesFromHash("hangfire:job:my-job");
+                Assert.False(job.ContainsKey("Fetched"));
             }
         }
 
@@ -107,8 +88,11 @@ namespace HangFire.Redis.Tests
                 watcher.Execute(_token);
 
                 // Arrange
-                _stateMachine.Verify(x => x.TryToChangeState(
-                    "my-job", It.IsAny<EnqueuedState>(), It.IsAny<string[]>()));
+                Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
+                Assert.Equal(1, redis.GetListCount("hangfire:queue:my-queue"));
+
+                var job = redis.GetAllEntriesFromHash("hangfire:job:my-job");
+                Assert.False(job.ContainsKey("Checked"));
             }
         }
 
@@ -131,15 +115,13 @@ namespace HangFire.Redis.Tests
                 watcher.Execute(_token);
 
                 // Assert
-                _stateMachine.Verify(
-                    x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()),
-                    Times.Never);
+                Assert.Equal(1, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
             }
         }
 
         private FetchedJobsWatcher CreateWatcher()
         {
-            return new FetchedJobsWatcher(_storage, _stateMachineFactory.Object);
+            return new FetchedJobsWatcher(_storage);
         }
     }
 }

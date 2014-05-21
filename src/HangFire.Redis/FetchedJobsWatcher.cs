@@ -19,7 +19,6 @@ using System.Threading;
 using Common.Logging;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.States;
 
 namespace HangFire.Redis
 {
@@ -28,25 +27,21 @@ namespace HangFire.Redis
         private static readonly ILog Logger = LogManager.GetLogger(typeof(FetchedJobsWatcher));
 
         private readonly JobStorage _storage;
-        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly FetchedJobsWatcherOptions _options;
 
-        public FetchedJobsWatcher(JobStorage storage, IStateMachineFactory stateMachineFactory)
-            : this(storage, stateMachineFactory, new FetchedJobsWatcherOptions())
+        public FetchedJobsWatcher(JobStorage storage)
+            : this(storage, new FetchedJobsWatcherOptions())
         {
         }
 
         public FetchedJobsWatcher(
-            JobStorage storage, 
-            IStateMachineFactory stateMachineFactory,
+            JobStorage storage,
             FetchedJobsWatcherOptions options)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (options == null) throw new ArgumentNullException("options");
 
             _storage = storage;
-            _stateMachineFactory = stateMachineFactory;
             _options = options;
         }
 
@@ -150,18 +145,8 @@ namespace HangFire.Redis
             {
                 if (TimedOutByFetchedTime(fetched) || TimedOutByCheckedTime(fetched, @checked))
                 {
-                    var stateMachine = _stateMachineFactory.Create(connection);
-                    var state = new EnqueuedState
-                    {
-                        Reason = "Re-queued due to time out"
-                    };
-
-                    stateMachine.TryToChangeState(
-                        jobId,
-                        state,
-                        new[] { EnqueuedState.StateName, ProcessingState.StateName });
-
-                    connection.DeleteJobFromQueue(jobId, queue);
+                    var fetchedJob = new RedisFetchedJob(connection.Redis, jobId, queue);
+                    fetchedJob.Dispose();
 
                     return true;
                 }
