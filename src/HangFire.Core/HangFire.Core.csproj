@@ -59,10 +59,13 @@
     <Compile Include="AutomaticRetryAttribute.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
+    <Compile Include="Server\JobAbortedException.cs" />
+    <Compile Include="JobCancellationToken.cs" />
     <Compile Include="Client\IJobCreationProcess.cs" />
     <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />
     <Compile Include="Client\CreateJobFailedException.cs" />
+    <Compile Include="IJobCancellationToken.cs" />
     <Compile Include="DisableConcurrentExecutionAttribute.cs" />
     <Compile Include="IBackgroundJobClient.cs" />
     <Compile Include="Client\JobCreationProcess.cs" />
@@ -96,6 +99,7 @@
     <Compile Include="Common\GlobalJobFilterCollection.cs" />
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\IJobFilterProvider.cs" />
+    <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
