@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using HangFire.Server;
+using HangFire.States;
 using HangFire.Storage;
 using Moq;
 using Xunit;
@@ -16,6 +17,9 @@ namespace HangFire.Core.Tests.Server
         public ServerJobCancellationTokenFacts()
         {
             _connection = new Mock<IStorageConnection>();
+            _connection.Setup(x => x.GetJobData(JobId))
+                .Returns(new JobData { State = ProcessingState.StateName });
+
             _shutdownToken = new CancellationToken(false);
         }
 
@@ -52,9 +56,9 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void IsCancellationRequested_ReturnsTrue_IfAJobWasAborted()
+        public void IsCancellationRequested_ReturnsTrue_IfJobIsNotInProcessingState()
         {
-            _connection.Setup(x => x.GetJobParameter(JobId, "AbortRequested")).Returns("true");
+            _connection.Setup(x => x.GetJobData(JobId)).Returns(new JobData { State = "NotProcessing" });
             var token = CreateToken();
 
             var result = token.IsCancellationRequested;
@@ -63,29 +67,7 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void IsCancellationRequested_ReturnsFalse_IfAbortedParameterIsNull()
-        {
-            _connection.Setup(x => x.GetJobParameter(JobId, "AbortRequested")).Returns((string)null);
-            var token = CreateToken();
-
-            var result = token.IsCancellationRequested;
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void IsCancellationRequested_ReturnsFalse_IfAbortedParameterIsFalse()
-        {
-            _connection.Setup(x => x.GetJobParameter(JobId, "AbortRequested")).Returns("false");
-            var token = CreateToken();
-
-            var result = token.IsCancellationRequested;
-
-            Assert.False(result);
-        }
-
-        [Fact]
-        public void ThrowIfCancellationRequested_DoesNotThrow_IfNeitherShutdownNorAbortRequested()
+        public void ThrowIfCancellationRequested_DoesNotThrowOnProcessingJob_IfNoShutdownRequested()
         {
             var token = CreateToken();
 
@@ -103,9 +85,9 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void ThrowIfCancellationRequested_ThrowsJobAborted_OnAbort()
+        public void ThrowIfCancellationRequested_ThrowsJobAborted_IfJobIsNotInProcessingState()
         {
-            _connection.Setup(x => x.GetJobParameter(JobId, "AbortRequested")).Returns("true");
+            _connection.Setup(x => x.GetJobData(JobId)).Returns(new JobData { State = "NotProcessing" });
             var token = CreateToken();
 
             Assert.Throws<JobAbortedException>(

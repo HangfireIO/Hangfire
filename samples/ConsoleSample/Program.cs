@@ -106,6 +106,12 @@ namespace ConsoleSample
                         BackgroundJob.Schedule<Services>(x => x.Random(number), TimeSpan.FromSeconds(seconds));
                     }
 
+                    if (command.StartsWith("cancelable", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var iterations = int.Parse(command.Substring(11));
+                        BackgroundJob.Enqueue<Services>(x => x.Cancelable(iterations, JobCancellationToken.Null));
+                    }
+
                     if (command.StartsWith("delete", StringComparison.OrdinalIgnoreCase))
                     {
                         var workCount = int.Parse(command.Substring(7));

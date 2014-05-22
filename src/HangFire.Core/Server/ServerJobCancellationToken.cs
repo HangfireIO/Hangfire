@@ -16,6 +16,7 @@
 
 using System;
 using System.Threading;
+using HangFire.States;
 using HangFire.Storage;
 
 namespace HangFire.Server
@@ -56,9 +57,8 @@ namespace HangFire.Server
 
         private bool IsJobAborted()
         {
-            var isAborted = _connection.GetJobParameter(_jobId, "AbortRequested");
-
-            return "true".Equals(isAborted, StringComparison.OrdinalIgnoreCase);
+            var backgroundJob = _connection.GetJobData(_jobId);
+            return !ProcessingState.StateName.Equals(backgroundJob.State, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

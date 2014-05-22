@@ -43,6 +43,25 @@ namespace ConsoleSample
             Console.WriteLine("Finished task: " + number);
         }
 
+        public void Cancelable(int iterationCount, IJobCancellationToken token)
+        {
+            try
+            {
+                for (var i = 1; i <= iterationCount; i++)
+                {
+                    Thread.Sleep(1000);
+                    Console.WriteLine("Performing step {0} of {1}...", i, iterationCount);
+
+                    token.ThrowIfCancellationRequested();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Cancellation requested, exiting...");
+                throw;
+            }
+        }
+
         public void Args(string name, int authorId, DateTime createdAt)
         {
             Console.WriteLine("{0}, {1}, {2}", name, authorId, createdAt);
