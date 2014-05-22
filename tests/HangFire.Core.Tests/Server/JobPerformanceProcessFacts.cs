@@ -83,8 +83,7 @@ namespace HangFire.Core.Tests.Server
         public void Run_CallsExceptionFilter_OnException()
         {
             // Arrange
-            var filter = new Mock<IServerExceptionFilter>();
-            _filters.Add(filter.Object);
+            var filter = CreateFilter<IServerExceptionFilter>();
 
             _performer
                 .Setup(x => x.Perform(It.IsNotNull<JobActivator>(), It.IsAny<IJobCancellationToken>()))
@@ -104,14 +103,11 @@ namespace HangFire.Core.Tests.Server
         public void Run_CallsExceptionFilters_InReverseOrder()
         {
             // Arrange
-            var filter1 = new Mock<IServerExceptionFilter>();
-            var filter2 = new Mock<IServerExceptionFilter>();
+            var filter1 = CreateFilter<IServerExceptionFilter>();
+            var filter2 = CreateFilter<IServerExceptionFilter>();
 
             filter2.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>())).InSequence();
             filter1.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>())).InSequence();
-
-            _filters.Add(filter1.Object);
-            _filters.Add(filter2.Object);
 
             _performer
                 .Setup(x => x.Perform(It.IsNotNull<JobActivator>(), It.IsAny<IJobCancellationToken>()))
@@ -134,12 +130,10 @@ namespace HangFire.Core.Tests.Server
                 .Setup(x => x.Perform(It.IsNotNull<JobActivator>(), It.IsAny<IJobCancellationToken>()))
                 .Throws<InvalidOperationException>();
 
-            var filter = new Mock<IServerExceptionFilter>();
+            var filter = CreateFilter<IServerExceptionFilter>();
             filter.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>()))
                 .Callback((ServerExceptionContext x) => x.ExceptionHandled = true);
-
-            _filters.Add(filter.Object);
-
+            
             var process = CreateProcess();
 
             // Act & Assert
@@ -150,8 +144,7 @@ namespace HangFire.Core.Tests.Server
         public void Run_CallsServerFilters_BeforeAndAfterTheCreationOfAJob()
         {
             // Arrange
-            var filter = new Mock<IServerFilter>();
-            _filters.Add(filter.Object);
+            var filter = CreateFilter<IServerFilter>();
 
             filter.Setup(x => x.OnPerforming(It.IsNotNull<PerformingContext>()))
                 .InSequence();
@@ -174,11 +167,8 @@ namespace HangFire.Core.Tests.Server
         public void Run_WrapsFilterCalls_OneIntoAnother()
         {
             // Arrange
-            var outerFilter = new Mock<IServerFilter>();
-            var innerFilter = new Mock<IServerFilter>();
-
-            _filters.Add(outerFilter.Object);
-            _filters.Add(innerFilter.Object);
+            var outerFilter = CreateFilter<IServerFilter>();
+            var innerFilter = CreateFilter<IServerFilter>();
 
             outerFilter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>())).InSequence();
             innerFilter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>())).InSequence();
@@ -197,8 +187,7 @@ namespace HangFire.Core.Tests.Server
         public void Run_DoesNotCallBoth_Perform_And_OnPerforming_WhenFilterCancelsThis()
         {
             // Arrange
-            var filter = new Mock<IServerFilter>();
-            _filters.Add(filter.Object);
+            var filter = CreateFilter<IServerFilter>();
 
             filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Callback((PerformingContext x) => x.Canceled = true);
@@ -220,11 +209,8 @@ namespace HangFire.Core.Tests.Server
         public void Run_TellsOuterFilter_AboutTheCancellationOfCreation()
         {
             // Arrange
-            var outerFilter = new Mock<IServerFilter>();
-            var innerFilter = new Mock<IServerFilter>();
-
-            _filters.Add(outerFilter.Object);
-            _filters.Add(innerFilter.Object);
+            var outerFilter = CreateFilter<IServerFilter>();
+            var innerFilter = CreateFilter<IServerFilter>();
 
             innerFilter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Callback((PerformingContext context) => context.Canceled = true);
@@ -242,8 +228,7 @@ namespace HangFire.Core.Tests.Server
         public void Run_DoesNotCall_Perform_And_OnPerformed_WhenExceptionOccured_DuringPerformingPhase()
         {
             // Arrange
-            var filter = new Mock<IServerFilter>();
-            _filters.Add(filter.Object);
+            var filter = CreateFilter<IServerFilter>();
 
             filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Throws<InvalidOperationException>();
@@ -268,8 +253,7 @@ namespace HangFire.Core.Tests.Server
         public void Run_TellsFiltersAboutException_WhenItIsOccured_DuringThePerformanceOfAJob()
         {
             // Arrange
-            var filter = new Mock<IServerFilter>();
-            _filters.Add(filter.Object);
+            var filter = CreateFilter<IServerFilter>();
 
             var exception = new InvalidOperationException();
             _performer
@@ -291,11 +275,8 @@ namespace HangFire.Core.Tests.Server
         public void Run_TellsOuterFilters_AboutAllExceptions()
         {
             // Arrange
-            var outerFilter = new Mock<IServerFilter>();
-            var innerFilter = new Mock<IServerFilter>();
-
-            _filters.Add(outerFilter.Object);
-            _filters.Add(innerFilter.Object);
+            var outerFilter = CreateFilter<IServerFilter>();
+            var innerFilter = CreateFilter<IServerFilter>();
 
             var exception = new InvalidOperationException();
             _performer
@@ -315,8 +296,7 @@ namespace HangFire.Core.Tests.Server
         public void Run_DoesNotThrow_HandledExceptions()
         {
             // Arrange
-            var filter = new Mock<IServerFilter>();
-            _filters.Add(filter.Object);
+            var filter = CreateFilter<IServerFilter>();
 
             var exception = new InvalidOperationException();
             _performer
@@ -336,12 +316,9 @@ namespace HangFire.Core.Tests.Server
         public void Run_TellsOuterFilter_EvenAboutHandledException()
         {
             // Arrange
-            var outerFilter = new Mock<IServerFilter>();
-            var innerFilter = new Mock<IServerFilter>();
-
-            _filters.Add(outerFilter.Object);
-            _filters.Add(innerFilter.Object);
-
+            var outerFilter = CreateFilter<IServerFilter>();
+            var innerFilter = CreateFilter<IServerFilter>();
+            
             _performer
                 .Setup(x => x.Perform(It.IsNotNull<JobActivator>(), It.IsAny<IJobCancellationToken>()))
                 .Throws<InvalidOperationException>();
@@ -362,11 +339,9 @@ namespace HangFire.Core.Tests.Server
         public void Run_WrapsOnPerformedException_IntoJobPerformanceException()
         {
             // Arrange
-            var filter = new Mock<IServerFilter>();
+            var filter = CreateFilter<IServerFilter>();
             filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
                 .Throws<InvalidOperationException>();
-
-            _filters.Add(filter.Object);
 
             var process = CreateProcess();
 
@@ -381,11 +356,9 @@ namespace HangFire.Core.Tests.Server
         public void Run_WrapsOnPerformedException_OccuredAfterAnotherException_IntoJobPerformanceException()
         {
             // Arrange
-            var filter = new Mock<IServerFilter>();
+            var filter = CreateFilter<IServerFilter>();
             filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
                 .Throws<InvalidOperationException>();
-
-            _filters.Add(filter.Object);
 
             _performer
                 .Setup(x => x.Perform(It.IsNotNull<JobActivator>(), It.IsAny<IJobCancellationToken>()))
@@ -407,6 +380,15 @@ namespace HangFire.Core.Tests.Server
         private JobPerformanceProcess CreateProcess()
         {
             return new JobPerformanceProcess(_filters);
+        }
+
+        private Mock<T> CreateFilter<T>()
+            where T : class
+        {
+            var filter = new Mock<T>();
+            _filters.Add(filter.Object);
+
+            return filter;
         }
     }
 }
