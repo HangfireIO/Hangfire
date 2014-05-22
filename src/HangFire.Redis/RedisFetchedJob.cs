@@ -46,17 +46,7 @@ namespace HangFire.Redis
         {
             using (var transaction = _redis.CreateTransaction())
             {
-                transaction.QueueCommand(x => x.RemoveItemFromList(
-                    String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", Queue),
-                    JobId,
-                    -1));
-
-                transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format(RedisStorage.Prefix + "job:{0}", JobId),
-                    "Fetched"));
-                transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                    String.Format(RedisStorage.Prefix + "job:{0}", JobId),
-                    "Checked"));
+                RemoveFromFetchedList(transaction);
 
                 transaction.Commit();
             }
@@ -76,23 +66,28 @@ namespace HangFire.Redis
                         String.Format(RedisStorage.Prefix + "queue:{0}", Queue),
                         JobId));
 
-                    transaction.QueueCommand(x => x.RemoveItemFromList(
-                        String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", Queue),
-                        JobId,
-                        -1));
-
-                    transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                        String.Format(RedisStorage.Prefix + "job:{0}", JobId),
-                        "Fetched"));
-                    transaction.QueueCommand(x => x.RemoveEntryFromHash(
-                        String.Format(RedisStorage.Prefix + "job:{0}", JobId),
-                        "Checked"));
+                    RemoveFromFetchedList(transaction);
 
                     transaction.Commit();
                 }
             }
 
             _disposed = true;
+        }
+
+        private void RemoveFromFetchedList(IRedisTransaction transaction)
+        {
+            transaction.QueueCommand(x => x.RemoveItemFromList(
+                        String.Format(RedisStorage.Prefix + "queue:{0}:dequeued", Queue),
+                        JobId,
+                        -1));
+
+            transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                String.Format(RedisStorage.Prefix + "job:{0}", JobId),
+                "Fetched"));
+            transaction.QueueCommand(x => x.RemoveEntryFromHash(
+                String.Format(RedisStorage.Prefix + "job:{0}", JobId),
+                "Checked"));
         }
     }
 }
