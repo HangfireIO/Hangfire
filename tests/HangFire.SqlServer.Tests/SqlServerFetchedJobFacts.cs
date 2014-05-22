@@ -57,7 +57,7 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void Complete_ReallyDeletesTheJobFromTheQueue()
+        public void RemoveFromQueue_ReallyDeletesTheJobFromTheQueue()
         {
             UseConnection(sql =>
             {
@@ -66,7 +66,7 @@ namespace HangFire.SqlServer.Tests
                 var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
 
                 // Act
-                processingJob.Complete();
+                processingJob.RemoveFromQueue();
 
                 // Assert
                 var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
@@ -75,7 +75,7 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void Complete_DoesNotDelete_UnrelatedJobs()
+        public void RemoveFromQueue_DoesNotDelete_UnrelatedJobs()
         {
             UseConnection(sql =>
             {
@@ -87,7 +87,7 @@ namespace HangFire.SqlServer.Tests
                 var fetchedJob = new SqlServerFetchedJob(sql, 999, "1", "default");
 
                 // Act
-                fetchedJob.Complete();
+                fetchedJob.RemoveFromQueue();
 
                 // Assert
                 var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
@@ -96,7 +96,7 @@ namespace HangFire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void Dispose_DoesNotRemoveTheJobFromTheQueue()
+        public void Requeue_SetsFetchedAtValueToNull()
         {
             UseConnection(sql =>
             {
@@ -105,11 +105,11 @@ namespace HangFire.SqlServer.Tests
                 var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
 
                 // Act
-                processingJob.Dispose();
+                processingJob.Requeue();
 
                 // Assert
-                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
-                Assert.Equal(1, count);
+                var record = sql.Query("select * from HangFire.JobQueue").Single();
+                Assert.Null(record.FetchedAt);
             });
         }
 

@@ -24,8 +24,9 @@ namespace HangFire.Redis
     {
         private readonly IRedisClient _redis;
 
-        private bool _completed;
         private bool _disposed;
+        private bool _removedFromQueue;
+        private bool _requeued;
 
         public RedisFetchedJob(IRedisClient redis, string jobId, string queue)
         {
@@ -42,7 +43,7 @@ namespace HangFire.Redis
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
-        public void Complete()
+        public void RemoveFromQueue()
         {
             using (var transaction = _redis.CreateTransaction())
             {
@@ -51,25 +52,32 @@ namespace HangFire.Redis
                 transaction.Commit();
             }
 
-            _completed = true;
+            _removedFromQueue = true;
+        }
+
+        public void Requeue()
+        {
+            using (var transaction = _redis.CreateTransaction())
+            {
+                transaction.QueueCommand(x => x.PushItemToList(
+                    String.Format(RedisStorage.Prefix + "queue:{0}", Queue),
+                    JobId));
+
+                RemoveFromFetchedList(transaction);
+
+                transaction.Commit();
+            }
+
+            _requeued = true;
         }
 
         public void Dispose()
         {
             if (_disposed) return;
 
-            if (!_completed)
+            if (!_removedFromQueue && !_requeued)
             {
-                using (var transaction = _redis.CreateTransaction())
-                {
-                    transaction.QueueCommand(x => x.PushItemToList(
-                        String.Format(RedisStorage.Prefix + "queue:{0}", Queue),
-                        JobId));
-
-                    RemoveFromFetchedList(transaction);
-
-                    transaction.Commit();
-                }
+                Requeue();
             }
 
             _disposed = true;

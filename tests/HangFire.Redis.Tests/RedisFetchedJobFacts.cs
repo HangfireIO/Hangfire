@@ -46,7 +46,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Complete_RemovesJobFromTheFetchedList()
+        public void RemoveFromQueue_RemovesJobFromTheFetchedList()
         {
             UseRedis(redis =>
             {
@@ -56,7 +56,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "job-id", "my-queue");
 
                 // Act
-                fetchedJob.Complete();
+                fetchedJob.RemoveFromQueue();
 
                 // Assert
                 Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -64,7 +64,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Complete_RemovesOnlyJobWithTheSpecifiedId()
+        public void RemoveFromQueue_RemovesOnlyJobWithTheSpecifiedId()
         {
             UseRedis(redis =>
             {
@@ -75,7 +75,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "job-id", "my-queue");
 
                 // Act
-                fetchedJob.Complete();
+                fetchedJob.RemoveFromQueue();
 
                 // Assert
                 Assert.Equal(1, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -84,7 +84,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Complete_RemovesOnlyOneJob()
+        public void RemoveFromQueue_RemovesOnlyOneJob()
         {
             UseRedis(redis =>
             {
@@ -95,7 +95,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "job-id", "my-queue");
 
                 // Act
-                fetchedJob.Complete();
+                fetchedJob.RemoveFromQueue();
 
                 // Assert
                 Assert.Equal(1, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -103,7 +103,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Complete_RemovesTheFetchedFlag()
+        public void RemoveFromQueue_RemovesTheFetchedFlag()
         {
             UseRedis(redis =>
             {
@@ -112,7 +112,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Complete();
+                fetchedJob.RemoveFromQueue();
 
                 // Assert
                 Assert.False(redis.HashContainsEntry("hangfire:job:my-job", "Fetched"));
@@ -120,7 +120,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Complete_RemovesTheCheckedFlag()
+        public void RemoveFromQueue_RemovesTheCheckedFlag()
         {
             UseRedis(redis =>
             {
@@ -129,7 +129,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Complete();
+                fetchedJob.RemoveFromQueue();
 
                 // Assert
                 Assert.False(redis.HashContainsEntry("hangfire:job:my-job", "Checked"));
@@ -137,7 +137,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Dispose_WithNoComplete_PushesAJobBackToQueue()
+        public void Requeue_PushesAJobBackToQueue()
         {
             UseRedis(redis => 
             {
@@ -146,7 +146,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Dispose();
+                fetchedJob.Requeue();
 
                 // Assert
                 Assert.Equal("my-job", redis.RemoveEndFromList("hangfire:queue:my-queue"));
@@ -154,7 +154,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Dispose_WithNoComplete_PushesAJobToTheRightSide()
+        public void Requeue_PushesAJobToTheRightSide()
         {
             UseRedis(redis =>
             {
@@ -165,7 +165,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Dispose();
+                fetchedJob.Requeue();
 
                 // Assert - RPOP
                 Assert.Equal("my-job", redis.RemoveEndFromList("hangfire:queue:my-queue")); 
@@ -173,7 +173,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Dispose_WithNoComplete_RemovesAJobFromFetchedList()
+        public void Requeue_RemovesAJobFromFetchedList()
         {
             UseRedis(redis =>
             {
@@ -182,7 +182,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Dispose();
+                fetchedJob.Requeue();
 
                 // Assert
                 Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -190,7 +190,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Dispose_WithNoComplete_RemovesTheFetchedFlag()
+        public void Requeue_RemovesTheFetchedFlag()
         {
             UseRedis(redis =>
             {
@@ -199,7 +199,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Dispose();
+                fetchedJob.Requeue();
 
                 // Assert
                 Assert.False(redis.HashContainsEntry("hangfire:job:my-job", "Fetched"));
@@ -207,7 +207,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Dispose_WithNoComplete_RemovesTheCheckedFlag()
+        public void Requeue_RemovesTheCheckedFlag()
         {
             UseRedis(redis =>
             {
@@ -216,7 +216,7 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Dispose();
+                fetchedJob.Requeue();
 
                 // Assert
                 Assert.False(redis.HashContainsEntry("hangfire:job:my-job", "Checked"));
@@ -224,7 +224,7 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
-        public void Dispose_AfterComplete_DoesNotRequeueAJob()
+        public void Dispose_WithNoComplete_RequeuesAJob()
         {
             UseRedis(redis =>
             {
@@ -233,7 +233,25 @@ namespace HangFire.Redis.Tests
                 var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
 
                 // Act
-                fetchedJob.Complete();
+                fetchedJob.Dispose();
+
+                // Assert
+                Assert.Equal(1, redis.GetListCount("hangfire:queue:my-queue"));
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void Dispose_AfterRemoveFromQueue_DoesNotRequeueAJob()
+        {
+            UseRedis(redis =>
+            {
+                // Arrange
+                redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
+                redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
+                var fetchedJob = new RedisFetchedJob(redis, "my-job", "my-queue");
+
+                // Act
+                fetchedJob.RemoveFromQueue();
                 fetchedJob.Dispose();
 
                 // Assert
