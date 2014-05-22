@@ -18,6 +18,6 @@ namespace HangFire.Server
 {
     public interface IJobPerformer
     {
-        void Perform(JobActivator activator);
+        void Perform(JobActivator activator, IJobCancellationToken cancellationToken);
     }
 }

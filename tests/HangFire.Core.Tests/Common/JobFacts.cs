@@ -17,6 +17,7 @@ namespace HangFire.Core.Tests.Common
         private readonly MethodInfo _method;
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
+        private readonly Mock<IJobCancellationToken> _token;
         
         public JobFacts()
         {
@@ -25,6 +26,7 @@ namespace HangFire.Core.Tests.Common
             _arguments = new string[0];
 
             _activator = new Mock<JobActivator> { CallBase = true };
+            _token = new Mock<IJobCancellationToken>();
         }
 
         [Fact]
@@ -152,7 +154,21 @@ namespace HangFire.Core.Tests.Common
         {
             var job = Job.FromExpression(() => StaticMethod());
 
-            Assert.Throws<ArgumentNullException>(() => job.Perform(null));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => job.Perform(null, _token.Object));
+
+            Assert.Equal("activator", exception.ParamName);
+        }
+
+        [Fact]
+        public void Perform_ThrowsAnException_WhenCancellationTokenIsNull()
+        {
+            var job = Job.FromExpression(() => StaticMethod());
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => job.Perform(_activator.Object, null));
+
+            Assert.Equal("cancellationToken", exception.ParamName);
         }
 
         [Fact, StaticLock]
@@ -161,7 +177,7 @@ namespace HangFire.Core.Tests.Common
             _methodInvoked = false;
             var job = Job.FromExpression(() => StaticMethod());
 
-            job.Perform(_activator.Object);
+            job.Perform(_activator.Object, _token.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -172,7 +188,7 @@ namespace HangFire.Core.Tests.Common
             _methodInvoked = false;
             var job = Job.FromExpression<Instance>(x => x.Method());
 
-            job.Perform(_activator.Object);
+            job.Perform(_activator.Object, _token.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -183,7 +199,7 @@ namespace HangFire.Core.Tests.Common
             _disposed = false;
             var job = Job.FromExpression<Instance>(x => x.Method());
 
-            job.Perform(_activator.Object);
+            job.Perform(_activator.Object, _token.Object);
 
             Assert.True(_disposed);
         }
@@ -196,7 +212,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithArguments("hello", 5));
 
             // Act
-            job.Perform(_activator.Object);
+            job.Perform(_activator.Object, _token.Object);
 
             // Assert - see the `MethodWithArguments` method.
             Assert.True(_methodInvoked);
@@ -210,7 +226,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithObjectArgument(5));
 
             // Act
-            job.Perform(_activator.Object);
+            job.Perform(_activator.Object, _token.Object);
 
             // Assert - see the `MethodWithObjectArgument` method.
             Assert.True(_methodInvoked);
@@ -222,10 +238,10 @@ namespace HangFire.Core.Tests.Common
             var exception = new InvalidOperationException();
             _activator.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws(exception);
 
-            var job = Job.FromExpression(() => StaticMethod());
+            var job = Job.FromExpression(() => InstanceMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object));
+                () => job.Perform(_activator.Object, _token.Object));
 
             Assert.Same(exception, thrownException.InnerException);
         }
@@ -234,10 +250,10 @@ namespace HangFire.Core.Tests.Common
         public void Perform_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
             _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
-            var job = Job.FromExpression(() => StaticMethod());
+            var job = Job.FromExpression(() => InstanceMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object));
+                () => job.Perform(_activator.Object, _token.Object));
 
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
         }
@@ -248,7 +264,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithCustomArgument(new Instance()));
 
             var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object));
+                () => job.Perform(_activator.Object, _token.Object));
 
             Assert.NotNull(exception.InnerException);
         }
@@ -261,7 +277,7 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression<BrokenDispose>(x => x.Method());
 
             var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object));
+                () => job.Perform(_activator.Object, _token.Object));
 
             Assert.True(_methodInvoked);
             Assert.NotNull(exception.InnerException);
@@ -273,10 +289,22 @@ namespace HangFire.Core.Tests.Common
             var job = Job.FromExpression(() => ExceptionMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object));
+                () => job.Perform(_activator.Object, _token.Object));
 
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
             Assert.Equal("exception", thrownException.InnerException.Message);
+        }
+
+        [Fact]
+        public void Perform_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _token.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
+
+            // Act & Assert
+            Assert.Throws<OperationCanceledException>(
+                () => job.Perform(_activator.Object, _token.Object));
         }
 
         [Fact]
@@ -320,9 +348,19 @@ namespace HangFire.Core.Tests.Common
             a = "hello";
         }
 
-        public void StaticMethod()
+        public static void StaticMethod()
         {
             _methodInvoked = true;
+        }
+
+        public void InstanceMethod()
+        {
+            _methodInvoked = true;
+        }
+
+        public static void CancelableJob(IJobCancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
         }
 
         public void MethodWithArguments(string stringArg, int intArg)
