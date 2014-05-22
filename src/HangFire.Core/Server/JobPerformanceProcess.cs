@@ -50,6 +50,10 @@ namespace HangFire.Server
             {
                 PerformJobWithFilters(context, performer, filterInfo.ServerFilters);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 var exceptionContext = new ServerExceptionContext(context, ex);
@@ -75,7 +79,7 @@ namespace HangFire.Server
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                performer.Perform(context.Activator, null);
+                performer.Perform(context.Activator, context.CancellationToken);
                 return new PerformedContext(context, false, null);
             };
 
@@ -93,6 +97,10 @@ namespace HangFire.Server
             try
             {
                 filter.OnPerforming(preContext);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception filterException)
             {
@@ -141,6 +149,10 @@ namespace HangFire.Server
                 try
                 {
                     filter.OnPerformed(postContext);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception filterException)
                 {

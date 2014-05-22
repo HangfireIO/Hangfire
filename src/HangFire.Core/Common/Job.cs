@@ -222,7 +222,7 @@ namespace HangFire.Common
             catch (Exception ex)
             {
                 throw new JobPerformanceException(
-                    "An exception occured during job activation.",
+                    "An exception occurred during job activation.",
                     ex);
             }
         }
@@ -265,7 +265,7 @@ namespace HangFire.Common
             catch (Exception ex)
             {
                 throw new JobPerformanceException(
-                    "An exception occured during arguments deserialization.",
+                    "An exception occurred during arguments deserialization.",
                     ex);
             }
         }
@@ -305,7 +305,7 @@ namespace HangFire.Common
             catch (Exception ex)
             {
                 throw new JobPerformanceException(
-                    "Job has been performed, but an exception occured during disposal.",
+                    "Job has been performed, but an exception occurred during disposal.",
                     ex);
             }
         }

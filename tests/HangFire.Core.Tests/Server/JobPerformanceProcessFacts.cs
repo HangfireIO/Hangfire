@@ -373,6 +373,57 @@ namespace HangFire.Core.Tests.Server
             Assert.IsType<InvalidOperationException>(exception.InnerException);
         }
 
+        [Fact]
+        public void Run_ServerFiltersAreNotInvoked_OnOperationCanceledException()
+        {
+            // Arrange
+            _performer
+                .Setup(x => x.Perform(It.IsAny<JobActivator>(), It.IsAny<IJobCancellationToken>()))
+                .Throws<OperationCanceledException>();
+
+            var filter = CreateFilter<IServerExceptionFilter>();
+            var process = CreateProcess();
+
+            // Act
+            Assert.Throws<OperationCanceledException>(
+                () => process.Run(_context, _performer.Object));
+
+            // Assert
+            filter.Verify(
+                x => x.OnServerException(It.IsAny<ServerExceptionContext>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public void Run_ThrowsOperationCanceledException_OccurredInPreFilterMethods()
+        {
+            // Arrange
+            var filter = CreateFilter<IServerFilter>();
+            filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
+                .Throws<OperationCanceledException>();
+
+            var process = CreateProcess();
+
+            // Act & Assert
+            Assert.Throws<OperationCanceledException>(
+                () => process.Run(_context, _performer.Object));
+        }
+
+        [Fact]
+        public void Run_ThrowsOperationCanceledException_OccurredInPostFilterMethods()
+        {
+            // Arrange
+            var filter = CreateFilter<IServerFilter>();
+            filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
+                .Throws<OperationCanceledException>();
+
+            var process = CreateProcess();
+
+            // Act & Assert
+            Assert.Throws<OperationCanceledException>(
+                () => process.Run(_context, _performer.Object));
+        }
+
         public static void Method()
         {
         }
