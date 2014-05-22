@@ -23,7 +23,8 @@ namespace HangFire.Core.Tests.Server
             const string jobId = "someId";
             var job = Job.FromExpression(() => Method());
 
-            _context = new PerformContext(workerContext.Object, connection.Object, jobId, job, DateTime.UtcNow);
+            _context = new PerformContext(
+                workerContext.Object, connection.Object, jobId, job, DateTime.UtcNow, new Mock<IJobCancellationToken>().Object);
             _performer = new Mock<IJobPerformer>();
 
             _filters = new List<object>();

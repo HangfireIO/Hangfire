@@ -28,7 +28,7 @@ namespace HangFire.Server
     public class PerformContext : WorkerContext
     {
         internal PerformContext(PerformContext context)
-            : this(context, context.Connection, context.JobId, context.Job, context.CreatedAt)
+            : this(context, context.Connection, context.JobId, context.Job, context.CreatedAt, context.CancellationToken)
         {
             Items = context.Items;
         }
@@ -38,17 +38,20 @@ namespace HangFire.Server
             IStorageConnection connection,
             string jobId,
             Job job,
-            DateTime createdAt)
+            DateTime createdAt,
+            IJobCancellationToken cancellationToken)
             : base(workerContext)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (job == null) throw new ArgumentNullException("job");
+            if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
 
             Connection = connection;
             JobId = jobId;
             Job = job;
             CreatedAt = createdAt;
+            CancellationToken = cancellationToken;
 
             Items = new Dictionary<string, object>();
         }
@@ -64,6 +67,7 @@ namespace HangFire.Server
         public Job Job { get; private set; }
         public DateTime CreatedAt { get; private set; }
 
+        public IJobCancellationToken CancellationToken { get; private set; }
         public IStorageConnection Connection { get; private set; }
 
         public void SetJobParameter(string name, object value)

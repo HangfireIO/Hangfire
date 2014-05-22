@@ -94,7 +94,9 @@ namespace HangFire.Server
                 var jobData = connection.GetJobData(jobId);
                 jobData.EnsureLoaded();
 
-                var performContext = new PerformContext(_context, connection, jobId, jobData.Job, jobData.CreatedAt);
+                var performContext = new PerformContext(
+                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, null);
+
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
