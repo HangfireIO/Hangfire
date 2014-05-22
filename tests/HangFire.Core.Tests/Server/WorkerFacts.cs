@@ -200,6 +200,41 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_DoesNotMoveAJob_ToTheFailedState_ButRequeuesIt_WhenProcessThrowsOperationCanceled()
+        {
+            // Arrange
+            _process.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+                .Throws<OperationCanceledException>();
+
+            var worker = CreateWorker();
+
+            // Act
+            Assert.Throws<OperationCanceledException>(() => worker.Execute(_token));
+
+            // Assert
+            _stateMachine.Verify(
+                x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<FailedState>(), It.IsAny<string[]>()),
+                Times.Never);
+            _fetchedJob.Verify(x => x.Requeue());
+        }
+
+        [Fact]
+        public void Execute_RemovesJobFromQueue_WhenProcessThrowsJobAbortedException()
+        {
+            // Arrange
+            _process.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+                .Throws<JobAbortedException>();
+
+            var worker = CreateWorker();
+
+            // Act
+            Assert.DoesNotThrow(() => worker.Execute(_token));
+
+            _fetchedJob.Verify(x => x.RemoveFromQueue());
+            _fetchedJob.Verify(x => x.Requeue(), Times.Never);
+        }
+
+        [Fact]
         public void Execute_MovesJob_ToSuccessfulState_OnlyIfItIsInProcessingState()
         {
             var worker = CreateWorker();

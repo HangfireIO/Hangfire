@@ -40,7 +40,7 @@ namespace HangFire.Server
             {
                 try
                 {
-                    ProcessJob(fetchedJob.JobId, connection, _context.PerformanceProcess);
+                    ProcessJob(fetchedJob.JobId, connection, _context.PerformanceProcess, cancellationToken);
 
                     // Checkpoint #4. The job was performed, and it is in the one
                     // of the explicit states (Succeeded, Scheduled and so on).
@@ -52,10 +52,13 @@ namespace HangFire.Server
                     // Success point. No things must be done after previous command
                     // was succeeded.
                 }
+                catch (JobAbortedException)
+                {
+                    fetchedJob.RemoveFromQueue();
+                }
                 catch (Exception)
                 {
                     fetchedJob.Requeue();
-
                     throw;
                 }
             }
@@ -69,7 +72,8 @@ namespace HangFire.Server
         private void ProcessJob(
             string jobId,
             IStorageConnection connection, 
-            IJobPerformanceProcess process)
+            IJobPerformanceProcess process,
+            CancellationToken shutdownToken)
         {
             var stateMachine = _context.StateMachineFactory.Create(connection);
             var processingState = new ProcessingState(_context.ServerId);
@@ -94,8 +98,9 @@ namespace HangFire.Server
                 var jobData = connection.GetJobData(jobId);
                 jobData.EnsureLoaded();
 
+                var cancellationToken = new ServerJobCancellationToken(jobId, connection, shutdownToken);
                 var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, null);
+                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, cancellationToken);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
@@ -103,7 +108,11 @@ namespace HangFire.Server
                 process.Run(performContext, jobData.Job);
                 duration.Stop();
 
-                state = new SucceededState((long)latency, duration.ElapsedMilliseconds);
+                state = new SucceededState((long) latency, duration.ElapsedMilliseconds);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (JobPerformanceException ex)
             {
