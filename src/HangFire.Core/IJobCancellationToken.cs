@@ -18,7 +18,6 @@ namespace HangFire
 {
     public interface IJobCancellationToken
     {
-        bool IsCancellationRequested { get; }
         void ThrowIfCancellationRequested();
     }
 }

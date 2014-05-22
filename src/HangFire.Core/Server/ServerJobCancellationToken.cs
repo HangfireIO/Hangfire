@@ -40,11 +40,6 @@ namespace HangFire.Server
             _connection = connection;
         }
 
-        public bool IsCancellationRequested
-        {
-            get { return _shutdownToken.IsCancellationRequested || IsJobAborted(); }
-        }
-
         public void ThrowIfCancellationRequested()
         {
             _shutdownToken.ThrowIfCancellationRequested();

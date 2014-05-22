@@ -6,16 +6,6 @@ namespace HangFire.Core.Tests
     public class JobCancellationTokenFacts
     {
         [Fact]
-        public void IsCancellationRequested_ReturnsTheCorrectValue()
-        {
-            var falseToken = new JobCancellationToken(false);
-            var trueToken = new JobCancellationToken(true);
-
-            Assert.False(falseToken.IsCancellationRequested);
-            Assert.True(trueToken.IsCancellationRequested);
-        }
-
-        [Fact]
         public void ThrowIfCancellationRequested_DoesNotThrowOnFalseValue()
         {
             var token = new JobCancellationToken(false);

@@ -27,8 +27,6 @@ namespace HangFire
             _canceled = canceled;
         }
 
-        public bool IsCancellationRequested { get { return _canceled; } }
-
         public void ThrowIfCancellationRequested()
         {
             if (_canceled) throw new OperationCanceledException();

@@ -42,31 +42,6 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
-        public void IsCancellationRequested_ReturnsTrue_WithoutStorageAccess_IfItWasRequestedByShutdown()
-        {
-            _shutdownToken = new CancellationToken(true);
-            var token = CreateToken();
-
-            var result = token.IsCancellationRequested;
-
-            Assert.True(result);
-            _connection.Verify(
-                x => x.GetJobParameter(It.IsAny<string>(), It.IsAny<string>()),
-                Times.Never);
-        }
-
-        [Fact]
-        public void IsCancellationRequested_ReturnsTrue_IfJobIsNotInProcessingState()
-        {
-            _connection.Setup(x => x.GetJobData(JobId)).Returns(new JobData { State = "NotProcessing" });
-            var token = CreateToken();
-
-            var result = token.IsCancellationRequested;
-
-            Assert.True(result);
-        }
-
-        [Fact]
         public void ThrowIfCancellationRequested_DoesNotThrowOnProcessingJob_IfNoShutdownRequested()
         {
             var token = CreateToken();
