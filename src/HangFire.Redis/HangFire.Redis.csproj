@@ -69,6 +69,7 @@
     <Compile Include="DeletedStateHandler.cs" />
     <Compile Include="FetchedJobsWatcherOptions.cs" />
     <Compile Include="FetchedJobsWatcher.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RedisFetchedJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisWriteOnlyTransaction.cs" />

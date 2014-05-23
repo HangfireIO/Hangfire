@@ -16,8 +16,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
+using HangFire.Annotations;
 using HangFire.Common;
 using HangFire.Server;
 
@@ -26,6 +26,7 @@ namespace HangFire.Storage
     public interface IStorageConnection : IDisposable
     {
         IWriteOnlyTransaction CreateWriteTransaction();
+        IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
 
         string CreateExpiredJob(
             Job job, 
@@ -38,14 +39,18 @@ namespace HangFire.Storage
         void SetJobParameter(string id, string name, string value);
         string GetJobParameter(string id, string name);
 
-        IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
-        JobData GetJobData(string id);
+        [CanBeNull]
+        JobData GetJobData([NotNull] string jobId);
 
-        string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+        [CanBeNull]
+        StateData GetStateData([NotNull] string jobId);
 
         void AnnounceServer(string serverId, ServerContext context);
         void RemoveServer(string serverId);
         void Heartbeat(string serverId);
         int RemoveTimedOutServers(TimeSpan timeOut);
+
+        // Set operations
+        string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
     }
 }
