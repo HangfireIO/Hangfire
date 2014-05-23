@@ -28,14 +28,14 @@ namespace HangFire.Web
 {
     internal static class HtmlHelper
     {
-        public static string DisplayMethod(Job job)
+        public static IHtmlString DisplayMethod(Job job)
         {
             if (job == null)
             {
-                return null;
+                return new HtmlString("<em>Can not find the target method.</em>");
             }
 
-            return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
+            return new HtmlString(String.Format("{0}.{1}", job.Type.Name, job.Method.Name));
         }
 
         public static IHtmlString Raw(string value)
@@ -49,28 +49,6 @@ namespace HangFire.Web
             return new HtmlString(Guid.TryParse(jobId, out guid)
                 ? (shorten ? jobId.Substring(0, 8) : jobId)
                 : "#" + jobId);
-        }
-
-        public static string JobType(Job job)
-        {
-            if (job == null)
-            {
-                return "Could not find the target method.";
-            }
-
-            return job.Type.FullName;
-        }
-
-        public static string JobType(string typeName)
-        {
-            var type = Type.GetType(typeName, throwOnError: false);
-
-            if (type == null)
-            {
-                return typeName;
-            }
-
-            return type.FullName;
         }
 
         public static string ToHumanDuration(TimeSpan? duration, bool displaySign = true)

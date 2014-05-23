@@ -24,9 +24,10 @@ namespace HangFire.Web
 {
     internal static class JobMethodCallRenderer
     {
-        public static IHtmlString Render(
-            Job job)
+        public static IHtmlString Render(Job job)
         {
+            if (job == null) { return new HtmlString("<em>Can not find the target method.</em>"); }
+
             var builder = new StringBuilder();
 
             builder.Append(WrapKeyword("using"));

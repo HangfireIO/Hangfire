@@ -96,7 +96,7 @@ WriteLiteral("\r\n");
 
     if (job != null)
     {
-        title = HtmlHelper.DisplayMethod(job.Job);
+        title = job.Job != null ? String.Format("{0}.{1}", job.Job.Type.Name, job.Job.Method.Name) : null;
     }
 
     title = title ?? "Job";
