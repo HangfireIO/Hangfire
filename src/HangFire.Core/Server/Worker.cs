@@ -76,7 +76,7 @@ namespace HangFire.Server
             CancellationToken shutdownToken)
         {
             var stateMachine = _context.StateMachineFactory.Create(connection);
-            var processingState = new ProcessingState(_context.ServerId);
+            var processingState = new ProcessingState(_context.ServerId, _context.WorkerNumber);
 
             if (!stateMachine.TryToChangeState(
                 jobId,

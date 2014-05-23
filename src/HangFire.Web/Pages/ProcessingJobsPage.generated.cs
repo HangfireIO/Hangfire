@@ -283,7 +283,7 @@ WriteLiteral("                        </td>\r\n                        <td class
 
             
             #line 90 "..\..\Pages\ProcessingJobsPage.cshtml"
-                       Write(job.Value.ServerName.ToUpperInvariant());
+                       Write(job.Value.ServerId.ToUpperInvariant());
 
             
             #line default

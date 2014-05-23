@@ -146,7 +146,7 @@ namespace HangFire.Core.Tests.Server
 
             _stateMachine.Verify(x => x.TryToChangeState(
                 It.IsAny<string>(),
-                It.Is<ProcessingState>(state => state.ServerName == _context.Object.ServerId),
+                It.Is<ProcessingState>(state => state.ServerId == _context.Object.ServerId),
                 It.IsAny<string[]>()));
         }
 
