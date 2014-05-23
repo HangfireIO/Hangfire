@@ -108,11 +108,11 @@ namespace HangFire.States
                     // and sometimes unable to change its state (the enqueued
                     // state depends on the type of a job).
 
-                    toState = new FailedState(ex)
+                    toState = new FailedState(ex.InnerException)
                     {
                         Reason = String.Format(
-                            "Could not change the state of the job '{0}' to the '{1}'. See the inner exception for details.",
-                            toState.Name, jobId)
+                            "Can not change the state of a job to '{0}': target method was not found.",
+                            toState.Name)
                     };
 
                     loadSucceeded = false;
