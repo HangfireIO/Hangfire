@@ -175,8 +175,8 @@ values (@jobId, @name, @value)";
 
             const string sql = @"
 select s.Name, s.Reason, s.Data
-from HangFire.Job j
-inner join HangFire.State s on j.Id = s.JobId
+from HangFire.State s
+inner join HangFire.Job j on j.StateId = s.Id
 where j.Id = @jobId";
 
             var sqlState = _connection.Query<SqlState>(sql, new { jobId = jobId }).SingleOrDefault();

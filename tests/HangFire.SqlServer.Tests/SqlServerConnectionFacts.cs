@@ -246,6 +246,8 @@ insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
 values ('', '', '', getutcdate());
 declare @JobId int;
 set @JobId = scope_identity();
+insert into HangFire.State (JobId, Name, CreatedAt)
+values (@JobId, 'old-state', getutcdate());
 insert into HangFire.State (JobId, Name, Reason, Data, CreatedAt)
 values (@JobId, @name, @reason, @data, getutcdate());
 declare @StateId int;
