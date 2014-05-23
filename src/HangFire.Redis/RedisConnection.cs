@@ -20,6 +20,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using HangFire.Common;
+using HangFire.Redis.Annotations;
 using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Redis;
@@ -199,6 +200,27 @@ namespace HangFire.Redis
                 State = storedData.ContainsKey("State") ? storedData["State"] : null,
                 CreatedAt = JobHelper.FromNullableStringTimestamp(createdAt) ?? DateTime.MinValue,
                 LoadException = loadException
+            };
+        }
+
+        public StateData GetStateData(string jobId)
+        {
+            if (jobId == null) throw new ArgumentNullException("jobId");
+
+            var entries = Redis.GetAllEntriesFromHash(
+                RedisStorage.Prefix + String.Format("job:{0}:state", jobId));
+
+            if (entries.Count == 0) return null;
+
+            var stateData = new Dictionary<string, string>(entries);
+            stateData.Remove("State");
+            stateData.Remove("Reason");
+
+            return new StateData
+            {
+                Name = entries["State"],
+                Reason = entries["Reason"],
+                Data = stateData
             };
         }
 

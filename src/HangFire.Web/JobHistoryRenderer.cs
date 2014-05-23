@@ -126,8 +126,37 @@ namespace HangFire.Web
 
         private static IHtmlString ProcessingRenderer(IDictionary<string, string> stateData)
         {
-            return new HtmlString(String.Format(
-                "<dl class=\"dl-horizontal\"><dt>Server:</dt><dd><span class=\"label label-default\">{0}</span></dd></dl>", stateData["ServerName"].ToUpperInvariant()));
+            var builder = new StringBuilder();
+            builder.Append("<dl class=\"dl-horizontal\">");
+
+            string serverId = null;
+
+            if (stateData.ContainsKey("ServerId"))
+            {
+                serverId = stateData["ServerId"];
+            } 
+            else if (stateData.ContainsKey("ServerName"))
+            {
+                serverId = stateData["ServerName"];
+            }
+
+            if (serverId != null)
+            {
+                builder.Append("<dt>Server:</dt>");
+                builder.AppendFormat(
+                    "<dd><span class=\"label label-default\">{0}</span></dd>",
+                    serverId.ToUpperInvariant());
+            }
+
+            if (stateData.ContainsKey("WorkerNumber"))
+            {
+                builder.Append("<dt>Worker:</dt>");
+                builder.AppendFormat("<dd>#{0}</dd>", stateData["WorkerNumber"]);
+            }
+
+            builder.Append("</dl>");
+
+            return new HtmlString(builder.ToString());
         }
 
         private static IHtmlString EnqueuedRenderer(IDictionary<string, string> stateData)

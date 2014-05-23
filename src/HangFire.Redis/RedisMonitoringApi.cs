@@ -80,14 +80,14 @@ namespace HangFire.Redis
             return new JobList<ProcessingJobDto>(GetJobsWithProperties(_redis,
                 jobIds,
                 null,
-                new[] { "StartedAt", "ServerName", "State" },
+                new[] { "StartedAt", "ServerName", "ServerId", "State" },
                 (job, jobData, state) => new ProcessingJobDto
                 {
-                    ServerName = state[1],
+                    ServerId = state[2] ?? state[1],
                     Job = job,
                     StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
                     InProcessingState = ProcessingState.StateName.Equals(
-                        state[2], StringComparison.OrdinalIgnoreCase),
+                        state[3], StringComparison.OrdinalIgnoreCase),
                 }).OrderBy(x => x.Value.StartedAt).ToList());
         }
 

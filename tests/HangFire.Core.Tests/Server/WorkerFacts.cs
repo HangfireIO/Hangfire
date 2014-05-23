@@ -146,7 +146,7 @@ namespace HangFire.Core.Tests.Server
 
             _stateMachine.Verify(x => x.TryToChangeState(
                 It.IsAny<string>(),
-                It.Is<ProcessingState>(state => state.ServerName == _context.Object.ServerId),
+                It.Is<ProcessingState>(state => state.ServerId == _context.Object.ServerId),
                 It.IsAny<string[]>()));
         }
 
@@ -197,6 +197,41 @@ namespace HangFire.Core.Tests.Server
             _process.Verify(x => x.Run(
                 It.IsNotNull<PerformContext>(),
                 It.IsNotNull<IJobPerformer>()));
+        }
+
+        [Fact]
+        public void Execute_DoesNotMoveAJob_ToTheFailedState_ButRequeuesIt_WhenProcessThrowsOperationCanceled()
+        {
+            // Arrange
+            _process.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+                .Throws<OperationCanceledException>();
+
+            var worker = CreateWorker();
+
+            // Act
+            Assert.Throws<OperationCanceledException>(() => worker.Execute(_token));
+
+            // Assert
+            _stateMachine.Verify(
+                x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<FailedState>(), It.IsAny<string[]>()),
+                Times.Never);
+            _fetchedJob.Verify(x => x.Requeue());
+        }
+
+        [Fact]
+        public void Execute_RemovesJobFromQueue_WhenProcessThrowsJobAbortedException()
+        {
+            // Arrange
+            _process.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+                .Throws<JobAbortedException>();
+
+            var worker = CreateWorker();
+
+            // Act
+            Assert.DoesNotThrow(() => worker.Execute(_token));
+
+            _fetchedJob.Verify(x => x.RemoveFromQueue());
+            _fetchedJob.Verify(x => x.Requeue(), Times.Never);
         }
 
         [Fact]

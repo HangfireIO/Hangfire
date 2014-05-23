@@ -28,7 +28,7 @@ namespace HangFire.Storage.Monitoring
 
         public Job Job { get; set; }
         public bool InProcessingState { get; set; }
-        public string ServerName { get; set; }
+        public string ServerId { get; set; }
         public DateTime? StartedAt { get; set; }
     }
 }

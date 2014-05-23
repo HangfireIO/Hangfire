@@ -1,5 +1,5 @@
-﻿// This file is part of HangFire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of HangFire.
+// Copyright � 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,10 +14,20 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Server
+using System.Collections.Generic;
+using HangFire.Annotations;
+
+namespace HangFire.Storage
 {
-    public interface IJobPerformer
+    public class StateData
     {
-        void Perform(JobActivator activator, IJobCancellationToken cancellationToken);
+        [NotNull]
+        public string Name { get; set; }
+
+        [CanBeNull]
+        public string Reason { get; set; }
+
+        [NotNull]
+        public IDictionary<string, string> Data { get; set; } 
     }
 }

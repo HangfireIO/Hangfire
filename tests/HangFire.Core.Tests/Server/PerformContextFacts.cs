@@ -15,6 +15,7 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<IStorageConnection> _connection;
         private readonly Job _job;
         private readonly DateTime _createdAt;
+        private readonly Mock<IJobCancellationToken> _cancellationToken; 
 
         public PerformContextFacts()
         {
@@ -22,20 +23,21 @@ namespace HangFire.Core.Tests.Server
             _connection = new Mock<IStorageConnection>();
             _job = Job.FromExpression(() => Method());
             _createdAt = new DateTime(2012, 12, 12);
+            _cancellationToken = new Mock<IJobCancellationToken>();
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenWorkerContextIsNull()
         {
             Assert.Throws<NullReferenceException>(
-                () => new PerformContext(null, _connection.Object, JobId, _job, _createdAt));
+                () => new PerformContext(null, _connection.Object, JobId, _job, _createdAt, _cancellationToken.Object));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext.Object, null, JobId, _job, _createdAt));
+                () => new PerformContext(_workerContext.Object, null, JobId, _job, _createdAt, _cancellationToken.Object));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -44,7 +46,7 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext.Object, _connection.Object, null, _job, _createdAt));
+                () => new PerformContext(_workerContext.Object, _connection.Object, null, _job, _createdAt, _cancellationToken.Object));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -53,9 +55,18 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext.Object, _connection.Object, JobId, null, _createdAt));
+                () => new PerformContext(_workerContext.Object, _connection.Object, JobId, null, _createdAt, _cancellationToken.Object));
 
             Assert.Equal("job", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenCancellationTokenIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new PerformContext(_workerContext.Object, _connection.Object, JobId, _job, _createdAt, null));
+
+            Assert.Equal("cancellationToken", exception.ParamName);
         }
 
         [Fact]
@@ -68,6 +79,7 @@ namespace HangFire.Core.Tests.Server
             Assert.NotNull(context.Items);
             Assert.Same(_connection.Object, context.Connection);
             Assert.Same(_job, context.Job);
+            Assert.Same(_cancellationToken.Object, context.CancellationToken);
         }
 
         [Fact]
@@ -88,6 +100,7 @@ namespace HangFire.Core.Tests.Server
             Assert.Same(context.Items, contextCopy.Items);
             Assert.Same(context.Connection, contextCopy.Connection);
             Assert.Same(context.Job, contextCopy.Job);
+            Assert.Same(context.CancellationToken, contextCopy.CancellationToken);
         }
 
         [Fact]
@@ -132,7 +145,7 @@ namespace HangFire.Core.Tests.Server
 
         private PerformContext CreateContext()
         {
-            return new PerformContext(_workerContext.Object, _connection.Object, JobId, _job, _createdAt);
+            return new PerformContext(_workerContext.Object, _connection.Object, JobId, _job, _createdAt, _cancellationToken.Object);
         }
 
         public static void Method() { }

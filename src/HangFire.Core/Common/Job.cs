@@ -64,9 +64,10 @@ namespace HangFire.Common
         /// </summary>
         public string[] Arguments { get; private set; }
 
-        public void Perform(JobActivator activator)
+        public void Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
             if (activator == null) throw new ArgumentNullException("activator");
+            if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
 
             object instance = null;
 
@@ -77,7 +78,7 @@ namespace HangFire.Common
                     instance = Activate(activator);
                 }
 
-                var deserializedArguments = DeserializeArguments();
+                var deserializedArguments = DeserializeArguments(cancellationToken);
                 InvokeMethod(instance, deserializedArguments);
             }
             finally
@@ -221,12 +222,12 @@ namespace HangFire.Common
             catch (Exception ex)
             {
                 throw new JobPerformanceException(
-                    "An exception occured during job activation.",
+                    "An exception occurred during job activation.",
                     ex);
             }
         }
 
-        private object[] DeserializeArguments()
+        private object[] DeserializeArguments(IJobCancellationToken cancellationToken)
         {
             try
             {
@@ -246,6 +247,10 @@ namespace HangFire.Common
                         // be converted to object type.
                         value = argument;
                     }
+                    else if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    {
+                        value = cancellationToken;
+                    }
                     else
                     {
                         var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
@@ -260,7 +265,7 @@ namespace HangFire.Common
             catch (Exception ex)
             {
                 throw new JobPerformanceException(
-                    "An exception occured during arguments deserialization.",
+                    "An exception occurred during arguments deserialization.",
                     ex);
             }
         }
@@ -273,6 +278,14 @@ namespace HangFire.Common
             }
             catch (TargetInvocationException ex)
             {
+                if (ex.InnerException is OperationCanceledException)
+                {
+                    // `OperationCanceledException` and its descendants are used
+                    // to notify a worker that job performance was canceled, 
+                    // so we should not wrap this exception and throw it as-is.
+                    throw ex.InnerException;
+                }
+
                 throw new JobPerformanceException(
                     "An exception occurred during performance of the job.",
                     ex.InnerException);
@@ -292,7 +305,7 @@ namespace HangFire.Common
             catch (Exception ex)
             {
                 throw new JobPerformanceException(
-                    "Job has been performed, but an exception occured during disposal.",
+                    "Job has been performed, but an exception occurred during disposal.",
                     ex);
             }
         }

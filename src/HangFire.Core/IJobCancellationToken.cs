@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Server
+namespace HangFire
 {
-    public interface IJobPerformer
+    public interface IJobCancellationToken
     {
-        void Perform(JobActivator activator, IJobCancellationToken cancellationToken);
+        void ThrowIfCancellationRequested();
     }
 }

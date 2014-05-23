@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using HangFire.Common;
 
 namespace HangFire.States
@@ -24,16 +25,18 @@ namespace HangFire.States
     {
         public static readonly string StateName = "Processing";
 
-        public ProcessingState(string serverName)
+        public ProcessingState(string serverId, int workerNumber)
         {
-            if (String.IsNullOrWhiteSpace(serverName)) throw new ArgumentNullException("serverName");
+            if (String.IsNullOrWhiteSpace(serverId)) throw new ArgumentNullException("serverId");
 
-            ServerName = serverName;
+            ServerId = serverId;
             StartedAt = DateTime.UtcNow;
+            WorkerNumber = workerNumber;
         }
 
         public DateTime StartedAt { get; set; }
-        public string ServerName { get; set; }
+        public string ServerId { get; set; }
+        public int WorkerNumber { get; set; }
 
         public string Name { get { return StateName; } }
         public string Reason { get; set; }
@@ -44,7 +47,8 @@ namespace HangFire.States
             return new Dictionary<string, string>
             {
                 { "StartedAt", JobHelper.ToStringTimestamp(StartedAt) },
-                { "ServerName", ServerName }
+                { "ServerId", ServerId },
+                { "WorkerNumber", WorkerNumber.ToString(CultureInfo.InvariantCulture) }
             };
         }
     }

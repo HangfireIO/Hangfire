@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace HangFire.Server
 {
-    public interface IJobPerformer
+    [Serializable]
+    public class JobAbortedException : OperationCanceledException
     {
-        void Perform(JobActivator activator, IJobCancellationToken cancellationToken);
     }
 }

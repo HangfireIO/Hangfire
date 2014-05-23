@@ -104,7 +104,7 @@ select count(Id) from HangFire.Job where StateName = @state";
                 (sqlJob, job, stateData) => new ProcessingJobDto
                 {
                     Job = job,
-                    ServerName = stateData["ServerName"],
+                    ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
                     StartedAt = JobHelper.FromStringTimestamp(stateData["StartedAt"]),
                 });
         }

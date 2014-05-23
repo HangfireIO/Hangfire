@@ -221,6 +221,61 @@ select scope_identity() as Id";
         }
 
         [Fact, CleanDatabase]
+        public void GetStateData_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseConnection(
+                connection => Assert.Throws<ArgumentNullException>(
+                    () => connection.GetStateData(null)));
+        }
+
+        [Fact, CleanDatabase]
+        public void GetStateData_ReturnsNull_IfThereIsNoSuchState()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetStateData("1");
+                Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetStateData_ReturnsCorrectData()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
+values ('', '', '', getutcdate());
+declare @JobId int;
+set @JobId = scope_identity();
+insert into HangFire.State (JobId, Name, CreatedAt)
+values (@JobId, 'old-state', getutcdate());
+insert into HangFire.State (JobId, Name, Reason, Data, CreatedAt)
+values (@JobId, @name, @reason, @data, getutcdate());
+declare @StateId int;
+set @StateId = scope_identity();
+update HangFire.Job set StateId = @StateId;
+select @JobId as Id;";
+
+            UseConnections((sql, connection) =>
+            {
+                var data = new Dictionary<string, string>
+                {
+                    { "Key", "Value" }
+                };
+
+                var jobId = (int)sql.Query(
+                    arrangeSql,
+                    new { name = "Name", reason = "Reason", @data = JobHelper.ToJson(data) }).Single().Id;
+
+                var result = connection.GetStateData(jobId.ToString());
+                Assert.NotNull(result);
+
+                Assert.Equal("Name", result.Name);
+                Assert.Equal("Reason", result.Reason);
+                Assert.Equal("Value", result.Data["Key"]);
+            });
+        }
+
+        [Fact, CleanDatabase]
         public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException()
         {
             const string arrangeSql = @"

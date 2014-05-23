@@ -22,6 +22,7 @@ using System.Threading;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
+using HangFire.SqlServer.Annotations;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
@@ -165,6 +166,30 @@ values (@jobId, @name, @value)";
                 State = jobData.StateName,
                 CreatedAt = jobData.CreatedAt,
                 LoadException = loadException
+            };
+        }
+
+        public StateData GetStateData(string jobId)
+        {
+            if (jobId == null) throw new ArgumentNullException("jobId");
+
+            const string sql = @"
+select s.Name, s.Reason, s.Data
+from HangFire.State s
+inner join HangFire.Job j on j.StateId = s.Id
+where j.Id = @jobId";
+
+            var sqlState = _connection.Query<SqlState>(sql, new { jobId = jobId }).SingleOrDefault();
+            if (sqlState == null)
+            {
+                return null;
+            }
+
+            return new StateData
+            {
+                Name = sqlState.Name,
+                Reason = sqlState.Reason,
+                Data = JobHelper.FromJson<Dictionary<string, string>>(sqlState.Data)
             };
         }
 
