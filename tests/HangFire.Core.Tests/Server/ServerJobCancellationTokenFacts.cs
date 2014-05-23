@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using HangFire.Server;
 using HangFire.States;
@@ -13,12 +14,26 @@ namespace HangFire.Core.Tests.Server
         private const string JobId = "my-job";
         private readonly Mock<IStorageConnection> _connection;
         private CancellationToken _shutdownToken;
+        private readonly WorkerContextMock _workerContextMock;
+        private readonly StateData _stateData;
 
         public ServerJobCancellationTokenFacts()
         {
+            _stateData = new StateData
+            {
+                Name = ProcessingState.StateName,
+                Data = new Dictionary<string, string>
+                {
+                    { "WorkerNumber", "1" },
+                    { "ServerId", "Server" },
+                }
+            };
+
             _connection = new Mock<IStorageConnection>();
-            _connection.Setup(x => x.GetJobData(JobId))
-                .Returns(new JobData { State = ProcessingState.StateName });
+            _connection.Setup(x => x.GetStateData(JobId)).Returns(_stateData);
+
+            _workerContextMock = new WorkerContextMock { WorkerNumber = 1 };
+            _workerContextMock.SharedContext.ServerId = "Server";
 
             _shutdownToken = new CancellationToken(false);
         }
@@ -27,7 +42,8 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIsIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(null, _connection.Object, new CancellationToken()));
+                () => new ServerJobCancellationToken(
+                    null, _connection.Object, _workerContextMock.Object, new CancellationToken()));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -36,9 +52,20 @@ namespace HangFire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(JobId, null, new CancellationToken()));
+                () => new ServerJobCancellationToken(
+                    JobId, null, _workerContextMock.Object, new CancellationToken()));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenWorkerContextIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ServerJobCancellationToken(
+                    JobId, _connection.Object, null, new CancellationToken()));
+
+            Assert.Equal("workerContext", exception.ParamName);
         }
 
         [Fact]
@@ -60,9 +87,38 @@ namespace HangFire.Core.Tests.Server
         }
 
         [Fact]
+        public void ThrowIfCancellationRequested_Throws_IfStateDataDoesNotExist()
+        {
+            _connection.Setup(x => x.GetStateData(It.IsAny<string>())).Returns((StateData)null);
+            var token = CreateToken();
+
+            Assert.Throws<JobAbortedException>(() => token.ThrowIfCancellationRequested());
+        }
+
+        [Fact]
         public void ThrowIfCancellationRequested_ThrowsJobAborted_IfJobIsNotInProcessingState()
         {
-            _connection.Setup(x => x.GetJobData(JobId)).Returns(new JobData { State = "NotProcessing" });
+            _stateData.Name = "NotProcessing";
+            var token = CreateToken();
+
+            Assert.Throws<JobAbortedException>(
+                () => token.ThrowIfCancellationRequested());
+        }
+
+        [Fact]
+        public void ThrowIfCancellationRequested_ThrowsJobAborted_IfStateData_ContainsDifferentServerId()
+        {
+            _stateData.Data["ServerId"] = "AnotherServer";
+            var token = CreateToken();
+
+            Assert.Throws<JobAbortedException>(
+                () => token.ThrowIfCancellationRequested());
+        }
+
+        [Fact]
+        public void ThrowIfCancellationRequested_ThrowsJobAborted_IfWorkerNumberWasChanged()
+        {
+            _stateData.Data["WorkerNumber"] = "999";
             var token = CreateToken();
 
             Assert.Throws<JobAbortedException>(
@@ -71,7 +127,8 @@ namespace HangFire.Core.Tests.Server
 
         private IJobCancellationToken CreateToken()
         {
-            return new ServerJobCancellationToken(JobId, _connection.Object, _shutdownToken);
+            return new ServerJobCancellationToken(
+                JobId, _connection.Object, _workerContextMock.Object, _shutdownToken);
         }
     }
 }

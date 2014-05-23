@@ -98,7 +98,9 @@ namespace HangFire.Server
                 var jobData = connection.GetJobData(jobId);
                 jobData.EnsureLoaded();
 
-                var cancellationToken = new ServerJobCancellationToken(jobId, connection, shutdownToken);
+                var cancellationToken = new ServerJobCancellationToken(
+                    jobId, connection, _context, shutdownToken);
+
                 var performContext = new PerformContext(
                     _context, connection, jobId, jobData.Job, jobData.CreatedAt, cancellationToken);
 

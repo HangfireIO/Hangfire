@@ -15,7 +15,9 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
 using System.Threading;
+using HangFire.Annotations;
 using HangFire.States;
 using HangFire.Storage;
 
@@ -26,18 +28,22 @@ namespace HangFire.Server
         private readonly string _jobId;
         private readonly CancellationToken _shutdownToken;
         private readonly IStorageConnection _connection;
+        private readonly WorkerContext _workerContext;
 
         public ServerJobCancellationToken(
-            string jobId,
-            IStorageConnection connection,
+            [NotNull] string jobId, 
+            [NotNull] IStorageConnection connection, 
+            [NotNull] WorkerContext workerContext,
             CancellationToken shutdownToken)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (connection == null) throw new ArgumentNullException("connection");
+            if (workerContext == null) throw new ArgumentNullException("workerContext");
 
             _jobId = jobId;
             _shutdownToken = shutdownToken;
             _connection = connection;
+            _workerContext = workerContext;
         }
 
         public void ThrowIfCancellationRequested()
@@ -52,8 +58,29 @@ namespace HangFire.Server
 
         private bool IsJobAborted()
         {
-            var backgroundJob = _connection.GetJobData(_jobId);
-            return !ProcessingState.StateName.Equals(backgroundJob.State, StringComparison.OrdinalIgnoreCase);
+            var state = _connection.GetStateData(_jobId);
+
+            if (state == null)
+            {
+                return true;
+            }
+
+            if (!state.Name.Equals(ProcessingState.StateName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (!state.Data["ServerId"].Equals(_workerContext.ServerId))
+            {
+                return true;
+            }
+
+            if (state.Data["WorkerNumber"] != _workerContext.WorkerNumber.ToString(CultureInfo.InvariantCulture))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

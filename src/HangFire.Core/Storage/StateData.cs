@@ -15,13 +15,19 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using HangFire.Annotations;
 
 namespace HangFire.Storage
 {
     public class StateData
     {
+        [NotNull]
         public string Name { get; set; }
+
+        [CanBeNull]
         public string Reason { get; set; }
+
+        [NotNull]
         public IDictionary<string, string> Data { get; set; } 
     }
 }
