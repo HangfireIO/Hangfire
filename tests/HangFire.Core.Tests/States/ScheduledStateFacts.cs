@@ -49,5 +49,12 @@ namespace HangFire.Core.Tests.States
 
             Assert.False(state.IsFinal);
         }
+
+        [Fact]
+        public void IgnoreExceptions_ReturnsFalse()
+        {
+            var state = new ScheduledState(DateTime.UtcNow);
+            Assert.False(state.IgnoreExceptions);
+        }
     }
 }

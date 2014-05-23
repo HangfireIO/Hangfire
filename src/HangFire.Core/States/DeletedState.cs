@@ -42,6 +42,11 @@ namespace HangFire.States
             get { return true; }
         }
 
+        public bool IgnoreExceptions
+        {
+            get { return true; }
+        }
+
         public DateTime DeletedAt { get; private set; }
 
         public Dictionary<string, string> SerializeData()

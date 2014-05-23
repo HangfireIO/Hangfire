@@ -38,6 +38,13 @@ namespace HangFire.Core.Tests.States
             Assert.True(state.IsFinal);
         }
 
+        [Fact]
+        public void IgnoreExceptions_ReturnsFalse()
+        {
+            var state = CreateState();
+            Assert.False(state.IgnoreExceptions);
+        }
+
         private static SucceededState CreateState()
         {
             return new SucceededState(11, 123);

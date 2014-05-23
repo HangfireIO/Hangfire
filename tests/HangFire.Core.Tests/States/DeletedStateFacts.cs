@@ -35,6 +35,16 @@ namespace HangFire.Core.Tests.States
         }
 
         [Fact]
+        public void IgnoreExceptions_ReturnsTrue()
+        {
+            var state = CreateState();
+
+            var result = state.IgnoreExceptions;
+
+            Assert.True(result);
+        }
+
+        [Fact]
         public void DeletedAtProperty_ReturnsCurrentUtcDate()
         {
             var state = CreateState();

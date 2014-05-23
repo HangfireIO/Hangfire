@@ -41,6 +41,7 @@ namespace HangFire.States
         public string Name { get { return StateName; } }
         public string Reason { get; set; }
         public bool IsFinal { get { return false; } }
+        public bool IgnoreExceptions { get { return false; } }
 
         public Dictionary<string, string> SerializeData()
         {

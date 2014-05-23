@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using HangFire.Common;
 using HangFire.States;
 using Xunit;
@@ -41,6 +40,13 @@ namespace HangFire.Core.Tests.States
             var state = new FailedState(new Exception());
 
             Assert.False(state.IsFinal);
+        }
+
+        [Fact]
+        public void IgnoreExceptions_ReturnsFalse()
+        {
+            var state = new FailedState(new Exception());
+            Assert.False(state.IgnoreExceptions);
         }
     }
 }

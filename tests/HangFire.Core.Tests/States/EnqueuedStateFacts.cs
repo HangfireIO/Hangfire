@@ -66,5 +66,13 @@ namespace HangFire.Core.Tests.States
 
             Assert.False(state.IsFinal);
         }
+
+        [Fact]
+        public void IgnoreExceptions_ReturnsFalse()
+        {
+            var state = new EnqueuedState();
+
+            Assert.False(state.IgnoreExceptions);
+        }
     }
 }

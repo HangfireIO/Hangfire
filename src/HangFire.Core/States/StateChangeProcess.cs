@@ -60,19 +60,22 @@ namespace HangFire.States
             }
             catch (Exception ex)
             {
-                var failedState = new FailedState(ex)
+                if (!toState.IgnoreExceptions)
                 {
-                    Reason = "An exception occurred during the transition of job's state"
-                };
+                    toState = new FailedState(ex)
+                    {
+                        Reason = "An exception occurred during the transition of job's state"
+                    };
+                }
 
-                var applyStateContext = new ApplyStateContext(context, failedState, oldStateName);
+                var applyStateContext = new ApplyStateContext(context, toState, oldStateName);
 
                 // We should not use any state changed filters, because
                 // some of the could cause an exception.
                 ApplyState(applyStateContext, Enumerable.Empty<IApplyStateFilter>());
 
                 // State transition was failed due to exception.
-                return false;
+                return toState.IgnoreExceptions;
             }
         }
 

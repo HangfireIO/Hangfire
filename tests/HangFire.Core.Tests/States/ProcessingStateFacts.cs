@@ -52,6 +52,14 @@ namespace HangFire.Core.Tests.States
             Assert.False(state.IsFinal);
         }
 
+        [Fact]
+        public void IgnoreExceptions_ReturnsFalse()
+        {
+            var state = CreateState();
+
+            Assert.False(state.IgnoreExceptions);
+        }
+
         private ProcessingState CreateState()
         {
             return new ProcessingState(ServerId, WorkerNumber);
