@@ -42,7 +42,7 @@ namespace HangFire.Core.Tests.States
         public void IgnoreExceptions_ReturnsFalse()
         {
             var state = CreateState();
-            Assert.False(state.IgnoreExceptions);
+            Assert.False(state.IgnoreJobLoadException);
         }
 
         private static SucceededState CreateState()

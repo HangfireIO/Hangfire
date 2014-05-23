@@ -72,7 +72,7 @@ namespace HangFire.Core.Tests.States
         {
             var state = new EnqueuedState();
 
-            Assert.False(state.IgnoreExceptions);
+            Assert.False(state.IgnoreJobLoadException);
         }
     }
 }

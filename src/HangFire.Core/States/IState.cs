@@ -23,7 +23,7 @@ namespace HangFire.States
         string Reason { get; }
         string Name { get; }
         bool IsFinal { get; }
-        bool IgnoreExceptions { get; }
+        bool IgnoreJobLoadException { get; }
 
         Dictionary<string, string> SerializeData();
     }

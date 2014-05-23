@@ -292,8 +292,12 @@ namespace HangFire.Core.Tests.States
                 {
                     State = OldStateName,
                     Job = null,
-                    LoadException = new JobLoadException()
+                    LoadException = new JobLoadException("asd", new InvalidOperationException())
                 });
+
+            _stateChangeProcess
+                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
+                .Returns(true);
 
             var stateMachine = CreateStateMachine();
 
@@ -307,6 +311,38 @@ namespace HangFire.Core.Tests.States
                 OldStateName));
 
             Assert.False(result);
+        }
+
+        [Fact]
+        public void TryToChangeState_MoveJobToTheGivenState_IfStateIgnoresThisException_AndMethodDataCouldNotBeResolved()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetJobData(JobId))
+                .Returns(new JobData
+                {
+                    State = OldStateName,
+                    Job = null,
+                    LoadException = new JobLoadException("asd", new Exception())
+                });
+
+            _stateChangeProcess
+                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
+                .Returns(true);
+
+            _state.Setup(x => x.IgnoreJobLoadException).Returns(true);
+
+            var stateMachine = CreateStateMachine();
+
+            // Act
+            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+
+            // Assert
+            _stateChangeProcess.Verify(x => x.ChangeState(
+                It.IsAny<StateContext>(),
+                _state.Object,
+                OldStateName));
+
+            Assert.True(result);
         }
 
         private StateMachine CreateStateMachine()

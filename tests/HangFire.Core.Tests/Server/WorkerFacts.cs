@@ -294,7 +294,7 @@ namespace HangFire.Core.Tests.Server
         {
             // Arrange
             _connection.Setup(x => x.GetJobData(JobId))
-                .Returns(new JobData { LoadException = new JobLoadException() });
+                .Returns(new JobData { LoadException = new JobLoadException("asd", new Exception()) });
 
             var worker = CreateWorker();
 

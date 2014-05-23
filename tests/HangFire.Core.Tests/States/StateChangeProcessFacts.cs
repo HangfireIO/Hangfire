@@ -278,27 +278,6 @@ namespace HangFire.Core.Tests.States
             Assert.False(result);
         }
 
-        [Fact]
-        public void ChangeState_AppliesGivenStateOnException_IfStateIsIgnoringStateChangeErrors()
-        {
-            // Arrange
-            var filter = CreateFilter<IApplyStateFilter>();
-            filter
-                .Setup(x => x.OnStateUnapplied(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()))
-                .Throws<InvalidOperationException>();
-
-            _state.Setup(x => x.IgnoreExceptions).Returns(true);
-
-            var process = CreateProcess();
-
-            // Act
-            var result = process.ChangeState(_context.Object, _state.Object, OldStateName);
-
-            // Assert
-            _transaction.Verify(x => x.SetJobState(JobId, _state.Object));
-            Assert.True(result);
-        }
-
         private StateChangeProcess CreateProcess()
         {
             return new StateChangeProcess(_handlers, _filters);

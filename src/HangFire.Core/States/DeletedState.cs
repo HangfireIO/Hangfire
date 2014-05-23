@@ -42,7 +42,7 @@ namespace HangFire.States
             get { return true; }
         }
 
-        public bool IgnoreExceptions
+        public bool IgnoreJobLoadException
         {
             get { return true; }
         }

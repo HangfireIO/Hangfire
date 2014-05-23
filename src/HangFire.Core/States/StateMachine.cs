@@ -80,8 +80,6 @@ namespace HangFire.States
                 String.Format("job:{0}:state-lock", jobId),
                 JobLockTimeout))
             {
-                bool loadSucceeded;
-
                 var jobData = _connection.GetJobData(jobId);
 
                 if (jobData == null)
@@ -96,10 +94,11 @@ namespace HangFire.States
                     return false;
                 }
 
+                bool loadSucceeded = true;
+
                 try
                 {
                     jobData.EnsureLoaded();
-                    loadSucceeded = true;
                 }
                 catch (JobLoadException ex)
                 {
@@ -108,14 +107,17 @@ namespace HangFire.States
                     // and sometimes unable to change its state (the enqueued
                     // state depends on the type of a job).
 
-                    toState = new FailedState(ex.InnerException)
+                    if (!toState.IgnoreJobLoadException)
                     {
-                        Reason = String.Format(
-                            "Can not change the state of a job to '{0}': target method was not found.",
-                            toState.Name)
-                    };
+                        toState = new FailedState(ex.InnerException)
+                        {
+                            Reason = String.Format(
+                                "Can not change the state of a job to '{0}': target method was not found.",
+                                toState.Name)
+                        };
 
-                    loadSucceeded = false;
+                        loadSucceeded = false;
+                    }
                 }
 
                 var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt, _connection);

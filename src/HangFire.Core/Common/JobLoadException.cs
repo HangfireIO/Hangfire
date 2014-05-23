@@ -29,22 +29,6 @@ namespace HangFire.Common
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JobLoadException"/>
-        /// class.
-        /// </summary>
-        public JobLoadException()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobLoadException"/>
-        /// class with a given message.
-        /// </summary>
-        public JobLoadException(string message) : base(message)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobLoadException"/>
         /// class with a given message and information about inner exception.
         /// </summary>
         public JobLoadException(string message, Exception inner) : base(message, inner)

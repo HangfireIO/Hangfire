@@ -54,7 +54,7 @@ namespace HangFire.Core.Tests.States
         public void IgnoreExceptions_ReturnsFalse()
         {
             var state = new ScheduledState(DateTime.UtcNow);
-            Assert.False(state.IgnoreExceptions);
+            Assert.False(state.IgnoreJobLoadException);
         }
     }
 }

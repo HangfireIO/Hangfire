@@ -13,20 +13,6 @@ namespace HangFire.Core.Tests.Common
     public class JobLoadExceptionFacts
     {
         [Fact]
-        public void DefaultCtor_CreatesNewInstance()
-        {
-            var exception = new JobLoadException();
-            Assert.NotNull(exception);
-        }
-
-        [Fact]
-        public void Ctor_CreatesException_WithAGivenMessage()
-        {
-            var exception = new JobLoadException("1");
-            Assert.Equal("1", exception.Message);
-        }
-
-        [Fact]
         public void Ctor_CreatesException_WithGivenMessageAnInnerException()
         {
             var innerException = new Exception();
@@ -39,7 +25,7 @@ namespace HangFire.Core.Tests.Common
         [Fact]
         public void Instance_CanBeSerializedAndDeserialized()
         {
-            var exception = new JobLoadException("1");
+            var exception = new JobLoadException("1", new Exception());
             JobLoadException deserializedException;
 
             using (var stream = new MemoryStream())
