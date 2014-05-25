@@ -11,7 +11,7 @@ namespace HangFire.SimpleInjector
 
     #endregion
 
-    public class AutomaticRetryDhtiWeletionAttribute : JobFilterAttribute, IElectStateFilter
+    public class AutomaticRetryWithDeletionAttribute : JobFilterAttribute, IElectStateFilter
     {
         private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
 
@@ -19,7 +19,7 @@ namespace HangFire.SimpleInjector
 
         private int attempts;
 
-        public AutomaticRetryDhtiWeletionAttribute()
+        public AutomaticRetryWithDeletionAttribute()
         {
             Attempts = DefaultRetryAttempts;
             LogEvents = true;
