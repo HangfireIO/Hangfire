@@ -23,6 +23,8 @@ HangFire is a .NET Framework alternative to `Resque
 <http://sidekiq.org>`_, `delayed_job
 <https://github.com/collectiveidea/delayed_job>`_.
 
+.. image:: http://hangfire.io/img/succeeded-job.png
+
 Contents
 ---------
 
