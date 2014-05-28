@@ -20,6 +20,8 @@ Just wrap your long-running process to a method and instruct HangFire to create 
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
+![HangFire Dashboard](http://hangfire.io/img/succeeded-job.png)
+
 Installation
 -------------
 
