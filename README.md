@@ -78,7 +78,8 @@ Related Projects
 
 * [HangFire.Autofac](https://github.com/odinserj/HangFire.Autofac)
 * [HangFire.Ninject](https://github.com/odinserj/HangFire.Ninject)
-* [HangFire.SimpleInjector](https://github.com/devmondo/HangFire.SimpleInjector)
+* [HangFire.SimpleInjector](https://github.com/devmondo/HangFire.SimpleInjector) by [@devmondo](https://github.com/devmondo)
+* [HangFire.Windsor](https://github.com/BredStik/HangFire.Windsor) by [@BredStik](https://github.com/BredStik)
 * [HangFire.Azure.QueueStorage](https://github.com/odinserj/HangFire.Azure.QueueStorage)
 * [HangFire.Azure.ServiceBusQueue](https://github.com/odinserj/HangFire.Azure.ServiceBusQueue)
 
