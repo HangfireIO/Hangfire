@@ -26,16 +26,14 @@
     Pager pager;
     JobList<EnqueuedJobDto> enqueuedJobs;
 
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
     {
-        pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
-        {
-            BasePageUrl = Request.LinkTo("/queues/" + Queue)
-        };
+        BasePageUrl = Request.LinkTo("/queues/" + Queue)
+    };
 
-        enqueuedJobs = monitor
-            .EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
-    }
+    enqueuedJobs = monitor
+        .EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

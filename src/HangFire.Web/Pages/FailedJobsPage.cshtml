@@ -16,16 +16,14 @@
     Pager pager;
     JobList<FailedJobDto> failedJobs;
 
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    pager = new Pager(from, perPage, monitor.FailedCount())
     {
-        pager = new Pager(from, perPage, monitor.FailedCount())
-        {
-            BasePageUrl = Request.LinkTo("/failed")
-        };
+        BasePageUrl = Request.LinkTo("/failed")
+    };
 
-        failedJobs = monitor
-            .FailedJobs(pager.FromRecord, pager.RecordsPerPage);
-    }
+    failedJobs = monitor
+        .FailedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

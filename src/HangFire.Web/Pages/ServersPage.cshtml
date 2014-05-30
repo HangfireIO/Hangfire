@@ -10,10 +10,8 @@
     Layout = new LayoutPage { Title = "Servers" };
     
     IList<ServerDto> servers;
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
-    {
-        servers = monitor.Servers();    
-    }
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    servers = monitor.Servers();    
 }
 
 @if (servers.Count == 0)

@@ -10,10 +10,8 @@
 @inherits RazorPage
 @{
     JobDetailsDto job;
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
-    {
-        job = monitor.JobDetails(JobId.ToString());
-    }
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    job = monitor.JobDetails(JobId.ToString());
 
     string title = null;
 

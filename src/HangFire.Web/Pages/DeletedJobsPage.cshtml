@@ -16,15 +16,13 @@
     Pager pager;
     JobList<DeletedJobDto> jobs;
 
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    pager = new Pager(from, perPage, monitor.DeletedListCount())
     {
-        pager = new Pager(from, perPage, monitor.DeletedListCount())
-        {
-            BasePageUrl = Request.LinkTo("/deleted")
-        };
+        BasePageUrl = Request.LinkTo("/deleted")
+    };
 
-        jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
-    }
+    jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

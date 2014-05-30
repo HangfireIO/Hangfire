@@ -15,16 +15,14 @@
     Pager pager;
     JobList<ProcessingJobDto> processingJobs;
 
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    pager = new Pager(from, perPage, monitor.ProcessingCount())
     {
-        pager = new Pager(from, perPage, monitor.ProcessingCount())
-        {
-            BasePageUrl = Request.LinkTo("/processing")
-        };
+        BasePageUrl = Request.LinkTo("/processing")
+    };
 
-        processingJobs = monitor
-            .ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
-    }
+    processingJobs = monitor
+        .ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

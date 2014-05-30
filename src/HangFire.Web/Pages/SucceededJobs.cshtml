@@ -17,16 +17,14 @@
     Pager pager;
     JobList<SucceededJobDto> succeededJobs;
 
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    pager = new Pager(from, perPage, monitor.SucceededListCount())
     {
-        pager = new Pager(from, perPage, monitor.SucceededListCount())
-        {
-            BasePageUrl = Request.LinkTo("/succeeded")
-        };
+        BasePageUrl = Request.LinkTo("/succeeded")
+    };
 
-        succeededJobs = monitor
-            .SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
-    }
+    succeededJobs = monitor
+        .SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

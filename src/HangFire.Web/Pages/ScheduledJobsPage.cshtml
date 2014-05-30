@@ -15,15 +15,13 @@
     Pager pager;
     JobList<ScheduledJobDto> scheduledJobs;
 
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    pager = new Pager(from, perPage, monitor.ScheduledCount())
     {
-        pager = new Pager(from, perPage, monitor.ScheduledCount())
-        {
-            BasePageUrl = Request.LinkTo("/scheduled")
-        };
+        BasePageUrl = Request.LinkTo("/scheduled")
+    };
 
-        scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
-    }
+    scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)
