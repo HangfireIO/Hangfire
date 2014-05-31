@@ -36,3 +36,4 @@ Contents
    features
    advfeatures
    tutorials/index
+   howtos/index
