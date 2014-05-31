@@ -7,3 +7,5 @@ How-tos
    configuring-authorization
    calling-methods-in-background
    calling-methods-with-delay
+   passing-arguments
+   passing-dependencies
