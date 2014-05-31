@@ -1,4 +1,4 @@
-Configuring HangFire Monitor Authorization
+Configuring HangFire Monitor authorization
 ===========================================
 
 After installing the ``HangFire.Web`` package (it's a dependency of the ``HangFire`` package)., the ``web.config`` file of your application is being changed to include *HangFire Monitor* HTTP handler to see what's going on with your background jobs.
