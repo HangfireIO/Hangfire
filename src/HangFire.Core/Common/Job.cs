@@ -323,8 +323,15 @@ namespace HangFire.Common
 
                 if (argument != null)
                 {
-                    var converter = TypeDescriptor.GetConverter(argument.GetType());
-                    value = converter.ConvertToInvariantString(argument);
+                    if (argument is DateTime)
+                    {
+                        value = ((DateTime) argument).ToString("MM/dd/yyyy HH:mm:ss.ffff");
+                    }
+                    else
+                    {
+                        var converter = TypeDescriptor.GetConverter(argument.GetType());
+                        value = converter.ConvertToInvariantString(argument);
+                    }
                 }
 
                 // Logic, related to optional parameters and their default values, 

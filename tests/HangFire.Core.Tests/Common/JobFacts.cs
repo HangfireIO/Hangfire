@@ -102,6 +102,17 @@ namespace HangFire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromStaticExpression_ShouldReturnCorrectFormat_WhenDateTimeArgumentIsProvided()
+        {
+            var dt = new DateTime(2014, 5, 30, 12, 0, 0, 777);
+            var expected = dt.ToString("MM/dd/yyyy HH:mm:ss.ffff");
+
+            var job = Job.FromExpression(() => MethodWithDateTimeArgument(dt));
+
+            Assert.Equal(expected, job.Arguments[0]);
+        }
+
+        [Fact]
         public void FromInstanceExpression_ShouldThrowException_WhenNullExpressionIsProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -215,6 +226,21 @@ namespace HangFire.Core.Tests.Common
             job.Perform(_activator.Object, _token.Object);
 
             // Assert - see the `MethodWithArguments` method.
+            Assert.True(_methodInvoked);
+        }
+
+        [Fact, StaticLock]
+        public void Perform_PassesDateTimeArguments_WithCorrectFormat()
+        {
+            // Arrange
+            _methodInvoked = false;
+            var dt = new DateTime(2014, 5, 30, 12, 0, 0, 777);
+            var job = Job.FromExpression(() => MethodWithDateTimeArgument(dt));
+
+            // Act
+            job.Perform(_activator.Object, _token.Object);
+
+            // Assert - see the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
         }
 
@@ -380,6 +406,14 @@ namespace HangFire.Core.Tests.Common
 
         public void MethodWithCustomArgument(Instance argument)
         {
+        }
+
+        public void MethodWithDateTimeArgument(DateTime argument)
+        {
+            _methodInvoked = true;
+            var expected = new DateTime(2014, 5, 30, 12, 0, 0, 777);
+
+            Assert.Equal(expected, argument);
         }
 
         public static void ExceptionMethod()
