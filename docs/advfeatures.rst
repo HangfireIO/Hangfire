@@ -37,7 +37,11 @@ To start to process multiple queues, tell the ``BackgroundJobServer`` (or ``AspN
 
 .. code-block:: c#
 
-   var server = new AspNetBackgroundJobServer("critical", "default");
+   var options = new BackgroundJobServerOptions
+   {
+       Queues = new[] { "critical", "default" }
+   };
+   var server = new AspNetBackgroundJobServer( options );
 
 The order is important, workers will fetch jobs from the ``critical`` queue first, and then from the ``default`` queue.
 
