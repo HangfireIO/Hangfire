@@ -11,5 +11,7 @@ How-tos
    passing-dependencies
    using-ioc-containers
    using-cancellation-tokens
+   processing-background-jobs
+   configuring-degree-of-parallelism
+   running-multiple-server-instances
    adding-logging
-   
