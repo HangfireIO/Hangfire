@@ -10,3 +10,6 @@ How-tos
    passing-arguments
    passing-dependencies
    using-ioc-containers
+   using-cancellation-tokens
+   adding-logging
+   
