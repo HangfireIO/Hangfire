@@ -38,7 +38,7 @@ Let's start with Monitor to test your configuration. Please, build the project a
    </div>
 
 
-.. image:: https://github.com/odinserj/hangfire/raw/master/content/dashboard-min.png
+.. image:: http://hangfire.io/img/succeeded-jobs-sm.png
 
 Usage
 ------
