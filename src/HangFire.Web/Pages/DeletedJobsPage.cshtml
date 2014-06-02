@@ -13,16 +13,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    Pager pager;
-    JobList<DeletedJobDto> jobs;
-
     var monitor = JobStorage.Current.GetMonitoringApi();
-    pager = new Pager(from, perPage, monitor.DeletedListCount())
+    Pager pager = new Pager(from, perPage, monitor.DeletedListCount())
     {
         BasePageUrl = Request.LinkTo("/deleted")
     };
 
-    jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
+    JobList<DeletedJobDto> jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

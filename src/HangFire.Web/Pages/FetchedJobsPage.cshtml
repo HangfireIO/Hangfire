@@ -25,16 +25,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    Pager pager;
-    JobList<FetchedJobDto> fetchedJobs;
-
     var monitor = JobStorage.Current.GetMonitoringApi();
-    pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
+    Pager pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
     {
         BasePageUrl = Request.LinkTo("/queues/fetched/" + Queue)
     };
 
-    fetchedJobs = monitor
+    JobList<FetchedJobDto> fetchedJobs = monitor
         .FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 

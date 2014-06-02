@@ -14,16 +14,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    Pager pager;
-    JobList<SucceededJobDto> succeededJobs;
-
     var monitor = JobStorage.Current.GetMonitoringApi();
-    pager = new Pager(from, perPage, monitor.SucceededListCount())
+    Pager pager = new Pager(from, perPage, monitor.SucceededListCount())
     {
         BasePageUrl = Request.LinkTo("/succeeded")
     };
 
-    succeededJobs = monitor
+    JobList<SucceededJobDto> succeededJobs = monitor
         .SucceededJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 

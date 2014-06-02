@@ -59,7 +59,7 @@ namespace HangFire.Web.Pages
         {
 
 
-WriteLiteral("\r\n");
+WriteLiteral("\n");
 
 
 
@@ -74,32 +74,30 @@ WriteLiteral("\r\n");
   
     Layout = new LayoutPage { Title = "Queues" };
 
-    IList<QueueWithTopEnqueuedJobsDto> queues;
-
     var monitor = JobStorage.Current.GetMonitoringApi();
-    queues = monitor.Queues();
+    IList<QueueWithTopEnqueuedJobsDto> queues = monitor.Queues();
 
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n");
+WriteLiteral("\n");
 
 
             
-            #line 18 "..\..\Pages\QueuesPage.cshtml"
+            #line 16 "..\..\Pages\QueuesPage.cshtml"
  if (queues.Count == 0)
 {
 
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-warning\">\r\n        No queued jobs found. Try to enque" +
-"ue a job.\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-warning\">\n        No queued jobs found. Try to enqueu" +
+"e a job.\n    </div>\n");
 
 
             
-            #line 23 "..\..\Pages\QueuesPage.cshtml"
+            #line 21 "..\..\Pages\QueuesPage.cshtml"
 }
 else
 {
@@ -107,64 +105,56 @@ else
             
             #line default
             #line hidden
-WriteLiteral(@"    <table class=""table table-striped"">
-        <thead>
-            <tr>
-                <th>Queue</th>
-                <th>Length</th>
-                <th>Fetched</th>
-                <th>Next jobs</th>
-            </tr>
-        </thead>
-        <tbody>
-");
+WriteLiteral("    <table class=\"table table-striped\">\n        <thead>\n            <tr>\n        " +
+"        <th>Queue</th>\n                <th>Length</th>\n                <th>Fetch" +
+"ed</th>\n                <th>Next jobs</th>\n            </tr>\n        </thead>\n  " +
+"      <tbody>\n");
 
 
             
-            #line 36 "..\..\Pages\QueuesPage.cshtml"
+            #line 34 "..\..\Pages\QueuesPage.cshtml"
              foreach (var queue in queues)
             {
 
             
             #line default
             #line hidden
-WriteLiteral("                <tr>\r\n                    <td>\r\n                        <a class=" +
-"\"label-queue\" href=\"");
+WriteLiteral("                <tr>\n                    <td>\n                        <a class=\"l" +
+"abel-queue\" href=\"");
 
 
             
-            #line 40 "..\..\Pages\QueuesPage.cshtml"
+            #line 38 "..\..\Pages\QueuesPage.cshtml"
                                                 Write(Request.LinkTo("/queues/" + queue.Name));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                            ");
+WriteLiteral("\">\n                            ");
 
 
             
-            #line 41 "..\..\Pages\QueuesPage.cshtml"
+            #line 39 "..\..\Pages\QueuesPage.cshtml"
                        Write(queue.Name);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        </a>\r\n                    </td>\r\n                    <t" +
-"d>");
+WriteLiteral("\n                        </a>\n                    </td>\n                    <td>");
 
 
             
-            #line 44 "..\..\Pages\QueuesPage.cshtml"
+            #line 42 "..\..\Pages\QueuesPage.cshtml"
                    Write(queue.Length);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                    <td>\r\n");
+WriteLiteral("</td>\n                    <td>\n");
 
 
             
-            #line 46 "..\..\Pages\QueuesPage.cshtml"
+            #line 44 "..\..\Pages\QueuesPage.cshtml"
                          if (queue.Fetched.HasValue)
                         {
 
@@ -175,27 +165,27 @@ WriteLiteral("                            <a href=\"");
 
 
             
-            #line 48 "..\..\Pages\QueuesPage.cshtml"
+            #line 46 "..\..\Pages\QueuesPage.cshtml"
                                 Write(Request.LinkTo("/queues/fetched/" + queue.Name));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                ");
+WriteLiteral("\">\n                                ");
 
 
             
-            #line 49 "..\..\Pages\QueuesPage.cshtml"
+            #line 47 "..\..\Pages\QueuesPage.cshtml"
                            Write(queue.Fetched);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                            </a>\r\n");
+WriteLiteral("\n                            </a>\n");
 
 
             
-            #line 51 "..\..\Pages\QueuesPage.cshtml"
+            #line 49 "..\..\Pages\QueuesPage.cshtml"
                         }
                         else
                         {
@@ -203,32 +193,32 @@ WriteLiteral("\r\n                            </a>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                            <em>N/A</em>\r\n");
+WriteLiteral("                            <em>N/A</em>\n");
 
 
             
-            #line 55 "..\..\Pages\QueuesPage.cshtml"
+            #line 53 "..\..\Pages\QueuesPage.cshtml"
                         }
 
             
             #line default
             #line hidden
-WriteLiteral("                    </td>\r\n                    <td>\r\n");
+WriteLiteral("                    </td>\n                    <td>\n");
 
 
             
-            #line 58 "..\..\Pages\QueuesPage.cshtml"
+            #line 56 "..\..\Pages\QueuesPage.cshtml"
                          if (queue.FirstJobs.Count == 0)
                         {
 
             
             #line default
             #line hidden
-WriteLiteral("                            <em>No jobs queued.</em>\r\n");
+WriteLiteral("                            <em>No jobs queued.</em>\n");
 
 
             
-            #line 61 "..\..\Pages\QueuesPage.cshtml"
+            #line 59 "..\..\Pages\QueuesPage.cshtml"
                         }
                         else
                         {
@@ -250,7 +240,7 @@ WriteLiteral(@"                            <table class=""table table-condensed 
 
 
             
-            #line 74 "..\..\Pages\QueuesPage.cshtml"
+            #line 72 "..\..\Pages\QueuesPage.cshtml"
                                      foreach (var job in queue.FirstJobs)
                                     {
 
@@ -261,18 +251,18 @@ WriteLiteral("                                        <tr class=\"");
 
 
             
-            #line 76 "..\..\Pages\QueuesPage.cshtml"
+            #line 74 "..\..\Pages\QueuesPage.cshtml"
                                                Write(!job.Value.InEnqueuedState ? "obsolete-data" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                            <td class=\"min-width\">\r\n         " +
-"                                       <a href=\"");
+WriteLiteral("\">\n                                            <td class=\"min-width\">\n           " +
+"                                     <a href=\"");
 
 
             
-            #line 78 "..\..\Pages\QueuesPage.cshtml"
+            #line 76 "..\..\Pages\QueuesPage.cshtml"
                                                     Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -282,17 +272,17 @@ WriteLiteral("\">");
 
 
             
-            #line 78 "..\..\Pages\QueuesPage.cshtml"
+            #line 76 "..\..\Pages\QueuesPage.cshtml"
                                                                                         Write(HtmlHelper.JobId(job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("</a>\r\n");
+WriteLiteral("</a>\n");
 
 
             
-            #line 79 "..\..\Pages\QueuesPage.cshtml"
+            #line 77 "..\..\Pages\QueuesPage.cshtml"
                                                  if (!job.Value.InEnqueuedState)
                                                 {
 
@@ -301,67 +291,67 @@ WriteLiteral("</a>\r\n");
             #line hidden
 WriteLiteral("                                                    <span title=\"Job\'s state has " +
 "been changed while fetching data.\" class=\"glyphicon glyphicon-question-sign\"></s" +
-"pan>\r\n");
+"pan>\n");
 
 
             
-            #line 82 "..\..\Pages\QueuesPage.cshtml"
+            #line 80 "..\..\Pages\QueuesPage.cshtml"
                                                 }
 
             
             #line default
             #line hidden
-WriteLiteral("                                            </td>\r\n                              " +
-"              <td class=\"min-width\">\r\n                                          " +
-"      <span class=\"label label-default\" style=\"");
+WriteLiteral("                                            </td>\n                               " +
+"             <td class=\"min-width\">\n                                            " +
+"    <span class=\"label label-default\" style=\"");
 
 
             
-            #line 85 "..\..\Pages\QueuesPage.cshtml"
+            #line 83 "..\..\Pages\QueuesPage.cshtml"
                                                                                      Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                                    ");
+WriteLiteral("\">\n                                                    ");
 
 
             
-            #line 86 "..\..\Pages\QueuesPage.cshtml"
+            #line 84 "..\..\Pages\QueuesPage.cshtml"
                                                Write(job.Value.State);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                                </span>\r\n                      " +
-"                      </td>\r\n                                            <td>\r\n " +
-"                                               <a class=\"job-method\" href=\"");
+WriteLiteral("\n                                                </span>\n                        " +
+"                    </td>\n                                            <td>\n     " +
+"                                           <a class=\"job-method\" href=\"");
 
 
             
-            #line 90 "..\..\Pages\QueuesPage.cshtml"
+            #line 88 "..\..\Pages\QueuesPage.cshtml"
                                                                        Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                                    ");
+WriteLiteral("\">\n                                                    ");
 
 
             
-            #line 91 "..\..\Pages\QueuesPage.cshtml"
+            #line 89 "..\..\Pages\QueuesPage.cshtml"
                                                Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                                </a>\r\n                         " +
-"                   </td>\r\n                                            <td class=" +
-"\"align-right min-width\">\r\n");
+WriteLiteral("\n                                                </a>\n                           " +
+"                 </td>\n                                            <td class=\"al" +
+"ign-right min-width\">\n");
 
 
             
-            #line 95 "..\..\Pages\QueuesPage.cshtml"
+            #line 93 "..\..\Pages\QueuesPage.cshtml"
                                                  if (job.Value.EnqueuedAt.HasValue)
                                                 {
 
@@ -372,27 +362,27 @@ WriteLiteral("                                                    <span data-mom
 
 
             
-            #line 97 "..\..\Pages\QueuesPage.cshtml"
+            #line 95 "..\..\Pages\QueuesPage.cshtml"
                                                                   Write(JobHelper.ToStringTimestamp(job.Value.EnqueuedAt.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                                        ");
+WriteLiteral("\">\n                                                        ");
 
 
             
-            #line 98 "..\..\Pages\QueuesPage.cshtml"
+            #line 96 "..\..\Pages\QueuesPage.cshtml"
                                                    Write(job.Value.EnqueuedAt);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                                    </span>\r\n");
+WriteLiteral("\n                                                    </span>\n");
 
 
             
-            #line 100 "..\..\Pages\QueuesPage.cshtml"
+            #line 98 "..\..\Pages\QueuesPage.cshtml"
                                                 }
                                                 else
                                                 {
@@ -400,52 +390,52 @@ WriteLiteral("\r\n                                                    </span>\r\
             
             #line default
             #line hidden
-WriteLiteral("                                                    <em>n/a</em>\r\n");
+WriteLiteral("                                                    <em>n/a</em>\n");
 
 
             
-            #line 104 "..\..\Pages\QueuesPage.cshtml"
+            #line 102 "..\..\Pages\QueuesPage.cshtml"
                                                 }
 
             
             #line default
             #line hidden
-WriteLiteral("                                            </td>\r\n                              " +
-"          </tr>\r\n");
+WriteLiteral("                                            </td>\n                               " +
+"         </tr>\n");
 
 
             
-            #line 107 "..\..\Pages\QueuesPage.cshtml"
+            #line 105 "..\..\Pages\QueuesPage.cshtml"
                                     }
 
             
             #line default
             #line hidden
-WriteLiteral("                                </tbody>\r\n                            </table>\r\n");
+WriteLiteral("                                </tbody>\n                            </table>\n");
 
 
             
-            #line 110 "..\..\Pages\QueuesPage.cshtml"
+            #line 108 "..\..\Pages\QueuesPage.cshtml"
                         }
 
             
             #line default
             #line hidden
-WriteLiteral("                </td>\r\n            </tr>\r\n");
+WriteLiteral("                </td>\n            </tr>\n");
 
 
             
-            #line 113 "..\..\Pages\QueuesPage.cshtml"
+            #line 111 "..\..\Pages\QueuesPage.cshtml"
             }
 
             
             #line default
             #line hidden
-WriteLiteral("        </tbody>\r\n    </table>\r\n");
+WriteLiteral("        </tbody>\n    </table>\n");
 
 
             
-            #line 116 "..\..\Pages\QueuesPage.cshtml"
+            #line 114 "..\..\Pages\QueuesPage.cshtml"
 }
             
             #line default

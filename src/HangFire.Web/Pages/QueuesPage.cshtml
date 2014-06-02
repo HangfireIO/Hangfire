@@ -9,10 +9,8 @@
 @{
     Layout = new LayoutPage { Title = "Queues" };
 
-    IList<QueueWithTopEnqueuedJobsDto> queues;
-
     var monitor = JobStorage.Current.GetMonitoringApi();
-    queues = monitor.Queues();
+    IList<QueueWithTopEnqueuedJobsDto> queues = monitor.Queues();
 }
 
 @if (queues.Count == 0)

@@ -64,7 +64,7 @@ namespace HangFire.Web.Pages
         {
 
 
-WriteLiteral("\r\n");
+WriteLiteral("\n");
 
 
 
@@ -95,38 +95,35 @@ WriteLiteral("\r\n");
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    Pager pager;
-    JobList<FetchedJobDto> fetchedJobs;
-
     var monitor = JobStorage.Current.GetMonitoringApi();
-    pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
+    Pager pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
     {
         BasePageUrl = Request.LinkTo("/queues/fetched/" + Queue)
     };
 
-    fetchedJobs = monitor
+    JobList<FetchedJobDto> fetchedJobs = monitor
         .FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n");
+WriteLiteral("\n");
 
 
             
-            #line 41 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 38 "..\..\Pages\FetchedJobsPage.cshtml"
  if (pager.TotalPageCount == 0)
 {
 
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"alert alert-info\">\r\n        The queue is empty.\r\n    </div>\r\n");
+WriteLiteral("    <div class=\"alert alert-info\">\n        The queue is empty.\n    </div>\n");
 
 
             
-            #line 46 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 43 "..\..\Pages\FetchedJobsPage.cshtml"
 }
 else
 {
@@ -134,13 +131,13 @@ else
             
             #line default
             #line hidden
-WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolbar btn-toolbar-top\">" +
-"\r\n            <button class=\"js-jobs-list-command btn btn-sm btn-primary\"\r\n     " +
-"               data-url=\"");
+WriteLiteral("    <div class=\"js-jobs-list\">\n        <div class=\"btn-toolbar btn-toolbar-top\">\n" +
+"            <button class=\"js-jobs-list-command btn btn-sm btn-primary\"\n        " +
+"            data-url=\"");
 
 
             
-            #line 52 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 49 "..\..\Pages\FetchedJobsPage.cshtml"
                          Write(Request.LinkTo("/enqueued/requeue"));
 
             
@@ -157,7 +154,7 @@ WriteLiteral(@"""
 
 
             
-            #line 59 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 56 "..\..\Pages\FetchedJobsPage.cshtml"
                          Write(Request.LinkTo("/enqueued/delete"));
 
             
@@ -174,7 +171,7 @@ WriteLiteral(@"""
 
 
             
-            #line 66 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 63 "..\..\Pages\FetchedJobsPage.cshtml"
        Write(RenderPartial(new PerPageSelector(pager)));
 
             
@@ -200,31 +197,31 @@ WriteLiteral(@"
 
 
             
-            #line 82 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 79 "..\..\Pages\FetchedJobsPage.cshtml"
                  foreach (var job in fetchedJobs)
                 {
 
             
             #line default
             #line hidden
-WriteLiteral("                    <tr class=\"js-jobs-list-row hover\">\r\n                        " +
-"<td>\r\n                            <input type=\"checkbox\" class=\"js-jobs-list-che" +
-"ckbox\" name=\"jobs[]\" value=\"");
+WriteLiteral("                    <tr class=\"js-jobs-list-row hover\">\n                        <" +
+"td>\n                            <input type=\"checkbox\" class=\"js-jobs-list-check" +
+"box\" name=\"jobs[]\" value=\"");
 
 
             
-            #line 86 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 83 "..\..\Pages\FetchedJobsPage.cshtml"
                                                                                                  Write(job.Key);
 
             
             #line default
             #line hidden
-WriteLiteral("\" />\r\n                        </td>\r\n                        <td class=\"min-width" +
-"\">\r\n                            <a href=\"");
+WriteLiteral("\" />\n                        </td>\n                        <td class=\"min-width\">" +
+"\n                            <a href=\"");
 
 
             
-            #line 89 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 86 "..\..\Pages\FetchedJobsPage.cshtml"
                                 Write(Request.LinkTo("/job/" + job.Key));
 
             
@@ -234,60 +231,60 @@ WriteLiteral("\">");
 
 
             
-            #line 89 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 86 "..\..\Pages\FetchedJobsPage.cshtml"
                                                                     Write(HtmlHelper.JobId(job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("</a>\r\n                        </td>\r\n                        <td class=\"min-width" +
-"\">\r\n                            <span class=\"label label-default\" style=\"");
+WriteLiteral("</a>\n                        </td>\n                        <td class=\"min-width\">" +
+"\n                            <span class=\"label label-default\" style=\"");
 
 
             
-            #line 92 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 89 "..\..\Pages\FetchedJobsPage.cshtml"
                                                                  Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                ");
+WriteLiteral("\">\n                                ");
 
 
             
-            #line 93 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 90 "..\..\Pages\FetchedJobsPage.cshtml"
                            Write(job.Value.State);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                            </span>\r\n                        </td>\r\n           " +
-"             <td>\r\n                            <a class=\"job-method\" href=\"");
+WriteLiteral("\n                            </span>\n                        </td>\n              " +
+"          <td>\n                            <a class=\"job-method\" href=\"");
 
 
             
-            #line 97 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 94 "..\..\Pages\FetchedJobsPage.cshtml"
                                                    Write(Request.LinkTo("/job/" + job.Key));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                ");
+WriteLiteral("\">\n                                ");
 
 
             
-            #line 98 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 95 "..\..\Pages\FetchedJobsPage.cshtml"
                            Write(HtmlHelper.DisplayMethod(job.Value.Job));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                            </a>\r\n                        </td>\r\n              " +
-"          <td class=\"align-right\">\r\n");
+WriteLiteral("\n                            </a>\n                        </td>\n                 " +
+"       <td class=\"align-right\">\n");
 
 
             
-            #line 102 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 99 "..\..\Pages\FetchedJobsPage.cshtml"
                              if (job.Value.FetchedAt.HasValue)
                             {
 
@@ -298,60 +295,60 @@ WriteLiteral("                                <span data-moment=\"");
 
 
             
-            #line 104 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 101 "..\..\Pages\FetchedJobsPage.cshtml"
                                               Write(JobHelper.ToStringTimestamp(job.Value.FetchedAt.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                    ");
+WriteLiteral("\">\n                                    ");
 
 
             
-            #line 105 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 102 "..\..\Pages\FetchedJobsPage.cshtml"
                                Write(job.Value.FetchedAt);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </span>\r\n");
+WriteLiteral("\n                                </span>\n");
 
 
             
-            #line 107 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 104 "..\..\Pages\FetchedJobsPage.cshtml"
                             }
 
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                    </tr>\r\n");
+WriteLiteral("                        </td>\n                    </tr>\n");
 
 
             
-            #line 110 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 107 "..\..\Pages\FetchedJobsPage.cshtml"
                 }
 
             
             #line default
             #line hidden
-WriteLiteral("            </tbody>\r\n        </table>\r\n    </div>\r\n");
+WriteLiteral("            </tbody>\n        </table>\n    </div>\n");
 
 
             
-            #line 114 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 111 "..\..\Pages\FetchedJobsPage.cshtml"
     
             
             #line default
             #line hidden
             
-            #line 114 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 111 "..\..\Pages\FetchedJobsPage.cshtml"
 Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 114 "..\..\Pages\FetchedJobsPage.cshtml"
+            #line 111 "..\..\Pages\FetchedJobsPage.cshtml"
                                         
 }
 

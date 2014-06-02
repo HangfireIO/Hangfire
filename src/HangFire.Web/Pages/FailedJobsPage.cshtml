@@ -13,16 +13,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    Pager pager;
-    JobList<FailedJobDto> failedJobs;
-
     var monitor = JobStorage.Current.GetMonitoringApi();
-    pager = new Pager(from, perPage, monitor.FailedCount())
+    Pager pager = new Pager(from, perPage, monitor.FailedCount())
     {
         BasePageUrl = Request.LinkTo("/failed")
     };
 
-    failedJobs = monitor
+    JobList<FailedJobDto> failedJobs = monitor
         .FailedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
