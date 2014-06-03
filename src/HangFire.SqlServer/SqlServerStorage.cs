@@ -22,6 +22,7 @@ using System.Text;
 using Common.Logging;
 using HangFire.Server;
 using HangFire.Storage;
+using System.Configuration;
 
 namespace HangFire.SqlServer
 {
@@ -30,18 +31,36 @@ namespace HangFire.SqlServer
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
-        public SqlServerStorage(string connectionString)
-            : this(connectionString, new SqlServerStorageOptions())
+        public SqlServerStorage(string nameOrConnectionString)
+            : this(nameOrConnectionString, new SqlServerStorageOptions())
         {
         }
 
-        public SqlServerStorage(string connectionString, SqlServerStorageOptions options)
+        /// <summary>
+        /// Initializes SqlServerStorage from the provided SqlServerStorageOptions and either the provided connection
+        /// string or the connection string with provided name pulled from the application config file. 
+        /// Throws ArgumentNullException if nameOrConnectionString or options are null.  Throws ArgumentException
+        /// if nameOrConnectionString is an invalid SQL Server connection string and no connection string with 
+        /// a name matching nameOrConnectionString is found in the application config file. 
+        /// </summary>
+        /// <param name="nameOrConnectionString">Either a SQL Server connection string or the name of 
+        /// a SQL Server connection string located in the connectionStrings node in the application config</param>
+        /// <param name="options"></param>
+        public SqlServerStorage(string nameOrConnectionString, SqlServerStorageOptions options)
         {
-            if (connectionString == null) throw new ArgumentNullException("connectionString");
+            if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
             if (options == null) throw new ArgumentNullException("options");
 
             _options = options;
-            _connectionString = connectionString;
+
+            if (IsConnectionString(nameOrConnectionString))
+                _connectionString = nameOrConnectionString;
+            else if (IsConnectionStringInConfiguration(nameOrConnectionString))
+                _connectionString = ConfigurationManager.ConnectionStrings[nameOrConnectionString].ConnectionString;
+            else
+                throw new ArgumentException(
+                    string.Format("Could not find connection string with name '{0}' in application config file",
+                                  nameOrConnectionString));
 
             if (options.PrepareSchemaIfNecessary)
             {
@@ -114,8 +133,8 @@ namespace HangFire.SqlServer
                     }
                 }
 
-                return builder.Length != 0 
-                    ? String.Format("SQL Server: {0}", builder) 
+                return builder.Length != 0
+                    ? String.Format("SQL Server: {0}", builder)
                     : canNotParseMessage;
             }
             catch (Exception)
@@ -130,6 +149,18 @@ namespace HangFire.SqlServer
             connection.Open();
 
             return connection;
+        }
+
+        private bool IsConnectionString(string nameOrConnectionString)
+        {
+            return nameOrConnectionString.Contains(";");
+        }
+
+        private bool IsConnectionStringInConfiguration(string connectionStringName)
+        {
+            var connectionStringSetting = ConfigurationManager.ConnectionStrings[connectionStringName];
+
+            return connectionStringSetting != null;
         }
     }
 }
