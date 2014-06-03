@@ -16,13 +16,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using Common.Logging;
 using HangFire.Server;
 using HangFire.Storage;
-using System.Configuration;
 
 namespace HangFire.SqlServer
 {
@@ -38,14 +38,16 @@ namespace HangFire.SqlServer
 
         /// <summary>
         /// Initializes SqlServerStorage from the provided SqlServerStorageOptions and either the provided connection
-        /// string or the connection string with provided name pulled from the application config file. 
-        /// Throws ArgumentNullException if nameOrConnectionString or options are null.  Throws ArgumentException
-        /// if nameOrConnectionString is an invalid SQL Server connection string and no connection string with 
-        /// a name matching nameOrConnectionString is found in the application config file. 
+        /// string or the connection string with provided name pulled from the application config file.       
         /// </summary>
         /// <param name="nameOrConnectionString">Either a SQL Server connection string or the name of 
         /// a SQL Server connection string located in the connectionStrings node in the application config</param>
         /// <param name="options"></param>
+        /// <exception cref="ArgumentNullException"><paramref name="nameOrConnectionString"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> argument is null.</exception>
+        /// <exception cref="ArgumentException"><paramref name="nameOrConnectionString"/> argument is neither 
+        /// a valid SQL Server connection string nor the name of a connection string in the application
+        /// config file.</exception>
         public SqlServerStorage(string nameOrConnectionString, SqlServerStorageOptions options)
         {
             if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
@@ -54,13 +56,19 @@ namespace HangFire.SqlServer
             _options = options;
 
             if (IsConnectionString(nameOrConnectionString))
+            {
                 _connectionString = nameOrConnectionString;
+            }
             else if (IsConnectionStringInConfiguration(nameOrConnectionString))
+            {
                 _connectionString = ConfigurationManager.ConnectionStrings[nameOrConnectionString].ConnectionString;
+            }
             else
+            {
                 throw new ArgumentException(
                     string.Format("Could not find connection string with name '{0}' in application config file",
                                   nameOrConnectionString));
+            }
 
             if (options.PrepareSchemaIfNecessary)
             {
