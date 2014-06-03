@@ -52,9 +52,5 @@ namespace HangFire.Storage
 
         // Set operations
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
-
-        // List operations
-        [NotNull]
-        string[] GetAllItemsFromList([NotNull] string key);
     }
 }
