@@ -647,6 +647,54 @@ values (@id, '', @heartbeat)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromList_ThrowsAnException_IfKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromList(null)));
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromList_ReturnsEmptyArray_IfListDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromList("some-list");
+
+                Assert.NotNull(result);
+                Assert.Equal(0, result.Length);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromList_ReturnsItems_InTheOrderTheyWereCreated()
+        {
+            const string arrangeSql = @"
+insert into HangFire.List ([key], value)
+values (@key, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "some-list", value = "1" },
+                    new { key = "some-list", value = "2" },
+                    new { key = "some-list", value = "3" },
+                    new { key = "another-list", value = "999" }
+                });
+
+                // Act
+                var result = connection.GetAllItemsFromList("some-list");
+
+                // Assert
+                Assert.Equal(3, result.Length);
+                Assert.Equal("1", result[0]);
+                Assert.Equal("2", result[1]);
+                Assert.Equal("3", result[2]);
+            });
+        }
+
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())

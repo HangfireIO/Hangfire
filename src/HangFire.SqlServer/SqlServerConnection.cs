@@ -22,7 +22,6 @@ using System.Threading;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.SqlServer.Annotations;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
@@ -278,6 +277,16 @@ where j.Id = @jobId";
             return _connection.Execute(
                 @"delete from HangFire.Server where LastHeartbeat < @timeOutAt",
                 new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) });
+        }
+
+        public string[] GetAllItemsFromList(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string sqlQuery = @"
+select Value from HangFire.List where [Key] = @key order by Id";
+
+            return _connection.Query(sqlQuery, new { key }).Select(x => (string)x.Value).ToArray();
         }
     }
 }

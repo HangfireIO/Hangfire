@@ -103,5 +103,10 @@ namespace HangFire.Redis
         {
             return String.Format("redis://{0}/{1}", HostAndPort, Db);
         }
+
+        internal static string GetRedisKey(string key)
+        {
+            return Prefix + key;
+        }
     }
 }

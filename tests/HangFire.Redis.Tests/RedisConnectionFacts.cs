@@ -48,6 +48,49 @@ namespace HangFire.Redis.Tests
             });
         }
 
+        [Fact, CleanRedis]
+        public void GetAllItemsFromList_ThrowsAnException_IfKeyIsNull()
+        {
+            UseConnection(connection => 
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromList(null)));
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllItemsFromList_ReturnsEmptyArray_IfListDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromList("some-list");
+
+                Assert.NotNull(result);
+                Assert.Equal(0, result.Length);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllItemsFromList_ReturnsAllItems_WithinTheSpecifiedOrder()
+        {
+            UseConnections((redis, connection) =>
+            {
+                // Fuck, I open the https://github.com/ServiceStack/ServiceStack.Redis/blob/master/src/ServiceStack.Redis/RedisClient_List.cs
+                // every time I use the `IRedisClient` interface.
+
+                // Arrange
+                redis.AddItemToList("hangfire:some-list", "1");
+                redis.AddItemToList("hangfire:some-list", "2");
+                redis.AddItemToList("hangfire:some-list", "3");
+
+                // Act
+                var result = connection.GetAllItemsFromList("some-list");
+
+                // Assert
+                Assert.Equal(3, result.Length);
+                Assert.Equal("1", result[0]);
+                Assert.Equal("2", result[1]);
+                Assert.Equal("3", result[2]);
+            });
+        }
+
         private void UseConnections(Action<IRedisClient, RedisConnection> action)
         {
             using (var redis = RedisUtils.CreateClient())

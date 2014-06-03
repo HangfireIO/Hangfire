@@ -344,5 +344,12 @@ namespace HangFire.Redis
 
             return removedServerCount;
         }
+
+        public string[] GetAllItemsFromList(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            return Redis.GetAllItemsFromList(RedisStorage.GetRedisKey(key)).ToArray();
+        }
     }
 }
