@@ -241,7 +241,7 @@ namespace HangFire.Redis
         public HashSet<string> GetAllItemsFromSet(string key)
         {
             if (key == null) throw new ArgumentNullException("key");
-
+            
             var result = Redis.GetAllItemsFromSortedSet(RedisStorage.GetRedisKey(key));
             return new HashSet<string>(result);
         }
@@ -251,6 +251,14 @@ namespace HangFire.Redis
             return Redis.GetRangeFromSortedSetByLowestScore(
                 RedisStorage.Prefix + key, fromScore, toScore, 0, 1)
                 .FirstOrDefault();
+        }
+
+        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+
+            Redis.SetRangeInHash(RedisStorage.GetRedisKey(key), keyValuePairs);
         }
 
         public void AnnounceServer(string serverId, ServerContext context)

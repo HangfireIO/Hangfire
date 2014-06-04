@@ -86,6 +86,47 @@ namespace HangFire.Redis.Tests
             });
         }
 
+        [Fact, CleanRedis]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.SetRangeInHash(null, new Dictionary<string, string>()));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.SetRangeInHash("some-hash", null));
+
+                Assert.Equal("keyValuePairs", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void SetRangeInHash_SetsAllGivenKeyPairs()
+        {
+            UseConnections((redis, connection) =>
+            {
+                connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                {
+                    { "Key1", "Value1" },
+                    { "Key2", "Value2" }
+                });
+
+                var hash = redis.GetAllEntriesFromHash("hangfire:some-hash");
+                Assert.Equal("Value1", hash["Key1"]);
+                Assert.Equal("Value2", hash["Key2"]);
+            });
+        }
+
         private void UseConnections(Action<IRedisClient, RedisConnection> action)
         {
             using (var redis = RedisUtils.CreateClient())
