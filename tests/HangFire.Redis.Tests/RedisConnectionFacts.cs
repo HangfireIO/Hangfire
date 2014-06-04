@@ -48,6 +48,44 @@ namespace HangFire.Redis.Tests
             });
         }
 
+        [Fact, CleanRedis]
+        public void GetAllItemsFromSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSet(null)));
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenSetDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromSet("some-set");
+
+                Assert.NotNull(result);
+                Assert.Equal(0, result.Count);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllItemsFromSet_ReturnsAllItems()
+        {
+            UseConnections((redis, connection) =>
+            {
+                // Arrange
+                redis.AddItemToSortedSet("hangfire:some-set", "1");
+                redis.AddItemToSortedSet("hangfire:some-set", "2");
+
+                // Act
+                var result = connection.GetAllItemsFromSet("some-set");
+
+                // Assert
+                Assert.Equal(2, result.Count);
+                Assert.Contains("1", result);
+                Assert.Contains("2", result);
+            });
+        }
+
         private void UseConnections(Action<IRedisClient, RedisConnection> action)
         {
             using (var redis = RedisUtils.CreateClient())

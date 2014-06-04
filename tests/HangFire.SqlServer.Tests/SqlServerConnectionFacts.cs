@@ -647,6 +647,52 @@ values (@id, '', @heartbeat)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSet(null)));
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenKeyDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromSet("some-set");
+
+                Assert.NotNull(result);
+                Assert.Equal(0, result.Count);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromSet_ReturnsAllItems()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], Score, Value)
+values (@key, 0.0, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "some-set", value = "1" },
+                    new { key = "some-set", value = "2" },
+                    new { key = "another-set", value = "3" }
+                });
+
+                // Act
+                var result = connection.GetAllItemsFromSet("some-set");
+
+                // Assert
+                Assert.Equal(2, result.Count);
+                Assert.Contains("1", result);
+                Assert.Contains("2", result);
+            });
+        }
+
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())

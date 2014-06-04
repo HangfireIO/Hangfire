@@ -51,6 +51,9 @@ namespace HangFire.Storage
         int RemoveTimedOutServers(TimeSpan timeOut);
 
         // Set operations
+        [NotNull]
+        HashSet<string> GetAllItemsFromSet([NotNull] string key);
+
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
     }
 }

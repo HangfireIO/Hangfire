@@ -20,7 +20,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using HangFire.Common;
-using HangFire.Redis.Annotations;
 using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Redis;
@@ -237,6 +236,14 @@ namespace HangFire.Redis
             return Redis.GetValueFromHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", id),
                 name);
+        }
+
+        public HashSet<string> GetAllItemsFromSet(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var result = Redis.GetAllItemsFromSortedSet(RedisStorage.GetRedisKey(key));
+            return new HashSet<string>(result);
         }
 
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)

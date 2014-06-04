@@ -22,7 +22,6 @@ using System.Threading;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.SqlServer.Annotations;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
@@ -216,6 +215,17 @@ where j.Id = @jobId";
                 @"select Value from HangFire.JobParameter where JobId = @id and Name = @name",
                 new { id = id, name = name })
                 .SingleOrDefault();
+        }
+
+        public HashSet<string> GetAllItemsFromSet(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var result = _connection.Query<string>(
+                @"select Value from HangFire.[Set] where [Key] = @key",
+                new { key });
+            
+            return new HashSet<string>(result);
         }
 
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
