@@ -288,11 +288,6 @@ BEGIN
 		);
 		PRINT 'Created table [HangFire].[Hash]';
 
-		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_Key] ON [HangFire].[Hash] (
-			[Key] ASC
-		);
-		PRINT 'Created index [UX_HangFire_Hash_Key]';
-
 		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_Key_Field] ON [HangFire].[Hash] (
 			[Key] ASC,
 			[Field] ASC
