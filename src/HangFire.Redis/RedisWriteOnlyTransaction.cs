@@ -189,5 +189,15 @@ namespace HangFire.Redis
             _transaction.QueueCommand(x => x.TrimList(
                 RedisStorage.Prefix + key, keepStartingFrom, keepEndingAt));
         }
+
+        public void SetRangeInHash(
+            string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+
+            _transaction.QueueCommand(
+                x => x.SetRangeInHash(RedisStorage.GetRedisKey(key), keyValuePairs));
+        }
     }
 }
