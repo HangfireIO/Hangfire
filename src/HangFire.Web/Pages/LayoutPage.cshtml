@@ -48,11 +48,8 @@
             <div class="container">
                 <div class="col-md-3">
                     @{
-                        StatisticsDto statistics;
-                        using (var monitor = JobStorage.Current.GetMonitoringApi())
-                        {
-                            statistics = monitor.GetStatistics();
-                        }
+                        var monitor = JobStorage.Current.GetMonitoringApi();
+                        StatisticsDto statistics = monitor.GetStatistics();
                     }
 
                     <div id="stats" class="list-group">

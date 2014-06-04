@@ -20,7 +20,7 @@ using HangFire.Storage.Monitoring;
 
 namespace HangFire.Storage
 {
-    public interface IMonitoringApi : IDisposable
+    public interface IMonitoringApi
     {
         IList<QueueWithTopEnqueuedJobsDto> Queues();
         IList<ServerDto> Servers();

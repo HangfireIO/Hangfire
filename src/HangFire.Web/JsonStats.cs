@@ -24,21 +24,19 @@ namespace HangFire.Web
     {
         public override void ProcessRequest()
         {
-            using (var monitoring = JobStorage.Current.GetMonitoringApi())
+            var monitoring = JobStorage.Current.GetMonitoringApi();
+            var response = monitoring.GetStatistics();
+
+            // TODO: th
+            var settings = new JsonSerializerSettings
             {
-                var response = monitoring.GetStatistics();
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            var serialized = JsonConvert.SerializeObject(response, settings);
 
-                // TODO: th
-                var settings = new JsonSerializerSettings
-                {
-                    ContractResolver = new CamelCasePropertyNamesContractResolver()
-                };
-                var serialized = JsonConvert.SerializeObject(response, settings);
-
-                Response.ContentType = "application/json";
-                Response.ContentEncoding = Encoding.UTF8;
-                Response.Write(serialized);
-            }
+            Response.ContentType = "application/json";
+            Response.ContentEncoding = Encoding.UTF8;
+            Response.Write(serialized);
         }
     }
 }

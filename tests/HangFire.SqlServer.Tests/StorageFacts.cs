@@ -29,10 +29,8 @@ namespace HangFire.SqlServer.Tests
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
-            using (var api = storage.GetMonitoringApi())
-            {
-                Assert.NotNull(api);
-            }
+            var api = storage.GetMonitoringApi();
+            Assert.NotNull(api);
         }
 
         [Fact, CleanDatabase]

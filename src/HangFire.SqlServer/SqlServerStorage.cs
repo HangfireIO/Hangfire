@@ -59,7 +59,7 @@ namespace HangFire.SqlServer
 
         public override IMonitoringApi GetMonitoringApi()
         {
-            return new SqlServerMonitoringApi(CreateAndOpenConnection(), QueueProviders);
+            return new SqlServerMonitoringApi(_connectionString, QueueProviders);
         }
 
         public override IStorageConnection GetConnection()
