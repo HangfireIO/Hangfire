@@ -738,6 +738,51 @@ values (@key, 0.0, @value)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void GetAllEntriesFromHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllEntriesFromHash(null)));
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllEntriesFromHash_ReturnsNull_IfHashDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllEntriesFromHash("some-hash");
+                Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllEntriesFromHash_ReturnsAllKeysAndTheirValues()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Hash ([Key], [Field], [Value])
+values (@key, @field, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "some-hash", field = "Key1", value = "Value1" },
+                    new { key = "some-hash", field = "Key2", value = "Value2" },
+                    new { key = "another-hash", field = "Key3", value = "Value3" }
+                });
+
+                // Act
+                var result = connection.GetAllEntriesFromHash("some-hash");
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Equal(2, result.Count);
+                Assert.Equal("Value1", result["Key1"]);
+                Assert.Equal("Value2", result["Key2"]);
+            });
+        }
+
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())

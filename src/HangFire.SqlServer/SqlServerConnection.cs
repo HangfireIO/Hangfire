@@ -263,6 +263,18 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             }
         }
 
+        public Dictionary<string, string> GetAllEntriesFromHash(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var result = _connection.Query<SqlHash>(
+                "select Field, Value from HangFire.Hash where [Key] = @key",
+                new { key })
+                .ToDictionary(x => x.Field, x => x.Value);
+
+            return result.Count != 0 ? result : null;
+        }
+
         public void AnnounceServer(string serverId, ServerContext context)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");

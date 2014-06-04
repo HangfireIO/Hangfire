@@ -57,6 +57,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="EnqueuedAndFetchedCountDto.cs" />
+    <Compile Include="Entities\SqlHash.cs" />
     <Compile Include="ExpirationManager.cs" />
     <Compile Include="Entities\JobParameter.cs" />
     <Compile Include="Entities\SqlJob.cs" />

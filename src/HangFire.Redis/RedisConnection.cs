@@ -261,6 +261,15 @@ namespace HangFire.Redis
             Redis.SetRangeInHash(RedisStorage.GetRedisKey(key), keyValuePairs);
         }
 
+        public Dictionary<string, string> GetAllEntriesFromHash(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var result = Redis.GetAllEntriesFromHash(RedisStorage.GetRedisKey(key));
+
+            return result.Count != 0 ? result : null;
+        }
+
         public void AnnounceServer(string serverId, ServerContext context)
         {
             using (var transaction = Redis.CreateTransaction())

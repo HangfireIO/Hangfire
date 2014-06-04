@@ -127,6 +127,45 @@ namespace HangFire.Redis.Tests
             });
         }
 
+        [Fact, CleanRedis]
+        public void GetAllEntriesFromHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllEntriesFromHash(null)));
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllEntriesFromHash_ReturnsNullValue_WhenHashDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllEntriesFromHash("some-hash");
+                Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllEntriesFromHash_ReturnsAllEntries()
+        {
+            UseConnections((redis, connection) =>
+            {
+                // Arrange
+                redis.SetRangeInHash("hangfire:some-hash", new Dictionary<string, string>
+                {
+                    { "Key1", "Value1" },
+                    { "Key2", "Value2" }
+                });
+
+                // Act
+                var result = connection.GetAllEntriesFromHash("some-hash");
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Equal("Value1", result["Key1"]);
+                Assert.Equal("Value2", result["Key2"]);
+            });
+        }
+
         private void UseConnections(Action<IRedisClient, RedisConnection> action)
         {
             using (var redis = RedisUtils.CreateClient())
