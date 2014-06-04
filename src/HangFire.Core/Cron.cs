@@ -213,14 +213,5 @@ namespace HangFire
         {
             return String.Format("{0} {1} {2} {3} *", minute, hour, day, month);
         }
-
-        /// <summary>
-        /// Returns the given cron expression.
-        /// </summary>
-        /// <param name="expression">CRON expression (for example, "0 12 * */2").</param>
-        public static string Expression(string expression)
-        {
-            return expression;
-        }
     }
 }

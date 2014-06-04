@@ -64,6 +64,8 @@
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Cron.cs" />
     <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="RecurringJob.cs" />
+    <Compile Include="RecurringJobManager.cs" />
     <Compile Include="Server\JobAbortedException.cs" />
     <Compile Include="JobCancellationToken.cs" />
     <Compile Include="Client\IJobCreationProcess.cs" />

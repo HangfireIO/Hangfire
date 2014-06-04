@@ -88,6 +88,7 @@
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
+    <Compile Include="RecurringJobManagerFacts.cs" />
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
