@@ -106,6 +106,7 @@
     <Compile Include="Common\GlobalJobFilterCollection.cs" />
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\IJobFilterProvider.cs" />
+    <Compile Include="Server\RecurringJobScheduler.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
     <Compile Include="States\DeletedState.cs" />

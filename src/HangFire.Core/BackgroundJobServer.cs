@@ -129,6 +129,9 @@ namespace HangFire
 
             yield return new ServerSupervisor(
                 new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval));
+
+            yield return new ServerSupervisor(
+                new RecurringJobScheduler(_storage, new BackgroundJobClient(_storage, stateMachineFactory)));
         }
 
         private IEnumerable<IServerSupervisor> GetStorageSupervisors()
