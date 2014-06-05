@@ -14,7 +14,7 @@ namespace HangFire.Msmq.Tests
         public MsmqSqlServerStorageExtensionsFacts()
         {
             _storage = new SqlServerStorage(
-                String.Empty,
+                @"Server=.\sqlexpress;Database=TheDatabase;Trusted_Connection=True;",
                 new SqlServerStorageOptions { PrepareSchemaIfNecessary = false });
         }
 
