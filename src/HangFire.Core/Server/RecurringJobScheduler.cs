@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using HangFire.Annotations;
 using HangFire.Common;
 using HangFire.States;
 using HangFire.Storage;
@@ -28,11 +29,20 @@ namespace HangFire.Server
     {
         private readonly JobStorage _storage;
         private readonly IBackgroundJobClient _client;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public RecurringJobScheduler(JobStorage storage, IBackgroundJobClient client)
+        public RecurringJobScheduler(
+            [NotNull] JobStorage storage, 
+            [NotNull] IBackgroundJobClient client, 
+            [NotNull] IDateTimeProvider dateTimeProvider)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (client == null) throw new ArgumentNullException("client");
+            if (dateTimeProvider == null) throw new ArgumentNullException("dateTimeProvider");
+
             _storage = storage;
             _client = client;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public void Execute(CancellationToken cancellationToken)
@@ -52,42 +62,52 @@ namespace HangFire.Server
                         continue;
                     }
 
-                    var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
-                    var job = serializedJob.Deserialize();
-                    var cron = recurringJob["Cron"];
-                    var cronSchedule = CrontabSchedule.Parse(cron);
-
-                    var nextExecution = recurringJob.ContainsKey("NextExecution")
-                        ? JobHelper.FromStringTimestamp(recurringJob["NextExecution"])
-                        : cronSchedule.GetNextOccurrence(DateTime.UtcNow);
-
-                    if (nextExecution <= DateTime.UtcNow)
-                    {
-                        var state = new EnqueuedState { Reason = "Enqueued as recurring job" };
-                        var jobId = _client.Create(job, state);
-
-                        connection.SetRangeInHash(
-                            String.Format("recurring-job:{0}", recurringJobId),
-                            new Dictionary<string, string>
-                            {
-                                { "LastExecution", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
-                                { "LastJobId", jobId },
-                                { "NextExecution", JobHelper.ToStringTimestamp(cronSchedule.GetNextOccurrence(nextExecution)) }
-                            });
-                    }
-                    else if (!recurringJob.ContainsKey("NextExecution"))
-                    {
-                        connection.SetRangeInHash(
-                            String.Format("recurring-job:{0}", recurringJobId),
-                            new Dictionary<string, string>
-                            {
-                                { "NextExecution", JobHelper.ToStringTimestamp(nextExecution) }
-                            });
-                    }
+                    TryScheduleJob(connection, recurringJobId, recurringJob);
                 }
             }
 
             cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+        }
+
+        private void TryScheduleJob(IStorageConnection connection, string recurringJobId, Dictionary<string, string> recurringJob)
+        {
+            var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
+            var job = serializedJob.Deserialize();
+            var cron = recurringJob["Cron"];
+            var cronSchedule = CrontabSchedule.Parse(cron);
+
+            var currentTime = _dateTimeProvider.CurrentDateTime;
+
+            if (recurringJob.ContainsKey("NextExecution"))
+            {
+                var nextExecution = JobHelper.FromStringTimestamp(recurringJob["NextExecution"]);
+
+                if (nextExecution <= currentTime)
+                {
+                    var state = new EnqueuedState { Reason = "Recurring" };
+                    var jobId = _client.Create(job, state);
+
+                    connection.SetRangeInHash(
+                        String.Format("recurring-job:{0}", recurringJobId),
+                        new Dictionary<string, string>
+                        {
+                            { "LastExecution", JobHelper.ToStringTimestamp(currentTime) },
+                            { "LastJobId", jobId },
+                            { "NextExecution", JobHelper.ToStringTimestamp(_dateTimeProvider.GetNextOccurrence(cronSchedule)) }
+                        });
+                }
+            }
+            else
+            {
+                var nextExecution = _dateTimeProvider.GetNextOccurrence(cronSchedule);
+
+                connection.SetRangeInHash(
+                    String.Format("recurring-job:{0}", recurringJobId),
+                    new Dictionary<string, string>
+                    {
+                        { "NextExecution", JobHelper.ToStringTimestamp(nextExecution) }
+                    });
+            }
         }
 
         public override string ToString()

@@ -90,7 +90,7 @@ namespace HangFire.Core.Tests
             manager.AddOrUpdate(_id, _job, _cronExpression);
 
             _transaction.Verify(x => x.SetRangeInHash(
-                _id,
+                String.Format("recurring-job:{0}", _id),
                 It.Is<Dictionary<string, string>>(rj => 
                     rj["Cron"] == "* * * * *" && !String.IsNullOrEmpty(rj["Job"]))));
         }

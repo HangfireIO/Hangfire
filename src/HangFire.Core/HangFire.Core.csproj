@@ -66,6 +66,7 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
+    <Compile Include="Server\IDateTimeProvider.cs" />
     <Compile Include="Server\JobAbortedException.cs" />
     <Compile Include="JobCancellationToken.cs" />
     <Compile Include="Client\IJobCreationProcess.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Server\RecurringJobScheduler.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
+    <Compile Include="Server\UtcNowDateTimeProvider.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />

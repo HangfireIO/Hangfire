@@ -131,7 +131,10 @@ namespace HangFire
                 new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval));
 
             yield return new ServerSupervisor(
-                new RecurringJobScheduler(_storage, new BackgroundJobClient(_storage, stateMachineFactory)));
+                new RecurringJobScheduler(
+                    _storage, 
+                    new BackgroundJobClient(_storage, stateMachineFactory),
+                    new UtcNowDateTimeProvider()));
         }
 
         private IEnumerable<IServerSupervisor> GetStorageSupervisors()
