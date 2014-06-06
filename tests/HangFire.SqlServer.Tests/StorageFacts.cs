@@ -13,7 +13,7 @@ namespace HangFire.SqlServer.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlServerStorage(null));
 
-            Assert.Equal("connectionString", exception.ParamName);
+            Assert.Equal("nameOrConnectionString", exception.ParamName);
         }
 
         [Fact]
