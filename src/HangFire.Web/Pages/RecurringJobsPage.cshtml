@@ -1,0 +1,84 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Common
+@using HangFire.Common
+@using HangFire.Web
+@using Pages
+@using HangFire.Storage
+@using Storage.Monitoring
+@inherits RazorPage
+@{
+    Layout = new LayoutPage { Title = "Recurring jobs" };
+}
+
+@if (RecurringJobs.Count == 0)
+{
+    <div class="alert alert-info">
+        No recurring jobs found.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th class="min-width">Id</th>
+                <th class="min-width">Cron</th>
+                <th>Job</th>
+                <th class="align-right min-width">Next execution</th>
+                <th class="align-right min-width">Last execution</th>
+                <th class="align-right min-width">Last job</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var job in RecurringJobs)
+            {
+                <tr>
+                    <td>@job.Id</td>
+                    <td class="min-width">@(CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron))</td>
+                    <td>@HtmlHelper.DisplayMethod(job.Job)</td>
+                    <td class="align-right min-width">
+                        @if (job.NextExecution != null)
+                        {
+                            <span data-moment="@(JobHelper.ToStringTimestamp(job.NextExecution.Value))">
+                                @job.NextExecution.Value
+                            </span>
+                        }
+                        else
+                        {
+                            <em>N/A</em>
+                        }
+                    </td>
+                    <td class="align-right min-width">
+                        @if (job.LastExecution != null)
+                        {
+                            <span data-moment="@(JobHelper.ToStringTimestamp(job.LastExecution.Value))">
+                                @job.LastExecution.Value
+                            </span>
+                        }
+                        else
+                        {
+                            <em>N/A</em>
+                        }
+                    </td>
+                    <td class="align-right min-width">
+                        @if (job.LastJobId != null)
+                        {
+                            <a href="@Request.LinkTo("/job/" + job.LastJobId)">
+                                <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
+                                    @job.LastJobState
+                                </span>
+                            </a>
+                        }
+                        else
+                        {
+                            <em>N/A</em>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

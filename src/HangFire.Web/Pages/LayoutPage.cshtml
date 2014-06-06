@@ -66,7 +66,13 @@
                            href="@Request.LinkTo("/servers")">
                             <span class="label label-default pull-right">@statistics.Servers</span>
                             <span class="glyphicon glyphicon-hdd"></span>
-                            Active Servers
+                            Servers
+                        </a>
+                        
+                        <a class="list-group-item @(Request.PathInfo.Equals("/recurring") ? "active" : null)"
+                           href="@Request.LinkTo("/recurring")">
+                            <span class="glyphicon glyphicon-time"></span>
+                            Recurring jobs
                         </a>
 
                         <a class="list-group-item @(Request.PathInfo.StartsWith("/queues") ? "active" : null)" 
@@ -81,7 +87,7 @@
                                 </span>
                             </span>
                             <span class="glyphicon glyphicon-inbox"></span>
-                            Jobs & Queues
+                            Queues
                         </a>
                         <a class="list-group-item stats-indent @(Request.PathInfo.Equals("/scheduled") ? "active" : null)" 
                            href="@Request.LinkTo("/scheduled")">

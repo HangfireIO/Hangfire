@@ -197,12 +197,34 @@ WriteLiteral("\">\r\n                            <span class=\"label label-defau
             #line default
             #line hidden
 WriteLiteral("</span>\r\n                            <span class=\"glyphicon glyphicon-hdd\"></span" +
-">\r\n                            Active Servers\r\n                        </a>\r\n\r\n " +
-"                       <a class=\"list-group-item ");
+">\r\n                            Servers\r\n                        </a>\r\n          " +
+"              \r\n                        <a class=\"list-group-item ");
 
 
             
             #line 72 "..\..\Pages\LayoutPage.cshtml"
+                                              Write(Request.PathInfo.Equals("/recurring") ? "active" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                           href=\"");
+
+
+            
+            #line 73 "..\..\Pages\LayoutPage.cshtml"
+                            Write(Request.LinkTo("/recurring"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                            <span class=\"glyphicon glyphicon-time\"></span>\r\n " +
+"                           Recurring jobs\r\n                        </a>\r\n\r\n     " +
+"                   <a class=\"list-group-item ");
+
+
+            
+            #line 78 "..\..\Pages\LayoutPage.cshtml"
                                               Write(Request.PathInfo.StartsWith("/queues") ? "active" : null);
 
             
@@ -212,7 +234,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
 
             
-            #line 73 "..\..\Pages\LayoutPage.cshtml"
+            #line 79 "..\..\Pages\LayoutPage.cshtml"
                             Write(Request.LinkTo("/queues"));
 
             
@@ -224,7 +246,7 @@ WriteLiteral("\">\r\n                            <span class=\"label label-defau
 
 
             
-            #line 76 "..\..\Pages\LayoutPage.cshtml"
+            #line 82 "..\..\Pages\LayoutPage.cshtml"
                                Write(statistics.Enqueued);
 
             
@@ -236,7 +258,7 @@ WriteLiteral("\r\n                                </span>\r\n                   
 
 
             
-            #line 80 "..\..\Pages\LayoutPage.cshtml"
+            #line 86 "..\..\Pages\LayoutPage.cshtml"
                                Write(statistics.Queues);
 
             
@@ -246,13 +268,13 @@ WriteLiteral(@"
                                 </span>
                             </span>
                             <span class=""glyphicon glyphicon-inbox""></span>
-                            Jobs & Queues
+                            Queues
                         </a>
                         <a class=""list-group-item stats-indent ");
 
 
             
-            #line 86 "..\..\Pages\LayoutPage.cshtml"
+            #line 92 "..\..\Pages\LayoutPage.cshtml"
                                                            Write(Request.PathInfo.Equals("/scheduled") ? "active" : null);
 
             
@@ -262,7 +284,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
 
             
-            #line 87 "..\..\Pages\LayoutPage.cshtml"
+            #line 93 "..\..\Pages\LayoutPage.cshtml"
                             Write(Request.LinkTo("/scheduled"));
 
             
@@ -273,7 +295,7 @@ WriteLiteral("\">\r\n                            <span id=\"stats-scheduled\" cl
 
 
             
-            #line 89 "..\..\Pages\LayoutPage.cshtml"
+            #line 95 "..\..\Pages\LayoutPage.cshtml"
                            Write(statistics.Scheduled);
 
             
@@ -285,7 +307,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
 
             
-            #line 93 "..\..\Pages\LayoutPage.cshtml"
+            #line 99 "..\..\Pages\LayoutPage.cshtml"
                                                            Write(Request.PathInfo.Equals("/processing") ? "active" : null);
 
             
@@ -295,7 +317,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
 
             
-            #line 94 "..\..\Pages\LayoutPage.cshtml"
+            #line 100 "..\..\Pages\LayoutPage.cshtml"
                             Write(Request.LinkTo("/processing"));
 
             
@@ -306,7 +328,7 @@ WriteLiteral("\">\r\n                            <span id=\"stats-processing\" c
 
 
             
-            #line 96 "..\..\Pages\LayoutPage.cshtml"
+            #line 102 "..\..\Pages\LayoutPage.cshtml"
                            Write(statistics.Processing);
 
             
@@ -318,7 +340,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
 
             
-            #line 100 "..\..\Pages\LayoutPage.cshtml"
+            #line 106 "..\..\Pages\LayoutPage.cshtml"
                                                            Write(Request.PathInfo.Equals("/succeeded") ? "active" : null);
 
             
@@ -328,7 +350,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
 
             
-            #line 101 "..\..\Pages\LayoutPage.cshtml"
+            #line 107 "..\..\Pages\LayoutPage.cshtml"
                             Write(Request.LinkTo("/succeeded"));
 
             
@@ -339,7 +361,7 @@ WriteLiteral("\">\r\n                            <span id=\"stats-succeeded\" cl
 
 
             
-            #line 103 "..\..\Pages\LayoutPage.cshtml"
+            #line 109 "..\..\Pages\LayoutPage.cshtml"
                            Write(statistics.Succeeded);
 
             
@@ -351,7 +373,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
 
             
-            #line 107 "..\..\Pages\LayoutPage.cshtml"
+            #line 113 "..\..\Pages\LayoutPage.cshtml"
                                                            Write(Request.PathInfo.Equals("/failed") ? "active" : null);
 
             
@@ -361,7 +383,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
 
             
-            #line 108 "..\..\Pages\LayoutPage.cshtml"
+            #line 114 "..\..\Pages\LayoutPage.cshtml"
                             Write(Request.LinkTo("/failed"));
 
             
@@ -372,7 +394,7 @@ WriteLiteral("\">\r\n                            <span id=\"stats-failed\" class
 
 
             
-            #line 110 "..\..\Pages\LayoutPage.cshtml"
+            #line 116 "..\..\Pages\LayoutPage.cshtml"
                            Write(statistics.Failed);
 
             
@@ -384,7 +406,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
 
             
-            #line 114 "..\..\Pages\LayoutPage.cshtml"
+            #line 120 "..\..\Pages\LayoutPage.cshtml"
                                                            Write(Request.PathInfo.Equals("/deleted") ? "active" : null);
 
             
@@ -394,7 +416,7 @@ WriteLiteral("\"\r\n                           href=\"");
 
 
             
-            #line 115 "..\..\Pages\LayoutPage.cshtml"
+            #line 121 "..\..\Pages\LayoutPage.cshtml"
                             Write(Request.LinkTo("/deleted"));
 
             
@@ -405,7 +427,7 @@ WriteLiteral("\">\r\n                            <span id=\"stats-deleted\" clas
 
 
             
-            #line 117 "..\..\Pages\LayoutPage.cshtml"
+            #line 123 "..\..\Pages\LayoutPage.cshtml"
                            Write(statistics.Deleted);
 
             
@@ -417,7 +439,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
 
             
-            #line 124 "..\..\Pages\LayoutPage.cshtml"
+            #line 130 "..\..\Pages\LayoutPage.cshtml"
                      if (Breadcrumbs != null)
                     {
 
@@ -429,7 +451,7 @@ WriteLiteral("                        <ol class=\"breadcrumb\">\r\n             
 
 
             
-            #line 127 "..\..\Pages\LayoutPage.cshtml"
+            #line 133 "..\..\Pages\LayoutPage.cshtml"
                                     Write(Request.LinkTo("/"));
 
             
@@ -439,7 +461,7 @@ WriteLiteral("\"><span class=\"glyphicon glyphicon-home\"></span></a></li>\r\n")
 
 
             
-            #line 128 "..\..\Pages\LayoutPage.cshtml"
+            #line 134 "..\..\Pages\LayoutPage.cshtml"
                              foreach (var breadcrumb in Breadcrumbs)
                             {
 
@@ -450,7 +472,7 @@ WriteLiteral("                                <li><a href=\"");
 
 
             
-            #line 130 "..\..\Pages\LayoutPage.cshtml"
+            #line 136 "..\..\Pages\LayoutPage.cshtml"
                                         Write(breadcrumb.Value);
 
             
@@ -460,7 +482,7 @@ WriteLiteral("\">");
 
 
             
-            #line 130 "..\..\Pages\LayoutPage.cshtml"
+            #line 136 "..\..\Pages\LayoutPage.cshtml"
                                                            Write(breadcrumb.Key);
 
             
@@ -470,7 +492,7 @@ WriteLiteral("</a></li>\r\n");
 
 
             
-            #line 131 "..\..\Pages\LayoutPage.cshtml"
+            #line 137 "..\..\Pages\LayoutPage.cshtml"
                             }
 
             
@@ -480,7 +502,7 @@ WriteLiteral("                            <li class=\"active\">");
 
 
             
-            #line 132 "..\..\Pages\LayoutPage.cshtml"
+            #line 138 "..\..\Pages\LayoutPage.cshtml"
                                            Write(BreadcrumbsTitle ?? Title);
 
             
@@ -490,7 +512,7 @@ WriteLiteral("</li>\r\n                        </ol>\r\n");
 
 
             
-            #line 134 "..\..\Pages\LayoutPage.cshtml"
+            #line 140 "..\..\Pages\LayoutPage.cshtml"
                     }
 
             
@@ -500,7 +522,7 @@ WriteLiteral("\r\n                    <h1 class=\"page-header\">\r\n            
 
 
             
-            #line 137 "..\..\Pages\LayoutPage.cshtml"
+            #line 143 "..\..\Pages\LayoutPage.cshtml"
                    Write(Title);
 
             
@@ -510,7 +532,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 138 "..\..\Pages\LayoutPage.cshtml"
+            #line 144 "..\..\Pages\LayoutPage.cshtml"
                          if (!String.IsNullOrEmpty(Subtitle))
                         {
 
@@ -521,7 +543,7 @@ WriteLiteral("                            <small>");
 
 
             
-            #line 140 "..\..\Pages\LayoutPage.cshtml"
+            #line 146 "..\..\Pages\LayoutPage.cshtml"
                               Write(Subtitle);
 
             
@@ -531,7 +553,7 @@ WriteLiteral("</small>\r\n");
 
 
             
-            #line 141 "..\..\Pages\LayoutPage.cshtml"
+            #line 147 "..\..\Pages\LayoutPage.cshtml"
                         }
 
             
@@ -541,7 +563,7 @@ WriteLiteral("                    </h1>\r\n                    ");
 
 
             
-            #line 143 "..\..\Pages\LayoutPage.cshtml"
+            #line 149 "..\..\Pages\LayoutPage.cshtml"
                Write(RenderBody());
 
             
@@ -561,7 +583,7 @@ WriteLiteral(@"
 
 
             
-            #line 153 "..\..\Pages\LayoutPage.cshtml"
+            #line 159 "..\..\Pages\LayoutPage.cshtml"
                        Write(FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion);
 
             
@@ -572,7 +594,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
 
             
-            #line 156 "..\..\Pages\LayoutPage.cshtml"
+            #line 162 "..\..\Pages\LayoutPage.cshtml"
                    Write(JobStorage.Current);
 
             
@@ -582,7 +604,7 @@ WriteLiteral("</li>\r\n                    <li>Time: ");
 
 
             
-            #line 157 "..\..\Pages\LayoutPage.cshtml"
+            #line 163 "..\..\Pages\LayoutPage.cshtml"
                          Write(DateTime.UtcNow);
 
             
@@ -592,7 +614,7 @@ WriteLiteral(" GMT\r\n                    </li>\r\n                    <li>Gener
 
 
             
-            #line 159 "..\..\Pages\LayoutPage.cshtml"
+            #line 165 "..\..\Pages\LayoutPage.cshtml"
                                   Write((DateTime.UtcNow - (DateTime)Context.Items["GenerationStartedAt"]).Milliseconds);
 
             
@@ -612,7 +634,7 @@ WriteLiteral(@" ms]
 
 
             
-            #line 169 "..\..\Pages\LayoutPage.cshtml"
+            #line 175 "..\..\Pages\LayoutPage.cshtml"
                           Write(Request.LinkTo("/stats"));
 
             
@@ -623,7 +645,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.HangFire = windo
 
 
             
-            #line 173 "..\..\Pages\LayoutPage.cshtml"
+            #line 179 "..\..\Pages\LayoutPage.cshtml"
                 Write(Request.LinkTo("/js/scripts.js"));
 
             
