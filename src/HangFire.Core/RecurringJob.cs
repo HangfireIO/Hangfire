@@ -53,7 +53,7 @@ namespace HangFire
 
         private static string GetRecurringJobId(Job job)
         {
-            return String.Format("{0}.{1}", job.Type.FullName, job.Method.Name);
+            return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
         }
     }
 }
