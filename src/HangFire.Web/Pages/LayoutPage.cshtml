@@ -71,6 +71,10 @@
                         
                         <a class="list-group-item @(Request.PathInfo.Equals("/recurring") ? "active" : null)"
                            href="@Request.LinkTo("/recurring")">
+                            <span id="stats-recurring" class="label label-default pull-right">
+                                @statistics.Recurring
+                            </span>
+
                             <span class="glyphicon glyphicon-time"></span>
                             Recurring jobs
                         </a>

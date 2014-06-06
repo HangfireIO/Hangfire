@@ -424,6 +424,7 @@ having StateName is not null;
 select count(Id) from HangFire.Server;
 select sum([Value]) from HangFire.Counter where [Key] = N'stats:succeeded';
 select sum([Value]) from HangFire.Counter where [Key] = N'stats:deleted';
+select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
 ";
 
             using (var multi = _connection.QueryMultiple(sql))
@@ -441,6 +442,8 @@ select sum([Value]) from HangFire.Counter where [Key] = N'stats:deleted';
 
                 stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
                 stats.Deleted = multi.Read<int?>().SingleOrDefault() ?? 0;
+
+                stats.Recurring = multi.Read<int>().Single();
             }
 
             stats.Queues = _queueProviders
