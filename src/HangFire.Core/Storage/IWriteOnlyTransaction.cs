@@ -50,6 +50,7 @@ namespace HangFire.Storage
 
         // Hash operations
         void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string>> keyValuePairs);
+        void RemoveHash([NotNull] string key);
 
         void Commit();
     }

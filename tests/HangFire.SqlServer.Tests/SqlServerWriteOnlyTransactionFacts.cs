@@ -639,6 +639,37 @@ select scope_identity() as Id";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void RemoveHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.RemoveHash(null)));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveHash_RemovesAllHashRecords()
+        {
+            UseConnection(sql =>
+            {
+                // Arrange
+                Commit(sql, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                {
+                    { "Key1", "Value1" },
+                    { "Key2", "Value2" }
+                }));
+
+                // Act
+                Commit(sql, x => x.RemoveHash("some-hash"));
+
+                // Assert
+                var count = sql.Query<int>("select count(*) from HangFire.Hash").Single();
+                Assert.Equal(0, count);
+            });
+        }
+
         private void UseConnection(Action<SqlConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())

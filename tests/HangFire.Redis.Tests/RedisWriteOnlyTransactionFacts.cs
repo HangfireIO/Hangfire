@@ -361,6 +361,30 @@ namespace HangFire.Redis.Tests
             });
         }
 
+        [Fact, CleanRedis]
+        public void RemoveHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(redis =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => Commit(redis, x => x.RemoveHash(null)));
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void RemoveHash_RemovesTheCorrespondingEntry()
+        {
+            UseConnection(redis =>
+            {
+                redis.SetEntryInHash("hangfire:some-hash", "key", "value");
+
+                Commit(redis, x => x.RemoveHash("some-hash"));
+
+                var hash = redis.GetAllEntriesFromHash("hangfire:some-hash");
+                Assert.Equal(0, hash.Count);
+            });
+        }
+
         private static void Commit(IRedisClient redis, Action<RedisWriteOnlyTransaction> action)
         {
             using (var transaction = new RedisWriteOnlyTransaction(redis.CreateTransaction()))

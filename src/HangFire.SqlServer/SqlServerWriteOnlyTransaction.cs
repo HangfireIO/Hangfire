@@ -226,6 +226,15 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             }
         }
 
+        public void RemoveHash(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            QueueCommand(x => x.Execute(
+                "delete from HangFire.Hash where [Key] = @key",
+                new { key }));
+        }
+
         internal void QueueCommand(Action<SqlConnection> action)
         {
             _commandQueue.Enqueue(action);
