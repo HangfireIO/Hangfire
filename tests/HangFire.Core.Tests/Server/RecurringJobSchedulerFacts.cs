@@ -22,7 +22,7 @@ namespace HangFire.Core.Tests.Server
         private readonly Dictionary<string, string> _recurringJob;
         private readonly Mock<IDateTimeProvider> _dateTimeProvider;
         private DateTime _currentTime;
-        private DateTime _nextTime;
+        private readonly DateTime _nextTime;
 
         public RecurringJobSchedulerFacts()
         {
@@ -32,7 +32,7 @@ namespace HangFire.Core.Tests.Server
             _token = new CancellationToken();
 
             // Setting up the successful path
-            _currentTime = new DateTime(2012, 12, 12, 12, 12, 12);
+            _currentTime = new DateTime(2012, 12, 12, 12, 12, 0);
             _nextTime = _currentTime.AddHours(1);
 
             _dateTimeProvider.Setup(x => x.CurrentDateTime).Returns(() => _currentTime);
@@ -154,6 +154,17 @@ namespace HangFire.Core.Tests.Server
                 String.Format("recurring-job:{0}", RecurringJobId),
                 It.Is<Dictionary<string, string>>(rj =>
                     rj["NextExecution"] == JobHelper.ToStringTimestamp(_nextTime))));
+        }
+
+        [Fact]
+        public void Execute_WorksWithOneMinuteInterval()
+        {
+            _dateTimeProvider.Setup(x => x.CurrentDateTime).Returns(
+                new DateTime(2012, 12, 12, 12, 12, 12));
+            var scheduler = CreateScheduler();
+            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+
+            Assert.Throws<OperationCanceledException>(() => scheduler.Execute(cts.Token));
         }
 
         private RecurringJobScheduler CreateScheduler()

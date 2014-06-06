@@ -27,6 +27,8 @@ namespace HangFire.Server
 {
     public class RecurringJobScheduler : IServerComponent
     {
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
+
         private readonly JobStorage _storage;
         private readonly IBackgroundJobClient _client;
         private readonly IDateTimeProvider _dateTimeProvider;
@@ -47,8 +49,14 @@ namespace HangFire.Server
 
         public void Execute(CancellationToken cancellationToken)
         {
+            while (_dateTimeProvider.CurrentDateTime.Second != 0)
+            {
+                cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
             using (var connection = _storage.GetConnection())
-            using (connection.AcquireDistributedLock("recurring-jobs:lock", TimeSpan.FromMinutes(1)))
+            using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
             {
                 var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
 
@@ -65,8 +73,6 @@ namespace HangFire.Server
                     TryScheduleJob(connection, recurringJobId, recurringJob);
                 }
             }
-
-            cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
         }
 
         private void TryScheduleJob(IStorageConnection connection, string recurringJobId, Dictionary<string, string> recurringJob)
