@@ -38,9 +38,12 @@ namespace HangFire
             _storage = storage;
         }
 
-        public void AddOrUpdate([NotNull] string id, [NotNull] Job job, [NotNull] string cronExpression)
+        public void AddOrUpdate(
+            [NotNull] string recurringJobId, 
+            [NotNull] Job job, 
+            [NotNull] string cronExpression)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
             if (job == null) throw new ArgumentNullException("job");
             if (cronExpression == null) throw new ArgumentNullException("cronExpression");
 
@@ -57,13 +60,27 @@ namespace HangFire
                 using (var transaction = connection.CreateWriteTransaction())
                 {
                     transaction.SetRangeInHash(
-                        String.Format("recurring-job:{0}", id), 
+                        String.Format("recurring-job:{0}", recurringJobId), 
                         recurringJob);
 
-                    transaction.AddToSet("recurring-jobs", id);
+                    transaction.AddToSet("recurring-jobs", recurringJobId);
 
                     transaction.Commit();
                 }
+            }
+        }
+
+        public void RemoveIfExists([NotNull] string recurringJobId)
+        {
+            if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
+
+            using (var connection = _storage.GetConnection())
+            using (var transaction = connection.CreateWriteTransaction())
+            {
+                transaction.RemoveHash(String.Format("recurring-job:{0}", recurringJobId));
+                transaction.RemoveFromSet("recurring-jobs", recurringJobId);
+
+                transaction.Commit();
             }
         }
     }

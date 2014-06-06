@@ -47,7 +47,7 @@ namespace HangFire.Core.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => manager.AddOrUpdate(null, _job, Cron.Daily()));
 
-            Assert.Equal("id", exception.ParamName);
+            Assert.Equal("recurringJobId", exception.ParamName);
         }
 
         [Fact]
@@ -102,6 +102,27 @@ namespace HangFire.Core.Tests
 
             manager.AddOrUpdate(_id, _job, _cronExpression);
 
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void RemoveIfExists_ThrowsAnException_WhenIdIsNull()
+        {
+            var manager = CreateManager();
+
+            Assert.Throws<ArgumentNullException>(
+                () => manager.RemoveIfExists(null));
+        }
+
+        [Fact]
+        public void RemoveIfExists_RemovesEntriesAndCommitsTheTransaction()
+        {
+            var manager = CreateManager();
+
+            manager.RemoveIfExists(_id);
+
+            _transaction.Verify(x => x.RemoveFromSet("recurring-jobs", _id));
+            _transaction.Verify(x => x.RemoveHash(String.Format("recurring-job:{0}", _id)));
             _transaction.Verify(x => x.Commit());
         }
 
