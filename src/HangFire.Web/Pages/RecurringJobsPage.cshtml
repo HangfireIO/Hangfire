@@ -62,7 +62,16 @@ else
                         </td>
                         <td>@job.Id</td>
                         <td class="min-width">@(CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron))</td>
-                        <td>@HtmlHelper.DisplayMethod(job.Job)</td>
+                        <td>
+                            @if (job.Job != null)
+                            {
+                                @: @HtmlHelper.DisplayMethod(job.Job)
+                            }
+                            else
+                            {
+                                <em>@job.LoadException.InnerException.Message</em>
+                            }
+                        </td>
                         <td class="align-right min-width">
                             @if (job.NextExecution != null)
                             {

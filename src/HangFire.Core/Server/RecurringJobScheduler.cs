@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Common.Logging;
 using HangFire.Annotations;
 using HangFire.Common;
 using HangFire.States;
@@ -28,6 +29,7 @@ namespace HangFire.Server
     public class RecurringJobScheduler : IServerComponent
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
+        private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly IBackgroundJobClient _client;
@@ -70,7 +72,15 @@ namespace HangFire.Server
                         continue;
                     }
 
-                    TryScheduleJob(connection, recurringJobId, recurringJob);
+                    try
+                    {
+                        TryScheduleJob(connection, recurringJobId, recurringJob);
+                    }
+                    catch (JobLoadException ex)
+                    {
+                        Logger.WarnFormat("Recurring job '{0}' can not be scheduled due to job load exception.", ex, recurringJobId);
+                    }
+                    
                 }
             }
         }

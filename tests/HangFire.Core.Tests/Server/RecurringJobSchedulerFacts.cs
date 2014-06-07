@@ -167,6 +167,19 @@ namespace HangFire.Core.Tests.Server
             Assert.Throws<OperationCanceledException>(() => scheduler.Execute(cts.Token));
         }
 
+        [Fact]
+        public void Execute_HandlesJobLoadException()
+        {
+            // Arrange
+            _recurringJob["Job"] =
+                JobHelper.ToJson(new InvocationData("SomeType", "SomeMethod", "Parameters", "arguments"));
+
+            var scheduler = CreateScheduler();
+
+            // Act & Assert
+            Assert.DoesNotThrow(() => scheduler.Execute(_token));
+        }
+
         private RecurringJobScheduler CreateScheduler()
         {
             return new RecurringJobScheduler(_storage.Object, _client.Object, _dateTimeProvider.Object);
