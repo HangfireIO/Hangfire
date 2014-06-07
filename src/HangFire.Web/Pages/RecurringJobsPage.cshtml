@@ -87,7 +87,7 @@ else
                             @if (job.LastExecution != null)
                             {
                                 <a href="@Request.LinkTo("/job/" + job.LastJobId)">
-                                    <span class="label label-default" data-moment="@(JobHelper.ToStringTimestamp(job.LastExecution.Value))" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
+                                    <span class="label label-default label-hover" data-moment="@(JobHelper.ToStringTimestamp(job.LastExecution.Value))" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
                                         @job.LastExecution.Value
                                     </span>
                                 </a>

@@ -89,7 +89,7 @@ html, body {
     height: 1px;
 }
 
-a:hover .label {
+a:hover .label-hover {
     background-color: #2a6496!important;
     color: #fff!important;
 }

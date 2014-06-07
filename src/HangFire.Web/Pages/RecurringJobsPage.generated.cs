@@ -347,13 +347,13 @@ WriteLiteral("                                <a href=\"");
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                    <span class=\"label label-default\" data-mo" +
-"ment=\"");
+WriteLiteral("\">\r\n                                    <span class=\"label label-default label-ho" +
+"ver\" data-moment=\"");
 
 
             
             #line 90 "..\..\Pages\RecurringJobsPage.cshtml"
-                                                                               Write(JobHelper.ToStringTimestamp(job.LastExecution.Value));
+                                                                                           Write(JobHelper.ToStringTimestamp(job.LastExecution.Value));
 
             
             #line default
@@ -363,7 +363,7 @@ WriteLiteral("\" style=\"");
 
             
             #line 90 "..\..\Pages\RecurringJobsPage.cshtml"
-                                                                                                                                               Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null);
+                                                                                                                                                           Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null);
 
             
             #line default
