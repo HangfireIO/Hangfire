@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using HangFire.SqlServer;
@@ -63,7 +64,7 @@ namespace HangFire.RabbitMQ
                     CreateChannel();
                     message = null;
                 }
-                catch (System.IO.EndOfStreamException)
+                catch (System.IO.EndOfStreamException ex)
                 {
                     CreateChannel();
                     message = null;
@@ -133,7 +134,7 @@ namespace HangFire.RabbitMQ
                     if (!_consumers.TryGetValue(queue, out consumer))
                     {
                         consumer = new QueueingBasicConsumer(_channel);
-                        _consumers.GetOrAdd(queue, consumer);
+                        _consumers.AddOrUpdate(queue, consumer, (dq, dc) => consumer);
                         _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, consumer);
                     }
                 }
@@ -150,7 +151,8 @@ namespace HangFire.RabbitMQ
                             // Recreate the consumer with the new channel
                             var newConsumer = new QueueingBasicConsumer(_channel);
                             _consumers.AddOrUpdate(queue, newConsumer, (dq, dc) => newConsumer);
-                            _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, consumer);
+                            _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, newConsumer);
+                            consumer = newConsumer;
                         }
                     }
                 }
