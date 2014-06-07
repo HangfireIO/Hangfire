@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -15,9 +16,9 @@ namespace HangFire.RabbitMQ
         private static readonly object ConsumerLock = new object();
         private readonly IEnumerable<string> _queues;
         private readonly ConnectionFactory _factory;
+        private readonly ConcurrentDictionary<string, QueueingBasicConsumer> _consumers;
         private IConnection _connection;
         private IModel _channel;
-        private Dictionary<string, QueueingBasicConsumer> _consumers;
 
         public RabbitMqJobQueue(IEnumerable<string> queues, ConnectionFactory factory)
         {
@@ -27,14 +28,17 @@ namespace HangFire.RabbitMQ
             _queues = queues;
             _factory = factory;
             _connection = factory.CreateConnection();
-            _consumers = new Dictionary<string, QueueingBasicConsumer>();
+            _consumers = new ConcurrentDictionary<string, QueueingBasicConsumer>();
 
             CreateChannel();
         }
 
         public IModel Channel
         {
-            get { return _channel; }
+            get
+            {
+                return _channel;
+            }
         }
 
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
@@ -118,26 +122,38 @@ namespace HangFire.RabbitMQ
         private QueueingBasicConsumer GetConsumerForQueue(string queue, CancellationToken cancellationToken)
         {
             QueueingBasicConsumer consumer;
-            if (!_consumers.TryGetValue(queue, out consumer))
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if(!_consumers.TryGetValue(queue, out consumer))
             {
-                consumer = new QueueingBasicConsumer(_channel);
-                _consumers.Add(queue, consumer);
+                // Need to create a new consumer since a consumer for the queue does not exist
+                lock (ConsumerLock)
+                {
+                    if (!_consumers.TryGetValue(queue, out consumer))
+                    {
+                        consumer = new QueueingBasicConsumer(_channel);
+                        _consumers.GetOrAdd(queue, consumer);
+                        _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, consumer);
+                    }
+                }
             }
             else
             {
+                // Consumer for the queue exists, ensure that the channel (Model) is not closed
                 if (consumer.Model.IsClosed)
                 {
-                    // Recreate the consumer with the new channel
-                    consumer = new QueueingBasicConsumer(_channel);
+                    lock (ConsumerLock)
+                    {
+                        if (consumer.Model.IsClosed)
+                        {
+                            // Recreate the consumer with the new channel
+                            var newConsumer = new QueueingBasicConsumer(_channel);
+                            _consumers.AddOrUpdate(queue, newConsumer, (dq, dc) => newConsumer);
+                            _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, consumer);
+                        }
+                    }
                 }
-            }
-
-            if (!consumer.IsRunning)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // Will throw AlreadyClosedException if consumer channel is closed
-                _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, consumer);
             }
 
             return consumer;
