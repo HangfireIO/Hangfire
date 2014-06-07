@@ -59,7 +59,7 @@ else
                         <td>
                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id" />
                         </td>
-                        <td>@job.Id</td>
+                        <td class="min-width">@job.Id</td>
                         <td class="min-width">@(CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron))</td>
                         <td>
                             @if (job.Job != null)

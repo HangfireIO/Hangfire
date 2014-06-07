@@ -196,12 +196,13 @@ WriteLiteral("                    <tr class=\"js-jobs-list-row hover\">\r\n     
             
             #line default
             #line hidden
-WriteLiteral("\" />\r\n                        </td>\r\n                        <td>");
+WriteLiteral("\" />\r\n                        </td>\r\n                        <td class=\"min-width" +
+"\">");
 
 
             
             #line 62 "..\..\Pages\RecurringJobsPage.cshtml"
-                       Write(job.Id);
+                                         Write(job.Id);
 
             
             #line default
