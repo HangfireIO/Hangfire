@@ -14,18 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Storage.Monitoring
+using System;
+
+namespace HangFire.SqlServer.Entities
 {
-    public class StatisticsDto
+    internal class SqlHash
     {
-        public long Servers { get; set; }
-        public long Recurring { get; set; }
-        public long Enqueued { get; set; }
-        public long Queues { get; set; }
-        public long Scheduled { get; set; }
-        public long Processing { get; set; }
-        public long Succeeded { get; set; }
-        public long Failed { get; set; }
-        public long Deleted { get; set; }
+        public int Id { get; set; }
+        public string Key { get; set; }
+        public string Field { get; set; }
+        public string Value { get; set; }
+        public DateTime? ExpireAt { get; set; }
     }
 }

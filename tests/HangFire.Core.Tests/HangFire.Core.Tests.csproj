@@ -38,6 +38,9 @@
     <Reference Include="Moq.Sequences">
       <HintPath>..\..\packages\Moq.Sequences.1.0.1.0\lib\net40\Moq.Sequences.dll</HintPath>
     </Reference>
+    <Reference Include="NCrontab, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -88,9 +91,11 @@
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
+    <Compile Include="RecurringJobManagerFacts.cs" />
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\ServerBootstrapperFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\SchedulePollerFacts.cs" />

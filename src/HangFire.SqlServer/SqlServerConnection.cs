@@ -19,10 +19,10 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
+using System.Transactions;
 using Dapper;
 using HangFire.Common;
 using HangFire.Server;
-using HangFire.SqlServer.Annotations;
 using HangFire.SqlServer.Entities;
 using HangFire.Storage;
 
@@ -218,6 +218,17 @@ where j.Id = @jobId";
                 .SingleOrDefault();
         }
 
+        public HashSet<string> GetAllItemsFromSet(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var result = _connection.Query<string>(
+                @"select Value from HangFire.[Set] where [Key] = @key",
+                new { key });
+            
+            return new HashSet<string>(result);
+        }
+
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             if (key == null) throw new ArgumentNullException("key");
@@ -227,6 +238,41 @@ where j.Id = @jobId";
                 @"select top 1 Value from HangFire.[Set] where [Key] = @key and Score between @from and @to order by Score",
                 new { key, from = fromScore, to = toScore })
                 .SingleOrDefault();
+        }
+
+        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+
+            const string sql = @"
+merge HangFire.Hash as Target
+using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
+on Target.[Key] = Source.[Key] and Target.Field = Source.Field
+when matched then update set Value = Source.Value
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+
+            using (var transaction = new TransactionScope())
+            {
+                foreach (var keyValuePair in keyValuePairs)
+                {
+                    _connection.Execute(sql, new { key = key, field = keyValuePair.Key, value = keyValuePair.Value });
+                }
+
+                transaction.Complete();
+            }
+        }
+
+        public Dictionary<string, string> GetAllEntriesFromHash(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var result = _connection.Query<SqlHash>(
+                "select Field, Value from HangFire.Hash where [Key] = @key",
+                new { key })
+                .ToDictionary(x => x.Field, x => x.Value);
+
+            return result.Count != 0 ? result : null;
         }
 
         public void AnnounceServer(string serverId, ServerContext context)

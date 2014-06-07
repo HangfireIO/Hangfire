@@ -31,6 +31,7 @@ namespace HangFire.SqlServer
             "Job",
             "List",
             "Set",
+            "Hash",
         };
 
         private readonly SqlServerStorage _storage;

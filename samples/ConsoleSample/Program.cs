@@ -23,6 +23,9 @@ namespace ConsoleSample
                 sqlServerStorage;
                 //new RedisStorage("localhost:6379", 3);
 
+            RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
+            RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), Cron.Hourly);
+
             var options = new BackgroundJobServerOptions
             {
                 Queues = new[] { "critical", "default" }

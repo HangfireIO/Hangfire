@@ -89,6 +89,11 @@ html, body {
     height: 1px;
 }
 
+a:hover .label-hover {
+    background-color: #2a6496!important;
+    color: #fff!important;
+}
+
 .pre-args {
     padding: 2px 4px;
     font-size: 90%;

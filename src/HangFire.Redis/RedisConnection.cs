@@ -20,7 +20,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using HangFire.Common;
-using HangFire.Redis.Annotations;
 using HangFire.Server;
 using HangFire.Storage;
 using ServiceStack.Redis;
@@ -239,11 +238,36 @@ namespace HangFire.Redis
                 name);
         }
 
+        public HashSet<string> GetAllItemsFromSet(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            
+            var result = Redis.GetAllItemsFromSortedSet(RedisStorage.GetRedisKey(key));
+            return new HashSet<string>(result);
+        }
+
         public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             return Redis.GetRangeFromSortedSetByLowestScore(
                 RedisStorage.Prefix + key, fromScore, toScore, 0, 1)
                 .FirstOrDefault();
+        }
+
+        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+
+            Redis.SetRangeInHash(RedisStorage.GetRedisKey(key), keyValuePairs);
+        }
+
+        public Dictionary<string, string> GetAllEntriesFromHash(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var result = Redis.GetAllEntriesFromHash(RedisStorage.GetRedisKey(key));
+
+            return result.Count != 0 ? result : null;
         }
 
         public void AnnounceServer(string serverId, ServerContext context)

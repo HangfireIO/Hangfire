@@ -48,6 +48,124 @@ namespace HangFire.Redis.Tests
             });
         }
 
+        [Fact, CleanRedis]
+        public void GetAllItemsFromSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSet(null)));
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenSetDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromSet("some-set");
+
+                Assert.NotNull(result);
+                Assert.Equal(0, result.Count);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllItemsFromSet_ReturnsAllItems()
+        {
+            UseConnections((redis, connection) =>
+            {
+                // Arrange
+                redis.AddItemToSortedSet("hangfire:some-set", "1");
+                redis.AddItemToSortedSet("hangfire:some-set", "2");
+
+                // Act
+                var result = connection.GetAllItemsFromSet("some-set");
+
+                // Assert
+                Assert.Equal(2, result.Count);
+                Assert.Contains("1", result);
+                Assert.Contains("2", result);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.SetRangeInHash(null, new Dictionary<string, string>()));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.SetRangeInHash("some-hash", null));
+
+                Assert.Equal("keyValuePairs", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void SetRangeInHash_SetsAllGivenKeyPairs()
+        {
+            UseConnections((redis, connection) =>
+            {
+                connection.SetRangeInHash("some-hash", new Dictionary<string, string>
+                {
+                    { "Key1", "Value1" },
+                    { "Key2", "Value2" }
+                });
+
+                var hash = redis.GetAllEntriesFromHash("hangfire:some-hash");
+                Assert.Equal("Value1", hash["Key1"]);
+                Assert.Equal("Value2", hash["Key2"]);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllEntriesFromHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+                Assert.Throws<ArgumentNullException>(() => connection.GetAllEntriesFromHash(null)));
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllEntriesFromHash_ReturnsNullValue_WhenHashDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllEntriesFromHash("some-hash");
+                Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void GetAllEntriesFromHash_ReturnsAllEntries()
+        {
+            UseConnections((redis, connection) =>
+            {
+                // Arrange
+                redis.SetRangeInHash("hangfire:some-hash", new Dictionary<string, string>
+                {
+                    { "Key1", "Value1" },
+                    { "Key2", "Value2" }
+                });
+
+                // Act
+                var result = connection.GetAllEntriesFromHash("some-hash");
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Equal("Value1", result["Key1"]);
+                Assert.Equal("Value2", result["Key2"]);
+            });
+        }
+
         private void UseConnections(Action<IRedisClient, RedisConnection> action)
         {
             using (var redis = RedisUtils.CreateClient())

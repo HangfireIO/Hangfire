@@ -320,6 +320,71 @@ namespace HangFire.Redis.Tests
             });
         }
 
+        [Fact, CleanRedis]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(redis =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(redis, x => x.SetRangeInHash(null, new Dictionary<string, string>())));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
+        {
+            UseConnection(redis =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(redis, x => x.SetRangeInHash("some-hash", null)));
+
+                Assert.Equal("keyValuePairs", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void SetRangeInHash_SetsAllGivenKeyPairs()
+        {
+            UseConnection(redis =>
+            {
+                Commit(redis, x => x.SetRangeInHash("some-hash", new Dictionary<string, string>
+                {
+                    { "Key1", "Value1" },
+                    { "Key2", "Value2" }
+                }));
+
+                var hash = redis.GetAllEntriesFromHash("hangfire:some-hash");
+                Assert.Equal("Value1", hash["Key1"]);
+                Assert.Equal("Value2", hash["Key2"]);
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void RemoveHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(redis =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => Commit(redis, x => x.RemoveHash(null)));
+            });
+        }
+
+        [Fact, CleanRedis]
+        public void RemoveHash_RemovesTheCorrespondingEntry()
+        {
+            UseConnection(redis =>
+            {
+                redis.SetEntryInHash("hangfire:some-hash", "key", "value");
+
+                Commit(redis, x => x.RemoveHash("some-hash"));
+
+                var hash = redis.GetAllEntriesFromHash("hangfire:some-hash");
+                Assert.Equal(0, hash.Count);
+            });
+        }
+
         private static void Commit(IRedisClient redis, Action<RedisWriteOnlyTransaction> action)
         {
             using (var transaction = new RedisWriteOnlyTransaction(redis.CreateTransaction()))

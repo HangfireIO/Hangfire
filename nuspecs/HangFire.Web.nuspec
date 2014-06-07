@@ -15,6 +15,7 @@
     <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
     <dependencies>
       <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="CronExpressionDescriptor" version="1.10.1" />
       <dependency id="Newtonsoft.Json" version="5.0.1" />
       <dependency id="WebActivatorEx" version="[2.0.1,)" />
     </dependencies>

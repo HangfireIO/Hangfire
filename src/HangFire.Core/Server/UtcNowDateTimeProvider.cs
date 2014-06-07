@@ -1,5 +1,5 @@
-﻿// This file is part of HangFire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of HangFire.
+// Copyright � 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,18 +14,18 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace HangFire.Storage.Monitoring
+using System;
+using NCrontab;
+
+namespace HangFire.Server
 {
-    public class StatisticsDto
+    public class UtcNowDateTimeProvider : IDateTimeProvider
     {
-        public long Servers { get; set; }
-        public long Recurring { get; set; }
-        public long Enqueued { get; set; }
-        public long Queues { get; set; }
-        public long Scheduled { get; set; }
-        public long Processing { get; set; }
-        public long Succeeded { get; set; }
-        public long Failed { get; set; }
-        public long Deleted { get; set; }
+        public DateTime CurrentDateTime { get { return DateTime.UtcNow; } }
+
+        public DateTime GetNextOccurrence(CrontabSchedule schedule)
+        {
+            return schedule.GetNextOccurrence(CurrentDateTime);
+        }
     }
 }

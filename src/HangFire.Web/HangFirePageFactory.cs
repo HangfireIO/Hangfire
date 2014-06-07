@@ -98,6 +98,12 @@ namespace HangFire.Web
                 "/actions/delete/(?<JobId>.+)",
                 x => new CommandHandler(() => BackgroundJob.Delete(x.Groups["JobId"].Value)));
 
+            RegisterPathHandlerFactory("/recurring", x => new RecurringJobsPage());
+            RegisterPathHandlerFactory("/recurring/remove", x => new BatchCommandHandler(
+                RecurringJob.RemoveIfExists));
+            RegisterPathHandlerFactory("/recurring/trigger", x => new BatchCommandHandler(
+                RecurringJob.Trigger));
+
             RegisterPathHandlerFactory("/js/scripts.js",  x => new JavaScriptHandler());
             RegisterPathHandlerFactory("/css/styles.css", x => new StyleSheetHandler());
 

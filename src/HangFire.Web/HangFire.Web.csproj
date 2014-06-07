@@ -36,6 +36,9 @@
     <DocumentationFile>bin\Release\HangFire.Web.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CronExpressionDescriptor">
+      <HintPath>..\..\packages\CronExpressionDescriptor.1.10.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -77,6 +80,10 @@
     <None Include="Pages\DeletedJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>DeletedJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Pages\RecurringJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>RecurringJobsPage.generated.cs</LastGenOutput>
     </None>
     <None Include="Pages\_PerPageSelector.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -120,6 +127,14 @@
     </Compile>
     <Compile Include="Pages\DeletedJobsPage.generated.cs">
       <DependentUpon>DeletedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Pages\RecurringJobsPage.cs">
+      <DependentUpon>RecurringJobsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\RecurringJobsPage.generated.cs">
+      <DependentUpon>RecurringJobsPage.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>

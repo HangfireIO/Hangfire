@@ -151,6 +151,27 @@ values ('key', 0, '', @expireAt)";
             }
         }
 
+        [Fact, CleanDatabase]
+        public void Execute_Processes_HashTable()
+        {
+            using (var connection = ConnectionUtils.CreateConnection())
+            {
+                // Arrange
+                const string createSql = @"
+insert into HangFire.Hash ([Key], [Field], [Value], ExpireAt) 
+values ('key', 'field', '', @expireAt)";
+                connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
+
+                var manager = CreateManager();
+
+                // Act
+                manager.Execute(_token);
+
+                // Assert
+                Assert.Equal(0, connection.Query<int>(@"select count(*) from HangFire.Hash").Single());
+            }
+        }
+
         private static int CreateExpirationEntry(IDbConnection connection, DateTime? expireAt)
         {
             const string insertSql = @"

@@ -578,6 +578,10 @@ namespace HangFire.Redis
                     x => x.GetValue("hangfire:stats:deleted"),
                     x => stats.Deleted = long.Parse(x ?? "0"));
 
+                pipeline.QueueCommand(
+                    x => x.GetSortedSetCount("hangfire:recurring-jobs"),
+                    x => stats.Recurring = x);
+
                 foreach (var queue in queues)
                 {
                     var queueName = queue;

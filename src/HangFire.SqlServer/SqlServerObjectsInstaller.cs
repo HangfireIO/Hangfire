@@ -28,7 +28,7 @@ namespace HangFire.SqlServer
     [ExcludeFromCodeCoverage]
     internal static class SqlServerObjectsInstaller
     {
-        private const int RequiredSchemaVersion = 2;
+        private const int RequiredSchemaVersion = 3;
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(SqlServerStorage));
 
@@ -47,7 +47,7 @@ namespace HangFire.SqlServer
                 typeof(SqlServerObjectsInstaller).Assembly, 
                 "HangFire.SqlServer.Install.sql");
 
-            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 2;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
+            script = script.Replace("SET @TARGET_SCHEMA_VERSION = 3;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
 
             connection.Execute(script);
 

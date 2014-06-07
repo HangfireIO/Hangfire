@@ -1,0 +1,106 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using Common
+@using HangFire.Common
+@using HangFire.Web
+@using Pages
+@using HangFire.Storage
+@using Storage.Monitoring
+@inherits RazorPage
+@{
+    Layout = new LayoutPage { Title = "Recurring jobs" };
+}
+
+@if (RecurringJobs.Count == 0)
+{
+    <div class="alert alert-info">
+        No recurring jobs found.
+    </div>
+}
+else
+{
+    <div class="js-jobs-list">
+        <div class="btn-toolbar btn-toolbar-top">
+            <button class="js-jobs-list-command btn btn-sm btn-primary"
+                    data-url="@Request.LinkTo("/recurring/trigger")"
+                    data-loading-text="Triggering...">
+                <span class="glyphicon glyphicon-play-circle"></span>
+                Trigger now
+            </button>
+
+            <button class="js-jobs-list-command btn btn-sm btn-default"
+                    data-url="@Request.LinkTo("/recurring/remove")"
+                    data-loading-text="Removing..."
+                    data-confirm="Do you really want to REMOVE ALL selected jobs?">
+                <span class="glyphicon glyphicon-remove"></span>
+                Remove
+            </button>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="min-width">
+                        <input type="checkbox" class="js-jobs-list-select-all" />
+                    </th>
+                    <th class="min-width">Id</th>
+                    <th class="min-width">Cron</th>
+                    <th>Job</th>
+                    <th class="align-right min-width">Next execution</th>
+                    <th class="align-right min-width">Last execution</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var job in RecurringJobs)
+                {
+                    <tr class="js-jobs-list-row hover">
+                        <td>
+                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id" />
+                        </td>
+                        <td class="min-width">@job.Id</td>
+                        <td class="min-width">@(CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron))</td>
+                        <td>
+                            @if (job.Job != null)
+                            {
+                                @: @HtmlHelper.DisplayMethod(job.Job)
+                            }
+                            else
+                            {
+                                <em>@job.LoadException.InnerException.Message</em>
+                            }
+                        </td>
+                        <td class="align-right min-width">
+                            @if (job.NextExecution != null)
+                            {
+                                <span data-moment="@(JobHelper.ToStringTimestamp(job.NextExecution.Value))">
+                                    @job.NextExecution.Value
+                                </span>
+                            }
+                            else
+                            {
+                                <em>N/A</em>
+                            }
+                        </td>
+                        <td class="align-right min-width">
+                            @if (job.LastExecution != null)
+                            {
+                                <a href="@Request.LinkTo("/job/" + job.LastJobId)">
+                                    <span class="label label-default label-hover" data-moment="@(JobHelper.ToStringTimestamp(job.LastExecution.Value))" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
+                                        @job.LastExecution.Value
+                                    </span>
+                                </a>
+                            }
+                            else
+                            {
+                                <em>N/A</em>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+    
