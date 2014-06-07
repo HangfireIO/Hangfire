@@ -82,22 +82,6 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
-        public void Ctor_TakesAConnection()
-        {
-            CreateClient();
-            _storage.Verify(x => x.GetConnection());
-        }
-
-        [Fact]
-        public void Dispose_DisposesTheConnection()
-        {
-            var client = CreateClient();
-            client.Dispose();
-
-            _connection.Verify(x => x.Dispose());
-        }
-
-        [Fact]
         public void CreateJob_ThrowsAnException_WhenJobIsNull()
         {
             var client = CreateClient();

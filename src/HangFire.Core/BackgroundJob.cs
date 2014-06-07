@@ -60,10 +60,8 @@ namespace HangFire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Enqueue(Expression<Action> methodCall)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Enqueue(methodCall);
-            }
+            var client = ClientFactory();
+            return client.Enqueue(methodCall);
         }
 
         /// <summary>
@@ -78,10 +76,8 @@ namespace HangFire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Enqueue<T>(Expression<Action<T>> methodCall)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Enqueue(methodCall);
-            }
+            var client = ClientFactory();
+            return client.Enqueue(methodCall);
         }
 
         /// <summary>
@@ -96,10 +92,8 @@ namespace HangFire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Enqueue(Expression<Action> methodCall, string queue)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Enqueue(methodCall, queue);
-            }
+            var client = ClientFactory();
+            return client.Enqueue(methodCall, queue);
         }
 
         /// <summary>
@@ -115,10 +109,8 @@ namespace HangFire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Enqueue<T>(Expression<Action<T>> methodCall, string queue)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Enqueue(methodCall, queue);
-            }
+            var client = ClientFactory();
+            return client.Enqueue(methodCall, queue);
         }
 
         /// <summary>
@@ -131,10 +123,8 @@ namespace HangFire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(Expression<Action> methodCall, TimeSpan delay)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Schedule(methodCall, delay);
-            }
+            var client = ClientFactory();
+            return client.Schedule(methodCall, delay);
         }
 
         /// <summary>
@@ -148,10 +138,8 @@ namespace HangFire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule<T>(Expression<Action<T>> methodCall, TimeSpan delay)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Schedule(methodCall, delay);
-            }
+            var client = ClientFactory();
+            return client.Schedule(methodCall, delay);
         }
 
         /// <summary>
@@ -164,10 +152,8 @@ namespace HangFire
         /// <returns>True on a successfull state transition, false otherwise.</returns>
         public static bool Delete(string jobId)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Delete(jobId);
-            }
+            var client = ClientFactory();
+            return client.Delete(jobId);
         }
 
         /// <summary>
@@ -182,10 +168,8 @@ namespace HangFire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Delete(string jobId, string fromState)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Delete(jobId, fromState);
-            }
+            var client = ClientFactory();
+            return client.Delete(jobId, fromState);
         }
         
         /// <summary>
@@ -197,10 +181,8 @@ namespace HangFire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Requeue(string jobId)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Requeue(jobId);
-            }
+            var client = ClientFactory();
+            return client.Requeue(jobId);
         }
 
         /// <summary>
@@ -215,10 +197,8 @@ namespace HangFire
         /// <returns>True, if state change succeeded, otherwise false.</returns>
         public static bool Requeue(string jobId, string fromState)
         {
-            using (var client = ClientFactory())
-            {
-                return client.Requeue(jobId, fromState);
-            }
+            var client = ClientFactory();
+            return client.Requeue(jobId, fromState);
         }
     }
 }
