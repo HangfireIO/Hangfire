@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using HangFire.Annotations;
 using HangFire.Common;
+using HangFire.States;
 using HangFire.Storage;
 using NCrontab;
 
@@ -30,12 +31,25 @@ namespace HangFire
     public class RecurringJobManager
     {
         private readonly JobStorage _storage;
+        private readonly IBackgroundJobClient _client;
+
+        public RecurringJobManager()
+            : this(JobStorage.Current)
+        {
+        }
 
         public RecurringJobManager([NotNull] JobStorage storage)
+            : this (storage, new BackgroundJobClient(storage))
+        {
+        }
+
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobClient client)
         {
             if (storage == null) throw new ArgumentNullException("storage");
+            if (client == null) throw new ArgumentNullException("client");
 
             _storage = storage;
+            _client = client;
         }
 
         public void AddOrUpdate(
@@ -67,6 +81,25 @@ namespace HangFire
 
                     transaction.Commit();
                 }
+            }
+        }
+
+        public void Trigger([NotNull] string recurringJobId)
+        {
+            if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
+
+            using (var connection = _storage.GetConnection())
+            {
+                var hash = connection.GetAllEntriesFromHash(String.Format("recurring-job:{0}", recurringJobId));
+                if (hash == null)
+                {
+                    return;
+                }
+                
+                var job = JobHelper.FromJson<InvocationData>(hash["Job"]).Deserialize();
+                var state = new EnqueuedState { Reason = "Triggered" };
+
+                _client.Create(job, state);
             }
         }
 

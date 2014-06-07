@@ -23,7 +23,7 @@ namespace HangFire
     public static class RecurringJob
     {
         private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
-            () => new RecurringJobManager(JobStorage.Current));
+            () => new RecurringJobManager());
 
         public static void AddOrUpdate(Expression<Action> methodCall, string cronExpression)
         {

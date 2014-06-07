@@ -90,7 +90,7 @@ namespace HangFire.Server
 
                 if (nextExecution <= currentTime)
                 {
-                    var state = new EnqueuedState { Reason = "Recurring" };
+                    var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                     var jobId = _client.Create(job, state);
 
                     connection.SetRangeInHash(
