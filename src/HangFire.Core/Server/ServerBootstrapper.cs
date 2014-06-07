@@ -20,14 +20,17 @@ using Common.Logging;
 
 namespace HangFire.Server
 {
-    public class ServerBootstrapper : IServerComponent
+    public class ServerBootstrapper : IServerComponent, IDisposable
     {
+        private const string BootstrapperId = "{4deecd4f-19f6-426b-aa87-6cd1a03eaa48}";
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerBootstrapper));
 
         private readonly JobStorage _storage;
         private readonly string _serverId;
         private readonly ServerContext _context;
         private readonly Lazy<IServerSupervisor> _supervisorFactory;
+
+        private readonly Mutex _globalMutex;
 
         public ServerBootstrapper(
             string serverId,
@@ -44,39 +47,58 @@ namespace HangFire.Server
             _serverId = serverId;
             _context = context;
             _supervisorFactory = supervisorFactory;
+
+            _globalMutex = new Mutex(false, String.Format(@"Global\{0}_{1}", BootstrapperId, _serverId));
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            using (var connection = _storage.GetConnection())
-            {
-                connection.AnnounceServer(_serverId, _context);
-            }
+            // Do not allow to run multiple servers with the same ServerId on same
+            // machine, fixes https://github.com/odinserj/HangFire/issues/112.
+            WaitHandle.WaitAny(new[] { _globalMutex, cancellationToken.WaitHandle });
+            cancellationToken.ThrowIfCancellationRequested();
             
             try
             {
-                using (_supervisorFactory.Value)
+                using (var connection = _storage.GetConnection())
                 {
-                    Logger.Info("Starting server components...");
-                    _supervisorFactory.Value.Start();
+                    connection.AnnounceServer(_serverId, _context);
+                }
 
-                    cancellationToken.WaitHandle.WaitOne();
+                try
+                {
+                    using (_supervisorFactory.Value)
+                    {
+                        Logger.Info("Starting server components...");
+                        _supervisorFactory.Value.Start();
 
-                    Logger.Info("Stopping server components...");
+                        cancellationToken.WaitHandle.WaitOne();
+
+                        Logger.Info("Stopping server components...");
+                    }
+                }
+                finally
+                {
+                    using (var connection = _storage.GetConnection())
+                    {
+                        connection.RemoveServer(_serverId);
+                    }
                 }
             }
             finally
             {
-                using (var connection = _storage.GetConnection())
-                {
-                    connection.RemoveServer(_serverId);
-                }
+                _globalMutex.ReleaseMutex();
             }
         }
 
         public override string ToString()
         {
             return "Server Core";
+        }
+
+        public void Dispose()
+        {
+            _globalMutex.Dispose();
         }
     }
 }

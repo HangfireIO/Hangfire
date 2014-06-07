@@ -15,7 +15,7 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<JobStorage> _storage;
         private readonly Lazy<IServerSupervisor> _supervisorFactory;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly CancellationToken _token;
+        private readonly CancellationTokenSource _cts;
         private readonly Mock<IServerSupervisor> _supervisor;
 
         public ServerBootstrapperFacts()
@@ -25,7 +25,7 @@ namespace HangFire.Core.Tests.Server
             _supervisor = new Mock<IServerSupervisor>();
             _supervisorFactory = new Lazy<IServerSupervisor>(() => _supervisor.Object);
             _connection = new Mock<IStorageConnection>();
-            _token = new CancellationToken(true);
+            _cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
@@ -71,7 +71,7 @@ namespace HangFire.Core.Tests.Server
         {
             var server = CreateServer();
 
-            server.Execute(_token);
+            server.Execute(_cts.Token);
 
             _connection.Verify(x => x.AnnounceServer(ServerId, _context));
         }
@@ -81,7 +81,7 @@ namespace HangFire.Core.Tests.Server
         {
             var server = CreateServer();
             
-            server.Execute(_token);
+            server.Execute(_cts.Token);
 
             _storage.Verify(x => x.GetConnection(), Times.Exactly(2));
             _connection.Verify(x => x.Dispose(), Times.Exactly(2));
@@ -91,7 +91,7 @@ namespace HangFire.Core.Tests.Server
         public void Execute_StartsTheSupervisor()
         {
             var server = CreateServer();
-            server.Execute(_token);
+            server.Execute(_cts.Token);
 
             _supervisor.Verify(x => x.Start());
         }
@@ -101,7 +101,7 @@ namespace HangFire.Core.Tests.Server
         {
             var server = CreateServer();
 
-            server.Execute(_token);
+            server.Execute(_cts.Token);
 
             _supervisor.Verify(x => x.Dispose());
         }
@@ -111,7 +111,7 @@ namespace HangFire.Core.Tests.Server
         {
             var server = CreateServer();
             
-            server.Execute(_token);
+            server.Execute(_cts.Token);
 
             _connection.Verify(x => x.RemoveServer(ServerId));
         }
@@ -122,7 +122,7 @@ namespace HangFire.Core.Tests.Server
             _supervisor.Setup(x => x.Dispose()).Throws<InvalidOperationException>();
             var server = CreateServer();
 
-            Assert.Throws<InvalidOperationException>(() => server.Execute(_token));
+            Assert.Throws<InvalidOperationException>(() => server.Execute(_cts.Token));
 
             _connection.Verify(x => x.RemoveServer(It.IsAny<string>()));
         }
