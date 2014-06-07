@@ -12,18 +12,13 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    Pager pager;
-    JobList<ScheduledJobDto> scheduledJobs;
-
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    Pager pager = new Pager(from, perPage, monitor.ScheduledCount())
     {
-        pager = new Pager(from, perPage, monitor.ScheduledCount())
-        {
-            BasePageUrl = Request.LinkTo("/scheduled")
-        };
+        BasePageUrl = Request.LinkTo("/scheduled")
+    };
 
-        scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
-    }
+    JobList<ScheduledJobDto> scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)

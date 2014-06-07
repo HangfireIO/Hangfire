@@ -23,19 +23,14 @@
     int.TryParse(Request.QueryString["from"], out from);
     int.TryParse(Request.QueryString["count"], out perPage);
 
-    Pager pager;
-    JobList<EnqueuedJobDto> enqueuedJobs;
-
-    using (var monitor = JobStorage.Current.GetMonitoringApi())
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    Pager pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
     {
-        pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
-        {
-            BasePageUrl = Request.LinkTo("/queues/" + Queue)
-        };
+        BasePageUrl = Request.LinkTo("/queues/" + Queue)
+    };
 
-        enqueuedJobs = monitor
-            .EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
-    }
+    JobList<EnqueuedJobDto> enqueuedJobs = monitor
+        .EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 
 @if (pager.TotalPageCount == 0)
