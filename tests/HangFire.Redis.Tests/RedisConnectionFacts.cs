@@ -49,6 +49,25 @@ namespace HangFire.Redis.Tests
         }
 
         [Fact, CleanRedis]
+        public void GetStateData_ReturnsNullReason_IfThereIsNoSuchKey()
+        {
+            UseConnections((redis, connection) =>
+            {
+                redis.SetRangeInHash(
+                    "hangfire:job:my-job:state",
+                    new Dictionary<string, string>
+                    {
+                        { "State", "Name" }
+                    });
+
+                var result = connection.GetStateData("my-job");
+
+                Assert.NotNull(result);
+                Assert.Null(result.Reason);
+            });
+        }
+
+        [Fact, CleanRedis]
         public void GetAllItemsFromSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection =>

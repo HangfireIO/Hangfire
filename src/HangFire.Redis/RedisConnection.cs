@@ -218,7 +218,7 @@ namespace HangFire.Redis
             return new StateData
             {
                 Name = entries["State"],
-                Reason = entries["Reason"],
+                Reason = entries.ContainsKey("Reason") ? entries["Reason"] : null,
                 Data = stateData
             };
         }
