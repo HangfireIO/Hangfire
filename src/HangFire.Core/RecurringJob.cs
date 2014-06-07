@@ -85,6 +85,16 @@ namespace HangFire
             AddOrUpdate(methodCall, cronExpression());
         }
 
+        public static void RemoveIfExists(string recurringJobId)
+        {
+            Instance.Value.RemoveIfExists(recurringJobId);
+        }
+
+        public static void Trigger(string recurringJobId)
+        {
+            Instance.Value.Trigger(recurringJobId);
+        }
+
         private static string GetRecurringJobId(Job job)
         {
             return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
