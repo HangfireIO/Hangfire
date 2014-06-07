@@ -23,23 +23,10 @@ Instead of invoking a method right now, you can postpone its execution for a spe
 
 This call also saves a job, but instead of placing it to a queue, it adds the job to a persistent schedule. When the given time elapsed, the job will be added to its queue. Meanwhile you can restart your application – it will be executed anyway.
 
-Integrated web interface
--------------------------
+Recurring tasks
+----------------
 
-Web interface will help you to track the execution of your jobs. See their processing state, watch the statistics. Look at screenshots on http://hangfire.io, and you'll love it.
-
-SQL Server and Redis support
------------------------------
-
-HangFire uses persistent storage to store jobs, queues and statistics and let them survive application restarts. The storage subsystem is abstracted enough to support both classic SQL Server and fast Redis.
-
-* **SQL Server** provides simplified installation together with usual maintenance plans.
-* **Redis** provides awesome speed, especially comparing to SQL Server, but requires additional knowledge.
-
-Recurring jobs
----------------
-
-Recurring jobs processing was never been easier. All you need is to call a single line of code:
+Recurring job processing was never been easier. All you need is to call a single line of code:
 
 .. code-block:: c#
 
@@ -52,6 +39,19 @@ HangFire uses `NCrontab <https://code.google.com/p/ncrontab/>`_ library to perfo
    RecurringJob.AddOrUpdate(
        () => Console.Write("Powerful!"), 
        "0 12 * */2");
+
+Integrated web interface
+-------------------------
+
+Web interface will help you to track the execution of your jobs. See their processing state, watch the statistics. Look at screenshots on http://hangfire.io, and you'll love it.
+
+SQL Server and Redis support
+-----------------------------
+
+HangFire uses persistent storage to store jobs, queues and statistics and let them survive application restarts. The storage subsystem is abstracted enough to support both classic SQL Server and fast Redis.
+
+* **SQL Server** provides simplified installation together with usual maintenance plans.
+* **Redis** provides awesome speed, especially comparing to SQL Server, but requires additional knowledge.
 
 Automatic retries
 ------------------
