@@ -50,7 +50,6 @@ else
                     <th>Job</th>
                     <th class="align-right min-width">Next execution</th>
                     <th class="align-right min-width">Last execution</th>
-                    <th class="align-right min-width">Last job</th>
                 </tr>
             </thead>
             <tbody>
@@ -87,21 +86,9 @@ else
                         <td class="align-right min-width">
                             @if (job.LastExecution != null)
                             {
-                                <span data-moment="@(JobHelper.ToStringTimestamp(job.LastExecution.Value))">
-                                    @job.LastExecution.Value
-                                </span>
-                            }
-                            else
-                            {
-                                <em>N/A</em>
-                            }
-                        </td>
-                        <td class="align-right min-width">
-                            @if (job.LastJobId != null)
-                            {
                                 <a href="@Request.LinkTo("/job/" + job.LastJobId)">
-                                    <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
-                                        @job.LastJobState
+                                    <span class="label label-default" data-moment="@(JobHelper.ToStringTimestamp(job.LastExecution.Value))" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
+                                        @job.LastExecution.Value
                                     </span>
                                 </a>
                             }
