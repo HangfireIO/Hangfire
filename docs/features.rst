@@ -36,10 +36,22 @@ HangFire uses persistent storage to store jobs, queues and statistics and let th
 * **SQL Server** provides simplified installation together with usual maintenance plans.
 * **Redis** provides awesome speed, especially comparing to SQL Server, but requires additional knowledge.
 
-Recurring jobs?
-----------------
+Recurring jobs
+---------------
 
-It is possible to implement them as extension of HangFire. But I do it a bit later :( 
+Recurring jobs processing was never been easier. All you need is to call a single line of code:
+
+.. code-block:: c#
+
+   RecurringJob.AddOrUpdate(() => Console.Write("Easy!"), Cron.Daily);
+
+HangFire uses `NCrontab <https://code.google.com/p/ncrontab/>`_ library to perform scheduling tasks, so you can use more complex `CRON expressions <http://en.wikipedia.org/wiki/Cron#CRON_expression>`_:
+
+.. code-block:: c#
+
+   RecurringJob.AddOrUpdate(
+       () => Console.Write("Powerful!"), 
+       "0 12 * */2");
 
 Automatic retries
 ------------------
