@@ -25,6 +25,15 @@ namespace HangFire
         private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
             () => new RecurringJobManager());
 
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Action> methodCall,
+            string cronExpression)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression);
+        }
+
         public static void AddOrUpdate(Expression<Action> methodCall, string cronExpression)
         {
             var job = Job.FromExpression(methodCall);
@@ -33,9 +42,26 @@ namespace HangFire
             Instance.Value.AddOrUpdate(id, job, cronExpression);
         }
 
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Action> methodCall,
+            Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression());
+        }
+
         public static void AddOrUpdate(Expression<Action> methodCall, Func<string> cronExpression)
         {
             AddOrUpdate(methodCall, cronExpression());
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Action<T>> methodCall,
+            string cronExpression)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression);
         }
 
         public static void AddOrUpdate<T>(Expression<Action<T>> methodCall, string cronExpression)
@@ -44,6 +70,14 @@ namespace HangFire
             var id = GetRecurringJobId(job);
 
             Instance.Value.AddOrUpdate(id, job, cronExpression);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Action<T>> methodCall,
+            Func<string> cronExpression)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression());
         }
 
         public static void AddOrUpdate<T>(Expression<Action<T>> methodCall, Func<string> cronExpression)
