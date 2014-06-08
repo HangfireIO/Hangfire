@@ -1,6 +1,22 @@
 Advanced Features
 ==================
 
+Cancellation tokens
+--------------------
+
+HangFire can tell your methods were aborted or canceled due to shutdown event, so you can stop them gracefully using job cancellation tokens that are similar to the regular ``CancellationToken`` class.
+
+.. code-block:: c#
+
+   public void Method(IJobCancellationToken token)
+   {
+       for (var i = 0; i < Int32.MaxValue; i++)
+       {
+           token.ThrowIfCancellationRequested();
+           Thread.Sleep(1000);
+       }
+   }
+
 IoC Containers
 ---------------
 
