@@ -7,6 +7,7 @@ User's Guide
    configuring-authorization
    calling-methods-in-background
    calling-methods-with-delay
+   performing-recurrent-tasks
    passing-arguments
    passing-dependencies
    using-ioc-containers
