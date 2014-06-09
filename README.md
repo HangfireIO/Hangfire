@@ -19,7 +19,7 @@ HangFire provides unified programming model to handle background tasks in a **re
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
-![HangFire Dashboard](http://hangfire.io/img/succeeded-job.png)
+![HangFire Succeeded Job](http://hangfire.io/img/succeeded-job-sm.png)
 
 Installation
 -------------
@@ -35,8 +35,7 @@ PM> Install-Package HangFire
 After installing, open the `~/App_Start/HangFireConfig.cs` file and modify the connection string:
 
 ```csharp
-JobStorage.Current = new SqlServerStorage(
-    @"Server=.\sqlexpress; Database=MyDatabase; Trusted_Connection=True;");
+JobStorage.Current = new SqlServerStorage("<name or connection string>");
 ```
 
 Usage
