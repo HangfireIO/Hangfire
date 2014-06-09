@@ -16,9 +16,6 @@ The ``Enqueue`` method does not call the target method immediately, it runs the 
 
 After these steps were performed, the ``BackgroundJob.Enqueue`` method immediately returns to a caller.
 
-Processing
------------
-
 Another HangFire component, called HangFire Server, checks the persistent storage for enqueued background jobs and performs them in a reliable way. The following process is being invoked by each worker:
 
 1. Fetch next job and hide it from other workers.
