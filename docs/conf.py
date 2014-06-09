@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'HangFire'
-copyright = u'2014, Sergey Odinokov'
+copyright = u'2014, Sergey Odinokov. Documentation is licensed under the CC BY 4.0'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
