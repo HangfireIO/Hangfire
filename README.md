@@ -13,8 +13,10 @@ HangFire provides unified programming model to handle background tasks in a **re
 - firing off web hooks;
 - deleting users;
 - building different graphs;
-- image processing;
-- system maintenance;
+- image/video processing;
+- purge temporary files;
+- recurring automated reports;
+- database maintenance;
 - *…and so on.*
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
