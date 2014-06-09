@@ -3,9 +3,9 @@ HangFire <a href="https://ci.appveyor.com/project/odinserj/hangfire"><img title=
 
 #### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) | [Twitter](https://twitter.com/hangfire_net) | [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
 
-HangFire gives you a simple way to kick off **long-running processes** from the **ASP.NET request processing pipeline**. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
+Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
 
-Improve the responsiveness of your web application. Do not force your users to wait when the application performs the following tasks:
+HangFire provides unified programming model to handle background tasks in a **reliable way** and run them on shared hosting, dedicated hosting or in cloud. You can start with a simple setup and grow computational power for background jobs with time for these scenarios:
 
 - mass notifications/newsletter;
 - batch import from xml, csv, json;
@@ -14,9 +14,8 @@ Improve the responsiveness of your web application. Do not force your users to w
 - deleting users;
 - building different graphs;
 - image processing;
+- system maintenance;
 - *…and so on.*
-
-Just wrap your long-running process to a method and instruct HangFire to create a **background job** based on this method. All backround jobs are being saved to a **persistent storage** ([Redis](http://redis.io), [SQL Server](http://www.microsoft.com/sql) or SQL Server + MSMQ) and performed on a dedicated **worker thread** in a reliable way inside or outside of your ASP.NET application.
 
 HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
@@ -43,24 +42,41 @@ JobStorage.Current = new SqlServerStorage(
 Usage
 ------
 
-**1. Enqueue a background job**
-
-You can run in background regular static or instance methods, just do the following:
+**Fire-and-forget tasks**
 
 ```csharp
-BackgroundJob.Enqueue(() => Console.WriteLine("Hello, world!"));
+BackgroundJob.Enqueue(() => Console.WriteLine("Simple!"));
 ```
 
-**2. Process it in background**
+**Delayed tasks**
 
-Processing is made inside a different worker thread. To start the worker pool, call:
+```csharp
+BackgroundJob.Schedule(() => Console.WriteLine("Reliable!"), TimeSpan.FromDays(7));
+```
+
+**Recurring tasks**
+
+```csharp
+RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
+```
+
+**Run them inside ASP.NET app…**
+
+Forget about AppDomain unloads, Web Garden & Web Farm issues – HangFire is reliable for ASP.NET from scratch, even on Shared Hosting!
 
 ```csharp
 var server = new AspNetBackgroundJobServer();
 server.Start();
 ```
 
-Please note, that **these lines already added** in the `~/App_Start/HangFireConfig.cs` file for you. 
+**… or anywhere else**
+
+In console application, Windows Service, Azure Worker Role, etc.
+
+```csharp
+var server = new BackgroundJobServer();
+server.Start();
+```
 
 This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io).
 
