@@ -5,4 +5,4 @@ Storage configuration
    :maxdepth: 1
 
    using-sql-server
-
+   using-sql-server-with-msmq
