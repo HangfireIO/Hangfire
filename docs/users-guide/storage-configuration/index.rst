@@ -6,3 +6,4 @@ Storage configuration
 
    using-sql-server
    using-sql-server-with-msmq
+   using-redis
