@@ -317,7 +317,7 @@ select * from HangFire.State where JobId = @id order by Id desc";
             return UseConnection(connection =>
             {
                 const string sql = @"
-select StateName as [State], count(id) as [Count] From HangFire.Job 
+select StateName as [State], count(Id) as [Count] From HangFire.Job 
 group by StateName
 having StateName is not null;
 select count(Id) from HangFire.Server;
