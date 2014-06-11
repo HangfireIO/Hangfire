@@ -1,6 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using HangFire.Common;
 using HangFire.Server;
 using Moq;
@@ -10,6 +13,7 @@ namespace HangFire.Core.Tests.Common
 {
     public class JobFacts
     {
+        private static readonly DateTime SomeDateTime = new DateTime(2014, 5, 30, 12, 0, 0);
         private static bool _methodInvoked;
         private static bool _disposed;
 
@@ -102,14 +106,28 @@ namespace HangFire.Core.Tests.Common
         }
 
         [Fact]
-        public void FromStaticExpression_ShouldReturnCorrectFormat_WhenDateTimeArgumentIsProvided()
+        public void FromStaticExpression_ConvertsDateTimeRepresentation_ToIso8601Format()
         {
-            var dt = new DateTime(2014, 5, 30, 12, 0, 0, 777);
-            var expected = dt.ToString("MM/dd/yyyy HH:mm:ss.ffff");
+            var date = new DateTime(2014, 5, 30, 12, 0, 0, 777);
+            var expected = date.ToString("o");
 
-            var job = Job.FromExpression(() => MethodWithDateTimeArgument(dt));
+            var job = Job.FromExpression(() => MethodWithDateTimeArgument(date));
 
             Assert.Equal(expected, job.Arguments[0]);
+        }
+
+        [Fact]
+        public void FromExpression_ReturnValueDoesNotDepend_OnCurrentCulture()
+        {
+            var date = DateTime.UtcNow;
+
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            var enJob = Job.FromExpression(() => MethodWithDateTimeArgument(date));
+
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("ru-RU");
+            var ruJob = Job.FromExpression(() => MethodWithDateTimeArgument(date));
+
+            Assert.Equal(enJob.Arguments[0], ruJob.Arguments[0]);
         }
 
         [Fact]
@@ -230,17 +248,55 @@ namespace HangFire.Core.Tests.Common
         }
 
         [Fact, StaticLock]
-        public void Perform_PassesDateTimeArguments_WithCorrectFormat()
+        public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
             // Arrange
             _methodInvoked = false;
-            var dt = new DateTime(2014, 5, 30, 12, 0, 0, 777);
-            var job = Job.FromExpression(() => MethodWithDateTimeArgument(dt));
+            var typeConverter = TypeDescriptor.GetConverter(typeof (DateTime));
+            var convertedDate = typeConverter.ConvertToInvariantString(SomeDateTime);
+
+            var type = typeof (JobFacts);
+            var method = type.GetMethod("MethodWithDateTimeArgument");
+
+            var job = new Job(type, method, new[] { convertedDate });
 
             // Act
             job.Perform(_activator.Object, _token.Object);
 
-            // Assert - see the `MethodWithDateTimeArgument` method.
+            // Assert - see also the `MethodWithDateTimeArgument` method.
+            Assert.True(_methodInvoked);
+        }
+
+        [Fact, StaticLock]
+        public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingOldFormat()
+        {
+            // Arrange
+            _methodInvoked = false;
+            var convertedDate = SomeDateTime.ToString("MM/dd/yyyy HH:mm:ss.ffff");
+
+            var type = typeof(JobFacts);
+            var method = type.GetMethod("MethodWithDateTimeArgument");
+
+            var job = new Job(type, method, new[] { convertedDate });
+
+            // Act
+            job.Perform(_activator.Object, _token.Object);
+
+            // Assert - see also the `MethodWithDateTimeArgument` method.
+            Assert.True(_methodInvoked);
+        }
+
+        [Fact, StaticLock]
+        public void Perform_PassesCorrectDateTimeArguments()
+        {
+            // Arrange
+            _methodInvoked = false;
+            var job = Job.FromExpression(() => MethodWithDateTimeArgument(SomeDateTime));
+
+            // Act
+            job.Perform(_activator.Object, _token.Object);
+
+            // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
         }
 
@@ -411,9 +467,8 @@ namespace HangFire.Core.Tests.Common
         public void MethodWithDateTimeArgument(DateTime argument)
         {
             _methodInvoked = true;
-            var expected = new DateTime(2014, 5, 30, 12, 0, 0, 777);
 
-            Assert.Equal(expected, argument);
+            Assert.Equal(SomeDateTime, argument);
         }
 
         public static void ExceptionMethod()
