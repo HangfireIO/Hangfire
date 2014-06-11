@@ -364,7 +364,7 @@ WriteLiteral("\" style=\"");
 
             
             #line 90 "..\..\Pages\RecurringJobsPage.cshtml"
-                                                                                                                                                           Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null);
+                                                                                                                                                           Write(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null);
 
             
             #line default
