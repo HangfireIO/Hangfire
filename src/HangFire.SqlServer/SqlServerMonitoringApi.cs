@@ -67,22 +67,6 @@ namespace HangFire.SqlServer
             return GetNumberOfJobsByStateName(FailedState.StateName);
         }
 
-        private long GetNumberOfJobsByStateName(string stateName)
-        {
-            return UseConnection<long>(connection =>
-            {
-                const string sqlQuery = @"
-select count(Id) from HangFire.Job where StateName = @state";
-
-                var count = connection.Query<int>(
-                     sqlQuery,
-                     new { state = stateName })
-                     .Single();
-
-                return count;
-            });
-        }
-
         public long ProcessingCount()
         {
             return GetNumberOfJobsByStateName(ProcessingState.StateName);
@@ -99,65 +83,6 @@ select count(Id) from HangFire.Job where StateName = @state";
                     ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
                     StartedAt = JobHelper.FromStringTimestamp(stateData["StartedAt"]),
                 });
-        }
-
-        private JobList<TDto> GetJobs<TDto>(
-            int from,
-            int count,
-            string stateName,
-            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
-        {
-            return UseConnection<JobList<TDto>>(connection =>
-            {
-                const string jobsSql = @"
-select * from (
-  select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
-  from HangFire.Job j
-  left join HangFire.State s on j.StateId = s.Id
-  where j.StateName = @stateName
-) as j where j.row_num between @start and @end
-";
-
-                var jobs = connection.Query<SqlJob>(
-                            jobsSql,
-                            new { stateName = stateName, start = @from + 1, end = @from + count })
-                            .ToList();
-
-                return DeserializeJobs(jobs, selector);
-            });
-        }
-
-        private static JobList<TDto> DeserializeJobs<TDto>(
-            ICollection<SqlJob> jobs,
-            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
-        {
-            var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
-
-            foreach (var job in jobs)
-            {
-                var stateData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
-                var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
-
-                result.Add(new KeyValuePair<string, TDto>(
-                    job.Id.ToString(), dto));
-            }
-
-            return new JobList<TDto>(result);
-        }
-
-        private static Job DeserializeJob(string invocationData, string arguments)
-        {
-            var data = JobHelper.FromJson<InvocationData>(invocationData);
-            data.Arguments = arguments;
-
-            try
-            {
-                return data.Deserialize();
-            }
-            catch (JobLoadException)
-            {
-                return null;
-            }
         }
 
         public JobList<ScheduledJobDto> ScheduledJobs(int @from, int count)
@@ -294,77 +219,12 @@ select * from (
             return EnqueuedJobs(enqueuedJobIds);
         }
 
-        private JobList<EnqueuedJobDto> EnqueuedJobs(IEnumerable<int> jobIds)
-        {
-            return UseConnection<JobList<EnqueuedJobDto>>(connection =>
-            {
-
-                const string enqueuedJobsSql = @"
-select j.*, s.Reason as StateReason, s.Data as StateData 
-from HangFire.Job j
-left join HangFire.State s on s.Id = j.StateId
-left join HangFire.JobQueue jq on jq.JobId = j.Id
-where j.Id in @jobIds and jq.FetchedAt is null";
-
-                var jobs = connection.Query<SqlJob>(
-                    enqueuedJobsSql,
-                    new { jobIds = jobIds })
-                    .ToList();
-
-                return DeserializeJobs(
-                    jobs,
-                    (sqlJob, job, stateData) => new EnqueuedJobDto
-                    {
-                        Job = job,
-                        State = sqlJob.StateName,
-                        EnqueuedAt = sqlJob.StateName == EnqueuedState.StateName
-                            ? JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
-                            : null
-                    });
-            });
-        }
-
         public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
         {
             var queueApi = GetQueueApi(queue);
             var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
 
             return FetchedJobs(fetchedJobIds);
-        }
-
-        private JobList<FetchedJobDto> FetchedJobs(IEnumerable<int> jobIds)
-        {
-            return UseConnection<JobList<FetchedJobDto>>(connection =>
-            {
-
-                const string fetchedJobsSql = @"
-select j.*, jq.FetchedAt, s.Reason as StateReason, s.Data as StateData 
-from HangFire.Job j
-left join HangFire.State s on s.Id = j.StateId
-left join HangFire.JobQueue jq on jq.JobId = j.Id
-where j.Id in @jobIds and jq.FetchedAt is not null";
-
-                var jobs = connection.Query<SqlJob>(
-                    fetchedJobsSql,
-                    new { jobIds = jobIds })
-                    .ToList();
-
-                var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);
-
-                foreach (var job in jobs)
-                {
-                    result.Add(new KeyValuePair<string, FetchedJobDto>(
-                        job.Id.ToString(),
-                        new FetchedJobDto
-                        {
-                            Job = DeserializeJob(job.InvocationData, job.Arguments),
-                            State = job.StateName,
-                            FetchedAt = job.FetchedAt
-                        }));
-                }
-
-                return new JobList<FetchedJobDto>(result);
-            });
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
@@ -575,6 +435,146 @@ having [Key] in @keys";
 
                 return result;
             }
+        }
+
+        private JobList<EnqueuedJobDto> EnqueuedJobs(IEnumerable<int> jobIds)
+        {
+            return UseConnection<JobList<EnqueuedJobDto>>(connection =>
+            {
+
+                const string enqueuedJobsSql = @"
+select j.*, s.Reason as StateReason, s.Data as StateData 
+from HangFire.Job j
+left join HangFire.State s on s.Id = j.StateId
+left join HangFire.JobQueue jq on jq.JobId = j.Id
+where j.Id in @jobIds and jq.FetchedAt is null";
+
+                var jobs = connection.Query<SqlJob>(
+                    enqueuedJobsSql,
+                    new { jobIds = jobIds })
+                    .ToList();
+
+                return DeserializeJobs(
+                    jobs,
+                    (sqlJob, job, stateData) => new EnqueuedJobDto
+                    {
+                        Job = job,
+                        State = sqlJob.StateName,
+                        EnqueuedAt = sqlJob.StateName == EnqueuedState.StateName
+                            ? JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                            : null
+                    });
+            });
+        }
+
+        private long GetNumberOfJobsByStateName(string stateName)
+        {
+            return UseConnection<long>(connection =>
+            {
+                const string sqlQuery = @"
+select count(Id) from HangFire.Job where StateName = @state";
+
+                var count = connection.Query<int>(
+                     sqlQuery,
+                     new { state = stateName })
+                     .Single();
+
+                return count;
+            });
+        }
+
+        private static Job DeserializeJob(string invocationData, string arguments)
+        {
+            var data = JobHelper.FromJson<InvocationData>(invocationData);
+            data.Arguments = arguments;
+
+            try
+            {
+                return data.Deserialize();
+            }
+            catch (JobLoadException)
+            {
+                return null;
+            }
+        }
+
+        private JobList<TDto> GetJobs<TDto>(
+            int from,
+            int count,
+            string stateName,
+            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
+        {
+            return UseConnection<JobList<TDto>>(connection =>
+            {
+                const string jobsSql = @"
+select * from (
+  select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
+  from HangFire.Job j
+  left join HangFire.State s on j.StateId = s.Id
+  where j.StateName = @stateName
+) as j where j.row_num between @start and @end
+";
+
+                var jobs = connection.Query<SqlJob>(
+                            jobsSql,
+                            new { stateName = stateName, start = @from + 1, end = @from + count })
+                            .ToList();
+
+                return DeserializeJobs(jobs, selector);
+            });
+        }
+
+        private static JobList<TDto> DeserializeJobs<TDto>(
+            ICollection<SqlJob> jobs,
+            Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
+        {
+            var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
+
+            foreach (var job in jobs)
+            {
+                var stateData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+
+                result.Add(new KeyValuePair<string, TDto>(
+                    job.Id.ToString(), dto));
+            }
+
+            return new JobList<TDto>(result);
+        }
+
+        private JobList<FetchedJobDto> FetchedJobs(IEnumerable<int> jobIds)
+        {
+            return UseConnection<JobList<FetchedJobDto>>(connection =>
+            {
+
+                const string fetchedJobsSql = @"
+select j.*, jq.FetchedAt, s.Reason as StateReason, s.Data as StateData 
+from HangFire.Job j
+left join HangFire.State s on s.Id = j.StateId
+left join HangFire.JobQueue jq on jq.JobId = j.Id
+where j.Id in @jobIds and jq.FetchedAt is not null";
+
+                var jobs = connection.Query<SqlJob>(
+                    fetchedJobsSql,
+                    new { jobIds = jobIds })
+                    .ToList();
+
+                var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);
+
+                foreach (var job in jobs)
+                {
+                    result.Add(new KeyValuePair<string, FetchedJobDto>(
+                        job.Id.ToString(),
+                        new FetchedJobDto
+                        {
+                            Job = DeserializeJob(job.InvocationData, job.Arguments),
+                            State = job.StateName,
+                            FetchedAt = job.FetchedAt
+                        }));
+                }
+
+                return new JobList<FetchedJobDto>(result);
+            });
         }
     }
 }
