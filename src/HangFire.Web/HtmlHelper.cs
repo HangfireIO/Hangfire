@@ -78,21 +78,24 @@ namespace HangFire.Web
                 builder.AppendFormat("{0}m ", duration.Value.Minutes);
             }
 
-            if (duration.Value.Seconds > 0)
+            if (duration.Value.TotalHours < 1)
             {
-                builder.Append(duration.Value.Seconds);
-                if (duration.Value.Milliseconds > 0)
+                if (duration.Value.Seconds > 0)
                 {
-                    builder.AppendFormat(".{0}", duration.Value.Milliseconds);
-                }
+                    builder.Append(duration.Value.Seconds);
+                    if (duration.Value.Milliseconds > 0)
+                    {
+                        builder.AppendFormat(".{0}", duration.Value.Milliseconds);
+                    }
 
-                builder.Append("s ");
-            }
-            else
-            {
-                if (duration.Value.Milliseconds > 0)
+                    builder.Append("s ");
+                }
+                else
                 {
-                    builder.AppendFormat("{0}ms ", duration.Value.Milliseconds);
+                    if (duration.Value.Milliseconds > 0)
+                    {
+                        builder.AppendFormat("{0}ms ", duration.Value.Milliseconds);
+                    }
                 }
             }
 
