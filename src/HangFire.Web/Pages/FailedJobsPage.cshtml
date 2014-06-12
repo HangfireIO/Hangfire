@@ -85,7 +85,7 @@ else
                         <td class="min-width">
                             @if (job.Value.FailedAt.HasValue)
                             {
-                                <span data-moment="@JobHelper.ToStringTimestamp(job.Value.FailedAt.Value)">
+                                <span data-moment="@JobHelper.ToTimestamp(job.Value.FailedAt.Value)">
                                     @job.Value.FailedAt
                                 </span>
                             }

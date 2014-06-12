@@ -39,7 +39,7 @@ namespace HangFire.Core.Tests.States
 
             var data = state.SerializeData();
 
-            Assert.Equal(JobHelper.ToStringTimestamp(state.StartedAt), data["StartedAt"]);
+            Assert.Equal(JobHelper.SerializeDateTime(state.StartedAt), data["StartedAt"]);
             Assert.Equal(ServerId, data["ServerId"]);
             Assert.Equal(WorkerNumber.ToString(CultureInfo.InvariantCulture), data["WorkerNumber"]);
         }

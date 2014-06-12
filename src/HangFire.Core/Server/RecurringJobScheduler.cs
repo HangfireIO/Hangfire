@@ -96,7 +96,7 @@ namespace HangFire.Server
 
             if (recurringJob.ContainsKey("NextExecution"))
             {
-                var nextExecution = JobHelper.FromStringTimestamp(recurringJob["NextExecution"]);
+                var nextExecution = JobHelper.DeserializeDateTime(recurringJob["NextExecution"]);
 
                 if (nextExecution <= currentTime)
                 {
@@ -107,9 +107,9 @@ namespace HangFire.Server
                         String.Format("recurring-job:{0}", recurringJobId),
                         new Dictionary<string, string>
                         {
-                            { "LastExecution", JobHelper.ToStringTimestamp(currentTime) },
+                            { "LastExecution", JobHelper.SerializeDateTime(currentTime) },
                             { "LastJobId", jobId },
-                            { "NextExecution", JobHelper.ToStringTimestamp(_dateTimeProvider.GetNextOccurrence(cronSchedule)) }
+                            { "NextExecution", JobHelper.SerializeDateTime(_dateTimeProvider.GetNextOccurrence(cronSchedule)) }
                         });
                 }
             }
@@ -121,7 +121,7 @@ namespace HangFire.Server
                     String.Format("recurring-job:{0}", recurringJobId),
                     new Dictionary<string, string>
                     {
-                        { "NextExecution", JobHelper.ToStringTimestamp(nextExecution) }
+                        { "NextExecution", JobHelper.SerializeDateTime(nextExecution) }
                     });
             }
         }

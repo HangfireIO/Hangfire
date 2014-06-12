@@ -98,7 +98,7 @@ else
                             <td class="min-width align-right">
                                 @if (job.Value.SucceededAt.HasValue)
                                 {
-                                    <span data-moment="@JobHelper.ToStringTimestamp(job.Value.SucceededAt.Value)">
+                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.SucceededAt.Value)">
                                         @job.Value.SucceededAt
                                     </span>
                                 }

@@ -171,7 +171,7 @@ namespace HangFire.Web
             return new HtmlString(String.Format(
                 "<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{0}\">{1}</dd></dl>",
                 stateData["EnqueueAt"],
-                JobHelper.FromStringTimestamp(stateData["EnqueueAt"])));
+                JobHelper.DeserializeDateTime(stateData["EnqueueAt"])));
         }
     }
 }

@@ -88,7 +88,7 @@ namespace HangFire.Redis
                     {
                         ServerId = state[2] ?? state[1],
                         Job = job,
-                        StartedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        StartedAt = JobHelper.DeserializeNullableDateTime(state[0]),
                         InProcessingState = ProcessingState.StateName.Equals(
                             state[3], StringComparison.OrdinalIgnoreCase),
                     }).OrderBy(x => x.Value.StartedAt).ToList());
@@ -143,7 +143,7 @@ namespace HangFire.Redis
                             Job = TryToGetJob(jobs[job.Key][0], jobs[job.Key][1], jobs[job.Key][2], jobs[job.Key][3]),
                             ScheduledAt =
                                 states[job.Key].Count > 1
-                                    ? JobHelper.FromNullableStringTimestamp(states[job.Key][1])
+                                    ? JobHelper.DeserializeNullableDateTime(states[job.Key][1])
                                     : null,
                             InScheduledState =
                                 ScheduledState.StateName.Equals(states[job.Key][0], StringComparison.OrdinalIgnoreCase)
@@ -202,8 +202,8 @@ namespace HangFire.Redis
                     Name = x,
                     WorkersCount = int.Parse(servers[x][0]),
                     Queues = queues[x],
-                    StartedAt = JobHelper.FromStringTimestamp(servers[x][1]),
-                    Heartbeat = JobHelper.FromNullableStringTimestamp(servers[x][2])
+                    StartedAt = JobHelper.DeserializeDateTime(servers[x][1]),
+                    Heartbeat = JobHelper.DeserializeNullableDateTime(servers[x][2])
                 }).ToList();
             });
         }
@@ -226,7 +226,7 @@ namespace HangFire.Redis
                     {
                         Job = job,
                         Reason = state[5],
-                        FailedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        FailedAt = JobHelper.DeserializeNullableDateTime(state[0]),
                         ExceptionType = state[1],
                         ExceptionMessage = state[2],
                         ExceptionDetails = state[3],
@@ -252,7 +252,7 @@ namespace HangFire.Redis
                     (job, jobData, state) => new SucceededJobDto
                     {
                         Job = job,
-                        SucceededAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        SucceededAt = JobHelper.DeserializeNullableDateTime(state[0]),
                         TotalDuration = state[1] != null && state[2] != null
                             ? (long?) long.Parse(state[1]) + (long?) long.Parse(state[2])
                             : null,
@@ -278,7 +278,7 @@ namespace HangFire.Redis
                     (job, jobData, state) => new DeletedJobDto
                     {
                         Job = job,
-                        DeletedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        DeletedAt = JobHelper.DeserializeNullableDateTime(state[0]),
                         InDeletedState = DeletedState.StateName.Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
             });
@@ -324,7 +324,7 @@ namespace HangFire.Redis
                         {
                             Job = job,
                             State = jobData[0],
-                            EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                            EnqueuedAt = JobHelper.DeserializeNullableDateTime(state[0]),
                             InEnqueuedState = jobData[0].Equals(state[1], StringComparison.OrdinalIgnoreCase)
                         });
 
@@ -360,7 +360,7 @@ namespace HangFire.Redis
                     {
                         Job = job,
                         State = jobData[0],
-                        EnqueuedAt = JobHelper.FromNullableStringTimestamp(state[0]),
+                        EnqueuedAt = JobHelper.DeserializeNullableDateTime(state[0]),
                         InEnqueuedState = jobData[0].Equals(state[1], StringComparison.OrdinalIgnoreCase)
                     });
             });
@@ -384,7 +384,7 @@ namespace HangFire.Redis
                     {
                         Job = job,
                         State = jobData[0],
-                        FetchedAt = JobHelper.FromNullableStringTimestamp(jobData[1])
+                        FetchedAt = JobHelper.DeserializeNullableDateTime(jobData[1])
                     });
             });
         }
@@ -422,7 +422,7 @@ namespace HangFire.Redis
                     {
                         StateName = entry["State"],
                         Reason = entry.ContainsKey("Reason") ? entry["Reason"] : null,
-                        CreatedAt = JobHelper.FromStringTimestamp(entry["CreatedAt"]),
+                        CreatedAt = JobHelper.DeserializeDateTime(entry["CreatedAt"]),
                     };
 
                     // Each history item contains all of the information,
@@ -446,7 +446,7 @@ namespace HangFire.Redis
                     Job = TryToGetJob(job["Type"], job["Method"], job["ParameterTypes"], job["Arguments"]),
                     CreatedAt =
                         job.ContainsKey("CreatedAt")
-                            ? JobHelper.FromStringTimestamp(job["CreatedAt"])
+                            ? JobHelper.DeserializeDateTime(job["CreatedAt"])
                             : (DateTime?) null,
                     Properties =
                         job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),

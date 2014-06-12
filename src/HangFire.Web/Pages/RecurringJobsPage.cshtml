@@ -74,7 +74,7 @@ else
                         <td class="align-right min-width">
                             @if (job.NextExecution != null)
                             {
-                                <span data-moment="@(JobHelper.ToStringTimestamp(job.NextExecution.Value))">
+                                <span data-moment="@(JobHelper.SerializeDateTime(job.NextExecution.Value))">
                                     @job.NextExecution.Value
                                 </span>
                             }
@@ -87,7 +87,7 @@ else
                             @if (job.LastExecution != null)
                             {
                                 <a href="@Request.LinkTo("/job/" + job.LastJobId)">
-                                    <span class="label label-default label-hover" data-moment="@(JobHelper.ToStringTimestamp(job.LastExecution.Value))" style="@(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
+                                    <span class="label label-default label-hover" data-moment="@(JobHelper.SerializeDateTime(job.LastExecution.Value))" style="@(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
                                         @job.LastExecution.Value
                                     </span>
                                 </a>

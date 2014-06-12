@@ -56,7 +56,7 @@ namespace HangFire.Core.Tests.States
             var serializedData = state.SerializeData();
 
             Assert.Equal(state.Queue, serializedData["Queue"]);
-            Assert.Equal(JobHelper.ToStringTimestamp(state.EnqueuedAt), serializedData["EnqueuedAt"]);
+            Assert.Equal(JobHelper.SerializeDateTime(state.EnqueuedAt), serializedData["EnqueuedAt"]);
         }
 
         [Fact]

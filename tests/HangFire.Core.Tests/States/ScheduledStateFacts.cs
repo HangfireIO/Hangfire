@@ -38,8 +38,8 @@ namespace HangFire.Core.Tests.States
 
             var data = state.SerializeData();
 
-            Assert.Equal(JobHelper.ToStringTimestamp(state.EnqueueAt), data["EnqueueAt"]);
-            Assert.Equal(JobHelper.ToStringTimestamp(state.ScheduledAt), data["ScheduledAt"]);
+            Assert.Equal(JobHelper.SerializeDateTime(state.EnqueueAt), data["EnqueueAt"]);
+            Assert.Equal(JobHelper.SerializeDateTime(state.ScheduledAt), data["ScheduledAt"]);
         }
 
         [Fact]

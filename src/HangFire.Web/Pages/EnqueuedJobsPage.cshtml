@@ -95,7 +95,7 @@ else
                         <td class="align-right">
                             @if (job.Value.EnqueuedAt.HasValue)
                             {
-                                <span data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueuedAt.Value)">
+                                <span data-moment="@JobHelper.ToTimestamp(job.Value.EnqueuedAt.Value)">
                                     @job.Value.EnqueuedAt
                                 </span>
                             }

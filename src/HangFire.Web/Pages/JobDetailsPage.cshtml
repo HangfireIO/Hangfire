@@ -48,7 +48,7 @@ else
             {
                 <div class="pull-right job-creation-date">
                     Created
-                    <span data-moment="@JobHelper.ToStringTimestamp(job.CreatedAt.Value)"></span>
+                    <span data-moment="@JobHelper.ToTimestamp(job.CreatedAt.Value)"></span>
                 </div>
             }
             @if (job != null)
@@ -97,7 +97,7 @@ else
 
             <div class="job-history @(index == 0 ? "job-history-current" : null)">
                 <div class="job-history-heading" style="@(background != null ? String.Format("background-color: {0};", background) : null)">
-                    <span class="pull-right" data-moment-title="@(JobHelper.ToStringTimestamp(entry.CreatedAt))">
+                    <span class="pull-right" data-moment-title="@(JobHelper.ToTimestamp(entry.CreatedAt))">
                         @HtmlHelper.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt))
                         @{ nextEntry++; }
                     </span>

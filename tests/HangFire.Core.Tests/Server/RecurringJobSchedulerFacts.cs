@@ -41,7 +41,7 @@ namespace HangFire.Core.Tests.Server
 
             _recurringJob = new Dictionary<string, string>
             {
-                { "NextExecution", JobHelper.ToStringTimestamp(_currentTime) },
+                { "NextExecution", JobHelper.SerializeDateTime(_currentTime) },
                 { "Cron", "* * * * *" },
                 { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
             };
@@ -97,15 +97,15 @@ namespace HangFire.Core.Tests.Server
             _connection.Verify(x => x.SetRangeInHash(
                 String.Format("recurring-job:{0}", RecurringJobId),
                 It.Is<Dictionary<string, string>>(rj =>
-                    rj["LastExecution"] == JobHelper.ToStringTimestamp(_currentTime)
+                    rj["LastExecution"] == JobHelper.SerializeDateTime(_currentTime)
                  && rj["LastJobId"] == "job-id"
-                 && rj["NextExecution"] == JobHelper.ToStringTimestamp(_nextTime))));
+                 && rj["NextExecution"] == JobHelper.SerializeDateTime(_nextTime))));
         }
 
         [Fact]
         public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_WhenNextExecutionTime_IsInTheFuture()
         {
-            _recurringJob["NextExecution"] = JobHelper.ToStringTimestamp(_currentTime.AddDays(1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_currentTime.AddDays(1));
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
@@ -124,7 +124,7 @@ namespace HangFire.Core.Tests.Server
         [Fact]
         public void Execute_EnqueuesRecurringJob_WhenNextExecutionTime_IsInThePast()
         {
-            _recurringJob["NextExecution"] = JobHelper.ToStringTimestamp(_currentTime.AddDays(-1));
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_currentTime.AddDays(-1));
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
@@ -153,7 +153,7 @@ namespace HangFire.Core.Tests.Server
             _connection.Setup(x => x.SetRangeInHash(
                 String.Format("recurring-job:{0}", RecurringJobId),
                 It.Is<Dictionary<string, string>>(rj =>
-                    rj["NextExecution"] == JobHelper.ToStringTimestamp(_nextTime))));
+                    rj["NextExecution"] == JobHelper.SerializeDateTime(_nextTime))));
         }
 
         [Fact]

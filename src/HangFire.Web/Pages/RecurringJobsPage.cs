@@ -40,7 +40,7 @@ namespace HangFire.Web.Pages
 
                     if (hash.ContainsKey("NextExecution"))
                     {
-                        dto.NextExecution = JobHelper.FromStringTimestamp(hash["NextExecution"]);
+                        dto.NextExecution = JobHelper.DeserializeDateTime(hash["NextExecution"]);
                     }
 
                     if (hash.ContainsKey("LastJobId"))
@@ -56,7 +56,7 @@ namespace HangFire.Web.Pages
 
                     if (hash.ContainsKey("LastExecution"))
                     {
-                        dto.LastExecution = JobHelper.FromStringTimestamp(hash["LastExecution"]);
+                        dto.LastExecution = JobHelper.DeserializeDateTime(hash["LastExecution"]);
                     }
 
                     RecurringJobs.Add(dto);

@@ -44,7 +44,7 @@ namespace HangFire.States
         {
             return new Dictionary<string, string>
             {
-                { "FailedAt", JobHelper.ToStringTimestamp(FailedAt) },
+                { "FailedAt", JobHelper.SerializeDateTime(FailedAt) },
                 { "ExceptionType", Exception.GetType().FullName },
                 { "ExceptionMessage", Exception.Message },
                 { "ExceptionDetails", Exception.ToString() }

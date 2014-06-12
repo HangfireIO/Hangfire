@@ -115,7 +115,7 @@ namespace HangFire.Redis
             var storedData = new Dictionary<string, string>(state.SerializeData());
             storedData.Add("State", state.Name);
             storedData.Add("Reason", state.Reason);
-            storedData.Add("CreatedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow));
+            storedData.Add("CreatedAt", JobHelper.SerializeDateTime(DateTime.UtcNow));
 
             _transaction.QueueCommand(x => x.EnqueueItemOnList(
                 String.Format(RedisStorage.Prefix + "job:{0}:history", jobId),

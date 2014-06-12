@@ -91,7 +91,7 @@ namespace HangFire.SqlServer
                 {
                     Job = job,
                     ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
-                    StartedAt = JobHelper.FromStringTimestamp(stateData["StartedAt"]),
+                    StartedAt = JobHelper.DeserializeDateTime(stateData["StartedAt"]),
                 }));
         }
 
@@ -104,8 +104,8 @@ namespace HangFire.SqlServer
                 (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
-                    EnqueueAt = JobHelper.FromStringTimestamp(stateData["EnqueueAt"]),
-                    ScheduledAt = JobHelper.FromStringTimestamp(stateData["ScheduledAt"])
+                    EnqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]),
+                    ScheduledAt = JobHelper.DeserializeDateTime(stateData["ScheduledAt"])
                 }));
         }
 
@@ -162,7 +162,7 @@ namespace HangFire.SqlServer
                     ExceptionDetails = stateData["ExceptionDetails"],
                     ExceptionMessage = stateData["ExceptionMessage"],
                     ExceptionType = stateData["ExceptionType"],
-                    FailedAt = JobHelper.FromNullableStringTimestamp(stateData["FailedAt"])
+                    FailedAt = JobHelper.DeserializeNullableDateTime(stateData["FailedAt"])
                 }));
         }
 
@@ -179,7 +179,7 @@ namespace HangFire.SqlServer
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
                         ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
                         : null,
-                    SucceededAt = JobHelper.FromNullableStringTimestamp(stateData["SucceededAt"])
+                    SucceededAt = JobHelper.DeserializeNullableDateTime(stateData["SucceededAt"])
                 }));
         }
 
@@ -193,7 +193,7 @@ namespace HangFire.SqlServer
                 (sqlJob, job, stateData) => new DeletedJobDto
                 {
                     Job = job,
-                    DeletedAt = JobHelper.FromNullableStringTimestamp(stateData["DeletedAt"])
+                    DeletedAt = JobHelper.DeserializeNullableDateTime(stateData["DeletedAt"])
                 }));
         }
 
@@ -483,7 +483,7 @@ where j.Id in @jobIds and jq.FetchedAt is null";
                     Job = job,
                     State = sqlJob.StateName,
                     EnqueuedAt = sqlJob.StateName == EnqueuedState.StateName
-                        ? JobHelper.FromNullableStringTimestamp(stateData["EnqueuedAt"])
+                        ? JobHelper.DeserializeNullableDateTime(stateData["EnqueuedAt"])
                         : null
                 });
         }

@@ -34,7 +34,7 @@ namespace HangFire.Redis.Tests
                 redis.AddItemToSet("hangfire:queues", "my-queue");
                 redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
                 redis.SetEntryInHash("hangfire:job:my-job", "Fetched",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow.AddDays(-1)));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow.AddDays(-1)));
 
                 var watcher = CreateWatcher();
 
@@ -66,7 +66,7 @@ namespace HangFire.Redis.Tests
                 // Act
                 watcher.Execute(_token);
 
-                Assert.NotNull(JobHelper.FromNullableStringTimestamp(
+                Assert.NotNull(JobHelper.DeserializeNullableDateTime(
                     redis.GetValueFromHash("hangfire:job:my-job", "Checked")));
             }
         }
@@ -80,7 +80,7 @@ namespace HangFire.Redis.Tests
                 redis.AddItemToSet("hangfire:queues", "my-queue");
                 redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
                 redis.SetEntryInHash("hangfire:job:my-job", "Checked",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow.AddDays(-1)));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow.AddDays(-1)));
 
                 var watcher = CreateWatcher();
 
@@ -105,9 +105,9 @@ namespace HangFire.Redis.Tests
                 redis.AddItemToSet("hangfire:queues", "my-queue");
                 redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
                 redis.SetEntryInHash("hangfire:job:my-job", "Checked",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow.AddDays(-1)));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow.AddDays(-1)));
                 redis.SetEntryInHash("hangfire:job:my-job", "Fetched",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow));
 
                 var watcher = CreateWatcher();
 

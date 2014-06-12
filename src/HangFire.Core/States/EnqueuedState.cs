@@ -73,7 +73,7 @@ namespace HangFire.States
         {
             return new Dictionary<string, string>
             {
-                { "EnqueuedAt", JobHelper.ToStringTimestamp(EnqueuedAt) },
+                { "EnqueuedAt", JobHelper.SerializeDateTime(EnqueuedAt) },
                 { "Queue", Queue }
             };
         }

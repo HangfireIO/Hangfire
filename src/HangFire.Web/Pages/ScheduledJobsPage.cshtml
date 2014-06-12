@@ -80,7 +80,7 @@ else
                         }
                     </td>
                     <td class="min-width">
-                        <span data-moment="@JobHelper.ToStringTimestamp(job.Value.EnqueueAt)">
+                        <span data-moment="@JobHelper.ToTimestamp(job.Value.EnqueueAt)">
                             @job.Value.EnqueueAt
                         </span>
                     </td>
@@ -92,7 +92,7 @@ else
                     <td class="align-right">
                         @if (job.Value.ScheduledAt != null)
                         {
-                            <span data-moment="@JobHelper.ToStringTimestamp(job.Value.ScheduledAt.Value)">
+                            <span data-moment="@JobHelper.ToTimestamp(job.Value.ScheduledAt.Value)">
                                 @job.Value.ScheduledAt
                             </span>
                         }

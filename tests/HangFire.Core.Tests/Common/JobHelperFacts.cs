@@ -6,8 +6,8 @@ namespace HangFire.Core.Tests.Common
 {
     public class JobHelperFacts
     {
-        private DateTime _wellKnownDateTime = new DateTime(1988, 04, 20, 01, 12, 32, DateTimeKind.Utc);
-        private int _wellKnownTimestamp = 577501952;
+        private static readonly DateTime WellKnownDateTime = new DateTime(1988, 04, 20, 01, 12, 32, DateTimeKind.Utc);
+        private const int WellKnownTimestamp = 577501952;
 
         [Fact]
         public void ToJson_EncodesNullValueAsNull()
@@ -44,47 +44,47 @@ namespace HangFire.Core.Tests.Common
         public void ToTimestamp_ReturnsUnixTimestamp_OfTheGivenDateTime()
         {
             var result = JobHelper.ToTimestamp(
-                _wellKnownDateTime);
+                WellKnownDateTime);
 
-            Assert.Equal(_wellKnownTimestamp, result);
+            Assert.Equal(WellKnownTimestamp, result);
         }
 
         [Fact]
         public void ToTimestamp_ReturnsDateTime_ForGivenTimestamp()
         {
-            var result = JobHelper.FromTimestamp(_wellKnownTimestamp);
+            var result = JobHelper.FromTimestamp(WellKnownTimestamp);
 
-            Assert.Equal(_wellKnownDateTime, result);
+            Assert.Equal(WellKnownDateTime, result);
         }
 
         [Fact]
-        public void ToStringTimestamp_ReturnsCorrectValue()
+        public void SerializeDateTime_ReturnsCorrectValue()
         {
-            var result = JobHelper.ToStringTimestamp(_wellKnownDateTime);
+            var result = JobHelper.SerializeDateTime(WellKnownDateTime);
 
-            Assert.Equal(_wellKnownTimestamp.ToString(), result);
+            Assert.Equal(WellKnownTimestamp.ToString(), result);
         }
 
         [Fact]
-        public void FromStringTimestamp_ReturnsCorrectValue()
+        public void DeserializeDateTime_ReturnsCorrectValue()
         {
-            var result = JobHelper.FromStringTimestamp(_wellKnownTimestamp.ToString());
+            var result = JobHelper.DeserializeDateTime(WellKnownTimestamp.ToString());
 
-            Assert.Equal(_wellKnownDateTime, result);
+            Assert.Equal(WellKnownDateTime, result);
         }
 
         [Fact]
-        public void FromNullableStringTimestamp_ReturnsNull_IfNullOrEmptyStringGiven()
+        public void DeserializeNullableDateTime_ReturnsNull_IfNullOrEmptyStringGiven()
         {
-            Assert.Null(JobHelper.FromNullableStringTimestamp(""));
-            Assert.Null(JobHelper.FromNullableStringTimestamp(null));
+            Assert.Null(JobHelper.DeserializeNullableDateTime(""));
+            Assert.Null(JobHelper.DeserializeNullableDateTime(null));
         }
 
         [Fact]
-        public void FromNullableStringTimestamp_ReturnsCorrectValue_OnNonNullString()
+        public void DeserializeNullableDateTime_ReturnsCorrectValue_OnNonNullString()
         {
-            var result = JobHelper.FromNullableStringTimestamp(_wellKnownTimestamp.ToString());
-            Assert.Equal(_wellKnownDateTime, result);
+            var result = JobHelper.DeserializeNullableDateTime(WellKnownTimestamp.ToString());
+            Assert.Equal(WellKnownDateTime, result);
         }
     }
 }

@@ -48,24 +48,24 @@ namespace HangFire.Common
             return Epoch.AddSeconds(value);
         }
 
-        public static string ToStringTimestamp(DateTime value)
+        public static string SerializeDateTime(DateTime value)
         {
             return ToTimestamp(value).ToString();
         }
 
-        public static DateTime FromStringTimestamp(string value)
+        public static DateTime DeserializeDateTime(string value)
         {
             return FromTimestamp(long.Parse(value));
         }
 
-        public static DateTime? FromNullableStringTimestamp(string value)
+        public static DateTime? DeserializeNullableDateTime(string value)
         {
             if (String.IsNullOrEmpty(value))
             {
                 return null;
             }
 
-            return FromStringTimestamp(value);
+            return DeserializeDateTime(value);
         }
     }
 }

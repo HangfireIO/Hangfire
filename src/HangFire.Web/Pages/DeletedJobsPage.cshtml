@@ -87,7 +87,7 @@ else
                             <td class="align-right">
                                 @if (job.Value.DeletedAt.HasValue)
                                 {
-                                    <span data-moment="@JobHelper.ToStringTimestamp(job.Value.DeletedAt.Value)">
+                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.DeletedAt.Value)">
                                         @job.Value.DeletedAt
                                     </span>
                                 }

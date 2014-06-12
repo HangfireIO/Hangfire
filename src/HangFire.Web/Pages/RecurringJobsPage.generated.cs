@@ -289,7 +289,7 @@ WriteLiteral("                                <span data-moment=\"");
 
             
             #line 77 "..\..\Pages\RecurringJobsPage.cshtml"
-                                               Write(JobHelper.ToStringTimestamp(job.NextExecution.Value));
+                                               Write(JobHelper.SerializeDateTime(job.NextExecution.Value));
 
             
             #line default
@@ -354,7 +354,7 @@ WriteLiteral("\">\r\n                                    <span class=\"label lab
 
             
             #line 90 "..\..\Pages\RecurringJobsPage.cshtml"
-                                                                                           Write(JobHelper.ToStringTimestamp(job.LastExecution.Value));
+                                                                                           Write(JobHelper.SerializeDateTime(job.LastExecution.Value));
 
             
             #line default

@@ -96,7 +96,7 @@ namespace HangFire.Redis
             Redis.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                 "Fetched",
-                JobHelper.ToStringTimestamp(DateTime.UtcNow));
+                JobHelper.SerializeDateTime(DateTime.UtcNow));
 
             // Checkpoint #2. The job is in the implicit 'Fetched' state now.
             // This state stores information about fetched time. The job will
@@ -126,7 +126,7 @@ namespace HangFire.Redis
             storedParameters.Add("Method", invocationData.Method);
             storedParameters.Add("ParameterTypes", invocationData.ParameterTypes);
             storedParameters.Add("Arguments", invocationData.Arguments);
-            storedParameters.Add("CreatedAt", JobHelper.ToStringTimestamp(createdAt));
+            storedParameters.Add("CreatedAt", JobHelper.SerializeDateTime(createdAt));
 
             using (var transaction = Redis.CreateTransaction())
             {
@@ -197,7 +197,7 @@ namespace HangFire.Redis
             {
                 Job = job,
                 State = storedData.ContainsKey("State") ? storedData["State"] : null,
-                CreatedAt = JobHelper.FromNullableStringTimestamp(createdAt) ?? DateTime.MinValue,
+                CreatedAt = JobHelper.DeserializeNullableDateTime(createdAt) ?? DateTime.MinValue,
                 LoadException = loadException
             };
         }
@@ -282,7 +282,7 @@ namespace HangFire.Redis
                     new Dictionary<string, string>
                         {
                             { "WorkerCount", context.WorkerCount.ToString(CultureInfo.InvariantCulture) },
-                            { "StartedAt", JobHelper.ToStringTimestamp(DateTime.UtcNow) },
+                            { "StartedAt", JobHelper.SerializeDateTime(DateTime.UtcNow) },
                         }));
 
                 foreach (var queue in context.Queues)
@@ -323,7 +323,7 @@ namespace HangFire.Redis
             Redis.SetEntryInHash(
                 String.Format(RedisStorage.Prefix + "server:{0}", serverId),
                 "Heartbeat",
-                JobHelper.ToStringTimestamp(DateTime.UtcNow));
+                JobHelper.SerializeDateTime(DateTime.UtcNow));
         }
 
         public int RemoveTimedOutServers(TimeSpan timeOut)
@@ -346,8 +346,8 @@ namespace HangFire.Redis
                         x => heartbeats.Add(
                             name,
                             new Tuple<DateTime, DateTime?>(
-                                JobHelper.FromStringTimestamp(x[0]),
-                                JobHelper.FromNullableStringTimestamp(x[1]))));
+                                JobHelper.DeserializeDateTime(x[0]),
+                                JobHelper.DeserializeNullableDateTime(x[1]))));
                 }
 
                 pipeline.Flush();

@@ -53,7 +53,7 @@ namespace HangFire.States
         {
             return new Dictionary<string, string>
             {
-                { "DeletedAt", JobHelper.ToStringTimestamp(DeletedAt) }
+                { "DeletedAt", JobHelper.SerializeDateTime(DeletedAt) }
             };
         }
 

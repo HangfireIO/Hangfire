@@ -48,8 +48,8 @@ namespace HangFire.States
         {
             return new Dictionary<string, string>
             {
-                { "EnqueueAt", JobHelper.ToStringTimestamp(EnqueueAt) },
-                { "ScheduledAt", JobHelper.ToStringTimestamp(ScheduledAt) }
+                { "EnqueueAt", JobHelper.SerializeDateTime(EnqueueAt) },
+                { "ScheduledAt", JobHelper.SerializeDateTime(ScheduledAt) }
             };
         }
 
