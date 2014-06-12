@@ -17,6 +17,13 @@
     <tags>Long-Running AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
     
+0.9.1
+* Changed – Improve resolution of metrics to milliseconds.
+* Fixed – ArgumentNullException on Recurring Jobs page.
+* Fixed – Theoretical FormatException when parsing DateTime arguments.
+* Fixed – MSDTC on server 'XXX' is unavailable exception when trying to open Queues page.
+* Fixed – Modified sql scripts to the accent sensitivity of the SQL Server for the Turkish collation.
+    
 0.9
 * Added – Out-of-the-box support for running recurring jobs. It's incredibly simple!
 * Added – `SqlServerStorage` now also accepts connection string names.
