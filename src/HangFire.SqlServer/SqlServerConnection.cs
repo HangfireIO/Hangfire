@@ -1,5 +1,5 @@
 // This file is part of HangFire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright Â© 2013-2014 Sergey Odinokov.
 // 
 // HangFire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -137,7 +137,7 @@ values (@jobId, @name, @value)";
             if (id == null) throw new ArgumentNullException("id");
 
             const string sql = 
-                @"select InvocationData, StateName, Arguments, CreatedAt from HangFire.Job where id = @id";
+                @"select InvocationData, StateName, Arguments, CreatedAt from HangFire.Job where Id = @id";
 
             var jobData = _connection.Query<SqlJob>(sql, new { id = id })
                 .SingleOrDefault();
