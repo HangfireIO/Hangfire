@@ -58,18 +58,25 @@ namespace HangFire.Core.Tests.Common
         }
 
         [Fact]
-        public void SerializeDateTime_ReturnsCorrectValue()
+        public void SerializeDateTime_ReturnsString_InISO8601Format()
         {
             var result = JobHelper.SerializeDateTime(WellKnownDateTime);
 
-            Assert.Equal(WellKnownTimestamp.ToString(), result);
+            Assert.Equal(WellKnownDateTime.ToString("o"), result);
         }
 
         [Fact]
-        public void DeserializeDateTime_ReturnsCorrectValue()
+        public void DeserializeDateTime_CanDeserialize_Timestamps()
         {
             var result = JobHelper.DeserializeDateTime(WellKnownTimestamp.ToString());
 
+            Assert.Equal(WellKnownDateTime, result);
+        }
+
+        [Fact]
+        public void DeserializeDateTime_CanDeserialize_ISO8601Format()
+        {
+            var result = JobHelper.DeserializeDateTime(WellKnownDateTime.ToString("o"));
             Assert.Equal(WellKnownDateTime, result);
         }
 
