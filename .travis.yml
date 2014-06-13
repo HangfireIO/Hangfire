@@ -6,8 +6,11 @@ language: c
 
 # Make sure build dependencies are installed.
 install:
+ - sudo add-apt-repository ppa:directhex/monoxide && sudo apt-get update
+ - mozroots --import --sync
  - sudo apt-get update -qq
  - sudo apt-get install -qq mono-devel mono-gmcs cli-common-dev
+cache: apt
 
 # Run the build script
 script:
