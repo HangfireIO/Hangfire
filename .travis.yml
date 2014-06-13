@@ -1,0 +1,20 @@
+# Travis-CI Build for HangFire
+# see travis-ci.org for details
+
+# Mono/.NET are not officially supported. The following is a workaround.
+language: c
+
+# Make sure build dependencies are installed.
+install:
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq mono-devel mono-gmcs cli-common-dev
+cache: apt
+
+# Run the build script
+script:
+ - ./build.sh
+
+# Only watch the master branch.
+branches:
+ only:
+   - master

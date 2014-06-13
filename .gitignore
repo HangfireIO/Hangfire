@@ -219,3 +219,4 @@ docs/_build
 
 #Jekyll site builds
 _site
+*.userprefs
