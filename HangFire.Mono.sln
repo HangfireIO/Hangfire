@@ -7,12 +7,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Core.Tests", "test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Web", "src\HangFire.Web\HangFire.Web.csproj", "{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Redis", "src\HangFire.Redis\HangFire.Redis.csproj", "{8F46F57B-3247-4AA7-B330-57AC088547EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC4AB33F-67C8-41B1-BB1A-CD62F44587AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
