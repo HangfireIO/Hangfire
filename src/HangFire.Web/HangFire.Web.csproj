@@ -39,10 +39,6 @@
     <Reference Include="CronExpressionDescriptor">
       <HintPath>..\..\packages\CronExpressionDescriptor.1.10.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -52,6 +48,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
@@ -245,7 +244,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">
-      <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
+      <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
       <Name>HangFire.Core</Name>
     </ProjectReference>
   </ItemGroup>
