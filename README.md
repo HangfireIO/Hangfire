@@ -1,5 +1,10 @@
-HangFire <a href="https://ci.appveyor.com/project/odinserj/hangfire"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4/branch/master?retina=true" /></a> <a href="https://travis-ci.org/odinserj/HangFire"><img src="https://travis-ci.org/odinserj/HangFire.svg?branch=master" alt="Travis CI Build"></a>
+HangFire 
 =========
+
+
+| Windows / .NET | Linux / Mono
+| --- | ---
+| <a href="https://ci.appveyor.com/project/odinserj/hangfire"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4/branch/master?retina=true" /></a> | <a href="https://travis-ci.org/odinserj/HangFire"><img src="https://travis-ci.org/odinserj/HangFire.svg?branch=master" alt="Travis CI Build"></a>
 
 #### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) | [Twitter](https://twitter.com/hangfire_net) | [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
 
