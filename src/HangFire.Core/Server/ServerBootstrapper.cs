@@ -30,7 +30,9 @@ namespace HangFire.Server
         private readonly ServerContext _context;
         private readonly Lazy<IServerSupervisor> _supervisorFactory;
 
+#if !MONO
         private readonly Mutex _globalMutex;
+#endif
 
         public ServerBootstrapper(
             string serverId,
@@ -48,15 +50,19 @@ namespace HangFire.Server
             _context = context;
             _supervisorFactory = supervisorFactory;
 
+#if !MONO
             _globalMutex = new Mutex(false, String.Format(@"Global\{0}_{1}", BootstrapperId, _serverId));
+#endif
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
+#if !MONO
             // Do not allow to run multiple servers with the same ServerId on same
             // machine, fixes https://github.com/odinserj/HangFire/issues/112.
             WaitHandle.WaitAny(new[] { _globalMutex, cancellationToken.WaitHandle });
             cancellationToken.ThrowIfCancellationRequested();
+#endif
             
             try
             {
@@ -87,7 +93,9 @@ namespace HangFire.Server
             }
             finally
             {
+#if !MONO
                 _globalMutex.ReleaseMutex();
+#endif
             }
         }
 
@@ -98,7 +106,9 @@ namespace HangFire.Server
 
         public void Dispose()
         {
+#if !MONO
             _globalMutex.Dispose();
+#endif
         }
     }
 }
