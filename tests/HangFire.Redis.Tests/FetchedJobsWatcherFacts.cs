@@ -8,12 +8,13 @@ namespace HangFire.Redis.Tests
     public class FetchedJobsWatcherFacts
     {
         private readonly RedisStorage _storage;
-        private readonly CancellationToken _token;
+		private readonly CancellationTokenSource _cts;
 
         public FetchedJobsWatcherFacts()
         {
             _storage = new RedisStorage(RedisUtils.GetHostAndPort(), RedisUtils.GetDb());
-            _token = new CancellationToken(true);
+			_cts = new CancellationTokenSource();
+			_cts.Cancel();
         }
 
         [Fact]
@@ -39,7 +40,7 @@ namespace HangFire.Redis.Tests
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -64,7 +65,7 @@ namespace HangFire.Redis.Tests
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
                 Assert.NotNull(JobHelper.DeserializeNullableDateTime(
                     redis.GetValueFromHash("hangfire:job:my-job", "Checked")));
@@ -85,7 +86,7 @@ namespace HangFire.Redis.Tests
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
                 // Arrange
                 Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -112,7 +113,7 @@ namespace HangFire.Redis.Tests
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(1, redis.GetListCount("hangfire:queue:my-queue:dequeued"));

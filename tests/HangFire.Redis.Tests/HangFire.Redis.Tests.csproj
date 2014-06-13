@@ -35,22 +35,6 @@
     <Reference Include="Moq">
       <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Common, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Redis, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Redis.3.9.69\lib\net35\ServiceStack.Redis.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text, Version=3.9.69.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\ServiceStack.Text.3.9.69\lib\net35\ServiceStack.Text.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,6 +44,18 @@
     <Reference Include="System.Xml" />
     <Reference Include="xunit">
       <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common">
+      <HintPath>..\..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>..\..\packages\ServiceStack.Common.3.9.69\lib\net35\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Redis">
+      <HintPath>..\..\packages\ServiceStack.Redis.3.9.69\lib\net35\ServiceStack.Redis.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>..\..\packages\ServiceStack.Text.3.9.69\lib\net35\ServiceStack.Text.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -85,15 +81,15 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\HangFire.Core\HangFire.Core.csproj">
-      <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
+      <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
       <Name>HangFire.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\HangFire.Redis\HangFire.Redis.csproj">
-      <Project>{8f46f57b-3247-4aa7-b330-57ac088547eb}</Project>
+      <Project>{8F46F57B-3247-4AA7-B330-57AC088547EB}</Project>
       <Name>HangFire.Redis</Name>
     </ProjectReference>
     <ProjectReference Include="..\HangFire.Core.Tests\HangFire.Core.Tests.csproj">
-      <Project>{e13c3543-39a3-475c-bb43-2e311e634843}</Project>
+      <Project>{E13C3543-39A3-475C-BB43-2E311E634843}</Project>
       <Name>HangFire.Core.Tests</Name>
     </ProjectReference>
   </ItemGroup>

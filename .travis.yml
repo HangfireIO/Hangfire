@@ -12,6 +12,9 @@ install:
  - mozroots --import --sync
 cache: apt
 
+services:
+  - redis-server
+
 # Run the build script
 script:
  - ./build.sh
