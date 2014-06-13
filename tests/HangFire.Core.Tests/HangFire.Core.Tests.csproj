@@ -38,9 +38,6 @@
     <Reference Include="Moq.Sequences">
       <HintPath>..\..\packages\Moq.Sequences.1.0.1.0\lib\net40\Moq.Sequences.dll</HintPath>
     </Reference>
-    <Reference Include="NCrontab, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
-    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -59,6 +56,9 @@
     <Reference Include="System.Xml" />
     <Reference Include="xunit">
       <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
+    <Reference Include="NCrontab, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -140,7 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\HangFire.Core\HangFire.Core.csproj">
-      <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
+      <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
       <Name>HangFire.Core</Name>
     </ProjectReference>
   </ItemGroup>
