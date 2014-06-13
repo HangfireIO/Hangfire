@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
-using HangFire.SqlServer;
 using HangFire.Storage;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace HangFire.RabbitMQ
+namespace HangFire.SqlServer.RabbitMQ
 {
     public class RabbitMqJobQueue : IPersistentJobQueue, IDisposable
     {
@@ -64,7 +62,7 @@ namespace HangFire.RabbitMQ
                     CreateChannel();
                     message = null;
                 }
-                catch (System.IO.EndOfStreamException ex)
+                catch (System.IO.EndOfStreamException)
                 {
                     CreateChannel();
                     message = null;

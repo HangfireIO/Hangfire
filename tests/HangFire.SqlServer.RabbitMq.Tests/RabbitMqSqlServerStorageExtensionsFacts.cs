@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
-using HangFire.RabbitMQ;
+using HangFire.SqlServer.RabbitMQ;
+using RabbitMQ.Client;
 using Xunit;
 
 namespace HangFire.SqlServer.RabbitMq.Tests
@@ -28,6 +29,7 @@ namespace HangFire.SqlServer.RabbitMq.Tests
         [Fact]
         public void UseRabbitMq_AddsMsmqJobQueueProvider()
         {
+            ConnectionFactory cfa = new ConnectionFactory();
             _storage.UseRabbitMq(conf => conf.HostName = "localhost");
 
             var providerTypes = _storage.QueueProviders.Select(x => x.GetType());

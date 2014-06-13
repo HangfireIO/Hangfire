@@ -1,18 +1,26 @@
 ﻿using System;
-using HangFire.SqlServer;
 using RabbitMQ.Client;
 
-namespace HangFire.RabbitMQ
+namespace HangFire.SqlServer.RabbitMQ
 {
     public static class RabbitMqSqlServerStorageExtensions
     {
-        public static SqlServerStorage UseRabbitMq(this SqlServerStorage storage, Action<ConnectionFactory> configureAction, params string[] queues)
+        public static SqlServerStorage UseRabbitMq(this SqlServerStorage storage, Action<RabbitMqConnectionConfiguration> configureAction, params string[] queues)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (queues == null) throw new ArgumentNullException("queues");
             if (configureAction == null) throw new ArgumentNullException("configureAction");
 
-            var provider = new RabbitMqJobQueueProvider(queues, configureAction);
+            RabbitMqConnectionConfiguration conf = new RabbitMqConnectionConfiguration();
+            configureAction(conf);
+
+            ConnectionFactory cf = new ConnectionFactory();
+            cf.HostName = conf.HostName;
+            cf.Port = conf.Port;
+            cf.UserName = conf.UserName;
+            cf.Password = conf.Password;
+            
+            var provider = new RabbitMqJobQueueProvider(queues, cf);
 
             storage.QueueProviders.Add(provider, queues);
 

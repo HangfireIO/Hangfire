@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
-using HangFire.RabbitMQ;
+using HangFire.SqlServer.RabbitMQ;
 using Xunit;
 
 namespace HangFire.SqlServer.RabbitMq.Tests

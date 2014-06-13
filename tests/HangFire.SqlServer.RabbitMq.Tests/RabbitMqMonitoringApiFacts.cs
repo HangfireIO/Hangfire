@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using HangFire.RabbitMQ;
+using HangFire.SqlServer.RabbitMQ;
 using Xunit;
 
 namespace HangFire.SqlServer.RabbitMq.Tests

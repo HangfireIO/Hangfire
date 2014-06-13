@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using HangFire.RabbitMQ;
+using HangFire.SqlServer.RabbitMQ;
 using RabbitMQ.Client;
 
 namespace HangFire.SqlServer.RabbitMq.Tests

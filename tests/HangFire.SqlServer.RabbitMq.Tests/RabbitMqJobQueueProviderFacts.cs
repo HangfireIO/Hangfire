@@ -1,5 +1,5 @@
 ﻿using System;
-using HangFire.RabbitMQ;
+using HangFire.SqlServer.RabbitMQ;
 using RabbitMQ.Client;
 using Xunit;
 
@@ -32,11 +32,7 @@ namespace HangFire.SqlServer.RabbitMq.Tests
 
         private static RabbitMqJobQueueProvider CreateProvider()
         {
-            Action<ConnectionFactory> configuration =
-                con =>
-                {
-                    con.HostName = HostName;
-                };
+            ConnectionFactory configuration = new ConnectionFactory { HostName = HostName };
 
             return new RabbitMqJobQueueProvider(Queue, configuration);
         }

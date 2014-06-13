@@ -7,8 +7,8 @@
     <ProjectGuid>{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.RabbitMQ</RootNamespace>
-    <AssemblyName>HangFire.RabbitMQ</AssemblyName>
+    <RootNamespace>HangFire.SqlServer.RabbitMQ</RootNamespace>
+    <AssemblyName>HangFire.SqlServer.RabbitMQ</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RabbitMqConnectionConfiguration.cs" />
     <Compile Include="RabbitMqFetchedJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RabbitMqJobQueue.cs" />

@@ -4,7 +4,7 @@ using HangFire.Storage;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace HangFire.RabbitMQ
+namespace HangFire.SqlServer.RabbitMQ
 {
     internal class RabbitMqFetchedJob : IFetchedJob
     {
