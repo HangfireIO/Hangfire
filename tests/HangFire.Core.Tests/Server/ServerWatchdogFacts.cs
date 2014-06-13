@@ -12,7 +12,7 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IStorageConnection> _connection;
         private readonly ServerWatchdogOptions _options;
-        private readonly CancellationToken _token;
+		private readonly CancellationTokenSource _cts;
 
         public ServerWatchdogFacts()
         {
@@ -22,7 +22,8 @@ namespace HangFire.Core.Tests.Server
             {
                 CheckInterval = Timeout.InfiniteTimeSpan // To check that it exits by cancellation token
             };
-            _token = new CancellationToken(true);
+			_cts = new CancellationTokenSource();
+			_cts.Cancel();
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
@@ -45,7 +46,7 @@ namespace HangFire.Core.Tests.Server
         {
             var watchdog = CreateWatchdog();
 
-            watchdog.Execute(_token);
+			watchdog.Execute(_cts.Token);
 
             _storage.Verify(x => x.GetConnection(), Times.Once);
             _connection.Verify(x => x.Dispose(), Times.Once);
@@ -57,7 +58,7 @@ namespace HangFire.Core.Tests.Server
             _connection.Setup(x => x.RemoveTimedOutServers(It.IsAny<TimeSpan>())).Returns(1);
             var watchdog = CreateWatchdog();
 
-            watchdog.Execute(_token);
+			watchdog.Execute(_cts.Token);
 
             _connection.Verify(x => x.RemoveTimedOutServers(_options.ServerTimeout));
         }

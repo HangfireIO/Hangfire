@@ -14,7 +14,7 @@ namespace HangFire.Core.Tests.Server
         private readonly SharedWorkerContext _sharedContext;
         private readonly Mock<WorkerManager> _manager;
         private readonly Mock<IServerSupervisor>[] _workerSupervisors;
-        
+		private readonly CancellationTokenSource _cts;
 
         public WorkerManagerFacts()
         {
@@ -37,6 +37,9 @@ namespace HangFire.Core.Tests.Server
 
             _manager.Setup(x => x.CreateWorkerSupervisor(It.IsNotNull<WorkerContext>()))
                 .Returns((WorkerContext context) => _workerSupervisors[context.WorkerNumber - 1].Object);
+
+			_cts = new CancellationTokenSource();
+			_cts.Cancel();
         }
 
         [Fact]
@@ -67,28 +70,28 @@ namespace HangFire.Core.Tests.Server
             Assert.NotNull(worker);
         }
 
-        [Fact]
+		[Fact]
         public void Execute_CallsStartMethodOnAllWorkers()
         {
-            _manager.Object.Execute(new CancellationToken(true));
+			_manager.Object.Execute(_cts.Token);
 
             _workerSupervisors[0].Verify(x => x.Start());
             _workerSupervisors[1].Verify(x => x.Start());
         }
 
-        [Fact]
+		[Fact]
         public void Execute_CallsStopMethodOnAllWorkers()
         {
-            _manager.Object.Execute(new CancellationToken(true));
+			_manager.Object.Execute(_cts.Token);
 
             _workerSupervisors[0].Verify(x => x.Stop());
             _workerSupervisors[1].Verify(x => x.Stop());
         }
 
-        [Fact]
+		[Fact]
         public void Execute_CallsDisposeMethodOnAllWorkers()
         {
-            _manager.Object.Execute(new CancellationToken(true));
+			_manager.Object.Execute(_cts.Token);
 
             _workerSupervisors[0].Verify(x => x.Dispose());
             _workerSupervisors[1].Verify(x => x.Dispose());

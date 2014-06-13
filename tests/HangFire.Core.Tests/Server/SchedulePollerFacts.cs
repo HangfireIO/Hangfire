@@ -15,14 +15,15 @@ namespace HangFire.Core.Tests.Server
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly Mock<IStateMachineFactory> _stateMachineFactory;
-        private readonly CancellationToken _token;
+		private readonly CancellationTokenSource _cts;
 
         public SchedulePollerFacts()
         {
             _storage = new Mock<JobStorage>();
             _connection = new Mock<IStorageConnection>();
             _stateMachine = new Mock<IStateMachine>();
-            _token = new CancellationToken(true);
+			_cts = new CancellationTokenSource();
+			_cts.Cancel();
 
             _stateMachineFactory = new Mock<IStateMachineFactory>();
             _stateMachineFactory.Setup(x => x.Create(It.IsNotNull<IStorageConnection>()))
@@ -58,7 +59,7 @@ namespace HangFire.Core.Tests.Server
         {
             var scheduler = CreateScheduler();
 
-            scheduler.Execute(_token);
+			scheduler.Execute(_cts.Token);
 
             _storage.Verify(x => x.GetConnection());
             _connection.Verify(x => x.Dispose());
@@ -69,7 +70,7 @@ namespace HangFire.Core.Tests.Server
         {
             var scheduler = CreateScheduler();
 
-            scheduler.Execute(_token);
+			scheduler.Execute(_cts.Token);
 
             _stateMachine.Verify(x => x.TryToChangeState(
                 JobId,
@@ -84,7 +85,7 @@ namespace HangFire.Core.Tests.Server
                 "schedule", 0, It.Is<double>(time => time > 0))).Returns((string)null);
             var scheduler = CreateScheduler();
 
-            scheduler.Execute(_token);
+			scheduler.Execute(_cts.Token);
 
             _stateMachine.Verify(
                 x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()),

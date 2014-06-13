@@ -12,13 +12,14 @@ namespace HangFire.Core.Tests.Server
         private const string ServerId = "server";
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly CancellationToken _token;
+		private readonly CancellationTokenSource _cts;
 
         public ServerHeartbeatFacts()
         {
             _storage = new Mock<JobStorage>();
             _connection = new Mock<IStorageConnection>();
-            _token = new CancellationToken(true);
+			_cts = new CancellationTokenSource();
+			_cts.Cancel();
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
@@ -46,7 +47,7 @@ namespace HangFire.Core.Tests.Server
         {
             var server = CreateHeartbeat();
 
-            server.Execute(_token);
+			server.Execute(_cts.Token);
 
             _storage.Verify(x => x.GetConnection(), Times.Once);
             _connection.Verify(x => x.Dispose(), Times.Once);
@@ -57,7 +58,7 @@ namespace HangFire.Core.Tests.Server
         {
             var server = CreateHeartbeat();
 
-            server.Execute(_token);
+			server.Execute(_cts.Token);
 
             _connection.Verify(x => x.Heartbeat(ServerId));
         }
