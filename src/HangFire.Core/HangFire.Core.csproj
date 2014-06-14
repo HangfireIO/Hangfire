@@ -69,6 +69,27 @@
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Cron.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\DashboardRouteCollection.cs" />
+    <Compile Include="Dashboard\DashboardRouteCollectionExtensions.cs" />
+    <Compile Include="Dashboard\GlobalDashboardRoutes.cs" />
+    <Compile Include="Dashboard\NonEscapedString.cs" />
+    <Compile Include="Dashboard\IRequestDispatcher.cs" />
+    <Compile Include="Dashboard\Pages\DashboardPage.generated.cs">
+      <DependentUpon>DashboardPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\LayoutPage.cs">
+      <DependentUpon>LayoutPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\LayoutPage.generated.cs">
+      <DependentUpon>LayoutPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\RazorPage.cs" />
+    <Compile Include="Dashboard\RazorPageDispatcher.cs" />
+    <Compile Include="Dashboard\RequestExtensions.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
@@ -201,6 +222,14 @@
     <Compile Include="Storage\StateData.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Dashboard\Pages\DashboardPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\LayoutPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>LayoutPage.generated.cs</LastGenOutput>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
