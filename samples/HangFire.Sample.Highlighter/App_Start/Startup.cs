@@ -12,7 +12,7 @@ namespace HangFire.Sample.Highlighter
         public void Configuration(IAppBuilder app)
         {
             app.MapSignalR();
-            app.Map("~/hangfire", subApp => subApp.Use<DashboardMiddleware>());
+            app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>());
         }
     }
 }
