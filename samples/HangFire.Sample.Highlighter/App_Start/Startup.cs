@@ -1,4 +1,5 @@
-﻿using HangFire.Sample.Highlighter;
+﻿using HangFire.Dashboard;
+using HangFire.Sample.Highlighter;
 using Microsoft.Owin;
 using Owin;
 
@@ -11,6 +12,7 @@ namespace HangFire.Sample.Highlighter
         public void Configuration(IAppBuilder app)
         {
             app.MapSignalR();
+            app.Map("~/hangfire", subApp => subApp.Use<DashboardMiddleware>());
         }
     }
 }

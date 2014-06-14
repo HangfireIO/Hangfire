@@ -36,6 +36,9 @@
     <DocumentationFile>bin\Release\HangFire.Core.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Owin">
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net40\Microsoft.Owin.dll</HintPath>
+    </Reference>
     <Reference Include="NCrontab">
       <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
     </Reference>
@@ -65,6 +68,7 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Cron.cs" />
+    <Compile Include="Dashboard\DashboardMiddleware.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
