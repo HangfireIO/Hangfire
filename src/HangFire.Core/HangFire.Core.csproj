@@ -68,9 +68,11 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Cron.cs" />
+    <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
     <Compile Include="Dashboard\DashboardRouteCollection.cs" />
     <Compile Include="Dashboard\DashboardRouteCollectionExtensions.cs" />
+    <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
     <Compile Include="Dashboard\GlobalDashboardRoutes.cs" />
     <Compile Include="Dashboard\NonEscapedString.cs" />
     <Compile Include="Dashboard\IRequestDispatcher.cs" />
@@ -222,6 +224,9 @@
     <Compile Include="Storage\StateData.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
     <None Include="Dashboard\Pages\DashboardPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
@@ -232,7 +237,39 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\css\bootstrap.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\css\hangfire.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\css\rickshaw.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\bootstrap.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\d3.layout.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\d3.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\hangfire.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\jquery-1.10.2.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\moment.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
+  </ItemGroup>
   <Import Project="..\Common\HangFire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

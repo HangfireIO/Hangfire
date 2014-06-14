@@ -77,7 +77,7 @@ WriteLiteral(" - HangFire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta
 
             
             #line 15 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/css/styles.css"));
+                            Write(Request.LinkTo("/css"));
 
             
             #line default
@@ -645,7 +645,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.HangFire = windo
 
             
             #line 178 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                Write(Request.LinkTo("/js/scripts.js"));
+                Write(Request.LinkTo("/js"));
 
             
             #line default

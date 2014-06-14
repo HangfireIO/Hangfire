@@ -41,7 +41,7 @@ namespace HangFire.Dashboard
                     return new Tuple<IRequestDispatcher, Match>(dispatcher.Item2, match);
                 }
             }
-
+            
             return null;
         }
     }
