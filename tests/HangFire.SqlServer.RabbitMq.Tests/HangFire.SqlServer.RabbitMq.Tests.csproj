@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RabbitMqConnectionConfigurationFacts.cs" />
     <Compile Include="RabbitMqSqlServerStorageExtensionsFacts.cs" />
     <Compile Include="RabbitMqMonitoringApiFacts.cs" />
     <Compile Include="RabbitMqJobQueueFacts.cs" />

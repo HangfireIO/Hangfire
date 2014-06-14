@@ -17,7 +17,7 @@ namespace HangFire.SqlServer.RabbitMQ
             ConnectionFactory cf = new ConnectionFactory();
             cf.HostName = conf.HostName;
             cf.Port = conf.Port;
-            cf.UserName = conf.UserName;
+            cf.UserName = conf.Username;
             cf.Password = conf.Password;
             
             var provider = new RabbitMqJobQueueProvider(queues, cf);

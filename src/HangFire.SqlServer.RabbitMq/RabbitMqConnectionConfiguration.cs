@@ -1,42 +1,45 @@
+using System;
 using RabbitMQ.Client;
 
 namespace HangFire.SqlServer.RabbitMQ
 {
     public class RabbitMqConnectionConfiguration
     {
+        public const string DefaultHost = "localhost";
         public const int DefaultPort = AmqpTcpEndpoint.UseDefaultPort;
         public const string DefaultUser = "guest";
         public const string DefaultPassword = "guest";
         public const string DefaultVirtualHost = "/";
 
         public RabbitMqConnectionConfiguration()
-            : this("localhost", DefaultPort, DefaultUser, DefaultPassword)
+            : this(DefaultHost, DefaultPort, DefaultUser, DefaultPassword)
         {
-            VirtualHost = DefaultVirtualHost;
         }
 
         public RabbitMqConnectionConfiguration(string host)
             : this(host, DefaultPort, DefaultUser, DefaultPassword)
         {
-            HostName = host;
         }
 
         public RabbitMqConnectionConfiguration(string host, int port)
             : this(host, port, DefaultUser, DefaultPassword)
         {
-            HostName = host;
         }
 
-        public RabbitMqConnectionConfiguration(string host, int port, string userName, string password)
+        public RabbitMqConnectionConfiguration(string host, int port, string username, string password)
         {
+            if (host == null) throw new ArgumentNullException("host");
+            if (username == null) throw new ArgumentNullException("username");
+            if (password == null) throw new ArgumentNullException("password");
+
             HostName = host;
-            UserName = userName;
+            Username = username;
             Password = password;
             Port = port;
             VirtualHost = DefaultVirtualHost;
         }
 
-        public string UserName { get; set; }
+        public string Username { get; set; }
 
         public string Password { get; set; }
 
