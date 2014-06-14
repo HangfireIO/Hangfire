@@ -27,7 +27,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="@Request.LinkTo("/")">HangFire Monitor</a>
+                        <a class="navbar-brand" href="@Request.LinkTo("/")">HangFire Dashboard</a>
                     </div>
                     <div class="collapse navbar-collapse">
                         <ul class="nav navbar-nav navbar-right">
@@ -53,7 +53,7 @@
                     }
 
                     <div id="stats" class="list-group">
-                        <a class="list-group-item @(Request.Path.Value.Equals("/") ? "active" : null)"
+                        <a class="list-group-item @(Request.Path.Value.Equals("/") || Request.Path.Value.Length == 0 ? "active" : null)"
                            href="@Request.LinkTo("/")">
                             <span class="glyphicon glyphicon-dashboard"></span>
                             Dashboard

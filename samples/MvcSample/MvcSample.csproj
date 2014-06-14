@@ -170,10 +170,6 @@
       <Project>{c02bb718-2ae4-434c-8668-c894ff663fce}</Project>
       <Name>ConsoleSample</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.Web\HangFire.Web.csproj">
-      <Project>{bc4ab33f-67c8-41b1-bb1a-cd62f44587aa}</Project>
-      <Name>HangFire.Web</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

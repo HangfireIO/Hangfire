@@ -214,10 +214,6 @@
       <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
       <Name>HangFire.SqlServer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.Web\HangFire.Web.csproj">
-      <Project>{bc4ab33f-67c8-41b1-bb1a-cd62f44587aa}</Project>
-      <Name>HangFire.Web</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201404132000304_AddSnippet.resx">

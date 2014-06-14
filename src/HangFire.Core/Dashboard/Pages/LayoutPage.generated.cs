@@ -107,7 +107,7 @@ WriteLiteral(@""" />
             
             #line default
             #line hidden
-WriteLiteral(@""">HangFire Monitor</a>
+WriteLiteral(@""">HangFire Dashboard</a>
                     </div>
                     <div class=""collapse navbar-collapse"">
                         <ul class=""nav navbar-nav navbar-right"">
@@ -146,7 +146,7 @@ WriteLiteral("\r\n                    <div id=\"stats\" class=\"list-group\">\r\
 
             
             #line 56 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(Request.Path.Value.Equals("/") ? "active" : null);
+                                              Write(Request.Path.Value.Equals("/") || Request.Path.Value.Length == 0 ? "active" : null);
 
             
             #line default

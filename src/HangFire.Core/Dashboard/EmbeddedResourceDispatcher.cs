@@ -32,11 +32,8 @@ namespace HangFire.Dashboard
             context.Response.Expires = DateTime.MaxValue;
 
             WriteResponse(context.Response);
-            
-            // TODO: replace with .NET 4.5's Task.FromResult
-            var taskSource = new TaskCompletionSource<bool>();
-            taskSource.SetResult(true);
-            return taskSource.Task;
+
+            return TaskHelper.FromResult(true);
         }
 
         protected virtual void WriteResponse(IOwinResponse response)
