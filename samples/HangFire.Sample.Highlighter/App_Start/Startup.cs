@@ -1,5 +1,8 @@
-﻿using HangFire.Dashboard;
+﻿using System.Configuration;
+using System.Threading;
+using HangFire.Dashboard;
 using HangFire.Sample.Highlighter;
+using HangFire.SqlServer;
 using Microsoft.Owin;
 using Owin;
 
@@ -13,6 +16,17 @@ namespace HangFire.Sample.Highlighter
         {
             app.MapSignalR();
             app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>(GlobalDashboardRoutes.Routes));
+
+            JobStorage.Current = new SqlServerStorage("HighlighterDb");
+
+            var server = new BackgroundJobServer();
+
+            var context = new OwinContext(app.Properties);
+            var token = context.Get<CancellationToken>("host.OnAppDisposing");
+            if (token != CancellationToken.None)
+            {
+                token.Register(server.Stop);
+            }
         }
     }
 }
