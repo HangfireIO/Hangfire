@@ -41,5 +41,7 @@
       <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
     </dependencies>
   </metadata>
-  <files></files>
+  <files>
+    <file src="Content\readme.txt" target="readme.txt" />
+  </files>
 </package>
