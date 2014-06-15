@@ -138,7 +138,7 @@ namespace HangFire.Dashboard
             }
         }
 
-        private static readonly Regex _reStackTrace = new Regex(@"
+        private static readonly Regex ReStackTrace = new Regex(@"
                 ^
                 \s*
                 \w+ \s+ 
@@ -166,7 +166,7 @@ namespace HangFire.Dashboard
 
             int anchor = 0;
 
-            foreach (Match match in _reStackTrace.Matches(text))
+            foreach (Match match in ReStackTrace.Matches(text))
             {
                 HtmlEncode(text.Substring(anchor, match.Index - anchor), writer);
                 MarkupStackFrame(text, match, writer);

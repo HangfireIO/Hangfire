@@ -14,20 +14,35 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Text.RegularExpressions;
+
 namespace HangFire.Dashboard
 {
-    public class NonEscapedString
+    public static class RouteCollectionExtensions
     {
-        private readonly string _value;
-
-        public NonEscapedString(string value)
+        public static void AddRazorPage(
+            this RouteCollection routes, 
+            string pathTemplate, 
+            Func<Match, RazorPage> pageFunc)
         {
-            _value = value;
+            routes.Add(pathTemplate, new RazorPageDispatcher(pageFunc));
         }
 
-        public override string ToString()
+        public static void AddCommand(
+            this RouteCollection routes,
+            string pathTemplate,
+            Func<Match, bool> command)
         {
-            return _value;
+            routes.Add(pathTemplate, new CommandDispatcher(command));
+        }
+
+        public static void AddBatchCommand(
+            this RouteCollection routes,
+            string pathTemplate,
+            Action<string> command)
+        {
+            routes.Add(pathTemplate, new BatchCommandDispatcher(command));
         }
     }
 }

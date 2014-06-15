@@ -59,7 +59,7 @@ namespace HangFire.Dashboard
         {
             if (string.IsNullOrEmpty(textToAppend))
                 return;
-            _content.Append(textToAppend); ;
+            _content.Append(textToAppend);
         }
 
         protected virtual void Write(object value)

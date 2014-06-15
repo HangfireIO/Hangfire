@@ -78,8 +78,8 @@
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
-    <Compile Include="Dashboard\DashboardRouteCollection.cs" />
-    <Compile Include="Dashboard\DashboardRouteCollectionExtensions.cs" />
+    <Compile Include="Dashboard\RouteCollection.cs" />
+    <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
     <Compile Include="Dashboard\GlobalDashboardRoutes.cs" />
     <Compile Include="Dashboard\HtmlHelper.cs" />
@@ -188,7 +188,6 @@
     </Compile>
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
     <Compile Include="Dashboard\RequestExtensions.cs" />
-    <Compile Include="Dashboard\TaskHelper.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />

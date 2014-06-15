@@ -132,11 +132,6 @@ namespace HangFire.Dashboard
             return Span("string", value);
         }
 
-        private static string WrapComment(string value)
-        {
-            return Span("comment", value);
-        }
-
         private static string Span(string @class, string value)
         {
             return String.Format(
