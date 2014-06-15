@@ -14,20 +14,44 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Linq;
+using System;
+using HangFire.Annotations;
 using HangFire.Dashboard;
-using HangFire.Dashboard.Authorization;
+using HangFire.Server;
 using Owin;
 
 namespace HangFire
 {
     public static class OwinExtensions
     {
-        public static void MapHangFireDashboard(this IAppBuilder app)
+        public static void UseHangFire(
+            [NotNull] this IAppBuilder app,
+            [NotNull] Action<IStartupConfiguration> configurationAction)
         {
-            app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>(
-                GlobalDashboardRoutes.Routes,
-                Enumerable.Empty<IAuthorizationFilter>()));
+            if (app == null) throw new ArgumentNullException("app");
+            if (configurationAction == null) throw new ArgumentNullException("configurationAction");
+
+            var configuration = new StartupConfiguration();
+            configurationAction(configuration);
+
+            if (configuration.Storage == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            JobStorage.Current = configuration.Storage;
+
+            if (configuration.Activator != null)
+            {
+                JobActivator.Current = configuration.Activator;
+            }
+
+            foreach (var server in configuration.Servers)
+            {
+                app.RunHangFireServer(server);
+            }
+
+            app.MapHangFireDashboard(configuration.DashboardPath);
         }
     }
 }

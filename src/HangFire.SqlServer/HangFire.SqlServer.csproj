@@ -84,6 +84,7 @@
     <Compile Include="SqlServerStorageOptions.cs" />
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />
+    <Compile Include="SqlServerStorageConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

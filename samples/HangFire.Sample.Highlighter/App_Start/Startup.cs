@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using HangFire.Sample.Highlighter;
+﻿using HangFire.Sample.Highlighter;
 using HangFire.SqlServer;
 using Microsoft.Owin;
 using Owin;
@@ -13,19 +12,12 @@ namespace HangFire.Sample.Highlighter
         public void Configuration(IAppBuilder app)
         {
             app.MapSignalR();
-            app.MapHangFireDashboard();
 
-            JobStorage.Current = new SqlServerStorage("HighlighterDb");
-
-            var server = new BackgroundJobServer();
-            server.Start();
-
-            var context = new OwinContext(app.Properties);
-            var token = context.Get<CancellationToken>("host.OnAppDisposing");
-            if (token != CancellationToken.None)
+            app.UseHangFire(config =>
             {
-                token.Register(server.Stop);
-            }
+                config.UseSqlServerStorage("HighlighterDb");
+                config.UseServer();
+            });
         }
     }
 }

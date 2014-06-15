@@ -192,6 +192,7 @@
     </Compile>
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
     <Compile Include="Dashboard\RequestExtensions.cs" />
+    <Compile Include="IStartupConfiguration.cs" />
     <Compile Include="OwinExtensions.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
@@ -241,6 +242,8 @@
     <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
     <Compile Include="Server\UtcNowDateTimeProvider.cs" />
+    <Compile Include="StartupConfiguration.cs" />
+    <Compile Include="StartupConfigurationExtensions.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
