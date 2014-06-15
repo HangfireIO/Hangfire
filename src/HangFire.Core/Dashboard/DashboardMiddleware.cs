@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using HangFire.Annotations;
-using HangFire.Dashboard.Authorization;
 using Microsoft.Owin;
 
 namespace HangFire.Dashboard

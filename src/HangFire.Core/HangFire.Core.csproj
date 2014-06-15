@@ -74,14 +74,12 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Cron.cs" />
-    <Compile Include="Dashboard\Authorization\ClaimsBasedAuthorizationFilter.cs" />
-    <Compile Include="Dashboard\Authorization\AuthorizationFilter.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
-    <Compile Include="Dashboard\Authorization\IAuthorizationFilter.cs" />
-    <Compile Include="Dashboard\Authorization\LocalRequestsOnlyAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\IAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
     <Compile Include="Dashboard\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
@@ -428,6 +426,7 @@
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Common\HangFire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

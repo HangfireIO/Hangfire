@@ -15,7 +15,6 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using HangFire.Dashboard.Authorization;
 using Owin;
 
 namespace HangFire.Dashboard

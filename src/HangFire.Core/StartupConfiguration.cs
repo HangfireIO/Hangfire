@@ -16,7 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using HangFire.Dashboard.Authorization;
+using HangFire.Dashboard;
 
 namespace HangFire
 {

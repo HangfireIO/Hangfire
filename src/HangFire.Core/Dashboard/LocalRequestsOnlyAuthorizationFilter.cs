@@ -17,7 +17,7 @@
 using System;
 using Microsoft.Owin;
 
-namespace HangFire.Dashboard.Authorization
+namespace HangFire.Dashboard
 {
     public class LocalRequestsOnlyAuthorizationFilter : IAuthorizationFilter
     {

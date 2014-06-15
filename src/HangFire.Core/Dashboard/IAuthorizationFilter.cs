@@ -16,7 +16,7 @@
 
 using Microsoft.Owin;
 
-namespace HangFire.Dashboard.Authorization
+namespace HangFire.Dashboard
 {
     public interface IAuthorizationFilter
     {
