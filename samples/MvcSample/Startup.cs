@@ -1,4 +1,5 @@
-﻿using HangFire.Dashboard;
+﻿using System.Linq;
+using HangFire.Dashboard;
 using HangFire.SqlServer;
 using HangFire.SqlServer.Msmq;
 using Microsoft.Owin;
@@ -12,7 +13,9 @@ namespace MvcSample
     {
         public void Configuration(IAppBuilder app)
         {
-            app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>(GlobalDashboardRoutes.Routes));
+            app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>(
+                GlobalDashboardRoutes.Routes,
+                Enumerable.Empty<IAuthorizationFilter>()));
 
             var storage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");

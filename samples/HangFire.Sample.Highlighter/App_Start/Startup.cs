@@ -1,4 +1,4 @@
-﻿using System.Configuration;
+﻿using System.Linq;
 using System.Threading;
 using HangFire.Dashboard;
 using HangFire.Sample.Highlighter;
@@ -15,7 +15,9 @@ namespace HangFire.Sample.Highlighter
         public void Configuration(IAppBuilder app)
         {
             app.MapSignalR();
-            app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>(GlobalDashboardRoutes.Routes));
+            app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>(
+                GlobalDashboardRoutes.Routes,
+                Enumerable.Empty<IAuthorizationFilter>()));
 
             JobStorage.Current = new SqlServerStorage("HighlighterDb");
 

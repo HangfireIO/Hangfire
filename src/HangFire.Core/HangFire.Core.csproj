@@ -78,6 +78,7 @@
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
