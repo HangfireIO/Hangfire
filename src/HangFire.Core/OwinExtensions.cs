@@ -34,21 +34,21 @@ namespace HangFire
             var configuration = new StartupConfiguration();
             configurationAction(configuration);
 
-            if (configuration.Storage == null)
-            {
-                throw new InvalidOperationException();
-            }
-
-            JobStorage.Current = configuration.Storage;
-
             if (configuration.Activator != null)
             {
                 JobActivator.Current = configuration.Activator;
             }
 
+            if (configuration.Storage == null)
+            {
+                throw new InvalidOperationException("");
+            }
+
+            JobStorage.Current = configuration.Storage;
+
             foreach (var server in configuration.Servers)
             {
-                app.RunHangFireServer(server);
+                app.RunHangFireServer(server());
             }
 
             app.MapHangFireDashboard(configuration.DashboardPath);

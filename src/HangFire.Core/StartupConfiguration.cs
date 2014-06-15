@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 
 namespace HangFire
@@ -22,14 +23,14 @@ namespace HangFire
     {
         public StartupConfiguration()
         {
-            Servers = new List<BackgroundJobServer>();
+            Servers = new List<Func<BackgroundJobServer>>();
             DashboardPath = "/hangfire";
         }
 
         public string DashboardPath { get; private set; }
         public JobStorage Storage { get; private set; }
         public JobActivator Activator { get; private set; }
-        public List<BackgroundJobServer> Servers { get; private set; }
+        public List<Func<BackgroundJobServer>> Servers { get; private set; }
 
         public void UseDashboardPath(string path)
         {
@@ -38,15 +39,15 @@ namespace HangFire
 
         public void UseStorage(JobStorage storage)
         {
-            Storage = Storage;
+            Storage = storage;
         }
 
         public void UseActivator(JobActivator activator)
         {
-            Activator = Activator;
+            Activator = activator;
         }
 
-        public void UseServer(BackgroundJobServer server)
+        public void UseServer(Func<BackgroundJobServer> server)
         {
             Servers.Add(server);
         }

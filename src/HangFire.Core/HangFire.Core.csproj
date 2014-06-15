@@ -82,6 +82,7 @@
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
     <Compile Include="Dashboard\Authorization\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\Authorization\LocalRequestsOnlyAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
@@ -240,6 +241,7 @@
     <Compile Include="Common\IJobFilterProvider.cs" />
     <Compile Include="Server\RecurringJobScheduler.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
+    <Compile Include="Server\ServerOwinExtensions.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
     <Compile Include="Server\UtcNowDateTimeProvider.cs" />
     <Compile Include="StartupConfiguration.cs" />

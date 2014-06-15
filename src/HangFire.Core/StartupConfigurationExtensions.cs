@@ -20,7 +20,7 @@ namespace HangFire
     {
         public static void UseServer(this IStartupConfiguration configuration)
         {
-            configuration.UseServer(new BackgroundJobServer());
+            configuration.UseServer(() => new BackgroundJobServer());
         }
     }
 }
