@@ -18,22 +18,11 @@
     <tags>AspNet SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
     
-0.9.1
-* Changed – Improve resolution of metrics to milliseconds.
-* Fixed – ArgumentNullException on Recurring Jobs page.
-* Fixed – Theoretical FormatException when parsing DateTime arguments.
-* Fixed – MSDTC on server 'XXX' is unavailable exception when trying to open Queues page.
-* Fixed – Modified sql scripts to the accent sensitivity of the SQL Server for the Turkish collation.
-    
-0.9
-* Added – Out-of-the-box support for running recurring jobs. It's incredibly simple!
-* Added – `SqlServerStorage` now also accepts connection string names.
-* Changed – `IBackgroundJobClient` does not implement the `IDisposable` interface anymore.
-* Changed – `IMonitoringApi` does not implement the `IDisposable` interface anymore.
-* Changed – Improve `DateTime` resolution for job arguments by including milliseconds.
-* Changed – Removed deprecated `RetryAttribute` class. Please, use `AutomaticRetryAttribute`.
-* Fixed – `KeyNotFoundException` when accessing job cancellation token with Redis
-* Fixed – Theoretical race condition that makes HangFire Server invisible from Monitor.
+1.0.0-alpha1
+* Added – OWIN implementation for HangFire Dashboard.
+* Added – Custom authorization filters support for dashboard.
+* Added – Unified bootstrapper to start HangFire in web applications.
+* Changed – HangFire now requires .NET Framework 4.5.
     </releaseNotes>
     <dependencies>
       <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
