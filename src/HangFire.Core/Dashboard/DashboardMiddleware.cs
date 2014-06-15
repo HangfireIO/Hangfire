@@ -54,16 +54,7 @@ namespace HangFire.Dashboard
             {
                 if (!filter.Authorize(context))
                 {
-                    if (context.Authentication.User != null
-                        && context.Authentication.User.Identity.IsAuthenticated)
-                    {
-                        context.Response.StatusCode = (int) HttpStatusCode.Forbidden;
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                    }
-
+                    context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
                     return Task.FromResult(false);
                 }
             }
