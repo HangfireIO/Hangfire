@@ -22,5 +22,50 @@ namespace HangFire
         {
             configuration.UseServer(() => new BackgroundJobServer());
         }
+
+        public static void UseServer(
+            this IStartupConfiguration configuration,
+            int workerCount)
+        {
+            var options = new BackgroundJobServerOptions
+            {
+                WorkerCount = workerCount
+            };
+
+            configuration.UseServer(() => new BackgroundJobServer(options));
+        }
+
+        public static void UseServer(
+            this IStartupConfiguration configuration,
+            params string[] queues)
+        {
+            var options = new BackgroundJobServerOptions
+            {
+                Queues = queues
+            };
+
+            configuration.UseServer(() => new BackgroundJobServer(options));
+        }
+
+        public static void UseServer(
+            this IStartupConfiguration configuration,
+            int workerCount,
+            params string[] queues)
+        {
+            var options = new BackgroundJobServerOptions
+            {
+                WorkerCount = workerCount,
+                Queues = queues
+            };
+
+            configuration.UseServer(() => new BackgroundJobServer(options));
+        }
+
+        public static void UseServer(
+            this IStartupConfiguration configuration,
+            BackgroundJobServerOptions options)
+        {
+            configuration.UseServer(() => new BackgroundJobServer(options));
+        }
     }
 }
