@@ -10,6 +10,7 @@ User's Guide
 
    background-methods/index
    background-processing/index
+   best-practices
    storage-configuration/index
    deployment-to-production/index
    extensibility/index
