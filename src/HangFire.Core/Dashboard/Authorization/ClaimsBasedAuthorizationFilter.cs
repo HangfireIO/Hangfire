@@ -14,20 +14,29 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Linq;
-using HangFire.Dashboard;
-using HangFire.Dashboard.Authorization;
-using Owin;
+using System;
+using HangFire.Annotations;
+using Microsoft.Owin;
 
-namespace HangFire
+namespace HangFire.Dashboard.Authorization
 {
-    public static class OwinExtensions
+    public class ClaimsBasedAuthorizationFilter : IAuthorizationFilter
     {
-        public static void MapHangFireDashboard(this IAppBuilder app)
+        private readonly string _type;
+        private readonly string _value;
+
+        public ClaimsBasedAuthorizationFilter([NotNull] string type, [NotNull] string value)
         {
-            app.Map("/hangfire", subApp => subApp.Use<DashboardMiddleware>(
-                GlobalDashboardRoutes.Routes,
-                Enumerable.Empty<IAuthorizationFilter>()));
+            if (type == null) throw new ArgumentNullException("type");
+            if (value == null) throw new ArgumentNullException("value");
+
+            _type = type;
+            _value = value;
+        }
+
+        public bool Authorize(IOwinContext context)
+        {
+            return context.Authentication.User.HasClaim(_type, _value);
         }
     }
 }

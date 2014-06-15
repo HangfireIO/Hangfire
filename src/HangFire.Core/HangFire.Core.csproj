@@ -74,11 +74,14 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Cron.cs" />
+    <Compile Include="Dashboard\Authorization\ClaimsBasedAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\Authorization\RoleBasedAuthorizationFilter.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
-    <Compile Include="Dashboard\IAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\Authorization\IAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\Authorization\LocalRequestsOnlyAuthorizationFilter.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />

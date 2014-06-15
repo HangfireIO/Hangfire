@@ -14,12 +14,30 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using Microsoft.Owin;
 
-namespace HangFire.Dashboard
+namespace HangFire.Dashboard.Authorization
 {
-    public interface IAuthorizationFilter
+    public class LocalRequestsOnlyAuthorizationFilter : IAuthorizationFilter
     {
-        bool Authorize(IOwinContext context);
+        public bool Authorize(IOwinContext context)
+        {
+            var remoteAddress = context.Request.RemoteIpAddress;
+
+            // if unknown, assume not local
+            if (String.IsNullOrEmpty(remoteAddress))
+                return false;
+
+            // check if localhost
+            if (remoteAddress == "127.0.0.1" || remoteAddress == "::1")
+                return true;
+
+            // compare with local address
+            if (remoteAddress == context.Request.LocalIpAddress)
+                return true;
+
+            return false;
+        }
     }
 }
