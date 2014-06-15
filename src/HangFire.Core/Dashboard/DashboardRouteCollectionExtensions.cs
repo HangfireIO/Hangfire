@@ -22,5 +22,13 @@ namespace HangFire.Dashboard
         {
             routes.Add(pathTemplate, new CommandDispatcher(command));
         }
+
+        public static void AddBatchCommand(
+            this DashboardRouteCollection routes,
+            string pathTemplate,
+            Action<string> command)
+        {
+            routes.Add(pathTemplate, new BatchCommandDispatcher(command));
+        }
     }
 }

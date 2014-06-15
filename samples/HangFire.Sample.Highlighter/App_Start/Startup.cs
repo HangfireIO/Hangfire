@@ -20,6 +20,7 @@ namespace HangFire.Sample.Highlighter
             JobStorage.Current = new SqlServerStorage("HighlighterDb");
 
             var server = new BackgroundJobServer();
+            server.Start();
 
             var context = new OwinContext(app.Properties);
             var token = context.Get<CancellationToken>("host.OnAppDisposing");

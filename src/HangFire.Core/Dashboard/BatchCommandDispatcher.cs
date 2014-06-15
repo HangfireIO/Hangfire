@@ -15,13 +15,14 @@ namespace HangFire.Dashboard
             _command = command;
         }
 
-        public Task Dispatch(IOwinContext context, Match match)
+        public async Task Dispatch(IOwinContext context, Match match)
         {
-            /*var jobIds = request.Form.GetValues("jobs[]");
+            var form = await context.Request.ReadFormAsync();
+            var jobIds = form.GetValues("jobs[]");
 
             if (jobIds == null)
             {
-                Response.StatusCode = 422;
+                context.Response.StatusCode = 422;
                 return;
             }
 
@@ -30,8 +31,7 @@ namespace HangFire.Dashboard
                 _command(jobId);
             }
 
-            Response.StatusCode = (int)HttpStatusCode.NoContent;*/
-            return TaskHelper.FromResult(false);
+            context.Response.StatusCode = (int) HttpStatusCode.NoContent;
         }
     }
 }
