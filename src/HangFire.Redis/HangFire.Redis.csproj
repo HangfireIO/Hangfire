@@ -77,7 +77,7 @@
     <Compile Include="RedisStorageOptions.cs" />
     <Compile Include="FailedStateHandler.cs" />
     <Compile Include="ProcessingStateHandler.cs" />
-    <Compile Include="RedisStorageConfigurationExtensions.cs" />
+    <Compile Include="RedisBootstrapperConfigurationExtensions.cs" />
     <Compile Include="SucceededStateHandler.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -22,16 +22,23 @@ using Owin;
 
 namespace HangFire
 {
-    public static class OwinExtensions
+    public static class OwinBootstrapper
     {
+        /// <summary>
+        /// Bootstraps HangFire components using the given configuration
+        /// action and maps HangFire Dashboard to the app builder pipeline
+        /// at the configured path ('/hangfire' by default).
+        /// </summary>
+        /// <param name="app">The app builder</param>
+        /// <param name="configurationAction">Configuration action</param>
         public static void UseHangFire(
             [NotNull] this IAppBuilder app,
-            [NotNull] Action<IStartupConfiguration> configurationAction)
+            [NotNull] Action<IBootstrapperConfiguration> configurationAction)
         {
             if (app == null) throw new ArgumentNullException("app");
             if (configurationAction == null) throw new ArgumentNullException("configurationAction");
 
-            var configuration = new StartupConfiguration();
+            var configuration = new BootstrapperConfiguration();
             configurationAction(configuration);
 
             if (configuration.Activator != null)

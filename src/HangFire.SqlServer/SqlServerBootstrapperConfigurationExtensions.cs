@@ -16,10 +16,17 @@
 
 namespace HangFire.SqlServer
 {
-    public static class SqlServerStorageConfigurationExtensions
+    public static class SqlServerBootstrapperConfigurationExtensions
     {
+        /// <summary>
+        /// Tells the bootstrapper to use SQL Server as a job storage,
+        /// that can be accessed using the given connection string or 
+        /// its name.
+        /// </summary>
+        /// <param name="configuration">Configuration</param>
+        /// <param name="nameOrConnectionString">Connection string or its name</param>
         public static SqlServerStorage UseSqlServerStorage(
-            this IStartupConfiguration configuration,
+            this IBootstrapperConfiguration configuration,
             string nameOrConnectionString)
         {
             var storage = new SqlServerStorage(nameOrConnectionString);
@@ -28,8 +35,16 @@ namespace HangFire.SqlServer
             return storage;
         }
 
+        /// <summary>
+        /// Tells the bootstrapper to use SQL Server as a job storage
+        /// with the given options, that can be accessed using the specified
+        /// connection string or its name.
+        /// </summary>
+        /// <param name="configuration">Configuration</param>
+        /// <param name="nameOrConnectionString">Connection string or its name</param>
+        /// <param name="options">Advanced options</param>
         public static SqlServerStorage UseSqlServerStorage(
-            this IStartupConfiguration configuration,
+            this IBootstrapperConfiguration configuration,
             string nameOrConnectionString,
             SqlServerStorageOptions options)
         {

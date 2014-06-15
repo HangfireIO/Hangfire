@@ -20,9 +20,9 @@ using HangFire.Dashboard.Authorization;
 
 namespace HangFire
 {
-    internal class StartupConfiguration : IStartupConfiguration
+    internal class BootstrapperConfiguration : IBootstrapperConfiguration
     {
-        public StartupConfiguration()
+        public BootstrapperConfiguration()
         {
             Servers = new List<Func<BackgroundJobServer>>();
             DashboardPath = "/hangfire";
