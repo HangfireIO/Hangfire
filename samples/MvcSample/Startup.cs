@@ -12,9 +12,14 @@ namespace MvcSample
     {
         public void Configuration(IAppBuilder app)
         {
-            app.UseHangFire(config => config
-                .UseSqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;")
-                .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical"));
+            app.UseHangFire(config =>
+            {
+                config.UseAuthorizationFilters();
+
+                config
+                    .UseSqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;")
+                    .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+            });
         }
     }
 }

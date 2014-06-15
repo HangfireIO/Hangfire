@@ -15,6 +15,7 @@ namespace HangFire.Sample.Highlighter
 
             app.UseHangFire(config =>
             {
+                config.UseAuthorizationFilters();
                 config.UseSqlServerStorage("HighlighterDb");
                 config.UseServer();
             });
