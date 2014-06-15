@@ -1,0 +1,54 @@
+﻿@* Generator: Template TypeVisibility: Internal *@
+@using System
+@using System.Linq
+@using Common
+@using Pages
+@using HangFire.Storage
+@using Storage.Monitoring
+@inherits RazorPage
+@{
+    Layout = new LayoutPage { Title = "Servers" };
+    
+    var monitor = JobStorage.Current.GetMonitoringApi();
+    IList<ServerDto> servers = monitor.Servers();    
+}
+
+@if (servers.Count == 0)
+{
+    <div class="alert alert-warning">
+        There are no active servers. Background tasks will not be processed.
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Workers</th>
+                <th>Queues</th>
+                <th>Started</th>
+                <th>Heartbeat</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var server in servers)
+            {
+                <tr>
+                    <td>@server.Name.ToUpperInvariant()</td>
+                    <td>@server.WorkersCount</td>
+                    <td>@HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel)))</td>
+                    <td data-moment="@JobHelper.ToTimestamp(server.StartedAt)">@server.StartedAt</td>
+                    <td>
+                        @if (server.Heartbeat.HasValue)
+                        {
+                            <span data-moment="@JobHelper.ToTimestamp(server.Heartbeat.Value)">
+                                @server.Heartbeat
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

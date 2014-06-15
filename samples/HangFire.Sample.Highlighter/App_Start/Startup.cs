@@ -1,4 +1,5 @@
 ﻿using HangFire.Sample.Highlighter;
+using HangFire.SqlServer;
 using Microsoft.Owin;
 using Owin;
 
@@ -11,6 +12,13 @@ namespace HangFire.Sample.Highlighter
         public void Configuration(IAppBuilder app)
         {
             app.MapSignalR();
+
+            app.UseHangFire(config =>
+            {
+                config.UseAuthorizationFilters();
+                config.UseSqlServerStorage("HighlighterDb");
+                config.UseServer();
+            });
         }
     }
 }

@@ -234,8 +234,7 @@
         <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
       <!-- Copy transformations to artifacts/{Configuration}/package-src/Content/ -->
-      <Artifacts Include="$(ContentPath)\HangFireConfig.cs.pp;
-                          $(ContentPath)\web.config.transform">
+      <Artifacts Include="$(ContentPath)\readme.txt">
         <Destination>$(PackageSrcDir)\Content</Destination>
       </Artifacts>
       <!-- Copy tools to artifacts/{Configuration}/package-src/Tools -->
