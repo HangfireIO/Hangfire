@@ -36,8 +36,9 @@
 * Fixed – Theoretical race condition that makes HangFire Server invisible from Monitor.
     </releaseNotes>
     <dependencies>
+      <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
       <dependency id="HangFire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="HangFire.Web" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
     </dependencies>
   </metadata>
   <files></files>

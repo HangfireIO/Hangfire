@@ -75,7 +75,7 @@
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Cron.cs" />
     <Compile Include="Dashboard\Authorization\ClaimsBasedAuthorizationFilter.cs" />
-    <Compile Include="Dashboard\Authorization\RoleBasedAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\Authorization\AuthorizationFilter.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
