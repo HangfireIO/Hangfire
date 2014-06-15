@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Linq;
+using System.Collections.Generic;
 using HangFire.Dashboard.Authorization;
 using Owin;
 
@@ -22,11 +22,14 @@ namespace HangFire.Dashboard
 {
     public static class DashboardOwinExtensions
     {
-        public static void MapHangFireDashboard(this IAppBuilder app, string dashboardPath)
+        public static void MapHangFireDashboard(
+            this IAppBuilder app, 
+            string dashboardPath,
+            IEnumerable<IAuthorizationFilter> authorizationFilters)
         {
             app.Map(dashboardPath, subApp => subApp.Use<DashboardMiddleware>(
                 GlobalDashboardRoutes.Routes,
-                Enumerable.Empty<IAuthorizationFilter>()));
+                authorizationFilters));
         }
     }
 }

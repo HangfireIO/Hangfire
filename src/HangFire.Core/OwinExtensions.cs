@@ -46,12 +46,17 @@ namespace HangFire
 
             JobStorage.Current = configuration.Storage;
 
+            foreach (var filter in configuration.Filters)
+            {
+                GlobalJobFilters.Filters.Add(filter);
+            }
+
             foreach (var server in configuration.Servers)
             {
                 app.RunHangFireServer(server());
             }
 
-            app.MapHangFireDashboard(configuration.DashboardPath);
+            app.MapHangFireDashboard(configuration.DashboardPath, configuration.AuthorizationFilters);
         }
     }
 }

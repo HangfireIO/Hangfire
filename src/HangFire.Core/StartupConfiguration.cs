@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using HangFire.Dashboard.Authorization;
 
 namespace HangFire
 {
@@ -25,12 +26,31 @@ namespace HangFire
         {
             Servers = new List<Func<BackgroundJobServer>>();
             DashboardPath = "/hangfire";
+
+            AuthorizationFilters = new IAuthorizationFilter[]
+            {
+                new LocalRequestsOnlyAuthorizationFilter()
+            };
+
+            Filters = new List<object>();
         }
 
         public string DashboardPath { get; private set; }
         public JobStorage Storage { get; private set; }
         public JobActivator Activator { get; private set; }
         public List<Func<BackgroundJobServer>> Servers { get; private set; }
+        public IAuthorizationFilter[] AuthorizationFilters { get; private set; }
+        public List<object> Filters { get; private set; } 
+
+        public void UseAuthorizationFilters(params IAuthorizationFilter[] filters)
+        {
+            AuthorizationFilters = filters;
+        }
+
+        public void UseFilter(object filter)
+        {
+            Filters.Add(filter);
+        }
 
         public void UseDashboardPath(string path)
         {

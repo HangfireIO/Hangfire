@@ -15,11 +15,14 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using HangFire.Dashboard.Authorization;
 
 namespace HangFire
 {
     public interface IStartupConfiguration
     {
+        void UseAuthorizationFilters(params IAuthorizationFilter[] filters);
+        void UseFilter(object filter);
         void UseDashboardPath(string path);
         void UseStorage(JobStorage storage);
         void UseActivator(JobActivator activator);
