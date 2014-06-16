@@ -7,7 +7,7 @@ HangFire
 | --- | ---
 | <a href="https://ci.appveyor.com/project/odinserj/hangfire"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4/branch/master?retina=true" /></a> | <a href="https://travis-ci.org/odinserj/HangFire"><img src="https://travis-ci.org/odinserj/HangFire.svg?branch=master" alt="Travis CI Build"></a>
 
-Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
+Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. CPU and I/O intensive, long-running and short-running jobs are supported. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
 
 HangFire provides unified programming model to handle background tasks in a **reliable way** and run them on shared hosting, dedicated hosting or in cloud. You can start with a simple setup and grow computational power for background jobs with time for these scenarios:
 
@@ -30,48 +30,57 @@ HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/r
 Installation
 -------------
 
-See the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide to learn how to install and use HangFire for the first time.
-
 HangFire is available as a NuGet package. So, install it using the NuGet Package Console window:
 
 ```
 PM> Install-Package HangFire
 ```
 
-After installing, open the `~/App_Start/HangFireConfig.cs` file and modify the connection string:
+After install, update your existing [OWIN Startup](http://www.asp.net/aspnet/overview/owin-and-katana/owin-startup-class-detection) file with the following lines of code. If you do not have this class in your project or don't know what is it, please read the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide to learn about how to install HangFire.
 
 ```csharp
-JobStorage.Current = new SqlServerStorage("<name or connection string>");
+app.UseHangFire(config =>
+{
+    config.UseSqlServerStorage("<connection string or its name>");
+    config.UseServer();
+});
 ```
 
 Usage
 ------
 
-**Fire-and-forget tasks**
+This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io).
+
+[**Fire-and-forget tasks**](http://docs.hangfire.io/en/latest/users-guide/background-methods/calling-methods-in-background.html)
+
+Enqueued background jobs are being executed inside a dedicated worker pool threads as soon as possible, shortening your request processing time.
 
 ```csharp
 BackgroundJob.Enqueue(() => Console.WriteLine("Simple!"));
 ```
 
-**Delayed tasks**
+[**Delayed tasks**](http://docs.hangfire.io/en/latest/users-guide/background-methods/calling-methods-with-delay.html)
+
+Scheduled background jobs are being executed only after given amount of time.
 
 ```csharp
 BackgroundJob.Schedule(() => Console.WriteLine("Reliable!"), TimeSpan.FromDays(7));
 ```
 
-**Recurring tasks**
+[**Recurring tasks**](http://docs.hangfire.io/en/latest/users-guide/background-methods/performing-recurrent-tasks.html)
+
+Recurring jobs were never been simpler, just call the following method to perform any kind of recurring task using the [CRON expressions](http://en.wikipedia.org/wiki/Cron#CRON_expression).
 
 ```csharp
 RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
 ```
 
-**Run them inside ASP.NET app…**
+**Process them inside a web application…**
 
-Forget about AppDomain unloads, Web Garden & Web Farm issues – HangFire is reliable for ASP.NET from scratch, even on Shared Hosting!
+You can process background tasks in any OWIN compatible application frameworks, including [ASP.NET MVC](http://www.asp.net/mvc), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – HangFire is reliable for web applications from scratch, even on shared hosting.
 
 ```csharp
-var server = new AspNetBackgroundJobServer();
-server.Start();
+app.UseHangFire(config => config.UseServer());
 ```
 
 **… or anywhere else**
@@ -82,8 +91,6 @@ In console application, Windows Service, Azure Worker Role, etc.
 var server = new BackgroundJobServer();
 server.Start();
 ```
-
-This is incomplete list of features, to see all of them, check the [official site](http://hangfire.io) and the [documentation](http://docs.hangfire.io).
 
 Questions? Problems?
 ---------------------
