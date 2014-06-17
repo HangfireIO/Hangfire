@@ -282,7 +282,7 @@ WriteLiteral("                                <span data-moment=\"");
 
             
             #line 76 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                               Write(JobHelper.SerializeDateTime(job.NextExecution.Value));
+                                               Write(JobHelper.ToTimestamp(job.NextExecution.Value));
 
             
             #line default
@@ -347,7 +347,7 @@ WriteLiteral("\">\r\n                                    <span class=\"label lab
 
             
             #line 89 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                                                           Write(JobHelper.SerializeDateTime(job.LastExecution.Value));
+                                                                                           Write(JobHelper.ToTimestamp(job.LastExecution.Value));
 
             
             #line default
@@ -357,7 +357,7 @@ WriteLiteral("\" style=\"");
 
             
             #line 89 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                                                                                                                           Write(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null);
+                                                                                                                                                     Write(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null);
 
             
             #line default

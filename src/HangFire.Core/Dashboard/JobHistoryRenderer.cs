@@ -167,10 +167,12 @@ namespace HangFire.Dashboard
 
         private static NonEscapedString ScheduledRenderer(IDictionary<string, string> stateData)
         {
+            var enqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]);
+
             return new NonEscapedString(String.Format(
                 "<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{0}\">{1}</dd></dl>",
-                stateData["EnqueueAt"],
-                JobHelper.DeserializeDateTime(stateData["EnqueueAt"])));
+                JobHelper.ToTimestamp(enqueueAt),
+                enqueueAt));
         }
     }
 }
