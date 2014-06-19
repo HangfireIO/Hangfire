@@ -16,7 +16,7 @@ This section is for demonstration purposes only – to show that logging feature
 
   .. code-block:: powershell
 
-     PM> Install-Package Common.Logging.NLog20
+     PM> Install-Package Common.Logging.NLog
 
 2. Configure the installed logging adapter:
 
