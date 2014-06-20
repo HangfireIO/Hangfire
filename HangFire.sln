@@ -43,6 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E68
 		nuspecs\HangFire.Redis.nuspec = nuspecs\HangFire.Redis.nuspec
 		nuspecs\HangFire.SqlServer.MSMQ.nuspec = nuspecs\HangFire.SqlServer.MSMQ.nuspec
 		nuspecs\HangFire.SqlServer.nuspec = nuspecs\HangFire.SqlServer.nuspec
+		nuspecs\HangFire.SqlServer.RabbitMQ.nuspec = nuspecs\HangFire.SqlServer.RabbitMQ.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2BF00-C473-48A5-B2A7-5A3DE0910FCF}"
