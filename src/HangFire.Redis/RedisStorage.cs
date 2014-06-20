@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Common.Logging;
+using HangFire.Redis.Annotations;
 using HangFire.Server;
 using HangFire.States;
 using HangFire.Storage;
@@ -72,7 +73,7 @@ namespace HangFire.Redis
 
         public override IMonitoringApi GetMonitoringApi()
         {
-            return new RedisMonitoringApi(_pooledManager.GetClient());
+            return new RedisMonitoringApi(_pooledManager);
         }
 
         public override IStorageConnection GetConnection()
@@ -102,6 +103,13 @@ namespace HangFire.Redis
         public override string ToString()
         {
             return String.Format("redis://{0}/{1}", HostAndPort, Db);
+        }
+
+        internal static string GetRedisKey([NotNull] string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            return Prefix + key;
         }
     }
 }

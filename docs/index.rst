@@ -1,9 +1,9 @@
 HangFire Documentation
 =======================
 
-HangFire gives you a simple way to kick off **long-running processes** from the **ASP.NET request processing pipeline**. Asynchronous, transparent, reliable, efficient processing. No Windows service/ Task Scheduler required. Even ASP.NET is not required.
+Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
 
-Improve the responsiveness of your web application. Do not force your users to wait when the application performs the following tasks:
+HangFire provides unified programming model to handle background tasks in a **reliable way** and run them on shared hosting, dedicated hosting or in cloud. You can start with a simple setup and grow computational power for background jobs with time for these scenarios:
 
 - mass notifications/newsletter;
 - batch import from xml, csv, json;
@@ -11,17 +11,13 @@ Improve the responsiveness of your web application. Do not force your users to w
 - firing off web hooks;
 - deleting users;
 - building different graphs;
-- image processing;
+- image/video processing;
+- purge temporary files;
+- recurring automated reports;
+- database maintenance;
 - *…and so on.*
 
-Just wrap your long-running process to a method and instruct HangFire to create a **background job** based on this method. All backround jobs are being saved to a **persistent storage** (`SQL Server
-<http://www.microsoft.com/sql‎>`_ or `Redis
-<http://redis.io>`_) and performed on a dedicated **worker thread** in a reliable way inside or outside of your ASP.NET application.
-
-HangFire is a .NET Framework alternative to `Resque
-<https://github.com/resque/resque>`_, `Sidekiq
-<http://sidekiq.org>`_, `delayed_job
-<https://github.com/collectiveidea/delayed_job>`_.
+HangFire is a .NET Framework alternative to `Sidekiq <http://sidekiq.org>`_, `Resque <https://github.com/resque/resque>`_, `delayed_job <https://github.com/collectiveidea/delayed_job>`_.
 
 .. image:: http://hangfire.io/img/succeeded-job.png
 
@@ -29,10 +25,11 @@ Contents
 ---------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    pages
    quickstart
    features
    advfeatures
    tutorials/index
+   users-guide/index

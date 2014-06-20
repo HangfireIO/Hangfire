@@ -19,6 +19,7 @@ namespace HangFire.Storage.Monitoring
     public class StatisticsDto
     {
         public long Servers { get; set; }
+        public long Recurring { get; set; }
         public long Enqueued { get; set; }
         public long Queues { get; set; }
         public long Scheduled { get; set; }

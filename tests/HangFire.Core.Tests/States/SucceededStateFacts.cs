@@ -26,7 +26,7 @@ namespace HangFire.Core.Tests.States
 
             var data = state.SerializeData();
 
-            Assert.Equal(JobHelper.ToStringTimestamp(state.SucceededAt), data["SucceededAt"]);
+            Assert.Equal(JobHelper.SerializeDateTime(state.SucceededAt), data["SucceededAt"]);
             Assert.Equal("123", data["PerformanceDuration"]);
             Assert.Equal("11", data["Latency"]);
         }

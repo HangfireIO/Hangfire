@@ -271,7 +271,7 @@ Or locally by applying the attribute to a method:
    }
 
 Fix-deploy-retry
---------------
+-----------------
 
 If you made a mistake in your ``NotifyNewComment`` method, you can fix it and restart the failed background job via web interface. Try to do it:
 

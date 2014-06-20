@@ -136,7 +136,7 @@ namespace HangFire.Redis
                 connection.Redis.SetEntryInHash(
                     String.Format(RedisStorage.Prefix + "job:{0}", jobId),
                     "Checked",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow));
 
                 // Checkpoint #1-2. The job is in the implicit 'Checked' state.
                 // It will be re-queued after the CheckedTimeout will be expired.
@@ -158,7 +158,7 @@ namespace HangFire.Redis
         private bool TimedOutByFetchedTime(string fetchedTimestamp)
         {
             return !String.IsNullOrEmpty(fetchedTimestamp) &&
-                   (DateTime.UtcNow - JobHelper.FromStringTimestamp(fetchedTimestamp) > _options.JobTimeout);
+                   (DateTime.UtcNow - JobHelper.DeserializeDateTime(fetchedTimestamp) > _options.JobTimeout);
         }
 
         private bool TimedOutByCheckedTime(string fetchedTimestamp, string checkedTimestamp)
@@ -172,7 +172,7 @@ namespace HangFire.Redis
             }
 
             return !String.IsNullOrEmpty(checkedTimestamp) &&
-                   (DateTime.UtcNow - JobHelper.FromStringTimestamp(checkedTimestamp) > _options.CheckedTimeout);
+                   (DateTime.UtcNow - JobHelper.DeserializeDateTime(checkedTimestamp) > _options.CheckedTimeout);
         }
     }
 }

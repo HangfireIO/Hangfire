@@ -5,7 +5,7 @@ using HangFire.States;
 
 namespace HangFire
 {
-    public class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
+    public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
     {
         private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
         private const int DefaultRetryAttempts = 10;

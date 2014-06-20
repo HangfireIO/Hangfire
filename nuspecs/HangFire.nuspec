@@ -10,54 +10,27 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
     <description>
-      Background job system for ASP.NET – a reliable way to kick off long-running tasks from the request processing pipeline as fire-and-forget jobs. No Windows service / Task Scheduler required. Even ASP.NET is not required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
+      Incredibly easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
+      Backed by Redis, SQL Server, SQL Azure or MSMQ.
       http://hangfire.io/
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
-    <tags>Long-Running AspNet SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
+    <tags>AspNet SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
-
-0.8.3
-* Added – Cancellation token for job methods that throws on server shutdown and job aborts.
-* Added – Place interrupted job back to its queue if possible.
-* Fixed – Can not delete jobs when method or class was removed.
-* Fixed – NullReferenceException in Monitor.
-* Fixed – SqlException when changing state of a job with absent target method.
     
-0.8.2
-* Added – Batch operations on jobs for HangFire Monitor.
-* Added – Retry and delete buttons for almost every page of HangFire Monitor.
-* Added – Duration and latency metrics for succeeded jobs.
-* Added – Display state transition latencies on job details page.
-* Added – DisableConcurrentExecution filter.
-* Misc – Tables in HangFire Monitor received some love.
-
-0.8.1
-* Added – MSMQ queues support for SQL Server job storage.
-* Added – "Deleted" state for jobs, when we don't want to process them anymore.
-* Added – "Requeue" and "Delete" buttons on a job page in HF Monitor.
-* Added – Logging job failures: warning - there is a retry, error - no attempts left.
-* Added – BackgroundJob.Requeue and BackgroundJob.Delete methods.
-* Changed – Set InvisibleTimeout back from 5 to 30 minutes.
-* Changed – RetryAttribute is deprecated. Use AutomaticRetryAttribute instead.
-
-0.8
-* Added – New server component subsystem - more reliability, more logging, less blocking on stop.
-* Added – Added monitor access authorization using ASP.NET RoleProvider.
-* Removed – Deprecated job format based on classes is not supported anymore (obsolete since 0.6.0).
-* Changed – Monitor access restricted to local requests only by default.
-* Changed – Some breaking changes for public API. Please, read GitHub release notes for details.
-* Changed – Default automatic retry attempts count set to 10.
-* Changed – Namespace optimization to reduce number of needed 'using' statements.
-* Fixed – PreserveCultureAttribute does not work.
-* Fixed – SqlServerStorageOptions.QueuePollInterval is not working.
-* Fixed – Rare 'arithmetic overflow error for data type tinyint, value = -1' exception.
-* Fixed – Numerous minor issues catched with new unit tests.
+1.0.0-alpha1
+* Added – OWIN implementation for HangFire Dashboard.
+* Added – Custom authorization filters support for dashboard.
+* Added – Unified bootstrapper to start HangFire in web applications.
+* Changed – HangFire now requires .NET Framework 4.5.
     </releaseNotes>
     <dependencies>
+      <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
       <dependency id="HangFire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="HangFire.Web" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
     </dependencies>
   </metadata>
-  <files></files>
+  <files>
+    <file src="Content\readme.txt" target="readme.txt" />
+  </files>
 </package>

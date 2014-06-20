@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -323,8 +324,15 @@ namespace HangFire.Common
 
                 if (argument != null)
                 {
-                    var converter = TypeDescriptor.GetConverter(argument.GetType());
-                    value = converter.ConvertToInvariantString(argument);
+                    if (argument is DateTime)
+                    {
+                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        var converter = TypeDescriptor.GetConverter(argument.GetType());
+                        value = converter.ConvertToInvariantString(argument);
+                    }
                 }
 
                 // Logic, related to optional parameters and their default values, 

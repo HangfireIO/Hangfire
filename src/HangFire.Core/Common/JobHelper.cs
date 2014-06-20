@@ -15,6 +15,7 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
 using Newtonsoft.Json;
 
 namespace HangFire.Common
@@ -48,24 +49,30 @@ namespace HangFire.Common
             return Epoch.AddSeconds(value);
         }
 
-        public static string ToStringTimestamp(DateTime value)
+        public static string SerializeDateTime(DateTime value)
         {
-            return ToTimestamp(value).ToString();
+            return value.ToString("o", CultureInfo.InvariantCulture);
         }
 
-        public static DateTime FromStringTimestamp(string value)
+        public static DateTime DeserializeDateTime(string value)
         {
-            return FromTimestamp(long.Parse(value));
+            long timestamp;
+            if (long.TryParse(value, out timestamp))
+            {
+                return FromTimestamp(timestamp);
+            }
+
+            return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
         }
 
-        public static DateTime? FromNullableStringTimestamp(string value)
+        public static DateTime? DeserializeNullableDateTime(string value)
         {
             if (String.IsNullOrEmpty(value))
             {
                 return null;
             }
 
-            return FromStringTimestamp(value);
+            return DeserializeDateTime(value);
         }
     }
 }

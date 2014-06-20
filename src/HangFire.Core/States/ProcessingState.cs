@@ -47,7 +47,7 @@ namespace HangFire.States
         {
             return new Dictionary<string, string>
             {
-                { "StartedAt", JobHelper.ToStringTimestamp(StartedAt) },
+                { "StartedAt", JobHelper.SerializeDateTime(StartedAt) },
                 { "ServerId", ServerId },
                 { "WorkerNumber", WorkerNumber.ToString(CultureInfo.InvariantCulture) }
             };

@@ -47,7 +47,7 @@ namespace HangFire.SqlServer
         public void Dispose()
         {
         }
-        
+
         public void Commit()
         {
             using (var transaction = new TransactionScope(
@@ -203,6 +203,36 @@ delete from cte where row_num not between @start and @end and [Key] = @key";
             QueueCommand(x => x.Execute(
                 trimSql,
                 new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
+        }
+
+        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+
+            const string sql = @"
+merge HangFire.Hash as Target
+using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
+on Target.[Key] = Source.[Key] and Target.Field = Source.Field
+when matched then update set Value = Source.Value
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+
+            foreach (var keyValuePair in keyValuePairs)
+            {
+                var pair = keyValuePair;
+
+                QueueCommand(
+                    x => x.Execute(sql, new { key = key, field = pair.Key, value = pair.Value }));
+            }
+        }
+
+        public void RemoveHash(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            QueueCommand(x => x.Execute(
+                "delete from HangFire.Hash where [Key] = @key",
+                new { key }));
         }
 
         internal void QueueCommand(Action<SqlConnection> action)

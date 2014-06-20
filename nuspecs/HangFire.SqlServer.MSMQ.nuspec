@@ -11,7 +11,7 @@
     <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
     <description>MSMQ queues support for SQL Server job storage implementation for HangFire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2014 Sergey Odinokov</copyright>
-    <tags>MSMQ SqlServer Async Background Fire-And-Forget Jobs Tasks Workers Threading Queue</tags>
+    <tags>HangFire SqlServer MSMQ</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
     <dependencies>
       <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />

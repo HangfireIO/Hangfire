@@ -61,7 +61,7 @@ namespace HangFire.Core.Tests.States
             var data = state.SerializeData();
 
             Assert.Equal(1, data.Count);
-            Assert.True(JobHelper.FromStringTimestamp(data["DeletedAt"]) != default(DateTime));
+            Assert.True(JobHelper.DeserializeDateTime(data["DeletedAt"]) != default(DateTime));
         }
 
         private static DeletedState CreateState()

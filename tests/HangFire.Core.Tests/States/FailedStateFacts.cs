@@ -28,7 +28,7 @@ namespace HangFire.Core.Tests.States
 
             var serializedData = state.SerializeData();
 
-            Assert.Equal(JobHelper.ToStringTimestamp(state.FailedAt), serializedData["FailedAt"]);
+            Assert.Equal(JobHelper.SerializeDateTime(state.FailedAt), serializedData["FailedAt"]);
             Assert.Equal("System.Exception", serializedData["ExceptionType"]);
             Assert.Equal("Message", serializedData["ExceptionMessage"]);
             Assert.Equal(state.Exception.ToString(), serializedData["ExceptionDetails"]);

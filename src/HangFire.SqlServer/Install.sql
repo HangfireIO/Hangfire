@@ -15,7 +15,7 @@
 -- License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 2;
+SET @TARGET_SCHEMA_VERSION = 3;
 
 PRINT 'Installing HangFire SQL objects...';
 
@@ -270,18 +270,40 @@ BEGIN
 		SET @CURRENT_SCHEMA_VERSION = 2;
 	END
 
-	/*IF @CURRENT_SCHEMA_VERSION = 2
+	IF @CURRENT_SCHEMA_VERSION = 2
 	BEGIN
 		PRINT 'Installing schema version 3';
 
-		-- Drop unused index. It is commented, because I don't want to add a
-		-- migration only to drop one index. But in a future migration it should
-		-- be uncommented.
 		DROP INDEX [IX_HangFire_JobQueue_JobIdAndQueue] ON [HangFire].[JobQueue];
+		PRINT 'Dropped index [IX_HangFire_JobQueue_JobIdAndQueue]';
+
+		CREATE TABLE [HangFire].[Hash](
+			[Id] [int] IDENTITY(1,1) NOT NULL,
+			[Key] [nvarchar](100) NOT NULL,
+			[Field] [nvarchar](100) NOT NULL,
+			[Value] [nvarchar](max) NULL,
+			[ExpireAt] [datetime2](7) NULL,
+		
+			CONSTRAINT [PK_HangFire_Hash] PRIMARY KEY CLUSTERED ([Id] ASC)
+		);
+		PRINT 'Created table [HangFire].[Hash]';
+
+		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_Hash_Key_Field] ON [HangFire].[Hash] (
+			[Key] ASC,
+			[Field] ASC
+		);
+		PRINT 'Created index [UX_HangFire_Hash_Key_Field]';
+
+		SET @CURRENT_SCHEMA_VERSION = 3;
+	END
+
+	/*IF @CURRENT_SCHEMA_VERSION = 3
+	BEGIN
+		PRINT 'Installing schema version 4';
 
 		-- Insert migration here
 
-		SET @CURRENT_SCHEMA_VERSION = 3;
+		SET @CURRENT_SCHEMA_VERSION = 4;
 	END*/
 
 	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

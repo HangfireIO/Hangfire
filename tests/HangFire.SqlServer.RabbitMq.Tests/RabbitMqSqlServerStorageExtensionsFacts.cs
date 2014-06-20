@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using HangFire.SqlServer.RabbitMQ;
-using RabbitMQ.Client;
 using Xunit;
 
 namespace HangFire.SqlServer.RabbitMq.Tests
@@ -13,7 +12,7 @@ namespace HangFire.SqlServer.RabbitMq.Tests
         public RabbitMqSqlServerStorageExtensionsFacts()
         {
             _storage = new SqlServerStorage(
-                String.Empty,
+                @"Server=.\sqlexpress;Database=TheDatabase;Trusted_Connection=True;",
                 new SqlServerStorageOptions { PrepareSchemaIfNecessary = false });
         }
 

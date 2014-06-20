@@ -18,7 +18,6 @@ using System;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.States;
-using HangFire.Storage;
 
 namespace HangFire
 {
@@ -28,8 +27,8 @@ namespace HangFire
     /// </summary>
     public class BackgroundJobClient : IBackgroundJobClient
     {
+        private readonly JobStorage _storage;
         private readonly IJobCreationProcess _process;
-        private readonly IStorageConnection _connection;
         private readonly IStateMachineFactory _stateMachineFactory;
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace HangFire
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (process == null) throw new ArgumentNullException("process");
             
-            _connection = storage.GetConnection();
+            _storage = storage;
             _stateMachineFactory = stateMachineFactory;
             _process = process;
         }
@@ -86,10 +85,13 @@ namespace HangFire
 
             try
             {
-                var context = new CreateContext(_connection, _stateMachineFactory, job, state);
-                _process.Run(context);
+                using (var connection = _storage.GetConnection())
+                {
+                    var context = new CreateContext(connection, _stateMachineFactory, job, state);
+                    _process.Run(context);
 
-                return context.JobId;
+                    return context.JobId;
+                }
             }
             catch (Exception ex)
             {
@@ -103,17 +105,11 @@ namespace HangFire
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (state == null) throw new ArgumentNullException("state");
 
-            var stateMachine = _stateMachineFactory.Create(_connection);
-            return stateMachine.TryToChangeState(jobId, state, fromState != null ? new[] { fromState } : null);
-        }
-
-        /// <summary>
-        /// Releases all resources used by the current instance
-        /// of the <see cref="BackgroundJobClient"/> class.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            _connection.Dispose();
+            using (var connection = _storage.GetConnection())
+            {
+                var stateMachine = _stateMachineFactory.Create(connection);
+                return stateMachine.TryToChangeState(jobId, state, fromState != null ? new[] { fromState } : null);
+            }
         }
     }
 }

@@ -8,12 +8,13 @@ namespace HangFire.Redis.Tests
     public class FetchedJobsWatcherFacts
     {
         private readonly RedisStorage _storage;
-        private readonly CancellationToken _token;
+		private readonly CancellationTokenSource _cts;
 
         public FetchedJobsWatcherFacts()
         {
             _storage = new RedisStorage(RedisUtils.GetHostAndPort(), RedisUtils.GetDb());
-            _token = new CancellationToken(true);
+			_cts = new CancellationTokenSource();
+			_cts.Cancel();
         }
 
         [Fact]
@@ -34,12 +35,12 @@ namespace HangFire.Redis.Tests
                 redis.AddItemToSet("hangfire:queues", "my-queue");
                 redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
                 redis.SetEntryInHash("hangfire:job:my-job", "Fetched",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow.AddDays(-1)));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow.AddDays(-1)));
 
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -64,9 +65,9 @@ namespace HangFire.Redis.Tests
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
-                Assert.NotNull(JobHelper.FromNullableStringTimestamp(
+                Assert.NotNull(JobHelper.DeserializeNullableDateTime(
                     redis.GetValueFromHash("hangfire:job:my-job", "Checked")));
             }
         }
@@ -80,12 +81,12 @@ namespace HangFire.Redis.Tests
                 redis.AddItemToSet("hangfire:queues", "my-queue");
                 redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
                 redis.SetEntryInHash("hangfire:job:my-job", "Checked",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow.AddDays(-1)));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow.AddDays(-1)));
 
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
                 // Arrange
                 Assert.Equal(0, redis.GetListCount("hangfire:queue:my-queue:dequeued"));
@@ -105,14 +106,14 @@ namespace HangFire.Redis.Tests
                 redis.AddItemToSet("hangfire:queues", "my-queue");
                 redis.AddItemToList("hangfire:queue:my-queue:dequeued", "my-job");
                 redis.SetEntryInHash("hangfire:job:my-job", "Checked",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow.AddDays(-1)));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow.AddDays(-1)));
                 redis.SetEntryInHash("hangfire:job:my-job", "Fetched",
-                    JobHelper.ToStringTimestamp(DateTime.UtcNow));
+                    JobHelper.SerializeDateTime(DateTime.UtcNow));
 
                 var watcher = CreateWatcher();
 
                 // Act
-                watcher.Execute(_token);
+				watcher.Execute(_cts.Token);
 
                 // Assert
                 Assert.Equal(1, redis.GetListCount("hangfire:queue:my-queue:dequeued"));

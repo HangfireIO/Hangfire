@@ -18,7 +18,6 @@ using System;
 using HangFire.Client;
 using HangFire.Common;
 using HangFire.States;
-using HangFire.Storage;
 
 namespace HangFire
 {
@@ -27,7 +26,7 @@ namespace HangFire
     /// to the job creation feature. See the default implementation
     /// in the <see cref="BackgroundJobClient"/> class.
     /// </summary>
-    public interface IBackgroundJobClient : IDisposable
+    public interface IBackgroundJobClient
     {
         /// <summary>
         /// Creates a given job in a specified state in the storage.

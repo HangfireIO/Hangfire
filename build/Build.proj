@@ -149,7 +149,7 @@
            Verbose="true" />
   
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
 	  </Exec>
   </Target>
@@ -167,7 +167,7 @@
            Verbose="true" />
     
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
     
@@ -179,7 +179,7 @@
            Verbose="true" />
   
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
 
@@ -191,7 +191,7 @@
            Verbose="true" />
 
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Msmq.Tests\HangFire.SqlServer.Msmq.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Msmq.Tests\HangFire.SqlServer.Msmq.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
   </Target>
@@ -234,8 +234,7 @@
         <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
       <!-- Copy transformations to artifacts/{Configuration}/package-src/Content/ -->
-      <Artifacts Include="$(ContentPath)\HangFireConfig.cs.pp;
-                          $(ContentPath)\web.config.transform">
+      <Artifacts Include="$(ContentPath)\readme.txt">
         <Destination>$(PackageSrcDir)\Content</Destination>
       </Artifacts>
       <!-- Copy tools to artifacts/{Configuration}/package-src/Tools -->

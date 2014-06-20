@@ -15,6 +15,8 @@
 // License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using HangFire.Annotations;
 using HangFire.States;
 
 namespace HangFire.Storage
@@ -45,6 +47,10 @@ namespace HangFire.Storage
         void InsertToList(string key, string value);
         void RemoveFromList(string key, string value);
         void TrimList(string key, int keepStartingFrom, int keepEndingAt);
+
+        // Hash operations
+        void SetRangeInHash([NotNull] string key, [NotNull] IEnumerable<KeyValuePair<string, string>> keyValuePairs);
+        void RemoveHash([NotNull] string key);
 
         void Commit();
     }

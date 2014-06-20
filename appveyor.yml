@@ -20,6 +20,12 @@ services:
   - mssql2008r2sp2
   - msmq
 
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+
 #---------------------------------#
 #       build configuration       #
 #---------------------------------#
