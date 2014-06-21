@@ -16,32 +16,45 @@
 
 using System;
 using System.Text.RegularExpressions;
+using HangFire.Annotations;
 
 namespace HangFire.Dashboard
 {
     public static class RouteCollectionExtensions
     {
         public static void AddRazorPage(
-            this RouteCollection routes, 
-            string pathTemplate, 
-            Func<Match, RazorPage> pageFunc)
+            [NotNull] this RouteCollection routes, 
+            [NotNull] string pathTemplate, 
+            [NotNull] Func<Match, RazorPage> pageFunc)
         {
+            if (routes == null) throw new ArgumentNullException("routes");
+            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
+            if (pageFunc == null) throw new ArgumentNullException("pageFunc");
+
             routes.Add(pathTemplate, new RazorPageDispatcher(pageFunc));
         }
 
         public static void AddCommand(
-            this RouteCollection routes,
-            string pathTemplate,
-            Func<Match, bool> command)
+            [NotNull] this RouteCollection routes, 
+            [NotNull] string pathTemplate, 
+            [NotNull] Func<Match, bool> command)
         {
+            if (routes == null) throw new ArgumentNullException("routes");
+            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
+            if (command == null) throw new ArgumentNullException("command");
+
             routes.Add(pathTemplate, new CommandDispatcher(command));
         }
 
         public static void AddBatchCommand(
-            this RouteCollection routes,
-            string pathTemplate,
-            Action<string> command)
+            [NotNull] this RouteCollection routes, 
+            [NotNull] string pathTemplate, 
+            [NotNull] Action<string> command)
         {
+            if (routes == null) throw new ArgumentNullException("routes");
+            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
+            if (command == null) throw new ArgumentNullException("command");
+
             routes.Add(pathTemplate, new BatchCommandDispatcher(command));
         }
     }
