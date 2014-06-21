@@ -48,7 +48,7 @@ namespace HangFire
 
             if (configuration.Storage == null)
             {
-                throw new InvalidOperationException("");
+                throw new InvalidOperationException("Job storage was not configured. Please call either `UseStorage` method or its overloads.");
             }
 
             JobStorage.Current = configuration.Storage;
