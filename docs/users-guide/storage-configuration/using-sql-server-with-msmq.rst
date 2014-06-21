@@ -30,16 +30,29 @@ Configuration
 
 To use MSMQ queues, you should do the following steps:
 
-1. Create them manually on each host. Don't forget to grant appropriate permissions.
+1. **Create them manually on each host**. Don't forget to grant appropriate permissions.
 2. Register all MSMQ queues in current ``SqlServerStorage`` instance.
+
+If you are using only default queue, pass the path pattern to the ``UseMsmqQueues`` extension method:
 
 .. code-block:: c#
 
-   var storage = new SqlServerStorage("<name or connection string>");
-   storage.UseMsmqQueues(@".\hangfire-{0}", "critical", "default");
-   // or storage.UseMsmqQueues(@".\hangfire-{0}") if you are using only "default" queue.
+   app.UseSqlServerStorage("<connection string or its name>")
+      .UseMsmqQueues(@".\hangfire-{0}");
 
-   JobStorage.Current = storage;
+To use multiple queues, you should pass them explicitly:
+
+.. code-block:: c#
+
+   app.UseSqlServerStorage("<connection string or its name>")
+      .UseMsmqQueues(@".\hangfire-{0}", "critical", "default");
+
+If you are running Hangfire outside of web application, and OWIN context is not accessible, call the extension method on an instance of the ``SqlServerStorage`` class (parameters are the same):
+
+.. code-block:: c#
+
+   var storage = new SqlServerStorage("<connection string or its name>");
+   storage.UseMsmqQueues(@".\hangfire-{0}");
 
 Limitations
 ------------
@@ -51,18 +64,10 @@ The following case will not work: the ``critical`` queue uses MSMQ, and the ``de
 
 .. code-block:: c#
 
-   var storage = new SqlServerStorage("<connection string>");
-   storage.UseMsmqQueues(@".\hangfire-{0}", "critical");
+   app.UseSqlServerStorage("<name or connection string>")
+      .UseMsmqQueues(@"hangfire-{0}", "critical");
 
-   JobStorage.Current = storage;
-
-   var options = new BackgroundJobServerOptions
-   {
-       Queues = new [] { "critical", "default" }
-   };
-
-   var server = new AspNetBackgroundJobServer(options);
-   server.Start();
+   app.UseServer("critical", "default");
 
 Transition to MSMQ queues
 --------------------------
@@ -74,31 +79,25 @@ If you are using default queue only, do this:
 .. code-block:: c#
 
     /* This server will process only SQL Server table queues, i.e. old jobs */
-
-    var oldStorage = new SqlServerStorage("<connection string>");
+    var oldStorage = new SqlServerStorage("<connection string or its name>");
     var oldOptions = new BackgroundJobServerOptions
     {
         ServerName = "OldQueueServer" // Pass this to differentiate this server from the next one
     };
 
-    var oldQueueServer = new AspNetBackgroundJobServer(oldOptions, oldStorage);
-    oldQueueServer.Start();
+    app.UseServer(oldStorage, oldOptions);
 
     /* This server will process only MSMQ queues, i.e. new jobs */
+    app.UseSqlServerStorage("<connection string or its name>")
+       .UseMsmqQueues(@".\hangfire-{0}");
 
-    // Assign the storage globally, for client, server and monitor.
-    JobStorage.Current = 
-        new SqlServerStorage("<connection string>").UseMsmqQueues(@".\hangfire-{0}");
-
-    var server = new AspNetBackgroundJobServer();
-    server.Start();
+    app.UseServer();
 
 If you use multiple queues, do this:
 
 .. code-block:: c#
 
     /* This server will process only SQL Server table queues, i.e. old jobs */
-
     var oldStorage = new SqlServerStorage("<connection string>");
     var oldOptions = new BackgroundJobServerOptions
     {
@@ -106,19 +105,10 @@ If you use multiple queues, do this:
         ServerName = "OldQueueServer" // Pass this to differentiate this server from the next one
     };
 
-    var oldQueueServer = new AspNetBackgroundJobServer(oldOptions, oldStorage);
-    oldQueueServer.Start();
+    app.UseServer(oldStorage, oldOptions);
 
     /* This server will process only MSMQ queues, i.e. new jobs */
+    app.UseSqlServerStorage("<connection string or its name>")
+       .UseMsmqQueues(@".\hangfire-{0}", "critical", "default");
 
-    // Assign the storage globally, for client, server and monitor.
-    JobStorage.Current = 
-        new SqlServerStorage("<connection string>").UseMsmqQueues(@".\hangfire-{0}");
-
-    var options = new BackgroundJobServerOptions
-    {
-        Queues = new [] { "critical", "default" }
-    };
-
-    var server = new AspNetBackgroundJobServer(options);
-    server.Start();
+    app.UseServer("critical", "default");
