@@ -16,21 +16,45 @@ Redis job storage implementation is available through the `HangFire.Redis <https
 
    PM> Install-Package HangFire.Redis
 
-Configuration
---------------
+OWIN configuration
+-------------------
 
-If you have package ``HangFire`` or ``HangFire.Web`` installed, open the ``~/App_Start/HangFireConfig.cs`` file and add the following line:
+If you are using Hangfire in a web application, you can use extension methods for OWIN configuration:
 
 .. code-block:: c#
 
-   // Using hostname only and default port 6379
-   JobStorage.Current = new RedisStorage("localhost");
-   // or specify a port
-   JobStorage.Current = new RedisStorage("localhost:6379");
-   // or add a db number
-   JobStorage.Current = new RedisStorage("localhost:6379", 0);
-   // or use a password
+   app.UsingHangFire(config =>
+   {
+       // Using hostname only and default port 6379
+      app.UseRedisStorage("localhost");
+
+      // or specify a port
+      app.UseRedisStorage("localhost:6379");
+
+      // or add a db number
+      app.UseRedisStorage("localhost:6379", 0);
+
+      // or use a password
+      app.UseRedisStorage("password@localhost:6379", 0);
+
+      // or with options
+      var options = new RedisStorageOptions();
+      app.UseRedisStorage("localhost", 0, options);
+
+      /* ... */
+   })
+
+Custom configuration
+---------------------
+
+When OWIN configuration is not appliable, you can create an instance of the ``RedisStorage`` class and pass it to the static ``JobStorage.Current`` property. All connection strings and options are same.
+
+.. code-block:: c#
+
    JobStorage.Current = new RedisStorage("password@localhost:6379", 0);
+
+Connection pool size
+---------------------
 
 HangFire leverages connection pool to get connections quickly and shorten their usage. You can configure the pool size to match your environment needs:
 
@@ -41,4 +65,4 @@ HangFire leverages connection pool to get connections quickly and shorten their 
        ConnectionPoolSize = 50 // default value
    };
 
-   var storage = new RedisStorage("localhost", 0, options);
+   app.UseRedisStorage("localhost", 0, options);
