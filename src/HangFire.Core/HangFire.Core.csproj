@@ -243,7 +243,7 @@
     <Compile Include="Server\SharedWorkerContext.cs" />
     <Compile Include="Server\UtcNowDateTimeProvider.cs" />
     <Compile Include="StartupConfiguration.cs" />
-    <Compile Include="BootstrapperConfigurationExceptions.cs" />
+    <Compile Include="BootstrapperConfigurationExtensions.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
