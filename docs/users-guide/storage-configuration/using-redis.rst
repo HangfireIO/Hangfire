@@ -16,8 +16,8 @@ Redis job storage implementation is available through the `HangFire.Redis <https
 
    PM> Install-Package HangFire.Redis
 
-OWIN configuration
--------------------
+Configuration
+--------------
 
 If you are using Hangfire in a web application, you can use extension methods for OWIN configuration:
 
@@ -43,9 +43,6 @@ If you are using Hangfire in a web application, you can use extension methods fo
 
       /* ... */
    })
-
-Custom configuration
----------------------
 
 When OWIN configuration is not appliable, you can create an instance of the ``RedisStorage`` class and pass it to the static ``JobStorage.Current`` property. All connection strings and options are same.
 
