@@ -22,7 +22,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Net40\HangFire.Redis.dll" target="lib\net40" />
-    <file src="Net40\HangFire.Redis.xml" target="lib\net40" />
+    <file src="Net45\HangFire.Redis.dll" target="lib\net45" />
+    <file src="Net45\HangFire.Redis.xml" target="lib\net45" />
   </files>
 </package>
