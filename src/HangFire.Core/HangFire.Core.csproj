@@ -83,7 +83,7 @@
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
-    <Compile Include="Dashboard\GlobalDashboardRoutes.cs" />
+    <Compile Include="Dashboard\DashboardRoutes.cs" />
     <Compile Include="Dashboard\HtmlHelper.cs" />
     <Compile Include="Dashboard\JobHistoryRenderer.cs" />
     <Compile Include="Dashboard\JobMethodCallRenderer.cs" />
