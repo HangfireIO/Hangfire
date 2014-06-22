@@ -20,7 +20,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Net40\HangFire.SqlServer.RabbitMQ.dll" target="lib\net40" />
-    <file src="Net40\HangFire.SqlServer.RabbitMQ.xml" target="lib\net40" />
+    <file src="Net45\HangFire.SqlServer.RabbitMQ.dll" target="lib\net45" />
+    <file src="Net45\HangFire.SqlServer.RabbitMQ.xml" target="lib\net45" />
   </files>
 </package>
