@@ -14,6 +14,7 @@ cache: apt
 
 services:
   - redis-server
+  - rabbitmq
 
 # Run the build script
 script:
