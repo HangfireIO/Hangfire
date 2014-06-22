@@ -16,7 +16,7 @@
 
 namespace HangFire
 {
-    public static class BootstrapperConfigurationExceptions
+    public static class BootstrapperConfigurationExtensions
     {
         /// <summary>
         /// Tells bootstrapper to start a job server with default options
@@ -102,6 +102,22 @@ namespace HangFire
             BackgroundJobServerOptions options)
         {
             configuration.UseServer(() => new BackgroundJobServer(options));
+        }
+
+        /// <summary>
+        /// Tells bootstrapper to start a job server, that uses
+        /// the given job storage, on application start and stop
+        /// it automatically on application shutdown request.
+        /// </summary>
+        /// <param name="configuration">Configuration</param>
+        /// <param name="storage">Job storage to use</param>
+        public static void UseServer(
+            this IBootstrapperConfiguration configuration,
+            JobStorage storage)
+        {
+            configuration.UseServer(() => new BackgroundJobServer(
+                new BackgroundJobServerOptions(),
+                storage));
         }
 
         /// <summary>

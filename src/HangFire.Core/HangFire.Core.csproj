@@ -44,8 +44,9 @@
     <Reference Include="NCrontab">
       <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -83,7 +84,7 @@
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
-    <Compile Include="Dashboard\GlobalDashboardRoutes.cs" />
+    <Compile Include="Dashboard\DashboardRoutes.cs" />
     <Compile Include="Dashboard\HtmlHelper.cs" />
     <Compile Include="Dashboard\JobHistoryRenderer.cs" />
     <Compile Include="Dashboard\JobMethodCallRenderer.cs" />
@@ -242,7 +243,7 @@
     <Compile Include="Server\SharedWorkerContext.cs" />
     <Compile Include="Server\UtcNowDateTimeProvider.cs" />
     <Compile Include="StartupConfiguration.cs" />
-    <Compile Include="BootstrapperConfigurationExceptions.cs" />
+    <Compile Include="BootstrapperConfigurationExtensions.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />

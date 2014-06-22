@@ -27,7 +27,7 @@ namespace HangFire.Dashboard
             IEnumerable<IAuthorizationFilter> authorizationFilters)
         {
             app.Map(dashboardPath, subApp => subApp.Use<DashboardMiddleware>(
-                GlobalDashboardRoutes.Routes,
+                DashboardRoutes.Routes,
                 authorizationFilters));
         }
     }

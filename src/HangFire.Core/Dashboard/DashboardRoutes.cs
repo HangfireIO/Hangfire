@@ -20,7 +20,7 @@ using HangFire.States;
 
 namespace HangFire.Dashboard
 {
-    public static class GlobalDashboardRoutes
+    public static class DashboardRoutes
     {
         private static readonly string[] Javascripts =
         {
@@ -40,7 +40,7 @@ namespace HangFire.Dashboard
             "hangfire.css"
         };
 
-        static GlobalDashboardRoutes()
+        static DashboardRoutes()
         {
             Routes = new RouteCollection();
             Routes.AddRazorPage("/", x => new DashboardPage());
@@ -50,34 +50,34 @@ namespace HangFire.Dashboard
 
             Routes.Add("/js", new CombinedResourceDispatcher(
                 "application/javascript", 
-                typeof(GlobalDashboardRoutes).Assembly,
+                typeof(DashboardRoutes).Assembly,
                 GetContentFolderNamespace("js"),
                 Javascripts));
 
             Routes.Add("/css", new CombinedResourceDispatcher(
                 "text/css",
-                typeof(GlobalDashboardRoutes).Assembly,
+                typeof(DashboardRoutes).Assembly,
                 GetContentFolderNamespace("css"),
                 Stylesheets));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/eot", new EmbeddedResourceDispatcher(
                 "application/vnd.ms-fontobject",
-                typeof(GlobalDashboardRoutes).Assembly,
+                typeof(DashboardRoutes).Assembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.eot")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/svg", new EmbeddedResourceDispatcher(
                 "image/svg+xml",
-                typeof(GlobalDashboardRoutes).Assembly,
+                typeof(DashboardRoutes).Assembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.svg")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/ttf", new EmbeddedResourceDispatcher(
                 "application/octet-stream",
-                typeof(GlobalDashboardRoutes).Assembly,
+                typeof(DashboardRoutes).Assembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.ttf")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/woff", new EmbeddedResourceDispatcher(
                 "application/font-woff",
-                typeof(GlobalDashboardRoutes).Assembly,
+                typeof(DashboardRoutes).Assembly,
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.woff")));
 
             #endregion
@@ -157,7 +157,7 @@ namespace HangFire.Dashboard
 
         internal static string GetContentFolderNamespace(string contentFolder)
         {
-            return String.Format("{0}.Content.{1}", typeof(GlobalDashboardRoutes).Namespace, contentFolder);
+            return String.Format("{0}.Content.{1}", typeof(DashboardRoutes).Namespace, contentFolder);
         }
 
         internal static string GetContentResourceName(string contentFolder, string resourceName)
