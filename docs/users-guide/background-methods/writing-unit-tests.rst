@@ -49,7 +49,7 @@ Simple, yeah. Now you can use any mocking framework, for example, `Moq <https://
         controller.Create(comment);
 
         // Assert
-        _client.Verify(x => x.Create(
+        client.Verify(x => x.Create(
             It.Is<Job>(job => job.Method.Name == "CheckForSpam" && job.Arguments[0] == comment.Id.ToString()),
             It.IsAny<EnqueuedState>());
     }
