@@ -23,6 +23,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using HangFire.Common;
+using System.ComponentModel;
 
 namespace HangFire.Dashboard
 {
@@ -35,7 +36,35 @@ namespace HangFire.Dashboard
                 return new NonEscapedString("<em>Can not find the target method.</em>");
             }
 
-            return new NonEscapedString(String.Format("{0}.{1}", job.Type.Name, job.Method.Name));
+            try
+            {
+                var displayNameAttribute = (DisplayNameAttribute)Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute));
+
+                return new NonEscapedString(String.Format(displayNameAttribute.DisplayName, job.Arguments));
+            }
+            catch (Exception)
+            {
+                return new NonEscapedString(String.Format("{0}.{1}", job.Type.Name, job.Method.Name));
+            }
+        }
+
+        public static string DisplayJob(Job job)
+        {
+            if (job == null)
+            {
+                return "Can not find the target method.";
+            }
+
+            try
+            {
+                var displayNameAttribute = (DisplayNameAttribute)Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute));
+
+                return String.Format(displayNameAttribute.DisplayName, job.Arguments);
+            }
+            catch (Exception)
+            {
+                return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
+            }
         }
 
         public static NonEscapedString Raw(string value)

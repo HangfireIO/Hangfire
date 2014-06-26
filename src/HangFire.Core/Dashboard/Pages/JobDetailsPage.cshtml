@@ -16,7 +16,7 @@
 
     if (job != null)
     {
-        title = job.Job != null ? String.Format("{0}.{1}", job.Job.Type.Name, job.Job.Method.Name) : null;
+        title = job.Job != null ? HtmlHelper.DisplayJob(job.Job) : null;
     }
 
     title = title ?? "Job";
