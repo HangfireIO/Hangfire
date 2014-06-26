@@ -127,7 +127,7 @@ WriteLiteral(" The job with id \'");
             
             #line default
             #line hidden
-WriteLiteral("\' has expired or has never existed on the server.\r\n");
+WriteLiteral("\' has expired or could not be found on the server.\r\n");
 
 
             
