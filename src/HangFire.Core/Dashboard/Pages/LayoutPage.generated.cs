@@ -61,7 +61,7 @@ WriteLiteral("\r\n");
 
 
 
-WriteLiteral("<!DOCTYPE html>\r\n\r\n<html>\r\n<head>\r\n    <title>");
+WriteLiteral("<!DOCTYPE html>\r\n\r\n<html lang=\"en\">\r\n<head>\r\n    <title>");
 
 
             
