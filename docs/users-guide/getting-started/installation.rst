@@ -15,7 +15,7 @@ Using Package Manager Console
 
 .. code-block:: c#
 
-   PM> Install-Package HangFire
+   PM> Install-Package Hangfire
 
 Using NuGet Package Manager
 ----------------------------
