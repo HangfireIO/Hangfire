@@ -59,44 +59,6 @@ namespace HangFire
         }
 
         /// <summary>
-        /// Creates a background job based on a specified static method 
-        /// call expression and places it into specified queue. 
-        /// Please, note that the <see cref="QueueAttribute"/> can
-        /// override the specified queue.
-        /// </summary>
-        /// 
-        /// <param name="client">A job client instance.</param>
-        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
-        /// <param name="queue">Queue to which the job will be placed.</param>
-        /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue(this IBackgroundJobClient client, Expression<Action> methodCall, string queue)
-        {
-            if (client == null) throw new ArgumentNullException("client");
-
-            return client.Create(methodCall, new EnqueuedState(queue));
-        }
-
-        /// <summary>
-        /// Creates a background job based on a specified instance method 
-        /// call expression and places it into specified queue. 
-        /// Please, note that the <see cref="QueueAttribute"/> can
-        /// override the specified queue.
-        /// </summary>
-        /// 
-        /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
-        /// <param name="client">A job client instance.</param>
-        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
-        /// <param name="queue">Queue to which the job will be placed.</param>
-        /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue<T>(
-            this IBackgroundJobClient client, Expression<Action<T>> methodCall, string queue)
-        {
-            if (client == null) throw new ArgumentNullException("client");
-
-            return client.Create(methodCall, new EnqueuedState(queue));
-        }
-
-        /// <summary>
         /// Creates a new background job based on a specified static method
         /// call expression and schedules it to be enqueued after a given delay.
         /// </summary>
