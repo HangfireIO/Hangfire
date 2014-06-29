@@ -6,4 +6,4 @@ Getting started
 
    overview
    installation
-   configuration
+   owin-bootstrapper

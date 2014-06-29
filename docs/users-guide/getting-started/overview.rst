@@ -59,11 +59,3 @@ All you need is to create an instance of the ``BackgroundJobServer`` class and s
 
 Hangfire uses reliable fetching algorithm for each storage backend, so you can start the processing inside a web application without a risk of losing background jobs on application restarts, process termination and so on.
 
-In OWIN based web application frameworks, such as `ASP.NET MVC <http://www.asp.net/mvc>`_, `FubuMVC <http://fubu-project.org>`_, `Nancy <http://nancyfx.org>`_, `ServiceStack <https://servicestack.net>`_ and many others, you can use :doc:`OWIN bootstrapper <owin-bootstrapper>` methods to simplify the configuration task.
-
-.. code-block:: c#
-
-   public void Configure(IAppBuilder app)
-   {
-       app.UseHangfire(config => config.UseServer());
-   }
