@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
-using HangFire;
+using Hangfire;
 
 namespace ConsoleSample
 {

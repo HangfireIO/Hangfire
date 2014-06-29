@@ -2,14 +2,14 @@
 @using System
 @using System.Diagnostics
 @using System.Linq
-@using HangFire.Storage
+@using Hangfire.Storage
 @using Storage.Monitoring
 @inherits RazorPage
 <!DOCTYPE html>
 
 <html lang="en">
 <head>
-    <title>@Title - HangFire</title>
+    <title>@Title - Hangfire</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="@Request.LinkTo("/css")" />
@@ -27,7 +27,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="@Request.LinkTo("/")">HangFire Dashboard</a>
+                        <a class="navbar-brand" href="@Request.LinkTo("/")">Hangfire Dashboard</a>
                     </div>
                     <div class="collapse navbar-collapse">
                         <ul class="nav navbar-nav navbar-right">
@@ -156,7 +156,7 @@
             <div class="container">
                 <ul class="list-inline credit">
                     <li>
-                        <a href="http://hangfire.io/" target="_blank">HangFire 
+                        <a href="http://hangfire.io/" target="_blank">Hangfire 
                             @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
                         </a>
                     </li>
@@ -173,7 +173,7 @@
                     pollInterval: 2000,
                     pollUrl: '@(Request.LinkTo("/stats"))'
                 };
-            })(window.HangFire = window.HangFire || {});
+            })(window.Hangfire = window.Hangfire || {});
         </script>
         <script src="@Request.LinkTo("/js")"></script>
     </body>

@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Web.Mvc;
 
-namespace HangFire.Sample.Highlighter
+namespace Hangfire.Sample.Highlighter
 {
     /// <summary>
     /// Attribute-based solution to the multiple submit button issue based 

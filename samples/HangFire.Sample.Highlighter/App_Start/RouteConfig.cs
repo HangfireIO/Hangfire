@@ -1,7 +1,7 @@
 ﻿using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace HangFire.Sample.Highlighter
+namespace Hangfire.Sample.Highlighter
 {
     public class RouteConfig
     {

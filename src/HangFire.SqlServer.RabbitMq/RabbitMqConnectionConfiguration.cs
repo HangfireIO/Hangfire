@@ -1,7 +1,7 @@
 using System;
 using RabbitMQ.Client;
 
-namespace HangFire.SqlServer.RabbitMQ
+namespace Hangfire.SqlServer.RabbitMQ
 {
     public class RabbitMqConnectionConfiguration
     {

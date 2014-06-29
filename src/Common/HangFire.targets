@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)HangFire.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)Hangfire.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis Condition="'$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
     <NoWarn>1591</NoWarn>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>

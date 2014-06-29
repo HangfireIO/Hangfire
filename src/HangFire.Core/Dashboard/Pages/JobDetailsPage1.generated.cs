@@ -45,7 +45,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     #line 8 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-    using HangFire.Storage;
+    using Hangfire.Storage;
     
     #line default
     #line hidden

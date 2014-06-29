@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ServiceStack.Redis;
 using Xunit;
 
-namespace HangFire.Redis.Tests
+namespace Hangfire.Redis.Tests
 {
     public class RedisConnectionFacts
     {

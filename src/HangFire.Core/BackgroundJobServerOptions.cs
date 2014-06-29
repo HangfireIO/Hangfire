@@ -1,25 +1,25 @@
-// This file is part of HangFire.
+// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
 // 
-// HangFire is free software: you can redistribute it and/or modify
+// Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// HangFire is distributed in the hope that it will be useful,
+// Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Linq;
 using Common.Logging;
-using HangFire.States;
+using Hangfire.States;
 
-namespace HangFire
+namespace Hangfire
 {
     public class BackgroundJobServerOptions
     {
@@ -75,7 +75,7 @@ namespace HangFire
 
         public void WriteToLog(ILog logger)
         {
-            logger.InfoFormat("Using the following options for HangFire Server:");
+            logger.InfoFormat("Using the following options for Hangfire Server:");
             logger.InfoFormat("    Worker count: {0}.", WorkerCount);
             logger.InfoFormat("    Listening queues: {0}.", String.Join(", ", Queues.Select(x => "'" + x + "'")));
             logger.InfoFormat("    Shutdown timeout: {0}.", ShutdownTimeout);

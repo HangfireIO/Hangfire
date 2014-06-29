@@ -1,7 +1,7 @@
-﻿using HangFire.SqlServer.Msmq;
+﻿using Hangfire.SqlServer.Msmq;
 using Xunit;
 
-namespace HangFire.Msmq.Tests
+namespace Hangfire.Msmq.Tests
 {
     public class MsmqJobQueueProviderFacts
     {

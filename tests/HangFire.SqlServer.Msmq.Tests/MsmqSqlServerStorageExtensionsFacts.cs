@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
-using HangFire.SqlServer;
-using HangFire.SqlServer.Msmq;
-using HangFire.States;
+using Hangfire.SqlServer;
+using Hangfire.SqlServer.Msmq;
+using Hangfire.States;
 using Xunit;
 
-namespace HangFire.Msmq.Tests
+namespace Hangfire.Msmq.Tests
 {
     public class MsmqSqlServerStorageExtensionsFacts
     {

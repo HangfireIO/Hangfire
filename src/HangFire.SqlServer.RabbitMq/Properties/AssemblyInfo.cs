@@ -2,10 +2,10 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("HangFire.SqlServer.RabbitMq")]
-[assembly: AssemblyDescription("HangFire RabbitMQ job queue for SQL Server storage implementation")]
-[assembly: Guid("03092b5c-0dfc-4c6c-8422-556bd1cb291e")]
+[assembly: AssemblyTitle("Hangfire.SqlServer.RabbitMq")]
+[assembly: AssemblyDescription("Hangfire RabbitMQ job queue for SQL Server storage implementation")]
+[assembly: Guid("cb0b1993-ef0a-4cfa-a1f0-a670dde3c12c")]
 
-[assembly: InternalsVisibleTo("HangFire.SqlServer.RabbitMq.Tests")]
+[assembly: InternalsVisibleTo("Hangfire.SqlServer.RabbitMq.Tests")]
 // Allow the generation of mocks for internal types
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

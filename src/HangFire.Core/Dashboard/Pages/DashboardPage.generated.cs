@@ -27,7 +27,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 6 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-    using HangFire.Storage;
+    using Hangfire.Storage;
     
     #line default
     #line hidden

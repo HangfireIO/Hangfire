@@ -1,9 +1,9 @@
 ﻿using System;
-using HangFire.States;
-using HangFire.Storage;
+using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class ApplyStateContextMock
     {

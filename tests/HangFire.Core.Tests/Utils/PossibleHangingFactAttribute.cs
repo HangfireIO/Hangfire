@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     internal class PossibleHangingFactAttribute : FactAttribute
     {

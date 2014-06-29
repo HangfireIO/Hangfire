@@ -3,7 +3,7 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // based on System.Web.Util.HashCodeCombiner
     [ExcludeFromCodeCoverage]

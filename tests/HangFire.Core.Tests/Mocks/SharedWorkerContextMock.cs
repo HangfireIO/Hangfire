@@ -1,9 +1,9 @@
 ﻿using System;
-using HangFire.Server;
-using HangFire.States;
+using Hangfire.Server;
+using Hangfire.States;
 using Moq;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class SharedWorkerContextMock
     {

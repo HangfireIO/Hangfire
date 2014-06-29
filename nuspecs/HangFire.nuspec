@@ -16,13 +16,13 @@
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
-    <releaseNotes>https://github.com/odinserj/HangFire/releases
+    <releaseNotes>https://github.com/odinserj/Hangfire/releases
     
 1.0.0-alpha1
 * Added – OWIN implementation for Hangfire Dashboard.
 * Added – Custom authorization filters support for dashboard.
-* Added – Unified bootstrapper to start HangFire in web applications.
-* Changed – HangFire now requires .NET Framework 4.5.
+* Added – Unified bootstrapper to start Hangfire in web applications.
+* Changed – Hangfire now requires .NET Framework 4.5.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />

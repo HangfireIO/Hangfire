@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Common;
-using HangFire.States;
+using Hangfire.Common;
+using Hangfire.States;
 using Moq;
 using ServiceStack.Redis;
 using Xunit;
 
-namespace HangFire.Redis.Tests
+namespace Hangfire.Redis.Tests
 {
     public class RedisWriteOnlyTransactionFacts
     {

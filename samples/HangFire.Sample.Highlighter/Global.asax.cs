@@ -1,12 +1,12 @@
 ﻿using System.Data.Entity;
 using System.Web.Mvc;
 using System.Web.Routing;
-using HangFire.Sample.Highlighter.Migrations;
-using HangFire.Sample.Highlighter.Models;
+using Hangfire.Sample.Highlighter.Migrations;
+using Hangfire.Sample.Highlighter.Models;
 using StackExchange.Profiling;
 using StackExchange.Profiling.EntityFramework6;
 
-namespace HangFire.Sample.Highlighter
+namespace Hangfire.Sample.Highlighter
 {
     public class MvcApplication : System.Web.HttpApplication
     {

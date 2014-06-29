@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
-  <Import Project="HangFire.Projects.Properties.proj" Condition=" '$(OS)' == 'Windows_NT' " />
+  <Import Project="Hangfire.Projects.Properties.proj" Condition=" '$(OS)' == 'Windows_NT' " />
 
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
@@ -26,7 +26,7 @@
     <DefaultSqlServerConnectionStringTemplate>
       Server=.\sqlexpress;Database={0};Trusted_Connection=True;
     </DefaultSqlServerConnectionStringTemplate>
-    <DefaultSqlServerTestDatabase>HangFire.Test</DefaultSqlServerTestDatabase>
+    <DefaultSqlServerTestDatabase>Hangfire.Test</DefaultSqlServerTestDatabase>
     <RedisDir>$(ProjectRoot)\packages\Redis-32.2.6.12.1\tools</RedisDir>
     <RedisFileName>redis-server.exe</RedisFileName>
     <RedisExePath>$(RedisDir)\$(RedisFileName)</RedisExePath>
@@ -34,7 +34,7 @@
     <DefaultRedisPort>6378</DefaultRedisPort>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildProjectDirectory)\HangFire.versions.targets" />
+  <Import Project="$(MSBuildProjectDirectory)\Hangfire.versions.targets" />
   <Import Project="$(MSBuildProjectDirectory)\MSBuild.Community.Tasks.Targets" />
 
   <!-- Add extra properties to the build for signing -->
@@ -52,7 +52,7 @@
     <!-- Add any src projects that have not been defined manually -->
     <Projects Include="$(ProjectRoot)\src\**\*.csproj" Exclude="@(Projects)" />
 
-    <Projects Include="$(ProjectRoot)\samples\HangFire.Sample.Highlighter\HangFire.Sample.Highlighter.csproj">
+    <Projects Include="$(ProjectRoot)\samples\Hangfire.Sample.Highlighter\Hangfire.Sample.Highlighter.csproj">
       <BuildDeploymentPackage>true</BuildDeploymentPackage>
       <Sample>true</Sample>
     </Projects>
@@ -64,13 +64,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UnitTestProjects Include="$(ProjectRoot)\tests\HangFire.Core.Tests\HangFire.Core.Tests.csproj"></UnitTestProjects>
+    <UnitTestProjects Include="$(ProjectRoot)\tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj"></UnitTestProjects>
   </ItemGroup>
   
   <ItemGroup>
-    <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.Redis.Tests\HangFire.Redis.Tests.csproj"></IntegrationTestProjects>
-    <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.csproj"></IntegrationTestProjects>
-    <IntegrationTestProjects Include="$(ProjectRoot)\tests\HangFire.SqlServer.Msmq.Tests\HangFire.SqlServer.Msmq.Tests.csproj"></IntegrationTestProjects>
+    <IntegrationTestProjects Include="$(ProjectRoot)\tests\Hangfire.Redis.Tests\Hangfire.Redis.Tests.csproj"></IntegrationTestProjects>
+    <IntegrationTestProjects Include="$(ProjectRoot)\tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj"></IntegrationTestProjects>
+    <IntegrationTestProjects Include="$(ProjectRoot)\tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj"></IntegrationTestProjects>
   </ItemGroup>
 
   <ItemGroup>
@@ -115,17 +115,17 @@
   </Target>
   
   <Target Name="PrepareForIntegrationTests">
-    <SetEnvironmentVariableIfNotExists Name="HangFire_Redis_Port" Value="$(DefaultRedisPort)">
-      <Output TaskParameter="ActualValue" PropertyName="HangFire_Redis_Port" />
+    <SetEnvironmentVariableIfNotExists Name="Hangfire_Redis_Port" Value="$(DefaultRedisPort)">
+      <Output TaskParameter="ActualValue" PropertyName="Hangfire_Redis_Port" />
     </SetEnvironmentVariableIfNotExists>
     
-    <SetEnvironmentVariableIfNotExists Name="HangFire_SqlServer_ConnectionStringTemplate" 
+    <SetEnvironmentVariableIfNotExists Name="Hangfire_SqlServer_ConnectionStringTemplate" 
                                        Value="$(DefaultSqlServerConnectionStringTemplate)" />
-    <SetEnvironmentVariableIfNotExists Name="HangFire_SqlServer_DatabaseName" 
+    <SetEnvironmentVariableIfNotExists Name="Hangfire_SqlServer_DatabaseName" 
                                        Value="$(DefaultSqlServerTestDatabase)" />
   
     <Delete Files="$(RedisLogPath)" />
-    <ExecAsync FilePath='$(RedisExePath)' Arguments='--port $(HangFire_Redis_Port) --logfile "$(RedisLogPath)"' ContinueOnError='true'>
+    <ExecAsync FilePath='$(RedisExePath)' Arguments='--port $(Hangfire_Redis_Port) --logfile "$(RedisLogPath)"' ContinueOnError='true'>
       <Output TaskParameter="Pid" PropertyName="RedisPid" />
     </ExecAsync>
   </Target>
@@ -144,12 +144,12 @@
     <!-- Core tests -->
     
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll"
-           Xml="$(TestResultsPath)\HangFire.Core.Tests.XunitResults.xml"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.Core.Tests\Hangfire.Core.Tests.dll"
+           Xml="$(TestResultsPath)\Hangfire.Core.Tests.XunitResults.xml"
            Verbose="true" />
   
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.Core.Tests\HangFire.Core.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.Core.Tests\Hangfire.Core.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
 	  </Exec>
   </Target>
@@ -162,36 +162,36 @@
     <!-- Redis integration tests -->    
 
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll"
-           Xml="$(TestResultsPath)\HangFire.Redis.Tests.XunitResults.xml"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.Redis.Tests\Hangfire.Redis.Tests.dll"
+           Xml="$(TestResultsPath)\Hangfire.Redis.Tests.XunitResults.xml"
            Verbose="true" />
     
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.Redis.Tests\HangFire.Redis.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.Redis.Tests\Hangfire.Redis.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
     
     <!-- SQL Server integration tests -->
 
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll"
-           Xml="$(TestResultsPath)\HangFire.SqlServer.Tests.XunitResults.xml"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.dll"
+           Xml="$(TestResultsPath)\Hangfire.SqlServer.Tests.XunitResults.xml"
            Verbose="true" />
   
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
 
     <!-- MSMQ integration tests -->
 
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\HangFire.SqlServer.Msmq.Tests\HangFire.SqlServer.Msmq.Tests.dll"
-           Xml="$(TestResultsPath)\HangFire.SqlServer.Msmq.Tests.XunitResults.xml"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.dll"
+           Xml="$(TestResultsPath)\Hangfire.SqlServer.Msmq.Tests.XunitResults.xml"
            Verbose="true" />
 
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\HangFire.SqlServer.Msmq.Tests\HangFire.SqlServer.Msmq.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
   </Target>
@@ -222,9 +222,9 @@
   <Target Name="CopyArtifacts" DependsOnTargets="Build">
     <ItemGroup>
       <!-- Copy remaining package artifacts to artifacts/{Configuration}/package-src/{Platform}/ -->
-      <Artifacts Include="$(ProjectArtifactsDir)\%(Projects.FileName)\HangFire.*.dll;
-                          $(ProjectArtifactsDir)\%(Projects.FileName)\HangFire.*.pdb;
-                          $(ProjectArtifactsDir)\%(Projects.FileName)\HangFire.*.xml"
+      <Artifacts Include="$(ProjectArtifactsDir)\%(Projects.FileName)\Hangfire.*.dll;
+                          $(ProjectArtifactsDir)\%(Projects.FileName)\Hangfire.*.pdb;
+                          $(ProjectArtifactsDir)\%(Projects.FileName)\Hangfire.*.xml"
                  Condition="%(Projects.CopyArtifacts) And !%(Projects.Sample)">
         <Destination>$(PackageSrcDir)\%(Projects.Platform)</Destination>
       </Artifacts>
@@ -238,7 +238,7 @@
         <Destination>$(PackageSrcDir)\Content</Destination>
       </Artifacts>
       <!-- Copy tools to artifacts/{Configuration}/package-src/Tools -->
-      <Artifacts Include="$(ProjectRoot)\src\HangFire.SqlServer\Install.sql">
+      <Artifacts Include="$(ProjectRoot)\src\Hangfire.SqlServer\Install.sql">
         <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
       <!-- Copy samples to artifacts/{Configuration}/samples while keeping directory structure -->

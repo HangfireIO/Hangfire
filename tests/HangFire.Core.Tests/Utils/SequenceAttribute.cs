@@ -3,7 +3,7 @@ using System.Reflection;
 using Moq.Sequences;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class SequenceAttribute : BeforeAfterTestAttribute
     {

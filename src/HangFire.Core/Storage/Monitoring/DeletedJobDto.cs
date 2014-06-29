@@ -1,7 +1,7 @@
 ﻿using System;
-using HangFire.Common;
+using Hangfire.Common;
 
-namespace HangFire.Storage.Monitoring
+namespace Hangfire.Storage.Monitoring
 {
     public class DeletedJobDto
     {

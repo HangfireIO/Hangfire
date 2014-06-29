@@ -1,7 +1,7 @@
 ﻿using System;
-using HangFire.Server;
+using Hangfire.Server;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class WorkerContextMock
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Text;
-using HangFire.Storage;
+using Hangfire.Storage;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace HangFire.SqlServer.RabbitMQ
+namespace Hangfire.SqlServer.RabbitMQ
 {
     internal class RabbitMqFetchedJob : IFetchedJob
     {

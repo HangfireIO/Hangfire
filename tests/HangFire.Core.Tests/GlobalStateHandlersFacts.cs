@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using HangFire.States;
+using Hangfire.States;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class GlobalStateHandlersFacts
     {

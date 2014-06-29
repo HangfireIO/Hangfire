@@ -1,4 +1,4 @@
-﻿namespace HangFire.Dashboard.Pages
+﻿namespace Hangfire.Dashboard.Pages
 {
     partial class FetchedJobsPage
     {

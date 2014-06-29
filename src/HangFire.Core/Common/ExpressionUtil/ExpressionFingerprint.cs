@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // Serves as the base class for all expression fingerprints. Provides a default implementation
     // of GetHashCode().

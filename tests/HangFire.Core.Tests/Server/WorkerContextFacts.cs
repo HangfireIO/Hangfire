@@ -1,8 +1,8 @@
 ﻿using System;
-using HangFire.Server;
+using Hangfire.Server;
 using Xunit;
 
-namespace HangFire.Core.Tests.Server
+namespace Hangfire.Core.Tests.Server
 {
     public class WorkerContextFacts
     {

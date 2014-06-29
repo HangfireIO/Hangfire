@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Threading;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     internal class StaticLockAttribute : BeforeAfterTestAttribute
     {

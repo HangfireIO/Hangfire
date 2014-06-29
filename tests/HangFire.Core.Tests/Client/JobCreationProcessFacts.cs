@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Client;
-using HangFire.Common;
-using HangFire.States;
-using HangFire.Storage;
+using Hangfire.Client;
+using Hangfire.Common;
+using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Moq.Sequences;
 using Xunit;
 
-namespace HangFire.Core.Tests.Client
+namespace Hangfire.Core.Tests.Client
 {
     public class JobCreationProcessFacts
     {

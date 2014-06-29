@@ -147,7 +147,7 @@
 
     hangFire.Page = (function() {
         function Page(config) {
-            this._poller = new HangFire.StatisticsPoller(
+            this._poller = new Hangfire.StatisticsPoller(
                 config.pollUrl, config.pollInterval);
 
             this._createGraphs();
@@ -184,7 +184,7 @@
         Page.prototype._createRealtimeGraph = function(elementId) {
             var realtimeElement = document.getElementById(elementId);
             if (realtimeElement) {
-                var realtimeGraph = new HangFire.RealtimeGraph(realtimeElement);
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
@@ -214,7 +214,7 @@
                 var succeeded = createSeries($(historyElement).data("succeeded"));
                 var failed = createSeries($(historyElement).data("failed"));
 
-                return new HangFire.HistoryGraph(historyElement, succeeded, failed);
+                return new Hangfire.HistoryGraph(historyElement, succeeded, failed);
             }
 
             return null;
@@ -391,8 +391,8 @@
 
         return Page;
     })();
-})(window.HangFire = window.HangFire || {});
+})(window.Hangfire = window.Hangfire || {});
 
 $(function () {
-    HangFire.page = new HangFire.Page(HangFire.config);
+    Hangfire.page = new Hangfire.Page(Hangfire.config);
 });

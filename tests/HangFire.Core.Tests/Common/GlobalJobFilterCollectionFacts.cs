@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HangFire.Client;
-using HangFire.Common;
-using HangFire.Server;
-using HangFire.States;
+using Hangfire.Client;
+using Hangfire.Common;
+using Hangfire.Server;
+using Hangfire.States;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.Common
+namespace Hangfire.Core.Tests.Common
 {
     public class GlobalJobFilterCollectionFacts
     {

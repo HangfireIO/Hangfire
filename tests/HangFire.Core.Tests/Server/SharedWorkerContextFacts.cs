@@ -1,10 +1,10 @@
 ﻿using System;
-using HangFire.Server;
-using HangFire.States;
+using Hangfire.Server;
+using Hangfire.States;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.Server
+namespace Hangfire.Core.Tests.Server
 {
     public class SharedWorkerContextFacts
     {

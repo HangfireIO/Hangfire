@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using RabbitMQ.Client;
 
-namespace HangFire.SqlServer.RabbitMQ
+namespace Hangfire.SqlServer.RabbitMQ
 {
     internal class RabbitMqJobQueueProvider : IPersistentJobQueueProvider
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using HangFire.Server;
+using Hangfire.Server;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class BackgroundJobServerFacts
     {

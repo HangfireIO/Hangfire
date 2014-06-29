@@ -7,7 +7,7 @@ using System.Reflection;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // UnaryExpression fingerprint class
     // The most common appearance of a UnaryExpression is a cast or other conversion operator

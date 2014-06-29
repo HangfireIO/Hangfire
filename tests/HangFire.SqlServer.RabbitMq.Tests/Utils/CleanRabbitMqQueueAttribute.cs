@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
-using HangFire.SqlServer.RabbitMQ;
+using Hangfire.SqlServer.RabbitMQ;
 using Xunit;
 
-namespace HangFire.SqlServer.RabbitMq.Tests
+namespace Hangfire.SqlServer.RabbitMq.Tests
 {
     public class CleanRabbitMqQueueAttribute : BeforeAfterTestAttribute
     {

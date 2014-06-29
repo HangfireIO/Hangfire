@@ -1,18 +1,18 @@
-namespace HangFire.Sample.Highlighter.Migrations
+namespace Hangfire.Sample.Highlighter.Migrations
 {
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<HangFire.Sample.Highlighter.Models.HighlighterDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<Hangfire.Sample.Highlighter.Models.HighlighterDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(HangFire.Sample.Highlighter.Models.HighlighterDbContext context)
+        protected override void Seed(Hangfire.Sample.Highlighter.Models.HighlighterDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 

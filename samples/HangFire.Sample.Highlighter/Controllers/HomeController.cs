@@ -6,13 +6,13 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using HangFire.Sample.Highlighter.Hubs;
-using HangFire.Sample.Highlighter.Models;
+using Hangfire.Sample.Highlighter.Hubs;
+using Hangfire.Sample.Highlighter.Models;
 using Microsoft.AspNet.SignalR;
 using PagedList;
 using StackExchange.Profiling;
 
-namespace HangFire.Sample.Highlighter.Controllers
+namespace Hangfire.Sample.Highlighter.Controllers
 {
     public class HomeController : Controller
     {

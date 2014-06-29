@@ -1,9 +1,9 @@
 ﻿using System;
-using HangFire.Common;
-using HangFire.Storage;
+using Hangfire.Common;
+using Hangfire.Storage;
 using Xunit;
 
-namespace HangFire.Core.Tests.Storage
+namespace Hangfire.Core.Tests.Storage
 {
     public class InvocationDataFacts
     {

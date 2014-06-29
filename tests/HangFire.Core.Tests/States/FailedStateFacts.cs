@@ -1,9 +1,9 @@
 ﻿using System;
-using HangFire.Common;
-using HangFire.States;
+using Hangfire.Common;
+using Hangfire.States;
 using Xunit;
 
-namespace HangFire.Core.Tests.States
+namespace Hangfire.Core.Tests.States
 {
     public class FailedStateFacts
     {

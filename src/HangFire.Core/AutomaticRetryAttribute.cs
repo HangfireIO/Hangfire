@@ -1,9 +1,9 @@
 using System;
 using Common.Logging;
-using HangFire.Common;
-using HangFire.States;
+using Hangfire.Common;
+using Hangfire.States;
 
-namespace HangFire
+namespace Hangfire
 {
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
     {

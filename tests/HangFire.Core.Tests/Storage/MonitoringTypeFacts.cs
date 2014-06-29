@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using HangFire.Storage.Monitoring;
+using Hangfire.Storage.Monitoring;
 using Xunit;
 
-namespace HangFire.Core.Tests.Storage
+namespace Hangfire.Core.Tests.Storage
 {
     public class MonitoringTypeFacts
     {

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Common;
-using HangFire.Server;
-using HangFire.Storage;
+using Hangfire.Common;
+using Hangfire.Server;
+using Hangfire.Storage;
 using Moq;
 using Moq.Sequences;
 using Xunit;
 
-namespace HangFire.Core.Tests.Server
+namespace Hangfire.Core.Tests.Server
 {
     public class JobPerformanceProcessFacts
     {

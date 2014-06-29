@@ -3,7 +3,7 @@ using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace HangFire.SqlServer.RabbitMq.Tests
+namespace Hangfire.SqlServer.RabbitMq.Tests
 {
     internal class RabbitMqUtils
     {

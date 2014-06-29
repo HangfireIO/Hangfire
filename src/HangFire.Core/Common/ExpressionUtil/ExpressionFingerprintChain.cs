@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // Expression fingerprint chain class
     // Contains information used for generalizing, comparing, and recreating Expression instances

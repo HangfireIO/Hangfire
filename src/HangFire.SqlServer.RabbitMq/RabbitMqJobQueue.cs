@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using HangFire.Storage;
+using Hangfire.Storage;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace HangFire.SqlServer.RabbitMQ
+namespace Hangfire.SqlServer.RabbitMQ
 {
     public class RabbitMqJobQueue : IPersistentJobQueue, IDisposable
     {
@@ -133,7 +133,7 @@ namespace HangFire.SqlServer.RabbitMQ
                     {
                         consumer = new QueueingBasicConsumer(_channel);
                         _consumers.AddOrUpdate(queue, consumer, (dq, dc) => consumer);
-                        _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, consumer);
+                        _channel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, consumer);
                     }
                 }
             }
@@ -149,7 +149,7 @@ namespace HangFire.SqlServer.RabbitMQ
                             // Recreate the consumer with the new channel
                             var newConsumer = new QueueingBasicConsumer(_channel);
                             _consumers.AddOrUpdate(queue, newConsumer, (dq, dc) => newConsumer);
-                            _channel.BasicConsume(queue, false, "HangFire.RabbitMq." + Thread.CurrentThread.Name, newConsumer);
+                            _channel.BasicConsume(queue, false, "Hangfire.RabbitMq." + Thread.CurrentThread.Name, newConsumer);
                             consumer = newConsumer;
                         }
                     }

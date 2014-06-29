@@ -23,7 +23,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     #line 4 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-    using HangFire.Storage;
+    using Hangfire.Storage;
     
     #line default
     #line hidden

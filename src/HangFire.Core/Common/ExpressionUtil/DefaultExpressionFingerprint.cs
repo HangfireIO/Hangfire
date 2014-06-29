@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // DefaultExpression fingerprint class
     // Expression of form default(T)

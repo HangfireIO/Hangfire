@@ -1,9 +1,9 @@
-﻿using HangFire.States;
-using HangFire.Storage;
+﻿using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.States
+namespace Hangfire.Core.Tests.States
 {
     public class DeletedStateHandlerFacts
     {

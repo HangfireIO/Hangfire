@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
-using HangFire.Server;
+using Hangfire.Server;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.Server
+namespace Hangfire.Core.Tests.Server
 {
     public class ServerSupervisorFacts
     {

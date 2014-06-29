@@ -1,6 +1,6 @@
-﻿using HangFire;
-using HangFire.SqlServer;
-using HangFire.SqlServer.Msmq;
+﻿using Hangfire;
+using Hangfire.SqlServer;
+using Hangfire.SqlServer.Msmq;
 using Microsoft.Owin;
 using Owin;
 
@@ -12,12 +12,12 @@ namespace MvcSample
     {
         public void Configuration(IAppBuilder app)
         {
-            app.UseHangFire(config =>
+            app.UseHangfire(config =>
             {
                 config.UseAuthorizationFilters();
 
                 config
-                    .UseSqlServerStorage(@"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;")
+                    .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
                     .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
             });
         }

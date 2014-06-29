@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Messaging;
 using System.Threading;
-using HangFire.SqlServer.Msmq;
+using Hangfire.SqlServer.Msmq;
 using Xunit;
 
-namespace HangFire.Msmq.Tests
+namespace Hangfire.Msmq.Tests
 {
     public class MsmqJobQueueFacts
     {

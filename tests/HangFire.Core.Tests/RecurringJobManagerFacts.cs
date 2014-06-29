@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Common;
-using HangFire.States;
-using HangFire.Storage;
+using Hangfire.Common;
+using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class RecurringJobManagerFacts
     {

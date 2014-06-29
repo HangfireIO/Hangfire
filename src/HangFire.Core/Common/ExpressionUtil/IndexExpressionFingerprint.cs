@@ -7,7 +7,7 @@ using System.Reflection;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // IndexExpression fingerprint class
     // Represents certain forms of array access or indexer property access

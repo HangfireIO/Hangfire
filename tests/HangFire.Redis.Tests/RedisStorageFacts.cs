@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Xunit;
 
-namespace HangFire.Redis.Tests
+namespace Hangfire.Redis.Tests
 {
     public class RedisStorageFacts
     {

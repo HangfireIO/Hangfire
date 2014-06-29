@@ -1,13 +1,13 @@
 ﻿using System;
 using ServiceStack.Redis;
 
-namespace HangFire.Redis.Tests
+namespace Hangfire.Redis.Tests
 {
     public static class RedisUtils
     {
-        private const string HostVariable = "HangFire_Redis_Host";
-        private const string PortVariable = "HangFire_Redis_Port";
-        private const string DbVariable = "HangFire_Redis_Db";
+        private const string HostVariable = "Hangfire_Redis_Host";
+        private const string PortVariable = "Hangfire_Redis_Port";
+        private const string DbVariable = "Hangfire_Redis_Db";
 
         private const string DefaultHost = "localhost";
         private const int DefaultPort = 6379;

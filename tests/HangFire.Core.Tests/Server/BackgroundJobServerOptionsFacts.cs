@@ -1,8 +1,8 @@
 ﻿using System;
-using HangFire.States;
+using Hangfire.States;
 using Xunit;
 
-namespace HangFire.Core.Tests.Server
+namespace Hangfire.Core.Tests.Server
 {
     public class BackgroundJobServerOptionsFacts
     {

@@ -2,7 +2,7 @@
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class JobStorageFacts
     {

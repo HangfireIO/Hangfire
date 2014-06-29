@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using HangFire.SqlServer.RabbitMQ;
+using Hangfire.SqlServer.RabbitMQ;
 using RabbitMQ.Client;
 
-namespace HangFire.SqlServer.RabbitMq.Tests
+namespace Hangfire.SqlServer.RabbitMq.Tests
 {
     public class RabbitMqChannel
     {

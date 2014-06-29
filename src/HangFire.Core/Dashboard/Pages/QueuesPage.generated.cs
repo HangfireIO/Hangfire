@@ -33,7 +33,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     #line 6 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-    using HangFire.Storage;
+    using Hangfire.Storage;
     
     #line default
     #line hidden

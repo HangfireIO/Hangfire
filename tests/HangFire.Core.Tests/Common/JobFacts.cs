@@ -4,12 +4,12 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using HangFire.Common;
-using HangFire.Server;
+using Hangfire.Common;
+using Hangfire.Server;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.Common
+namespace Hangfire.Core.Tests.Common
 {
     public class JobFacts
     {

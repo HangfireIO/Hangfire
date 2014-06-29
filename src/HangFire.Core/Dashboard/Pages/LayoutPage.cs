@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace HangFire.Dashboard.Pages
+namespace Hangfire.Dashboard.Pages
 {
     partial class LayoutPage
     {

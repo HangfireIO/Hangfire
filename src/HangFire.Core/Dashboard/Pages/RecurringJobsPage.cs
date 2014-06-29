@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using HangFire.Common;
-using HangFire.Storage;
+using Hangfire.Common;
+using Hangfire.Storage;
 
-namespace HangFire.Dashboard.Pages
+namespace Hangfire.Dashboard.Pages
 {
     partial class RecurringJobsPage
     {

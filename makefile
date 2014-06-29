@@ -1,5 +1,5 @@
 all: 
-	xbuild HangFire.Mono.sln
+	xbuild Hangfire.Mono.sln
 
 compile:
-	xbuild HangFire.Mono.sln
+	xbuild Hangfire.Mono.sln

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Globalization;
 using System.Threading;
-using HangFire.Client;
-using HangFire.Common;
-using HangFire.Server;
-using HangFire.States;
-using HangFire.Storage;
+using Hangfire.Client;
+using Hangfire.Common;
+using Hangfire.Server;
+using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class PreserveCultureAttributeFacts
     {

@@ -1,10 +1,10 @@
-﻿using HangFire.Core.Tests;
-using HangFire.States;
-using HangFire.Storage;
+﻿using Hangfire.Core.Tests;
+using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Redis.Tests
+namespace Hangfire.Redis.Tests
 {
     public class DeletedStateHandlerFacts
     {

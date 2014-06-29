@@ -1,37 +1,37 @@
-﻿// This file is part of HangFire.
+﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
 // 
-// HangFire is free software: you can redistribute it and/or modify
+// Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// HangFire is distributed in the hope that it will be useful,
+// Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using HangFire.Annotations;
-using HangFire.Dashboard;
-using HangFire.Server;
+using Hangfire.Annotations;
+using Hangfire.Dashboard;
+using Hangfire.Server;
 using Owin;
 
-namespace HangFire
+namespace Hangfire
 {
     public static class OwinBootstrapper
     {
         /// <summary>
-        /// Bootstraps HangFire components using the given configuration
-        /// action and maps HangFire Dashboard to the app builder pipeline
+        /// Bootstraps Hangfire components using the given configuration
+        /// action and maps Hangfire Dashboard to the app builder pipeline
         /// at the configured path ('/hangfire' by default).
         /// </summary>
         /// <param name="app">The app builder</param>
         /// <param name="configurationAction">Configuration action</param>
-        public static void UseHangFire(
+        public static void UseHangfire(
             [NotNull] this IAppBuilder app,
             [NotNull] Action<IBootstrapperConfiguration> configurationAction)
         {
@@ -60,10 +60,10 @@ namespace HangFire
 
             foreach (var server in configuration.Servers)
             {
-                app.RunHangFireServer(server());
+                app.RunHangfireServer(server());
             }
 
-            app.MapHangFireDashboard(configuration.DashboardPath, configuration.AuthorizationFilters);
+            app.MapHangfireDashboard(configuration.DashboardPath, configuration.AuthorizationFilters);
         }
     }
 }

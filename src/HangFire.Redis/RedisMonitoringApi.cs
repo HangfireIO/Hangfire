@@ -1,30 +1,30 @@
-﻿// This file is part of HangFire.
+﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
 // 
-// HangFire is free software: you can redistribute it and/or modify
+// Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// HangFire is distributed in the hope that it will be useful,
+// Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HangFire.Common;
-using HangFire.Redis.Annotations;
-using HangFire.States;
-using HangFire.Storage;
-using HangFire.Storage.Monitoring;
+using Hangfire.Common;
+using Hangfire.Redis.Annotations;
+using Hangfire.States;
+using Hangfire.Storage;
+using Hangfire.Storage.Monitoring;
 using ServiceStack.Redis;
 
-namespace HangFire.Redis
+namespace Hangfire.Redis
 {
     internal class RedisMonitoringApi : IMonitoringApi
     {

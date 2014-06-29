@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HangFire.States;
+using Hangfire.States;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.States
+namespace Hangfire.Core.Tests.States
 {
     public class StateHandlerCollectionFacts
     {

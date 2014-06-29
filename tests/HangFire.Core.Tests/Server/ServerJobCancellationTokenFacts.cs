@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using HangFire.Server;
-using HangFire.States;
-using HangFire.Storage;
+using Hangfire.Server;
+using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests.Server
+namespace Hangfire.Core.Tests.Server
 {
     public class ServerJobCancellationTokenFacts
     {

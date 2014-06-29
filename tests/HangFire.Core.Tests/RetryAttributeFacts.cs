@@ -1,10 +1,10 @@
 ﻿using System;
-using HangFire.States;
-using HangFire.Storage;
+using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class RetryAttributeFacts
     {

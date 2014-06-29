@@ -1,8 +1,8 @@
-﻿using HangFire.States;
+﻿using Hangfire.States;
 using Moq;
 using Xunit;
 
-namespace HangFire.Core.Tests
+namespace Hangfire.Core.Tests
 {
     public class QueueAttributeFacts
     {

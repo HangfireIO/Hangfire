@@ -7,7 +7,7 @@ using System.Reflection;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // MemberExpression fingerprint class
     // Expression of form xxx.FieldOrProperty

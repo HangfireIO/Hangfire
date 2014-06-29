@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
-using HangFire.Common;
+using Hangfire.Common;
 using Xunit;
 
-namespace HangFire.Redis.Tests
+namespace Hangfire.Redis.Tests
 {
     public class FetchedJobsWatcherFacts
     {

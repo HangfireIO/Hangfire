@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
-namespace HangFire.Common
+namespace Hangfire.Common
 {
     /// <summary>
     /// The caching expression tree compiler was copied from MVC core to MVC Futures so that Futures code could benefit

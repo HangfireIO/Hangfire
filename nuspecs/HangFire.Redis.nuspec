@@ -12,7 +12,7 @@
     <description>Redis job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>Hangfire Redis</tags>
-    <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
+    <releaseNotes>https://github.com/odinserj/Hangfire/releases</releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
       <dependency id="Common.Logging" version="2.1.2" />

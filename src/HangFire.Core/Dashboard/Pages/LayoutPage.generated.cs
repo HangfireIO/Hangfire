@@ -33,7 +33,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 5 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-    using HangFire.Storage;
+    using Hangfire.Storage;
     
     #line default
     #line hidden
@@ -71,7 +71,7 @@ WriteLiteral("<!DOCTYPE html>\r\n\r\n<html lang=\"en\">\r\n<head>\r\n    <title>
             
             #line default
             #line hidden
-WriteLiteral(" - HangFire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" cont" +
+WriteLiteral(" - Hangfire</title>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" cont" +
 "ent=\"width=device-width, initial-scale=1.0\">\r\n    <link rel=\"stylesheet\" href=\"");
 
 
@@ -107,7 +107,7 @@ WriteLiteral(@""" />
             
             #line default
             #line hidden
-WriteLiteral(@""">HangFire Dashboard</a>
+WriteLiteral(@""">Hangfire Dashboard</a>
                     </div>
                     <div class=""collapse navbar-collapse"">
                         <ul class=""nav navbar-nav navbar-right"">
@@ -587,7 +587,7 @@ WriteLiteral(@"
             <div class=""container"">
                 <ul class=""list-inline credit"">
                     <li>
-                        <a href=""http://hangfire.io/"" target=""_blank"">HangFire 
+                        <a href=""http://hangfire.io/"" target=""_blank"">Hangfire 
                             ");
 
 
@@ -639,7 +639,7 @@ WriteLiteral(@" GMT
             
             #line default
             #line hidden
-WriteLiteral("\'\r\n                };\r\n            })(window.HangFire = window.HangFire || {});\r\n" +
+WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = window.Hangfire || {});\r\n" +
 "        </script>\r\n        <script src=\"");
 
 

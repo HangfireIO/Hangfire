@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Web.Mvc;
 
-namespace HangFire.Sample.Highlighter.Models
+namespace Hangfire.Sample.Highlighter.Models
 {
     public class Snippet
     {

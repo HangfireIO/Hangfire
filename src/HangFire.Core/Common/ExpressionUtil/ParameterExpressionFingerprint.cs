@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 #pragma warning disable 659 // overrides AddToHashCodeCombiner instead
 
-namespace HangFire.Common.ExpressionUtil
+namespace Hangfire.Common.ExpressionUtil
 {
     // ParameterExpression fingerprint class
     // Can represent the model parameter or an inner parameter in an open lambda expression
