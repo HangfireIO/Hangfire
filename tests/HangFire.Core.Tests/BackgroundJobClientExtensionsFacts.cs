@@ -92,46 +92,6 @@ namespace HangFire.Core.Tests
         }
 
         [Fact]
-        public void StaticEnqueue_WithQueue_ThrowsAnException_WhenClientIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => BackgroundJobClientExtensions.Enqueue(
-                    null, () => StaticMethod(), "critical"));
-
-            Assert.Equal("client", exception.ParamName);
-        }
-
-        [Fact]
-        public void StaticEnqueue_WithQueue_ShouldCreateAJobInTheEnqueuedState()
-        {
-            _client.Object.Enqueue(() => StaticMethod(), "critical");
-
-            _client.Verify(x => x.Create(
-                It.IsNotNull<Job>(),
-                It.Is<EnqueuedState>(state => state.Queue == "critical")));
-        }
-
-        [Fact]
-        public void InstanceEnqueue_WithQueue_ThrowsAnException_WhenClientIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => BackgroundJobClientExtensions.Enqueue<BackgroundJobClientExtensionsFacts>(
-                    null, x => x.InstanceMethod(), "critical"));
-
-            Assert.Equal("client", exception.ParamName);
-        }
-
-        [Fact]
-        public void InstanceEnqueue_WithQueue_ShouldCreateAJobInTheEnqueuedState()
-        {
-            _client.Object.Enqueue<BackgroundJobClientExtensionsFacts>(x => x.InstanceMethod(), "critical");
-
-            _client.Verify(x => x.Create(
-                It.IsNotNull<Job>(),
-                It.Is<EnqueuedState>(state => state.Queue == "critical")));
-        }
-
-        [Fact]
         public void StaticSchedule_ThrowsAnException_WhenClientIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
