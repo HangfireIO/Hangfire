@@ -1,15 +1,15 @@
-HangFire 
+Hangfire 
 =========
 
 #### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) | [Twitter](https://twitter.com/hangfire_net) | [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
 
 | Windows / .NET | Linux / Mono
 | --- | ---
-| <a href="https://ci.appveyor.com/project/odinserj/hangfire"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4/branch/master?retina=true" /></a> | <a href="https://travis-ci.org/odinserj/HangFire"><img src="https://travis-ci.org/odinserj/HangFire.svg?branch=master" alt="Travis CI Build"></a>
+| <a href="https://ci.appveyor.com/project/odinserj/hangfire"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4/branch/master?retina=true" /></a> | <a href="https://travis-ci.org/odinserj/Hangfire"><img src="https://travis-ci.org/odinserj/Hangfire.svg?branch=master" alt="Travis CI Build"></a>
 
 Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. CPU and I/O intensive, long-running and short-running jobs are supported. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
 
-HangFire provides unified programming model to handle background tasks in a **reliable way** and run them on shared hosting, dedicated hosting or in cloud. You can start with a simple setup and grow computational power for background jobs with time for these scenarios:
+Hangfire provides unified programming model to handle background tasks in a **reliable way** and run them on shared hosting, dedicated hosting or in cloud. You can start with a simple setup and grow computational power for background jobs with time for these scenarios:
 
 - mass notifications/newsletter;
 - batch import from xml, csv, json;
@@ -23,23 +23,23 @@ HangFire provides unified programming model to handle background tasks in a **re
 - database maintenance;
 - *…and so on.*
 
-HangFire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
+Hangfire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
 
-![HangFire Succeeded Job](http://hangfire.io/img/succeeded-job-sm.png)
+![Hangfire Succeeded Job](http://hangfire.io/img/succeeded-job-sm.png)
 
 Installation
 -------------
 
-HangFire is available as a NuGet package. So, install it using the NuGet Package Console window:
+Hangfire is available as a NuGet package. So, install it using the NuGet Package Console window:
 
 ```
-PM> Install-Package HangFire
+PM> Install-Package Hangfire
 ```
 
-After install, update your existing [OWIN Startup](http://www.asp.net/aspnet/overview/owin-and-katana/owin-startup-class-detection) file with the following lines of code. If you do not have this class in your project or don't know what is it, please read the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide to learn about how to install HangFire.
+After install, update your existing [OWIN Startup](http://www.asp.net/aspnet/overview/owin-and-katana/owin-startup-class-detection) file with the following lines of code. If you do not have this class in your project or don't know what is it, please read the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide to learn about how to install Hangfire.
 
 ```csharp
-app.UseHangFire(config =>
+app.UseHangfire(config =>
 {
     config.UseSqlServerStorage("<connection string or its name>");
     config.UseServer();
@@ -77,10 +77,10 @@ RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
 
 **Process them inside a web application…**
 
-You can process background tasks in any OWIN compatible application frameworks, including [ASP.NET MVC](http://www.asp.net/mvc), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – HangFire is reliable for web applications from scratch, even on shared hosting.
+You can process background tasks in any OWIN compatible application frameworks, including [ASP.NET MVC](http://www.asp.net/mvc), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – Hangfire is reliable for web applications from scratch, even on shared hosting.
 
 ```csharp
-app.UseHangFire(config => config.UseServer());
+app.UseHangfire(config => config.UseServer());
 ```
 
 **… or anywhere else**
@@ -97,19 +97,19 @@ Questions? Problems?
 
 Open-source project are developing more smoothly, when all discussions are held in public.
 
-If you have any questions, problems related to the HangFire usage or want to discuss new features, please visit the [discussion forum](http://discuss.hangfire.io). You can sign in there using your existing Google or GitHub account, so it's very simple to start using it.
+If you have any questions, problems related to the Hangfire usage or want to discuss new features, please visit the [discussion forum](http://discuss.hangfire.io). You can sign in there using your existing Google or GitHub account, so it's very simple to start using it.
 
-If you've discovered a bug, please report it to the [HangFire GitHub Issues](https://github.com/odinserj/HangFire/issues?state=open). Detailed reports with stack traces, actual and expected behavours are welcome. 
+If you've discovered a bug, please report it to the [Hangfire GitHub Issues](https://github.com/odinserj/Hangfire/issues?state=open). Detailed reports with stack traces, actual and expected behavours are welcome. 
 
 Related Projects
 -----------------
 
-* [HangFire.Autofac](https://github.com/odinserj/HangFire.Autofac)
-* [HangFire.Ninject](https://github.com/odinserj/HangFire.Ninject)
-* [HangFire.SimpleInjector](https://github.com/devmondo/HangFire.SimpleInjector) by [@devmondo](https://github.com/devmondo)
-* [HangFire.Windsor](https://github.com/BredStik/HangFire.Windsor) by [@BredStik](https://github.com/BredStik)
-* [HangFire.Azure.QueueStorage](https://github.com/odinserj/HangFire.Azure.QueueStorage)
-* [HangFire.Azure.ServiceBusQueue](https://github.com/odinserj/HangFire.Azure.ServiceBusQueue)
+* [Hangfire.Autofac](https://github.com/odinserj/Hangfire.Autofac)
+* [Hangfire.Ninject](https://github.com/odinserj/Hangfire.Ninject)
+* [Hangfire.SimpleInjector](https://github.com/devmondo/Hangfire.SimpleInjector) by [@devmondo](https://github.com/devmondo)
+* [Hangfire.Windsor](https://github.com/BredStik/Hangfire.Windsor) by [@BredStik](https://github.com/BredStik)
+* [Hangfire.Azure.QueueStorage](https://github.com/odinserj/Hangfire.Azure.QueueStorage)
+* [Hangfire.Azure.ServiceBusQueue](https://github.com/odinserj/Hangfire.Azure.ServiceBusQueue)
 
 Roadmap
 --------
@@ -139,4 +139,4 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
 
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/dd58c8cf730a3ed3675202135bb06025 "githalytics.com")](http://githalytics.com/odinserj/HangFire)
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/dd58c8cf730a3ed3675202135bb06025 "githalytics.com")](http://githalytics.com/odinserj/Hangfire)
