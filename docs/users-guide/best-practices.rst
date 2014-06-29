@@ -23,7 +23,7 @@ Consider doing this:
 Make your background methods reentrant
 ---------------------------------------
 
-`Reentrancy <https://en.wikipedia.org/wiki/Reentrant_(subroutine)>`_ means that a method can be interrupted in the middle of its execution and then safely called again. The interruption can be caused by different exceptions, and HangFire will attempt to retry it many times.
+`Reentrancy <https://en.wikipedia.org/wiki/Reentrant_(subroutine)>`_ means that a method can be interrupted in the middle of its execution and then safely called again. The interruption can be caused by different exceptions, and Hangfire will attempt to retry it many times.
 
 You can face with different problems, if you didn't prepared your method to this feature. For example, if you are using email sending background job and experience errors with SMTP service, you can end with multiple letters sent to the single 
 

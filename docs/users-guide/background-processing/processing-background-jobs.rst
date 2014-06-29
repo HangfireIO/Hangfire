@@ -1,20 +1,28 @@
 Processing background jobs
 ===========================
 
-Background job processing is performed by HangFire Server component that is exposed as the ``BackgroundJobServer`` class and its derived class ``AspNetBackgroundJobServer``. To start the background job processing, you need to start it:
+Background job processing is performed by Hangfire Server component that is exposed as the ``BackgroundJobServer`` class. To start the background job processing, you need to start it:
 
 .. code-block:: c#
 
    var server = new BackgroundJobServer();
    server.Start();
 
-Since ASP.NET should know about all background threads to provide graceful shutdown capabilities for them, there is another version of server class – ``AspNetBackgroundJobServer``. It implements the ``IRegisteredObject`` interface and registers itself in the hosting environment.
+You should also call the ``Stop`` method to shutdown all background thread gracefully, making :doc:`cancellation tokens <../background-methods/using-cancellation-tokens>` work on shutdown event.
 
 .. code-block:: c#
 
-   var server = new AspNetBackgroundJobServer();
-   server.Start();
+   server.Stop();
 
-.. note::
+If you want to process background jobs inside a web application, you should use the :doc:`OWIN bootstrapper's <../getting-started/owin-bootstrapper>` ``UseServer`` method instead of manual instantiation of the ``BackgroundJobServer`` class. If you are curious why, you should know that this method registers the callback for ``host.OnAppDisposing`` application event that stops the Server gracefully.
 
-   If you installed HangFire through the ``HangFire`` NuGet package, these lines of code already added for you with the ``HangFireConfig.cs`` class.
+.. code-block:: c#
+
+   app.UseHangfire(config =>
+   {
+       config.UseServer();
+   });
+
+.. warning::
+
+   If you are using custom installation within a web application hosted in IIS, do not forget to install the `Microsoft.Owin.Host.SystemWeb <https://www.nuget.org/packages/Microsoft.Owin.Host.SystemWeb/>`_ package. Otherwise some features, like graceful shutdown may not work.

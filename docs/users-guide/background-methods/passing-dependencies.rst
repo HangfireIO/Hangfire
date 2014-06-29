@@ -10,7 +10,7 @@ When you are calling static methods in background, you are restricted only to th
 * `Abstract factories <http://en.wikipedia.org/wiki/Abstract_factory_pattern>`_ or `builders <http://en.wikipedia.org/wiki/Builder_pattern>`_
 * `Singletons <http://en.wikipedia.org/wiki/Singleton_pattern>`_
 
-However, all of these patterns greatly complicate the unit testability aspect of your application. To fight with this issue, HangFire allows you to call instance methods in background. Consider you have the following class that uses some kind of ``DbContext`` to access the database, and ``EmailService`` to send emails.
+However, all of these patterns greatly complicate the unit testability aspect of your application. To fight with this issue, Hangfire allows you to call instance methods in background. Consider you have the following class that uses some kind of ``DbContext`` to access the database, and ``EmailService`` to send emails.
 
 .. code-block:: c#
 

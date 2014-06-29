@@ -7,7 +7,7 @@ Recurring job registration is pretty simple – you need to write only a single 
 
    RecurringJob.AddOrUpdate(() => Console.Write("Easy!"), Cron.Daily);
 
-This line creates a new entry in the storage. Special component in HangFire Server (see :doc:`../background-processing/processing-background-jobs`) will check the recurring jobs on a minute-based interval and enqueue them as fire-and-forget jobs, so you can track them as usual.
+This line creates a new entry in the storage. Special component in Hangfire Server (see :doc:`../background-processing/processing-background-jobs`) will check the recurring jobs on a minute-based interval and enqueue them as fire-and-forget jobs, so you can track them as usual.
 
 The ``Cron`` class contains different methods and overloads to run jobs on a minutely, hourly, daily, weekly, monthly and yearly basis. But you can use `CRON expressions <http://en.wikipedia.org/wiki/Cron#CRON_expression>`_ to specify more complex schedule:
 
