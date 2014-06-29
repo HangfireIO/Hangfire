@@ -43,8 +43,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'HangFire'
-copyright = u'2014, Sergey Odinokov. HangFire documentation is licensed under the CC BY 4.0'
+project = u'Hangfire'
+copyright = u'2014, Sergey Odinokov. Hangfire documentation is licensed under the CC BY 4.0'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -238,7 +238,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'hangfire', u'HangFire Documentation',
+    ('index', 'hangfire', u'Hangfire Documentation',
      [u'Sergey Odinokov'], 1)
 ]
 
@@ -252,8 +252,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'HangFire', u'HangFire Documentation',
-   u'Sergey Odinokov', 'HangFire', 'One line description of project.',
+  ('index', 'HangFire', u'Hangfire Documentation',
+   u'Sergey Odinokov', 'Hangfire', 'Incredibly easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications',
    'Miscellaneous'),
 ]
 
