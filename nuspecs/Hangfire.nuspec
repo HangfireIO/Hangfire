@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Hangfire</id>
+    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <title>Hangfire</title>
+    <authors>Sergey Odinokov</authors>
+    <owners>odinserj</owners>
+    <projectUrl>http://hangfire.io/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.github.com/odinserj/Hangfire/master/LICENSE.md</licenseUrl>
+    <description>
+      Incredibly easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
+      Backed by Redis, SQL Server, SQL Azure or MSMQ.
+      http://hangfire.io/
+    </description>
+    <copyright>Copyright © Sergey Odinokov</copyright>
+    <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
+    <releaseNotes>https://github.com/odinserj/Hangfire/releases
+    
+1.0.0-alpha1
+* Added – OWIN implementation for Hangfire Dashboard.
+* Added – Custom authorization filters support for dashboard.
+* Added – Unified bootstrapper to start Hangfire in web applications.
+* Changed – Hangfire now requires .NET Framework 4.5.
+    </releaseNotes>
+    <dependencies>
+      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Content\readme.txt" target="readme.txt" />
+  </files>
+</package>

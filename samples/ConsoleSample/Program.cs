@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
-using HangFire;
-using HangFire.SqlServer;
-using HangFire.SqlServer.Msmq;
+using Hangfire;
+using Hangfire.SqlServer;
+using Hangfire.SqlServer.Msmq;
 
 namespace ConsoleSample
 {
@@ -16,7 +16,7 @@ namespace ConsoleSample
                 LogLevel.Info, false, false, true, "");
 
             var sqlServerStorage = new SqlServerStorage(
-                @"Server=.\sqlexpress;Database=HangFire.Sample;Trusted_Connection=True;");
+                @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
             sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
             JobStorage.Current =
