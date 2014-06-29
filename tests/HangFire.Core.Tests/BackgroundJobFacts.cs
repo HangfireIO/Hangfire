@@ -36,30 +36,6 @@ namespace HangFire.Core.Tests
         }
 
         [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
-        public void Enqueue_WithQueue_CreatesAJobInEnqueuedState_WithCorrespondingQueue()
-        {
-            Initialize();
-
-            BackgroundJob.Enqueue(() => Method(), "queue");
-
-            _client.Verify(x => x.Create(
-                It.IsNotNull<Job>(), 
-                It.Is<EnqueuedState>(state => state.Queue == "queue")));
-        }
-
-        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
-        public void EnqueueGeneric_WithQueue_CreatesAJobInEnqueuedState_WithCorrespondingQueue()
-        {
-            Initialize();
-
-            BackgroundJob.Enqueue<BackgroundJobFacts>(x => Method(), "queue");
-
-            _client.Verify(x => x.Create(
-                It.IsNotNull<Job>(),
-                It.Is<EnqueuedState>(state => state.Queue == "queue")));
-        }
-
-        [Fact, GlobalLock(Reason = "Access BackgroundJob.ClientFactory member")]
         public void Schedule_WithTimeSpan_CreatesAJobInScheduledState()
         {
             Initialize();
