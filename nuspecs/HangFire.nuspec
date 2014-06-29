@@ -1,32 +1,32 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>HangFire</id>
+    <id>Hangfire</id>
     <version>__HANGFIRE_PACKAGE_VERSION__</version>
-    <title>HangFire</title>
+    <title>Hangfire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
+    <licenseUrl>https://raw.github.com/odinserj/Hangfire/master/LICENSE.md</licenseUrl>
     <description>
       Incredibly easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
       Backed by Redis, SQL Server, SQL Azure or MSMQ.
       http://hangfire.io/
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
-    <tags>AspNet SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
+    <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/HangFire/releases
     
 1.0.0-alpha1
-* Added – OWIN implementation for HangFire Dashboard.
+* Added – OWIN implementation for Hangfire Dashboard.
 * Added – Custom authorization filters support for dashboard.
 * Added – Unified bootstrapper to start HangFire in web applications.
 * Changed – HangFire now requires .NET Framework 4.5.
     </releaseNotes>
     <dependencies>
-      <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="HangFire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
       <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
     </dependencies>
   </metadata>

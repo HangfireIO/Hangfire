@@ -1,25 +1,25 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>HangFire.SqlServer.MSMQ</id>
+    <id>Hangfire.SqlServer.MSMQ</id>
     <version>__HANGFIRE_PACKAGE_VERSION__</version>
-    <title>HangFire MSMQ Queues for SQL Server Storage</title>
+    <title>Hangfire MSMQ Queues for SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/HangFire/master/LICENSE.md</licenseUrl>
-    <description>MSMQ queues support for SQL Server job storage implementation for HangFire (background job system for ASP.NET applications).</description>
+    <licenseUrl>https://raw.github.com/odinserj/Hangfire/master/LICENSE.md</licenseUrl>
+    <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2014 Sergey Odinokov</copyright>
-    <tags>HangFire SqlServer MSMQ</tags>
-    <releaseNotes>https://github.com/odinserj/HangFire/releases</releaseNotes>
+    <tags>Hangfire SqlServer MSMQ</tags>
+    <releaseNotes>https://github.com/odinserj/Hangfire/releases</releaseNotes>
     <dependencies>
-      <dependency id="HangFire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="HangFire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\HangFire.SqlServer.Msmq.dll" target="lib\net45" />
-    <file src="Net45\HangFire.SqlServer.Msmq.xml" target="lib\net45" />
+    <file src="Net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
+    <file src="Net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
   </files>
 </package>
