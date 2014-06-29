@@ -16,7 +16,7 @@
 
     if (job != null)
     {
-        title = job.Job != null ? String.Format("{0}.{1}", job.Job.Type.Name, job.Job.Method.Name) : null;
+        title = job.Job != null ? HtmlHelper.DisplayJob(job.Job) : null;
     }
 
     title = title ?? "Job";
@@ -26,7 +26,7 @@
 
 @if (job == null)
 {
-    @: The job with id '@JobId' was expired or was not existed on the server.
+    @: The job with id '@JobId' has expired or could not be found on the server.
 }
 else
 {
