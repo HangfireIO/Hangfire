@@ -4,13 +4,13 @@ Features
 Queue-based processing
 -----------------------
 
-Instead of invoking a method synchronously, place it on a persistent queue, and HangFire worker thread will take it and perform within its own execution context:
+Instead of invoking a method synchronously, place it on a persistent queue, and Hangfire worker thread will take it and perform within its own execution context:
 
 .. code-block:: c#
 
    BackgroundJob.Enqueue(() => Console.WriteLine("Hello, world!"));
 
-This method creates a job in the storage and immediately returns control to the caller. HangFire guarantees that the specified method will be called even after the abnormal termination of the host process.
+This method creates a job in the storage and immediately returns control to the caller. Hangfire guarantees that the specified method will be called even after the abnormal termination of the host process.
 
 Delayed method invocation
 --------------------------
@@ -32,7 +32,7 @@ Recurring job processing was never been easier. All you need is to call a single
 
    RecurringJob.AddOrUpdate(() => Console.Write("Easy!"), Cron.Daily);
 
-HangFire uses `NCrontab <https://code.google.com/p/ncrontab/>`_ library to perform scheduling tasks, so you can use more complex `CRON expressions <http://en.wikipedia.org/wiki/Cron#CRON_expression>`_:
+Hangfire uses `NCrontab <https://code.google.com/p/ncrontab/>`_ library to perform scheduling tasks, so you can use more complex `CRON expressions <http://en.wikipedia.org/wiki/Cron#CRON_expression>`_:
 
 .. code-block:: c#
 
@@ -48,21 +48,21 @@ Web interface will help you to track the execution of your jobs. See their proce
 SQL Server and Redis support
 -----------------------------
 
-HangFire uses persistent storage to store jobs, queues and statistics and let them survive application restarts. The storage subsystem is abstracted enough to support both classic SQL Server and fast Redis.
+Hangfire uses persistent storage to store jobs, queues and statistics and let them survive application restarts. The storage subsystem is abstracted enough to support both classic SQL Server and fast Redis.
 
-* **SQL Server** provides simplified installation together with usual maintenance plans.
-* **Redis** provides awesome speed, especially comparing to SQL Server, but requires additional knowledge.
+* :doc:`SQL Server <../users-guide/storage-configuration/using-sql-server>` provides simplified installation together with usual maintenance plans.
+* :doc:`Redis <../users-guide/storage-configuration/using-redis>` provides awesome speed, especially comparing to SQL Server, but requires additional knowledge.
 
 Automatic retries
 ------------------
 
 If your method encounters a transient exception, don't worry – it will be retried automatically in a few seconds. If all retry attempts are exhausted, you are able to restart it manually from integrated web interface.
 
-You can also control the retry behavior with the ``RetryAttribute`` class. Just apply it to your method to tell HangFire the number of retry attempts:
+You can also control the retry behavior with the ``AutomaticRetryAttribute`` class. Just apply it to your method to tell Hangfire the number of retry attempts:
 
 .. code-block:: c#
 
-   [Retry(100)]
+   [AutomaticRetry(100)]
    public static void GenerateStatistics() { }
 
    BackgroundJob.Enqueue(() => GenerateStatistics());
@@ -70,7 +70,7 @@ You can also control the retry behavior with the ``RetryAttribute`` class. Just 
 Guaranteed processing
 ----------------------
 
-HangFire was made with the knowledge that the hosting environment can kill all the threads on each line. So, it does not remove the job until it was successfully completed and contains different implicit retry logic to do the job when its processing was aborted.
+Hangfire was made with the knowledge that the hosting environment can kill all the threads on each line. So, it does not remove the job until it was successfully completed and contains different implicit retry logic to do the job when its processing was aborted.
 
 Instance method calls
 ----------------------

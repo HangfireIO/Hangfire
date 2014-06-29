@@ -2,8 +2,8 @@ Highlighter Tutorial
 =========================
 
 ====================== =======
-Simple sample          https://github.com/odinserj/HangFire.Highlighter 
-Full sample            http://highlighter.hangfire.io, `sources <https://github.com/odinserj/HangFire/tree/master/samples/HangFire.Sample.Highlighter>`_
+Simple sample          https://github.com/odinserj/Hangfire.Highlighter 
+Full sample            http://highlighter.hangfire.io, `sources <https://github.com/odinserj/Hangfire/tree/master/samples/Hangfire.Sample.Highlighter>`_
 ====================== =======
 
 .. contents:: Table of Contents
@@ -28,7 +28,7 @@ Setting up the project
 
 .. tip::
 
-   This section contains steps to prepare the project. However, if you don't want to do the boring stuff or if you have problems with project set-up, you can download the tutorial `source code <https://github.com/odinserj/HangFire.Highlighter/releases/tag/vBefore>`_ and go straight to :ref:`the-problem` section.
+   This section contains steps to prepare the project. However, if you don't want to do the boring stuff or if you have problems with project set-up, you can download the tutorial `source code <https://github.com/odinserj/Hangfire.Highlighter/releases/tag/vBefore>`_ and go straight to :ref:`the-problem` section.
 
 Prerequisites
 ^^^^^^^^^^^^^^
@@ -40,7 +40,7 @@ The project uses **.NET 4.5**, **ASP.NET MVC 5** and **SQL Server 2008 Express**
 Creating a project
 ^^^^^^^^^^^^^^^^^^^
 
-Let's start from scratch. Create an *ASP.NET MVC 5 Empty Project* and name this awesome web application ``HangFire.Highlighter`` (you can name it as you want, but prepare to change namespaces).
+Let's start from scratch. Create an *ASP.NET MVC 5 Empty Project* and name this awesome web application ``Hangfire.Highlighter`` (you can name it as you want, but prepare to change namespaces).
 
 I've included some screenshots to make the project set-up not so boring:
 
@@ -70,7 +70,7 @@ The view scaffolding process also adds additional components to the project, lik
 
 .. image:: highlighter/solutionafterview.png
 
-Let's test the initial setup of our application. Press the :kbd:`F5` key to start debugging and wait for your browser. If you encounter exceptions or don't see the default page, try to reproduce all the given steps, see the `tutorial sources <https://github.com/odinserj/HangFire.Highlighter>`_ or ask a question in the comments below.
+Let's test the initial setup of our application. Press the :kbd:`F5` key to start debugging and wait for your browser. If you encounter exceptions or don't see the default page, try to reproduce all the given steps, see the `tutorial sources <https://github.com/odinserj/Hangfire.Highlighter>`_ or ask a question in the comments below.
 
 Defining a model
 ~~~~~~~~~~~~~~~~
@@ -94,7 +94,7 @@ After the package installed, create a new class in the ``Models`` folder and nam
 
    using System.Data.Entity;
 
-   namespace HangFire.Highlighter.Models
+   namespace Hangfire.Highlighter.Models
    {
        public class HighlighterDbContext : DbContext
        {
@@ -109,7 +109,7 @@ Please note, that we are using undefined yet connection string name ``Highlighte
 .. code-block:: xml
 
    <connectionStrings>
-     <add name="HighlighterDb" connectionString="Server=.\sqlexpress; Database=HangFire.Highlighter; Trusted_Connection=True;" providerName="System.Data.SqlClient" />
+     <add name="HighlighterDb" connectionString="Server=.\sqlexpress; Database=Hangfire.Highlighter; Trusted_Connection=True;" providerName="System.Data.SqlClient" />
    </connectionStrings>
 
 Then enable **Entity Framework Code First Migrations** by typing in your *Package Manager Console* window the following command:
@@ -131,7 +131,7 @@ It's time to add the most valuable class in the application. Create the ``CodeSn
    using System.ComponentModel.DataAnnotations;
    using System.Web.Mvc;
 
-   namespace HangFire.Highlighter.Models
+   namespace Hangfire.Highlighter.Models
    {
        public class CodeSnippet
        {
@@ -174,9 +174,9 @@ Now its time to breathe life into our project. Please, modify the following file
   using System;
   using System.Linq;
   using System.Web.Mvc;
-  using HangFire.Highlighter.Models;
+  using Hangfire.Highlighter.Models;
 
-  namespace HangFire.Highlighter.Controllers
+  namespace Hangfire.Highlighter.Controllers
   {
       public class HomeController : Controller
       {
@@ -231,7 +231,7 @@ Now its time to breathe life into our project. Please, modify the following file
 
   @* ~/Views/Home/Index.cshtml *@
 
-  @model IEnumerable<HangFire.Highlighter.Models.CodeSnippet>
+  @model IEnumerable<Hangfire.Highlighter.Models.CodeSnippet>
   @{ ViewBag.Title = "Snippets"; }
 
   <h2>Snippets</h2>
@@ -260,7 +260,7 @@ Now its time to breathe life into our project. Please, modify the following file
 
   @* ~/Views/Home/Create.cshtml *@
 
-  @model HangFire.Highlighter.Models.CodeSnippet
+  @model Hangfire.Highlighter.Models.CodeSnippet
   @{ ViewBag.Title = "Create a snippet"; }
 
   <h2>Create a snippet</h2>
@@ -283,7 +283,7 @@ Now its time to breathe life into our project. Please, modify the following file
 
   @* ~/Views/Home/Details.cshtml *@
 
-  @model HangFire.Highlighter.Models.CodeSnippet
+  @model Hangfire.Highlighter.Models.CodeSnippet
   @{ ViewBag.Title = "Details"; }
 
   <h2>Snippet <small>#@Model.Id</small></h2>
@@ -497,28 +497,33 @@ The latter way solves this problem, but brings another ones. Should the queue be
 
    They will be simple aborted on application shutdown, and can be aborted even if the ``IRegisteredObject`` interface is being used due to time out.
 
-Too many questions? Relax, you can use `HangFire <http://hangfire.io>`_. It is based on *persistent queues* to survive on application restarts, uses *reliable fetching* to handle unexpected thread aborts and contains *coordination logic* to allow multiple worker threads. And it is simple enough to use it.
+Too many questions? Relax, you can use `Hangfire <http://hangfire.io>`_. It is based on *persistent queues* to survive on application restarts, uses *reliable fetching* to handle unexpected thread aborts and contains *coordination logic* to allow multiple worker threads. And it is simple enough to use it.
 
 .. note::
 
-   **YOU CAN** process your long-running jobs with HangFire inside ASP.NET application – aborted jobs will be restarted automatically.
+   **YOU CAN** process your long-running jobs with Hangfire inside ASP.NET application – aborted jobs will be restarted automatically.
 
-Installing HangFire
+Installing Hangfire
 ^^^^^^^^^^^^^^^^^^^^
 
-To install HangFire, run the following command in the Package Manager Console window:
+To install Hangfire, run the following command in the Package Manager Console window:
 
 .. code-block:: powershell
 
-   Install-Package HangFire
+   Install-Package Hangfire
 
-After the package installed, open the ``App_Start/HangFireConfig.cs`` file to change the database connection string:
+After the package installed, add or update the OWIN Startup class as :doc:`written here <../users-guide/getting-started/owin-bootstrap>` with the following lines of code.
 
 .. code-block:: c#
 
-   JobStorage.Current = new SqlServerStorage(System.Configuration.ConfigurationManager
-       .ConnectionStrings["HighlighterDb"]
-       .ConnectionString);
+   public void Configure(IAppBuilder app)
+   {
+       app.UseHangfire(config =>
+       {
+           config.UseSqlServerStorage("HighlighterDb");
+           config.UseServer();
+       });
+   }
 
 That's all. All database tables will be created automatically on first start-up.
 
@@ -548,7 +553,7 @@ First, we need to define our background job method that will be called when work
       }
   }
 
-Note that it is simple method that does not contain any HangFire-related functionality. It creates a new instance of the ``HighlighterDbContext`` class, looks for the desired snippet and makes a call to a web service.
+Note that it is simple method that does not contain any Hangfire-related functionality. It creates a new instance of the ``HighlighterDbContext`` class, looks for the desired snippet and makes a call to a web service.
 
 Then, we need to place the invocation of this method on a queue. So, let's modify the ``Create`` action:
 
@@ -648,7 +653,7 @@ In this tutorial you've seen that:
 * Sometimes you can't avoid long-running methods in ASP.NET applications.
 * Long running methods can cause your application to be un-responsible from the users point of view.
 * To remove waits you should place your long-running method invocation into background job.
-* Background job processing is complex itself, but simple with HangFire.
-* You can process background jobs even inside ASP.NET applications with HangFire.
+* Background job processing is complex itself, but simple with Hangfire.
+* You can process background jobs even inside ASP.NET applications with Hangfire.
 
 Please, ask any questions using the comments form below.
