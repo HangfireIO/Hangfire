@@ -18,6 +18,10 @@ This package is a dependency of the HangFire's bootstrapper package ``HangFire``
 Configuration
 --------------
 
+.. code-block:: c#
+
+   app.UseSqlServerStorage("connection string or its name");
+
 To use SQL Server as your main job storage, just pass an instance of the ``SqlServerStorage`` class to the ``JobStorage.Current`` static property with defined connection string name:
 
 .. code-block:: c#

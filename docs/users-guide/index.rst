@@ -8,6 +8,7 @@ User's Guide
 .. toctree::
    :maxdepth: 2
 
+   getting-started/index
    background-methods/index
    background-processing/index
    best-practices
