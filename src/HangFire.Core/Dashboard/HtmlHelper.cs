@@ -31,6 +31,11 @@ namespace HangFire.Dashboard
     {
         public static NonEscapedString DisplayMethod(Job job)
         {
+            if (job == null)
+            {
+                return new NonEscapedString("<em>Can not find the target method.</em>");
+            }
+
             return new NonEscapedString(DisplayJob(job));
         }
 
@@ -38,21 +43,22 @@ namespace HangFire.Dashboard
         {
             if (job == null)
             {
-                throw new ArgumentNullException("Can not find the target method.");
+                throw new ArgumentNullException("job");
             }
 
             var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
 
-            if (displayNameAttribute == null)
+            if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
             {
                 return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
             }
 
             try
             {
-                return String.Format(displayNameAttribute.DisplayName, job.Arguments);
+                var arguments = job.Arguments.Cast<object>().ToArray();
+                return String.Format(displayNameAttribute.DisplayName, arguments);
             }
-            catch (Exception)
+            catch (FormatException)
             {
                 return displayNameAttribute.DisplayName;
             }

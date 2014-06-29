@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using HangFire;
@@ -62,6 +63,7 @@ namespace ConsoleSample
             }
         }
 
+        [DisplayName("Name: {0}, Author: {1}, Created: {2}")]
         public void Args(string name, int authorId, DateTime createdAt)
         {
             Console.WriteLine("{0}, {1}, {2}", name, authorId, createdAt);
