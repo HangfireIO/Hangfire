@@ -64,11 +64,11 @@
     <Compile Include="RabbitMqSqlServerStorageExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HangFire.Core\Hangfire.Core.csproj">
+    <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
       <Name>Hangfire.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HangFire.SqlServer\Hangfire.SqlServer.csproj">
+    <ProjectReference Include="..\Hangfire.SqlServer\Hangfire.SqlServer.csproj">
       <Project>{A523C0E3-097D-4869-977F-15A717EA3E83}</Project>
       <Name>Hangfire.SqlServer</Name>
     </ProjectReference>
@@ -76,7 +76,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\Common\HangFire.targets" />
+  <Import Project="..\Common\Hangfire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

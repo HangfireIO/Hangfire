@@ -1,4 +1,4 @@
-# Travis-CI Build for HangFire
+# Travis-CI Build for Hangfire
 # see travis-ci.org for details
 
 # Mono/.NET are not officially supported. The following is a workaround.

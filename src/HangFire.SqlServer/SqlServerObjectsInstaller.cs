@@ -1,18 +1,18 @@
-﻿// This file is part of HangFire.
+﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
 // 
-// HangFire is free software: you can redistribute it and/or modify
+// Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// HangFire is distributed in the hope that it will be useful,
+// Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with HangFire. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Data.SqlClient;
@@ -23,7 +23,7 @@ using System.Reflection;
 using Common.Logging;
 using Dapper;
 
-namespace HangFire.SqlServer
+namespace Hangfire.SqlServer
 {
     [ExcludeFromCodeCoverage]
     internal static class SqlServerObjectsInstaller
@@ -36,7 +36,7 @@ namespace HangFire.SqlServer
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            Log.Info("Start installing HangFire SQL objects...");
+            Log.Info("Start installing Hangfire SQL objects...");
 
             if (!IsSqlEditionSupported(connection))
             {
@@ -45,13 +45,13 @@ namespace HangFire.SqlServer
 
             var script = GetStringResource(
                 typeof(SqlServerObjectsInstaller).Assembly, 
-                "HangFire.SqlServer.Install.sql");
+                "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 3;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
 
             connection.Execute(script);
 
-            Log.Info("HangFire SQL objects installed.");
+            Log.Info("Hangfire SQL objects installed.");
         }
 
         private static bool IsSqlEditionSupported(SqlConnection connection)

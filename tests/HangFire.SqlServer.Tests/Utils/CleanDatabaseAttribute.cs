@@ -6,7 +6,7 @@ using System.Transactions;
 using Dapper;
 using Xunit;
 
-namespace HangFire.SqlServer.Tests
+namespace Hangfire.SqlServer.Tests
 {
     public class CleanDatabaseAttribute : BeforeAfterTestAttribute
     {

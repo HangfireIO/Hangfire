@@ -3,7 +3,7 @@ using System.Linq;
 using Moq;
 using Xunit;
 
-namespace HangFire.SqlServer.Tests
+namespace Hangfire.SqlServer.Tests
 {
     public class PersistentJobQueueProviderCollectionFacts
     {

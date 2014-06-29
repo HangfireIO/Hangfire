@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace HangFire.SqlServer.Tests
+namespace Hangfire.SqlServer.Tests
 {
     public class StorageOptionsFacts
     {

@@ -5,13 +5,13 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
-using HangFire.Common;
-using HangFire.Server;
-using HangFire.Storage;
+using Hangfire.Common;
+using Hangfire.Server;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace HangFire.SqlServer.Tests
+namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerConnectionFacts
     {

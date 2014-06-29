@@ -80,15 +80,15 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HangFire.Core\Hangfire.Core.csproj">
+    <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
       <Name>Hangfire.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.Redis\Hangfire.Redis.csproj">
+    <ProjectReference Include="..\..\src\Hangfire.Redis\Hangfire.Redis.csproj">
       <Project>{8F46F57B-3247-4AA7-B330-57AC088547EB}</Project>
       <Name>Hangfire.Redis</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HangFire.Core.Tests\Hangfire.Core.Tests.csproj">
+    <ProjectReference Include="..\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj">
       <Project>{E13C3543-39A3-475C-BB43-2E311E634843}</Project>
       <Name>Hangfire.Core.Tests</Name>
     </ProjectReference>
@@ -96,7 +96,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <Import Project="..\..\src\Common\HangFire.targets" />
+  <Import Project="..\..\src\Common\Hangfire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

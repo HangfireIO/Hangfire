@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>..\HangFire.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>..\Hangfire.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Debug\Hangfire.Core.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
@@ -431,7 +431,7 @@
     <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
   </ItemGroup>
   <ItemGroup />
-  <Import Project="..\Common\HangFire.targets" />
+  <Import Project="..\Common\Hangfire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

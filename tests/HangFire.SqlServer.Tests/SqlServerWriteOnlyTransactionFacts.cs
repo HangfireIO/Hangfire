@@ -4,11 +4,11 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
-using HangFire.States;
+using Hangfire.States;
 using Moq;
 using Xunit;
 
-namespace HangFire.SqlServer.Tests
+namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerWriteOnlyTransactionFacts
     {

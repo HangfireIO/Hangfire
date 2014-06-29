@@ -3,7 +3,7 @@ using System.Linq;
 using System.Transactions;
 using Xunit;
 
-namespace HangFire.SqlServer.Tests
+namespace Hangfire.SqlServer.Tests
 {
     public class StorageFacts
     {

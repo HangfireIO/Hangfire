@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Data.SqlClient;
 
-namespace HangFire.SqlServer.Tests
+namespace Hangfire.SqlServer.Tests
 {
     public static class ConnectionUtils
     {
-        private const string DatabaseVariable = "HangFire_SqlServer_DatabaseName";
+        private const string DatabaseVariable = "Hangfire_SqlServer_DatabaseName";
         private const string ConnectionStringTemplateVariable 
-            = "HangFire_SqlServer_ConnectionStringTemplate";
+            = "Hangfire_SqlServer_ConnectionStringTemplate";
 
         private const string MasterDatabaseName = "master";
-        private const string DefaultDatabaseName = @"HangFire.SqlServer.Tests";
+        private const string DefaultDatabaseName = @"Hangfire.SqlServer.Tests";
         private const string DefaultConnectionStringTemplate
             = @"Server=.\sqlexpress;Database={0};Trusted_Connection=True;";
 
