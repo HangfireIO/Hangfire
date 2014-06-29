@@ -55,4 +55,4 @@ Hangfire provides an extension method for the ``IAppBuilder`` interface called `
        });
    }
 
-The ``UseHangfire`` method also registers the *Hangfire Dashboard* middleware at the ``http://<your-app>/hangfire`` default url (but you can change it).
+The order of ``Use*`` methods inside the configuration action is not important, all configuration logic is being performed after all calls to these methods. The ``UseHangfire`` method also registers the *Hangfire Dashboard* middleware at the ``http://<your-app>/hangfire`` default url (but you can change it).
