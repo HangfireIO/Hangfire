@@ -101,4 +101,4 @@ So, if you have long-running jobs, it is better to configure the invisibility ti
 
    var storage = new SqlServerStorage("<name or connection string>", options);
 
-If you want to forget about invisibility interval, take a look at MSMQ extension, it uses transactional queues that return a job to its queue immediately upon a process termination.
+If you want to forget about invisibility interval, take a look at :doc:`MSMQ extension <using-sql-server-with-msmq>`, it uses transactional queues that return a job to its queue immediately upon a process termination.

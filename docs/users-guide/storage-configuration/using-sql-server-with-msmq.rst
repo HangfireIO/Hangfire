@@ -1,7 +1,7 @@
 Using SQL Server with MSMQ
 ===========================
 
-`HangFire.SqlServer.MSMQ <https://www.nuget.org/packages/HangFire.SqlServer.MSMQ/>`_ extension changed the way HangFire handles job queues. Default :doc:`implementation <using-sql-server>` uses regular SQL Server tables to organize queues, and this extensions uses transactional MSMQ queues to process jobs in a more efficient way:
+`Hangfire.SqlServer.MSMQ <https://www.nuget.org/packages/Hangfire.SqlServer.MSMQ/>`_ extension changes the way Hangfire handles job queues. Default :doc:`implementation <using-sql-server>` uses regular SQL Server tables to organize queues, and this extensions uses transactional MSMQ queues to process jobs in a more efficient way:
 
 ================================ ================= =================
 Feature                          Raw SQL Server    SQL Server + MSMQ
@@ -19,11 +19,11 @@ So, if you want to lower background job processing latency with SQL Server stora
 Installation
 -------------
 
-MSMQ support for SQL Server job storage implementation, like other HangFire extensions, is a NuGet package. So, you can install it using NuGet Package Manager Console window:
+MSMQ support for SQL Server job storage implementation, like other Hangfire extensions, is a NuGet package. So, you can install it using NuGet Package Manager Console window:
 
 .. code-block:: powershell
 
-   PM> Install-Package HangFire.SqlServer.MSMQ
+   PM> Install-Package Hangfire.SqlServer.MSMQ
 
 Configuration
 --------------
@@ -33,19 +33,22 @@ To use MSMQ queues, you should do the following steps:
 1. **Create them manually on each host**. Don't forget to grant appropriate permissions.
 2. Register all MSMQ queues in current ``SqlServerStorage`` instance.
 
-If you are using only default queue, pass the path pattern to the ``UseMsmqQueues`` extension method:
+If you are using only default queue, pass the path pattern to the ``UseMsmqQueues`` extension method (it also applicable to the :doc:`OWIN bootstrapper <../getting-started/owin-bootstrapper>`):
 
 .. code-block:: c#
 
-   app.UseSqlServerStorage("<connection string or its name>")
-      .UseMsmqQueues(@".\hangfire-{0}");
+   app.UseHangfire(config =>
+   {
+       config.UseSqlServerStorage("<connection string or its name>")
+             .UseMsmqQueues(@".\hangfire-{0}");
+   });
 
 To use multiple queues, you should pass them explicitly:
 
 .. code-block:: c#
 
-   app.UseSqlServerStorage("<connection string or its name>")
-      .UseMsmqQueues(@".\hangfire-{0}", "critical", "default");
+   config.UseSqlServerStorage("<connection string or its name>")
+         .UseMsmqQueues(@".\hangfire-{0}", "critical", "default");
 
 If you are running Hangfire outside of web application, and OWIN context is not accessible, call the extension method on an instance of the ``SqlServerStorage`` class (parameters are the same):
 
@@ -58,21 +61,21 @@ Limitations
 ------------
 
 * Only transactional MSMQ queues supported for reability reasons inside ASP.NET.
-* You can not use both SQL Server Job Queue and MSMQ Job Queue implementations in the same server (see below). This limitation relates to HangFire.Server only. You can still enqueue jobs to whatever queues and watch them both in HangFire.Monitor.
+* You can not use both SQL Server Job Queue and MSMQ Job Queue implementations in the same server (see below). This limitation relates to Hangfire Server only. You can still enqueue jobs to whatever queues and watch them both in Hangfire Dashboard.
 
 The following case will not work: the ``critical`` queue uses MSMQ, and the ``default`` queue uses SQL Server to store job queue. In this case job fetcher can not make the right decision.
 
 .. code-block:: c#
 
-   app.UseSqlServerStorage("<name or connection string>")
-      .UseMsmqQueues(@"hangfire-{0}", "critical");
+   config.UseSqlServerStorage("<name or connection string>")
+         .UseMsmqQueues(@"hangfire-{0}", "critical");
 
-   app.UseServer("critical", "default");
+   config.UseServer("critical", "default");
 
 Transition to MSMQ queues
 --------------------------
 
-If you have a fresh installation, just use the ``UseMsmqQueues`` method. Otherwise, your system may contain unprocessed jobs in SQL Server. Since one HangFire.Server instance can not process job from different queues, you should deploy :doc:`multiple instances <../background-processing/running-multiple-server-instances>` of HangFire.Server, one listens only MSMQ queues, another – only SQL Server queues. When the latter finish its work (you can see this from HangFire.Monitor – your SQL Server queues will be removed), you can remove it safely.
+If you have a fresh installation, just use the ``UseMsmqQueues`` method. Otherwise, your system may contain unprocessed jobs in SQL Server. Since one Hangfire Server instance can not process job from different queues, you should deploy :doc:`multiple instances <../background-processing/running-multiple-server-instances>` of Hangfire Server, one listens only MSMQ queues, another – only SQL Server queues. When the latter finish its work (you can see this from HangFire.Monitor – your SQL Server queues will be removed), you can remove it safely.
 
 If you are using default queue only, do this:
 
@@ -85,13 +88,13 @@ If you are using default queue only, do this:
         ServerName = "OldQueueServer" // Pass this to differentiate this server from the next one
     };
 
-    app.UseServer(oldStorage, oldOptions);
+    config.UseServer(oldStorage, oldOptions);
 
     /* This server will process only MSMQ queues, i.e. new jobs */
-    app.UseSqlServerStorage("<connection string or its name>")
-       .UseMsmqQueues(@".\hangfire-{0}");
+    config.UseSqlServerStorage("<connection string or its name>")
+          .UseMsmqQueues(@".\hangfire-{0}");
 
-    app.UseServer();
+    config.UseServer();
 
 If you use multiple queues, do this:
 
@@ -105,10 +108,10 @@ If you use multiple queues, do this:
         ServerName = "OldQueueServer" // Pass this to differentiate this server from the next one
     };
 
-    app.UseServer(oldStorage, oldOptions);
+    config.UseServer(oldStorage, oldOptions);
 
     /* This server will process only MSMQ queues, i.e. new jobs */
-    app.UseSqlServerStorage("<connection string or its name>")
-       .UseMsmqQueues(@".\hangfire-{0}", "critical", "default");
+    config.UseSqlServerStorage("<connection string or its name>")
+          .UseMsmqQueues(@".\hangfire-{0}", "critical", "default");
 
-    app.UseServer("critical", "default");
+    config.UseServer("critical", "default");
