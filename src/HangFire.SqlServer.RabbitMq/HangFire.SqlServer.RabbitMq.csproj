@@ -7,8 +7,8 @@
     <ProjectGuid>{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.SqlServer.RabbitMq</RootNamespace>
-    <AssemblyName>HangFire.SqlServer.RabbitMq</AssemblyName>
+    <RootNamespace>Hangfire.SqlServer.RabbitMq</RootNamespace>
+    <AssemblyName>Hangfire.SqlServer.RabbitMq</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\HangFire.SqlServer.RabbitMq.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\Hangfire.SqlServer.RabbitMq.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -33,7 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\HangFire.SqlServer.RabbitMq.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\Hangfire.SqlServer.RabbitMq.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
@@ -64,13 +64,13 @@
     <Compile Include="RabbitMqSqlServerStorageExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">
+    <ProjectReference Include="..\HangFire.Core\Hangfire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
-      <Name>HangFire.Core</Name>
+      <Name>Hangfire.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HangFire.SqlServer\HangFire.SqlServer.csproj">
+    <ProjectReference Include="..\HangFire.SqlServer\Hangfire.SqlServer.csproj">
       <Project>{A523C0E3-097D-4869-977F-15A717EA3E83}</Project>
-      <Name>HangFire.SqlServer</Name>
+      <Name>Hangfire.SqlServer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

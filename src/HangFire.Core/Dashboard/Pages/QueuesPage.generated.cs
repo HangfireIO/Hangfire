@@ -9,7 +9,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HangFire.Dashboard.Pages
+namespace Hangfire.Dashboard.Pages
 {
     
     #line 2 "..\..\Dashboard\Pages\QueuesPage.cshtml"

@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Core", "src\HangFire.Core\HangFire.Core.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core", "src\HangFire.Core\Hangfire.Core.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSample", "samples\MvcSample\MvcSample.csproj", "{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}"
 EndProject
@@ -18,9 +18,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5D1016
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{119DA7FA-B94C-4B63-AEC9-428EF834E0D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Redis", "src\HangFire.Redis\HangFire.Redis.csproj", "{8F46F57B-3247-4AA7-B330-57AC088547EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Redis", "src\HangFire.Redis\Hangfire.Redis.csproj", "{8F46F57B-3247-4AA7-B330-57AC088547EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer", "src\HangFire.SqlServer\HangFire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer", "src\HangFire.SqlServer\Hangfire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{766BE831-F758-46BC-AFD3-BBEEFE0F686F}"
 EndProject
@@ -38,12 +38,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E687025-A525-4534-8869-CB685C7B11C4}"
 	ProjectSection(SolutionItems) = preProject
-		nuspecs\HangFire.Core.nuspec = nuspecs\HangFire.Core.nuspec
-		nuspecs\HangFire.nuspec = nuspecs\HangFire.nuspec
-		nuspecs\HangFire.Redis.nuspec = nuspecs\HangFire.Redis.nuspec
-		nuspecs\HangFire.SqlServer.MSMQ.nuspec = nuspecs\HangFire.SqlServer.MSMQ.nuspec
-		nuspecs\HangFire.SqlServer.nuspec = nuspecs\HangFire.SqlServer.nuspec
-		nuspecs\HangFire.SqlServer.RabbitMQ.nuspec = nuspecs\HangFire.SqlServer.RabbitMQ.nuspec
+		nuspecs\Hangfire.Core.nuspec = nuspecs\Hangfire.Core.nuspec
+		nuspecs\Hangfire.nuspec = nuspecs\Hangfire.nuspec
+		nuspecs\Hangfire.Redis.nuspec = nuspecs\Hangfire.Redis.nuspec
+		nuspecs\Hangfire.SqlServer.MSMQ.nuspec = nuspecs\Hangfire.SqlServer.MSMQ.nuspec
+		nuspecs\Hangfire.SqlServer.nuspec = nuspecs\Hangfire.SqlServer.nuspec
+		nuspecs\Hangfire.SqlServer.RabbitMQ.nuspec = nuspecs\Hangfire.SqlServer.RabbitMQ.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2BF00-C473-48A5-B2A7-5A3DE0910FCF}"
@@ -52,21 +52,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2
 		content\web.config.transform = content\web.config.transform
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Core.Tests", "tests\HangFire.Core.Tests\HangFire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.Tests", "tests\HangFire.Core.Tests\Hangfire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Redis.Tests", "tests\HangFire.Redis.Tests\HangFire.Redis.Tests.csproj", "{25909EE6-2A56-4EAC-9D0E-436FF2435E88}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Redis.Tests", "tests\HangFire.Redis.Tests\Hangfire.Redis.Tests.csproj", "{25909EE6-2A56-4EAC-9D0E-436FF2435E88}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer.Tests", "tests\HangFire.SqlServer.Tests\HangFire.SqlServer.Tests.csproj", "{6DFFA275-C483-4501-823A-741AC9EC0846}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Tests", "tests\HangFire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj", "{6DFFA275-C483-4501-823A-741AC9EC0846}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.Sample.Highlighter", "samples\HangFire.Sample.Highlighter\HangFire.Sample.Highlighter.csproj", "{B5476D92-46B1-4A65-A1FD-675342B7BB64}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Sample.Highlighter", "samples\HangFire.Sample.Highlighter\Hangfire.Sample.Highlighter.csproj", "{B5476D92-46B1-4A65-A1FD-675342B7BB64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer.Msmq", "src\HangFire.SqlServer.Msmq\HangFire.SqlServer.Msmq.csproj", "{762BE479-0AEC-47E0-8F9C-34FA54641749}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Msmq", "src\HangFire.SqlServer.Msmq\Hangfire.SqlServer.Msmq.csproj", "{762BE479-0AEC-47E0-8F9C-34FA54641749}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer.Msmq.Tests", "tests\HangFire.SqlServer.Msmq.Tests\HangFire.SqlServer.Msmq.Tests.csproj", "{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Msmq.Tests", "tests\HangFire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj", "{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer.RabbitMq.Tests", "tests\HangFire.SqlServer.RabbitMq.Tests\HangFire.SqlServer.RabbitMq.Tests.csproj", "{2654D751-33D5-411D-A187-D057FED9CD25}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq.Tests", "tests\HangFire.SqlServer.RabbitMq.Tests\Hangfire.SqlServer.RabbitMq.Tests.csproj", "{2654D751-33D5-411D-A187-D057FED9CD25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangFire.SqlServer.RabbitMq", "src\HangFire.SqlServer.RabbitMq\HangFire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq", "src\HangFire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

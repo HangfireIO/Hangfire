@@ -9,7 +9,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HangFire.Dashboard.Pages
+namespace Hangfire.Dashboard.Pages
 {
     using System;
     using System.Collections.Generic;

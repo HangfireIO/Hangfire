@@ -7,8 +7,8 @@
     <ProjectGuid>{2654D751-33D5-411D-A187-D057FED9CD25}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.SqlServer.RabbitMq.Tests</RootNamespace>
-    <AssemblyName>HangFire.SqlServer.RabbitMq.Tests</AssemblyName>
+    <RootNamespace>Hangfire.SqlServer.RabbitMq.Tests</RootNamespace>
+    <AssemblyName>Hangfire.SqlServer.RabbitMq.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -63,17 +63,17 @@
     <Compile Include="Utils\RabbitMqChannel.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HangFire.Core\HangFire.Core.csproj">
+    <ProjectReference Include="..\..\src\HangFire.Core\Hangfire.Core.csproj">
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
-      <Name>HangFire.Core</Name>
+      <Name>Hangfire.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.SqlServer.RabbitMq\HangFire.SqlServer.RabbitMq.csproj">
+    <ProjectReference Include="..\..\src\HangFire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj">
       <Project>{4cc51f69-0311-4485-b7de-9ecab3a1b5e5}</Project>
-      <Name>HangFire.SqlServer.RabbitMq</Name>
+      <Name>Hangfire.SqlServer.RabbitMq</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.SqlServer\HangFire.SqlServer.csproj">
+    <ProjectReference Include="..\..\src\HangFire.SqlServer\Hangfire.SqlServer.csproj">
       <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
-      <Name>HangFire.SqlServer</Name>
+      <Name>Hangfire.SqlServer</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -7,8 +7,8 @@
     <ProjectGuid>{A523C0E3-097D-4869-977F-15A717EA3E83}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.SqlServer</RootNamespace>
-    <AssemblyName>HangFire.SqlServer</AssemblyName>
+    <RootNamespace>Hangfire.SqlServer</RootNamespace>
+    <AssemblyName>Hangfire.SqlServer</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\HangFire.SqlServer.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Hangfire.SqlServer.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -33,7 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\HangFire.SqlServer.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Hangfire.SqlServer.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
@@ -98,9 +98,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HangFire.Core\HangFire.Core.csproj">
+    <ProjectReference Include="..\HangFire.Core\Hangfire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
-      <Name>HangFire.Core</Name>
+      <Name>Hangfire.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -7,8 +7,8 @@
     <ProjectGuid>{25909EE6-2A56-4EAC-9D0E-436FF2435E88}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.Redis.Tests</RootNamespace>
-    <AssemblyName>HangFire.Redis.Tests</AssemblyName>
+    <RootNamespace>Hangfire.Redis.Tests</RootNamespace>
+    <AssemblyName>Hangfire.Redis.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -80,17 +80,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HangFire.Core\HangFire.Core.csproj">
+    <ProjectReference Include="..\..\src\HangFire.Core\Hangfire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
-      <Name>HangFire.Core</Name>
+      <Name>Hangfire.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\HangFire.Redis\HangFire.Redis.csproj">
+    <ProjectReference Include="..\..\src\HangFire.Redis\Hangfire.Redis.csproj">
       <Project>{8F46F57B-3247-4AA7-B330-57AC088547EB}</Project>
-      <Name>HangFire.Redis</Name>
+      <Name>Hangfire.Redis</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HangFire.Core.Tests\HangFire.Core.Tests.csproj">
+    <ProjectReference Include="..\HangFire.Core.Tests\Hangfire.Core.Tests.csproj">
       <Project>{E13C3543-39A3-475C-BB43-2E311E634843}</Project>
-      <Name>HangFire.Core.Tests</Name>
+      <Name>Hangfire.Core.Tests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

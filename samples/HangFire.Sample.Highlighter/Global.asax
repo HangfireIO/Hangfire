@@ -1,1 +1,1 @@
-﻿<%@ Application Codebehind="Global.asax.cs" Inherits="HangFire.Sample.Highlighter.MvcApplication" Language="C#" %>
+﻿<%@ Application Codebehind="Global.asax.cs" Inherits="Hangfire.Sample.Highlighter.MvcApplication" Language="C#" %>

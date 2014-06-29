@@ -7,8 +7,8 @@
     <ProjectGuid>{E13C3543-39A3-475C-BB43-2E311E634843}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HangFire.Core.Tests</RootNamespace>
-    <AssemblyName>HangFire.Core.Tests</AssemblyName>
+    <RootNamespace>Hangfire.Core.Tests</RootNamespace>
+    <AssemblyName>Hangfire.Core.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -139,9 +139,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\HangFire.Core\HangFire.Core.csproj">
+    <ProjectReference Include="..\..\src\HangFire.Core\Hangfire.Core.csproj">
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
-      <Name>HangFire.Core</Name>
+      <Name>Hangfire.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
