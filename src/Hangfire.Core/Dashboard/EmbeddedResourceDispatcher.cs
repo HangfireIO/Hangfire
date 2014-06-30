@@ -45,7 +45,7 @@ namespace Hangfire.Dashboard
         public Task Dispatch(IOwinContext context, Match match)
         {
             context.Response.ContentType = _contentType;
-            context.Response.Expires = DateTime.MaxValue;
+            context.Response.Expires = DateTime.Now.AddYears(1);
 
             WriteResponse(context.Response);
 
