@@ -18,11 +18,21 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
     <releaseNotes>https://github.com/odinserj/Hangfire/releases
     
-1.0.0-alpha1
+1.0.0
 * Added – OWIN implementation for Hangfire Dashboard.
 * Added – Custom authorization filters support for dashboard.
 * Added – Unified bootstrapper to start Hangfire in web applications.
+* Added – Descriptive names for background jobs in Dashboard.
+* Added – RabbitMQ support for SQL Server storage. Thanks to Denny Ferrassoli!
 * Changed – Hangfire now requires .NET Framework 4.5.
+* Changed – Namespaces, assemblies and packages now start with `Hangfire` (not `HangFire`).
+* Changed – `Hangfire.Core` now contains the dashboard. There is no more `Hangfire.Web`.
+* Changed – Common.Logging dependency package updated to 2.2.0.
+* Changed – Default dashboard url is now '/hangfire' (without `.axd` suffix).
+* Removed – Removed `Enqueue` method overloads with queue parameter.
+* Removed – Removed `AspNetBackgroundJobServer` class.
+* Fixed – Russian language in Dashboard replaced with English.
+* Fixed – Recurring jobs reported to be executed 44 years ago.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
