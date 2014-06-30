@@ -77,7 +77,7 @@ RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
 
 **Process them inside a web application…**
 
-You can process background tasks in any OWIN compatible application frameworks, including [ASP.NET MVC](http://www.asp.net/mvc), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – Hangfire is reliable for web applications from scratch, even on shared hosting.
+You can process background tasks in any OWIN compatible application frameworks, including [ASP.NET MVC](http://www.asp.net/mvc), [ASP.NET Web API](http://www.asp.net/web-api), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – Hangfire is reliable for web applications from scratch, even on shared hosting.
 
 ```csharp
 app.UseHangfire(config => config.UseServer());
@@ -138,5 +138,3 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
-
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/dd58c8cf730a3ed3675202135bb06025 "githalytics.com")](http://githalytics.com/odinserj/Hangfire)
