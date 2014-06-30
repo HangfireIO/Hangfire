@@ -1,27 +1,42 @@
-Configuring HangFire Monitor authorization
-===========================================
+Configuring Dashboard authorization
+====================================
 
-After installing the ``HangFire.Web`` package (it's a dependency of the ``HangFire`` package)., the ``web.config`` file of your application is being changed to include *HangFire Monitor* HTTP handler to see what's going on with your background jobs.
+By default Hangfire allows access to Dashboard pages only for local requests. In order to give appropriate rights for production users, install the following package:
 
-By default, you can access this UI only from a local machine for security reasons described `here <http://odinserj.net/2014/05/02/hangfire-0.8-released/#toc_0>`_. This policy makes the Monitor absolutely useless for production environments, but you can change this behavior through changing the ``hangfire:EnableRemoteMonitorAccess`` setting in your ``web.config`` file:
+.. code-block:: powershell
 
-.. code-block:: xml
+   Install-Package Hangfire.Dashboard.Authorization
 
-  <appSettings>
-    <add key="hangfire:EnableRemoteMonitorAccess" value="true"/>
-    ...
-  </appSettings>
+And configure authorization filters in the :doc:`OWIN bootstrapper's <../getting-started/owin-bootstrapper>` configuration action:
 
-However, if you do this, anyone will be able to access this internal page and sooner or later some dishonorable users may use it in their dishonorable interests. To prevent this, you should install (if it's not installed yet) the Role Provider implementation (`MembershipProvider <http://msdn.microsoft.com/en-us/library/system.web.security.membershipprovider.aspx>`_, `SimpleMembershipProvider <http://msdn.microsoft.com/ru-ru/library/webmatrix.webdata.simplemembershipprovider(v=vs.111).aspx>`_ or new `ASP.NET Identity <http://www.asp.net/identity>`_), and choose the roles you want to give access to in your ``web.config`` using standard ASP.NET authorization configuration.
+.. code-block:: c#
 
-.. code-block:: xml
+   using Hangfire.Dashboard;
 
-  <location path="hangfire.axd" inheritInChildApplications="false">
-    <system.web>
-      <authorization>
-        <allow roles="Administrator" />
-        <deny users="*" />
-      </authorization>
-    </system.web>
-    ...
-  </location>
+   app.UseHangfire(config =>
+   {
+       config.UseAuthorizationFilters(new AuthorizationFilter
+       {
+           Users = "admin, superuser", // allow only specified users
+           Roles = "admins" // allow only specified roles
+       });
+
+       // or
+
+       config.UseAuthorizationFilters(
+           new ClaimsBasedAuthorizationFilter("hangfire", "access"));
+   });
+
+Or implement your own authorization filter:
+
+.. code-block:: c#
+    
+    using Hangfire.Dashboard;
+
+    public class MyRestrictiveAuthorizationFilter : IAuthorizationFilter
+    {
+         public bool Authorize(IOwinContext context)
+         {
+             return false;
+         }
+    }
