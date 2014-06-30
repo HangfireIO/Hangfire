@@ -1,7 +1,7 @@
 Using Redis
 ============
 
-HangFire with Redis job storage implementation processes jobs much faster than with SQL Server storage. On my development machine I observed more than 4x throughput improvement with empty jobs (method that does not do anything). ``HangFire.Redis`` leverages the ``BRPOPLPUSH`` command to fetch jobs, so the job processing latency is kept to minimum.
+Hangfire with Redis job storage implementation processes jobs much faster than with SQL Server storage. On my development machine I observed more than 4x throughput improvement with empty jobs (method that does not do anything). ``Hangfire.Redis`` leverages the ``BRPOPLPUSH`` command to fetch jobs, so the job processing latency is kept to minimum.
 
 Please, see the `downloads page <http://redis.io/download>`_ to obtain latest version of Redis. If you unfamiliar with this great storage, please see its `documentation <http://redis.io/documentation>`_. 
 
@@ -10,29 +10,50 @@ Redis also supports Windows platform, but this is unofficial fork made by clever
 Installation
 -------------
 
-Redis job storage implementation is available through the `HangFire.Redis <https://www.nuget.org/packages/HangFire.Redis/>`_ NuGet package. So, install it using the NuGet Package Manager Console window:
+Redis job storage implementation is available through the `Hangfire.Redis <https://www.nuget.org/packages/Hangfire.Redis/>`_ NuGet package. So, install it using the NuGet Package Manager Console window:
 
 .. code-block:: powershell
 
-   PM> Install-Package HangFire.Redis
+   PM> Install-Package Hangfire.Redis
 
 Configuration
 --------------
 
-If you have package ``HangFire`` or ``HangFire.Web`` installed, open the ``~/App_Start/HangFireConfig.cs`` file and add the following line:
+If you are using Hangfire in a web application, you can use extension methods for :doc:`OWIN bootstrapper <../getting-started/owin-bootstrapper>`:
 
 .. code-block:: c#
 
-   // Using hostname only and default port 6379
-   JobStorage.Current = new RedisStorage("localhost");
-   // or specify a port
-   JobStorage.Current = new RedisStorage("localhost:6379");
-   // or add a db number
-   JobStorage.Current = new RedisStorage("localhost:6379", 0);
-   // or use a password
+   app.UseHangfire(config =>
+   {
+       // Using hostname only and default port 6379
+      config.UseRedisStorage("localhost");
+
+      // or specify a port
+      config.UseRedisStorage("localhost:6379");
+
+      // or add a db number
+      config.UseRedisStorage("localhost:6379", 0);
+
+      // or use a password
+      config.UseRedisStorage("password@localhost:6379", 0);
+
+      // or with options
+      var options = new RedisStorageOptions();
+      config.UseRedisStorage("localhost", 0, options);
+
+      /* ... */
+   })
+
+When OWIN configuration is not applicable, you can create an instance of the ``RedisStorage`` class and pass it to the static ``JobStorage.Current`` property. All connection strings and options are same.
+
+.. code-block:: c#
+
    JobStorage.Current = new RedisStorage("password@localhost:6379", 0);
 
-HangFire leverages connection pool to get connections quickly and shorten their usage. You can configure the pool size to match your environment needs:
+Connection pool size
+---------------------
+
+Hangfire leverages connection pool to get connections quickly and shorten their usage. You can configure the pool size to match your environment needs:
 
 .. code-block:: c#
 
@@ -41,4 +62,4 @@ HangFire leverages connection pool to get connections quickly and shorten their 
        ConnectionPoolSize = 50 // default value
    };
 
-   var storage = new RedisStorage("localhost", 0, options);
+   app.UseRedisStorage("localhost", 0, options);

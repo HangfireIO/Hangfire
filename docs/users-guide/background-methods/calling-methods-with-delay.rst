@@ -9,7 +9,7 @@ Sometimes you may want to postpone a method invocation, for example, to send an 
        () => Console.WriteLine("Hello, world"),
        TimeSpan.FromDays(1));
 
-HangFire Server periodically check the schedule to enqueue scheduled jobs to their queues, allowing workers to perform them. By default, check interval is equal to ``15 seconds``, but you can change it, just pass the corresponding option to the ``BackgroundJobServer`` or ``AspNetBackgroundJobServer`` ctor:
+:doc:`Hangfire Server <../background-processing/processing-background-jobs>` periodically check the schedule to enqueue scheduled jobs to their queues, allowing workers to perform them. By default, check interval is equal to ``15 seconds``, but you can change it, just pass the corresponding option to the ``BackgroundJobServer`` ctor (also applicable for :doc:`OWIN bootstrapper <../getting-started/owin-bootstrapper>`):
 
 .. code-block:: c#
 
@@ -18,7 +18,7 @@ HangFire Server periodically check the schedule to enqueue scheduled jobs to the
       SchedulePollingInterval = TimeSpan.FromMinutes(1)
   };
 
-  var server = new AspNetBackgroundJobServer(options);
+  var server = new BackgroundJobServer(options);
   server.Start();
 
 If you are processing your jobs inside an ASP.NET application, you should be warned about some setting that may prevent your scheduled jobs to be performed in-time. To avoid that behavour, perform the following steps:

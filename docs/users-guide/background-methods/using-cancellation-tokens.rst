@@ -1,7 +1,7 @@
 Using cancellation tokens
 ===========================
 
-HangFire provides support for cancellation tokens for your jobs to let them know when a shutdown request was initiated, or job performance was aborted. In the former case the job will be automatically put back to the beginning of its queue, allowing HangFire to process it after restart.
+Hangfire provides support for cancellation tokens for your jobs to let them know when a shutdown request was initiated, or job performance was aborted. In the former case the job will be automatically put back to the beginning of its queue, allowing Hangfire to process it after restart.
 
 Cancellation tokens are exposed through the ``IJobCancellationToken`` interface. It contains the ``ThrowIfCancellationRequested`` method that throws the ``OperationCanceledException`` when cancellation was requested:
 

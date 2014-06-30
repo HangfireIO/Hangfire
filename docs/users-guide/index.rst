@@ -8,9 +8,10 @@ User's Guide
 .. toctree::
    :maxdepth: 2
 
+   getting-started/index
+   storage-configuration/index
    background-methods/index
    background-processing/index
    best-practices
-   storage-configuration/index
    deployment-to-production/index
    extensibility/index

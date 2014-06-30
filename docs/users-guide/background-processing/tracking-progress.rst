@@ -3,7 +3,7 @@ Tracking the progress
 
 There are two ways to implement this task: polling and pushing. Polling is easier to understand, but server push is a more comfortable way, because it help you to avoid unnecessary calls to server. Plus, `SignalR <http://signalr.net>`_ greatly simplifies the latter task.
 
-I'll show you a simple example, where client needs only to check for a job completion. You can see the full sample in `HangFire.Highlighter <https://github.com/odinserj/HangFire.Highlighter>`_ project. 
+I'll show you a simple example, where client needs only to check for a job completion. You can see the full sample in `Hangfire.Highlighter <https://github.com/odinserj/Hangfire.Highlighter>`_ project. 
 
 Highlighter has the following background job that calls an external web service to highlight code snippets:
 

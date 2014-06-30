@@ -9,7 +9,7 @@ Let's start with a simple example: you are building your own blog using ASP.NET 
 
 .. tip::
 
-   I've prepared a simple application that has only comments list, you can `download its sources <https://github.com/odinserj/HangFire.Mailer/releases/tag/vBare>`_ to start work on tutorial.
+   I've prepared a simple application that has only comments list, you can `download its sources <https://github.com/odinserj/Hangfire.Mailer/releases/tag/vBare>`_ to start work on tutorial.
 
 You already have a controller action that creates new comment, and want to add the notification feature.
 
@@ -44,7 +44,7 @@ Then, create ``~/Models/NewCommentEmail.cs`` file with the following contents:
 
     using Postal;
 
-    namespace HangFire.Mailer.Models
+    namespace Hangfire.Mailer.Models
     {
         public class NewCommentEmail : Email
         {
@@ -58,7 +58,7 @@ Create a corresponding template for this email by adding the ``~/Views/Emails/Ne
 
 .. code-block:: text
 
-    @model HangFire.Mailer.Models.NewCommentEmail
+    @model Hangfire.Mailer.Models.NewCommentEmail
     To: @Model.To
     From: mailer@example.com
     Subject: New comment posted
@@ -120,25 +120,31 @@ There are `great problems <http://blog.stephencleary.com/2012/12/returning-early
 
 And you are unlikely want to install external Windows Services or use Windows Scheduler with console application to solve this simple problem (we are building a personal blog, not an e-commerce solution).
 
-Installing HangFire
+Installing Hangfire
 --------------------
 
-To be able to put tasks into background and to not to lose them during application restarts, we'll use `HangFire <http://hangfire.io>`_. It can handle background jobs in a reliable way inside ASP.NET application without external Windows Services or Windows Scheduler.
+To be able to put tasks into background and to not to lose them during application restarts, we'll use `Hangfire <http://hangfire.io>`_. It can handle background jobs in a reliable way inside ASP.NET application without external Windows Services or Windows Scheduler.
 
 .. code-block:: powershell
 
-   Install-Package HangFire
+   Install-Package Hangfire
 
-HangFire uses SQL Server or Redis to store information about background jobs. So, let's configure it. Go to ``~/App_Start/HangFireConfig.cs`` file and modify it:
+Hangfire uses SQL Server or Redis to store information about background jobs. So, let's configure it. Add or update the OWIN Startup class as :doc:`written here <../users-guide/getting-started/owin-bootstrapper>`.
 
 .. code-block:: c#
 
-   JobStorage.Current = new SqlServerStorage(
-       ConfigurationManager.ConnectionStrings["MailerDb"].ConnectionString);
+   public void Configure(IAppBuilder app)
+   {
+       app.UseHangfire(config =>
+       {
+           app.UseSqlServerStorage("MailerDb");
+           app.UseServer();
+       });
+   }
 
 The ``SqlServerStorage`` class will install all database tables automatically on application start-up (but you are able to do it manually).
 
-Now we are ready to use HangFire. It asks us to wrap a piece of code that should be executed in background to a public method.
+Now we are ready to use Hangfire. It asks us to wrap a piece of code that should be executed in background to a public method.
 
 .. code-block:: c#
 
@@ -156,7 +162,7 @@ Now we are ready to use HangFire. It asks us to wrap a piece of code that should
         return RedirectToAction("Index");
     }
 
-Note, that we are passing comment identifier instead of a full comment – HangFire should be able to serialize all method call arguments to string values. Default serializer does not know anything about our ``Comment`` class. Furthermore, integer identifier takes less space in serialized form than full comment text.
+Note, that we are passing comment identifier instead of a full comment – Hangfire should be able to serialize all method call arguments to string values. Default serializer does not know anything about our ``Comment`` class. Furthermore, integer identifier takes less space in serialized form than full comment text.
 
 Now, we need to prepare the ``NotifyNewComment`` method that will be called in background. Note, that ``HttpContext.Current`` is not available in this situation, but Postal library can work even `outside of ASP.NET request <http://aboutcode.net/postal/outside-aspnet.html>`_. But first install another package (that is needed for Postal 0.9.2, see `the issue <https://github.com/andrewdavey/postal/issues/68>`_).
 
@@ -193,7 +199,7 @@ Now, we need to prepare the ``NotifyNewComment`` method that will be called in b
 
 This is plain C# static method. We creating an ``EmailService`` instance, finding the needed comment and sending a mail with Postal. Simple enough, especially when comparing to custom Windows Service solution.
 
-That's all! Try to create some comments and see the ``C:\Temp`` path. You are also can check your background jobs at ``http://<your-app>/hangfire.axd``. If you have any questions – welcome to the comments form below.
+That's all! Try to create some comments and see the ``C:\Temp`` path. You are also can check your background jobs at ``http://<your-app>/hangfire``. If you have any questions – welcome to the comments form below.
 
 .. note::
 
@@ -201,10 +207,6 @@ That's all! Try to create some comments and see the ``C:\Temp`` path. You are al
 
    .. code-block:: xml
 
-      <dependentAssembly>
-        <assemblyIdentity name="Ninject" publicKeyToken="c7192dc5380945e7" culture="neutral" />
-        <bindingRedirect oldVersion="0.0.0.0-3.2.0.0" newVersion="3.2.0.0" />
-      </dependentAssembly>
       <dependentAssembly>
         <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
         <bindingRedirect oldVersion="0.0.0.0-6.0.0.0" newVersion="6.0.0.0" />
@@ -217,11 +219,11 @@ That's all! Try to create some comments and see the ``C:\Temp`` path. You are al
 Automatic retries
 ------------------
 
-When the ``emailService.Send`` method throws an exception, HangFire will retry it automatically after some delay (that is increased with each attempt). Retry attempt count is limited (3 by default), but you can increase it. Just apply the ``RetryAttribute`` to the ``NotifyNewComment`` method:
+When the ``emailService.Send`` method throws an exception, HangFire will retry it automatically after some delay (that is increased with each attempt). Retry attempt count is limited (3 by default), but you can increase it. Just apply the ``AutomaticRetryAttribute`` to the ``NotifyNewComment`` method:
 
 .. code-block:: c#
 
-   [Retry(20)]
+   [AutomaticRetry(20)]
    public static void NotifyNewComment(int commentId)
    {
        /* ... */
@@ -285,7 +287,7 @@ Compile a project, add a comment and go to web interface by typing ``http://<you
 Preserving current culture
 ---------------------------
 
-If you set a custom culture for your requests, HangFire will store and set it during the performance of background job. Try to do the following:
+If you set a custom culture for your requests, Hangfire will store and set it during the performance of background job. Try to do the following:
 
 .. code-block:: c#
 
