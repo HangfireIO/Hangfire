@@ -104,12 +104,13 @@ If you've discovered a bug, please report it to the [Hangfire GitHub Issues](htt
 Related Projects
 -----------------
 
-* [Hangfire.Autofac](https://github.com/odinserj/Hangfire.Autofac)
-* [Hangfire.Ninject](https://github.com/odinserj/Hangfire.Ninject)
+* [Hangfire.Dashboard.Authorization](https://github.com/HangfireIO/Hangfire.Dashboard.Authorization)
+* [Hangfire.Autofac](https://github.com/HangfireIO/Hangfire.Autofac)
+* [Hangfire.Ninject](https://github.com/HangfireIO/Hangfire.Ninject)
 * [Hangfire.SimpleInjector](https://github.com/devmondo/Hangfire.SimpleInjector) by [@devmondo](https://github.com/devmondo)
 * [Hangfire.Windsor](https://github.com/BredStik/Hangfire.Windsor) by [@BredStik](https://github.com/BredStik)
-* [Hangfire.Azure.QueueStorage](https://github.com/odinserj/Hangfire.Azure.QueueStorage)
-* [Hangfire.Azure.ServiceBusQueue](https://github.com/odinserj/Hangfire.Azure.ServiceBusQueue)
+* [Hangfire.Azure.QueueStorage](https://github.com/HangfireIO/Hangfire.Azure.QueueStorage)
+* [Hangfire.Azure.ServiceBusQueue](https://github.com/HangfireIO/Hangfire.Azure.ServiceBusQueue)
 
 Roadmap
 --------
