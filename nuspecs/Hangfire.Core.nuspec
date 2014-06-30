@@ -16,7 +16,7 @@
     <dependencies>
       <dependency id="Owin" version="1.0" />
       <dependency id="Microsoft.Owin" version="2.1.0" />
-      <dependency id="Common.Logging" version="2.1.2" />
+      <dependency id="Common.Logging" version="2.2.0" />
       <dependency id="Newtonsoft.Json" version="5.0.0" />
       <dependency id="ncrontab" version="1.0.0" />
       <dependency id="CronExpressionDescriptor" version="1.10.1" />
