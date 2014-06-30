@@ -5,7 +5,7 @@ Hangfire
 
 | Windows / .NET | Linux / Mono
 | --- | ---
-| <a href="https://ci.appveyor.com/project/odinserj/hangfire"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/qejwc7kshs1q75m4/branch/master?retina=true" /></a> | <a href="https://travis-ci.org/odinserj/Hangfire"><img src="https://travis-ci.org/odinserj/Hangfire.svg?branch=master" alt="Travis CI Build"></a>
+| <a href="https://ci.appveyor.com/project/odinserj/hangfire-525"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/master?retina=true" /></a> | <a href="https://travis-ci.org/HangfireIO/Hangfire"><img src="https://travis-ci.org/HangfireIO/Hangfire.svg?branch=master" alt="Travis CI Build"></a>
 
 Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. CPU and I/O intensive, long-running and short-running jobs are supported. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
 
