@@ -32,6 +32,8 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(IOwinContext context, Match match)
         {
+            context.Response.ContentType = "text/html";
+
             var page = _pageFunc(match);
             page.Request = context.Request;
             page.Response = context.Response;
