@@ -67,6 +67,12 @@ Hangfire uses its own fixed worker thread pool to consume queued jobs. Default w
 
 .. code-block:: c#
 
+   app.UseHangfire(config =>
+   {
+       config.UseServer(100);
+   });
+   
+   // or
    var server = new BackgroundJobServer(100);
 
 Process jobs anywhere
