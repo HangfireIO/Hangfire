@@ -48,16 +48,15 @@ To place a job into a different queue, use the ``QueueAttribute`` class on your 
    public void SomeMethod() { }
 
    BackgroundJob.Enqueue(() => SomeMethod());
-
-To start to process multiple queues, tell the ``BackgroundJobServer`` (or ``AspNetBackgroundJobServer``) class which queues to listen:
+   
+To start to process multiple queues, you need to update your :doc:`OWIN bootstrapper's <../getting-started/owin-bootstrapper>` configuration action:
 
 .. code-block:: c#
 
-   var options = new BackgroundJobServerOptions
+   app.UseHangfire(config =>
    {
-       Queues = new[] { "critical", "default" }
-   };
-   var server = new AspNetBackgroundJobServer( options );
+       config.UseServer("critical", "default");
+   });
 
 The order is important, workers will fetch jobs from the ``critical`` queue first, and then from the ``default`` queue.
 
