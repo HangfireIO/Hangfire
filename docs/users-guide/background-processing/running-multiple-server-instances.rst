@@ -18,3 +18,7 @@ Since the defaults values provide uniqueness only on a process level, you should
     };
 
     var server = new BackgroundJobServer(options);
+
+    // or
+    
+    app.UseHangfire(config => config.UseServer(options));
