@@ -49,7 +49,7 @@ To place a job into a different queue, use the ``QueueAttribute`` class on your 
 
    BackgroundJob.Enqueue(() => SomeMethod());
    
-To start to process multiple queues, you need to update your :doc:`OWIN bootstrapper's <../getting-started/owin-bootstrapper>` configuration action:
+To start to process multiple queues, you need to update your :doc:`OWIN bootstrapper's <../users-guide/getting-started/owin-bootstrapper>` configuration action:
 
 .. code-block:: c#
 
@@ -63,7 +63,7 @@ The order is important, workers will fetch jobs from the ``critical`` queue firs
 Concurrency level control
 --------------------------
 
-Hangfire uses its own fixed worker thread pool to consume queued jobs. Default worker count is set to ``Environment.ProcessorCount * 5``. This number is optimized both for CPU-intensive and I/O intensive tasks. If you experience excessive waits or context switches, you can configure amount of workers manually:
+Hangfire uses its own fixed worker thread pool to consume queued jobs. Default worker count is set to ``Environment.ProcessorCount * 5``. This number is optimized both for CPU-intensive and I/O intensive tasks. If you experience excessive waits or context switches, you can configure amount of workers manually: 
 
 .. code-block:: c#
 
