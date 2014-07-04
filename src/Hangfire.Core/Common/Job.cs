@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Hangfire.Server;
+using Newtonsoft.Json;
 
 namespace Hangfire.Common
 {
@@ -242,20 +243,30 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (parameter.ParameterType == typeof(object))
-                    {
-                        // Special case for handling object types, because string can not
-                        // be converted to object type.
-                        value = argument;
-                    }
-                    else if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
                     {
                         value = cancellationToken;
                     }
                     else
                     {
-                        var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-                        value = converter.ConvertFromInvariantString(argument);
+	                    try
+	                    {
+							value = JsonConvert.DeserializeObject(argument, parameter.ParameterType);
+	                    }
+	                    catch (Exception)
+	                    {
+		                    if (parameter.ParameterType == typeof (object))
+		                    {
+			                    // Special case for handling object types, because string can not
+			                    // be converted to object type.
+			                    value = argument;
+		                    }
+		                    else
+		                    {
+			                    var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
+			                    value = converter.ConvertFromInvariantString(argument);
+		                    }
+	                    }
                     }
 
                     result.Add(value);

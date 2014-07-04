@@ -300,20 +300,6 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(_methodInvoked);
         }
 
-        [Fact, StaticLock]
-        public void Perform_PassesObjectArguments_AsStrings()
-        {
-            // Arrange
-            _methodInvoked = false;
-            var job = Job.FromExpression(() => MethodWithObjectArgument(5));
-
-            // Act
-            job.Perform(_activator.Object, _token.Object);
-
-            // Assert - see the `MethodWithObjectArgument` method.
-            Assert.True(_methodInvoked);
-        }
-
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenActivatorThrowsAnException()
         {
