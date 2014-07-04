@@ -341,8 +341,7 @@ namespace Hangfire.Common
                     }
                     else
                     {
-                        var converter = TypeDescriptor.GetConverter(argument.GetType());
-                        value = converter.ConvertToInvariantString(argument);
+	                    value = JsonConvert.SerializeObject(argument);
                     }
                 }
 

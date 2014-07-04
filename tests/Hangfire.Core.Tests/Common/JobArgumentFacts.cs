@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Common
 {
-	public class JobArgumentTests
+	public class JobArgumentFacts
 	{
 		private readonly Mock<JobActivator> _activator;
 		private readonly Mock<IJobCancellationToken> _token;
 
-		public JobArgumentTests()
+		public JobArgumentFacts()
 		{
 			_activator = new Mock<JobActivator>();
 			_activator.Setup(x => x.ActivateJob(It.IsAny<Type>()))
-				      .Returns(() => new JobArgumentTests());
+				      .Returns(() => new JobArgumentFacts());
 
 			_token = new Mock<IJobCancellationToken>();
 		}
@@ -292,7 +292,7 @@ namespace Hangfire.Core.Tests.Common
 
 		private void CreateAndPerform<T>(T argumentValue, bool checkJsonOnly = false)
 		{
-			var type = typeof(JobArgumentTests);
+			var type = typeof(JobArgumentFacts);
 			var methodInfo = type.GetMethod("Method", new[] { typeof(T) });
 
 			var serializationMethods = new List<Tuple<string, Func<string>>>();

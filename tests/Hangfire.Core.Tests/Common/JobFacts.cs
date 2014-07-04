@@ -116,6 +116,15 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(expected, job.Arguments[0]);
         }
 
+	    [Fact]
+	    public void FromExpression_ConvertsArgumentsToJson()
+	    {
+		    var job = Job.FromExpression(() => MethodWithArguments("123", 1));
+
+			Assert.Equal("\"123\"", job.Arguments[0]);
+			Assert.Equal("1", job.Arguments[1]);
+	    }
+
         [Fact]
         public void FromExpression_ReturnValueDoesNotDepend_OnCurrentCulture()
         {
@@ -329,7 +338,9 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
         {
-            var job = Job.FromExpression(() => MethodWithCustomArgument(new Instance()));
+	        var type = typeof (JobFacts);
+	        var method = type.GetMethod("MethodWithDateTimeArgument");
+			var job = new Job(type, method, new []{ "sdfa" });
 
             var exception = Assert.Throws<JobPerformanceException>(
                 () => job.Perform(_activator.Object, _token.Object));

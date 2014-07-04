@@ -76,7 +76,7 @@
     <Compile Include="Client\CreatingContextFacts.cs" />
     <Compile Include="Client\JobCreationProcessFacts.cs" />
     <Compile Include="Common\GlobalJobFilterCollectionFacts.cs" />
-    <Compile Include="Common\JobArgumentTests.cs" />
+    <Compile Include="Common\JobArgumentFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
     <Compile Include="Common\JobFilterAttributeFacts.cs" />
     <Compile Include="Common\JobFilterAttributeFilterProviderFacts.cs" />
