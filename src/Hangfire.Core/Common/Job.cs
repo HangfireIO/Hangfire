@@ -251,7 +251,9 @@ namespace Hangfire.Common
                     {
 	                    try
 	                    {
-							value = JsonConvert.DeserializeObject(argument, parameter.ParameterType);
+							value = argument != null
+								? JsonConvert.DeserializeObject(argument, parameter.ParameterType)
+								: null;
 	                    }
 	                    catch (Exception)
 	                    {
