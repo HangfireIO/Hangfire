@@ -63,10 +63,20 @@ namespace ConsoleSample
             }
         }
 
-        [DisplayName("Name: {0}, Author: {1}, Created: {2}")]
+        [DisplayName("Name: {0}")]
         public void Args(string name, int authorId, DateTime createdAt)
         {
             Console.WriteLine("{0}, {1}, {2}", name, authorId, createdAt);
+        }
+
+        public void Custom(int id, string[] values, CustomObject objects, DayOfWeek dayOfWeek)
+        {
+        }
+
+        public class CustomObject
+        {
+            public int Id { get; set; }
+            public CustomObject[] Children { get; set; }
         }
     }
 }

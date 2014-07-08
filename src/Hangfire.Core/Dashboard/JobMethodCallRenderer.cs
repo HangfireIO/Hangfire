@@ -15,10 +15,13 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using Hangfire.Common;
+using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {
@@ -73,10 +76,39 @@ namespace Hangfire.Dashboard
                 if (i < job.Arguments.Length)
                 {
                     var argument = job.Arguments[i]; // TODO: check bounds
+                    string renderedArgument;
 
-                    var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                    var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
 
-                    var renderedArgument = argumentRenderer.Render(parameter.Name, argument);
+                    if (enumerableArgument == null)
+                    {
+                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                        renderedArgument = argumentRenderer.Render(parameter.Name, argument);
+                    }
+                    else
+                    {
+                        // TODO: argument may be serialized with TypeConverter.
+                        // TODO: add parameter name.
+                        // TODO: handle empty collections.
+                        // TODO: replace JsonConvert with real converter.
+                        var value = JsonConvert.DeserializeObject(
+                            argument,
+                            parameter.ParameterType);
+
+                        var renderedItems = new List<string>();
+
+                        foreach (var item in (IEnumerable)value)
+                        {
+                            var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
+                            renderedItems.Add(argumentRenderer.Render(null, item.ToString()));
+                        }
+
+                        renderedArgument = String.Format(
+                            WrapKeyword("new") + "{0} {{ {1} }}",
+                            parameter.ParameterType.IsArray ? " []" : "",
+                            String.Join(", ", renderedItems));
+                    }
+
                     renderedArguments.Add(renderedArgument);
                     renderedArgumentsTotalLength += renderedArgument.Length;
                 }
@@ -143,6 +175,15 @@ namespace Hangfire.Dashboard
         private static string Encode(string value)
         {
             return WebUtility.HtmlEncode(value);
+        }
+
+        private static Type GetIEnumerableGenericArgument(Type type)
+        {
+            return type.GetInterfaces()
+                .Where(x => x.IsGenericType
+                            && x.GetGenericTypeDefinition() == typeof (IEnumerable<>))
+                .Select(x => x.GetGenericArguments()[0])
+                .FirstOrDefault();
         }
 
         private class ArgumentRenderer

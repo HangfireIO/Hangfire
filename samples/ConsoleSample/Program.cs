@@ -102,6 +102,20 @@ namespace ConsoleSample
                         }
                     }
 
+                    if (command.StartsWith("custom", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var workCount = int.Parse(command.Substring(7));
+                        for (var i = 0; i < workCount; i++)
+                        {
+                            BackgroundJob.Enqueue<Services>(x => x.Custom(
+                                new Random().Next(),
+                                new []{ "Hello", "world!" },
+                                new Services.CustomObject { Id = 123 },
+                                DayOfWeek.Friday
+                                ));
+                        }
+                    }
+
                     if (command.StartsWith("in", StringComparison.OrdinalIgnoreCase))
                     {
                         var seconds = int.Parse(command.Substring(2));
