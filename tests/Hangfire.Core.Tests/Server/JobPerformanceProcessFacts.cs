@@ -84,6 +84,24 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Run_ReturnsValueReturnedByJob()
+        {
+            // Arrange
+            var filter = CreateFilter<IServerFilter>();
+            var process = CreateProcess();
+
+            _performer
+                .Setup(x => x.Perform(It.IsNotNull<JobActivator>(), It.IsNotNull<IJobCancellationToken>()))
+                .Returns("Returned value");
+
+            // Act
+            var result = process.Run(_context, _performer.Object);
+
+            // Assert
+            Assert.Equal("Returned value", result);
+        }
+
+        [Fact]
         public void Run_DoesNotCatchExceptions()
         {
             // Arrange
