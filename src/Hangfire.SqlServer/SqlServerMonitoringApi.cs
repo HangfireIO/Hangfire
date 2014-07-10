@@ -176,6 +176,7 @@ namespace Hangfire.SqlServer
                 (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
+                    Result = stateData.ContainsKey("Result") ? stateData["Result"] : null,
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
                         ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
                         : null,

@@ -110,7 +110,9 @@ namespace Hangfire.Server
                 process.Run(performContext, jobData.Job);
                 duration.Stop();
 
-                state = new SucceededState((long) latency, duration.ElapsedMilliseconds);
+                // TODO set proper job result
+                object result = null;
+                state = new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
             }
             catch (OperationCanceledException)
             {
