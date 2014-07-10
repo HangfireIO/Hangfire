@@ -65,6 +65,25 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Run_StoresJobReturnValueInPerformedContext()
+        {
+            // Arrange
+            var filter = CreateFilter<IServerFilter>();
+            var process = CreateProcess();
+
+            _performer
+                .Setup(x => x.Perform(It.IsNotNull<JobActivator>(), It.IsNotNull<IJobCancellationToken>()))
+                .Returns("Returned value");
+
+            // Act
+            process.Run(_context, _performer.Object);
+
+            // Assert
+            filter.Verify(
+                x => x.OnPerformed(It.Is<PerformedContext>(context => (string)context.Result == "Returned value")));
+        }
+
+        [Fact]
         public void Run_DoesNotCatchExceptions()
         {
             // Arrange

@@ -25,14 +25,21 @@ namespace Hangfire.Server
     public class PerformedContext : PerformContext
     {
         internal PerformedContext(
-            PerformContext context, 
-            bool canceled, 
+            PerformContext context,
+            object result,
+            bool canceled,
             Exception exception)
             : base(context)
         {
+            Result = result;
             Canceled = canceled;
             Exception = exception;
         }
+
+        /// <summary>
+        /// Gets a value that was returned by the job.
+        /// </summary>
+        public object Result { get; private set; }
 
         /// <summary>
         /// Gets a value that indicates that this <see cref="PerformedContext"/>

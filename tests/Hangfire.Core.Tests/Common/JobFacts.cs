@@ -390,6 +390,15 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void Perform_ReturnsValue_WhenCallingFunctionReturningValue()
+        {
+            var job = Job.FromExpression<Instance>(x => x.FunctionReturningValue());
+
+            var result = job.Perform(_activator.Object, _token.Object);
+
+            Assert.Equal("Return value", result);
+        }
+
         public void GetTypeFilterAttributes_ReturnsCorrectAttributes()
         {
             var job = Job.FromExpression<Instance>(x => x.Method());
@@ -488,6 +497,11 @@ namespace Hangfire.Core.Tests.Common
             public void Dispose()
             {
                 _disposed = true;
+            }
+
+            public string FunctionReturningValue()
+            {
+                return "Return value";
             }
         }
 

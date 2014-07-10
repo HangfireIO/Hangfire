@@ -79,8 +79,8 @@ namespace Hangfire.Server
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                performer.Perform(context.Activator, context.CancellationToken);
-                return new PerformedContext(context, false, null);
+                var result = performer.Perform(context.Activator, context.CancellationToken);
+                return new PerformedContext(context, result, false, null);
             };
 
             var thunk = filters.Reverse().Aggregate(continuation,
@@ -112,7 +112,7 @@ namespace Hangfire.Server
             if (preContext.Canceled)
             {
                 return new PerformedContext(
-                    preContext, true, null);
+                    preContext, null, true, null);
             }
 
             var wasError = false;
@@ -125,7 +125,7 @@ namespace Hangfire.Server
             {
                 wasError = true;
                 postContext = new PerformedContext(
-                    preContext, false, ex);
+                    preContext, null, false, ex);
 
                 try
                 {
