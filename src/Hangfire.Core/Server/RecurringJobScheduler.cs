@@ -112,20 +112,27 @@ namespace Hangfire.Server
                             { "NextExecution", JobHelper.SerializeDateTime(_dateTimeProvider.GetNextOccurrence(cronSchedule)) }
                         });
                 }
+                else
+                {
+                    TryUpdateNextExecutionTime(connection, recurringJobId, cronSchedule);
+                }
             }
             else
             {
-                var nextExecution = _dateTimeProvider.GetNextOccurrence(cronSchedule);
-
-                connection.SetRangeInHash(
-                    String.Format("recurring-job:{0}", recurringJobId),
-                    new Dictionary<string, string>
-                    {
-                        { "NextExecution", JobHelper.SerializeDateTime(nextExecution) }
-                    });
+                TryUpdateNextExecutionTime(connection, recurringJobId, cronSchedule);
             }
         }
 
+        private void TryUpdateNextExecutionTime(IStorageConnection connection, string recurringJobId, CrontabSchedule cronSchedule)
+        {
+            connection.SetRangeInHash(
+                String.Format("recurring-job:{0}", recurringJobId),
+                new Dictionary<string, string>
+                    {
+                        { "NextExecution", JobHelper.SerializeDateTime(_dateTimeProvider.GetNextOccurrence(cronSchedule)) }
+                    });
+        }
+        
         public override string ToString()
         {
             return "Recurring Job Scheduler";
