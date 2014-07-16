@@ -83,12 +83,10 @@ namespace Hangfire.Dashboard
                     if (enumerableArgument == null)
                     {
                         var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                        renderedArgument = argumentRenderer.Render(parameter.Name, argument);
+                        renderedArgument = argumentRenderer.Render(argument);
                     }
                     else
                     {
-                        // TODO: argument may be serialized with TypeConverter.
-                        // TODO: add parameter name.
                         // TODO: handle empty collections.
                         // TODO: replace JsonConvert with real converter.
                         var value = JsonConvert.DeserializeObject(
@@ -100,7 +98,7 @@ namespace Hangfire.Dashboard
                         foreach (var item in (IEnumerable)value)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                            renderedItems.Add(argumentRenderer.Render(null, item.ToString()));
+                            renderedItems.Add(argumentRenderer.Render(item.ToString()));
                         }
 
                         renderedArgument = String.Format(
@@ -120,18 +118,31 @@ namespace Hangfire.Dashboard
 
             for (int i = 0; i < renderedArguments.Count; i++)
             {
+                // TODO: be aware of out of range
+                var parameter = parameters[i];
+                var tooltipPosition = "top";
+
                 var renderedArgument = renderedArguments[i];
                 if (renderedArgumentsTotalLength > splitStringMinLength)
                 {
                     builder.AppendLine();
                     builder.Append("    ");
+
+                    tooltipPosition = "left";
                 }
                 else if (i > 0)
                 {
                     builder.Append(" ");
                 }
 
+                builder.AppendFormat(
+                    "<span title=\"{0}:\" data-placement=\"{1}\">",
+                    parameter.Name,
+                    tooltipPosition);
+
                 builder.Append(renderedArgument);
+
+                builder.Append("</span>");
 
                 if (i < renderedArguments.Count - 1)
                 {
@@ -179,6 +190,8 @@ namespace Hangfire.Dashboard
 
         private static Type GetIEnumerableGenericArgument(Type type)
         {
+            if (type == typeof (string)) return null;
+
             return type.GetInterfaces()
                 .Where(x => x.IsGenericType
                             && x.GetGenericTypeDefinition() == typeof (IEnumerable<>))
@@ -198,7 +211,7 @@ namespace Hangfire.Dashboard
                 _valueRenderer = WrapString;
             }
 
-            public string Render(string name, string value)
+            public string Render(string value)
             {
                 if (value == null)
                 {
@@ -206,14 +219,6 @@ namespace Hangfire.Dashboard
                 }
 
                 var builder = new StringBuilder();
-
-                if (name != null)
-                {
-                    builder.AppendFormat(
-                        "<span title=\"{0}:\" data-placement=\"left\">", 
-                        name);
-                }
-
                 if (_deserializationType != null)
                 {
                     builder.Append(WrapIdentifier(
@@ -225,11 +230,6 @@ namespace Hangfire.Dashboard
                 if (_deserializationType != null)
                 {
                     builder.Append(")");
-                }
-
-                if (name != null)
-                {
-                    builder.Append("</span>");
                 }
 
                 return builder.ToString();
