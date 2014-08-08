@@ -45,7 +45,7 @@ Hangfire provides an extension method for the ``IAppBuilder`` interface called `
 
 .. code-block:: c#
 
-   public void Configure(IAppBuilder app)
+   public void Configuration(IAppBuilder app)
    {
        app.UseHangfire(config => 
        {
