@@ -66,7 +66,7 @@ namespace Hangfire.Dashboard
             var renderedArguments = new List<string>(parameters.Length);
             var renderedArgumentsTotalLength = 0;
 
-            const int splitStringMinLength = 200;
+            const int splitStringMinLength = 100;
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -86,7 +86,7 @@ namespace Hangfire.Dashboard
                     }
                     else
                     {
-                        // TODO: handle empty collections.
+                        // TODO: handle empty and null collections.
                         var value = JobHelper.FromJson(
                             argument,
                             parameter.ParameterType);
