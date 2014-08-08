@@ -97,7 +97,7 @@ namespace Hangfire.Dashboard
                     if (enumerableArgument == null)
                     {
                         var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                        renderedArgument = argumentRenderer.Render(argumentValue.ToString());
+                        renderedArgument = argumentRenderer.Render(argumentValue.ToString(), argument);
                     }
                     else
                     {
@@ -107,7 +107,7 @@ namespace Hangfire.Dashboard
                         foreach (var item in (IEnumerable)argumentValue)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                            renderedItems.Add(argumentRenderer.Render(item.ToString()));
+                            renderedItems.Add(argumentRenderer.Render(item.ToString(), JobHelper.ToJson(item)));
                         }
 
                         renderedArgument = String.Format(
@@ -220,9 +220,9 @@ namespace Hangfire.Dashboard
                 _valueRenderer = WrapString;
             }
 
-            public string Render(string value)
+            public string Render(string deserializedValue, string rawValue)
             {
-                if (value == null)
+                if (deserializedValue == null)
                 {
                     return WrapKeyword("null");
                 }
@@ -230,11 +230,17 @@ namespace Hangfire.Dashboard
                 var builder = new StringBuilder();
                 if (_deserializationType != null)
                 {
-                    builder.Append(WrapIdentifier(
-                        String.Format("Deserialize<{0}>(", WrapType(_deserializationType.Name))));
-                }
+                    builder.Append(WrapIdentifier("Deserialize&lt;"))
+                        .Append(WrapType(Encode(_deserializationType.Name)))
+                        .Append(WrapIdentifier("&gt;"))
+                        .Append("(");
 
-                builder.Append(_valueRenderer(Encode(_enclosingString + value + _enclosingString)));
+                    builder.Append(WrapString(Encode("\"" + rawValue + "\"")));
+                }
+                else
+                {
+                    builder.Append(_valueRenderer(Encode(_enclosingString + deserializedValue + _enclosingString)));    
+                }
 
                 if (_deserializationType != null)
                 {
