@@ -100,27 +100,34 @@ namespace Hangfire.Dashboard
                         argumentValue = argument;
                         isJson = false;
                     }
-                    
-                    if (enumerableArgument == null)
+
+                    if (argumentValue == null)
                     {
-                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                        renderedArgument = argumentRenderer.Render(isJson, argumentValue.ToString(), argument);
+                        renderedArgument = WrapKeyword("null");
                     }
                     else
                     {
-                        // TODO: handle empty and null collections.
-                        var renderedItems = new List<string>();
-
-                        foreach (var item in (IEnumerable)argumentValue)
+                        if (enumerableArgument == null)
                         {
-                            var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                            renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(), JobHelper.ToJson(item)));
+                            var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                            renderedArgument = argumentRenderer.Render(isJson, argumentValue.ToString(), argument);
                         }
+                        else
+                        {
+                            var renderedItems = new List<string>();
 
-                        renderedArgument = String.Format(
-                            WrapKeyword("new") + "{0} {{ {1} }}",
-                            parameter.ParameterType.IsArray ? " []" : "",
-                            String.Join(", ", renderedItems));
+                            foreach (var item in (IEnumerable) argumentValue)
+                            {
+                                var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
+                                renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
+                                    JobHelper.ToJson(item)));
+                            }
+
+                            renderedArgument = String.Format(
+                                WrapKeyword("new") + "{0} {{ {1} }}",
+                                parameter.ParameterType.IsArray ? " []" : "",
+                                String.Join(", ", renderedItems));
+                        }
                     }
 
                     renderedArguments.Add(renderedArgument);
@@ -287,7 +294,7 @@ namespace Hangfire.Dashboard
                 {
                     return new ArgumentRenderer
                     {
-                        _valueRenderer = WrapKeyword,
+                        _valueRenderer = value => WrapKeyword(value.ToLowerInvariant()),
                         _enclosingString = String.Empty,
                     };
                 }

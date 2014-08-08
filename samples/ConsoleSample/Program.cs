@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
@@ -113,6 +114,28 @@ namespace ConsoleSample
                                 new Services.CustomObject { Id = 123 },
                                 DayOfWeek.Friday
                                 ));
+                        }
+                    }
+
+                    if (command.StartsWith("fullargs", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var workCount = int.Parse(command.Substring(9));
+                        for (var i = 0; i < workCount; i++)
+                        {
+                            BackgroundJob.Enqueue<Services>(x => x.FullArgs(
+                                false,
+                                123,
+                                'c',
+                                DayOfWeek.Monday,
+                                "hello",
+                                new TimeSpan(12, 13, 14),
+                                new DateTime(2012, 11, 10),
+                                new Services.CustomObject { Id = 123 },
+                                new[] { "1", "2", "3" },
+                                new[] { 4, 5, 6 },
+                                new long[0],
+                                null,
+                                new List<string> { "7", "8", "9" }));
                         }
                     }
 

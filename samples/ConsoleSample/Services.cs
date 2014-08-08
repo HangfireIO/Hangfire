@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
@@ -70,6 +71,23 @@ namespace ConsoleSample
         }
 
         public void Custom(int id, string[] values, CustomObject objects, DayOfWeek dayOfWeek)
+        {
+        }
+
+        public void FullArgs(
+            bool b,
+            int i,
+            char c,
+            DayOfWeek e,
+            string s,
+            TimeSpan t,
+            DateTime d,
+            CustomObject o,
+            string[] sa,
+            int[] ia,
+            long[] ea,
+            object[] na,
+            List<string> sl)
         {
         }
 
