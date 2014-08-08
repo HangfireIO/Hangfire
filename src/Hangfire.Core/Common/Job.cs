@@ -23,7 +23,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Hangfire.Server;
-using Newtonsoft.Json;
 
 namespace Hangfire.Common
 {
@@ -252,7 +251,7 @@ namespace Hangfire.Common
 	                    try
 	                    {
 							value = argument != null
-								? JsonConvert.DeserializeObject(argument, parameter.ParameterType)
+								? JobHelper.FromJson(argument, parameter.ParameterType)
 								: null;
 	                    }
 	                    catch (Exception)
@@ -343,7 +342,7 @@ namespace Hangfire.Common
                     }
                     else
                     {
-	                    value = JsonConvert.SerializeObject(argument);
+	                    value = JobHelper.ToJson(argument);
                     }
                 }
 

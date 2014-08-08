@@ -21,7 +21,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Hangfire.Common;
-using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {
@@ -88,8 +87,7 @@ namespace Hangfire.Dashboard
                     else
                     {
                         // TODO: handle empty collections.
-                        // TODO: replace JsonConvert with real converter.
-                        var value = JsonConvert.DeserializeObject(
+                        var value = JobHelper.FromJson(
                             argument,
                             parameter.ParameterType);
 
