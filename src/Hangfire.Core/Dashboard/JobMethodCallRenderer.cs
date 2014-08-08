@@ -41,7 +41,14 @@ namespace Hangfire.Dashboard
 
             if (!job.Method.IsStatic)
             {
-                var serviceName = Char.ToLower(job.Type.Name[0]) + job.Type.Name.Substring(1);
+                var serviceName = job.Type.Name;
+
+                if (job.Type.IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
+                {
+                    serviceName = serviceName.Substring(1);
+                }
+
+                serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
 
                 builder.Append(WrapType(job.Type.Name));
                 builder.AppendFormat(
