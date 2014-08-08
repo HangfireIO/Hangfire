@@ -79,21 +79,32 @@ namespace Hangfire.Dashboard
 
                     var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
 
+                    object argumentValue;
+
+                    try
+                    {
+                        argumentValue = JobHelper.FromJson(
+                            argument,
+                            parameter.ParameterType);
+                    }
+                    catch (Exception)
+                    {
+                        // If argument value is not encoded as JSON (an old
+                        // way using TypeConverter), we should display it as is.
+                        argumentValue = argument;
+                    }
+                    
                     if (enumerableArgument == null)
                     {
                         var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                        renderedArgument = argumentRenderer.Render(argument);
+                        renderedArgument = argumentRenderer.Render(argumentValue.ToString());
                     }
                     else
                     {
                         // TODO: handle empty and null collections.
-                        var value = JobHelper.FromJson(
-                            argument,
-                            parameter.ParameterType);
-
                         var renderedItems = new List<string>();
 
-                        foreach (var item in (IEnumerable)value)
+                        foreach (var item in (IEnumerable)argumentValue)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
                             renderedItems.Add(argumentRenderer.Render(item.ToString()));
