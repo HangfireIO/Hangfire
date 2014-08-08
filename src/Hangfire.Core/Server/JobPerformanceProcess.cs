@@ -39,7 +39,7 @@ namespace Hangfire.Server
             }
         }
 
-        public void Run(PerformContext context, IJobPerformer performer)
+        public object Run(PerformContext context, IJobPerformer performer)
         {
             if (context == null) throw new ArgumentNullException("context");
             if (performer == null) throw new ArgumentNullException("performer");
@@ -48,7 +48,7 @@ namespace Hangfire.Server
 
             try
             {
-                PerformJobWithFilters(context, performer, filterInfo.ServerFilters);
+                return PerformJobWithFilters(context, performer, filterInfo.ServerFilters);
             }
             catch (OperationCanceledException)
             {
@@ -64,6 +64,8 @@ namespace Hangfire.Server
                     throw;
                 }
             }
+
+            return null;
         }
 
         private JobFilterInfo GetFilters(Job job)
@@ -71,22 +73,26 @@ namespace Hangfire.Server
             return new JobFilterInfo(_getFiltersThunk(job));
         }
 
-        private static void PerformJobWithFilters(
+        private static object PerformJobWithFilters(
             PerformContext context,
             IJobPerformer performer,
             IEnumerable<IServerFilter> filters)
         {
+            object result = null;
+
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                performer.Perform(context.Activator, context.CancellationToken);
-                return new PerformedContext(context, false, null);
+                result = performer.Perform(context.Activator, context.CancellationToken);
+                return new PerformedContext(context, result, false, null);
             };
 
             var thunk = filters.Reverse().Aggregate(continuation,
                 (next, filter) => () => InvokePerformFilter(filter, preContext, next));
             
             thunk();
+
+            return result;
         }
 
         private static PerformedContext InvokePerformFilter(
@@ -112,7 +118,7 @@ namespace Hangfire.Server
             if (preContext.Canceled)
             {
                 return new PerformedContext(
-                    preContext, true, null);
+                    preContext, null, true, null);
             }
 
             var wasError = false;
@@ -125,7 +131,7 @@ namespace Hangfire.Server
             {
                 wasError = true;
                 postContext = new PerformedContext(
-                    preContext, false, ex);
+                    preContext, null, false, ex);
 
                 try
                 {

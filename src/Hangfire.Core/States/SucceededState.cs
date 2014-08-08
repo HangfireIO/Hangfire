@@ -26,13 +26,15 @@ namespace Hangfire.States
     {
         public static readonly string StateName = "Succeeded";
 
-        public SucceededState(long latency, long performanceDuration)
+        public SucceededState(object result, long latency, long performanceDuration)
         {
+            Result = result;
             Latency = latency;
             PerformanceDuration = performanceDuration;
             SucceededAt = DateTime.UtcNow;
         }
 
+        public object Result { get; private set; }
         public DateTime SucceededAt { get; private set; }
         public long Latency { get; private set; }
         public long PerformanceDuration { get; private set; }
@@ -47,6 +49,7 @@ namespace Hangfire.States
         {
             return new Dictionary<string, string>
             {
+                { "Result", JobHelper.ToJson(Result) },
                 { "SucceededAt",  JobHelper.SerializeDateTime(SucceededAt) },
                 { "PerformanceDuration", PerformanceDuration.ToString(CultureInfo.InvariantCulture) },
                 { "Latency", Latency.ToString(CultureInfo.InvariantCulture) }

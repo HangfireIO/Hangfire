@@ -106,6 +106,15 @@ namespace Hangfire.Dashboard
                 itemsAdded = true;
             }
 
+
+            if (stateData.ContainsKey("Result"))
+            {
+                var result = stateData["Result"];
+                builder.AppendFormat("<dt>Result:</dt><dd>{0}</dd>", System.Net.WebUtility.HtmlEncode(result));
+
+                itemsAdded = true;
+            }
+
             builder.Append("</dl>");
 
             if (!itemsAdded) return null;
