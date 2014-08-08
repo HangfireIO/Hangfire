@@ -246,6 +246,18 @@ namespace Hangfire.Dashboard
 
             public static ArgumentRenderer GetRenderer(Type type)
             {
+                if (type.IsEnum)
+                {
+                    return new ArgumentRenderer
+                    {
+                        _enclosingString = String.Empty,
+                        _valueRenderer = value => String.Format(
+                            "{0}.{1}",
+                            WrapType(type.Name),
+                            value)
+                    };
+                }
+
                 if (IsNumericType(type))
                 {
                     return new ArgumentRenderer
