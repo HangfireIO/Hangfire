@@ -69,4 +69,4 @@ If you want the class to be ready for unit testing, consider to add constructor 
         }
     }
 
-If you are using IoC containers, such as Autofac, Ninject, SimpleInjector and so on, you can remove the default constructor. To leard how to do this, proceed to the next section.
+If you are using IoC containers, such as Autofac, Ninject, SimpleInjector and so on, you can remove the default constructor. To learn how to do this, proceed to the next section.
