@@ -251,8 +251,8 @@ namespace Hangfire.Dashboard
                         .Append(WrapType(Encode(_deserializationType.Name)))
                         .Append(WrapIdentifier("&gt;"))
                         .Append("(");
-
-                    builder.Append(WrapString(Encode("\"" + rawValue + "\"")));
+                    
+                    builder.Append(WrapString(Encode("\"" + rawValue.Replace("\"", "\\\"") + "\"")));
                 }
                 else
                 {
