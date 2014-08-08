@@ -116,6 +116,15 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(expected, job.Arguments[0]);
         }
 
+	    [Fact]
+	    public void FromExpression_ConvertsArgumentsToJson()
+	    {
+		    var job = Job.FromExpression(() => MethodWithArguments("123", 1));
+
+			Assert.Equal("\"123\"", job.Arguments[0]);
+			Assert.Equal("1", job.Arguments[1]);
+	    }
+
         [Fact]
         public void FromExpression_ReturnValueDoesNotDepend_OnCurrentCulture()
         {
@@ -300,19 +309,19 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(_methodInvoked);
         }
 
-        [Fact, StaticLock]
-        public void Perform_PassesObjectArguments_AsStrings()
-        {
-            // Arrange
-            _methodInvoked = false;
-            var job = Job.FromExpression(() => MethodWithObjectArgument(5));
+		[Fact, StaticLock]
+	    public void Perform_WorksCorrectly_WithNullValues()
+	    {
+			// Arrange
+			_methodInvoked = false;
+			var job = Job.FromExpression(() => NullArgumentMethod(null));
 
-            // Act
-            job.Perform(_activator.Object, _token.Object);
+			// Act
+			job.Perform(_activator.Object, _token.Object);
 
-            // Assert - see the `MethodWithObjectArgument` method.
-            Assert.True(_methodInvoked);
-        }
+			// Assert - see also `NullArgumentMethod` method.
+			Assert.True(_methodInvoked);
+	    }
 
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenActivatorThrowsAnException()
@@ -343,7 +352,9 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
         {
-            var job = Job.FromExpression(() => MethodWithCustomArgument(new Instance()));
+	        var type = typeof (JobFacts);
+	        var method = type.GetMethod("MethodWithDateTimeArgument");
+			var job = new Job(type, method, new []{ "sdfa" });
 
             var exception = Assert.Throws<JobPerformanceException>(
                 () => job.Perform(_activator.Object, _token.Object));
@@ -389,7 +400,7 @@ namespace Hangfire.Core.Tests.Common
                 () => job.Perform(_activator.Object, _token.Object));
         }
 
-        [Fact]
+	    [Fact]
         public void GetTypeFilterAttributes_ReturnsCorrectAttributes()
         {
             var job = Job.FromExpression<Instance>(x => x.Method());
@@ -444,6 +455,12 @@ namespace Hangfire.Core.Tests.Common
         {
             token.ThrowIfCancellationRequested();
         }
+
+	    public static void NullArgumentMethod(string[] argument)
+	    {
+		    _methodInvoked = true;
+		    Assert.Null(argument);
+	    }
 
         public void MethodWithArguments(string stringArg, int intArg)
         {

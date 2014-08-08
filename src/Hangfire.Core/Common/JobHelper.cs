@@ -16,6 +16,7 @@
 
 using System;
 using System.Globalization;
+using Hangfire.Annotations;
 using Newtonsoft.Json;
 
 namespace Hangfire.Common
@@ -34,6 +35,15 @@ namespace Hangfire.Common
             return value != null 
                 ? JsonConvert.DeserializeObject<T>(value)
                 : default(T);
+        }
+
+        public static object FromJson(string value, [NotNull] Type type)
+        {
+            if (type == null) throw new ArgumentNullException("type");
+
+            return value != null
+                ? JsonConvert.DeserializeObject(value, type)
+                : null;
         }
 
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);

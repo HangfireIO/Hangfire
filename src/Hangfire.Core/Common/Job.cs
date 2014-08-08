@@ -242,20 +242,32 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (parameter.ParameterType == typeof(object))
-                    {
-                        // Special case for handling object types, because string can not
-                        // be converted to object type.
-                        value = argument;
-                    }
-                    else if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
                     {
                         value = cancellationToken;
                     }
                     else
                     {
-                        var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-                        value = converter.ConvertFromInvariantString(argument);
+	                    try
+	                    {
+							value = argument != null
+								? JobHelper.FromJson(argument, parameter.ParameterType)
+								: null;
+	                    }
+	                    catch (Exception)
+	                    {
+		                    if (parameter.ParameterType == typeof (object))
+		                    {
+			                    // Special case for handling object types, because string can not
+			                    // be converted to object type.
+			                    value = argument;
+		                    }
+		                    else
+		                    {
+			                    var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
+			                    value = converter.ConvertFromInvariantString(argument);
+		                    }
+	                    }
                     }
 
                     result.Add(value);
@@ -330,8 +342,7 @@ namespace Hangfire.Common
                     }
                     else
                     {
-                        var converter = TypeDescriptor.GetConverter(argument.GetType());
-                        value = converter.ConvertToInvariantString(argument);
+	                    value = JobHelper.ToJson(argument);
                     }
                 }
 

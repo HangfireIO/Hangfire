@@ -1,22 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Hangfire.Common;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Common
 {
-	public class TypeDescriptorArgumentDeserializationTests
+	public class JobArgumentFacts
 	{
 		private readonly Mock<JobActivator> _activator;
 		private readonly Mock<IJobCancellationToken> _token;
 
-		public TypeDescriptorArgumentDeserializationTests()
+		public JobArgumentFacts()
 		{
 			_activator = new Mock<JobActivator>();
 			_activator.Setup(x => x.ActivateJob(It.IsAny<Type>()))
-				      .Returns(() => new TypeDescriptorArgumentDeserializationTests());
+				      .Returns(() => new JobArgumentFacts());
 
 			_token = new Mock<IJobCancellationToken>();
 		}
@@ -223,25 +225,95 @@ namespace Hangfire.Core.Tests.Common
 		public void Method(Int32? value) { Assert.Equal(NullNullableValue, value); }
 
 		[Fact]
-		public void NullNullableValue_AreBeingCorrectlyDeserialized()
+		public void NullNullableValues_AreBeingCorrectlyDeserialized()
 		{
 			CreateAndPerform(NullNullableValue);
 		}
 
-		private void CreateAndPerform<T>(T argumentValue)
+		private static readonly string[] ArrayValue = { "Hello", "world" };
+		public void Method(string[] value) { Assert.Equal(ArrayValue, value); }
+
+		[Fact]
+		public void ArrayValues_AreBeingCorrectlyDeserialized_FromJson()
 		{
-			var job = CreateJob(argumentValue);
-			job.Perform(_activator.Object, _token.Object);
+			CreateAndPerform(ArrayValue, true);
 		}
 
-		private static Job CreateJob<T>(T argumentValue)
+		private static readonly List<DateTime> ListValue = new List<DateTime> { DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddDays(1) };
+		public void Method(List<DateTime> value) { Assert.Equal(ListValue, value); }
+
+		[Fact]
+		public void ListValues_AreBeingCorrectlyDeserialized_FromJson()
 		{
-			var type = typeof (TypeDescriptorArgumentDeserializationTests);
-			var methodInfo = type.GetMethod("Method", new []{ typeof(T) });
+			CreateAndPerform(ListValue, true);
+		}
 
-			var converter = TypeDescriptor.GetConverter(typeof(T));
+		private static readonly Dictionary<TimeSpan, string> DictionaryValue = new Dictionary<TimeSpan, string>
+		{
+			{ TimeSpan.FromSeconds(1), "123" },
+			{ TimeSpan.FromDays(12), "376" }
+		};  
+		public void Method(Dictionary<TimeSpan, string> value) { Assert.Equal(DictionaryValue, value); }
 
-			return new Job(type, methodInfo, new []{ converter.ConvertToInvariantString(argumentValue) });
+		[Fact]
+		public void DictionaryValues_AreBeingCorrectlyDeserialized_FromJson()
+		{
+			CreateAndPerform(DictionaryValue, true);
+		}
+
+		public struct MyStruct
+		{
+			public Guid Id { get; set; } 
+			public string Name { get; set; }
+		}
+
+		private static readonly MyStruct CustomStructValue = new MyStruct { Id = Guid.NewGuid(), Name = "Hangfire" };
+		public void Method(MyStruct value) { Assert.Equal(CustomStructValue, value); }
+
+		[Fact]
+		public void CustomStructValues_AreBeingCorrectlyDeserialized_FromJson()
+		{
+			CreateAndPerform(CustomStructValue, true);
+		}
+
+		public class MyClass
+		{
+			public DateTime CreatedAt { get; set; }
+		}
+		
+		private static readonly MyClass CustomClassValue = new MyClass { CreatedAt = DateTime.UtcNow };
+		public void Method(MyClass value) { Assert.Equal(CustomClassValue.CreatedAt, value.CreatedAt); }
+
+		[Fact]
+		public void CustomClassValues_AreBeingCorrectlyDeserialized_FromJson()
+		{
+			CreateAndPerform(CustomClassValue, true);
+		}
+
+		private void CreateAndPerform<T>(T argumentValue, bool checkJsonOnly = false)
+		{
+			var type = typeof(JobArgumentFacts);
+			var methodInfo = type.GetMethod("Method", new[] { typeof(T) });
+
+			var serializationMethods = new List<Tuple<string, Func<string>>>();
+
+			if (!checkJsonOnly)
+			{
+				var converter = TypeDescriptor.GetConverter(typeof(T));
+				serializationMethods.Add(new Tuple<string, Func<string>>(
+					"TypeDescriptor",
+					() => converter.ConvertToInvariantString(argumentValue)));
+			}
+
+			serializationMethods.Add(new Tuple<string, Func<string>>(
+				"JSON",
+				() => JsonConvert.SerializeObject(argumentValue)));
+
+			foreach (var method in serializationMethods)
+			{
+				var job = new Job(type, methodInfo, new[] { method.Item2() });
+				job.Perform(_activator.Object, _token.Object);	
+			}
 		}
 	}
 }

@@ -121,7 +121,7 @@ namespace Hangfire.Core.Tests.States
             stateMachine.CreateInState(job, _parameters, _state.Object);
 
             _connection.Verify(x => x.CreateExpiredJob(
-                It.Is<Job>(j => j.Type == typeof(Console) && j.Arguments[0] == "SomeString"),
+				job,
                 It.Is<Dictionary<string, string>>(d => d["Name"] == "Value"),
                 It.IsAny<DateTime>(),
                 It.IsAny<TimeSpan>()));

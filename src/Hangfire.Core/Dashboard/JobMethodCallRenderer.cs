@@ -15,7 +15,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using Hangfire.Common;
@@ -39,7 +41,14 @@ namespace Hangfire.Dashboard
 
             if (!job.Method.IsStatic)
             {
-                var serviceName = Char.ToLower(job.Type.Name[0]) + job.Type.Name.Substring(1);
+                var serviceName = job.Type.Name;
+
+                if (job.Type.IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
+                {
+                    serviceName = serviceName.Substring(1);
+                }
+
+                serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
 
                 builder.Append(WrapType(job.Type.Name));
                 builder.AppendFormat(
@@ -64,7 +73,7 @@ namespace Hangfire.Dashboard
             var renderedArguments = new List<string>(parameters.Length);
             var renderedArgumentsTotalLength = 0;
 
-            const int splitStringMinLength = 200;
+            const int splitStringMinLength = 100;
 
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -73,10 +82,54 @@ namespace Hangfire.Dashboard
                 if (i < job.Arguments.Length)
                 {
                     var argument = job.Arguments[i]; // TODO: check bounds
+                    string renderedArgument;
 
-                    var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                    var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
 
-                    var renderedArgument = argumentRenderer.Render(parameter.Name, argument);
+                    object argumentValue;
+                    bool isJson = true;
+
+                    try
+                    {
+                        argumentValue = JobHelper.FromJson(argument, parameter.ParameterType);
+                    }
+                    catch (Exception)
+                    {
+                        // If argument value is not encoded as JSON (an old
+                        // way using TypeConverter), we should display it as is.
+                        argumentValue = argument;
+                        isJson = false;
+                    }
+
+                    if (argumentValue == null)
+                    {
+                        renderedArgument = WrapKeyword("null");
+                    }
+                    else
+                    {
+                        if (enumerableArgument == null)
+                        {
+                            var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                            renderedArgument = argumentRenderer.Render(isJson, argumentValue.ToString(), argument);
+                        }
+                        else
+                        {
+                            var renderedItems = new List<string>();
+
+                            foreach (var item in (IEnumerable) argumentValue)
+                            {
+                                var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
+                                renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
+                                    JobHelper.ToJson(item)));
+                            }
+
+                            renderedArgument = String.Format(
+                                WrapKeyword("new") + "{0} {{ {1} }}",
+                                parameter.ParameterType.IsArray ? " []" : "",
+                                String.Join(", ", renderedItems));
+                        }
+                    }
+
                     renderedArguments.Add(renderedArgument);
                     renderedArgumentsTotalLength += renderedArgument.Length;
                 }
@@ -88,18 +141,31 @@ namespace Hangfire.Dashboard
 
             for (int i = 0; i < renderedArguments.Count; i++)
             {
+                // TODO: be aware of out of range
+                var parameter = parameters[i];
+                var tooltipPosition = "top";
+
                 var renderedArgument = renderedArguments[i];
                 if (renderedArgumentsTotalLength > splitStringMinLength)
                 {
                     builder.AppendLine();
                     builder.Append("    ");
+
+                    tooltipPosition = "left";
                 }
                 else if (i > 0)
                 {
                     builder.Append(" ");
                 }
 
+                builder.AppendFormat(
+                    "<span title=\"{0}:\" data-placement=\"{1}\">",
+                    parameter.Name,
+                    tooltipPosition);
+
                 builder.Append(renderedArgument);
+
+                builder.Append("</span>");
 
                 if (i < renderedArguments.Count - 1)
                 {
@@ -145,6 +211,17 @@ namespace Hangfire.Dashboard
             return WebUtility.HtmlEncode(value);
         }
 
+        private static Type GetIEnumerableGenericArgument(Type type)
+        {
+            if (type == typeof (string)) return null;
+
+            return type.GetInterfaces()
+                .Where(x => x.IsGenericType
+                            && x.GetGenericTypeDefinition() == typeof (IEnumerable<>))
+                .Select(x => x.GetGenericArguments()[0])
+                .FirstOrDefault();
+        }
+
         private class ArgumentRenderer
         {
             private string _enclosingString;
@@ -157,38 +234,34 @@ namespace Hangfire.Dashboard
                 _valueRenderer = WrapString;
             }
 
-            public string Render(string name, string value)
+            public string Render(bool isJson, string deserializedValue, string rawValue)
             {
-                if (value == null)
+                if (deserializedValue == null)
                 {
                     return WrapKeyword("null");
                 }
 
                 var builder = new StringBuilder();
-
-                if (name != null)
-                {
-                    builder.AppendFormat(
-                        "<span title=\"{0}:\" data-placement=\"left\">", 
-                        name);
-                }
-
                 if (_deserializationType != null)
                 {
                     builder.Append(WrapIdentifier(
-                        String.Format("Deserialize<{0}>(", WrapType(_deserializationType.Name))));
-                }
+                        isJson ? "FromJson" : "Deserialize"));
 
-                builder.Append(_valueRenderer(Encode(_enclosingString + value + _enclosingString)));
+                    builder.Append("&lt;")
+                        .Append(WrapType(Encode(_deserializationType.Name)))
+                        .Append(WrapIdentifier("&gt;"))
+                        .Append("(");
+                    
+                    builder.Append(WrapString(Encode("\"" + rawValue.Replace("\"", "\\\"") + "\"")));
+                }
+                else
+                {
+                    builder.Append(_valueRenderer(Encode(_enclosingString + deserializedValue + _enclosingString)));    
+                }
 
                 if (_deserializationType != null)
                 {
                     builder.Append(")");
-                }
-
-                if (name != null)
-                {
-                    builder.Append("</span>");
                 }
 
                 return builder.ToString();
@@ -196,6 +269,18 @@ namespace Hangfire.Dashboard
 
             public static ArgumentRenderer GetRenderer(Type type)
             {
+                if (type.IsEnum)
+                {
+                    return new ArgumentRenderer
+                    {
+                        _enclosingString = String.Empty,
+                        _valueRenderer = value => String.Format(
+                            "{0}.{1}",
+                            WrapType(type.Name),
+                            value)
+                    };
+                }
+
                 if (IsNumericType(type))
                 {
                     return new ArgumentRenderer
@@ -209,7 +294,7 @@ namespace Hangfire.Dashboard
                 {
                     return new ArgumentRenderer
                     {
-                        _valueRenderer = WrapKeyword,
+                        _valueRenderer = value => WrapKeyword(value.ToLowerInvariant()),
                         _enclosingString = String.Empty,
                     };
                 }

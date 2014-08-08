@@ -41,6 +41,26 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromJson_ThrowsAnException_WhenTypeIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => JobHelper.FromJson("1", null));
+        }
+
+        [Fact]
+        public void FromJson_WithType_DecodesFromJsonString()
+        {
+            var result = (string) JobHelper.FromJson("\"hello\"", typeof (string));
+            Assert.Equal("hello", result);
+        }
+
+        [Fact]
+        public void FromJson_WithType_DecodesNullValue_ToNull()
+        {
+            var result = (string) JobHelper.FromJson(null, typeof (string));
+            Assert.Null(result);
+        }
+
+        [Fact]
         public void ToTimestamp_ReturnsUnixTimestamp_OfTheGivenDateTime()
         {
             var result = JobHelper.ToTimestamp(
