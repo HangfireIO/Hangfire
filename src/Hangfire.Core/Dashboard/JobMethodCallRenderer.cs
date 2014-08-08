@@ -80,24 +80,24 @@ namespace Hangfire.Dashboard
                     var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
 
                     object argumentValue;
+                    bool isJson = true;
 
                     try
                     {
-                        argumentValue = JobHelper.FromJson(
-                            argument,
-                            parameter.ParameterType);
+                        argumentValue = JobHelper.FromJson(argument, parameter.ParameterType);
                     }
                     catch (Exception)
                     {
                         // If argument value is not encoded as JSON (an old
                         // way using TypeConverter), we should display it as is.
                         argumentValue = argument;
+                        isJson = false;
                     }
                     
                     if (enumerableArgument == null)
                     {
                         var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                        renderedArgument = argumentRenderer.Render(argumentValue.ToString(), argument);
+                        renderedArgument = argumentRenderer.Render(isJson, argumentValue.ToString(), argument);
                     }
                     else
                     {
@@ -107,7 +107,7 @@ namespace Hangfire.Dashboard
                         foreach (var item in (IEnumerable)argumentValue)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                            renderedItems.Add(argumentRenderer.Render(item.ToString(), JobHelper.ToJson(item)));
+                            renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(), JobHelper.ToJson(item)));
                         }
 
                         renderedArgument = String.Format(
@@ -220,7 +220,7 @@ namespace Hangfire.Dashboard
                 _valueRenderer = WrapString;
             }
 
-            public string Render(string deserializedValue, string rawValue)
+            public string Render(bool isJson, string deserializedValue, string rawValue)
             {
                 if (deserializedValue == null)
                 {
@@ -230,7 +230,10 @@ namespace Hangfire.Dashboard
                 var builder = new StringBuilder();
                 if (_deserializationType != null)
                 {
-                    builder.Append(WrapIdentifier("Deserialize&lt;"))
+                    builder.Append(WrapIdentifier(
+                        isJson ? "FromJson" : "Deserialize"));
+
+                    builder.Append("&lt;")
                         .Append(WrapType(Encode(_deserializationType.Name)))
                         .Append(WrapIdentifier("&gt;"))
                         .Append("(");
