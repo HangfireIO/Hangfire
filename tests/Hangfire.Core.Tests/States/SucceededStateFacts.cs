@@ -26,6 +26,7 @@ namespace Hangfire.Core.Tests.States
 
             var data = state.SerializeData();
 
+            Assert.Equal("\"Returned  value\"", data["Result"]);
             Assert.Equal(JobHelper.SerializeDateTime(state.SucceededAt), data["SucceededAt"]);
             Assert.Equal("123", data["PerformanceDuration"]);
             Assert.Equal("11", data["Latency"]);
@@ -47,7 +48,7 @@ namespace Hangfire.Core.Tests.States
 
         private static SucceededState CreateState()
         {
-            return new SucceededState(11, 123);
+            return new SucceededState("Returned  value", 11, 123);
         }
     }
 }
