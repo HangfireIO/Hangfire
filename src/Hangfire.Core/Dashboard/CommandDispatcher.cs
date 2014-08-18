@@ -18,7 +18,6 @@ using System;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -31,21 +30,23 @@ namespace Hangfire.Dashboard
             _command = command;
         }
 
-        public Task Dispatch(IOwinContext context, Match match)
+        public Task Dispatch(RequestDispatcherContext context)
         {
-            if (context.Request.Method != WebRequestMethods.Http.Post)
+            var owinContext = context.OwinContext;
+
+            if (owinContext.Request.Method != WebRequestMethods.Http.Post)
             {
-                context.Response.StatusCode = (int) HttpStatusCode.MethodNotAllowed;
+                owinContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                 return Task.FromResult(false);
             }
 
-            if (_command(match))
+            if (_command(context.UriMatch))
             {
-                context.Response.StatusCode = (int)HttpStatusCode.NoContent;
+                owinContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
             }
             else
             {
-                context.Response.StatusCode = 422;
+                owinContext.Response.StatusCode = 422;
             }
 
             return Task.FromResult(true);

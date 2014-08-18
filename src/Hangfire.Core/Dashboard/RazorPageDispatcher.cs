@@ -17,7 +17,6 @@
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -30,15 +29,17 @@ namespace Hangfire.Dashboard
             _pageFunc = pageFunc;
         }
 
-        public Task Dispatch(IOwinContext context, Match match)
+        public Task Dispatch(RequestDispatcherContext context)
         {
-            context.Response.ContentType = "text/html";
+            var owinContext = context.OwinContext;
 
-            var page = _pageFunc(match);
-            page.Request = context.Request;
-            page.Response = context.Response;
-            
-            return context.Response.WriteAsync(page.TransformText());
+            owinContext.Response.ContentType = "text/html";
+
+            var page = _pageFunc(context.UriMatch);
+            page.Request = owinContext.Request;
+            page.Response = owinContext.Response;
+
+            return owinContext.Response.WriteAsync(page.TransformText());
         }
     }
 }

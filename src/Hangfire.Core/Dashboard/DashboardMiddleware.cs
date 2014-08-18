@@ -59,7 +59,11 @@ namespace Hangfire.Dashboard
                 }
             }
 
-            return dispatcher.Item1.Dispatch(context, dispatcher.Item2);
+            var dispatcherContext = new RequestDispatcherContext(
+                context,
+                dispatcher.Item2);
+
+            return dispatcher.Item1.Dispatch(dispatcherContext);
         }
     }
 }

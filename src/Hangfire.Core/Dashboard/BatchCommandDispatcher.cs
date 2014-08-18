@@ -16,9 +16,7 @@
 
 using System;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -31,14 +29,16 @@ namespace Hangfire.Dashboard
             _command = command;
         }
 
-        public async Task Dispatch(IOwinContext context, Match match)
+        public async Task Dispatch(RequestDispatcherContext context)
         {
-            var form = await context.Request.ReadFormAsync();
+            var owinContext = context.OwinContext;
+
+            var form = await owinContext.Request.ReadFormAsync();
             var jobIds = form.GetValues("jobs[]");
 
             if (jobIds == null)
             {
-                context.Response.StatusCode = 422;
+                owinContext.Response.StatusCode = 422;
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace Hangfire.Dashboard
                 _command(jobId);
             }
 
-            context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+            owinContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
         }
     }
 }

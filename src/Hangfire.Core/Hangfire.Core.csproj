@@ -82,6 +82,7 @@
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\RequestDispatcherContext.cs" />
     <Compile Include="Dashboard\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
     <Compile Include="Dashboard\DashboardOwinExtensions.cs" />

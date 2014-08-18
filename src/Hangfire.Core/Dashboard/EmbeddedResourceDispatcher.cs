@@ -16,7 +16,6 @@
 
 using System;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.Owin;
@@ -42,12 +41,14 @@ namespace Hangfire.Dashboard
             _contentType = contentType;
         }
 
-        public Task Dispatch(IOwinContext context, Match match)
+        public Task Dispatch(RequestDispatcherContext context)
         {
-            context.Response.ContentType = _contentType;
-            context.Response.Expires = DateTime.Now.AddYears(1);
+            var owinContext = context.OwinContext;
 
-            WriteResponse(context.Response);
+            owinContext.Response.ContentType = _contentType;
+            owinContext.Response.Expires = DateTime.Now.AddYears(1);
+
+            WriteResponse(owinContext.Response);
 
             return Task.FromResult(true);
         }
