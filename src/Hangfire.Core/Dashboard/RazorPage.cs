@@ -50,6 +50,8 @@ namespace Hangfire.Dashboard
             {
                 Layout.Request = Request;
                 Layout.Response = Response;
+                Layout.Storage = Storage;
+
                 return Layout.TransformText(_content.ToString());
             }
 
