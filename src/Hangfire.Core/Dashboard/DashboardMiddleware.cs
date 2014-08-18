@@ -23,7 +23,7 @@ using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
-    public class DashboardMiddleware : OwinMiddleware
+    internal class DashboardMiddleware : OwinMiddleware
     {
         private readonly JobStorage _storage;
         private readonly RouteCollection _routes;
