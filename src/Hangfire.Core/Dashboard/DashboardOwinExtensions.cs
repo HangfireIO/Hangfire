@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Owin;
 
 namespace Hangfire.Dashboard
@@ -26,7 +28,19 @@ namespace Hangfire.Dashboard
             string dashboardPath,
             IEnumerable<IAuthorizationFilter> authorizationFilters)
         {
+            MapHangfireDashboard(app, dashboardPath, authorizationFilters, JobStorage.Current);
+        }
+
+        public static void MapHangfireDashboard(
+            [NotNull] this IAppBuilder app,
+            string dashboardPath,
+            IEnumerable<IAuthorizationFilter> authorizationFilters,
+            JobStorage storage)
+        {
+            if (app == null) throw new ArgumentNullException("app");
+
             app.Map(dashboardPath, subApp => subApp.Use<DashboardMiddleware>(
+                storage,
                 DashboardRoutes.Routes,
                 authorizationFilters));
         }

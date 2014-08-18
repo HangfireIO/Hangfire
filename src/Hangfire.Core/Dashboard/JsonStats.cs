@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -24,9 +22,11 @@ namespace Hangfire.Dashboard
 {
     internal class JsonStats : IRequestDispatcher
     {
-        public Task Dispatch(IOwinContext context, Match match)
+        public Task Dispatch(RequestDispatcherContext context)
         {
-            var monitoring = JobStorage.Current.GetMonitoringApi();
+            var owinContext = context.OwinContext;
+
+            var monitoring = context.JobStorage.GetMonitoringApi();
             var response = monitoring.GetStatistics();
 
             var settings = new JsonSerializerSettings
@@ -35,8 +35,8 @@ namespace Hangfire.Dashboard
             };
             var serialized = JsonConvert.SerializeObject(response, settings);
 
-            context.Response.ContentType = "application/json";
-            return context.Response.WriteAsync(serialized);
+            owinContext.Response.ContentType = "application/json";
+            return owinContext.Response.WriteAsync(serialized);
         }
     }
 }

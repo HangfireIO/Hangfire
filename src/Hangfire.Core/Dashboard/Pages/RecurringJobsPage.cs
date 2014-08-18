@@ -7,11 +7,11 @@ namespace Hangfire.Dashboard.Pages
 {
     partial class RecurringJobsPage
     {
-        public RecurringJobsPage()
+        private List<RecurringJobDto> GetRecurringJobs()
         {
-            RecurringJobs = new List<RecurringJobDto>();
+            var result = new List<RecurringJobDto>();
 
-            using (var connection = JobStorage.Current.GetConnection())
+            using (var connection = Storage.GetConnection())
             {
                 var ids = connection.GetAllItemsFromSet("recurring-jobs");
 
@@ -21,7 +21,7 @@ namespace Hangfire.Dashboard.Pages
 
                     if (hash == null)
                     {
-                        RecurringJobs.Add(new RecurringJobDto { Id = id, Removed = true });
+                        result.Add(new RecurringJobDto { Id = id, Removed = true });
                         continue;
                     }
 
@@ -59,12 +59,12 @@ namespace Hangfire.Dashboard.Pages
                         dto.LastExecution = JobHelper.DeserializeDateTime(hash["LastExecution"]);
                     }
 
-                    RecurringJobs.Add(dto);
+                    result.Add(dto);
                 }
             }
-        }
 
-        public List<RecurringJobDto> RecurringJobs { get; private set; } 
+            return result;
+        }
 
         public class RecurringJobDto
         {

@@ -14,14 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
     public interface IRequestDispatcher
     {
-        Task Dispatch(IOwinContext context, Match match);
+        Task Dispatch(RequestDispatcherContext context);
     }
 }

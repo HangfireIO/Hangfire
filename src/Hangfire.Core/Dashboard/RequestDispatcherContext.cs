@@ -16,31 +16,29 @@
 
 using System;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Hangfire.Annotations;
+using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
-    internal class RazorPageDispatcher : IRequestDispatcher
+    public class RequestDispatcherContext
     {
-        private readonly Func<Match, RazorPage> _pageFunc;
-
-        public RazorPageDispatcher(Func<Match, RazorPage> pageFunc)
+        public RequestDispatcherContext(
+            [NotNull] JobStorage jobStorage,
+            [NotNull] IOwinContext owinContext, 
+            [NotNull] Match uriMatch)
         {
-            _pageFunc = pageFunc;
+            if (jobStorage == null) throw new ArgumentNullException("jobStorage");
+            if (owinContext == null) throw new ArgumentNullException("owinContext");
+            if (uriMatch == null) throw new ArgumentNullException("uriMatch");
+
+            JobStorage = jobStorage;
+            OwinContext = owinContext;
+            UriMatch = uriMatch;
         }
 
-        public Task Dispatch(RequestDispatcherContext context)
-        {
-            var owinContext = context.OwinContext;
-
-            owinContext.Response.ContentType = "text/html";
-
-            var page = _pageFunc(context.UriMatch);
-            page.Request = owinContext.Request;
-            page.Response = owinContext.Response;
-            page.Storage = context.JobStorage;
-
-            return owinContext.Response.WriteAsync(page.TransformText());
-        }
+        public JobStorage JobStorage { get; private set; }
+        public IOwinContext OwinContext { get; private set; }
+        public Match UriMatch { get; private set; }
     }
 }

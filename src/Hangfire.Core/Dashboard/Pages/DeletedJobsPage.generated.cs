@@ -74,7 +74,7 @@ WriteLiteral("\r\n");
     int.TryParse(Request.Query["from"], out from);
     int.TryParse(Request.Query["count"], out perPage);
 
-    var monitor = JobStorage.Current.GetMonitoringApi();
+    var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.DeletedListCount())
     {
         BasePageUrl = Request.LinkTo("/deleted")

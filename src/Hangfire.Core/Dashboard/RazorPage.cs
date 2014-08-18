@@ -31,6 +31,7 @@ namespace Hangfire.Dashboard
         public RazorPage Layout { get; protected set; }
         public IOwinRequest Request { get; internal set; }
         public IOwinResponse Response { get; internal set; }
+        public JobStorage Storage { get; internal set; }
 
         public abstract void Execute();
 
@@ -49,6 +50,8 @@ namespace Hangfire.Dashboard
             {
                 Layout.Request = Request;
                 Layout.Response = Response;
+                Layout.Storage = Storage;
+
                 return Layout.TransformText(_content.ToString());
             }
 

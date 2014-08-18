@@ -9,9 +9,10 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Recurring jobs" };
+    var recurringJobs = GetRecurringJobs();
 }
 
-@if (RecurringJobs.Count == 0)
+@if (recurringJobs.Count == 0)
 {
     <div class="alert alert-info">
         No recurring jobs found.
@@ -51,7 +52,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var job in RecurringJobs)
+                @foreach (var job in recurringJobs)
                 {
                     <tr class="js-jobs-list-row hover">
                         <td>

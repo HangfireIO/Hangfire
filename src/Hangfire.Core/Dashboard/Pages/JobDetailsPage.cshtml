@@ -9,7 +9,7 @@
 @using Storage.Monitoring
 @inherits RazorPage
 @{
-    var monitor = JobStorage.Current.GetMonitoringApi();
+    var monitor = Storage.GetMonitoringApi();
     JobDetailsDto job = monitor.JobDetails(JobId.ToString());
 
     string title = null;

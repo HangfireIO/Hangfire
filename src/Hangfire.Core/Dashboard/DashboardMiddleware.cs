@@ -23,20 +23,24 @@ using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
-    public class DashboardMiddleware : OwinMiddleware
+    internal class DashboardMiddleware : OwinMiddleware
     {
+        private readonly JobStorage _storage;
         private readonly RouteCollection _routes;
         private readonly IEnumerable<IAuthorizationFilter> _authorizationFilters;
 
         public DashboardMiddleware(
             OwinMiddleware next, 
+            [NotNull] JobStorage storage,
             [NotNull] RouteCollection routes, 
             [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters)
             : base(next)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (routes == null) throw new ArgumentNullException("routes");
             if (authorizationFilters == null) throw new ArgumentNullException("authorizationFilters");
 
+            _storage = storage;
             _routes = routes;
             _authorizationFilters = authorizationFilters;
         }
@@ -59,7 +63,12 @@ namespace Hangfire.Dashboard
                 }
             }
 
-            return dispatcher.Item1.Dispatch(context, dispatcher.Item2);
+            var dispatcherContext = new RequestDispatcherContext(
+                _storage,
+                context,
+                dispatcher.Item2);
+
+            return dispatcher.Item1.Dispatch(dispatcherContext);
         }
     }
 }

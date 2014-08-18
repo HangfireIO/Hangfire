@@ -74,7 +74,7 @@ WriteLiteral("\r\n");
   
     Layout = new LayoutPage { Title = "Queues" };
 
-    var monitor = JobStorage.Current.GetMonitoringApi();
+    var monitor = Storage.GetMonitoringApi();
     IList<QueueWithTopEnqueuedJobsDto> queues = monitor.Queues();
 
 
