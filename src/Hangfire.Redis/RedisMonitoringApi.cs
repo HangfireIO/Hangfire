@@ -248,10 +248,11 @@ namespace Hangfire.Redis
                     redis,
                     succeededJobIds,
                     null,
-                    new[] { "SucceededAt", "PerformanceDuration", "Latency", "State" },
+                    new[] { "SucceededAt", "PerformanceDuration", "Latency", "State", "Result" },
                     (job, jobData, state) => new SucceededJobDto
                     {
                         Job = job,
+                        Result = state[4],
                         SucceededAt = JobHelper.DeserializeNullableDateTime(state[0]),
                         TotalDuration = state[1] != null && state[2] != null
                             ? (long?) long.Parse(state[1]) + (long?) long.Parse(state[2])
