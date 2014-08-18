@@ -86,7 +86,7 @@ WriteLiteral("\r\n");
             
             #line 11 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
   
-    var monitor = JobStorage.Current.GetMonitoringApi();
+    var monitor = Storage.GetMonitoringApi();
     JobDetailsDto job = monitor.JobDetails(JobId.ToString());
 
     string title = null;

@@ -71,7 +71,7 @@ WriteLiteral("\r\n");
 
     var period = Request.Query["period"]?? "day";
 
-    var monitor = JobStorage.Current.GetMonitoringApi();
+    var monitor = Storage.GetMonitoringApi();
     if ("week".Equals(period, StringComparison.OrdinalIgnoreCase))
     {
         succeeded = monitor.SucceededByDatesCount();

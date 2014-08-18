@@ -133,7 +133,7 @@ WriteLiteral(@""">Hangfire Dashboard</a>
             
             #line 50 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                       
-                        var monitor = JobStorage.Current.GetMonitoringApi();
+                        var monitor = Storage.GetMonitoringApi();
                         StatisticsDto statistics = monitor.GetStatistics();
                     
 
@@ -604,7 +604,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
             
             #line 163 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(JobStorage.Current);
+                   Write(Storage);
 
             
             #line default

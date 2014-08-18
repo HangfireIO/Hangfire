@@ -11,7 +11,7 @@ namespace Hangfire.Dashboard.Pages
         {
             RecurringJobs = new List<RecurringJobDto>();
 
-            using (var connection = JobStorage.Current.GetConnection())
+            using (var connection = Storage.GetConnection())
             {
                 var ids = connection.GetAllItemsFromSet("recurring-jobs");
 

@@ -26,7 +26,7 @@ namespace Hangfire.Dashboard
         {
             var owinContext = context.OwinContext;
 
-            var monitoring = JobStorage.Current.GetMonitoringApi();
+            var monitoring = context.JobStorage.GetMonitoringApi();
             var response = monitoring.GetStatistics();
 
             var settings = new JsonSerializerSettings

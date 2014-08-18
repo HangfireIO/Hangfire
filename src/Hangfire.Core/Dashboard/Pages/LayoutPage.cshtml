@@ -48,7 +48,7 @@
             <div class="container">
                 <div class="col-md-3">
                     @{
-                        var monitor = JobStorage.Current.GetMonitoringApi();
+                        var monitor = Storage.GetMonitoringApi();
                         StatisticsDto statistics = monitor.GetStatistics();
                     }
 
@@ -160,7 +160,7 @@
                             @FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion
                         </a>
                     </li>
-                    <li>@JobStorage.Current</li>
+                    <li>@Storage</li>
                     <li>Time: @DateTime.UtcNow GMT
                     </li>
                 </ul>
