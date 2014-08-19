@@ -53,8 +53,7 @@ namespace Hangfire.Server
         {
             while (_dateTimeProvider.CurrentDateTime.Second != 0)
             {
-                cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
-                cancellationToken.ThrowIfCancellationRequested();
+                WaitASecondOrThrowIfCanceled(cancellationToken);
             }
 
             using (var connection = _storage.GetConnection())
@@ -80,9 +79,15 @@ namespace Hangfire.Server
                     {
                         Logger.WarnFormat("Recurring job '{0}' can not be scheduled due to job load exception.", ex, recurringJobId);
                     }
-                    
                 }
+
+                WaitASecondOrThrowIfCanceled(cancellationToken);
             }
+        }
+
+        public override string ToString()
+        {
+            return "Recurring Job Scheduler";
         }
 
         private void TryScheduleJob(IStorageConnection connection, string recurringJobId, Dictionary<string, string> recurringJob)
@@ -126,9 +131,10 @@ namespace Hangfire.Server
             }
         }
 
-        public override string ToString()
+        private static void WaitASecondOrThrowIfCanceled(CancellationToken cancellationToken)
         {
-            return "Recurring Job Scheduler";
+            cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+            cancellationToken.ThrowIfCancellationRequested();
         }
     }
 }
