@@ -9,7 +9,12 @@
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Recurring jobs" };
-    var recurringJobs = GetRecurringJobs();
+	List<RecurringJobDto> recurringJobs;
+
+	using (var connection = Storage.GetConnection())
+	{
+		recurringJobs = connection.GetRecurringJobs();
+	}
 }
 
 @if (recurringJobs.Count == 0)
