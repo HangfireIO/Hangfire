@@ -24,24 +24,31 @@ namespace Hangfire.Redis
 {
     internal class FetchedJobsWatcher : IServerComponent
     {
+        private readonly TimeSpan _invisibilityTimeout;
         private static readonly ILog Logger = LogManager.GetLogger(typeof(FetchedJobsWatcher));
 
         private readonly JobStorage _storage;
         private readonly FetchedJobsWatcherOptions _options;
 
-        public FetchedJobsWatcher(JobStorage storage)
-            : this(storage, new FetchedJobsWatcherOptions())
+        public FetchedJobsWatcher(JobStorage storage, TimeSpan invisibilityTimeout)
+            : this(storage, invisibilityTimeout, new FetchedJobsWatcherOptions())
         {
         }
 
         public FetchedJobsWatcher(
             JobStorage storage,
+            TimeSpan invisibilityTimeout,
             FetchedJobsWatcherOptions options)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (options == null) throw new ArgumentNullException("options");
+            if (invisibilityTimeout.Ticks <= 0)
+            {
+                throw new ArgumentOutOfRangeException("invisibilityTimeout", "Invisibility timeout duration should be positive.");
+            }
 
             _storage = storage;
+            _invisibilityTimeout = invisibilityTimeout;
             _options = options;
         }
 
@@ -63,9 +70,8 @@ namespace Hangfire.Redis
 
         private void ProcessQueue(string queue, RedisConnection connection)
         {
-// Allowing only one server at a time to process the timed out
+            // Allowing only one server at a time to process the timed out
             // jobs from the specified queue.
-
             Logger.DebugFormat(
                 "Acquiring the lock for the fetched list of the '{0}' queue...", queue);
 
@@ -158,7 +164,7 @@ namespace Hangfire.Redis
         private bool TimedOutByFetchedTime(string fetchedTimestamp)
         {
             return !String.IsNullOrEmpty(fetchedTimestamp) &&
-                   (DateTime.UtcNow - JobHelper.DeserializeDateTime(fetchedTimestamp) > _options.JobTimeout);
+                   (DateTime.UtcNow - JobHelper.DeserializeDateTime(fetchedTimestamp) > _invisibilityTimeout);
         }
 
         private bool TimedOutByCheckedTime(string fetchedTimestamp, string checkedTimestamp)

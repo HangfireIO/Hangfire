@@ -83,7 +83,7 @@ namespace Hangfire.Redis
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new FetchedJobsWatcher(this);
+            yield return new FetchedJobsWatcher(this, Options.InvisibilityTimeout);
         }
 
         public override IEnumerable<IStateHandler> GetStateHandlers()
