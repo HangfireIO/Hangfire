@@ -8,7 +8,7 @@
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/Hangfire/master/LICENSE.md</licenseUrl>
+    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>
       Incredibly easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
       Backed by Redis, SQL Server, SQL Azure or MSMQ.
@@ -16,7 +16,7 @@
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://github.com/odinserj/Hangfire/releases
+    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
 1.1.0-alpha1
 * Added – Serializing job arguments to JSON: arrays, collections and custom objects are fully supported now.

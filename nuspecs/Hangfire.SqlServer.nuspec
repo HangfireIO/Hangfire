@@ -8,11 +8,11 @@
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/Hangfire/master/LICENSE.md</licenseUrl>
+    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server / SQL Azure job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure</tags>
-    <releaseNotes>https://github.com/odinserj/Hangfire/releases</releaseNotes>
+    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
       <dependency id="Common.Logging" version="2.2.0" />

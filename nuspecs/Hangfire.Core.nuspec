@@ -8,11 +8,11 @@
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/odinserj/Hangfire/master/LICENSE.md</licenseUrl>
+    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>Core components for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://github.com/odinserj/Hangfire/releases</releaseNotes>
+    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
       <dependency id="Owin" version="1.0" />
       <dependency id="Microsoft.Owin" version="2.1.0" />
