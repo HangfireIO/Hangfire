@@ -94,61 +94,74 @@ namespace Hangfire.Dashboard
                 "/queues/(?<Queue>.+)",
                 x => new EnqueuedJobsPage(x.Groups["Queue"].Value));
 
-            Routes.AddBatchCommand("/enqueued/delete", jobId => BackgroundJob.Delete(jobId));
-            Routes.AddBatchCommand("/enqueued/requeue", jobId => BackgroundJob.Requeue(jobId));
+            Routes.AddClientBatchCommand("/enqueued/delete", (client, jobId) => client.Delete(jobId));
+            Routes.AddClientBatchCommand("/enqueued/requeue", (client, jobId) => client.Requeue(jobId));
 
             Routes.AddRazorPage("/processing", x => new ProcessingJobsPage());
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/processing/delete", 
-                jobId => BackgroundJob.Delete(jobId, ProcessingState.StateName));
+                (client, jobId) => client.Delete(jobId, ProcessingState.StateName));
 
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/processing/requeue",
-                jobId => BackgroundJob.Requeue(jobId, ProcessingState.StateName));
+                (client, jobId) => client.Requeue(jobId, ProcessingState.StateName));
 
             Routes.AddRazorPage("/scheduled", x => new ScheduledJobsPage());
 
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/scheduled/enqueue", 
-                jobId => BackgroundJob.Requeue(jobId, ScheduledState.StateName));
+                (client, jobId) => client.Requeue(jobId, ScheduledState.StateName));
 
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/scheduled/delete",
-                jobId => BackgroundJob.Delete(jobId, ScheduledState.StateName));
+                (client, jobId) => client.Delete(jobId, ScheduledState.StateName));
 
             Routes.AddRazorPage("/servers", x => new ServersPage());
             Routes.AddRazorPage("/succeeded", x => new SucceededJobs());
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/succeeded/requeue",
-                jobId => BackgroundJob.Requeue(jobId, SucceededState.StateName));
+                (client, jobId) => client.Requeue(jobId, SucceededState.StateName));
 
             Routes.AddRazorPage("/failed", x => new FailedJobsPage());
 
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/failed/requeue",
-                jobId => BackgroundJob.Requeue(jobId, FailedState.StateName));
+                (client, jobId) => client.Requeue(jobId, FailedState.StateName));
 
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/failed/delete",
-                jobId => BackgroundJob.Delete(jobId, FailedState.StateName));
+                (client, jobId) => client.Delete(jobId, FailedState.StateName));
 
             Routes.AddRazorPage("/deleted", x => new DeletedJobsPage());
 
-            Routes.AddBatchCommand(
+            Routes.AddClientBatchCommand(
                 "/deleted/requeue",
-                jobId => BackgroundJob.Requeue(jobId, DeletedState.StateName));
+                (client, jobId) => client.Requeue(jobId, DeletedState.StateName));
 
             Routes.AddCommand(
                 "/actions/requeue/(?<JobId>.+)",
-                x => BackgroundJob.Requeue(x.Groups["JobId"].Value));
+                context =>
+                {
+                    var client = new BackgroundJobClient(context.JobStorage);
+                    return client.Requeue(context.UriMatch.Groups["JobId"].Value);
+                });
 
             Routes.AddCommand(
                 "/actions/delete/(?<JobId>.+)",
-                x => BackgroundJob.Delete(x.Groups["JobId"].Value));
+                context =>
+                {
+                    var client = new BackgroundJobClient(context.JobStorage);
+                    return client.Delete(context.UriMatch.Groups["JobId"].Value);
+                });
 
             Routes.AddRazorPage("/recurring", x => new RecurringJobsPage());
-            Routes.AddBatchCommand("/recurring/remove", RecurringJob.RemoveIfExists);
-            Routes.AddBatchCommand("/recurring/trigger", RecurringJob.Trigger);
+            Routes.AddRecurringBatchCommand(
+                "/recurring/remove", 
+                (manager, jobId) => manager.RemoveIfExists(jobId));
+
+            Routes.AddRecurringBatchCommand(
+                "/recurring/trigger", 
+                (manager, jobId) => manager.Trigger(jobId));
 
             #endregion
         }

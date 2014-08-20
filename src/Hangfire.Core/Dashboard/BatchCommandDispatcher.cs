@@ -22,9 +22,9 @@ namespace Hangfire.Dashboard
 {
     internal class BatchCommandDispatcher : IRequestDispatcher
     {
-        private readonly Action<string> _command;
+        private readonly Action<RequestDispatcherContext, string> _command;
 
-        public BatchCommandDispatcher(Action<string> command)
+        public BatchCommandDispatcher(Action<RequestDispatcherContext, string> command)
         {
             _command = command;
         }
@@ -44,7 +44,7 @@ namespace Hangfire.Dashboard
 
             foreach (var jobId in jobIds)
             {
-                _command(jobId);
+                _command(context, jobId);
             }
 
             owinContext.Response.StatusCode = (int)HttpStatusCode.NoContent;

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 
@@ -37,7 +38,7 @@ namespace Hangfire.Dashboard
         public static void AddCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
-            [NotNull] Func<Match, bool> command)
+            [NotNull] Func<RequestDispatcherContext, bool> command)
         {
             if (routes == null) throw new ArgumentNullException("routes");
             if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
@@ -49,13 +50,41 @@ namespace Hangfire.Dashboard
         public static void AddBatchCommand(
             [NotNull] this RouteCollection routes, 
             [NotNull] string pathTemplate, 
-            [NotNull] Action<string> command)
+            [NotNull] Action<RequestDispatcherContext, string> command)
         {
             if (routes == null) throw new ArgumentNullException("routes");
             if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
             if (command == null) throw new ArgumentNullException("command");
 
             routes.Add(pathTemplate, new BatchCommandDispatcher(command));
+        }
+
+        public static void AddClientBatchCommand(
+            this RouteCollection routes,
+            string pathTemplate, 
+            [NotNull] Action<IBackgroundJobClient, string> command)
+        {
+            if (command == null) throw new ArgumentNullException("command");
+
+            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
+            {
+                var client = new BackgroundJobClient(context.JobStorage);
+                command(client, jobId);
+            });
+        }
+
+        public static void AddRecurringBatchCommand(
+            this RouteCollection routes,
+            string pathTemplate,
+            [NotNull] Action<RecurringJobManager, string> command)
+        {
+            if (command == null) throw new ArgumentNullException("command");
+
+            routes.AddBatchCommand(pathTemplate, (context, jobId) =>
+            {
+                var manager = new RecurringJobManager(context.JobStorage);
+                command(manager, jobId);
+            });
         }
     }
 }

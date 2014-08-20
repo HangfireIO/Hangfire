@@ -23,9 +23,9 @@ namespace Hangfire.Dashboard
 {
     internal class CommandDispatcher : IRequestDispatcher
     {
-        private readonly Func<Match, bool> _command;
+        private readonly Func<RequestDispatcherContext, bool> _command;
 
-        public CommandDispatcher(Func<Match, bool> command)
+        public CommandDispatcher(Func<RequestDispatcherContext, bool> command)
         {
             _command = command;
         }
@@ -40,7 +40,7 @@ namespace Hangfire.Dashboard
                 return Task.FromResult(false);
             }
 
-            if (_command(context.UriMatch))
+            if (_command(context))
             {
                 owinContext.Response.StatusCode = (int)HttpStatusCode.NoContent;
             }
