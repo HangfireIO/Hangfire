@@ -15,7 +15,7 @@
       http://hangfire.io/
     </description>
     <copyright>Copyright © Sergey Odinokov</copyright>
-    <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Threading Queue</tags>
+    <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/odinserj/Hangfire/releases
     
 1.0.2
