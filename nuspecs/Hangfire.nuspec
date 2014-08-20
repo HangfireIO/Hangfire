@@ -18,6 +18,14 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/odinserj/Hangfire/releases
     
+1.1.0-alpha1
+* Added – Serializing job arguments to JSON: arrays, collections and custom objects are fully supported now.
+* Added – Job filters can access method's return value. You can also see it in the Dashboard. Thanks to @gius!
+* Added – Ability to plug in multiple dashboards with different storages.
+* Added – Method to query recurring jobs to the Storage API.
+* Fixed – CPU bursts every 0th minute caused by the `RecurringJobScheduler` class.
+* Fixed – Redis.FetchedJobsWatcher prohibits jobs from running longer than 15 minutes.
+    
 1.0.2
 * Fixed – Dashboard pages: missing ContentType header.
 * Fixed – CSS and JS resources throw ArgumentOutOfRangeException.
