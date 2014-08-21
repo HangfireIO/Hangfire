@@ -1,4 +1,5 @@
-﻿using Hangfire.Common;
+﻿using System;
+using Hangfire.Common;
 using Hangfire.States;
 using Xunit;
 
@@ -30,6 +31,16 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(JobHelper.SerializeDateTime(state.SucceededAt), data["SucceededAt"]);
             Assert.Equal("123", data["PerformanceDuration"]);
             Assert.Equal("11", data["Latency"]);
+        }
+
+        [Fact]
+        public void SerializeData_DoesNotAppendEntry_ForNullResult()
+        {
+            var state = new SucceededState(null, 0, 0);
+
+            var data = state.SerializeData();
+
+            Assert.False(data.ContainsKey("Result"));
         }
 
         [Fact]

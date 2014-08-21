@@ -47,13 +47,19 @@ namespace Hangfire.States
 
         public Dictionary<string, string> SerializeData()
         {
-            return new Dictionary<string, string>
+            var data = new Dictionary<string, string>
             {
-                { "Result", JobHelper.ToJson(Result) },
                 { "SucceededAt",  JobHelper.SerializeDateTime(SucceededAt) },
                 { "PerformanceDuration", PerformanceDuration.ToString(CultureInfo.InvariantCulture) },
                 { "Latency", Latency.ToString(CultureInfo.InvariantCulture) }
             };
+
+            if (Result != null)
+            {
+                data.Add("Result", JobHelper.ToJson(Result));
+            }
+
+            return data;
         }
 
         internal class Handler : IStateHandler

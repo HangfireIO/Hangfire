@@ -107,7 +107,7 @@ namespace Hangfire.Dashboard
             }
 
 
-            if (stateData.ContainsKey("Result"))
+            if (stateData.ContainsKey("Result") && !String.IsNullOrWhiteSpace(stateData["Result"]))
             {
                 var result = stateData["Result"];
                 builder.AppendFormat("<dt>Result:</dt><dd>{0}</dd>", System.Net.WebUtility.HtmlEncode(result));
