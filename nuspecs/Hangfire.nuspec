@@ -18,6 +18,9 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.1.0-alpha2
+* Fixed – `ArgumentNullException` is being thrown on job completion.
+    
 1.1.0-alpha1
 * Added – Serializing job arguments to JSON: arrays, collections and custom objects are fully supported now.
 * Added – Job filters can access method's return value. You can also see it in the Dashboard. Thanks to @gius!
