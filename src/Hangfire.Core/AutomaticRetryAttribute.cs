@@ -55,27 +55,7 @@ namespace Hangfire
             
             if (retryAttempt <= Attempts)
             {
-                var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
-
-                context.SetJobParameter("RetryCount", retryAttempt);
-
-                // If attempt number is less than max attempts, we should
-                // schedule the job to run again later.
-                context.CandidateState = new ScheduledState(delay)
-                {
-                    Reason = String.Format("Retry attempt {0} of {1}", retryAttempt, Attempts)
-                };
-
-                if (LogEvents)
-                {
-                    Logger.WarnFormat(
-                        "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
-                        failedState.Exception,
-                        context.JobId,
-                        retryAttempt,
-                        Attempts,
-                        delay);
-                }
+                ScheduleAgainLater(context, retryAttempt, failedState);
             }
             else
             {
@@ -89,7 +69,38 @@ namespace Hangfire
             }
         }
 
-        // delayed_job uses the same basic formula
+		/// <summary>
+		/// Schedules the job to run again later. See <see cref="SecondsToDelay"/>.
+		/// </summary>
+		/// <param name="context">The state context.</param>
+		/// <param name="retryAttempt">The count of retry attempts made so far.</param>
+		/// <param name="failedState">Object which contains details about the current failed state.</param>
+	    private void ScheduleAgainLater(ElectStateContext context, int retryAttempt, FailedState failedState)
+	    {
+		    var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
+
+		    context.SetJobParameter("RetryCount", retryAttempt);
+
+		    // If attempt number is less than max attempts, we should
+		    // schedule the job to run again later.
+		    context.CandidateState = new ScheduledState(delay)
+		    {
+			    Reason = String.Format("Retry attempt {0} of {1}", retryAttempt, Attempts)
+		    };
+
+		    if (LogEvents)
+		    {
+			    Logger.WarnFormat(
+				    "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
+				    failedState.Exception,
+				    context.JobId,
+				    retryAttempt,
+				    Attempts,
+				    delay);
+		    }
+	    }
+
+	    // delayed_job uses the same basic formula
         private static int SecondsToDelay(long retryCount)
         {
             var random = new Random();
