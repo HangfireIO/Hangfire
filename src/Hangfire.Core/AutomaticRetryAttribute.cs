@@ -57,7 +57,11 @@ namespace Hangfire
             {
                 ScheduleAgainLater(context, retryAttempt, failedState);
             }
-            else
+			else if (retryAttempt > Attempts && OnAttemptsExceeded == AttemptsExceededAction.Delete)
+			{
+				TransitionToDeleted(context, failedState);
+			}
+			else
             {
                 if (LogEvents)
                 {
@@ -69,7 +73,7 @@ namespace Hangfire
             }
         }
 
-		/// <summary>
+	    /// <summary>
 		/// Schedules the job to run again later. See <see cref="SecondsToDelay"/>.
 		/// </summary>
 		/// <param name="context">The state context.</param>
@@ -97,6 +101,28 @@ namespace Hangfire
 				    retryAttempt,
 				    Attempts,
 				    delay);
+		    }
+	    }
+
+		/// <summary>
+		/// Transition the candidate state to the deleted state.
+		/// </summary>
+		/// <param name="context">The state context.</param>
+		/// <param name="failedState">Object which contains details about the current failed state.</param>
+	    private void TransitionToDeleted(ElectStateContext context, FailedState failedState)
+	    {
+		    context.CandidateState = new DeletedState
+		    {
+			    Reason = string.Format("Automatic deletion after retry count exceeded {0}", Attempts)
+		    };
+
+		    if (LogEvents)
+		    {
+			    Logger.WarnFormat(
+				    "Failed to process the job '{0}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {1}",
+				    failedState.Exception,
+				    context.JobId,
+				    Attempts);
 		    }
 	    }
 
