@@ -25,7 +25,7 @@ namespace Hangfire
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("value", "Attempts value must be equal or greater that zero.");
+                    throw new ArgumentOutOfRangeException("value", "Attempts value must be equal or greater than zero.");
                 }
                 _attempts = value;
             }
