@@ -5,6 +5,12 @@ using Hangfire.States;
 
 namespace Hangfire
 {
+	public enum AttemptsExceededAction
+	{
+		Fail = 0,
+		Delete
+	}
+
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
     {
         private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
@@ -16,6 +22,7 @@ namespace Hangfire
         {
             Attempts = DefaultRetryAttempts;
             LogEvents = true;
+			OnAttemptsExceeded = AttemptsExceededAction.Fail;
         }
 
         public int Attempts
@@ -30,6 +37,8 @@ namespace Hangfire
                 _attempts = value;
             }
         }
+
+		public AttemptsExceededAction OnAttemptsExceeded { get; set; }
 
         public bool LogEvents { get; set; }
 

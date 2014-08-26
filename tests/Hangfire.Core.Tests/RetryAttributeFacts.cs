@@ -39,6 +39,13 @@ namespace Hangfire.Core.Tests
                 () => new AutomaticRetryAttribute { Attempts = -1 });
         }
 
+	    [Fact]
+	    public void Ctor_SetsOnAttemptsExceededAction_ByDefault()
+	    {
+		    var filter = new AutomaticRetryAttribute();
+			Assert.Equal(AttemptsExceededAction.Fail, filter.OnAttemptsExceeded);
+	    }
+
         [Fact]
         public void OnStateElection_DoesNotChangeState_IfRetryAttemptsIsSetToZero()
         {
