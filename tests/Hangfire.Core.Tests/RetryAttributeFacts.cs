@@ -40,6 +40,13 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Ctor_SetsOnAttemptsExceededAction_ByDefault()
+        {
+            var filter = new AutomaticRetryAttribute();
+            Assert.Equal(AttemptsExceededAction.Fail, filter.OnAttemptsExceeded);
+        }
+
+        [Fact]
         public void OnStateElection_DoesNotChangeState_IfRetryAttemptsIsSetToZero()
         {
             var filter = new AutomaticRetryAttribute { Attempts = 0 };
@@ -69,7 +76,7 @@ namespace Hangfire.Core.Tests
             _context.CandidateStateValue = state.Object;
 
             filter.OnStateElection(_context.Object);
-            
+
             Assert.Same(state.Object, _context.Object.CandidateState);
         }
 
@@ -82,6 +89,39 @@ namespace Hangfire.Core.Tests
             filter.OnStateElection(_context.Object);
 
             Assert.Same(_failedState, _context.Object.CandidateState);
+        }
+
+        [Fact]
+        public void OnStateElection_ChangesStateToDeleted_IfRetryAttemptsNumberExceededAndOnAttemptsExceededIsSetToDelete()
+        {
+            _connection.Setup(x => x.GetJobParameter(JobId, "RetryCount")).Returns("1");
+            var filter = new AutomaticRetryAttribute { Attempts = 1, OnAttemptsExceeded = AttemptsExceededAction.Delete };
+
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<DeletedState>(_context.Object.CandidateState);
+        }
+
+        [Fact]
+        public void OnStateElection_ChangesStateToFailed_IfRetryAttemptsNumberExceededAndOnAttemptsExceedIsSetToFail()
+        {
+            _connection.Setup(x => x.GetJobParameter(JobId, "RetryCount")).Returns("1");
+            var filter = new AutomaticRetryAttribute { Attempts = 1, OnAttemptsExceeded = AttemptsExceededAction.Fail };
+
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<FailedState>(_context.Object.CandidateState);
+        }
+
+        [Fact]
+        public void OnStateElection_ChangesStateToDeleted_IfRetryAttemptsNumberIsZeroAndOnAttemptsExceedIsSetToDelete()
+        {
+            _connection.Setup(x => x.GetJobParameter(JobId, "RetryCount")).Returns("0");
+            var filter = new AutomaticRetryAttribute { Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete };
+
+            filter.OnStateElection(_context.Object);
+
+            Assert.IsType<DeletedState>(_context.Object.CandidateState);
         }
 
         private static AutomaticRetryAttribute CreateFilter()

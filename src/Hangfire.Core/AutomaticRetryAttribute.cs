@@ -5,17 +5,24 @@ using Hangfire.States;
 
 namespace Hangfire
 {
+    public enum AttemptsExceededAction
+    {
+        Fail = 0,
+        Delete
+    }
+
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
     {
         private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
         private const int DefaultRetryAttempts = 10;
 
         private int _attempts;
-        
+
         public AutomaticRetryAttribute()
         {
             Attempts = DefaultRetryAttempts;
             LogEvents = true;
+            OnAttemptsExceeded = AttemptsExceededAction.Fail;
         }
 
         public int Attempts
@@ -25,11 +32,13 @@ namespace Hangfire
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("value", "Attempts value must be equal or greater that zero.");
+                    throw new ArgumentOutOfRangeException("value", "Attempts value must be equal or greater than zero.");
                 }
                 _attempts = value;
             }
         }
+
+        public AttemptsExceededAction OnAttemptsExceeded { get; set; }
 
         public bool LogEvents { get; set; }
 
@@ -43,30 +52,14 @@ namespace Hangfire
             }
 
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
-            
+
             if (retryAttempt <= Attempts)
             {
-                var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
-
-                context.SetJobParameter("RetryCount", retryAttempt);
-
-                // If attempt number is less than max attempts, we should
-                // schedule the job to run again later.
-                context.CandidateState = new ScheduledState(delay)
-                {
-                    Reason = String.Format("Retry attempt {0} of {1}", retryAttempt, Attempts)
-                };
-
-                if (LogEvents)
-                {
-                    Logger.WarnFormat(
-                        "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
-                        failedState.Exception,
-                        context.JobId,
-                        retryAttempt,
-                        Attempts,
-                        delay);
-                }
+                ScheduleAgainLater(context, retryAttempt, failedState);
+            }
+            else if (retryAttempt > Attempts && OnAttemptsExceeded == AttemptsExceededAction.Delete)
+            {
+                TransitionToDeleted(context, failedState);
             }
             else
             {
@@ -77,6 +70,59 @@ namespace Hangfire
                         failedState.Exception,
                         context.JobId);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Schedules the job to run again later. See <see cref="SecondsToDelay"/>.
+        /// </summary>
+        /// <param name="context">The state context.</param>
+        /// <param name="retryAttempt">The count of retry attempts made so far.</param>
+        /// <param name="failedState">Object which contains details about the current failed state.</param>
+        private void ScheduleAgainLater(ElectStateContext context, int retryAttempt, FailedState failedState)
+        {
+            var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
+
+            context.SetJobParameter("RetryCount", retryAttempt);
+
+            // If attempt number is less than max attempts, we should
+            // schedule the job to run again later.
+            context.CandidateState = new ScheduledState(delay)
+            {
+                Reason = String.Format("Retry attempt {0} of {1}", retryAttempt, Attempts)
+            };
+
+            if (LogEvents)
+            {
+                Logger.WarnFormat(
+                    "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
+                    failedState.Exception,
+                    context.JobId,
+                    retryAttempt,
+                    Attempts,
+                    delay);
+            }
+        }
+
+        /// <summary>
+        /// Transition the candidate state to the deleted state.
+        /// </summary>
+        /// <param name="context">The state context.</param>
+        /// <param name="failedState">Object which contains details about the current failed state.</param>
+        private void TransitionToDeleted(ElectStateContext context, FailedState failedState)
+        {
+            context.CandidateState = new DeletedState
+            {
+                Reason = string.Format("Automatic deletion after retry count exceeded {0}", Attempts)
+            };
+
+            if (LogEvents)
+            {
+                Logger.WarnFormat(
+                    "Failed to process the job '{0}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {1}",
+                    failedState.Exception,
+                    context.JobId,
+                    Attempts);
             }
         }
 
