@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Common.Logging;
 using Hangfire.Annotations;
@@ -33,28 +34,29 @@ namespace Hangfire.Server
 
         private readonly JobStorage _storage;
         private readonly IBackgroundJobClient _client;
-        private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly IScheduleInstantFactory _instantFactory;
+        private readonly IThrottler _throttler;
 
         public RecurringJobScheduler(
-            [NotNull] JobStorage storage, 
-            [NotNull] IBackgroundJobClient client, 
-            [NotNull] IDateTimeProvider dateTimeProvider)
+            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundJobClient client,
+            [NotNull] IScheduleInstantFactory instantFactory,
+            [NotNull] IThrottler throttler)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (client == null) throw new ArgumentNullException("client");
-            if (dateTimeProvider == null) throw new ArgumentNullException("dateTimeProvider");
+            if (instantFactory == null) throw new ArgumentNullException("instantFactory");
+            if (throttler == null) throw new ArgumentNullException("throttler");
 
             _storage = storage;
             _client = client;
-            _dateTimeProvider = dateTimeProvider;
+            _instantFactory = instantFactory;
+            _throttler = throttler;
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            while (_dateTimeProvider.CurrentDateTime.Second != 0)
-            {
-                WaitASecondOrThrowIfCanceled(cancellationToken);
-            }
+            _throttler.Throttle(cancellationToken);
 
             using (var connection = _storage.GetConnection())
             using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
@@ -81,7 +83,7 @@ namespace Hangfire.Server
                     }
                 }
 
-                WaitASecondOrThrowIfCanceled(cancellationToken);
+                _throttler.Delay(cancellationToken);
             }
         }
 
@@ -96,45 +98,35 @@ namespace Hangfire.Server
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
             var cronSchedule = CrontabSchedule.Parse(cron);
+            var instant = _instantFactory.GetInstant(cronSchedule);
 
-            var currentTime = _dateTimeProvider.CurrentDateTime;
+            var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
+                ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"]).ToLocalTime()
+                : (DateTime?)null;
 
-            if (recurringJob.ContainsKey("NextExecution"))
+            if (instant.GetMatches(lastExecutionTime).Any())
             {
-                var nextExecution = JobHelper.DeserializeDateTime(recurringJob["NextExecution"]);
-
-                if (nextExecution <= currentTime)
-                {
-                    var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
-                    var jobId = _client.Create(job, state);
-
-                    connection.SetRangeInHash(
-                        String.Format("recurring-job:{0}", recurringJobId),
-                        new Dictionary<string, string>
-                        {
-                            { "LastExecution", JobHelper.SerializeDateTime(currentTime) },
-                            { "LastJobId", jobId },
-                            { "NextExecution", JobHelper.SerializeDateTime(_dateTimeProvider.GetNextOccurrence(cronSchedule)) }
-                        });
-                }
-            }
-            else
-            {
-                var nextExecution = _dateTimeProvider.GetNextOccurrence(cronSchedule);
+                var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
+                var jobId = _client.Create(job, state);
 
                 connection.SetRangeInHash(
                     String.Format("recurring-job:{0}", recurringJobId),
                     new Dictionary<string, string>
-                    {
-                        { "NextExecution", JobHelper.SerializeDateTime(nextExecution) }
-                    });
+                        {
+                            { "LastExecution", JobHelper.SerializeDateTime(instant.LocalTime.ToUniversalTime()) },
+                            { "LastJobId", jobId },
+                        });
             }
-        }
 
-        private static void WaitASecondOrThrowIfCanceled(CancellationToken cancellationToken)
-        {
-            cancellationToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
-            cancellationToken.ThrowIfCancellationRequested();
+            connection.SetRangeInHash(
+                String.Format("recurring-job:{0}", recurringJobId),
+                new Dictionary<string, string>
+                {
+                    {
+                        "NextExecution", 
+                        JobHelper.SerializeDateTime(instant.NextOccurrence.ToUniversalTime())
+                    }
+                });
         }
     }
 }

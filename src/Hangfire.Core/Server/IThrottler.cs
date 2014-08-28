@@ -14,14 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using NCrontab;
+using System.Threading;
 
 namespace Hangfire.Server
 {
-    public interface IDateTimeProvider
+    public interface IThrottler
     {
-        DateTime CurrentDateTime { get; }
-        DateTime GetNextOccurrence(CrontabSchedule schedule);
+        void Throttle(CancellationToken token);
+        void Delay(CancellationToken token);
     }
 }

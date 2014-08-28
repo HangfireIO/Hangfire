@@ -134,7 +134,8 @@ namespace Hangfire
                 new RecurringJobScheduler(
                     _storage, 
                     new BackgroundJobClient(_storage, stateMachineFactory),
-                    new UtcNowDateTimeProvider()));
+                    new ScheduleInstantFactory(),
+                    new EveryMinuteThrottler()));
         }
 
         private IEnumerable<IServerSupervisor> GetStorageSupervisors()

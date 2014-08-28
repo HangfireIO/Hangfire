@@ -101,6 +101,7 @@
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
+    <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\ServerBootstrapperFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\SchedulePollerFacts.cs" />
