@@ -193,6 +193,7 @@
     </Compile>
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
     <Compile Include="Dashboard\RequestExtensions.cs" />
+    <Compile Include="DeleteOnLatencyTimeoutAttribute.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
