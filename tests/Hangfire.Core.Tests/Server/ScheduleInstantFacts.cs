@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using Hangfire.Server;
-using Moq;
 using NCrontab;
 using Xunit;
 
@@ -14,17 +13,26 @@ namespace Hangfire.Core.Tests.Server
 
         public ScheduleInstantFacts()
         {
-            _localTime = new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Local);
+            _localTime = new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc);
             _schedule = CrontabSchedule.Parse("* * * * *");
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenLocalTimeArgument_HasUtcKind()
+        public void Ctor_ThrowsAnException_WhenLocalTimeArgument_HasLocalKind()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ScheduleInstant(DateTime.UtcNow, _schedule));
+            var exception = Assert.Throws<ArgumentException>(
+                () => new ScheduleInstant(new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Local), _schedule));
 
-            Assert.Equal("localTime", exception.ParamName);
+            Assert.Equal("utcTime", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenLocalTimeArgument_HasUnspecifiedKind()
+        {
+            var exception = Assert.Throws<ArgumentException>(
+                () => new ScheduleInstant(new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Unspecified), _schedule));
+
+            Assert.Equal("utcTime", exception.ParamName);
         }
 
         [Fact]
@@ -42,7 +50,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var instant = CreateInstant();
 
-            var value = instant.LocalTime;
+            var value = instant.UtcTime;
 
             Assert.Equal(_localTime, value);
         }
@@ -58,17 +66,17 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void GetMatches_ThrowsAnException_WhenLastTime_IsNotLocal()
+        public void GetMatches_ThrowsAnException_WhenLastTime_IsNotUtc()
         {
             var instant = CreateInstant();
 
-            Assert.Throws<ArgumentException>(() => instant.GetMatches(DateTime.UtcNow));
+            Assert.Throws<ArgumentException>(() => instant.GetMatches(DateTime.Now));
         }
 
         [Fact]
         public void GetMatches_ReturnsCollectionOfScheduleMatches_BetweenLocalTime_AndLastMatchingTime()
         {
-            var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Local);
+            var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Utc);
             var instant = CreateInstant(time);
 
             var matches = instant.GetMatches(time.AddMinutes(-3)).ToList();
@@ -82,7 +90,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void GetMatches_ReturnsSingleMatch_WhenLocalTimeSatisfiesTheSchedule()
         {
-            var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Local);
+            var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Utc);
             var instant = CreateInstant(time);
 
             var matches = instant.GetMatches(null).ToList();
@@ -94,7 +102,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void GetMatches_ReturnsEmptyCollection_WhenGivenIntervalDoesNotSatisfyTheSchedule()
         {
-            var time = new DateTime(2012, 12, 12, 00, 01, 00, DateTimeKind.Local);
+            var time = new DateTime(2012, 12, 12, 00, 01, 00, DateTimeKind.Utc);
             var instant = new ScheduleInstant(time, CrontabSchedule.Parse("0 * * * *"));
 
             var matches = instant.GetMatches(time.AddMinutes(50));

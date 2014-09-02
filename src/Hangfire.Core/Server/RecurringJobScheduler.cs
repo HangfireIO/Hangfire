@@ -101,7 +101,7 @@ namespace Hangfire.Server
             var instant = _instantFactory.GetInstant(cronSchedule);
 
             var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
-                ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"]).ToLocalTime()
+                ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
                 : (DateTime?)null;
 
             if (instant.GetMatches(lastExecutionTime).Any())
@@ -113,7 +113,7 @@ namespace Hangfire.Server
                     String.Format("recurring-job:{0}", recurringJobId),
                     new Dictionary<string, string>
                         {
-                            { "LastExecution", JobHelper.SerializeDateTime(instant.LocalTime.ToUniversalTime()) },
+                            { "LastExecution", JobHelper.SerializeDateTime(instant.UtcTime) },
                             { "LastJobId", jobId },
                         });
             }
@@ -124,7 +124,7 @@ namespace Hangfire.Server
                 {
                     {
                         "NextExecution", 
-                        JobHelper.SerializeDateTime(instant.NextOccurrence.ToUniversalTime())
+                        JobHelper.SerializeDateTime(instant.NextOccurrence)
                     }
                 });
         }

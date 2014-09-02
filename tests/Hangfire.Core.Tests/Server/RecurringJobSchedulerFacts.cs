@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Setting up the successful path
             _instant = new Mock<IScheduleInstant>();
-            _instant.Setup(x => x.GetMatches(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.LocalTime });
+            _instant.Setup(x => x.GetMatches(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.UtcTime });
 
             _instantFactory.Setup(x => x.GetInstant(It.IsNotNull<CrontabSchedule>()))
                 .Returns(() => _instant.Object);
@@ -129,13 +129,13 @@ namespace Hangfire.Core.Tests.Server
                 jobKey,
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("LastExecution") && rj["LastExecution"] 
-                        == JobHelper.SerializeDateTime(_instant.Object.LocalTime.ToUniversalTime()))));
+                        == JobHelper.SerializeDateTime(_instant.Object.UtcTime))));
 
             _connection.Verify(x => x.SetRangeInHash(
                 jobKey,
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence.ToUniversalTime()))));
+                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence))));
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace Hangfire.Core.Tests.Server
                 String.Format("recurring-job:{0}", RecurringJobId),
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence.ToUniversalTime()))));
+                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence))));
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace Hangfire.Core.Tests.Server
 
             scheduler.Execute(_token);
 
-            _instant.Verify(x => x.GetMatches(time.ToLocalTime()));
+            _instant.Verify(x => x.GetMatches(time));
         }
         
         [Fact]

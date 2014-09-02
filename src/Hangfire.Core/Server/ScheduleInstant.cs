@@ -25,33 +25,33 @@ namespace Hangfire.Server
     {
         private readonly CrontabSchedule _schedule;
 
-        public ScheduleInstant(DateTime localTime, [NotNull] CrontabSchedule schedule)
+        public ScheduleInstant(DateTime utcTime, [NotNull] CrontabSchedule schedule)
         {
-            if (localTime.Kind != DateTimeKind.Local)
+            if (utcTime.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only local DateTime values should be passed.", "localTime");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", "utcTime");
             }
 
             if (schedule == null) throw new ArgumentNullException("schedule");
 
             _schedule = schedule;
 
-            LocalTime = localTime;
-            NextOccurrence = _schedule.GetNextOccurrence(LocalTime);
+            UtcTime = utcTime;
+            NextOccurrence = _schedule.GetNextOccurrence(UtcTime);
         }
 
-        public DateTime LocalTime { get; private set; }
+        public DateTime UtcTime { get; private set; }
         public DateTime NextOccurrence { get; private set; }
 
         public IEnumerable<DateTime> GetMatches(DateTime? lastMachingTime)
         {
-            if (lastMachingTime.HasValue && lastMachingTime.Value.Kind != DateTimeKind.Local)
+            if (lastMachingTime.HasValue && lastMachingTime.Value.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only local DateTime values should be passed.", "lastMachingTime");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastMachingTime");
             }
             
-            var baseTime = lastMachingTime ?? LocalTime.AddSeconds(-1);
-            var endTime = LocalTime.AddSeconds(1);
+            var baseTime = lastMachingTime ?? UtcTime.AddSeconds(-1);
+            var endTime = UtcTime.AddSeconds(1);
 
             return _schedule.GetNextOccurrences(baseTime, endTime);
         }
