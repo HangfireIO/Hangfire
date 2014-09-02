@@ -19,7 +19,7 @@ using System.Threading;
 
 namespace Hangfire.Server
 {
-    public class EveryMinuteThrottler : IThrottler
+    internal class EveryMinuteThrottler : IThrottler
     {
         public void Throttle(CancellationToken token)
         {

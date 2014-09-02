@@ -18,7 +18,7 @@ using System.Threading;
 
 namespace Hangfire.Server
 {
-    public interface IThrottler
+    internal interface IThrottler
     {
         void Throttle(CancellationToken token);
         void Delay(CancellationToken token);

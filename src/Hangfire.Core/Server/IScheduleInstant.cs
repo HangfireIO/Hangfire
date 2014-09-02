@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace Hangfire.Server
 {
-    public interface IScheduleInstant
+    internal interface IScheduleInstant
     {
         DateTime LocalTime { get; }
         DateTime NextOccurrence { get; }

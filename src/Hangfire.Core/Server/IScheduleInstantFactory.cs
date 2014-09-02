@@ -18,7 +18,7 @@ using NCrontab;
 
 namespace Hangfire.Server
 {
-    public interface IScheduleInstantFactory
+    internal interface IScheduleInstantFactory
     {
         IScheduleInstant GetInstant(CrontabSchedule schedule);
     }

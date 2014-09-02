@@ -21,7 +21,7 @@ using NCrontab;
 
 namespace Hangfire.Server
 {
-    public class ScheduleInstant : IScheduleInstant
+    internal class ScheduleInstant : IScheduleInstant
     {
         private readonly CrontabSchedule _schedule;
 
