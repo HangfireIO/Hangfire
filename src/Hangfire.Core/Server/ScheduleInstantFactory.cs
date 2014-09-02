@@ -23,7 +23,7 @@ namespace Hangfire.Server
     {
         public IScheduleInstant GetInstant(CrontabSchedule schedule)
         {
-            return new ScheduleInstant(DateTime.Now, schedule);
+            return new ScheduleInstant(DateTime.UtcNow, schedule);
         }
     }
 }
