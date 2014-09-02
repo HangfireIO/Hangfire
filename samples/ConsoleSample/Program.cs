@@ -25,7 +25,7 @@ namespace ConsoleSample
                 //new RedisStorage("localhost:6379", 3);
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
-            RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), Cron.Hourly);
+            RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
 
             var options = new BackgroundJobServerOptions
             {
