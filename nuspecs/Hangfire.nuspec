@@ -18,21 +18,17 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
 
-1.1.0-alpha3
+1.1.0
 * Added – Add ability to automatically delete job when retry attempts exceeded. Thanks to @sgrassie!
-* Changed – NCrontab, CronExpressionDescriptor and Microsoft.Owin dependencies merged with Hangfire.Core and internalized.
-* Fixed – NextExecution values are only updated upon execution.
-* Fixed – Force IE compatibility to edge for Intranet sites. Thanks to @jeremycook!
-* Fixed – Added missing event argument in Dashboard UI. Thanks to @jeremycook!
-    
-1.1.0-alpha2
-* Fixed – `ArgumentNullException` is being thrown on job completion.
-    
-1.1.0-alpha1
 * Added – Serializing job arguments to JSON: arrays, collections and custom objects are fully supported now.
 * Added – Job filters can access method's return value. You can also see it in the Dashboard. Thanks to @gius!
 * Added – Ability to plug in multiple dashboards with different storages.
 * Added – Method to query recurring jobs to the Storage API.
+* Changed – NCrontab, CronExpressionDescriptor and Microsoft.Owin dependencies merged with Hangfire.Core and internalized.
+* Fixed – NextExecution values are only updated upon execution.
+* Fixed – Force IE compatibility to edge for Intranet sites. Thanks to @jeremycook!
+* Fixed – Added missing event argument in Dashboard UI. Thanks to @jeremycook!
+* Fixed – `ArgumentNullException` is being thrown on job completion.
 * Fixed – CPU bursts every 0th minute caused by the `RecurringJobScheduler` class.
 * Fixed – Redis.FetchedJobsWatcher prohibits jobs from running longer than 15 minutes.
     </releaseNotes>
