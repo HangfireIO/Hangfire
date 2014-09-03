@@ -17,6 +17,13 @@
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+
+1.1.0-alpha3
+* Added – Add ability to automatically delete job when retry attempts exceeded. Thanks to @sgrassie!
+* Changed – NCrontab, CronExpressionDescriptor and Microsoft.Owin dependencies merged with Hangfire.Core and internalized.
+* Fixed – NextExecution values are only updated upon execution.
+* Fixed – Force IE compatibility to edge for Intranet sites. Thanks to @jeremycook!
+* Fixed – Added missing event argument in Dashboard UI. Thanks to @jeremycook!
     
 1.1.0-alpha2
 * Fixed – `ArgumentNullException` is being thrown on job completion.
@@ -28,26 +35,6 @@
 * Added – Method to query recurring jobs to the Storage API.
 * Fixed – CPU bursts every 0th minute caused by the `RecurringJobScheduler` class.
 * Fixed – Redis.FetchedJobsWatcher prohibits jobs from running longer than 15 minutes.
-    
-1.0.2
-* Fixed – Dashboard pages: missing ContentType header.
-* Fixed – CSS and JS resources throw ArgumentOutOfRangeException.
-    
-1.0.0, 1.0.1
-* Added – OWIN implementation for Hangfire Dashboard.
-* Added – Custom authorization filters support for dashboard.
-* Added – Unified bootstrapper to start Hangfire in web applications.
-* Added – Descriptive names for background jobs in Dashboard.
-* Added – RabbitMQ support for SQL Server storage. Thanks to Denny Ferrassoli!
-* Changed – Hangfire now requires .NET Framework 4.5.
-* Changed – Namespaces, assemblies and packages now start with `Hangfire` (not `HangFire`).
-* Changed – `Hangfire.Core` now contains the dashboard. There is no more `Hangfire.Web`.
-* Changed – Common.Logging dependency package updated to 2.2.0.
-* Changed – Default dashboard url is now '/hangfire' (without `.axd` suffix).
-* Removed – Removed `Enqueue` method overloads with queue parameter.
-* Removed – Removed `AspNetBackgroundJobServer` class.
-* Fixed – Russian language in Dashboard replaced with English.
-* Fixed – Recurring jobs reported to be executed 44 years ago.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
