@@ -18,6 +18,7 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Server;
+using Microsoft.Owin.Infrastructure;
 using Owin;
 
 namespace Hangfire
@@ -63,6 +64,7 @@ namespace Hangfire
                 app.RunHangfireServer(server());
             }
 
+            SignatureConversions.AddConversions(app);
             app.MapHangfireDashboard(configuration.DashboardPath, configuration.AuthorizationFilters);
         }
     }
