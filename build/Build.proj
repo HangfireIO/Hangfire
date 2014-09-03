@@ -38,10 +38,10 @@
   <Import Project="$(MSBuildProjectDirectory)\Hangfire.versions.targets" />
   <Import Project="$(MSBuildProjectDirectory)\MSBuild.Community.Tasks.Targets" />
 
-  <!-- Add extra properties to the build for signing -->
-  <!--PropertyGroup Condition="Exists('$(KeyFile)')">
-    <ExtraProperties>KeyFile=$(KeyFile)</ExtraProperties>
-  </PropertyGroup-->
+  <!-- Add extra properties to the build for merging -->
+  <PropertyGroup Condition="$(UseILMerge) != ''">
+    <ExtraProperties>UseILMerge=$(UseILMerge)</ExtraProperties>
+  </PropertyGroup>
 
   <PropertyGroup>
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
