@@ -44,7 +44,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
-        internal Job(Type type, MethodInfo method, string[] arguments)
+        internal Job(Type type, MethodInfo method, string[] arguments, bool methodMissing)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
@@ -53,6 +53,7 @@ namespace Hangfire.Common
             Type = type;
             Method = method;
             Arguments = arguments;
+            MethodMissing = methodMissing;
 
             Validate();
         }
@@ -64,6 +65,11 @@ namespace Hangfire.Common
         /// Gets arguments array that will be passed to the method during its invocation.
         /// </summary>
         public string[] Arguments { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the target method of the job is actually missing
+        /// </summary>
+        public bool MethodMissing { get; private set; }
 
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
@@ -136,7 +142,8 @@ namespace Hangfire.Common
             return new Job(
                 callExpression.Method.DeclaringType, 
                 callExpression.Method, 
-                GetArguments(callExpression));
+                GetArguments(callExpression),
+                false);
         }
 
         /// <summary>
@@ -159,7 +166,8 @@ namespace Hangfire.Common
             return new Job(
                 typeof(T), 
                 callExpression.Method, 
-                GetArguments(callExpression));
+                GetArguments(callExpression),
+                false);
         }
 
         private void Validate()

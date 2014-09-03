@@ -311,7 +311,7 @@ namespace Hangfire.Core.Tests.Common
 
 			foreach (var method in serializationMethods)
 			{
-				var job = new Job(type, methodInfo, new[] { method.Item2() });
+				var job = new Job(type, methodInfo, new[] { method.Item2() }, false);
 				job.Perform(_activator.Object, _token.Object);	
 			}
 		}

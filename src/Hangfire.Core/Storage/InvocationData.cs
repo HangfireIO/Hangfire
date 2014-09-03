@@ -55,7 +55,7 @@ namespace Hangfire.Storage
 
                 var arguments = JobHelper.FromJson<string[]>(Arguments);
 
-                return new Job(type, method, arguments);
+                return new Job(type, method, arguments, false);
             }
             catch (Exception ex)
             {
