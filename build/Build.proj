@@ -6,6 +6,7 @@
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
     <BuildEnvironment Condition="'$(BuildEnvironment)' == ''">local</BuildEnvironment>
+    <UseILMerge>False</UseILMerge>
     <Nightly Condition="$(Nightly) == ''">true</Nightly>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
@@ -37,10 +38,10 @@
   <Import Project="$(MSBuildProjectDirectory)\Hangfire.versions.targets" />
   <Import Project="$(MSBuildProjectDirectory)\MSBuild.Community.Tasks.Targets" />
 
-  <!-- Add extra properties to the build for signing -->
-  <!--PropertyGroup Condition="Exists('$(KeyFile)')">
-    <ExtraProperties>KeyFile=$(KeyFile)</ExtraProperties>
-  </PropertyGroup-->
+  <!-- Add extra properties to the build for merging -->
+  <PropertyGroup Condition="$(UseILMerge) != ''">
+    <ExtraProperties>UseILMerge=$(UseILMerge)</ExtraProperties>
+  </PropertyGroup>
 
   <PropertyGroup>
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
