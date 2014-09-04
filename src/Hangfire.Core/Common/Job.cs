@@ -44,7 +44,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
-        internal Job(Type type, MethodInfo method, string[] arguments, bool methodMissing)
+        internal Job(Type type, MethodInfo method, string[] arguments)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
@@ -53,9 +53,16 @@ namespace Hangfire.Common
             Type = type;
             Method = method;
             Arguments = arguments;
-            MethodMissing = methodMissing;
 
             Validate();
+        }
+
+        internal Job(bool isMethodMissing, string missingMethodError)
+        {
+            if(String.IsNullOrEmpty(missingMethodError)) throw new ArgumentNullException("missingMethodError");
+
+            MethodMissing = isMethodMissing;
+            MissingMethodError = missingMethodError;
         }
 
         public Type Type { get; private set; }
@@ -67,9 +74,14 @@ namespace Hangfire.Common
         public string[] Arguments { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether or not the target method of the job is actually missing
+        /// Gets or sets a value indicating whether or not the target method of the job is actually missing
         /// </summary>
         public bool MethodMissing { get; private set; }
+
+        /// <summary>
+        /// Sets a string which may contain the details of the missing method, if a method is missing (<see cref="MethodMissing"/>).
+        /// </summary>
+        public string MissingMethodError { get; private set; }
 
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
@@ -142,8 +154,7 @@ namespace Hangfire.Common
             return new Job(
                 callExpression.Method.DeclaringType, 
                 callExpression.Method, 
-                GetArguments(callExpression),
-                false);
+                GetArguments(callExpression));
         }
 
         /// <summary>
@@ -166,8 +177,7 @@ namespace Hangfire.Common
             return new Job(
                 typeof(T), 
                 callExpression.Method, 
-                GetArguments(callExpression),
-                false);
+                GetArguments(callExpression));
         }
 
         private void Validate()

@@ -37,34 +37,34 @@ namespace Hangfire.Core.Tests.Common
         public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new Job(null, _method, _arguments, false));
+                () => new Job(null, _method, _arguments));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new Job(_type, null, _arguments, false));
+                () => new Job(_type, null, _arguments));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenTheTypeDoesNotContainTheGivenMethod()
         {
             Assert.Throws<ArgumentException>(
-                () => new Job(typeof(Job), _method, _arguments, true));
+                () => new Job(typeof(Job), _method, _arguments));
         }
 
         [Fact]
         public void Ctor_ShouldThrowAnException_WhenArgumentsArrayIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new Job(_type, _method, null, false));
+                () => new Job(_type, _method, null));
         }
 
         [Fact]
         public void Ctor_ShouldInitializeAllProperties()
         {
-            var job = new Job(_type, _method, _arguments, false);
+            var job = new Job(_type, _method, _arguments);
 
             Assert.Same(_type, job.Type);
             Assert.Same(_method, job.Method);
@@ -75,7 +75,7 @@ namespace Hangfire.Core.Tests.Common
         public void Ctor_ShouldThrowAnException_WhenArgumentCountIsNotEqualToParameterCount()
         {
             var exception = Assert.Throws<ArgumentException>(
-                () => new Job(_type, _method, new[] { "hello!" }, false));
+                () => new Job(_type, _method, new[] { "hello!" }));
 
             Assert.Contains("count", exception.Message);
         }
@@ -267,7 +267,7 @@ namespace Hangfire.Core.Tests.Common
             var type = typeof (JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            var job = new Job(type, method, new[] { convertedDate }, false);
+            var job = new Job(type, method, new[] { convertedDate });
 
             // Act
             job.Perform(_activator.Object, _token.Object);
@@ -286,7 +286,7 @@ namespace Hangfire.Core.Tests.Common
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            var job = new Job(type, method, new[] { convertedDate }, false);
+            var job = new Job(type, method, new[] { convertedDate });
 
             // Act
             job.Perform(_activator.Object, _token.Object);
@@ -354,7 +354,7 @@ namespace Hangfire.Core.Tests.Common
         {
 	        var type = typeof (JobFacts);
 	        var method = type.GetMethod("MethodWithDateTimeArgument");
-			var job = new Job(type, method, new []{ "sdfa" }, false);
+			var job = new Job(type, method, new []{ "sdfa" });
 
             var exception = Assert.Throws<JobPerformanceException>(
                 () => job.Perform(_activator.Object, _token.Object));
