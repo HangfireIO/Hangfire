@@ -27,7 +27,8 @@ namespace Hangfire.Redis
 {
     public class RedisStorage : JobStorage
     {
-        internal static readonly string Prefix = "hangfire:";
+        internal static string _prefix = "hangfire:";
+        internal static string Prefix { get { return _prefix; } set { _prefix = value; } }
 
         private readonly PooledRedisClientManager _pooledManager;
 
