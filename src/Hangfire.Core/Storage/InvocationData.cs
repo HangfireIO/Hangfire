@@ -43,19 +43,24 @@ namespace Hangfire.Storage
                 var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
                 var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
                 var method = type.GetMethod(Method, parameterTypes);
+                var isMethodMissing = false;
+                var missingMethodError = String.Empty;
                 
                 if (method == null)
                 {
-                    throw new InvalidOperationException(String.Format(
+                    isMethodMissing = true;
+                    missingMethodError = String.Format(
                         "The type `{0}` does not contain a method with signature `{1}({2})`",
                         type.FullName,
                         Method,
-                        String.Join(", ", parameterTypes.Select(x => x.Name))));
+                        String.Join(", ", parameterTypes.Select(x => x.Name)));
                 }
 
                 var arguments = JobHelper.FromJson<string[]>(Arguments);
 
-                return new Job(type, method, arguments, false);
+                return !isMethodMissing
+                    ? new Job(type, method, arguments)
+                    : new Job(true, missingMethodError);
             }
             catch (Exception ex)
             {
