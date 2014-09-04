@@ -24,9 +24,13 @@ namespace Hangfire.Redis
         /// the data.
         /// </summary>
         public static RedisStorage UseRedisStorage(
-            this IBootstrapperConfiguration configuration)
+            this IBootstrapperConfiguration configuration, string prefix = null)
         {
             var storage = new RedisStorage();
+
+            if (!string.IsNullOrWhiteSpace(prefix))
+                RedisStorage.Prefix = prefix;
+
             configuration.UseStorage(storage);
 
             return storage;
@@ -39,11 +43,16 @@ namespace Hangfire.Redis
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="hostAndPort">Host and port, for example 'localhost:6379'</param>
+        /// <param name="prefix">Redis collections prefix, 'Hangfire:' by default</param>
         public static RedisStorage UseRedisStorage(
             this IBootstrapperConfiguration configuration,
-            string hostAndPort)
+            string hostAndPort, string prefix = null)
         {
             var storage = new RedisStorage(hostAndPort);
+
+            if (!string.IsNullOrWhiteSpace(prefix))
+                RedisStorage.Prefix = prefix;
+
             configuration.UseStorage(storage);
 
             return storage;
@@ -57,13 +66,19 @@ namespace Hangfire.Redis
         /// <param name="configuration">Configuration</param>
         /// <param name="hostAndPort">Host and port, for example, 'localhost:6379'</param>
         /// <param name="db">Database number to store the data, for example '0'</param>
+        /// <param name="prefix">Redis collections prefix, 'Hangfire:' by default</param>
         /// <returns></returns>
         public static RedisStorage UseRedisStorage(
             this IBootstrapperConfiguration configuration,
             string hostAndPort,
-            int db)
+            int db,
+            string prefix = null)
         {
             var storage = new RedisStorage(hostAndPort, db);
+
+            if (!string.IsNullOrWhiteSpace(prefix))
+                RedisStorage.Prefix = prefix;
+
             configuration.UseStorage(storage);
 
             return storage;
@@ -77,14 +92,20 @@ namespace Hangfire.Redis
         /// <param name="configuration">Configuration</param>
         /// <param name="hostAndPort">Host and port, for example 'localhost:6379'</param>
         /// <param name="db">Database number to store the data, for example '0'</param>
+        /// <param name="prefix">Redis collections prefix, 'Hangfire:' by default</param>
         /// <param name="options">Advanced storage options</param>
         public static RedisStorage UseRedisStorage(
             this IBootstrapperConfiguration configuration,
             string hostAndPort,
             int db,
-            RedisStorageOptions options)
+            RedisStorageOptions options,
+            string prefix = null)
         {
             var storage = new RedisStorage(hostAndPort, db, options);
+
+            if (!string.IsNullOrWhiteSpace(prefix))
+                RedisStorage.Prefix = prefix;
+
             configuration.UseStorage(storage);
 
             return storage;
