@@ -75,13 +75,16 @@ namespace Hangfire.Common
             object result = null;
             try
             {
-                if (!Method.IsStatic)
+                using (var jobActivationContext = new JobActivationContext())
                 {
-                    instance = Activate(activator);
-                }
+                    if (!Method.IsStatic)
+                    {
+                        instance = Activate(activator, jobActivationContext);
+                    }
 
-                var deserializedArguments = DeserializeArguments(cancellationToken);
-                result = InvokeMethod(instance, deserializedArguments);
+                    var deserializedArguments = DeserializeArguments(cancellationToken);
+                    result = InvokeMethod(instance, deserializedArguments);
+                }
             }
             finally
             {
@@ -209,11 +212,11 @@ namespace Hangfire.Common
             }
         }
 
-        private object Activate(JobActivator activator)
+        private object Activate(JobActivator activator, IJobActivationContext jobActivationContext)
         {
             try
             {
-                var instance = activator.ActivateJob(Type);
+                var instance = activator.ActivateJob(Type, jobActivationContext);
 
                 if (instance == null)
                 {

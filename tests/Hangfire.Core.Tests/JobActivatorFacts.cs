@@ -3,6 +3,8 @@ using Xunit;
 
 namespace Hangfire.Core.Tests
 {
+    using Moq;
+
     public class JobActivatorFacts
     {
         [Fact, GlobalLock]
@@ -24,8 +26,9 @@ namespace Hangfire.Core.Tests
         public void DefaultActivator_CanCreateInstanceOfClassWithDefaultConstructor()
         {
             var activator = new JobActivator();
+            var context = new Mock<IJobActivationContext>();
 
-            var instance = activator.ActivateJob(typeof (DefaultConstructor));
+            var instance = activator.ActivateJob(typeof(DefaultConstructor), context.Object);
 
             Assert.NotNull(instance);
         }
@@ -34,9 +37,10 @@ namespace Hangfire.Core.Tests
         public void DefaultActivator_ThrowAnException_IfThereIsNoDefaultConstructor()
         {
             var activator = new JobActivator();
+            var context = new Mock<IJobActivationContext>();
 
             Assert.Throws<MissingMethodException>(
-                () => activator.ActivateJob(typeof (CustomConstructor)));
+                () => activator.ActivateJob(typeof(CustomConstructor), context.Object));
         }
 
         public class DefaultConstructor

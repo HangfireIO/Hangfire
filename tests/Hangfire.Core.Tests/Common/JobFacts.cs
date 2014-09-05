@@ -191,9 +191,10 @@ namespace Hangfire.Core.Tests.Common
         public void Perform_ThrowsAnException_WhenActivatorIsNull()
         {
             var job = Job.FromExpression(() => StaticMethod());
+            var context = new Mock<IJobActivationContext>();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => job.Perform(null, _token.Object));
+                () => job.Perform(null, this._token.Object));
 
             Assert.Equal("activator", exception.ParamName);
         }
@@ -202,9 +203,10 @@ namespace Hangfire.Core.Tests.Common
         public void Perform_ThrowsAnException_WhenCancellationTokenIsNull()
         {
             var job = Job.FromExpression(() => StaticMethod());
+            var context = new Mock<IJobActivationContext>();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => job.Perform(_activator.Object, null));
+                () => job.Perform(this._activator.Object, null));
 
             Assert.Equal("cancellationToken", exception.ParamName);
         }
@@ -327,7 +329,7 @@ namespace Hangfire.Core.Tests.Common
         public void Perform_ThrowsPerformanceException_WhenActivatorThrowsAnException()
         {
             var exception = new InvalidOperationException();
-            _activator.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws(exception);
+            _activator.Setup(x => x.ActivateJob(It.IsAny<Type>(), It.IsAny<IJobActivationContext>())).Throws(exception);
 
             var job = Job.FromExpression(() => InstanceMethod());
 
@@ -340,7 +342,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
-            _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
+            _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>(), It.IsAny<IJobActivationContext>())).Returns(null);
             var job = Job.FromExpression(() => InstanceMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
@@ -408,6 +410,44 @@ namespace Hangfire.Core.Tests.Common
             var result = job.Perform(_activator.Object, _token.Object);
 
             Assert.Equal("Return value", result);
+        }
+
+        [Fact]
+        public void Perform_EndsActivationContext_WhenCalledFunctionReturns()
+        {
+            var contextEnded = false;
+
+            _activator.Setup(activator => activator.ActivateJob(It.IsAny<Type>(), It.IsAny<IJobActivationContext>()))
+                .Callback<Type, IJobActivationContext>(
+                    (type, context) =>
+                        {
+                            context.ContextEnded += (sender, args) => contextEnded = true;
+                        }).CallBase();
+
+            var job = Job.FromExpression<Instance>(x => x.Method());
+
+            job.Perform(_activator.Object, _token.Object);
+
+            Assert.True(contextEnded, "The performed job did not notify the activation context of completion.");
+        }
+
+        [Fact]
+        public void Perform_EndsActivationContext_WhenCalledFunctionThrows()
+        {
+            var contextEnded = false;
+
+            _activator.Setup(activator => activator.ActivateJob(It.IsAny<Type>(), It.IsAny<IJobActivationContext>()))
+                .Callback<Type, IJobActivationContext>(
+                    (type, context) =>
+                    {
+                        context.ContextEnded += (sender, args) => contextEnded = true;
+                    }).CallBase();
+
+            var job = Job.FromExpression<Instance>(x => x.MethodThrowingException());
+
+            Assert.Throws<JobPerformanceException>(() => job.Perform(_activator.Object, _token.Object));
+
+            Assert.True(contextEnded, "The performed job did not notify the activation context of completion.");
         }
 
         public void GetTypeFilterAttributes_ReturnsCorrectAttributes()
@@ -509,6 +549,11 @@ namespace Hangfire.Core.Tests.Common
             public void Method()
             {
                 _methodInvoked = true;
+            }
+
+            public void MethodThrowingException()
+            {
+                ExceptionMethod();
             }
 
             public void Dispose()

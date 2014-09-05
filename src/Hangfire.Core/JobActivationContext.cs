@@ -14,35 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 namespace Hangfire
 {
-    public class JobActivator
+    using System;
+
+    public sealed class JobActivationContext : IJobActivationContext, IDisposable
     {
-        private static JobActivator _current = new JobActivator();
+        public event EventHandler ContextEnded;
 
-        /// <summary>
-        /// Gets or sets the current <see cref="JobActivator"/> instance 
-        /// that will be used to activate jobs during performance.
-        /// </summary>
-        public static JobActivator Current
+        public void Dispose()
         {
-            get { return _current; }
-            set
+            var contextEndedEventHandler = this.ContextEnded;
+
+            if (contextEndedEventHandler != null)
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-
-                _current = value;
+                contextEndedEventHandler(this, EventArgs.Empty);
             }
-        }
 
-        public virtual object ActivateJob(Type jobType, IJobActivationContext jobActivationContext)
-        {
-            return Activator.CreateInstance(jobType);
+            this.ContextEnded = null;
         }
     }
 }
