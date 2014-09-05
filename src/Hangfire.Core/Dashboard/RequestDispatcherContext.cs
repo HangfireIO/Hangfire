@@ -15,9 +15,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Hangfire.Annotations;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -25,20 +25,20 @@ namespace Hangfire.Dashboard
     {
         public RequestDispatcherContext(
             [NotNull] JobStorage jobStorage,
-            [NotNull] IOwinContext owinContext, 
+            [NotNull] IDictionary<string, object> owinEnvironment, 
             [NotNull] Match uriMatch)
         {
             if (jobStorage == null) throw new ArgumentNullException("jobStorage");
-            if (owinContext == null) throw new ArgumentNullException("owinContext");
+            if (owinEnvironment == null) throw new ArgumentNullException("owinEnvironment");
             if (uriMatch == null) throw new ArgumentNullException("uriMatch");
 
             JobStorage = jobStorage;
-            OwinContext = owinContext;
+            OwinEnvironment = owinEnvironment;
             UriMatch = uriMatch;
         }
 
         public JobStorage JobStorage { get; private set; }
-        public IOwinContext OwinContext { get; private set; }
+        public IDictionary<string, object> OwinEnvironment { get; private set; } 
         public Match UriMatch { get; private set; }
     }
 }

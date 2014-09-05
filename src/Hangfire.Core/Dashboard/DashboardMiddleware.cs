@@ -56,7 +56,7 @@ namespace Hangfire.Dashboard
 
             foreach (var filter in _authorizationFilters)
             {
-                if (!filter.Authorize(context))
+                if (!filter.Authorize(context.Environment))
                 {
                     context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
                     return Task.FromResult(false);
@@ -65,7 +65,7 @@ namespace Hangfire.Dashboard
 
             var dispatcherContext = new RequestDispatcherContext(
                 _storage,
-                context,
+                context.Environment,
                 dispatcher.Item2);
 
             return dispatcher.Item1.Dispatch(dispatcherContext);

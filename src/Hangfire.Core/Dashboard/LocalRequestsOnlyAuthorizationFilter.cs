@@ -15,14 +15,16 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
     public class LocalRequestsOnlyAuthorizationFilter : IAuthorizationFilter
     {
-        public bool Authorize(IOwinContext context)
+        public bool Authorize(IDictionary<string, object> owinEnvironment)
         {
+            var context = new OwinContext(owinEnvironment);
             var remoteAddress = context.Request.RemoteIpAddress;
 
             // if unknown, assume not local
