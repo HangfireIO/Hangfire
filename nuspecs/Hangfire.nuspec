@@ -17,6 +17,9 @@
     <copyright>Copyright © Sergey Odinokov</copyright>
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.1.1
+* Fixed – `IAuthorizationFilter.Authorize` method issues with `IOwinContext` interface.
 
 1.1.0
 * Added – Add ability to automatically delete job when retry attempts exceeded. Thanks to @sgrassie!
