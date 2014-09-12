@@ -94,7 +94,7 @@ namespace Hangfire.Core.Tests.Server
             
             var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback(() => { timesExecuted++; Thread.Yield(); });
+                .Callback(() => { timesExecuted++; Thread.Sleep(100); });
 
             supervisor.Start();
 
@@ -126,7 +126,7 @@ namespace Hangfire.Core.Tests.Server
             
             var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback(() => { timesExecuted++; Thread.Yield(); });
+                .Callback(() => { timesExecuted++; Thread.Sleep(100); });
 
             supervisor.Start();
             supervisor.Stop();
@@ -261,7 +261,7 @@ namespace Hangfire.Core.Tests.Server
         private ServerSupervisor CreateSupervisor()
         {
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback(() => Thread.Yield());
+                .Callback(() => Thread.Sleep(100));
             return new ServerSupervisor(_component.Object, _options);
         }
 
