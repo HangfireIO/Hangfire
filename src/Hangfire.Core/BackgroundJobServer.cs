@@ -123,19 +123,23 @@ namespace Hangfire
                 JobActivator.Current,
                 stateMachineFactory);
 
-            yield return new ServerSupervisor(new WorkerManager(sharedWorkerContext, _options.WorkerCount));
-            yield return new ServerSupervisor(new ServerHeartbeat(_storage, _serverId));
-            yield return new ServerSupervisor(new ServerWatchdog(_storage));
+            yield return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(
+                new WorkerManager(sharedWorkerContext, _options.WorkerCount)));
 
-            yield return new ServerSupervisor(
-                new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval));
+            yield return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(
+                new ServerHeartbeat(_storage, _serverId)));
+            yield return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(
+                new ServerWatchdog(_storage)));
 
-            yield return new ServerSupervisor(
+            yield return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(
+                new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval)));
+
+            yield return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(
                 new RecurringJobScheduler(
                     _storage, 
                     new BackgroundJobClient(_storage, stateMachineFactory),
                     new ScheduleInstantFactory(),
-                    new EveryMinuteThrottler()));
+                    new EveryMinuteThrottler())));
         }
 
         private IEnumerable<IServerSupervisor> GetStorageSupervisors()
@@ -143,7 +147,7 @@ namespace Hangfire
             var components = _storage.GetComponents();
 
             return components
-                .Select(component => new ServerSupervisor(component))
+                .Select(component => new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component)))
                 .ToArray();
         }
     }

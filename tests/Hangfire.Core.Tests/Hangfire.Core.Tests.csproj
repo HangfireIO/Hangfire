@@ -109,7 +109,7 @@
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
     <Compile Include="Server\ServerSupervisorCollectionFacts.cs" />
     <Compile Include="Server\ServerSupervisorFacts.cs" />
-    <Compile Include="Server\ServerSupervisorOptionsFacts.cs" />
+    <Compile Include="Server\AutomaticRetryServerComponentWrapperFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\SharedWorkerContextFacts.cs" />

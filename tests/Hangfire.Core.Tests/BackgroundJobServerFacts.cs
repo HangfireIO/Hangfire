@@ -94,7 +94,7 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void GetSupervisors_ContainsDefaultComponents()
+        public void GetSupervisors_ContainsDefaultComponents_WrappedTo_AutomaticRetryServerComponentWrapper()
         {
             // Arrange
             var server = CreateServer();
@@ -105,6 +105,8 @@ namespace Hangfire.Core.Tests
             // Assert
             var componentTypes = supervisors.OfType<ServerSupervisor>()
                 .Select(x => x.Component)
+                .Cast<AutomaticRetryServerComponentWrapper>()
+                .Select(x => x.InnerComponent)
                 .Select(x => x.GetType())
                 .ToArray();
 
@@ -115,7 +117,7 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void GetSupervisors_ContainsStorageComponents()
+        public void GetSupervisors_ContainsStorageComponents_WrappedTo_AutomaticRetryServerComponentWrapper()
         {
             // Arrange
             var storageComponent = new Mock<IServerComponent>();
@@ -129,6 +131,8 @@ namespace Hangfire.Core.Tests
             // Assert
             var components = supervisors.OfType<ServerSupervisor>()
                 .Select(x => x.Component)
+                .Cast<AutomaticRetryServerComponentWrapper>()
+                .Select(x => x.InnerComponent)
                 .ToArray();
 
             Assert.Contains(storageComponent.Object, components);
