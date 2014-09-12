@@ -54,7 +54,7 @@
     <Projects Include="$(ProjectRoot)\src\**\*.csproj" Exclude="@(Projects)" />
 
     <Projects Include="$(ProjectRoot)\samples\Hangfire.Sample.Highlighter\Hangfire.Sample.Highlighter.csproj">
-      <BuildDeploymentPackage>true</BuildDeploymentPackage>
+      <BuildDeploymentPackage>false</BuildDeploymentPackage>
       <Sample>true</Sample>
     </Projects>
 
