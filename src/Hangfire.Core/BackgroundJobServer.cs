@@ -106,13 +106,13 @@ namespace Hangfire
         {
             var supervisors = new List<IServerSupervisor>();
 
-            supervisors.AddRange(GetCommonSupervisors());
-            supervisors.AddRange(GetStorageSupervisors());
+            supervisors.AddRange(GetCommonComponents().Select(CreateSupervisor));
+            supervisors.AddRange(_storage.GetComponents().Select(CreateSupervisor));
 
             return new ServerSupervisorCollection(supervisors);
         }
 
-        private IEnumerable<IServerSupervisor> GetCommonSupervisors()
+        private IEnumerable<IServerComponent> GetCommonComponents()
         {
             var stateMachineFactory = new StateMachineFactory(_storage);
             var sharedWorkerContext = new SharedWorkerContext(
@@ -123,28 +123,21 @@ namespace Hangfire
                 JobActivator.Current,
                 stateMachineFactory);
 
-            yield return new ServerSupervisor(new WorkerManager(sharedWorkerContext, _options.WorkerCount));
-            yield return new ServerSupervisor(new ServerHeartbeat(_storage, _serverId));
-            yield return new ServerSupervisor(new ServerWatchdog(_storage));
+            yield return new WorkerManager(sharedWorkerContext, _options.WorkerCount);
+            yield return new ServerHeartbeat(_storage, _serverId);
+            yield return new ServerWatchdog(_storage);
+            yield return new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval);
 
-            yield return new ServerSupervisor(
-                new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval));
-
-            yield return new ServerSupervisor(
-                new RecurringJobScheduler(
-                    _storage, 
-                    new BackgroundJobClient(_storage, stateMachineFactory),
-                    new ScheduleInstantFactory(),
-                    new EveryMinuteThrottler()));
+            yield return new RecurringJobScheduler(
+                _storage, 
+                new BackgroundJobClient(_storage, stateMachineFactory),
+                new ScheduleInstantFactory(),
+                new EveryMinuteThrottler());
         }
 
-        private IEnumerable<IServerSupervisor> GetStorageSupervisors()
+        private static ServerSupervisor CreateSupervisor(IServerComponent component)
         {
-            var components = _storage.GetComponents();
-
-            return components
-                .Select(component => new ServerSupervisor(component))
-                .ToArray();
+            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component));
         }
     }
 }

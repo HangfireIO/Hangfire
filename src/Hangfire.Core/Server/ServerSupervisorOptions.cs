@@ -21,29 +21,10 @@ namespace Hangfire.Server
 {
     public class ServerSupervisorOptions
     {
-        private int _maxRetryAttempts;
-
         public ServerSupervisorOptions()
         {
-            MaxRetryAttempts = 10;
             ShutdownTimeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
             LowerLogVerbosity = false;
-        }
-
-        public int MaxRetryAttempts
-        {
-            get { return _maxRetryAttempts; }
-            set
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        "value",
-                        "MaxRetryAttempts property value must be greater or equal to 0.");
-                }
-
-                _maxRetryAttempts = value;
-            }
         }
 
         public TimeSpan ShutdownTimeout { get; set; }

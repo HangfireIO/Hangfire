@@ -202,6 +202,7 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
+    <Compile Include="Server\AutomaticRetryServerComponentWrapper.cs" />
     <Compile Include="Server\EveryMinuteThrottler.cs" />
     <Compile Include="Server\IScheduleInstant.cs" />
     <Compile Include="Server\IScheduleInstantFactory.cs" />

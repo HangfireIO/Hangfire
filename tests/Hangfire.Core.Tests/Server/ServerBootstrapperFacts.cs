@@ -25,7 +25,7 @@ namespace Hangfire.Core.Tests.Server
             _supervisor = new Mock<IServerSupervisor>();
             _supervisorFactory = new Lazy<IServerSupervisor>(() => _supervisor.Object);
             _connection = new Mock<IStorageConnection>();
-            _cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            _cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
