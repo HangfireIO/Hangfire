@@ -93,7 +93,7 @@ namespace Hangfire.SqlServer
         {
             var connection = CreateAndOpenConnection();
 
-            return new SqlServerConnection(connection, QueueProviders);
+            return new SqlServerConnection(connection, QueueProviders, _options.WriteIsolationLevel);
         }
 
         public override IEnumerable<IServerComponent> GetComponents()

@@ -32,16 +32,19 @@ namespace Hangfire.SqlServer
 
         private readonly SqlConnection _connection;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
+        private readonly IsolationLevel _writeIsolationLevel;
 
         public SqlServerWriteOnlyTransaction( 
             SqlConnection connection,
-            PersistentJobQueueProviderCollection queueProviders)
+            PersistentJobQueueProviderCollection queueProviders,
+            IsolationLevel writeIsolationLevel)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             _connection = connection;
             _queueProviders = queueProviders;
+            _writeIsolationLevel = writeIsolationLevel;
         }
 
         public void Dispose()
@@ -52,7 +55,7 @@ namespace Hangfire.SqlServer
         {
             using (var transaction = new TransactionScope(
                 TransactionScopeOption.Required,
-                new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+                new TransactionOptions { IsolationLevel = _writeIsolationLevel }))
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
