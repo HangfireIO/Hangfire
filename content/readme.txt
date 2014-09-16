@@ -5,7 +5,7 @@ any OWIN-based web application.
 Bootstrapping Hangfire
 -----------------------
 To run Hangfire in your application, update the existing OWIN Startup class or
-create the file `Startup.cs` in the root foloder of your application as shown
+create the file `Startup.cs` in the root folder of your application as shown
 below. Please see also http://docs.hangfire.io/en/latest/quickstart.html.
 
 using Hangfire;
