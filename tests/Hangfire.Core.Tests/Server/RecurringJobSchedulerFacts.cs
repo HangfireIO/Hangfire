@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -20,28 +21,27 @@ namespace Hangfire.Core.Tests.Server
         private readonly CancellationToken _token;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Dictionary<string, string> _recurringJob;
-        private readonly Mock<IDateTimeProvider> _dateTimeProvider;
-        private DateTime _currentTime;
-        private readonly DateTime _nextTime;
+        private readonly Mock<IScheduleInstantFactory> _instantFactory; 
+        private readonly Mock<IThrottler> _throttler;
+        private readonly Mock<IScheduleInstant> _instant;
 
         public RecurringJobSchedulerFacts()
         {
             _storage = new Mock<JobStorage>();
             _client = new Mock<IBackgroundJobClient>();
-            _dateTimeProvider = new Mock<IDateTimeProvider>();
-            _token = new CancellationToken();
+            _instantFactory = new Mock<IScheduleInstantFactory>();
+            _throttler = new Mock<IThrottler>();
+            _token = new CancellationTokenSource().Token;
 
             // Setting up the successful path
-            _currentTime = new DateTime(2012, 12, 12, 12, 12, 0);
-            _nextTime = _currentTime.AddHours(1);
+            _instant = new Mock<IScheduleInstant>();
+            _instant.Setup(x => x.GetMatches(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.UtcTime });
 
-            _dateTimeProvider.Setup(x => x.CurrentDateTime).Returns(() => _currentTime);
-            _dateTimeProvider.Setup(x => x.GetNextOccurrence(It.IsNotNull<CrontabSchedule>()))
-                .Returns(() => _nextTime);
+            _instantFactory.Setup(x => x.GetInstant(It.IsNotNull<CrontabSchedule>()))
+                .Returns(() => _instant.Object);
 
             _recurringJob = new Dictionary<string, string>
             {
-                { "NextExecution", JobHelper.SerializeDateTime(_currentTime) },
                 { "Cron", "* * * * *" },
                 { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
             };
@@ -54,13 +54,16 @@ namespace Hangfire.Core.Tests.Server
 
             _connection.Setup(x => x.GetAllEntriesFromHash(String.Format("recurring-job:{0}", RecurringJobId)))
                 .Returns(_recurringJob);
+
+            _client.Setup(x => x.Create(It.IsAny<Job>(), It.IsAny<IState>())).Returns("job-id");
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobScheduler(null, _client.Object, _dateTimeProvider.Object));
+// ReSharper disable once AssignNullToNotNullAttribute
+                () => new RecurringJobScheduler(null, _client.Object, _instantFactory.Object, _throttler.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -69,43 +72,76 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenClientIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobScheduler(_storage.Object, null, _dateTimeProvider.Object));
+// ReSharper disable once AssignNullToNotNullAttribute
+                () => new RecurringJobScheduler(_storage.Object, null, _instantFactory.Object, _throttler.Object));
 
             Assert.Equal("client", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenDateTimeProviderIsNull()
+        public void Ctor_ThrowsAnException_WhenInstantFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobScheduler(_storage.Object, _client.Object, null));
+// ReSharper disable once AssignNullToNotNullAttribute
+                () => new RecurringJobScheduler(_storage.Object, _client.Object, null, _throttler.Object));
 
-            Assert.Equal("dateTimeProvider", exception.ParamName);
+            Assert.Equal("instantFactory", exception.ParamName);
         }
 
         [Fact]
-        public void Execute_EnqueuesRecurringJob_AndUpdatesIt_WhenNextExecutionTime_IsEqualToCurrentTime()
+        public void Ctor_ThrowsAnException_WhenThrottlerIsNull()
         {
-            _client.Setup(x => x.Create(It.IsAny<Job>(), It.IsAny<IState>())).Returns("job-id");
+            var exception = Assert.Throws<ArgumentNullException>(
+// ReSharper disable once AssignNullToNotNullAttribute
+                () => new RecurringJobScheduler(_storage.Object, _client.Object, _instantFactory.Object, null));
 
+            Assert.Equal("throttler", exception.ParamName);
+        }
+
+        [Fact]
+        public void Execute_EnqueuesAJob_WhenItIsTimeToRunIt()
+        {
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
 
             _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
-
-            _connection.Verify(x => x.SetRangeInHash(
-                String.Format("recurring-job:{0}", RecurringJobId),
-                It.Is<Dictionary<string, string>>(rj =>
-                    rj["LastExecution"] == JobHelper.SerializeDateTime(_currentTime)
-                 && rj["LastJobId"] == "job-id"
-                 && rj["NextExecution"] == JobHelper.SerializeDateTime(_nextTime))));
         }
 
         [Fact]
-        public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_WhenNextExecutionTime_IsInTheFuture()
+        public void Execute_UpdatesRecurringJobParameters_OnCompletion()
         {
-            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_currentTime.AddDays(1));
+            // Arrange
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_token);
+
+            // Assert
+            var jobKey = String.Format("recurring-job:{0}", RecurringJobId);
+
+            _connection.Verify(x => x.SetRangeInHash(
+                jobKey,
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("LastJobId") && rj["LastJobId"] == "job-id")));
+
+            _connection.Verify(x => x.SetRangeInHash(
+                jobKey,
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("LastExecution") && rj["LastExecution"] 
+                        == JobHelper.SerializeDateTime(_instant.Object.UtcTime))));
+
+            _connection.Verify(x => x.SetRangeInHash(
+                jobKey,
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") && rj["NextExecution"]
+                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence))));
+        }
+
+        [Fact]
+        public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt()
+        {
+            _instant.Setup(x => x.GetMatches(It.IsAny<DateTime?>())).Returns(Enumerable.Empty<DateTime>);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
@@ -114,24 +150,25 @@ namespace Hangfire.Core.Tests.Server
                 x => x.Create(It.IsAny<Job>(), It.IsAny<EnqueuedState>()),
                 Times.Never);
 
-            _connection.Verify(
-                x => x.SetRangeInHash(
-                    It.IsAny<string>(),
-                    It.IsAny<IEnumerable<KeyValuePair<string, string>>>()),
-                Times.Never);
+            _connection.Verify(x => x.SetRangeInHash(
+                String.Format("recurring-job:{0}", RecurringJobId),
+                It.Is<Dictionary<string, string>>(rj =>
+                    rj.ContainsKey("NextExecution") && rj["NextExecution"]
+                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence))));
         }
 
         [Fact]
-        public void Execute_EnqueuesRecurringJob_WhenNextExecutionTime_IsInThePast()
+        public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone()
         {
-            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(_currentTime.AddDays(-1));
+            var time = DateTime.UtcNow;
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(DateTime.UtcNow);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
 
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _instant.Verify(x => x.GetMatches(time));
         }
-
+        
         [Fact]
         public void Execute_DoesNotFail_WhenRecurringJobDoesNotExist()
         {
@@ -140,31 +177,6 @@ namespace Hangfire.Core.Tests.Server
             var scheduler = CreateScheduler();
 
             Assert.DoesNotThrow(() => scheduler.Execute(_token));
-        }
-
-        [Fact]
-        public void Execute_SetsTheNextExecutionTime_WhenItIsNull()
-        {
-            _recurringJob.Remove("NextExecution");
-            var scheduler = CreateScheduler();
-
-            scheduler.Execute(_token);
-
-            _connection.Setup(x => x.SetRangeInHash(
-                String.Format("recurring-job:{0}", RecurringJobId),
-                It.Is<Dictionary<string, string>>(rj =>
-                    rj["NextExecution"] == JobHelper.SerializeDateTime(_nextTime))));
-        }
-
-        [Fact]
-        public void Execute_WorksWithOneMinuteInterval()
-        {
-            _dateTimeProvider.Setup(x => x.CurrentDateTime).Returns(
-                new DateTime(2012, 12, 12, 12, 12, 12));
-            var scheduler = CreateScheduler();
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-
-            Assert.Throws<OperationCanceledException>(() => scheduler.Execute(cts.Token));
         }
 
         [Fact]
@@ -182,7 +194,11 @@ namespace Hangfire.Core.Tests.Server
 
         private RecurringJobScheduler CreateScheduler()
         {
-            return new RecurringJobScheduler(_storage.Object, _client.Object, _dateTimeProvider.Object);
+            return new RecurringJobScheduler(
+                _storage.Object, 
+                _client.Object, 
+                _instantFactory.Object,
+                _throttler.Object);
         }
     }
 }

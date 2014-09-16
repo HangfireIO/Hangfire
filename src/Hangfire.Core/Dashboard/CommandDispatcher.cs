@@ -16,8 +16,8 @@
 
 using System;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -32,7 +32,7 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(RequestDispatcherContext context)
         {
-            var owinContext = context.OwinContext;
+            var owinContext = new OwinContext(context.OwinEnvironment);
 
             if (owinContext.Request.Method != WebRequestMethods.Http.Post)
             {

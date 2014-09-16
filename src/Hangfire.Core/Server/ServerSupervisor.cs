@@ -176,7 +176,7 @@ namespace Hangfire.Server
 
                     // This is background component and it should
                     // repair on transient exceptions automatically.
-                    ExecuteWithAutomaticRetry(_cts.Token);
+                    _component.Execute(_cts.Token);
                 }
             }
             catch (OperationCanceledException)
@@ -187,51 +187,6 @@ namespace Hangfire.Server
                     _cts = new CancellationTokenSource();
                 }
             }
-        }
-
-        private void ExecuteWithAutomaticRetry(CancellationToken cancellationToken)
-        {
-            for (var i = 0; i <= _options.MaxRetryAttempts; i++)
-            {
-                try
-                {
-                    _component.Execute(cancellationToken);
-                    return;
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    // Break the loop after the retry attempts number exceeded.
-                    if (i >= _options.MaxRetryAttempts - 1) throw;
-
-                    var nextTry = GetBackOffMultiplier(i);
-
-                    _logger.ErrorFormat(
-                        "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
-                        ex,
-                        _component,
-                        i + 1,
-                        _options.MaxRetryAttempts,
-                        nextTry);
-
-                    // Break the loop when the wait handle was signaled.
-                    cancellationToken.WaitHandle.WaitOne(nextTry);
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-            }
-        }
-
-        private static TimeSpan GetBackOffMultiplier(int retryAttemptNumber)
-        {
-            //exponential/random retry back-off.
-            var rand = new Random(Guid.NewGuid().GetHashCode());
-            var nextTry = rand.Next(
-                (int)Math.Pow(retryAttemptNumber, 2), (int)Math.Pow(retryAttemptNumber + 1, 2) + 1);
-
-            return TimeSpan.FromSeconds(nextTry);
         }
 
         private void LogComponentStopped()

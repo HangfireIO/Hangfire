@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System.Threading.Tasks;
+using Microsoft.Owin;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -24,7 +25,7 @@ namespace Hangfire.Dashboard
     {
         public Task Dispatch(RequestDispatcherContext context)
         {
-            var owinContext = context.OwinContext;
+            var owinContext = new OwinContext(context.OwinEnvironment);
 
             var monitoring = context.JobStorage.GetMonitoringApi();
             var response = monitoring.GetStatistics();

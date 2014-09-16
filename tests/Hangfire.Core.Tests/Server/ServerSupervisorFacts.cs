@@ -70,7 +70,7 @@ namespace Hangfire.Core.Tests.Server
             var supervisor = CreateSupervisor();
 
             supervisor.Start();
-            Thread.Sleep(TimeSpan.FromMilliseconds(100));
+            Thread.Sleep(TimeSpan.FromMilliseconds(150));
 
             _component.Verify(
                 x => x.Execute(It.IsNotNull<CancellationToken>()),
@@ -94,7 +94,7 @@ namespace Hangfire.Core.Tests.Server
             
             var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback(() => { timesExecuted++; Thread.Yield(); });
+                .Callback(() => { timesExecuted++; Thread.Sleep(50); });
 
             supervisor.Start();
 
@@ -126,7 +126,7 @@ namespace Hangfire.Core.Tests.Server
             
             var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback(() => { timesExecuted++; Thread.Yield(); });
+                .Callback(() => { timesExecuted++; Thread.Sleep(50); });
 
             supervisor.Start();
             supervisor.Stop();
@@ -174,8 +174,6 @@ namespace Hangfire.Core.Tests.Server
         public void Dispose_ShouldDisposeDisposableComponent()
         {
             // Arrange
-            _options.MaxRetryAttempts = 0;
-
             var component = new DisposableComponent();
             var supervisor = new ServerSupervisor(component, _options);
 
@@ -184,45 +182,10 @@ namespace Hangfire.Core.Tests.Server
 
             // Act
             supervisor.Dispose();
-            Thread.Sleep(500);
+            Thread.Sleep(100);
 
             // Assert
             Assert.True(component.Disposed);
-        }
-
-        [PossibleHangingFact]
-        public void FailingComponent_ShouldNotBeRetried_IfMaxRetryAttemptsIsZero()
-        {
-            // Arrange
-            _options.MaxRetryAttempts = 0;
-
-            var supervisor = CreateSupervisor();
-            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
-
-            supervisor.Start();
-            Thread.Sleep(500);
-
-            // Act
-            supervisor.Dispose();
-
-            _component.Verify(
-                x => x.Execute(It.IsAny<CancellationToken>()),
-                Times.Once);
-        }
-
-        [PossibleHangingFact]
-        public void FailingComponent_ShouldBeExecutedSeveralTimes_Automatically()
-        {
-            var supervisor = CreateSupervisor();
-            _component.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Throws<InvalidOperationException>();
-            supervisor.Start();
-
-            Thread.Sleep(5000);
-            supervisor.Dispose();
-
-            _component.Verify(x => x.Execute(
-                It.IsAny<CancellationToken>()),
-                Times.AtLeast(2));
         }
 
         [Fact]
@@ -233,35 +196,10 @@ namespace Hangfire.Core.Tests.Server
             Assert.Same(_component.Object, supervisor.Component);
         }
 
-        [PossibleHangingFact]
-        public void OperationCanceledException_DoesNotCauseAutomaticRetry()
-        {
-            var component = new WaitingComponent();
-            var supervisor = new ServerSupervisor(component, _options);
-            supervisor.Start();
-
-            Thread.Sleep(500);
-            supervisor.Dispose();
-
-            Assert.Equal(1, component.CalledTimes);
-        }
-
-        private class WaitingComponent : IServerComponent
-        {
-            public int CalledTimes = 0;
-
-            public void Execute(CancellationToken token)
-            {
-                CalledTimes++;
-                token.WaitHandle.WaitOne(Timeout.Infinite);
-                token.ThrowIfCancellationRequested();
-            }
-        }
-
         private ServerSupervisor CreateSupervisor()
         {
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
-                .Callback(() => Thread.Yield());
+                .Callback(() => Thread.Sleep(50));
             return new ServerSupervisor(_component.Object, _options);
         }
 

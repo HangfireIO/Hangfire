@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
@@ -33,6 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF
 		src\Common\Hangfire.ruleset = src\Common\Hangfire.ruleset
 		src\Common\Hangfire.targets = src\Common\Hangfire.targets
 		build\Hangfire.versions.targets = build\Hangfire.versions.targets
+		build\ILMerge.CSharp.targets = build\ILMerge.CSharp.targets
 		src\Common\SharedAssemblyInfo.cs = src\Common\SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject

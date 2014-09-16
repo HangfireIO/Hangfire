@@ -43,7 +43,7 @@ namespace Hangfire.Dashboard
 
         public Task Dispatch(RequestDispatcherContext context)
         {
-            var owinContext = context.OwinContext;
+            var owinContext = new OwinContext(context.OwinEnvironment);
 
             owinContext.Response.ContentType = _contentType;
             owinContext.Response.Expires = DateTime.Now.AddYears(1);

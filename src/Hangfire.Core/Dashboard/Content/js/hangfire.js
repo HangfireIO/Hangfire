@@ -343,7 +343,7 @@
                     e.stopPropagation();
                 });
 
-                $(this).on('click', 'a', function() {
+                $(this).on('click', 'a', function(e) {
                     e.stopPropagation();
                 });
 

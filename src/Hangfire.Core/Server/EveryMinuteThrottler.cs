@@ -15,13 +15,29 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using NCrontab;
+using System.Threading;
 
 namespace Hangfire.Server
 {
-    public interface IDateTimeProvider
+    internal class EveryMinuteThrottler : IThrottler
     {
-        DateTime CurrentDateTime { get; }
-        DateTime GetNextOccurrence(CrontabSchedule schedule);
+        public void Throttle(CancellationToken token)
+        {
+            while (DateTime.Now.Second != 0)
+            {
+                WaitASecondOrThrowIfCanceled(token);
+            }
+        }
+
+        public void Delay(CancellationToken token)
+        {
+            WaitASecondOrThrowIfCanceled(token);
+        }
+
+        private static void WaitASecondOrThrowIfCanceled(CancellationToken token)
+        {
+            token.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+            token.ThrowIfCancellationRequested();
+        }
     }
 }
