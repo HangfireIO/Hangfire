@@ -36,9 +36,17 @@
 * Fixed – Redis.FetchedJobsWatcher prohibits jobs from running longer than 15 minutes.
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
+	  <group targetFramework="net45">
+        <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
+      </group>
+	  <group targetFramework="net40">
+	    <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
+        <dependency id="Microsoft.Bcl.Async" />
+      </group>
     </dependencies>
   </metadata>
   <files>
