@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Owin;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -37,7 +37,11 @@ namespace Hangfire.Dashboard
             if (owinContext.Request.Method != WebRequestMethods.Http.Post)
             {
                 owinContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
+#if (NET_4_0)
+                return Net40Helpers.FromResult(false);
+#else
                 return Task.FromResult(false);
+#endif
             }
 
             if (_command(context))
@@ -49,7 +53,11 @@ namespace Hangfire.Dashboard
                 owinContext.Response.StatusCode = 422;
             }
 
+#if (NET_4_0)
+            return Net40Helpers.FromResult(true);
+#else
             return Task.FromResult(true);
+#endif
         }
     }
 }

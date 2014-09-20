@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+using Microsoft.Owin;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using Hangfire.Annotations;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
@@ -30,9 +30,9 @@ namespace Hangfire.Dashboard
         private readonly IEnumerable<IAuthorizationFilter> _authorizationFilters;
 
         public DashboardMiddleware(
-            OwinMiddleware next, 
+            OwinMiddleware next,
             [NotNull] JobStorage storage,
-            [NotNull] RouteCollection routes, 
+            [NotNull] RouteCollection routes,
             [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters)
             : base(next)
         {
@@ -48,7 +48,7 @@ namespace Hangfire.Dashboard
         public override Task Invoke(IOwinContext context)
         {
             var dispatcher = _routes.FindDispatcher(context.Request.Path.Value);
-            
+
             if (dispatcher == null)
             {
                 return Next.Invoke(context);
@@ -58,8 +58,12 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context.Environment))
                 {
-                    context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+#if (NET_4_0)
+                    return Net40Helpers.FromResult(false);
+#else
                     return Task.FromResult(false);
+#endif
                 }
             }
 
