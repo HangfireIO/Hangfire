@@ -25,7 +25,7 @@
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
     <XunitPath>$(ToolsPath)xunit\</XunitPath>
     <DefaultSqlServerConnectionStringTemplate>
-      Server=(localdb)\V11.0;Database={0};Trusted_Connection=True;
+      Server=.\sqlexpress;Database={0};Trusted_Connection=True;
     </DefaultSqlServerConnectionStringTemplate>
     <DefaultSqlServerTestDatabase>Hangfire.Test</DefaultSqlServerTestDatabase>
     <RedisDir>$(ProjectRoot)\packages\Redis-32.2.6.12.1\tools</RedisDir>
