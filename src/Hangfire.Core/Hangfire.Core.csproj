@@ -10,7 +10,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hangfire</RootNamespace>
     <AssemblyName>Hangfire.Core</AssemblyName>
-    <TargetFrameworkVersion>$(Framework.Replace("NET_", "v").Replace("_", "."))</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(Framework)' == 'NET_4_5' ">v4.5</TargetFrameworkVersion>
+	<TargetFrameworkVersion Condition=" '$(Framework)' == 'NET_4_0' ">v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
