@@ -10,7 +10,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hangfire.SqlServer.Msmq</RootNamespace>
     <AssemblyName>Hangfire.SqlServer.Msmq</AssemblyName>
-    <TargetFrameworkVersion>$(Framework.Replace("NET_", "v").Replace("_", "."))</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(Framework)' == 'NET_4_5' ">v4.5</TargetFrameworkVersion>
+	<TargetFrameworkVersion Condition=" '$(Framework)' == 'NET_4_0' ">v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <IntermediateOutputPath>obj\$(Configuration)\$(TargetFrameworkVersion)\</IntermediateOutputPath>
@@ -121,7 +122,7 @@
   <Target Name="AfterBuild" >
     <CallTarget Targets="BuildNet40;ILMerge" />
   </Target> 
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="..\..\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>

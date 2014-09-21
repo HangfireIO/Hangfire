@@ -10,7 +10,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Hangfire.SqlServer.RabbitMq</RootNamespace>
     <AssemblyName>Hangfire.SqlServer.RabbitMq</AssemblyName>
-    <TargetFrameworkVersion>$(Framework.Replace("NET_", "v").Replace("_", "."))</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(Framework)' == 'NET_4_5' ">v4.5</TargetFrameworkVersion>
+	<TargetFrameworkVersion Condition=" '$(Framework)' == 'NET_4_0' ">v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -129,7 +130,7 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
     <Error Condition="Exists('..\..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
   </Target>
-  <Import Project="$(SolutionDir)\build\ILMerge.CSharp.targets" />
+  <Import Project="..\..\build\ILMerge.CSharp.targets" />
   <Target Name="BuildNet40">
     <MSBuild Condition=" '$(Framework)' != 'NET_4_0'" Projects="$(MSBuildProjectFile)" Properties="Framework=NET_4_0" RunEachTargetSeparately="true" />
   </Target>
