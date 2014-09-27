@@ -14,13 +14,23 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
-      <dependency id="Owin" version="1.0" />
-      <dependency id="Common.Logging" version="2.2.0" />
-      <dependency id="Newtonsoft.Json" version="5.0.0" />
+      <group targetFramework="net45">
+	    <dependency id="Owin" version="1.0" />
+        <dependency id="Common.Logging" version="2.2.0" />
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+	  </group>
+	  <group targetFramework="net40">
+	    <dependency id="Owin" version="1.0" />
+        <dependency id="Common.Logging" version="2.2.0" />
+        <dependency id="Newtonsoft.Json" version="5.0.0" />
+        <dependency id="Microsoft.Bcl.Async" />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.Core.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.Core.xml" target="lib\net45" />
+    <file src="net45\Hangfire.Core.dll" target="lib\net45" />
+    <file src="net45\Hangfire.Core.xml" target="lib\net45" />
+	<file src="net40\Hangfire.Core.dll" target="lib\net40" />
+    <file src="net40\Hangfire.Core.xml" target="lib\net40" />
   </files>
 </package>

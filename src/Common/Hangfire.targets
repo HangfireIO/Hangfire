@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(ArtifactsDir)' != ''">
-    <OutputPath Condition="$(UseBinPath) == ''">$(ArtifactsDir)\$(MSBuildProjectName)</OutputPath>
-    <OutputPath Condition="$(UseBinPath) == 'true'">$(ArtifactsDir)\$(MSBuildProjectName)\bin</OutputPath>
+  <PropertyGroup Condition="'$(ArtifactsDir)' != '' AND '$(TargetFrameworkVersion)' == 'v4.0' ">
+    <OutputPath Condition="$(UseBinPath) == ''">$(ArtifactsDir)\$(MSBuildProjectName)\net40</OutputPath>
+    <OutputPath Condition="$(UseBinPath) == 'true'">$(ArtifactsDir)\$(MSBuildProjectName)\bin\net40</OutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(ArtifactsDir)' != '' AND '$(TargetFrameworkVersion)' == 'v4.5' ">
+    <OutputPath Condition="$(UseBinPath) == ''">$(ArtifactsDir)\$(MSBuildProjectName)\net45</OutputPath>
+    <OutputPath Condition="$(UseBinPath) == 'true'">$(ArtifactsDir)\$(MSBuildProjectName)\bin\net45</OutputPath>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(ArtifactsDir)' == ''">
