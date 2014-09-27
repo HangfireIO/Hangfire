@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E13C3543-39A3-475C-BB43-2E311E634843}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hangfire.Core.Tests</RootNamespace>
+    <AssemblyName>Hangfire.Core.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Moq">
+      <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
+    </Reference>
+    <Reference Include="Moq.Sequences">
+      <HintPath>..\..\packages\Moq.Sequences.1.0.1.0\lib\net40\Moq.Sequences.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.mocks">
+      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.mocks.dll</HintPath>
+    </Reference>
+    <Reference Include="pnunit.framework">
+      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\pnunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="xunit">
+      <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+    </Reference>
+    <Reference Include="NCrontab, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" Condition="$(UseILMerge) != 'True'">
+      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BackgroundJobClientExtensionsFacts.cs" />
+    <Compile Include="BackgroundJobClientFacts.cs" />
+    <Compile Include="BackgroundJobFacts.cs" />
+    <Compile Include="BackgroundJobServerFacts.cs" />
+    <Compile Include="Client\ClientExceptionContextFacts.cs" />
+    <Compile Include="Client\CreateContextFacts.cs" />
+    <Compile Include="Client\CreatedContextFacts.cs" />
+    <Compile Include="Client\CreatingContextFacts.cs" />
+    <Compile Include="Client\JobCreationProcessFacts.cs" />
+    <Compile Include="Common\GlobalJobFilterCollectionFacts.cs" />
+    <Compile Include="Common\JobArgumentFacts.cs" />
+    <Compile Include="Common\JobFacts.cs" />
+    <Compile Include="Common\JobFilterAttributeFacts.cs" />
+    <Compile Include="Common\JobFilterAttributeFilterProviderFacts.cs" />
+    <Compile Include="Common\JobFilterFacts.cs" />
+    <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
+    <Compile Include="Common\JobHelperFacts.cs" />
+    <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="CronFacts.cs" />
+    <Compile Include="GlobalStateHandlersFacts.cs" />
+    <Compile Include="JobActivatorFacts.cs" />
+    <Compile Include="JobCancellationTokenFacts.cs" />
+    <Compile Include="JobStorageFacts.cs" />
+    <Compile Include="Mocks\ApplyStateContextMock.cs" />
+    <Compile Include="Mocks\ElectStateContextMock.cs" />
+    <Compile Include="Mocks\SharedWorkerContextMock.cs" />
+    <Compile Include="Mocks\StateContextMock.cs" />
+    <Compile Include="Mocks\WorkerContextMock.cs" />
+    <Compile Include="PreserveCultureAttributeFacts.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueueAttributeFacts.cs" />
+    <Compile Include="RecurringJobManagerFacts.cs" />
+    <Compile Include="RetryAttributeFacts.cs" />
+    <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
+    <Compile Include="Server\JobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
+    <Compile Include="Server\ScheduleInstantFactoryFacts.cs" />
+    <Compile Include="Server\ScheduleInstantFacts.cs" />
+    <Compile Include="Server\ServerBootstrapperFacts.cs" />
+    <Compile Include="Server\PerformContextFacts.cs" />
+    <Compile Include="Server\SchedulePollerFacts.cs" />
+    <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
+    <Compile Include="Server\ServerSupervisorCollectionFacts.cs" />
+    <Compile Include="Server\ServerSupervisorFacts.cs" />
+    <Compile Include="Server\AutomaticRetryServerComponentWrapperFacts.cs" />
+    <Compile Include="Server\ServerHeartbeatFacts.cs" />
+    <Compile Include="Server\ServerWatchdogFacts.cs" />
+    <Compile Include="Server\SharedWorkerContextFacts.cs" />
+    <Compile Include="Server\WorkerContextFacts.cs" />
+    <Compile Include="Server\WorkerFacts.cs" />
+    <Compile Include="Server\WorkerManagerFacts.cs" />
+    <Compile Include="States\DeletedStateFacts.cs" />
+    <Compile Include="States\DeletedStateHandlerFacts.cs" />
+    <Compile Include="States\EnqueuedStateFacts.cs" />
+    <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
+    <Compile Include="States\FailedStateFacts.cs" />
+    <Compile Include="States\ScheduledStateHandlerFacts.cs" />
+    <Compile Include="States\ProcessingStateFacts.cs" />
+    <Compile Include="States\ScheduledStateFacts.cs" />
+    <Compile Include="States\ApplyStateContextFacts.cs" />
+    <Compile Include="States\ElectStateContextFacts.cs" />
+    <Compile Include="States\StateChangeProcessFacts.cs" />
+    <Compile Include="States\StateContextFacts.cs" />
+    <Compile Include="States\StateHandlerCollectionFacts.cs" />
+    <Compile Include="States\StateMachineFactoryFacts.cs" />
+    <Compile Include="States\StateMachineFacts.cs" />
+    <Compile Include="States\SucceededStateFacts.cs" />
+    <Compile Include="States\SucceededStateHandlerFacts.cs" />
+    <Compile Include="StatisticsHistoryAttributeFacts.cs" />
+    <Compile Include="Storage\InvocationDataFacts.cs" />
+    <Compile Include="Storage\MonitoringTypeFacts.cs" />
+    <Compile Include="Utils\GlobalLockAttribute.cs" />
+    <Compile Include="Utils\PossibleHangingFactAttribute.cs" />
+    <Compile Include="Utils\SequenceAttribute.cs" />
+    <Compile Include="Utils\StaticLockAttribute.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.net45.csproj">
+      <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
+      <Name>Hangfire.Core.net45</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+  <Import Project="..\..\src\Common\Hangfire.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

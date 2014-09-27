@@ -37,7 +37,7 @@ namespace Hangfire.Dashboard
             if (owinContext.Request.Method != WebRequestMethods.Http.Post)
             {
                 owinContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-                return Task.FromResult(false);
+                return Net40CompatibilityHelper.Task.FromResult(false);
             }
 
             if (_command(context))
@@ -49,7 +49,7 @@ namespace Hangfire.Dashboard
                 owinContext.Response.StatusCode = 422;
             }
 
-            return Task.FromResult(true);
+            return Net40CompatibilityHelper.Task.FromResult(true);
         }
     }
 }

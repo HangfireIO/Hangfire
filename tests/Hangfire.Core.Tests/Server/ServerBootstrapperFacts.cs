@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading;
-using Hangfire.Server;
+﻿using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
+using System;
+using System.Threading;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
@@ -25,7 +25,8 @@ namespace Hangfire.Core.Tests.Server
             _supervisor = new Mock<IServerSupervisor>();
             _supervisorFactory = new Lazy<IServerSupervisor>(() => _supervisor.Object);
             _connection = new Mock<IStorageConnection>();
-            _cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+            _cts = new CancellationTokenSource();
+            _cts.CancelAfter(TimeSpan.FromMilliseconds(50));
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
@@ -80,7 +81,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_GetsExactlyTwoConnections_AndClosesThem()
         {
             var server = CreateServer();
-            
+
             server.Execute(_cts.Token);
 
             _storage.Verify(x => x.GetConnection(), Times.Exactly(2));
@@ -110,7 +111,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_RemovesServerFromServersList()
         {
             var server = CreateServer();
-            
+
             server.Execute(_cts.Token);
 
             _connection.Verify(x => x.RemoveServer(ServerId));

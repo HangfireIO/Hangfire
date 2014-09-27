@@ -1,0 +1,451 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Hangfire</RootNamespace>
+    <AssemblyName>Hangfire.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+    <ILMerge>True</ILMerge>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>..\Hangfire.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Common.Logging, Version=2.2.0.0, Culture=neutral, PublicKeyToken=af08829b84f0328e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Common.Logging.2.2.0\lib\net40\Common.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Common.Logging.Core">
+      <HintPath>..\..\packages\Common.Logging.Core.2.2.0\lib\net40\Common.Logging.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="CronExpressionDescriptor">
+      <HintPath>..\..\packages\CronExpressionDescriptor.1.10.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+      <ILMerge>True</ILMerge>
+    </Reference>
+    <Reference Include="NCrontab">
+      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
+      <ILMerge>True</ILMerge>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.Owin">
+      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+      <ILMerge>True</ILMerge>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5">
+      <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Common\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="AutomaticRetryAttribute.cs" />
+    <Compile Include="BackgroundJobServer.cs" />
+    <Compile Include="BackgroundJobServerOptions.cs" />
+    <Compile Include="Cron.cs" />
+    <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
+    <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
+    <Compile Include="Dashboard\CommandDispatcher.cs" />
+    <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\RequestDispatcherContext.cs" />
+    <Compile Include="Dashboard\IAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
+    <Compile Include="Dashboard\DashboardOwinExtensions.cs" />
+    <Compile Include="Dashboard\RouteCollection.cs" />
+    <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
+    <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
+    <Compile Include="Dashboard\DashboardRoutes.cs" />
+    <Compile Include="Dashboard\HtmlHelper.cs" />
+    <Compile Include="Dashboard\JobHistoryRenderer.cs" />
+    <Compile Include="Dashboard\JobMethodCallRenderer.cs" />
+    <Compile Include="Dashboard\JsonStats.cs" />
+    <Compile Include="Dashboard\NonEscapedString.cs" />
+    <Compile Include="Dashboard\IRequestDispatcher.cs" />
+    <Compile Include="Dashboard\Pager.cs" />
+    <Compile Include="Dashboard\Pages\DashboardPage.generated.cs">
+      <DependentUpon>DashboardPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\DeletedJobsPage.generated.cs">
+      <DependentUpon>DeletedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\EnqueuedJobsPage.cs">
+      <DependentUpon>EnqueuedJobsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\EnqueuedJobsPage.generated.cs">
+      <DependentUpon>EnqueuedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\FailedJobsPage.generated.cs">
+      <DependentUpon>FailedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\FetchedJobsPage.cs">
+      <DependentUpon>FetchedJobsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\FetchedJobsPage.generated.cs">
+      <DependentUpon>FetchedJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\JobDetailsPage.cs">
+      <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\JobDetailsPage1.generated.cs">
+      <DependentUpon>JobDetailsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\LayoutPage.cs">
+      <DependentUpon>LayoutPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\LayoutPage.generated.cs">
+      <DependentUpon>LayoutPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\ProcessingJobsPage.generated.cs">
+      <DependentUpon>ProcessingJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\QueuesPage.generated.cs">
+      <DependentUpon>QueuesPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\RazorPage.cs" />
+    <Compile Include="Dashboard\Pages\RecurringJobsPage.generated.cs">
+      <DependentUpon>RecurringJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\ScheduledJobsPage.generated.cs">
+      <DependentUpon>ScheduledJobsPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\ServersPage.generated.cs">
+      <DependentUpon>ServersPage.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\SucceededJobs1.generated.cs">
+      <DependentUpon>SucceededJobs.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Paginator.cs">
+      <DependentUpon>_Paginator.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Paginator.generated.cs">
+      <DependentUpon>_Paginator.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_PerPageSelector.cs">
+      <DependentUpon>_PerPageSelector.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_PerPageSelector.generated.cs">
+      <DependentUpon>_PerPageSelector.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\RazorPageDispatcher.cs" />
+    <Compile Include="Dashboard\RequestExtensions.cs" />
+    <Compile Include="IBootstrapperConfiguration.cs" />
+    <Compile Include="Net40CompatibilityHelper.cs" />
+    <Compile Include="OwinBootstrapper.cs" />
+    <Compile Include="Properties\Annotations.cs" />
+    <Compile Include="RecurringJob.cs" />
+    <Compile Include="RecurringJobManager.cs" />
+    <Compile Include="Server\AutomaticRetryServerComponentWrapper.cs" />
+    <Compile Include="Server\EveryMinuteThrottler.cs" />
+    <Compile Include="Server\IScheduleInstant.cs" />
+    <Compile Include="Server\IScheduleInstantFactory.cs" />
+    <Compile Include="Server\IThrottler.cs" />
+    <Compile Include="Server\JobAbortedException.cs" />
+    <Compile Include="JobCancellationToken.cs" />
+    <Compile Include="Client\IJobCreationProcess.cs" />
+    <Compile Include="BackgroundJobClientExtensions.cs" />
+    <Compile Include="Common\CachedExpressionCompiler.cs" />
+    <Compile Include="Client\CreateJobFailedException.cs" />
+    <Compile Include="IJobCancellationToken.cs" />
+    <Compile Include="DisableConcurrentExecutionAttribute.cs" />
+    <Compile Include="IBackgroundJobClient.cs" />
+    <Compile Include="Client\JobCreationProcess.cs" />
+    <Compile Include="Client\CreateContext.cs" />
+    <Compile Include="Common\Job.cs" />
+    <Compile Include="Common\JobLoadException.cs" />
+    <Compile Include="Common\ExpressionUtil\BinaryExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\CachedExpressionCompiler.cs" />
+    <Compile Include="Common\ExpressionUtil\ConditionalExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\ConstantExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\DefaultExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\ExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\ExpressionFingerprintChain.cs" />
+    <Compile Include="Common\ExpressionUtil\FingerprintingExpressionVisitor.cs" />
+    <Compile Include="Common\ExpressionUtil\HashCodeCombiner.cs" />
+    <Compile Include="Common\ExpressionUtil\Hoisted.cs" />
+    <Compile Include="Common\ExpressionUtil\HoistingExpressionVisitor.cs" />
+    <Compile Include="Common\ExpressionUtil\IndexExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\LambdaExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\MemberExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\MethodCallExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\ParameterExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\TypeBinaryExpressionFingerprint.cs" />
+    <Compile Include="Common\ExpressionUtil\UnaryExpressionFingerprint.cs" />
+    <Compile Include="Common\JobFilter.cs" />
+    <Compile Include="Common\JobFilterProviderCollection.cs" />
+    <Compile Include="Common\JobFilterProviders.cs" />
+    <Compile Include="Common\JobFilterScope.cs" />
+    <Compile Include="Common\ReflectedAttributeCache.cs" />
+    <Compile Include="Client\ClientExceptionContext.cs" />
+    <Compile Include="Common\GlobalJobFilterCollection.cs" />
+    <Compile Include="Client\IClientExceptionFilter.cs" />
+    <Compile Include="Common\IJobFilterProvider.cs" />
+    <Compile Include="Server\RecurringJobScheduler.cs" />
+    <Compile Include="Server\ScheduleInstant.cs" />
+    <Compile Include="Server\ScheduleInstantFactory.cs" />
+    <Compile Include="Server\ServerJobCancellationToken.cs" />
+    <Compile Include="Server\ServerOwinExtensions.cs" />
+    <Compile Include="Server\SharedWorkerContext.cs" />
+    <Compile Include="StartupConfiguration.cs" />
+    <Compile Include="BootstrapperConfigurationExtensions.cs" />
+    <Compile Include="States\DeletedState.cs" />
+    <Compile Include="States\IElectStateFilter.cs" />
+    <Compile Include="Common\JobFilterAttribute.cs" />
+    <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
+    <Compile Include="Common\JobFilterInfo.cs" />
+    <Compile Include="States\IStateChangeProcess.cs" />
+    <Compile Include="States\IStateMachineFactory.cs" />
+    <Compile Include="States\StateChangeProcess.cs" />
+    <Compile Include="States\StateHandlerCollection.cs" />
+    <Compile Include="Server\SchedulePoller.cs" />
+    <Compile Include="Server\ServerWatchdog.cs" />
+    <Compile Include="Server\ServerWatchdogOptions.cs" />
+    <Compile Include="Server\IServerExceptionFilter.cs" />
+    <Compile Include="Client\CreatedContext.cs" />
+    <Compile Include="Client\CreatingContext.cs" />
+    <Compile Include="Server\IServerComponent.cs" />
+    <Compile Include="Server\IServerSupervisor.cs" />
+    <Compile Include="Server\JobPerformanceException.cs" />
+    <Compile Include="Server\ServerBootstrapper.cs" />
+    <Compile Include="Server\IJobPerformanceProcess.cs" />
+    <Compile Include="Server\PerformContext.cs" />
+    <Compile Include="Server\ServerExceptionContext.cs" />
+    <Compile Include="Server\PerformedContext.cs" />
+    <Compile Include="Server\PerformingContext.cs" />
+    <Compile Include="GlobalJobFilters.cs" />
+    <Compile Include="States\IApplyStateFilter.cs" />
+    <Compile Include="GlobalStateHandlers.cs" />
+    <Compile Include="Server\ServerSupervisor.cs" />
+    <Compile Include="Server\ServerSupervisorCollection.cs" />
+    <Compile Include="Server\ServerSupervisorOptions.cs" />
+    <Compile Include="Server\ServerContext.cs" />
+    <Compile Include="Server\ServerHeartbeat.cs" />
+    <Compile Include="Server\Worker.cs" />
+    <Compile Include="Server\WorkerManager.cs" />
+    <Compile Include="States\IStateMachine.cs" />
+    <Compile Include="States\StateMachineFactory.cs" />
+    <Compile Include="Storage\InvocationData.cs" />
+    <Compile Include="Storage\IMonitoringApi.cs" />
+    <Compile Include="Storage\IFetchedJob.cs" />
+    <Compile Include="Storage\Monitoring\DeletedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\FetchedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\FailedJobDto.cs" />
+    <Compile Include="Storage\Monitoring\JobDetailsDto.cs" />
+    <Compile Include="Storage\Monitoring\JobList.cs" />
+    <Compile Include="Storage\Monitoring\ProcessingJobDto.cs" />
+    <Compile Include="Storage\Monitoring\QueueWithTopEnqueuedJobsDto.cs" />
+    <Compile Include="Storage\Monitoring\ScheduledJobDto.cs" />
+    <Compile Include="Storage\Monitoring\ServerDto.cs" />
+    <Compile Include="Storage\Monitoring\StateHistoryDto.cs" />
+    <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
+    <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
+    <Compile Include="Server\IJobPerformer.cs" />
+    <Compile Include="JobStorage.cs" />
+    <Compile Include="States\EnqueuedState.cs" />
+    <Compile Include="States\FailedState.cs" />
+    <Compile Include="States\IState.cs" />
+    <Compile Include="Client\IClientFilter.cs" />
+    <Compile Include="Common\IJobFilter.cs" />
+    <Compile Include="Server\IServerFilter.cs" />
+    <Compile Include="CaptureCultureAttribute.cs" />
+    <Compile Include="BackgroundJob.cs" />
+    <Compile Include="QueueAttribute.cs" />
+    <Compile Include="JobActivator.cs" />
+    <Compile Include="Server\JobPerformanceProcess.cs" />
+    <Compile Include="BackgroundJobClient.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Common\JobHelper.cs" />
+    <Compile Include="Server\WorkerContext.cs" />
+    <Compile Include="States\IStateHandler.cs" />
+    <Compile Include="States\ProcessingState.cs" />
+    <Compile Include="States\ScheduledState.cs" />
+    <Compile Include="States\ApplyStateContext.cs" />
+    <Compile Include="States\ElectStateContext.cs" />
+    <Compile Include="States\StateContext.cs" />
+    <Compile Include="States\StateMachine.cs" />
+    <Compile Include="States\SucceededState.cs" />
+    <Compile Include="StatisticsHistoryAttribute.cs" />
+    <Compile Include="Storage\IWriteOnlyTransaction.cs" />
+    <Compile Include="Storage\IStorageConnection.cs" />
+    <Compile Include="Storage\JobData.cs" />
+    <Compile Include="Storage\RecurringJobDto.cs" />
+    <Compile Include="Storage\StateData.cs" />
+    <Compile Include="Storage\StorageConnectionExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
+    <None Include="Dashboard\Pages\DashboardPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\DeletedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>DeletedJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\EnqueuedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>EnqueuedJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\FailedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>FailedJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\FetchedJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>FetchedJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\JobDetailsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>JobDetailsPage1.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\LayoutPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>LayoutPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\ProcessingJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>ProcessingJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\QueuesPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>QueuesPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\RecurringJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>RecurringJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\ScheduledJobsPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>ScheduledJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\ServersPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>ServersPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\SucceededJobs.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>SucceededJobs1.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_Paginator.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Paginator.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_PerPageSelector.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_PerPageSelector.generated.cs</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\css\bootstrap.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\css\hangfire.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\css\rickshaw.min.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\bootstrap.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\d3.layout.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\d3.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\hangfire.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\jquery-1.10.2.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\moment.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="..\Common\Hangfire.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\build\ILMerge.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -14,12 +14,23 @@
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+	  <group targetFramework="net45">
+       <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+       <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+	  </group>
+	  <group targetFramework="net40">
+	    <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Microsoft.Bcl" version="1.1.9"/>
+		<dependency id="Microsoft.Bcl.Async" version="1.0.168"/>
+		<dependency id="Microsoft.Bcl.Build" version="1.0.21"/>
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
+    <file src="net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
+	<file src="net40\Hangfire.SqlServer.Msmq.dll" target="lib\net40" />
+    <file src="net40\Hangfire.SqlServer.Msmq.xml" target="lib\net40" />
   </files>
 </package>
