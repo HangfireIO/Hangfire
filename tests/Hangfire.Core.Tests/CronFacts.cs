@@ -30,6 +30,7 @@ namespace Hangfire.Core.Tests
         {
             string expected = "5 * * * *";
             string actual = Cron.Hourly(5);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
