@@ -57,6 +57,14 @@ namespace Hangfire.Common
             Validate();
         }
 
+        internal Job(bool isMethodMissing, string missingMethodError)
+        {
+            if(String.IsNullOrEmpty(missingMethodError)) throw new ArgumentNullException("missingMethodError");
+
+            MethodMissing = isMethodMissing;
+            MissingMethodError = missingMethodError;
+        }
+
         public Type Type { get; private set; }
         public MethodInfo Method { get; private set; }
 
@@ -64,6 +72,16 @@ namespace Hangfire.Common
         /// Gets arguments array that will be passed to the method during its invocation.
         /// </summary>
         public string[] Arguments { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not the target method of the job is actually missing
+        /// </summary>
+        public bool MethodMissing { get; private set; }
+
+        /// <summary>
+        /// Sets a string which may contain the details of the missing method, if a method is missing (<see cref="MethodMissing"/>).
+        /// </summary>
+        public string MissingMethodError { get; private set; }
 
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {

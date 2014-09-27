@@ -31,9 +31,9 @@ namespace Hangfire.Dashboard
     {
         public static NonEscapedString DisplayMethod(Job job)
         {
-            if (job == null)
+            if (job.MethodMissing)
             {
-                return new NonEscapedString("<em>Can not find the target method.</em>");
+                return new NonEscapedString(String.Format("<em>{0}</em>", job.MissingMethodError));
             }
 
             return new NonEscapedString(DisplayJob(job));

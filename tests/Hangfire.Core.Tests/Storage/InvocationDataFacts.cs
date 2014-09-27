@@ -49,7 +49,7 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [Fact]
-        public void Deserialize_ThrowsAnException_WhenMethodCanNotBeFound()
+        public void Deserialize_DoesNotThrowAnException_WhenMethodCanNotBeFound()
         {
             var serializedData = new InvocationData(
                 typeof(InvocationDataFacts).AssemblyQualifiedName,
@@ -57,8 +57,23 @@ namespace Hangfire.Core.Tests.Storage
                 JobHelper.ToJson(new [] { typeof(string) }),
                 "");
 
-            Assert.Throws<JobLoadException>(
+            Assert.DoesNotThrow(
                 () => serializedData.Deserialize());
+        }
+
+        [Fact]
+        public void Deserialize_CorrectlyDeserializes_MissingMethodError()
+        {
+            var expectedMessage = String.Format("The type `{0}` does not contain a method with signature `NonExistingMethod(String)`", typeof(InvocationDataFacts).FullName);
+            var serializedData = new InvocationData(
+                typeof(InvocationDataFacts).AssemblyQualifiedName,
+                "NonExistingMethod",
+                JobHelper.ToJson(new [] { typeof(string) }),
+                "");
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(expectedMessage, job.MissingMethodError);
         }
 
         [Fact]
