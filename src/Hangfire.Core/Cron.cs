@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using CronExpressionDescriptor;
 using System;
 
 namespace Hangfire
@@ -212,6 +213,32 @@ namespace Hangfire
         public static string Yearly(int month, int day, int hour, int minute)
         {
             return String.Format("{0} {1} {2} {3} *", minute, hour, day, month);
+        }
+
+        /// <summary>
+        /// Converts a Cron expression string into a description.
+        /// </summary>
+        /// <param name="cronExpression">A Cron expression string.</param>
+        /// <returns>English description.</returns>
+        public static string GetDescription(string cronExpression)
+        {
+            string[] expressionParts = cronExpression.Split(Convert.ToChar(" "));
+
+            if (expressionParts.Length != 5)
+            {
+                throw new InvalidCastException("Invalid Cron Expression");
+            }
+
+            foreach(string expressionPart in expressionParts)
+            {
+                int num;
+                if (!Int32.TryParse(expressionPart, out num) && expressionPart != "*")
+                {
+                    throw new InvalidCastException("Invalid Cron Expression");
+                }
+            }
+            
+            return ExpressionDescriptor.GetDescription(cronExpression);
         }
     }
 }
