@@ -78,7 +78,8 @@ namespace Hangfire.SqlServer.Tests
         {
             UseConnection(connection =>
             {
-                var cts = new CancellationTokenSource(200);
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(200);
                 var queue = CreateJobQueue(connection);
 
                 Assert.Throws<OperationCanceledException>(
@@ -295,7 +296,8 @@ values (scope_identity(), @queue)";
 
         private static CancellationToken CreateTimingOutCancellationToken()
         {
-            var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var source = new CancellationTokenSource();
+            source.CancelAfter(TimeSpan.FromSeconds(10));
             return source.Token;
         }
 

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading;
-using Hangfire.Server;
+﻿using Hangfire.Server;
 using Moq;
+using System;
+using System.Threading;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests.Server
             _component = new Mock<IServerComponent>();
             _options = new ServerSupervisorOptions
             {
-                ShutdownTimeout = Timeout.InfiniteTimeSpan // Letting tests to timeout
+                ShutdownTimeout = Net40CompatibilityHelper.Timeout.InfiniteTimeSpan // Letting tests to timeout
             };
         }
 
@@ -91,7 +91,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             int timesExecuted = 0;
-            
+
             var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
                 .Callback(() => { timesExecuted++; Thread.Sleep(50); });
@@ -123,7 +123,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             int timesExecuted = 0;
-            
+
             var supervisor = CreateSupervisor();
             _component.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
                 .Callback(() => { timesExecuted++; Thread.Sleep(50); });

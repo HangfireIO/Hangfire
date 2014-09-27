@@ -50,7 +50,7 @@ namespace Hangfire.Dashboard
 
             WriteResponse(owinContext.Response);
 
-            return Task.FromResult(true);
+            return Net40CompatibilityHelper.Task.FromResult(true);
         }
 
         protected virtual void WriteResponse(IOwinResponse response)

@@ -59,7 +59,7 @@ namespace Hangfire.Dashboard
                 if (!filter.Authorize(context.Environment))
                 {
                     context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
-                    return Task.FromResult(false);
+                    return Net40CompatibilityHelper.Task.FromResult(false);
                 }
             }
 

@@ -4,6 +4,18 @@
     <OutputPath Condition="$(UseBinPath) == ''">$(ArtifactsDir)\$(MSBuildProjectName)</OutputPath>
     <OutputPath Condition="$(UseBinPath) == 'true'">$(ArtifactsDir)\$(MSBuildProjectName)\bin</OutputPath>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(ArtifactsDir)' == ''">
+    <OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v4.0' ">bin\$(Configuration)\net40\</OutputPath>
+	<OutputPath Condition=" '$(TargetFrameworkVersion)' == 'v4.5' ">bin\$(Configuration)\net45\</OutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+	<DocumentationFile Condition=" '$(TargetFrameworkVersion)' == 'v4.0' ">bin\$(Configuration)\net40\$(AssemblyName).xml</DocumentationFile>
+	<DocumentationFile Condition=" '$(TargetFrameworkVersion)' == 'v4.5' ">bin\$(Configuration)\net45\$(AssemblyName).xml</DocumentationFile>
+	<IntermediateOutputPath Condition=" '$(TargetFrameworkVersion)' == 'v4.0' ">obj\$(Configuration)\net40\</IntermediateOutputPath>
+	<IntermediateOutputPath Condition=" '$(TargetFrameworkVersion)' == 'v4.5' ">obj\$(Configuration)\net45\</IntermediateOutputPath>
+  </PropertyGroup>
 
   <PropertyGroup>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)Hangfire.ruleset</CodeAnalysisRuleSet>
@@ -27,6 +39,11 @@
     <DelaySign>true</DelaySign>
     <AssemblyOriginatorKeyFile>$(KeyFile)</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.0' ">NET40</DefineConstants>
+	<DefineConstants Condition=" '$(TargetFrameworkVersion)' == 'v4.5' ">NET45</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)GlobalSuppressions.cs')">
     <Compile Include="$(MSBuildThisFileDirectory)GlobalSuppressions.cs">
@@ -35,6 +52,6 @@
   </ItemGroup>
 
   <ItemGroup>
-  <CodeAnalysisDictionary Include="$(MSBuildThisFileDirectory)CodeAnalysisDictionary.xml" />
+	<CodeAnalysisDictionary Include="$(MSBuildThisFileDirectory)CodeAnalysisDictionary.xml" />
   </ItemGroup>
 </Project>
