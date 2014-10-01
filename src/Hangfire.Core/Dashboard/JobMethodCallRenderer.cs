@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
 
             if (!job.Method.IsStatic)
             {
-                var serviceName = job.Type.Name;
+                var serviceName = job.Type.ToGenericTypeString();
 
                 if (job.Type.IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
                 {
@@ -50,11 +50,11 @@ namespace Hangfire.Dashboard
 
                 serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
 
-                builder.Append(WrapType(job.Type.Name));
+                builder.Append(WrapType(job.Type.ToGenericTypeString()));
                 builder.AppendFormat(
                     " {0} = Activate<{1}>();",
                     Encode(serviceName),
-                    WrapType(Encode(job.Type.Name)));
+                    WrapType(Encode(job.Type.ToGenericTypeString())));
 
                 builder.AppendLine();
 
@@ -62,7 +62,7 @@ namespace Hangfire.Dashboard
             }
             else
             {
-                builder.Append(WrapType(Encode(job.Type.Name)));
+                builder.Append(WrapType(Encode(job.Type.ToGenericTypeString())));
             }
 
             builder.Append(".");

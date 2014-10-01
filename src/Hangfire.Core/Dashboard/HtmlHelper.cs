@@ -50,7 +50,7 @@ namespace Hangfire.Dashboard
 
             if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
             {
-                return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
+                return job.GetTypeAndMethod().Replace("<", "&lt;").Replace(">", "&gt;");
             }
 
             try

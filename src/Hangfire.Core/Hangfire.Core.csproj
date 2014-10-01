@@ -81,6 +81,7 @@
     <Compile Include="AutomaticRetryAttribute.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
+    <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="Cron.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
