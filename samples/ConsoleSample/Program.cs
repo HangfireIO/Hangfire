@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
 using Hangfire;
+using Hangfire.Redis;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
 
@@ -184,6 +185,11 @@ namespace ConsoleSample
                         {
                             Console.WriteLine(ex.Message);
                         }
+                    }
+
+                    if (command.StartsWith("generic", StringComparison.OrdinalIgnoreCase))
+                    {
+                        BackgroundJob.Enqueue<GenericServices<string>>(x => x.Method("hello", 1));
                     }
                 }
             }

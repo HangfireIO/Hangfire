@@ -81,6 +81,17 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodContains_UnassignedGenericTypeParameters()
+        {
+            var method = _type.GetMethod("GenericMethod");
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => new Job(_type, method, new[] { "hello!" }));
+
+            Assert.Equal("method", exception.ParamName);
+        }
+
+        [Fact]
         public void FromStaticExpression_ShouldThrowException_WhenNullExpressionProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -511,6 +522,10 @@ namespace Hangfire.Core.Tests.Common
         public static void ExceptionMethod()
         {
             throw new InvalidOperationException("exception");
+        }
+
+        public void GenericMethod<T>(T arg)
+        {
         }
 
         [TestType]

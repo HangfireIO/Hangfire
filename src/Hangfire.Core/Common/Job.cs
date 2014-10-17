@@ -50,6 +50,11 @@ namespace Hangfire.Common
             if (method == null) throw new ArgumentNullException("method");
             if (arguments == null) throw new ArgumentNullException("arguments");
 
+            if (method.ContainsGenericParameters)
+            {
+                throw new ArgumentException("Job method can not contain unassigned generic type parameters.", "method");
+            }
+
             Type = type;
             Method = method;
             Arguments = arguments;

@@ -29,16 +29,6 @@ namespace Hangfire.Dashboard
 {
     internal static class HtmlHelper
     {
-        public static NonEscapedString DisplayMethod(Job job)
-        {
-            if (job == null)
-            {
-                return new NonEscapedString("<em>Can not find the target method.</em>");
-            }
-
-            return new NonEscapedString(DisplayJob(job));
-        }
-
         public static string DisplayJob(Job job)
         {
             if (job == null)
@@ -50,7 +40,7 @@ namespace Hangfire.Dashboard
 
             if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
             {
-                return job.GetTypeAndMethod().Replace("<", "&lt;").Replace(">", "&gt;");
+                return job.GetTypeAndMethod();
             }
 
             try

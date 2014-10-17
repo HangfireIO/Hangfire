@@ -93,7 +93,7 @@ else
                         <td>
                             <div>
                                 <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
-                                    @HtmlHelper.DisplayMethod(job.Value.Job)
+                                    @HtmlHelper.DisplayJob(job.Value.Job)
                                 </a>
                             </div>
                             @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))

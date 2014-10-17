@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
 
             if (!job.Method.IsStatic)
             {
-                var serviceName = job.Type.ToGenericTypeString();
+                var serviceName = GetNameWithoutGenericArity(job.Type);
 
                 if (job.Type.IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
                 {
@@ -220,6 +220,13 @@ namespace Hangfire.Dashboard
                             && x.GetGenericTypeDefinition() == typeof (IEnumerable<>))
                 .Select(x => x.GetGenericArguments()[0])
                 .FirstOrDefault();
+        }
+
+        public static string GetNameWithoutGenericArity(Type t)
+        {
+            string name = t.Name;
+            int index = name.IndexOf('`');
+            return index == -1 ? name : name.Substring(0, index);
         }
 
         private class ArgumentRenderer
