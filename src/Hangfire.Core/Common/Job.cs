@@ -378,12 +378,7 @@ namespace Hangfire.Common
             return CachedExpressionCompiler.Evaluate(expression);
         }
 
-        /// <summary>
-        /// Get a name of the job type class with a method to invoke in a readable format
-        /// Handles generic types
-        /// </summary>
-        /// <returns></returns>
-        public string GetTypeAndMethod()
+        public override string ToString()
         {
             return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
         }

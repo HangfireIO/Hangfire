@@ -33,7 +33,7 @@ namespace Hangfire
 
         public void OnPerforming(PerformingContext filterContext)
         {
-            var resource = filterContext.Job.GetTypeAndMethod();
+            var resource = filterContext.Job.ToString();
 
             var timeout = TimeSpan.FromSeconds(_timeoutInSeconds);
 

@@ -97,7 +97,7 @@ namespace Hangfire
 
         private static string GetRecurringJobId(Job job)
         {
-            return job.GetTypeAndMethod();
+            return job.ToString();
         }
     }
 }

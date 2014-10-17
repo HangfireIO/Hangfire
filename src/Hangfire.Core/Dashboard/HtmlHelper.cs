@@ -40,7 +40,7 @@ namespace Hangfire.Dashboard
 
             if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
             {
-                return job.GetTypeAndMethod();
+                return job.ToString();
             }
 
             try

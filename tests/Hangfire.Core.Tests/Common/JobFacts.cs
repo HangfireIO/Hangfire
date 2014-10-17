@@ -453,8 +453,8 @@ namespace Hangfire.Core.Tests.Common
         {
             var job1 = Job.FromExpression<JobClassWrapper<Instance>>(x => x.Dispose());
             var job2 = Job.FromExpression<JobClassWrapper<BrokenDispose>>(x => x.Dispose());
-            var id1 = job1.GetTypeAndMethod();
-            var id2 = job2.GetTypeAndMethod();
+            var id1 = job1.ToString();
+            var id2 = job2.ToString();
 
             Assert.NotEqual(id1, id2);
         }
