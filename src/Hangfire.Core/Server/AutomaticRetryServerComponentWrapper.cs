@@ -107,6 +107,11 @@ namespace Hangfire.Server
             }
         }
 
+        public override string ToString()
+        {
+            return _innerComponent.ToString();
+        }
+
         private static TimeSpan GetBackOffMultiplier(int retryAttemptNumber)
         {
             //exponential/random retry back-off.
