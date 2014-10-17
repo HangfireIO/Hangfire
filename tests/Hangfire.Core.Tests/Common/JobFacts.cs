@@ -437,6 +437,17 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(cachedAttributes[0] is TestMethodAttribute);
         }
 
+        [Fact]
+        public void Jobs_With_Generics_Have_Different_Ids()
+        {
+            var job1 = Job.FromExpression<JobClassWrapper<Instance>>(x => x.Dispose());
+            var job2 = Job.FromExpression<JobClassWrapper<BrokenDispose>>(x => x.Dispose());
+            var id1 = job1.GetTypeAndMethod();
+            var id2 = job2.GetTypeAndMethod();
+
+            Assert.NotEqual(id1, id2);
+        }
+
         private static void PrivateMethod()
         {
         }
@@ -532,6 +543,13 @@ namespace Hangfire.Core.Tests.Common
             public void Dispose()
             {
                 throw new InvalidOperationException();
+            }
+        }
+
+        public class JobClassWrapper<T> : IDisposable where T : IDisposable
+        {
+            public void Dispose()
+            {
             }
         }
 
