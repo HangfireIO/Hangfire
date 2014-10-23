@@ -144,6 +144,8 @@ namespace Hangfire.Server
 
                 jobData.EnsureLoaded();
 
+                JobExecutionContext.Current = jobExecutionContext;
+
                 var performContext = new PerformContext(
                     _context, connection, jobId, jobData.Job, jobData.CreatedAt, jobExecutionContext);
 
@@ -152,6 +154,8 @@ namespace Hangfire.Server
 
                 var result = _process.Run(performContext, jobData.Job);
                 duration.Stop();
+				
+                JobExecutionContext.Current = null;
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
             }

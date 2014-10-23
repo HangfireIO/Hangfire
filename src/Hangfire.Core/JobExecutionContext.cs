@@ -23,5 +23,20 @@ namespace Hangfire
         }
 
         public static new IJobExecutionContext Null { get { return null; } }
+
+        [ThreadStatic]
+        private static IJobExecutionContext _Current;
+
+        public static IJobExecutionContext Current
+        {
+            get
+            {
+                return _Current;
+            }
+            internal set
+            {
+                _Current = value;
+            }
+        }
     }
 }
