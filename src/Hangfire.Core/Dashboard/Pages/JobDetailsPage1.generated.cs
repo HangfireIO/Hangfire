@@ -447,11 +447,17 @@ WriteLiteral("                <h3>History</h3>\r\n");
             #line 120 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                 var index = 0;
 
-                DateTime[] entriesCreationTime = job.History.Select(x => x.CreatedAt).ToArray();
+                var stateGroups = job.History.ChunkBy(x => x.StateName);
+        
+                DateTime[] entriesCreationTime = stateGroups.Select(x => x.Last().CreatedAt).ToArray();
                 var nextEntry = 1;
 
-                foreach (var entry in job.History)
+                foreach (IGrouping<string, Hangfire.Storage.Monitoring.StateHistoryDto> stateGroup in stateGroups)
                 {
+                    var entry = stateGroup.Last();
+                    var mostRecentEntry = stateGroup.First();
+                    
+                    var stateEnteredAt = entry.CreatedAt; 
                     var background = index == 0
                         ? JobHistoryRenderer.GetForegroundStateColor(entry.StateName)
                         : JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
@@ -464,7 +470,7 @@ WriteLiteral("                    <div class=\"job-history ");
 
 
             
-            #line 131 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 137 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                         Write(index == 0 ? "job-history-current" : null);
 
             
@@ -474,7 +480,7 @@ WriteLiteral("\">\r\n                        <div class=\"job-history-heading\" 
 
 
             
-            #line 132 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 138 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                                            Write(String.Format("background-color: {0};", background));
 
             
@@ -484,7 +490,7 @@ WriteLiteral("\">\r\n                            <span class=\"pull-right\" data
 
 
             
-            #line 133 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 139 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                                                     Write(JobHelper.ToTimestamp(entry.CreatedAt));
 
             
@@ -494,7 +500,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 134 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 140 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                            Write(Html.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt)));
 
             
@@ -504,7 +510,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 135 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 141 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                    nextEntry++; 
 
             
@@ -515,7 +521,7 @@ WriteLiteral("                            </span>\r\n                           
 
 
             
-            #line 138 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 144 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                            Write(entry.StateName);
 
             
@@ -525,7 +531,7 @@ WriteLiteral("\r\n\r\n");
 
 
             
-            #line 140 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 146 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                  if (!String.IsNullOrWhiteSpace(entry.Reason))
                                 {
 
@@ -536,7 +542,7 @@ WriteLiteral("                                    <small>");
 
 
             
-            #line 142 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 148 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                       Write(entry.Reason);
 
             
@@ -546,7 +552,7 @@ WriteLiteral("</small>\r\n");
 
 
             
-            #line 143 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 149 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                 }
 
             
@@ -556,7 +562,7 @@ WriteLiteral("                            </h4>\r\n                        </div
 
 
             
-            #line 147 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 153 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                          if (JobHistoryRenderer.Exists(entry.StateName))
                         {
                             var rendered = Html.RenderHistory(entry.StateName, entry.Data);
@@ -571,7 +577,7 @@ WriteLiteral("                                <div class=\"job-history-body\">\r
 
 
             
-            #line 153 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 159 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                Write(rendered);
 
             
@@ -581,10 +587,10 @@ WriteLiteral("\r\n                                </div>\r\n");
 
 
             
-            #line 155 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 161 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                             }
                         }
-                        else
+                        else if (entry.Data.Count > 0)
                         {
 
             
@@ -595,7 +601,7 @@ WriteLiteral("                            <div class=\"job-history-body\">\r\n  
 
 
             
-            #line 161 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 167 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                      foreach (var item in entry.Data)
                                     {
 
@@ -606,7 +612,7 @@ WriteLiteral("                                        <dt>");
 
 
             
-            #line 163 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 169 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                        Write(item.Key);
 
             
@@ -620,7 +626,7 @@ WriteLiteral("                                        <dd>");
 
 
             
-            #line 164 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 170 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                        Write(item.Value);
 
             
@@ -630,7 +636,7 @@ WriteLiteral("</dd>\r\n");
 
 
             
-            #line 165 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 171 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                                     }
 
             
@@ -640,8 +646,105 @@ WriteLiteral("                                </dl>\r\n                         
 
 
             
-            #line 168 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+            #line 174 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                         }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
+
+
+            
+            #line 176 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                         if (stateGroup.Count() > 1) {
+                            var stateStartedAt = entry.CreatedAt;
+
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <div class=\"job-history-body\">\r\n");
+
+
+            
+            #line 180 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                 foreach (Hangfire.Storage.Monitoring.StateHistoryDto subentry in stateGroup.Take(stateGroup.Count() - 1))
+                                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    <div>\r\n                                      " +
+"  <span class=\"pull-right\" data-moment-title=\"");
+
+
+            
+            #line 183 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                                                                Write(JobHelper.ToTimestamp(subentry.CreatedAt));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                                            ");
+
+
+            
+            #line 184 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                       Write(Html.ToHumanDuration(subentry.CreatedAt - stateStartedAt));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</span>\r\n                                        <span style=\"display: inline-blo" +
+"ck; width: 85px\">\r\n                                            ");
+
+
+            
+            #line 186 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                       Write(subentry.Data.GetValueOrDefault("Level", "UPDATE"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</span>\r\n                                            ");
+
+
+            
+            #line 187 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                       Write(subentry.Reason);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                    </div>\r\n");
+
+
+            
+            #line 189 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                }   
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            </div>\r\n");
+
+
+            
+            #line 191 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
+
+
+            
+            #line 193 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                          
+                            index++;
+                        
 
             
             #line default
@@ -650,9 +753,7 @@ WriteLiteral("                    </div>\r\n");
 
 
             
-            #line 170 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-
-                        index++;
+            #line 197 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                 }
             }
         }

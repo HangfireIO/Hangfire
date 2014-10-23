@@ -8,23 +8,24 @@ namespace Hangfire.States
 {
     public class ProcessingLogState : IState
     {
-        public static readonly string StateName = "Log";
-
         public ProcessingLogState(string level, string message)
         {
-            this.Name = level;
+            this.Level = level;
             this.Reason = message;
         }
 
-        public string Name { get; set; }
+        public string Name { get { return ProcessingState.StateName; } }
         public string Reason { get; set; }
         public bool IsFinal { get { return false; } }
         public bool IgnoreJobLoadException { get { return false; } }
+
+        public string Level { get; set; }
 
         public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
             {
+                { "Level", this.Level }
             };
         }
     }
