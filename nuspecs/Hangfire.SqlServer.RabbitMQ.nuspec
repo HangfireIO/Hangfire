@@ -14,13 +14,23 @@
     <tags>Hangfire SqlServer RabbitMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="RabbitMQ.Client" version="3.3.0" />
+	  <group targetFramework="net45">
+        <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="RabbitMQ.Client" version="3.3.0" />
+	  </group>
+	  <group targetFramework="net40">
+	    <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+        <dependency id="RabbitMQ.Client" version="3.3.0" />
+        <dependency id="Microsoft.Bcl.Async" />
+      </group>
     </dependencies>
   </metadata>
   <files>
     <file src="Net45\Hangfire.SqlServer.RabbitMQ.dll" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net45" />
+	<file src="Net40\Hangfire.SqlServer.RabbitMQ.dll" target="lib\net40" />
+    <file src="Net40\Hangfire.SqlServer.RabbitMQ.xml" target="lib\net40" />
   </files>
 </package>

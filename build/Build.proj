@@ -98,7 +98,7 @@
   <Target Name="Go" DependsOnTargets="Build; CopyArtifacts; RunTests;">
   </Target>
 
-  <Target Name="BuildCmd" DependsOnTargets="Build; CopyArtifacts; RunUnitTests;">
+  <Target Name="BuildCmd" DependsOnTargets="Build; CopyArtifacts; RunNet45UnitTests;">
   </Target>
 
   <Target Name="BuildNetUnitTests" DependsOnTargets="CreateOutputDirs">
@@ -140,64 +140,64 @@
     <Message Text="%(RedisLogContents.Identity)" />
   </Target>
 
-  <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
+  <Target Name="RunNet45UnitTests" DependsOnTargets="BuildNetUnitTests">
     
     <!-- Core tests -->
     
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\Hangfire.Core.Tests\Hangfire.Core.Tests.dll"
-           Xml="$(TestResultsPath)\Hangfire.Core.Tests.XunitResults.xml"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.Core.Tests\v4.5\Hangfire.Core.Tests.dll"
+           Xml="$(TestResultsPath)\v4.5\Hangfire.Core.Tests.XunitResults.xml"
            Verbose="true" />
   
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.Core.Tests\Hangfire.Core.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.Core.Tests\v4.5\Hangfire.Core.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
 	  </Exec>
   </Target>
   
-  <Target Name="RunIntegrationTests" DependsOnTargets="DoIntegrationTests; CleanUpAfterIntegrationTests">
+  <Target Name="RunIntegrationTests" DependsOnTargets="DoNet45IntegrationTests; CleanUpAfterIntegrationTests">
   </Target>
 
-  <Target Name="DoIntegrationTests" DependsOnTargets="BuildNetIntegrationTests; PrepareForIntegrationTests">
+  <Target Name="DoNet45IntegrationTests" DependsOnTargets="BuildNetIntegrationTests; PrepareForIntegrationTests">
     
     <!-- Redis integration tests -->    
 
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\Hangfire.Redis.Tests\Hangfire.Redis.Tests.dll"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.Redis.Tests\v4.5\Hangfire.Redis.Tests.dll"
            Xml="$(TestResultsPath)\Hangfire.Redis.Tests.XunitResults.xml"
            Verbose="true" />
     
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.Redis.Tests\Hangfire.Redis.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.Redis.Tests\v4.5\Hangfire.Redis.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
     
     <!-- SQL Server integration tests -->
 
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.dll"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.SqlServer.Tests\v4.5\Hangfire.SqlServer.Tests.dll"
            Xml="$(TestResultsPath)\Hangfire.SqlServer.Tests.XunitResults.xml"
            Verbose="true" />
   
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.SqlServer.Tests\v4.5\Hangfire.SqlServer.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
 
     <!-- MSMQ integration tests -->
 
     <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.dll"
+           Assembly="$(ProjectArtifactsDir)\Hangfire.SqlServer.Msmq.Tests\v4.5\Hangfire.SqlServer.Msmq.Tests.dll"
            Xml="$(TestResultsPath)\Hangfire.SqlServer.Msmq.Tests.XunitResults.xml"
            Verbose="true" />
 
     <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.dll&quot; /appveyor"
+          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.SqlServer.Msmq.Tests\v4.5\Hangfire.SqlServer.Msmq.Tests.dll&quot; /appveyor"
           LogStandardErrorAsError="true">
     </Exec>
   </Target>
 
-  <Target Name="RunTests" DependsOnTargets="RunUnitTests; RunIntegrationTests;">
+  <Target Name="RunTests" DependsOnTargets="RunNet45UnitTests; RunIntegrationTests;">
   </Target>
 
   <Target Name="CreateOutputDirs">
@@ -206,6 +206,8 @@
     <MakeDir Directories="$(PackagesDestinationDir)" Condition="!Exists('$(PackagesDestinationDir)')" />
     <MakeDir Directories="$(SamplesDir)" Condition="!Exists('$(SamplesDir)')" />
     <MakeDir Directories="$(TestResultsPath)" Condition="!Exists('$(TestResultsPath)')" />
+	<MakeDir Directories="$(TestResultsPath)\v4.5" Condition="!Exists('$(TestResultsPath)\v4.5')" />
+	<MakeDir Directories="$(TestResultsPath)\v4.0" Condition="!Exists('$(TestResultsPath)\v4.0')" />
   </Target>
 
   <Target Name="Build" DependsOnTargets="CreateOutputDirs">
@@ -223,11 +225,17 @@
   <Target Name="CopyArtifacts" DependsOnTargets="Build">
     <ItemGroup>
       <!-- Copy remaining package artifacts to artifacts/{Configuration}/package-src/{Platform}/ -->
-      <Artifacts Include="$(ProjectArtifactsDir)\%(Projects.FileName)\Hangfire.*.dll;
-                          $(ProjectArtifactsDir)\%(Projects.FileName)\Hangfire.*.pdb;
-                          $(ProjectArtifactsDir)\%(Projects.FileName)\Hangfire.*.xml"
+      <Artifacts Include="$(ProjectArtifactsDir)\%(Projects.FileName)\v4.5\Hangfire.*.dll;
+                          $(ProjectArtifactsDir)\%(Projects.FileName)\v4.5\Hangfire.*.pdb;
+                          $(ProjectArtifactsDir)\%(Projects.FileName)\v4.5\Hangfire.*.xml"
                  Condition="%(Projects.CopyArtifacts) And !%(Projects.Sample)">
-        <Destination>$(PackageSrcDir)\%(Projects.Platform)</Destination>
+        <Destination>$(PackageSrcDir)\Net45</Destination>
+      </Artifacts>
+	  <Artifacts Include="$(ProjectArtifactsDir)\%(Projects.FileName)\v4.0\Hangfire.*.dll;
+                          $(ProjectArtifactsDir)\%(Projects.FileName)\v4.0\Hangfire.*.pdb;
+                          $(ProjectArtifactsDir)\%(Projects.FileName)\v4.0\Hangfire.*.xml"
+                 Condition="%(Projects.CopyArtifacts) And !%(Projects.Sample)">
+        <Destination>$(PackageSrcDir)\Net40</Destination>
       </Artifacts>
       <!-- Copy exe's to artifacts/{Configuration}/package-src/tools/ -->
       <Artifacts Include="$(ProjectArtifactsDir)\%(Projects.FileName)\*.exe"
