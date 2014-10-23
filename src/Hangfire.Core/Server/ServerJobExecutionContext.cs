@@ -78,6 +78,8 @@ namespace Hangfire.Server
             return false;
         }
 
+        public string JobId { get { return _jobId; } }
+
         public void UpdateProgress(int percentComplete, string currentStatus)
         {
             using (var transaction = _connection.CreateWriteTransaction())

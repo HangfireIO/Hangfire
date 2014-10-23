@@ -10,6 +10,8 @@ namespace Hangfire
     {
         public JobExecutionContext(bool canceled) : base(canceled) { }
 
+        public string JobId { get { return null; } }
+
         public void UpdateProgress(int percentComplete, string currentStatus)
         {
             // TODO: I have no idea what needs to go here.

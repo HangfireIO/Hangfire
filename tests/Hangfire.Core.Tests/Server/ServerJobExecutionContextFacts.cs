@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class ServerJobCancellationTokenFacts
+    public class ServerJobExecutionContextFacts
     {
         private const string JobId = "my-job";
         private readonly Mock<IStorageConnection> _connection;
@@ -17,7 +17,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly WorkerContextMock _workerContextMock;
         private readonly StateData _stateData;
 
-        public ServerJobCancellationTokenFacts()
+        public ServerJobExecutionContextFacts()
         {
             _stateData = new StateData
             {
@@ -73,6 +73,14 @@ namespace Hangfire.Core.Tests.Server
         {
             var token = CreateToken();
             Assert.Equal(_shutdownToken, token.ShutdownToken);
+        }
+
+        [Fact]
+        public void JobId_ReturnsJobId()
+        {
+            var context = CreateContext();
+
+            Assert.Equal(JobId, context.JobId);
         }
 
         [Fact]
@@ -133,6 +141,11 @@ namespace Hangfire.Core.Tests.Server
         }
 
         private IJobCancellationToken CreateToken()
+        {
+            return this.CreateContext();
+        }
+
+        private IJobExecutionContext CreateContext()
         {
             return new ServerJobExecutionContext(
                 JobId, _connection.Object, _workerContextMock.Object, _shutdownToken);

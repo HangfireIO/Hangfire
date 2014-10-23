@@ -18,6 +18,8 @@ namespace Hangfire
 {
     public interface IJobExecutionContext : IJobCancellationToken
     {
+        string JobId { get; }
+
         /// <summary>
         /// Report the current status of a job, potentially to an end-user, along with an
         /// estimate of the % of the job that is completed.
