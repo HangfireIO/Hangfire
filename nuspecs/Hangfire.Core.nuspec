@@ -15,7 +15,7 @@
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
       <dependency id="Owin" version="1.0" />
-      <dependency id="Common.Logging" version="2.2.0" />
+      <dependency id="Common.Logging" version="2.3.1" />
       <dependency id="Newtonsoft.Json" version="5.0.0" />
     </dependencies>
   </metadata>
