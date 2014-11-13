@@ -24,9 +24,11 @@ namespace Hangfire.Redis
         {
             ConnectionPoolSize = 50;
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
+            Prefix = string.Empty;
         }
 
         public int ConnectionPoolSize { get; set; }
         public TimeSpan InvisibilityTimeout { get; set; }
+        public string Prefix { get; set; }
     }
 }

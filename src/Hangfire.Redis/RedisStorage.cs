@@ -27,7 +27,7 @@ namespace Hangfire.Redis
 {
     public class RedisStorage : JobStorage
     {
-        internal static readonly string Prefix = "hangfire:";
+        internal static string _prefix;
 
         private readonly PooledRedisClientManager _pooledManager;
 
@@ -55,6 +55,10 @@ namespace Hangfire.Redis
             Db = db;
             Options = options;
 
+            _prefix = !string.IsNullOrEmpty(options.Prefix)
+                ? options.Prefix + ":hangfire:"
+                : "hangfire:";
+
             _pooledManager = new PooledRedisClientManager(
                 new []{ HostAndPort },
                 new string[0],
@@ -64,6 +68,8 @@ namespace Hangfire.Redis
                     MaxWritePoolSize = Options.ConnectionPoolSize
                 });
         }
+
+        internal static string Prefix { get { return _prefix; } }
 
         public string HostAndPort { get; private set; }
         public int Db { get; private set; }
