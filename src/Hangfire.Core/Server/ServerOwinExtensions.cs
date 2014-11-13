@@ -28,6 +28,12 @@ namespace Hangfire.Server
         private static readonly ConcurrentBag<BackgroundJobServer> Servers 
             = new ConcurrentBag<BackgroundJobServer>(); 
 
+        /// <summary>
+        /// Starts the specified background job server and registers the call
+        /// to its `Dispose` method at OWIN application's shutdown event.
+        /// </summary>
+        /// <param name="app">The app builder</param>
+        /// <param name="server">The background job server to start</param>
         public static void RunHangfireServer(
             this IAppBuilder app,
             BackgroundJobServer server)
@@ -41,7 +47,7 @@ namespace Hangfire.Server
 
             if (token != CancellationToken.None)
             {
-                token.Register(server.Stop);
+                token.Register(server.Dispose);
             }
         }
     }
