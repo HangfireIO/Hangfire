@@ -25,12 +25,9 @@ namespace Hangfire
         public BootstrapperConfiguration()
         {
             Servers = new List<Func<BackgroundJobServer>>();
-            DashboardPath = "/hangfire";
+            DashboardPath = DashboardOwinExtensions.DefaultDashboardPath;
 
-            AuthorizationFilters = new IAuthorizationFilter[]
-            {
-                new LocalRequestsOnlyAuthorizationFilter()
-            };
+            AuthorizationFilters = DashboardOwinExtensions.DefaultAuthorizationFilters;
 
             Filters = new List<object>();
         }
