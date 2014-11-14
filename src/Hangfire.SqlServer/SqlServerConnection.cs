@@ -32,16 +32,19 @@ namespace Hangfire.SqlServer
     {
         private readonly SqlConnection _connection;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
+        private readonly IsolationLevel _writeIsolationLevel;
 
         public SqlServerConnection(
             SqlConnection connection, 
-            PersistentJobQueueProviderCollection queueProviders)
+            PersistentJobQueueProviderCollection queueProviders,
+            IsolationLevel writeIsolationLevel)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             _connection = connection;
             _queueProviders = queueProviders;
+            _writeIsolationLevel = writeIsolationLevel;
         }
 
         public void Dispose()
@@ -51,7 +54,7 @@ namespace Hangfire.SqlServer
 
         public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlServerWriteOnlyTransaction(_connection, _queueProviders);
+            return new SqlServerWriteOnlyTransaction(_connection, _queueProviders, _writeIsolationLevel);
         }
 
         public IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)

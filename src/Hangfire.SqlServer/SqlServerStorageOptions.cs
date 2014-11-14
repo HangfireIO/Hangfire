@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Transactions;
 
 namespace Hangfire.SqlServer
 {
@@ -26,7 +27,8 @@ namespace Hangfire.SqlServer
         {
             QueuePollInterval = TimeSpan.FromSeconds(15);
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
-
+            WriteIsolationLevel = IsolationLevel.Serializable;
+            
             PrepareSchemaIfNecessary = true;
         }
 
@@ -55,5 +57,7 @@ namespace Hangfire.SqlServer
         public TimeSpan InvisibilityTimeout { get; set; }
 
         public bool PrepareSchemaIfNecessary { get; set; }
+
+        public IsolationLevel WriteIsolationLevel { get; set; }
     }
 }

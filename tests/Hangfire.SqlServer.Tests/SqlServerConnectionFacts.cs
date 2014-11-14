@@ -34,7 +34,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, _providers));
+                () => new SqlServerConnection(null, _providers, System.Transactions.IsolationLevel.Serializable));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -43,7 +43,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null, System.Transactions.IsolationLevel.Serializable));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -786,7 +786,7 @@ values (@key, @field, @value)";
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, _providers))
+            using (var connection = new SqlServerConnection(sqlConnection, _providers, System.Transactions.IsolationLevel.Serializable))
             {
                 action(sqlConnection, connection);
             }
@@ -796,7 +796,8 @@ values (@key, @field, @value)";
         {
             using (var connection = new SqlServerConnection( 
                 ConnectionUtils.CreateConnection(),
-                _providers))
+                _providers,
+                System.Transactions.IsolationLevel.Serializable))
             {
                 action(connection);
             }
