@@ -15,6 +15,7 @@ namespace Hangfire.SqlServer.RabbitMQ
             configureAction(conf);
 
             ConnectionFactory cf = new ConnectionFactory();
+            cf.VirtualHost = conf.VirtualHost;
             cf.HostName = conf.HostName;
             cf.Port = conf.Port;
             cf.UserName = conf.Username;
