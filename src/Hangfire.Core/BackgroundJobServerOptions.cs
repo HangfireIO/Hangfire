@@ -23,13 +23,16 @@ namespace Hangfire
 {
     public class BackgroundJobServerOptions
     {
+        // https://github.com/HangfireIO/Hangfire/issues/246
+        private const int MaxDefaultWorkerCount = 40;
+
         private string _serverName;
         private int _workerCount;
         private string[] _queues;
 
         public BackgroundJobServerOptions()
         {
-            WorkerCount = Environment.ProcessorCount * 5;
+            WorkerCount = Math.Min(Environment.ProcessorCount * 5, MaxDefaultWorkerCount);
             ServerName = Environment.MachineName;
             Queues = new[] { EnqueuedState.DefaultQueue };
             ShutdownTimeout = TimeSpan.FromSeconds(15);
