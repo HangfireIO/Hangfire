@@ -2,27 +2,17 @@
 <package >
   <metadata>
     <id>Hangfire.Redis</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>2.0.0</version>
     <title>Hangfire Redis Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
-    <projectUrl>http://hangfire.io/</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
-    <description>Redis job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
+    <projectUrl>http://odinserj.net/2014/11/15/hangfire-pro/</projectUrl>
+    <description>DEPRECATED -- DO NOT INSTALL OR UPDATE. Now shipped with Hangfire Pro, please read the "Project site" (http://odinserj.net/2014/11/15/hangfire-pro/) for more information.</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
-    <tags>Hangfire Redis</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
-    <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Common.Logging" version="2.2.0" />
-      <dependency id="ServiceStack.Text" version="[3.9.69,4.0)" />
-      <dependency id="ServiceStack.Common" version="[3.9.69,4.0)" />
-      <dependency id="ServiceStack.Redis" version="[3.9.69,4.0)" />
-    </dependencies>
+    <tags>Hangfire Unsupported</tags>
+    <releaseNotes></releaseNotes>
   </metadata>
   <files>
-    <file src="Net45\Hangfire.Redis.dll" target="lib\net45" />
-    <file src="Net45\Hangfire.Redis.xml" target="lib\net45" />
+    <file src="Content\redis-readme.txt" target="readme.txt" />
   </files>
 </package>

@@ -163,10 +163,6 @@
       <Project>{762be479-0aec-47e0-8f9c-34fa54641749}</Project>
       <Name>Hangfire.SqlServer.Msmq</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Hangfire.Redis\Hangfire.Redis.csproj">
-      <Project>{8f46f57b-3247-4aa7-b330-57ac088547eb}</Project>
-      <Name>Hangfire.Redis</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\Hangfire.SqlServer\Hangfire.SqlServer.csproj">
       <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
       <Name>Hangfire.SqlServer</Name>

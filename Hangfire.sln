@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "samples\ConsoleSample\ConsoleSample.csproj", "{C02BB718-2AE4-434C-8668-C894FF663FCE}"
 EndProject
@@ -17,8 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5D1016
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{119DA7FA-B94C-4B63-AEC9-428EF834E0D8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Redis", "src\Hangfire.Redis\Hangfire.Redis.csproj", "{8F46F57B-3247-4AA7-B330-57AC088547EB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer", "src\Hangfire.SqlServer\Hangfire.SqlServer.csproj", "{A523C0E3-097D-4869-977F-15A717EA3E83}"
 EndProject
@@ -49,13 +47,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspecs", "nuspecs", "{5E68
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{37E2BF00-C473-48A5-B2A7-5A3DE0910FCF}"
 	ProjectSection(SolutionItems) = preProject
-		content\HangfireConfig.cs.pp = content\HangfireConfig.cs.pp
-		content\web.config.transform = content\web.config.transform
+		content\readme.txt = content\readme.txt
+		content\redis-readme.txt = content\redis-readme.txt
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.Tests", "tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Redis.Tests", "tests\Hangfire.Redis.Tests\Hangfire.Redis.Tests.csproj", "{25909EE6-2A56-4EAC-9D0E-436FF2435E88}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.Tests", "tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj", "{6DFFA275-C483-4501-823A-741AC9EC0846}"
 EndProject
@@ -87,10 +83,6 @@ Global
 		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8F46F57B-3247-4AA7-B330-57AC088547EB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A523C0E3-097D-4869-977F-15A717EA3E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -99,10 +91,6 @@ Global
 		{E13C3543-39A3-475C-BB43-2E311E634843}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E13C3543-39A3-475C-BB43-2E311E634843}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E13C3543-39A3-475C-BB43-2E311E634843}.Release|Any CPU.Build.0 = Release|Any CPU
-		{25909EE6-2A56-4EAC-9D0E-436FF2435E88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{25909EE6-2A56-4EAC-9D0E-436FF2435E88}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{25909EE6-2A56-4EAC-9D0E-436FF2435E88}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{25909EE6-2A56-4EAC-9D0E-436FF2435E88}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6DFFA275-C483-4501-823A-741AC9EC0846}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6DFFA275-C483-4501-823A-741AC9EC0846}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DFFA275-C483-4501-823A-741AC9EC0846}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -135,7 +123,6 @@ Global
 		{C02BB718-2AE4-434C-8668-C894FF663FCE} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{FE5EAE49-2627-42B6-8C2B-EBE4D45B4D97} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
-		{25909EE6-2A56-4EAC-9D0E-436FF2435E88} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{6DFFA275-C483-4501-823A-741AC9EC0846} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}
 		{B5476D92-46B1-4A65-A1FD-675342B7BB64} = {119DA7FA-B94C-4B63-AEC9-428EF834E0D8}
 		{DBC6BC12-06AD-4597-9E0F-B77BE754FA2C} = {766BE831-F758-46BC-AFD3-BBEEFE0F686F}

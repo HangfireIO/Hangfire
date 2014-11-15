@@ -28,11 +28,6 @@
       Server=.\sqlexpress;Database={0};Trusted_Connection=True;
     </DefaultSqlServerConnectionStringTemplate>
     <DefaultSqlServerTestDatabase>Hangfire.Test</DefaultSqlServerTestDatabase>
-    <RedisDir>$(ProjectRoot)\packages\Redis-32.2.6.12.1\tools</RedisDir>
-    <RedisFileName>redis-server.exe</RedisFileName>
-    <RedisExePath>$(RedisDir)\$(RedisFileName)</RedisExePath>
-    <RedisLogPath>$(ProjectRoot)\redis.log</RedisLogPath>
-    <DefaultRedisPort>6378</DefaultRedisPort>
   </PropertyGroup>
 
   <Import Project="$(MSBuildProjectDirectory)\Hangfire.versions.targets" />
@@ -69,7 +64,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <IntegrationTestProjects Include="$(ProjectRoot)\tests\Hangfire.Redis.Tests\Hangfire.Redis.Tests.csproj"></IntegrationTestProjects>
     <IntegrationTestProjects Include="$(ProjectRoot)\tests\Hangfire.SqlServer.Tests\Hangfire.SqlServer.Tests.csproj"></IntegrationTestProjects>
     <IntegrationTestProjects Include="$(ProjectRoot)\tests\Hangfire.SqlServer.Msmq.Tests\Hangfire.SqlServer.Msmq.Tests.csproj"></IntegrationTestProjects>
   </ItemGroup>
@@ -116,30 +110,12 @@
   </Target>
   
   <Target Name="PrepareForIntegrationTests">
-    <SetEnvironmentVariableIfNotExists Name="Hangfire_Redis_Port" Value="$(DefaultRedisPort)">
-      <Output TaskParameter="ActualValue" PropertyName="Hangfire_Redis_Port" />
-    </SetEnvironmentVariableIfNotExists>
-    
     <SetEnvironmentVariableIfNotExists Name="Hangfire_SqlServer_ConnectionStringTemplate" 
                                        Value="$(DefaultSqlServerConnectionStringTemplate)" />
     <SetEnvironmentVariableIfNotExists Name="Hangfire_SqlServer_DatabaseName" 
                                        Value="$(DefaultSqlServerTestDatabase)" />
-  
-    <Delete Files="$(RedisLogPath)" />
-    <ExecAsync FilePath='$(RedisExePath)' Arguments='--port $(Hangfire_Redis_Port) --logfile "$(RedisLogPath)"' ContinueOnError='true'>
-      <Output TaskParameter="Pid" PropertyName="RedisPid" />
-    </ExecAsync>
   </Target>
   
-  <Target Name="CleanUpAfterIntegrationTests">
-    <Exec Command="taskkill /F /PID $(RedisPid)" IgnoreExitCode="true" />
-    <Message Text="$(RedisLogPath):" />
-    <ReadLinesFromFile File="$(RedisLogPath)">
-      <Output TaskParameter="Lines" ItemName="RedisLogContents" />
-    </ReadLinesFromFile>
-    <Message Text="%(RedisLogContents.Identity)" />
-  </Target>
-
   <Target Name="RunUnitTests" DependsOnTargets="BuildNetUnitTests">
     
     <!-- Core tests -->
@@ -155,22 +131,7 @@
 	  </Exec>
   </Target>
   
-  <Target Name="RunIntegrationTests" DependsOnTargets="DoIntegrationTests; CleanUpAfterIntegrationTests">
-  </Target>
-
-  <Target Name="DoIntegrationTests" DependsOnTargets="BuildNetIntegrationTests; PrepareForIntegrationTests">
-    
-    <!-- Redis integration tests -->    
-
-    <xunit Condition=" '$(BuildEnvironment)' == 'local' "
-           Assembly="$(ProjectArtifactsDir)\Hangfire.Redis.Tests\Hangfire.Redis.Tests.dll"
-           Xml="$(TestResultsPath)\Hangfire.Redis.Tests.XunitResults.xml"
-           Verbose="true" />
-    
-    <Exec Condition=" '$(BuildEnvironment)' == 'appveyor' "
-          Command="xunit.console.clr4 &quot;$(ProjectArtifactsDir)\Hangfire.Redis.Tests\Hangfire.Redis.Tests.dll&quot; /appveyor"
-          LogStandardErrorAsError="true">
-    </Exec>
+  <Target Name="RunIntegrationTests" DependsOnTargets="BuildNetIntegrationTests; PrepareForIntegrationTests">
     
     <!-- SQL Server integration tests -->
 
@@ -235,7 +196,7 @@
         <Destination>$(PackageSrcDir)\Tools</Destination>
       </Artifacts>
       <!-- Copy transformations to artifacts/{Configuration}/package-src/Content/ -->
-      <Artifacts Include="$(ContentPath)\readme.txt">
+      <Artifacts Include="$(ContentPath)\*.*">
         <Destination>$(PackageSrcDir)\Content</Destination>
       </Artifacts>
       <!-- Copy tools to artifacts/{Configuration}/package-src/Tools -->

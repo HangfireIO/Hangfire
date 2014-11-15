@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
 using Hangfire;
-using Hangfire.Redis;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
 
@@ -21,9 +20,7 @@ namespace ConsoleSample
                 @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
             sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
-            JobStorage.Current =
-                sqlServerStorage;
-                //new RedisStorage("localhost:6379", 3);
+            JobStorage.Current = sqlServerStorage;
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
