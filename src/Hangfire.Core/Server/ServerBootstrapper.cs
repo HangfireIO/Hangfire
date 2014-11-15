@@ -48,21 +48,21 @@ namespace Hangfire.Server
             _context = context;
             _supervisorFactory = supervisorFactory;
 
-			if (!RunningWithMono()) 
-			{
-				_globalMutex = new Mutex (false, String.Format (@"Global\{0}_{1}", BootstrapperId, _serverId));
-			}
+            if (!RunningWithMono()) 
+            {
+                _globalMutex = new Mutex (false, String.Format (@"Global\{0}_{1}", BootstrapperId, _serverId));
+            }
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-			if (!RunningWithMono()) 
-			{
-				// Do not allow to run multiple servers with the same ServerId on same
-				// machine, fixes https://github.com/odinserj/Hangfire/issues/112.
-				WaitHandle.WaitAny (new[] { _globalMutex, cancellationToken.WaitHandle });
-				cancellationToken.ThrowIfCancellationRequested ();
-			}
+            if (!RunningWithMono()) 
+            {
+                // Do not allow to run multiple servers with the same ServerId on same
+                // machine, fixes https://github.com/odinserj/Hangfire/issues/112.
+                WaitHandle.WaitAny (new[] { _globalMutex, cancellationToken.WaitHandle });
+                cancellationToken.ThrowIfCancellationRequested ();
+            }
             
             try
             {
@@ -93,10 +93,10 @@ namespace Hangfire.Server
             }
             finally
             {
-				if (!RunningWithMono()) 
-				{
-					_globalMutex.ReleaseMutex ();
-				}
+                if (!RunningWithMono()) 
+                {
+                    _globalMutex.ReleaseMutex ();
+                }
             }
         }
 
@@ -107,15 +107,15 @@ namespace Hangfire.Server
 
         public void Dispose()
         {
-			if (_globalMutex != null) 
-			{
-				_globalMutex.Dispose ();
-			}
+            if (_globalMutex != null) 
+            {
+                _globalMutex.Dispose ();
+            }
         }
 
-		private static bool RunningWithMono()
-		{
-			return Type.GetType("Mono.Runtime") != null;
-		}
+        private static bool RunningWithMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
+        }
     }
 }
