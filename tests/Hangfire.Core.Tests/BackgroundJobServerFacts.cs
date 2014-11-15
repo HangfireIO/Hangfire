@@ -48,14 +48,23 @@ namespace Hangfire.Core.Tests
         public void Ctor_HasDefaultValue_ForStorage()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
-            Assert.DoesNotThrow(() => new BackgroundJobServer(_options));
+            Assert.DoesNotThrow(() => StartServer(
+                () => new BackgroundJobServer(_options)));
+        }
+
+        [Fact]
+        public void Ctor_HasDefaultValue_ForOptions()
+        {
+            Assert.DoesNotThrow(() => StartServer(
+                () => new BackgroundJobServer(_storage.Object)));
         }
 
         [Fact, GlobalLock(Reason = "Uses JobStorage.Current instance")]
-        public void Ctor_HasDefaultValue_ForOptions()
+        public void Ctor_HasDefaultValues_ForAllParameters()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
-            Assert.DoesNotThrow(() => new BackgroundJobServer());
+            Assert.DoesNotThrow(() => StartServer(
+                () => new BackgroundJobServer()));
         }
 
         [Fact]
@@ -141,6 +150,14 @@ namespace Hangfire.Core.Tests
         private BackgroundJobServer CreateServer()
         {
             return new BackgroundJobServer(_options, _storage.Object);
+        }
+
+        private void StartServer(Func<BackgroundJobServer> createFunc)
+        {
+            using (var server = createFunc())
+            {
+                server.Start();
+            }
         }
     }
 }

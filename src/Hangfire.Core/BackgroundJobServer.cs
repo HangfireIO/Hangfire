@@ -34,16 +34,41 @@ namespace Hangfire
         private readonly string _serverId;
         private readonly IServerSupervisor _bootstrapSupervisor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with default options and <see cref="JobStorage.Current"/> storage.
+        /// </summary>
         public BackgroundJobServer()
             : this(new BackgroundJobServerOptions())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with default options and the given storage.
+        /// </summary>
+        /// <param name="storage">The storage</param>
+        public BackgroundJobServer(JobStorage storage)
+            : this(new BackgroundJobServerOptions(), storage)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with the given options and <see cref="JobStorage.Current"/> storage.
+        /// </summary>
+        /// <param name="options">Server options</param>
         public BackgroundJobServer(BackgroundJobServerOptions options)
             : this(options, JobStorage.Current)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with the specified options and the given storage.
+        /// </summary>
+        /// <param name="options">Server options</param>
+        /// <param name="storage">The storage</param>
         public BackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage)
         {
             if (options == null) throw new ArgumentNullException("options");
