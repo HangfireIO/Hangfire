@@ -69,6 +69,13 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void ShutdownTokenProperty_PointsToShutdownTokenValue()
+        {
+            var token = CreateToken();
+            Assert.Equal(_shutdownToken, token.ShutdownToken);
+        }
+
+        [Fact]
         public void ThrowIfCancellationRequested_DoesNotThrowOnProcessingJob_IfNoShutdownRequested()
         {
             var token = CreateToken();

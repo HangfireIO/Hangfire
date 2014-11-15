@@ -46,6 +46,11 @@ namespace Hangfire.Server
             _workerContext = workerContext;
         }
 
+        public CancellationToken ShutdownToken
+        {
+            get { return _shutdownToken; }
+        }
+
         public void ThrowIfCancellationRequested()
         {
             _shutdownToken.ThrowIfCancellationRequested();
