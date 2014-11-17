@@ -62,6 +62,13 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void Ctor_DoesNotThrowAnException_WhenArgumentArrayIsOmitted()
+        {
+            Assert.DoesNotThrow(
+                () => new Job(_type, _method));
+        }
+
+        [Fact]
         public void Ctor_ShouldInitializeAllProperties()
         {
             var job = new Job(_type, _method, _arguments);

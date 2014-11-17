@@ -44,12 +44,24 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
-        internal Job(Type type, MethodInfo method, string[] arguments)
+        public Job(Type type, MethodInfo method, string[] arguments)
+        {
+            this.Initialize(type, method, arguments, true);
+        }
+
+        public Job(Type type, MethodInfo method)
+        {
+            this.Initialize(type, method, null, false);
+        }
+
+        internal void Initialize(Type type, MethodInfo method, string[] arguments, bool hasArguments)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
-            if (arguments == null) throw new ArgumentNullException("arguments");
-
+            if (hasArguments)
+            {
+                if (arguments == null) throw new ArgumentNullException("arguments");
+            }
             if (method.ContainsGenericParameters)
             {
                 throw new ArgumentException("Job method can not contain unassigned generic type parameters.", "method");
@@ -57,8 +69,10 @@ namespace Hangfire.Common
 
             Type = type;
             Method = method;
-            Arguments = arguments;
-
+            if (hasArguments)
+            {
+                Arguments = arguments;
+            }
             Validate();
         }
 
@@ -189,7 +203,7 @@ namespace Hangfire.Common
 
             var parameters = Method.GetParameters();
 
-            if (parameters.Length != Arguments.Length)
+            if (Arguments != null && parameters.Length != Arguments.Length)
             {
                 throw new ArgumentException("Argument count must be equal to method parameter count.");
             }
