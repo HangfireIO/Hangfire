@@ -33,18 +33,39 @@ namespace Hangfire.Common
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with
+        /// a given method data and an empty arguments array.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// Each argument should be serialized into a string using the 
+        /// <see cref="JobHelper.ToJson(object)"/> method of the <see cref="JobHelper"/> 
+        /// class.
+        /// </remarks>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
+        /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
+        public Job(Type type, MethodInfo method) 
+            : this(type, method, new string[0])
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Job"/> class with
         /// a given method data and arguments.
         /// </summary>
         /// 
         /// <remarks>
         /// Each argument should be serialized into a string using the 
-        /// <see cref="TypeConverter.ConvertToInvariantString(object)"/> method of
-        /// a corresponding <see cref="TypeConverter"/> instance.
+        /// <see cref="JobHelper.ToJson(object)"/> method of the <see cref="JobHelper"/> 
+        /// class.
         /// </remarks>
         /// 
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
-        internal Job(Type type, MethodInfo method, string[] arguments)
+        /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
+        public Job(Type type, MethodInfo method, string[] arguments)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");

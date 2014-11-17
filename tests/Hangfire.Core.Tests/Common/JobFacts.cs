@@ -72,6 +72,14 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void Ctor_ShouldHave_DefaultValueForArguments()
+        {
+            var job = new Job(_type, _method);
+
+            Assert.Empty(job.Arguments);
+        }
+
+        [Fact]
         public void Ctor_ShouldThrowAnException_WhenArgumentCountIsNotEqualToParameterCount()
         {
             var exception = Assert.Throws<ArgumentException>(
