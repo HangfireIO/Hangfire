@@ -20,14 +20,14 @@
     
 1.2.0
 * Removed – HANGFIRE.REDIS PACKAGE MOVED TO PRO VERSION.
-* Added – Support for **generic types and methods** for background jobs (#222 by @gorbach).
-* Added – GetDescription method to Cron (#210 by @djrineh).
-* Added – Support for System.Threading.CancellationToken (#211).
-* Added – Make Job(Type, MethodInfo, string[]) ctor public (#241).
-* Changed – Provide a ceiling value for `WorkerCount` setting (#246).
-* Fixed – Call `Dispose` method instead of `Stop` for graceful shutdown (#244).
-* Fixed – ArgumentException: No conversion available between `Func` and `OwinMiddleware` (#242).
-* Fixed – Updated UseRabbitMq extension method to actually use the VirtualHost property (#248 by @gaiazov).
+* Added – Support for **generic types and methods** for background jobs (by @gorbach).
+* Added – GetDescription method to Cron (by @djrineh).
+* Added – Support for System.Threading.CancellationToken.
+* Added – Make Job(Type, MethodInfo, string[]) ctor public.
+* Changed – Provide a ceiling value for `WorkerCount` setting.
+* Fixed – Call `Dispose` method instead of `Stop` for graceful shutdown.
+* Fixed – ArgumentException: No conversion available between `Func` and `OwinMiddleware`.
+* Fixed – Updated UseRabbitMq extension method to actually use the VirtualHost property (by @gaiazov).
     
 1.1.1
 * Fixed – `IAuthorizationFilter.Authorize` method issues with `IOwinContext` interface.
