@@ -52,7 +52,7 @@ namespace Hangfire.Dashboard
 
                 builder.Append(WrapType(job.Type.ToGenericTypeString()));
                 builder.AppendFormat(
-                    " {0} = Activate<{1}>();",
+                    " {0} = Activate&lt;{1}&gt;();",
                     Encode(serviceName),
                     WrapType(Encode(job.Type.ToGenericTypeString())));
 
@@ -67,6 +67,16 @@ namespace Hangfire.Dashboard
 
             builder.Append(".");
             builder.Append(Encode(job.Method.Name));
+
+            if (job.Method.IsGenericMethod)
+            {
+                var genericArgumentTypes = job.Method.GetGenericArguments()
+                    .Select(x => WrapType(x.Name))
+                    .ToArray();
+
+                builder.AppendFormat("&lt;{0}&gt;", String.Join(", ", genericArgumentTypes));
+            }
+
             builder.Append("(");
 
             var parameters = job.Method.GetParameters();
