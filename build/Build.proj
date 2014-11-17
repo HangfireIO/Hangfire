@@ -6,7 +6,7 @@
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
     <BuildEnvironment Condition="'$(BuildEnvironment)' == ''">local</BuildEnvironment>
-    <UseILMerge>False</UseILMerge>
+    <UseILMerge Condition=" '$(OS)' == 'Windows_NT' ">True</UseILMerge>
     <Nightly Condition="$(Nightly) == ''">true</Nightly>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
@@ -23,6 +23,7 @@
     <NuGetExePath>$(NuGetToolsPath)\nuget.exe</NuGetExePath>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
+    <ILRepackPath>$(ToolsPath)ILRepack.exe</ILRepackPath>
     <XunitPath>$(ToolsPath)xunit\</XunitPath>
     <DefaultSqlServerConnectionStringTemplate>
       Server=.\sqlexpress;Database={0};Trusted_Connection=True;
@@ -35,7 +36,7 @@
 
   <!-- Add extra properties to the build for merging -->
   <PropertyGroup Condition="$(UseILMerge) != ''">
-    <ExtraProperties>UseILMerge=$(UseILMerge)</ExtraProperties>
+    <ExtraProperties>UseILMerge=$(UseILMerge);ILRepackPath=$(ILRepackPath)</ExtraProperties>
   </PropertyGroup>
 
   <PropertyGroup>
