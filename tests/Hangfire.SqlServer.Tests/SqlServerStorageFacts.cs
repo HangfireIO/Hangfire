@@ -5,13 +5,13 @@ using Xunit;
 
 namespace Hangfire.SqlServer.Tests
 {
-    public class StorageFacts
+    public class SqlServerStorageFacts
     {
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionStringIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerStorage(null));
+                () => new SqlServerStorage((string)null));
 
             Assert.Equal("nameOrConnectionString", exception.ParamName);
         }
@@ -23,6 +23,28 @@ namespace Hangfire.SqlServer.Tests
                 () => new SqlServerStorage("hello", null));
 
             Assert.Equal("options", exception.ParamName);
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_CanCreateSqlServerStorage_WithExistingConnection()
+        {
+            var connection = ConnectionUtils.CreateConnection();
+            var storage = new SqlServerStorage(connection);
+
+            Assert.NotNull(storage);
+        }
+
+        [Fact, CleanDatabase]
+        public void GetConnection_ReturnsExistingConnection_WhenStorageUsesIt()
+        {
+            var connection = ConnectionUtils.CreateConnection();
+            var storage = new SqlServerStorage(connection);
+
+            using (var storageConnection = (SqlServerConnection) storage.GetConnection())
+            {
+                Assert.Same(connection, storageConnection.Connection);
+                Assert.False(storageConnection.OwnsConnection);
+            }
         }
 
         [Fact, CleanDatabase(IsolationLevel.ReadUncommitted)]
@@ -37,9 +59,10 @@ namespace Hangfire.SqlServer.Tests
         public void GetConnection_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
-            using (var connection = storage.GetConnection())
+            using (var connection = (SqlServerConnection)storage.GetConnection())
             {
                 Assert.NotNull(connection);
+                Assert.True(connection.OwnsConnection);
             }
         }
 

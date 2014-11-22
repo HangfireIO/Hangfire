@@ -49,6 +49,32 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
+        public void Dispose_DisposesTheConnection_IfOwned()
+        {
+            using (var sqlConnection = ConnectionUtils.CreateConnection())
+            {
+                var connection = new SqlServerConnection(sqlConnection, _providers);
+
+                connection.Dispose();
+
+                Assert.Equal(ConnectionState.Closed, sqlConnection.State);
+            }
+        }
+
+        [Fact, CleanDatabase]
+        public void Dispose_DoesNotDisposeTheConnection_IfNotOwned()
+        {
+            using (var sqlConnection = ConnectionUtils.CreateConnection())
+            {
+                var connection = new SqlServerConnection(sqlConnection, _providers, ownsConnection: false);
+
+                connection.Dispose();
+
+                Assert.Equal(ConnectionState.Open, sqlConnection.State);
+            }
+        }
+
+        [Fact, CleanDatabase]
         public void FetchNextJob_DelegatesItsExecution_ToTheQueue()
         {
             UseConnection(connection =>

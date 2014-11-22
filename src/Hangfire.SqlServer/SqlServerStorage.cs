@@ -21,6 +21,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using Common.Logging;
+using Hangfire.Annotations;
 using Hangfire.Server;
 using Hangfire.Storage;
 
@@ -28,6 +29,7 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
+        private readonly SqlConnection _existingConnection;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
@@ -78,8 +80,22 @@ namespace Hangfire.SqlServer
                 }
             }
 
-            var defaultQueueProvider = new SqlServerJobQueueProvider(options);
-            QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
+            InitializeQueueProviders();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// explicit instance of the <see cref="SqlConnection"/> class that will be used
+        /// to query the data.
+        /// </summary>
+        /// <param name="existingConnection">Existing connection</param>
+        public SqlServerStorage([NotNull] SqlConnection existingConnection)
+        {
+            if (existingConnection == null) throw new ArgumentNullException("existingConnection");
+
+            _existingConnection = existingConnection;
+
+            InitializeQueueProviders();
         }
 
         public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
@@ -91,9 +107,8 @@ namespace Hangfire.SqlServer
 
         public override IStorageConnection GetConnection()
         {
-            var connection = CreateAndOpenConnection();
-
-            return new SqlServerConnection(connection, QueueProviders);
+            var connection = _existingConnection ?? CreateAndOpenConnection();
+            return new SqlServerConnection(connection, QueueProviders, _existingConnection == null);
         }
 
         public override IEnumerable<IServerComponent> GetComponents()
@@ -157,6 +172,12 @@ namespace Hangfire.SqlServer
             connection.Open();
 
             return connection;
+        }
+
+        private void InitializeQueueProviders()
+        {
+            var defaultQueueProvider = new SqlServerJobQueueProvider(new SqlServerStorageOptions());
+            QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
 
         private bool IsConnectionString(string nameOrConnectionString)

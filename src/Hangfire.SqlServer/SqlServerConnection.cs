@@ -34,19 +34,34 @@ namespace Hangfire.SqlServer
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerConnection(
-            SqlConnection connection, 
+            SqlConnection connection,
             PersistentJobQueueProviderCollection queueProviders)
+            : this(connection, queueProviders, true)
+        {
+        }
+
+        public SqlServerConnection(
+            SqlConnection connection, 
+            PersistentJobQueueProviderCollection queueProviders,
+            bool ownsConnection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             _connection = connection;
             _queueProviders = queueProviders;
+            OwnsConnection = ownsConnection;
         }
+
+        public SqlConnection Connection { get { return _connection; } }
+        public bool OwnsConnection { get; private set; }
 
         public void Dispose()
         {
-            _connection.Dispose();
+            if (OwnsConnection)
+            {
+                _connection.Dispose();
+            }
         }
 
         public IWriteOnlyTransaction CreateWriteTransaction()
