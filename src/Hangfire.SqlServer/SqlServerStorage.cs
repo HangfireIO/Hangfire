@@ -132,7 +132,7 @@ namespace Hangfire.SqlServer
                 var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
-                    .ToDictionary(x => x.Key, x => x.Value);
+                    .ToDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
 
                 var builder = new StringBuilder();
 
@@ -140,7 +140,7 @@ namespace Hangfire.SqlServer
                 {
                     if (parts.ContainsKey(alias))
                     {
-                        builder.AppendFormat("{1}", alias, parts[alias]);
+                        builder.Append(parts[alias]);
                         break;
                     }
                 }
@@ -151,7 +151,7 @@ namespace Hangfire.SqlServer
                 {
                     if (parts.ContainsKey(alias))
                     {
-                        builder.AppendFormat("{1}", alias, parts[alias]);
+                        builder.Append(parts[alias]);
                         break;
                     }
                 }
