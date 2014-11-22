@@ -22,6 +22,7 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using Hangfire.Server;
 
 namespace Hangfire.Common
@@ -206,6 +207,11 @@ namespace Hangfire.Common
             if (!Method.IsPublic)
             {
                 throw new NotSupportedException("Only public methods can be invoked in the background.");
+            }
+
+            if (typeof (Task).IsAssignableFrom(Method.ReturnType))
+            {
+                throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
             }
 
             var parameters = Method.GetParameters();

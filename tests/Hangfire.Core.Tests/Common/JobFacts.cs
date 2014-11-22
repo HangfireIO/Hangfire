@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
@@ -97,6 +98,15 @@ namespace Hangfire.Core.Tests.Common
                 () => new Job(_type, method, new[] { "hello!" }));
 
             Assert.Equal("method", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodReturns_Task()
+        {
+            var method = _type.GetMethod("AsyncMethod");
+
+            Assert.Throws<NotSupportedException>(
+                () => new Job(_type, method, new string[0]));
         }
 
         [Fact]
@@ -534,6 +544,12 @@ namespace Hangfire.Core.Tests.Common
 
         public void GenericMethod<T>(T arg)
         {
+        }
+
+        public Task AsyncMethod()
+        {
+            var source = new TaskCompletionSource<bool>();
+            return source.Task;
         }
 
         [TestType]
