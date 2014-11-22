@@ -52,13 +52,13 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            using (var connection = _storage.CreateAndOpenConnection())
+            using (var storageConnection = (SqlServerConnection)_storage.GetConnection())
             {
                 foreach (var table in ProcessedTables)
                 {
                     Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
 
-                    connection.Execute(
+                    storageConnection.Connection.Execute(
                         String.Format(@"
 set transaction isolation level read committed;
 delete from HangFire.[{0}] with (tablock) where ExpireAt < @now;", table),
