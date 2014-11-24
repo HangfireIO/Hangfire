@@ -94,6 +94,7 @@ namespace Hangfire.SqlServer
             if (existingConnection == null) throw new ArgumentNullException("existingConnection");
 
             _existingConnection = existingConnection;
+            _options = new SqlServerStorageOptions();
 
             InitializeQueueProviders();
         }
