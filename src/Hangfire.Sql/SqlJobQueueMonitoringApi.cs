@@ -25,34 +25,25 @@ namespace Hangfire.Sql
     internal class SqlJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
     {
         private readonly IDbConnection _connection;
+        private readonly SqlBook _sqlBook;
 
-        public SqlJobQueueMonitoringApi(IDbConnection connection)
+        public SqlJobQueueMonitoringApi(IDbConnection connection, SqlBook sqlBook)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
             _connection = connection;
+            _sqlBook = sqlBook;
         }
 
         public IEnumerable<string> GetQueues()
         {
-            const string sqlQuery = @"select distinct(Queue) from HangFire.JobQueue";
-            return _connection.Query(sqlQuery).Select(x => (string)x.Queue).ToList();
+            return _connection.Query(_sqlBook.SqlJobQueueMonitoringApi_GetQueues).Select(x => (string)x.Queue).ToList();
         }
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
-            const string sqlQuery = @"
-select r.Id from (
-  select j.Id, row_number() over (order by j.Id) as row_num 
-  from HangFire.JobQueue jq
-  left join HangFire.Job j on jq.JobId = j.Id
-  left join HangFire.State s on s.Id = j.StateId
-  where jq.Queue = @queue and jq.FetchedAt is null
-) as r
-where r.row_num between @start and @end";
-
             return _connection.Query<JobIdDto>(
-                sqlQuery,
+                _sqlBook.SqlJobQueueMonitoringApi_GetEnqueuedJobIds,
                 new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList()
                 .Select(x => x.Id)
@@ -61,17 +52,8 @@ where r.row_num between @start and @end";
 
         public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
         {
-            const string fetchedJobsSql = @"
-select r.Id from (
-  select j.Id, jq.FetchedAt, row_number() over (order by j.Id) as row_num 
-  from HangFire.JobQueue jq
-  left join HangFire.Job j on jq.JobId = j.Id
-  where jq.Queue = @queue and jq.FetchedAt is not null
-) as r
-where r.row_num between @start and @end";
-
             return _connection.Query<JobIdDto>(
-                fetchedJobsSql,
+                _sqlBook.SqlJobQueueMonitoringApi_GetFetchedJobIds,
                 new { queue = queue, start = from + 1, end = @from + perPage })
                 .ToList()
                 .Select(x => x.Id)
@@ -80,17 +62,7 @@ where r.row_num between @start and @end";
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            const string sqlQuery = @"
-select sum(Enqueued) as EnqueuedCount, sum(Fetched) as FetchedCount 
-from (
-    select 
-	    case when FetchedAt is null then 1 else 0 end as Enqueued,
-	    case when FetchedAt is not null then 1 else 0 end as Fetched
-    from HangFire.JobQueue
-    where Queue = @queue
-) q";
-
-            var result = _connection.Query(sqlQuery, new { queue = queue }).Single();
+            var result = _connection.Query(_sqlBook.SqlJobQueueMonitoringApi_GetEnqueuedAndFetchedCount, new { queue = queue }).Single();
 
             return new EnqueuedAndFetchedCountDto
             {

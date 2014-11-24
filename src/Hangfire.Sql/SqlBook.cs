@@ -155,7 +155,53 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
         public string SqlWriteOnlyTransaction_RemoveHash = "delete from HangFire.Hash where [Key] = @key";
 
-        //public string SqlFetchedJob
-        //todo: continue from here
+
+        public string SqlJobQueue_Dequeue_fetched_null = @"
+set transaction isolation level read committed
+update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
+output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
+where FetchedAt is null
+and Queue in @queues";
+        public string SqlJobQueue_Dequeue_fetched_before = @"
+set transaction isolation level read committed
+update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
+output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
+where FetchedAt < DATEADD(second, @timeout, GETUTCDATE())
+and Queue in @queues";
+        public string SqlJobQueue_Enqueue = @"insert into HangFire.JobQueue (JobId, Queue) values (@jobId, @queue)";
+
+        public string SqlFetchedJob_RemoveFromQueue = "delete from HangFire.JobQueue where Id = @id";
+        public string SqlFetchedJob_Requeue = "update HangFire.JobQueue set FetchedAt = null where Id = @id";
+
+
+        public string SqlJobQueueMonitoringApi_GetQueues = @"select distinct(Queue) from HangFire.JobQueue";
+        public string SqlJobQueueMonitoringApi_GetEnqueuedJobIds = @"
+select r.Id from (
+  select j.Id, row_number() over (order by j.Id) as row_num 
+  from HangFire.JobQueue jq
+  left join HangFire.Job j on jq.JobId = j.Id
+  left join HangFire.State s on s.Id = j.StateId
+  where jq.Queue = @queue and jq.FetchedAt is null
+) as r
+where r.row_num between @start and @end";
+        public string SqlJobQueueMonitoringApi_GetFetchedJobIds = @"
+select r.Id from (
+  select j.Id, jq.FetchedAt, row_number() over (order by j.Id) as row_num 
+  from HangFire.JobQueue jq
+  left join HangFire.Job j on jq.JobId = j.Id
+  where jq.Queue = @queue and jq.FetchedAt is not null
+) as r
+where r.row_num between @start and @end";
+
+        public string SqlJobQueueMonitoringApi_GetEnqueuedAndFetchedCount = @"
+select sum(Enqueued) as EnqueuedCount, sum(Fetched) as FetchedCount 
+from (
+    select 
+	    case when FetchedAt is null then 1 else 0 end as Enqueued,
+	    case when FetchedAt is not null then 1 else 0 end as Fetched
+    from HangFire.JobQueue
+    where Queue = @queue
+) q";
+
     }
 }

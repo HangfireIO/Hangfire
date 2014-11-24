@@ -24,7 +24,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlFetchedJob(null, 1, JobId, Queue));
+                () => new SqlFetchedJob(null, new SqlBook(), 1, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -33,7 +33,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlFetchedJob(_connection.Object, 1, null, Queue));
+                () => new SqlFetchedJob(_connection.Object, new SqlBook(), 1, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -42,7 +42,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlFetchedJob(_connection.Object, 1, JobId, null));
+                () => new SqlFetchedJob(_connection.Object, new SqlBook(), 1, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -50,7 +50,7 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var fetchedJob = new SqlFetchedJob(_connection.Object, 1, JobId, Queue);
+            var fetchedJob = new SqlFetchedJob(_connection.Object, new SqlBook(), 1, JobId, Queue);
 
             Assert.Equal(1, fetchedJob.Id);
             Assert.Equal(JobId, fetchedJob.JobId);
@@ -64,7 +64,7 @@ namespace Hangfire.SqlServer.Tests
             {
                 // Arrange
                 var id = CreateJobQueueRecord(sql, "1", "default");
-                var processingJob = new SqlFetchedJob(sql, id, "1", "default");
+                var processingJob = new SqlFetchedJob(sql, new SqlBook(), id, "1", "default");
 
                 // Act
                 processingJob.RemoveFromQueue();
@@ -85,7 +85,7 @@ namespace Hangfire.SqlServer.Tests
                 CreateJobQueueRecord(sql, "1", "critical");
                 CreateJobQueueRecord(sql, "2", "default");
 
-                var fetchedJob = new SqlFetchedJob(sql, 999, "1", "default");
+                var fetchedJob = new SqlFetchedJob(sql, new SqlBook(), 999, "1", "default");
 
                 // Act
                 fetchedJob.RemoveFromQueue();
@@ -103,7 +103,7 @@ namespace Hangfire.SqlServer.Tests
             {
                 // Arrange
                 var id = CreateJobQueueRecord(sql, "1", "default");
-                var processingJob = new SqlFetchedJob(sql, id, "1", "default");
+                var processingJob = new SqlFetchedJob(sql, new SqlBook(), id, "1", "default");
 
                 // Act
                 processingJob.Requeue();
@@ -121,7 +121,7 @@ namespace Hangfire.SqlServer.Tests
             {
                 // Arrange
                 var id = CreateJobQueueRecord(sql, "1", "default");
-                var processingJob = new SqlFetchedJob(sql, id, "1", "default");
+                var processingJob = new SqlFetchedJob(sql, new SqlBook(), id, "1", "default");
 
                 // Act
                 processingJob.Dispose();

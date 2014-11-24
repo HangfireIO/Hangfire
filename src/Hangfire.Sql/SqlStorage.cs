@@ -24,24 +24,38 @@ using Hangfire.Server;
 
 namespace Hangfire.Sql
 {
-    public abstract class SqlStorage : JobStorage
-    {
+    public abstract class SqlStorage : JobStorage {
+        private static object _sync = new object();
+        private SqlBook _sqlBook;
         private readonly SqlStorageOptions _options;
         protected string ConnectionString { get; private set; }
 
         public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
-        protected SqlStorage(string nameOrConnectionString)
-            : this(nameOrConnectionString, new SqlStorageOptions())
-        {
+        public SqlBook SqlBook {
+            get {
+                lock (_sync) {
+                    if (_sqlBook == null) {
+                        _sqlBook = CreateSqlBook();
+                    }
+                    return _sqlBook;
+                }
+            }
         }
+
+
+        protected SqlStorage(string nameOrConnectionString)
+            : this(nameOrConnectionString, new SqlStorageOptions()) {
+        }
+
+        protected abstract SqlBook CreateSqlBook();
 
         /// <summary>
         /// Initializes SqlStorage from the provided SqlStorageOptions and either the provided connection
         /// string or the connection string with provided name pulled from the application config file.       
         /// </summary>
         /// <param name="nameOrConnectionString">Either a SQL Server connection string or the name of 
-        /// a SQL Server connection string located in the connectionStrings node in the application config</param>
+        ///     a SQL Server connection string located in the connectionStrings node in the application config</param>
         /// <param name="options"></param>
         /// <exception cref="ArgumentNullException"><paramref name="nameOrConnectionString"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="options"/> argument is null.</exception>
@@ -76,7 +90,7 @@ namespace Hangfire.Sql
         protected abstract ISchemaBuilder GetSchemaBuilder();
 
         protected virtual IPersistentJobQueueProvider GetDefaultPersistentJobQueueProvider() {
-            return new SqlJobQueueProvider(_options); 
+            return new SqlJobQueueProvider(SqlBook, _options); 
         }
 
         protected abstract IConnectionProvider GetConnectionProvider();

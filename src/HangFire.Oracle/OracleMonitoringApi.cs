@@ -13,35 +13,26 @@ namespace Hangfire.Oracle {
 
         public override StatisticsDto GetStatistics() {
             return UseConnection(connection => {
-                var dynParams = new OracleDynamicParameters();
-                dynParams.Add(":res1", OracleDbType.RefCursor, ParameterDirection.Output);
-                dynParams.Add(":res2", OracleDbType.RefCursor, ParameterDirection.Output);
-                dynParams.Add(":res3", OracleDbType.RefCursor, ParameterDirection.Output);
-                dynParams.Add(":res4", OracleDbType.RefCursor, ParameterDirection.Output);
-                dynParams.Add(":res5", OracleDbType.RefCursor, ParameterDirection.Output);
+                var sqls = SqlBook.SqlMonitoringApi_GetStatistics.Split(';');
+
+                var countByStates = connection.Query(sqls[0]).ToDictionary(x => x.State, x => x.Count);
+                Func<string, int> getCountIfExists = name => countByStates.ContainsKey(name) ? countByStates[name] : 0;
                 var stats = new StatisticsDto();
-                using (var multi = connection.QueryMultiple(SqlBook.SqlMonitoringApi_GetStatistics, dynParams)) {
-                    
+                stats.Enqueued = getCountIfExists(EnqueuedState.StateName);
+                stats.Failed = getCountIfExists(FailedState.StateName);
+                stats.Processing = getCountIfExists(ProcessingState.StateName);
+                stats.Scheduled = getCountIfExists(ScheduledState.StateName);
 
-                    var countByStates = multi.Read().ToDictionary(x => x.State, x => x.Count);
-                    Func<string, int> getCountIfExists = name => countByStates.ContainsKey(name) ? countByStates[name] : 0;
+                var xx = connection.Query(sqls[1]);
 
-                    stats.Enqueued = getCountIfExists(EnqueuedState.StateName);
-                    stats.Failed = getCountIfExists(FailedState.StateName);
-                    stats.Processing = getCountIfExists(ProcessingState.StateName);
-                    stats.Scheduled = getCountIfExists(ScheduledState.StateName);
+                stats.Servers = Convert.ToInt64(connection.Query(sqls[1]).First().First() ?? 0);
+                stats.Succeeded = Convert.ToInt64(connection.Query(sqls[2]).First().First() ?? 0);
+                stats.Deleted = Convert.ToInt64(connection.Query(sqls[3]).First().First() ?? 0);
 
-                    stats.Servers = Convert.ToInt64(multi.Read<decimal>().SingleOrDefault());
-                    stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
-                    stats.Deleted = multi.Read<int?>().SingleOrDefault() ?? 0;
-
-                    stats.Recurring = Convert.ToInt64(multi.Read<decimal>().SingleOrDefault());
-                }
-
+                stats.Recurring = Convert.ToInt64(connection.Query(sqls[3]).First().First());
                 stats.Queues = QueueProviders
                     .SelectMany(x => x.GetJobQueueMonitoringApi(connection).GetQueues())
                     .Count();
-
                 return stats;
             });
         }

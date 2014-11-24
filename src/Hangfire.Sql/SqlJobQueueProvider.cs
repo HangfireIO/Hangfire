@@ -21,23 +21,25 @@ namespace Hangfire.Sql
 {
     internal class SqlJobQueueProvider : IPersistentJobQueueProvider
     {
+        private readonly SqlBook _sqkBook;
         private readonly SqlStorageOptions _options;
 
-        public SqlJobQueueProvider(SqlStorageOptions options)
+        public SqlJobQueueProvider(SqlBook sqkBook, SqlStorageOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");
 
+            _sqkBook = sqkBook;
             _options = options;
         }
 
         public IPersistentJobQueue GetJobQueue(IDbConnection connection)
         {
-            return new SqlJobQueue(connection, _options);
+            return new SqlJobQueue(connection, _sqkBook, _options);
         }
 
         public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
         {
-            return new SqlJobQueueMonitoringApi(connection);
+            return new SqlJobQueueMonitoringApi(connection, _sqkBook);
         }
     }
 }

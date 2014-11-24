@@ -169,14 +169,8 @@ namespace Hangfire.Sql {
                 var pair = keyValuePair;
 
                 QueueCommand(x => {
-                        try {
-                            x.Execute(SqlBook.SqlWriteOnlyTransaction_SetRangeInHash,
-                                new {key = key, field = pair.Key, value = pair.Value});
-
-                        }
-                        catch (Exception ex) {
-                            Debug.WriteLine(ex);
-                        }
+                        x.Execute(SqlBook.SqlWriteOnlyTransaction_SetRangeInHash,
+                            new {key = key, field = pair.Key, value = pair.Value});
                     }
                 );
             }

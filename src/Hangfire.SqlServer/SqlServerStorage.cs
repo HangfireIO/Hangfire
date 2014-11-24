@@ -3,10 +3,14 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer {
     public class SqlServerStorage : SqlStorage {
-        public SqlServerStorage(string nameOrConnectionString) : base(nameOrConnectionString) {}
+        public SqlServerStorage(string nameOrConnectionString) : base(nameOrConnectionString) { }
 
         public SqlServerStorage(string nameOrConnectionString, SqlStorageOptions options)
             : base(nameOrConnectionString, options) {}
+
+        protected override SqlBook CreateSqlBook() {
+            return new SqlBook();
+        }
 
         protected override ISchemaBuilder GetSchemaBuilder() {
             return new SqlServerObjectsInstaller();
@@ -17,12 +21,12 @@ namespace Hangfire.SqlServer {
         }
 
         public override IMonitoringApi GetMonitoringApi() {
-            return new SqlMonitoringApi(new SqlStorageConnectionProvider(ConnectionString), new SqlBook(), QueueProviders);
+            return new SqlMonitoringApi(new SqlStorageConnectionProvider(ConnectionString), SqlBook, QueueProviders);
         }
 
         public override IStorageConnection GetConnection() {
-            return new SqlStorageConnection(CreateAndOpenConnection(), 
-                                     new SqlBook(), 
+            return new SqlStorageConnection(CreateAndOpenConnection(),
+                                     SqlBook, 
                                      new SqlServerDistributedLockAcquirer(), 
                                      QueueProviders);
         }

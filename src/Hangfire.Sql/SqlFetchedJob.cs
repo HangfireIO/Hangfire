@@ -24,6 +24,7 @@ namespace Hangfire.Sql
     public class SqlFetchedJob : IFetchedJob
     {
         private readonly IDbConnection _connection;
+        protected readonly SqlBook SqlBook;
 
         private bool _disposed;
         private bool _removedFromQueue;
@@ -31,6 +32,7 @@ namespace Hangfire.Sql
 
         public SqlFetchedJob(
             IDbConnection connection, 
+            SqlBook sqlBook,
             int id, 
             string jobId, 
             string queue)
@@ -40,6 +42,7 @@ namespace Hangfire.Sql
             if (queue == null) throw new ArgumentNullException("queue");
 
             _connection = connection;
+            SqlBook = sqlBook;
 
             Id = id;
             JobId = jobId;
@@ -53,7 +56,7 @@ namespace Hangfire.Sql
         public void RemoveFromQueue()
         {
             _connection.Execute(
-                "delete from HangFire.JobQueue where Id = @id",
+                SqlBook.SqlFetchedJob_RemoveFromQueue,
                 new { id = Id });
 
             _removedFromQueue = true;
@@ -62,7 +65,7 @@ namespace Hangfire.Sql
         public void Requeue()
         {
             _connection.Execute(
-                "update HangFire.JobQueue set FetchedAt = null where Id = @id",
+                SqlBook.SqlFetchedJob_Requeue,
                 new { id = Id });
 
             _requeued = true;

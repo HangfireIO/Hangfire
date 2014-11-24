@@ -4,13 +4,11 @@ using Hangfire.Storage;
 namespace Hangfire.Oracle {
     public class OracleStorage : SqlStorage {
 
-        private static OracleSqlBook _sqlBook = new OracleSqlBook();
-
         public OracleStorage(string nameOrConnectionString) : base(nameOrConnectionString) {}
         public OracleStorage(string nameOrConnectionString, SqlStorageOptions options) : base(nameOrConnectionString, options) {}
         
         public override IMonitoringApi GetMonitoringApi() {
-            return new OracleMonitoringApi(new OracleConnectionProvider(ConnectionString), _sqlBook, QueueProviders);
+            return new OracleMonitoringApi(new OracleConnectionProvider(ConnectionString), SqlBook, QueueProviders);
         }
 
         protected override IConnectionProvider GetConnectionProvider() {
@@ -20,9 +18,13 @@ namespace Hangfire.Oracle {
         public override IStorageConnection GetConnection() {
             return new SqlStorageConnection(
                 CreateAndOpenConnection(), 
-                _sqlBook, 
+                SqlBook, 
                 new OracleDistributedLockAcquirer(),
                 QueueProviders);
+        }
+
+        protected override SqlBook CreateSqlBook() {
+            return new OracleSqlBook();
         }
 
         protected override ISchemaBuilder GetSchemaBuilder() {

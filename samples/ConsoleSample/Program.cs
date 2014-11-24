@@ -18,11 +18,11 @@ namespace ConsoleSample
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
                 LogLevel.Info, false, false, true, "");
 
-            SqlStorage storage = new SqlServerStorage(
-                @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
+            //SqlStorage storage = new SqlServerStorage(
+            //    @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
             //storage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
-            storage = new OracleStorage("Data Source=//localhost:1521/XE;User Id=hangfire;Password=hangfire;");
+            var storage = new OracleStorage("Data Source=//localhost:1521/XE;User Id=hangfire;Password=hangfire;");
 
             JobStorage.Current = storage;
 

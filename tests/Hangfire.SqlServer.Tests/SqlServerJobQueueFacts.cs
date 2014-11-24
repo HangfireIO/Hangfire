@@ -18,7 +18,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlJobQueue(null, new SqlStorageOptions()));
+                () => new SqlJobQueue(null, new SqlBook(), new SqlStorageOptions()));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -27,7 +27,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlJobQueue(new Mock<IDbConnection>().Object, null));
+                () => new SqlJobQueue(new Mock<IDbConnection>().Object, new SqlBook(), null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -304,7 +304,7 @@ values (scope_identity(), @queue)";
 
         private static SqlJobQueue CreateJobQueue(IDbConnection connection)
         {
-            return new SqlJobQueue(connection, new SqlStorageOptions());
+            return new SqlJobQueue(connection, new SqlBook(), new SqlStorageOptions());
         }
 
         private static void UseConnection(Action<SqlConnection> action)
