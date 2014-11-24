@@ -176,7 +176,7 @@ namespace Hangfire.SqlServer
 
         private void InitializeQueueProviders()
         {
-            var defaultQueueProvider = new SqlServerJobQueueProvider(new SqlServerStorageOptions());
+            var defaultQueueProvider = new SqlServerJobQueueProvider(_options);
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
 

@@ -7,6 +7,13 @@ namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerStorageFacts
     {
+        private readonly SqlServerStorageOptions _options;
+
+        public SqlServerStorageFacts()
+        {
+            _options = new SqlServerStorageOptions { PrepareSchemaIfNecessary = false };
+        }
+
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionStringIsNull()
         {
@@ -32,6 +39,17 @@ namespace Hangfire.SqlServer.Tests
             var storage = new SqlServerStorage(connection);
 
             Assert.NotNull(storage);
+        }
+
+        [Fact, CleanDatabase]
+        public void Ctor_InitializesDefaultJobQueueProvider_AndPassesCorrectOptions()
+        {
+            var storage = CreateStorage();
+            var providers = storage.QueueProviders;
+
+            var provider = (SqlServerJobQueueProvider)providers.GetProvider("default");
+
+            Assert.Same(_options, provider.Options);
         }
 
         [Fact, CleanDatabase]
@@ -66,7 +84,7 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        [Fact]
+        [Fact, CleanDatabase]
         public void GetComponents_ReturnsAllNeededComponents()
         {
             var storage = CreateStorage();
@@ -77,11 +95,11 @@ namespace Hangfire.SqlServer.Tests
             Assert.Contains(typeof(ExpirationManager), componentTypes);
         }
 
-        private static SqlServerStorage CreateStorage()
+        private SqlServerStorage CreateStorage()
         {
             return new SqlServerStorage(
                 ConnectionUtils.GetConnectionString(),
-                new SqlServerStorageOptions { PrepareSchemaIfNecessary = false });
+                _options);
         }
     }
 }

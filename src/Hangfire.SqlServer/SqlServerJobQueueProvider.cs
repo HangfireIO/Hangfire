@@ -30,6 +30,8 @@ namespace Hangfire.SqlServer
             _options = options;
         }
 
+        public SqlServerStorageOptions Options { get { return _options; } }
+
         public IPersistentJobQueue GetJobQueue(IDbConnection connection)
         {
             return new SqlServerJobQueue(connection, _options);
