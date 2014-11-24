@@ -26,7 +26,7 @@ namespace Hangfire.Storage
     public interface IStorageConnection : IDisposable
     {
         IWriteOnlyTransaction CreateWriteTransaction();
-        IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
+        IDistributedLock AcquireDistributedLock(string resource, TimeSpan timeout);
 
         string CreateExpiredJob(
             Job job, 

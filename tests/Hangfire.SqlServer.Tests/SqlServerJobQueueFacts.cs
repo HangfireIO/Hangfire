@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
+using Hangfire.Sql;
 using Moq;
 using Xunit;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -17,7 +18,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerJobQueue(null, new SqlServerStorageOptions()));
+                () => new SqlJobQueue(null, new SqlStorageOptions()));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -26,7 +27,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerJobQueue(new Mock<IDbConnection>().Object, null));
+                () => new SqlJobQueue(new Mock<IDbConnection>().Object, null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -103,7 +104,7 @@ select scope_identity() as Id;";
                 var queue = CreateJobQueue(connection);
 
                 // Act
-                var payload = (SqlServerFetchedJob)queue.Dequeue(
+                var payload = (SqlFetchedJob)queue.Dequeue(
                     DefaultQueues,
                     CreateTimingOutCancellationToken());
 
@@ -261,14 +262,14 @@ values (scope_identity(), @queue)";
 
                 var queue = CreateJobQueue(connection);
 
-                var critical = (SqlServerFetchedJob)queue.Dequeue(
+                var critical = (SqlFetchedJob)queue.Dequeue(
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 
                 Assert.NotNull(critical.JobId);
                 Assert.Equal("critical", critical.Queue);
 
-                var @default = (SqlServerFetchedJob)queue.Dequeue(
+                var @default = (SqlFetchedJob)queue.Dequeue(
                     new[] { "critical", "default" },
                     CreateTimingOutCancellationToken());
 
@@ -301,9 +302,9 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static SqlServerJobQueue CreateJobQueue(IDbConnection connection)
+        private static SqlJobQueue CreateJobQueue(IDbConnection connection)
         {
-            return new SqlServerJobQueue(connection, new SqlServerStorageOptions());
+            return new SqlJobQueue(connection, new SqlStorageOptions());
         }
 
         private static void UseConnection(Action<SqlConnection> action)

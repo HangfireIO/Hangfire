@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Messaging;
+using Hangfire.Sql;
 
 namespace Hangfire.SqlServer.Msmq
 {

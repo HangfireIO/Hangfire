@@ -69,7 +69,7 @@ namespace Hangfire.SqlServer.Tests
             using (var connection = new SqlConnection(
                 ConnectionUtils.GetConnectionString()))
             {
-                SqlServerObjectsInstaller.Install(connection);
+                new SqlServerObjectsInstaller().BuildDatabase(connection);
             }
         }
     }

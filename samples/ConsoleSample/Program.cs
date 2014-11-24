@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
 using Hangfire;
+using Hangfire.Oracle;
+using Hangfire.Sql;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
 
@@ -16,11 +18,13 @@ namespace ConsoleSample
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
                 LogLevel.Info, false, false, true, "");
 
-            var sqlServerStorage = new SqlServerStorage(
+            SqlStorage storage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
-            sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+            //storage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
-            JobStorage.Current = sqlServerStorage;
+            storage = new OracleStorage("Data Source=//localhost:1521/XE;User Id=hangfire;Password=hangfire;");
+
+            JobStorage.Current = storage;
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Transactions;
+using Hangfire.Sql;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -58,7 +59,7 @@ namespace Hangfire.SqlServer.Tests
         {
             return new SqlServerStorage(
                 ConnectionUtils.GetConnectionString(),
-                new SqlServerStorageOptions { PrepareSchemaIfNecessary = false });
+                new SqlStorageOptions { PrepareSchemaIfNecessary = false });
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Hangfire.Sql;
 using RabbitMQ.Client;
 
 namespace Hangfire.SqlServer.RabbitMQ

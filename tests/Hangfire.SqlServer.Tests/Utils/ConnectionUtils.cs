@@ -1,5 +1,6 @@
 ﻿using System;
-using System.Data.SqlClient;
+using Hangfire.Sql;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -33,6 +34,10 @@ namespace Hangfire.SqlServer.Tests
         {
             return Environment.GetEnvironmentVariable(ConnectionStringTemplateVariable)
                    ?? DefaultConnectionStringTemplate;
+        }
+
+        public static IConnectionProvider CreateConnectionProvider() {
+            return new SqlStorageConnectionProvider(GetConnectionString());
         }
 
         public static SqlConnection CreateConnection()

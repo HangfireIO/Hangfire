@@ -17,6 +17,7 @@
 using System;
 using System.Messaging;
 using System.Threading;
+using Hangfire.Sql;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer.Msmq

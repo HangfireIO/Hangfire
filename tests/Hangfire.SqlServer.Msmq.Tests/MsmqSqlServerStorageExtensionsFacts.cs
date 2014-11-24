@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Hangfire.Sql;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
 using Hangfire.States;
@@ -15,7 +16,7 @@ namespace Hangfire.Msmq.Tests
         {
             _storage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=TheDatabase;Trusted_Connection=True;",
-                new SqlServerStorageOptions { PrepareSchemaIfNecessary = false });
+                new SqlStorageOptions { PrepareSchemaIfNecessary = false });
         }
 
         [Fact]

@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using Hangfire.Dashboard;
+using Hangfire.Oracle;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
 using Microsoft.Owin;
@@ -16,10 +17,9 @@ namespace MvcSample
             app.UseHangfire(config =>
             {
                 config.UseAuthorizationFilters();
-
-                config
-                    .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
-                    .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+                config.UseOracleStorage("Data Source=//localhost:1521/XE;User Id=hangfire;Password=hangfire;");
+                //config.UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
+                //.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
             });
         }
     }

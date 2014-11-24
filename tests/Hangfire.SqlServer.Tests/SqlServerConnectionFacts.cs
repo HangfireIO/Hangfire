@@ -1,25 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
 using Hangfire.Common;
+using Hangfire.Sql;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
-    public class SqlServerConnectionFacts
+    public class SqlStorageConnectionFacts
     {
         private readonly Mock<IPersistentJobQueue> _queue;
         private readonly Mock<IPersistentJobQueueProvider> _provider;
         private readonly PersistentJobQueueProviderCollection _providers;
 
-        public SqlServerConnectionFacts()
+        public SqlStorageConnectionFacts()
         {
             _queue = new Mock<IPersistentJobQueue>();
 
@@ -34,7 +35,8 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, _providers));
+                () => new SqlStorageConnection(null, new SqlBook(),
+                new SqlServerDistributedLockAcquirer(), _providers));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -43,7 +45,8 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+                () => new SqlStorageConnection(ConnectionUtils.CreateConnection(), new SqlBook(),
+                new SqlServerDistributedLockAcquirer(), null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -153,7 +156,7 @@ namespace Hangfire.SqlServer.Tests
                 invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();
-                Assert.Equal(typeof(SqlServerConnectionFacts), job.Type);
+                Assert.Equal(typeof(SqlStorageConnectionFacts), job.Type);
                 Assert.Equal("SampleMethod", job.Method.Name);
                 Assert.Equal("\"Hello\"", job.Arguments[0]);
 
@@ -783,19 +786,22 @@ values (@key, @field, @value)";
             });
         }
 
-        private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
+        private void UseConnections(Action<SqlConnection, SqlStorageConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, _providers))
+            using (var connection = new SqlStorageConnection(sqlConnection, new SqlBook(),
+                new SqlServerDistributedLockAcquirer(), _providers))
             {
                 action(sqlConnection, connection);
             }
         }
 
-        private void UseConnection(Action<SqlServerConnection> action)
+        private void UseConnection(Action<SqlStorageConnection> action)
         {
-            using (var connection = new SqlServerConnection( 
+            using (var connection = new SqlStorageConnection( 
                 ConnectionUtils.CreateConnection(),
+                new SqlBook(), 
+                new SqlServerDistributedLockAcquirer(), 
                 _providers))
             {
                 action(connection);

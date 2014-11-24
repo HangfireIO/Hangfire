@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Threading;
 using Dapper;
+using Hangfire.Sql;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests

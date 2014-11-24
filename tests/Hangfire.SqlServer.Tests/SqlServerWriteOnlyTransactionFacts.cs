@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
+using Hangfire.Sql;
 using Hangfire.States;
 using Moq;
 using Xunit;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -27,7 +28,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, _queueProviders));
+                () => new SqlWriteOnlyTransaction(null, new SqlBook(), _queueProviders));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -36,7 +37,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null));
+                () => new SqlWriteOnlyTransaction(ConnectionUtils.CreateConnection(), new SqlBook(), null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -680,9 +681,9 @@ select scope_identity() as Id";
 
         private void Commit(
             SqlConnection connection,
-            Action<SqlServerWriteOnlyTransaction> action)
+            Action<SqlWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection, _queueProviders))
+            using (var transaction = new SqlWriteOnlyTransaction(connection, new SqlBook(), _queueProviders))
             {
                 action(transaction);
                 transaction.Commit();
