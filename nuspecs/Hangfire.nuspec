@@ -18,6 +18,10 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.2.2
+* Changed – Add constraint for Common.Logging package to support only versions 2.2.0 and below.
+* Fixed – QueuePollInterval option for SQL Server storage do not work.
+    
 1.2.1
 * Added – Ability to pass existing `SqlConnection` to `SqlServerStorage`.
 * Changed – Throw `NotSupportedException` for methods returning `Task`.
