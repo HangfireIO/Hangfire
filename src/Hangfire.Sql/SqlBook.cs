@@ -105,6 +105,8 @@ left join HangFire.JobQueue jq on jq.JobId = j.Id
 where j.Id in @jobIds and jq.FetchedAt is not null";
 
         public string SqlWriteOnlyTransaction_ExpireJob = @"update HangFire.Job set ExpireAt = @expireAt where Id = @id";
+
+        public string SqlWriteOnlyTransaction_PersistJob = @"update HangFire.Job set ExpireAt = NULL where Id = @id";
         public string SqlWriteOnlyTransaction_SetJobState = @"
 insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);

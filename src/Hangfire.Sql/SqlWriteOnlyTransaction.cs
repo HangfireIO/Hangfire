@@ -67,7 +67,7 @@ namespace Hangfire.Sql {
 
         public void PersistJob(string jobId) {
             QueueCommand(x => x.Execute(
-                @"update HangFire.Job set ExpireAt = NULL where Id = @id",
+                SqlBook.SqlWriteOnlyTransaction_PersistJob,
                 new { id = jobId }));
         }
 
@@ -117,7 +117,7 @@ namespace Hangfire.Sql {
 
         public void DecrementCounter(string key) {
             QueueCommand(x => x.Execute(
-                @"insert into HangFire.Counter ([Key], [Value]) values (@key, @value)",
+                SqlBook.SqlWriteOnlyTransaction_DecrementCounter,
                 new { key, value = -1 }));
         }
 
