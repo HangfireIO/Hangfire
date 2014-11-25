@@ -18,7 +18,7 @@ using System;
 
 namespace Hangfire.Sql.Entities
 {
-    internal class ServerData
+    public class ServerData
     {
         public int WorkerCount { get; set; }
         public string[] Queues { get; set; }

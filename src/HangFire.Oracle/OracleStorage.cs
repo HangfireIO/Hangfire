@@ -16,7 +16,7 @@ namespace Hangfire.Oracle {
         }
 
         public override IStorageConnection GetConnection() {
-            return new SqlStorageConnection(
+            return new OracleStorageConnection(
                 CreateAndOpenConnection(), 
                 SqlBook, 
                 new OracleDistributedLockAcquirer(),

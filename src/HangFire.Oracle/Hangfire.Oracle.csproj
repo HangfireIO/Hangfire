@@ -78,6 +78,7 @@
     <Compile Include="OracleMonitoringApi.cs" />
     <Compile Include="OracleShemaBuilder.cs" />
     <Compile Include="OracleSqlBook.cs" />
+    <Compile Include="OracleStorageConnection.cs" />
     <Compile Include="OracleStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="OracleBootstrapperConfigurationExtensions.cs" />

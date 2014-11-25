@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Threading;
 using Common.Logging;
 using Dapper;
@@ -36,10 +37,6 @@ namespace Hangfire.Sql
         private readonly SqlStorage _storage;
         private readonly TimeSpan _checkInterval;
         
-        protected string SqlExecute = @"
-set transaction isolation level read committed;
-delete from HangFire.[{0}] with (tablock) where ExpireAt < @now;";
-
         public ExpirationManager(SqlStorage storage)
             : this(storage, TimeSpan.FromHours(1))
         {
@@ -60,13 +57,15 @@ delete from HangFire.[{0}] with (tablock) where ExpireAt < @now;";
                 foreach (var table in ProcessedTables)
                 {
                     Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
-
-                    connection.Execute(
-                        String.Format(SqlExecute, table),
-                        new { now = DateTime.UtcNow });
+                    using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
+                        int rowsAffected = connection.Execute(
+                            String.Format(_storage.SqlBook.ExpirationManager_Execute, table),
+                            new {now = DateTime.UtcNow});
+                        transaction.Commit();
+                        Logger.DebugFormat("Removed {0} outdated records from table '{1}'...", rowsAffected, table);
+                    }
                 }
             }
-
             cancellationToken.WaitHandle.WaitOne(_checkInterval);
         }
 

@@ -205,5 +205,6 @@ from (
     where Queue = @queue
 ) q";
 
+        public string ExpirationManager_Execute = "set transaction isolation level read committed; delete from HangFire.[{0}] with (tablock) where ExpireAt < @now;";
     }
 }

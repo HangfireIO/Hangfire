@@ -28,9 +28,9 @@ using Hangfire.Storage;
 
 namespace Hangfire.Sql {
     public class SqlStorageConnection : IStorageConnection {
-        private readonly SqlBook _sqlBook;
         private readonly IDistributedLockAcquirer _distributedLockAcquirer;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
+        protected SqlBook SqlBook { get; private set; }
         protected IDbConnection Connection { get; private set; }
 
         public SqlStorageConnection(
@@ -42,7 +42,7 @@ namespace Hangfire.Sql {
             if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             Connection = connection;
-            _sqlBook = sqlBook;
+            SqlBook = sqlBook;
             _distributedLockAcquirer = distributedLockAcquirer;
             _queueProviders = queueProviders;
         }
@@ -52,7 +52,7 @@ namespace Hangfire.Sql {
         }
 
         public IWriteOnlyTransaction CreateWriteTransaction() {
-            return new SqlWriteOnlyTransaction(Connection, _sqlBook, _queueProviders);
+            return new SqlWriteOnlyTransaction(Connection, SqlBook, _queueProviders);
         }
 
         public IDistributedLock AcquireDistributedLock(string resource, TimeSpan timeout) {
@@ -88,7 +88,7 @@ namespace Hangfire.Sql {
             var invocationData = InvocationData.Serialize(job);
 
             var jobId = Connection.Query<int>(
-                _sqlBook.SqlConnection_CreateExpiredJob_Job,
+                SqlBook.SqlConnection_CreateExpiredJob_Job,
                 new {
                     invocationData = JobHelper.ToJson(invocationData),
                     arguments = invocationData.Arguments,
@@ -106,7 +106,7 @@ namespace Hangfire.Sql {
                         value = parameter.Value
                     };
                 }
-                Connection.Execute(_sqlBook.SqlConnection_CreateExpiredJob_Parameter, parameterArray);
+                Connection.Execute(SqlBook.SqlConnection_CreateExpiredJob_Parameter, parameterArray);
             }
 
             return jobId;
@@ -115,7 +115,7 @@ namespace Hangfire.Sql {
         public JobData GetJobData(string id) {
             if (id == null) throw new ArgumentNullException("id");
 
-            var jobData = Connection.Query<SqlJob>(_sqlBook.SqlConnection_GetJobData, new {id = id})
+            var jobData = Connection.Query<SqlJob>(SqlBook.SqlConnection_GetJobData, new {id = id})
                 .SingleOrDefault();
 
             if (jobData == null) return null;
@@ -145,7 +145,7 @@ namespace Hangfire.Sql {
         public StateData GetStateData(string jobId) {
             if (jobId == null) throw new ArgumentNullException("jobId");
 
-            var sqlState = Connection.Query<SqlState>(_sqlBook.SqlConnection_GetStateData, new {jobId = jobId}).SingleOrDefault();
+            var sqlState = Connection.Query<SqlState>(SqlBook.SqlConnection_GetStateData, new {jobId = jobId}).SingleOrDefault();
             if (sqlState == null) {
                 return null;
             }
@@ -161,7 +161,7 @@ namespace Hangfire.Sql {
             if (id == null) throw new ArgumentNullException("id");
             if (name == null) throw new ArgumentNullException("name");
             Connection.Execute(
-                _sqlBook.SqlConnection_SetJobParameter,
+                SqlBook.SqlConnection_SetJobParameter,
                 new {jobId = id, name, value});
         }
 
@@ -170,7 +170,7 @@ namespace Hangfire.Sql {
             if (name == null) throw new ArgumentNullException("name");
 
             return Connection.Query<string>(
-                _sqlBook.SqlConnection_GetJobParameter,
+                SqlBook.SqlConnection_GetJobParameter,
                 new {id = id, name = name})
                 .SingleOrDefault();
         }
@@ -179,7 +179,7 @@ namespace Hangfire.Sql {
             if (key == null) throw new ArgumentNullException("key");
 
             var result = Connection.Query<string>(
-                _sqlBook.SqlConnection_GetAllItemsFromSet,
+                SqlBook.SqlConnection_GetAllItemsFromSet,
                 new {key});
 
             return new HashSet<string>(result);
@@ -191,7 +191,7 @@ namespace Hangfire.Sql {
                 throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
 
             return Connection.Query<string>(
-                _sqlBook.SqlConnection_GetFirstByLowestScoreFromSet,
+                SqlBook.SqlConnection_GetFirstByLowestScoreFromSet,
                 new {key, from = fromScore, to = toScore})
                 .SingleOrDefault();
         }
@@ -202,7 +202,7 @@ namespace Hangfire.Sql {
 
             using (var transaction = new TransactionScope()) {
                 foreach (var keyValuePair in keyValuePairs) {
-                    Connection.Execute(_sqlBook.SqlConnection_GetFirstByLowestScoreFromSet, 
+                    Connection.Execute(SqlBook.SqlConnection_GetFirstByLowestScoreFromSet, 
                         new { key = key, field = keyValuePair.Key, value = keyValuePair.Value });
                 }
 
@@ -214,14 +214,14 @@ namespace Hangfire.Sql {
             if (key == null) throw new ArgumentNullException("key");
 
             var result = Connection.Query<SqlHash>(
-                _sqlBook.SqlConnection_GetAllEntriesFromHash,
+                SqlBook.SqlConnection_GetAllEntriesFromHash,
                 new {key})
                 .ToDictionary(x => x.Field, x => x.Value);
 
             return result.Count != 0 ? result : null;
         }
 
-        public void AnnounceServer(string serverId, ServerContext context) {
+        public virtual void AnnounceServer(string serverId, ServerContext context) {
             if (serverId == null) throw new ArgumentNullException("serverId");
             if (context == null) throw new ArgumentNullException("context");
 
@@ -231,7 +231,7 @@ namespace Hangfire.Sql {
                 StartedAt = DateTime.UtcNow,
             };
 
-            Connection.Execute(_sqlBook.SqlConnection_AnnounceServer,
+            Connection.Execute(SqlBook.SqlConnection_AnnounceServer,
                 new {id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow});
         }
 
@@ -239,7 +239,7 @@ namespace Hangfire.Sql {
             if (serverId == null) throw new ArgumentNullException("serverId");
 
             Connection.Execute(
-                _sqlBook.SqlConnection_RemoveServer,
+                SqlBook.SqlConnection_RemoveServer,
                 new {id = serverId});
         }
 
@@ -247,7 +247,7 @@ namespace Hangfire.Sql {
             if (serverId == null) throw new ArgumentNullException("serverId");
 
             Connection.Execute(
-                _sqlBook.SqlConnection_Heartbeat,
+                SqlBook.SqlConnection_Heartbeat,
                 new {now = DateTime.UtcNow, id = serverId});
         }
 
@@ -257,7 +257,7 @@ namespace Hangfire.Sql {
             }
 
             return Connection.Execute(
-                _sqlBook.SqlConnection_RemoveTimedOutServers,
+                SqlBook.SqlConnection_RemoveTimedOutServers,
                 new {timeOutAt = DateTime.UtcNow.Add(timeOut.Negate())});
         }
     }

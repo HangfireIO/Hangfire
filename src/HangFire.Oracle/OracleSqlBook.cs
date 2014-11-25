@@ -5,7 +5,7 @@ namespace Hangfire.Oracle {
     public class OracleSqlBook : SqlBook {
         public OracleSqlBook() {
             FixSqls();
-            
+
             SqlWriteOnlyTransaction_AddToSet = @"
 merge into SetTable Target
 using (select :key Key, :value Value, :score Score from dual) Source
@@ -19,12 +19,15 @@ on (Target.Key = Source.Key and Target.Field = Source.Field)
 when matched then update set Value = Source.Value
 when not matched then insert (Key, Field, Value) values (Source.Key, Source.Field, Source.Value)
 ";
-             SqlConnection_AnnounceServer = @"
-merge into HangFire.Server Target
+            SqlConnection_AnnounceServer = @"
+merge into Server Target
 using (select :id Id, :data Data, :heartbeat Heartbeat from dual) Source
-on (Target.Id = Source.Id) 
+on (Target.Id = Source.Id )
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat 
-when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat)";
+when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat)
+";
+            ExpirationManager_Execute = "delete from {0} where ExpireAt < :now";
+
         }
 
         private void FixSqls() {
