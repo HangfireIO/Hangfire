@@ -15,6 +15,10 @@ namespace Hangfire.Oracle {
             return new OracleConnectionProvider(ConnectionString);
         }
 
+        protected override IPersistentJobQueueProvider GetDefaultPersistentJobQueueProvider() {
+            return new OracleJobQueueProvider(SqlBook, Options);
+        }
+
         public override IStorageConnection GetConnection() {
             return new OracleStorageConnection(
                 CreateAndOpenConnection(), 

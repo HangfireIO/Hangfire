@@ -68,10 +68,10 @@ namespace Hangfire.Sql {
         public void PersistJob(string jobId) {
             QueueCommand(x => x.Execute(
                 SqlBook.SqlWriteOnlyTransaction_PersistJob,
-                new { id = jobId }));
+                new { pid = jobId }));
         }
 
-        public void SetJobState(string jobId, IState state) {
+        public virtual void SetJobState(string jobId, IState state) {
             QueueCommand(x => x.Execute(
                 SqlBook.SqlWriteOnlyTransaction_SetJobState,
                 new {
@@ -183,7 +183,7 @@ namespace Hangfire.Sql {
                 new { key }));
         }
 
-        internal void QueueCommand(Action<IDbConnection> action) {
+        protected internal void QueueCommand(Action<IDbConnection> action) {
             _commandQueue.Enqueue(action);
         }
     }

@@ -27,7 +27,7 @@ namespace Hangfire.Sql
     public abstract class SqlStorage : JobStorage {
         private static object _sync = new object();
         private SqlBook _sqlBook;
-        private readonly SqlStorageOptions _options;
+        protected SqlStorageOptions Options { get; private set; }
         protected string ConnectionString { get; private set; }
 
         public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
@@ -67,7 +67,7 @@ namespace Hangfire.Sql
             if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
             if (options == null) throw new ArgumentNullException("options");
 
-            _options = options;
+            Options = options;
             ConnectionString = ConnectionStringResolver.GetConnectionString(nameOrConnectionString);
             QueueProviders = new PersistentJobQueueProviderCollection(GetDefaultPersistentJobQueueProvider());
 
@@ -90,7 +90,7 @@ namespace Hangfire.Sql
         protected abstract ISchemaBuilder GetSchemaBuilder();
 
         protected virtual IPersistentJobQueueProvider GetDefaultPersistentJobQueueProvider() {
-            return new SqlJobQueueProvider(SqlBook, _options); 
+            return new SqlJobQueueProvider(SqlBook, Options); 
         }
 
         protected abstract IConnectionProvider GetConnectionProvider();
@@ -103,8 +103,8 @@ namespace Hangfire.Sql
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info("Using the following options for SQL job storage:");
-            logger.InfoFormat("    Queue poll interval: {0}.", _options.QueuePollInterval);
-            logger.InfoFormat("    Invisibility timeout: {0}.", _options.InvisibilityTimeout);
+            logger.InfoFormat("    Queue poll interval: {0}.", Options.QueuePollInterval);
+            logger.InfoFormat("    Invisibility timeout: {0}.", Options.InvisibilityTimeout);
         }
 
         public override string ToString()

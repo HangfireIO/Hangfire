@@ -15,7 +15,7 @@ namespace Hangfire.SharpData.Migrations {
                 Column.String("InvocationData").Size(Int32.MaxValue).NotNull(),
                 Column.String("Arguments").Size(Int32.MaxValue).NotNull(),
                 Column.Date("CreatedAt").NotNull(),
-                Column.Date("ExpireAt").NotNull()
+                Column.Date("ExpireAt")
             );
             Add.IndexKey("IX_HangFire_Job_StateName").OnColumns("StateName").OfTable("Job");
         }

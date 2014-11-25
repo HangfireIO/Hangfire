@@ -29,7 +29,7 @@ using Hangfire.Storage;
 namespace Hangfire.Sql {
     public class SqlStorageConnection : IStorageConnection {
         private readonly IDistributedLockAcquirer _distributedLockAcquirer;
-        private readonly PersistentJobQueueProviderCollection _queueProviders;
+        protected PersistentJobQueueProviderCollection QueueProviders { get; private set; }
         protected SqlBook SqlBook { get; private set; }
         protected IDbConnection Connection { get; private set; }
 
@@ -44,15 +44,15 @@ namespace Hangfire.Sql {
             Connection = connection;
             SqlBook = sqlBook;
             _distributedLockAcquirer = distributedLockAcquirer;
-            _queueProviders = queueProviders;
+            QueueProviders = queueProviders;
         }
 
         public void Dispose() {
             Connection.Dispose();
         }
 
-        public IWriteOnlyTransaction CreateWriteTransaction() {
-            return new SqlWriteOnlyTransaction(Connection, SqlBook, _queueProviders);
+        public virtual IWriteOnlyTransaction CreateWriteTransaction() {
+            return new SqlWriteOnlyTransaction(Connection, SqlBook, QueueProviders);
         }
 
         public IDistributedLock AcquireDistributedLock(string resource, TimeSpan timeout) {
@@ -63,7 +63,7 @@ namespace Hangfire.Sql {
             if (queues == null || queues.Length == 0) throw new ArgumentNullException("queues");
 
             var providers = queues
-                .Select(queue => _queueProviders.GetProvider(queue))
+                .Select(queue => QueueProviders.GetProvider(queue))
                 .Distinct()
                 .ToArray();
 
@@ -77,7 +77,7 @@ namespace Hangfire.Sql {
             return persistentQueue.Dequeue(queues, cancellationToken);
         }
 
-        public string CreateExpiredJob(
+        public virtual string CreateExpiredJob(
             Job job,
             IDictionary<string, string> parameters,
             DateTime createdAt,
@@ -192,7 +192,7 @@ namespace Hangfire.Sql {
 
             return Connection.Query<string>(
                 SqlBook.SqlConnection_GetFirstByLowestScoreFromSet,
-                new {key, from = fromScore, to = toScore})
+                new {key, pfrom = fromScore, pto = toScore})
                 .SingleOrDefault();
         }
 
@@ -202,10 +202,13 @@ namespace Hangfire.Sql {
 
             using (var transaction = new TransactionScope()) {
                 foreach (var keyValuePair in keyValuePairs) {
-                    Connection.Execute(SqlBook.SqlConnection_GetFirstByLowestScoreFromSet, 
-                        new { key = key, field = keyValuePair.Key, value = keyValuePair.Value });
+                    Connection.Execute(SqlBook.SqlWriteOnlyTransaction_SetRangeInHash, 
+                        new { 
+                            key = key, 
+                            field = keyValuePair.Key, 
+                            value = keyValuePair.Value 
+                        });
                 }
-
                 transaction.Complete();
             }
         }

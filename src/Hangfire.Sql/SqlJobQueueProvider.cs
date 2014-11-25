@@ -19,27 +19,27 @@ using System.Data;
 
 namespace Hangfire.Sql
 {
-    internal class SqlJobQueueProvider : IPersistentJobQueueProvider
+    public class SqlJobQueueProvider : IPersistentJobQueueProvider
     {
-        private readonly SqlBook _sqkBook;
-        private readonly SqlStorageOptions _options;
+        protected SqlBook SqkBook { get; private set; }
+        protected SqlStorageOptions Options { get; private set; }
 
         public SqlJobQueueProvider(SqlBook sqkBook, SqlStorageOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");
 
-            _sqkBook = sqkBook;
-            _options = options;
+            SqkBook = sqkBook;
+            Options = options;
         }
 
-        public IPersistentJobQueue GetJobQueue(IDbConnection connection)
+        public virtual IPersistentJobQueue GetJobQueue(IDbConnection connection)
         {
-            return new SqlJobQueue(connection, _sqkBook, _options);
+            return new SqlJobQueue(connection, SqkBook, Options);
         }
 
-        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
+        public virtual IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
         {
-            return new SqlJobQueueMonitoringApi(connection, _sqkBook);
+            return new SqlJobQueueMonitoringApi(connection, SqkBook);
         }
     }
 }

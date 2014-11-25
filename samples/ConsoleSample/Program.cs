@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
@@ -37,11 +38,10 @@ namespace ConsoleSample
             using (var server = new BackgroundJobServer(options))
             {
                 var count = 1;
-
+                server.Start();
                 while (true)
                 {
                     var command = Console.ReadLine();
-
                     if (command == null || command.Equals("stop", StringComparison.OrdinalIgnoreCase))
                     {
                         break;

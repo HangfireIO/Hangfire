@@ -75,11 +75,14 @@
     <Compile Include="OracleConnectionProvider.cs" />
     <Compile Include="OracleDistributedLock.cs" />
     <Compile Include="OracleDynamicParameters.cs" />
+    <Compile Include="OracleJobQueue.cs" />
+    <Compile Include="OracleJobQueueProvider.cs" />
     <Compile Include="OracleMonitoringApi.cs" />
     <Compile Include="OracleShemaBuilder.cs" />
     <Compile Include="OracleSqlBook.cs" />
-    <Compile Include="OracleStorageConnection.cs" />
     <Compile Include="OracleStorage.cs" />
+    <Compile Include="OracleStorageConnection.cs" />
+    <Compile Include="OracleWriteOnlyTransaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="OracleBootstrapperConfigurationExtensions.cs" />
     <Compile Include="OracleDistributedLockAcquirer.cs" />

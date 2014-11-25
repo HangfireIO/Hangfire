@@ -1,5 +1,15 @@
 namespace Hangfire.Sql {
     public class SqlBook {
+
+        public string[] ProcessedTables =
+        {
+            "Counter",
+            "Job",
+            "List",
+            "Set",
+            "Hash",
+        };
+
         public string SqlConnection_CreateExpiredJob_Job = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 values (@invocationData, @arguments, @createdAt, @expireAt);
@@ -31,7 +41,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
             @"select Value from HangFire.[Set] where [Key] = @key";
 
         public string SqlConnection_GetFirstByLowestScoreFromSet =
-            @"select top 1 Value from HangFire.[Set] where [Key] = @key and Score between @from and @to order by Score";
+            @"select top 1 Value from HangFire.[Set] where [Key] = @key and Score between @pfrom and @pto order by Score";
 
         public string SqlConnection_SetRangeInHash = @"
 merge HangFire.Hash as Target
@@ -106,7 +116,7 @@ where j.Id in @jobIds and jq.FetchedAt is not null";
 
         public string SqlWriteOnlyTransaction_ExpireJob = @"update HangFire.Job set ExpireAt = @expireAt where Id = @id";
 
-        public string SqlWriteOnlyTransaction_PersistJob = @"update HangFire.Job set ExpireAt = NULL where Id = @id";
+        public string SqlWriteOnlyTransaction_PersistJob = @"update HangFire.Job set ExpireAt = NULL where Id = @pid";
         public string SqlWriteOnlyTransaction_SetJobState = @"
 insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);

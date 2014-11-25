@@ -27,17 +27,17 @@ namespace Hangfire.Sql
 {
     public class SqlJobQueue : IPersistentJobQueue
     {
-        private readonly SqlStorageOptions _options;
-        private readonly IDbConnection _connection;
-        protected readonly SqlBook SqlBook;
+        protected SqlStorageOptions Options { get; private set; }
+        protected IDbConnection Connection { get; private set; }
+        protected SqlBook SqlBook { get; private set; }
 
         public SqlJobQueue(IDbConnection connection, SqlBook sqlBook, SqlStorageOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");
             if (connection == null) throw new ArgumentNullException("connection");
 
-            _options = options;
-            _connection = connection;
+            Options = options;
+            Connection = connection;
             SqlBook = sqlBook;
         }
 
@@ -47,41 +47,48 @@ namespace Hangfire.Sql
             if (queues == null) throw new ArgumentNullException("queues");
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
             FetchedJob fetchedJob;
-            do
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                // Sql query is splitted to force SQL Server to use 
-                // INDEX SEEK instead of INDEX SCAN operator.
-                QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_null);
-                fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_before);
-                if (fetchedJob == null) {
-                    cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+            using (var transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
+                do {
                     cancellationToken.ThrowIfCancellationRequested();
-                }
-            } while (fetchedJob == null);
-
+                    // Sql query is splitted to force SQL Server to use 
+                    // INDEX SEEK instead of INDEX SCAN operator.
+                    fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_null);
+                    if (fetchedJob != null) {
+                        break;
+                    }
+                    fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_before);
+                    if (fetchedJob == null) {
+                        cancellationToken.WaitHandle.WaitOne(Options.QueuePollInterval);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                } while (fetchedJob == null);
+                transaction.Commit();
+            }
             return new SqlFetchedJob(
-                _connection,
+                Connection,
                 SqlBook,
                 fetchedJob.Id,
                 fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
                 fetchedJob.Queue);
         }
 
-        private FetchedJob QueryFetchedJob(string[] queues, string sql) {
-            return _connection.Query<FetchedJob>(
+        protected virtual FetchedJob QueryFetchedJob(string[] queues, string sql) {
+            return Connection.Query<FetchedJob>(
                 sql,
-                new {queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds})
+                new {
+                    queues = queues, 
+                    timeout = Options.InvisibilityTimeout.Negate().TotalSeconds
+                })
                 .SingleOrDefault();
         }
 
         public void Enqueue(string queue, string jobId)
         {
-            _connection.Execute(SqlBook.SqlJobQueue_Enqueue, new { jobId = jobId, queue = queue });
+            Connection.Execute(SqlBook.SqlJobQueue_Enqueue, new { jobId = jobId, queue = queue });
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-        private class FetchedJob
+        public class FetchedJob
         {
             public int Id { get; set; }
             public int JobId { get; set; }

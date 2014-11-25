@@ -26,14 +26,6 @@ namespace Hangfire.Sql
     public class ExpirationManager : IServerComponent
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ExpirationManager));
-        private static readonly string[] ProcessedTables =
-        {
-            "Counter",
-            "Job",
-            "List",
-            "Set",
-            "Hash",
-        };
         private readonly SqlStorage _storage;
         private readonly TimeSpan _checkInterval;
         
@@ -54,7 +46,7 @@ namespace Hangfire.Sql
         {
             using (var connection = _storage.CreateAndOpenConnection())
             {
-                foreach (var table in ProcessedTables)
+                foreach (var table in _storage.SqlBook.ProcessedTables)
                 {
                     Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
                     using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
