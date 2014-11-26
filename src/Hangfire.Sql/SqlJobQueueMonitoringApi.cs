@@ -44,7 +44,7 @@ namespace Hangfire.Sql
         {
             return _connection.Query<JobIdDto>(
                 _sqlBook.SqlJobQueueMonitoringApi_GetEnqueuedJobIds,
-                new { queue = queue, start = from + 1, end = @from + perPage })
+                new { queue = queue, pstart = from + 1, pend = @from + perPage })
                 .ToList()
                 .Select(x => x.Id)
                 .ToList();

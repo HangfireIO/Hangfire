@@ -434,17 +434,12 @@ namespace Hangfire.Sql
             }
         }
 
-        private JobList<EnqueuedJobDto> EnqueuedJobs(
+        protected JobList<EnqueuedJobDto> EnqueuedJobs(
             IDbConnection connection,
             IEnumerable<int> jobIds)
         {
-            var jobs = connection.Query<SqlJob>(
-                SqlBook.SqlMonitoringApi_EnqueuedJobs,
-                new { jobIds = jobIds })
-                .ToList();
-
             return DeserializeJobs(
-                jobs,
+                GetEnqueuedJobs(connection, jobIds),
                 (sqlJob, job, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
@@ -453,6 +448,14 @@ namespace Hangfire.Sql
                         ? JobHelper.DeserializeNullableDateTime(stateData["EnqueuedAt"])
                         : null
                 });
+        }
+
+        protected virtual List<SqlJob> GetEnqueuedJobs(IDbConnection connection,
+            IEnumerable<int> jobIds) {
+                return connection.Query<SqlJob>(
+                    SqlBook.SqlMonitoringApi_EnqueuedJobs,
+                    new { jobIds = jobIds })
+                    .ToList();
         }
 
         private long GetNumberOfJobsByStateName(IDbConnection connection, string stateName)
@@ -494,7 +497,7 @@ namespace Hangfire.Sql
             return DeserializeJobs(jobs, selector);
         }
 
-        private static JobList<TDto> DeserializeJobs<TDto>(
+        protected static JobList<TDto> DeserializeJobs<TDto>(
             ICollection<SqlJob> jobs,
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {

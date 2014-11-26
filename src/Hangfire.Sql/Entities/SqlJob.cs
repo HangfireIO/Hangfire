@@ -18,7 +18,7 @@ using System;
 
 namespace Hangfire.Sql.Entities
 {
-    internal class SqlJob
+    public class SqlJob
     {
         public int Id { get; set; }
         public string InvocationData { get; set; }

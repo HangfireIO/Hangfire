@@ -75,6 +75,18 @@ update JobQueue j
                where rownum <= 1)
 returning Id, JobId, Queue into :id, :jobid, :queue";
 
+            SqlJobQueueMonitoringApi_GetEnqueuedJobIds = @"
+select r.Id
+  from (select j.Id, rownum rown
+          from JobQueue jq
+          left join Job j on jq.JobId = j.Id
+          left join State s on s.Id = j.StateId
+         where jq.Queue = :queue
+           and jq.FetchedAt is null
+           order by j.Id
+           ) r
+ where r.rown between :pstart and :pend";
+
             ExpirationManager_Execute = "delete from {0} where ExpireAt < :now";
 
         }

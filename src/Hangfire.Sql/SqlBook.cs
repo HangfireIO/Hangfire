@@ -195,7 +195,7 @@ select r.Id from (
   left join HangFire.State s on s.Id = j.StateId
   where jq.Queue = @queue and jq.FetchedAt is null
 ) as r
-where r.row_num between @start and @end";
+where r.row_num between @pstart and @pend";
         public string SqlJobQueueMonitoringApi_GetFetchedJobIds = @"
 select r.Id from (
   select j.Id, jq.FetchedAt, row_number() over (order by j.Id) as row_num 
