@@ -544,7 +544,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesAllRecords_WhenStartingFromValue_GreaterThanMaxElementIndex()
         {
             UseConnection(sql =>

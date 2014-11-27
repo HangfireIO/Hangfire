@@ -18,8 +18,8 @@ namespace MvcSample
             {
                 config.UseAuthorizationFilters();
                 //config.UseOracleStorage("Data Source=//localhost:1521/XE;User Id=hangfire;Password=hangfire;");
-                config.UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
-                //.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+                config.UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
+                      .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
             });
         }
     }

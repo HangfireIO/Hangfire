@@ -49,11 +49,11 @@ namespace Hangfire.Sql {
                         cancellationToken.ThrowIfCancellationRequested();
                         // Sql query is splitted to force SQL Server to use 
                         // INDEX SEEK instead of INDEX SCAN operator.
-                        fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_null);
+                        fetchedJob = QueryNeverFetchedJob(queues);
                         if (fetchedJob != null) {
                             break;
                         }
-                        fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_before);
+                        fetchedJob = QueryFetchedAtJob(queues);
                         if (fetchedJob == null) {
                             cancellationToken.WaitHandle.WaitOne(Options.QueuePollInterval);
                             cancellationToken.ThrowIfCancellationRequested();
@@ -70,7 +70,15 @@ namespace Hangfire.Sql {
                 fetchedJob.Queue);
         }
 
-        protected virtual FetchedJob QueryFetchedJob(string[] queues, string sql) {
+        protected virtual FetchedJob QueryNeverFetchedJob(string[] queues) {
+            return QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_null);
+        }
+
+        protected virtual FetchedJob QueryFetchedAtJob(string[] queues) {
+            return QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_before);
+        }
+
+        private FetchedJob QueryFetchedJob(string[] queues, string sql) {
             using (var connection = ConnectionProvider.CreateAndOpenConnection()) {
                 return connection.Query<FetchedJob>(
                     sql,

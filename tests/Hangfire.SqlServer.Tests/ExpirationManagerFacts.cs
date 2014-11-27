@@ -135,7 +135,7 @@ values ('key', 0, '', @expireAt)";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void Execute_Processes_HashTable()
         {
             ConnectionUtils.UseConnection((connection, tx) =>

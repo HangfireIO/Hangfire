@@ -34,5 +34,9 @@ namespace Hangfire.Oracle {
         protected override ISchemaBuilder GetSchemaBuilder() {
             return new OracleShemaBuilder(ConnectionString);
         }
+
+        public override string ToString() {
+            return "OracleStorage: " + ConnectionString;
+        }
     }
 }

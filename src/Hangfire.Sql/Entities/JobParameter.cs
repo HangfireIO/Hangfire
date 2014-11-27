@@ -16,7 +16,7 @@
 
 namespace Hangfire.Sql.Entities
 {
-    internal class JobParameter
+    public class JobParameter
     {
         public int JobId { get; set; }
         public string Name { get; set; }

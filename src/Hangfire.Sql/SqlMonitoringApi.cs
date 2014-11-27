@@ -237,7 +237,7 @@ namespace Hangfire.Sql {
                 GetHourlyTimelineStats(connection, transaction, "failed"));
         }
 
-        public JobDetailsDto JobDetails(string jobId) {
+        public virtual JobDetailsDto JobDetails(string jobId) {
             return UseConnection((connection, transaction) => {
                 using (var multi = connection.QueryMultiple(
                         SqlBook.SqlMonitoringApi_JobDetails, 
@@ -318,11 +318,8 @@ namespace Hangfire.Sql {
             }
 
             var keys = dates.Select(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH"))).ToList();
-            var valuesMap = connection.Query(
-                SqlBook.SqlMonitoringApi_GetHourlyTimelineStats,
-                new { keys = keys }, transaction: transaction)
-                .ToDictionary(x => (string)x.Key, x => (long)x.Count);
-
+            var valuesMap = ExecuteHourlyTimelineStatsQuery(connection, transaction, keys);
+            
             foreach (var key in keys) {
                 if (!valuesMap.ContainsKey(key)) valuesMap.Add(key, 0);
             }
@@ -336,10 +333,18 @@ namespace Hangfire.Sql {
             return result;
         }
 
+        protected virtual Dictionary<string, long> ExecuteHourlyTimelineStatsQuery(IDbConnection connection, IDbTransaction transaction, List<string> keys) {
+            var valuesMap = connection.Query(
+                SqlBook.SqlMonitoringApi_GetHourlyTimelineStats,
+                new {keys = keys}, transaction: transaction)
+                .ToDictionary(x => (string) x.Key, x => (long) x.Count);
+            return valuesMap;
+        }
+
         private Dictionary<DateTime, long> GetTimelineStats(
-            IDbConnection connection,
-            IDbTransaction transaction,
-            string type) {
+                IDbConnection connection,
+                IDbTransaction transaction,
+                string type) {
             var endDate = DateTime.UtcNow.Date;
             var startDate = endDate.AddDays(-7);
             var dates = new List<DateTime>();
@@ -351,10 +356,7 @@ namespace Hangfire.Sql {
 
             var stringDates = dates.Select(x => x.ToString("yyyy-MM-dd")).ToList();
             var keys = stringDates.Select(x => String.Format("stats:{0}:{1}", type, x)).ToList();
-            var valuesMap = connection.Query(
-                SqlBook.SqlMonitoringApi_GetTimelineStats,
-                new { keys = keys }, transaction: transaction)
-                .ToDictionary(x => (string)x.Key, x => (long)x.Count);
+            var valuesMap = ExecuteGetTimelineStatsQuery(connection, transaction, keys);
 
             foreach (var key in keys) {
                 if (!valuesMap.ContainsKey(key)) valuesMap.Add(key, 0);
@@ -367,6 +369,14 @@ namespace Hangfire.Sql {
             }
 
             return result;
+        }
+
+        protected virtual Dictionary<string, long> ExecuteGetTimelineStatsQuery(IDbConnection connection, IDbTransaction transaction, List<string> keys) {
+            var valuesMap = connection.Query(
+                SqlBook.SqlMonitoringApi_GetTimelineStats,
+                new {keys = keys}, transaction: transaction)
+                .ToDictionary(x => (string) x.Key, x => (long) x.Count);
+            return valuesMap;
         }
 
         private IPersistentJobQueueMonitoringApi GetQueueApi(string queueName) {
@@ -417,7 +427,7 @@ namespace Hangfire.Sql {
             return count;
         }
 
-        private static Job DeserializeJob(string invocationData, string arguments) {
+        protected Job DeserializeJob(string invocationData, string arguments) {
             var data = JobHelper.FromJson<InvocationData>(invocationData);
             data.Arguments = arguments;
 
@@ -443,7 +453,7 @@ namespace Hangfire.Sql {
             return DeserializeJobs(jobs, selector);
         }
 
-        protected static JobList<TDto> DeserializeJobs<TDto>(
+        protected JobList<TDto> DeserializeJobs<TDto>(
             ICollection<SqlJob> jobs,
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector) {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);

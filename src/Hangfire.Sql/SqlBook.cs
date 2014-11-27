@@ -67,8 +67,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
         public string SqlMonitoringApi_Servers = @"select * from HangFire.Server";
         public string SqlMonitoringApi_JobDetails = @"
-select * from HangFire.Job where Id = @id
-select * from HangFire.JobParameter where JobId = @id
+select * from HangFire.Job where Id = @id;
+select * from HangFire.JobParameter where JobId = @id;
 select * from HangFire.State where JobId = @id order by Id desc";
         public string SqlMonitoringApi_GetStatistics = @"
 select StateName as [State], count(Id) as [Count] From HangFire.Job 

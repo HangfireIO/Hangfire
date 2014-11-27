@@ -58,7 +58,7 @@ update JobQueue j
                 from (select Id
                         from JobQueue
                        where FetchedAt is null
-                         and Queue in :queues
+                         and Queue in ('{0}')
                        order by queue, fetchedAt)
                where rownum <= 1)
 returning Id, JobId, Queue into :id, :jobid, :queue";
