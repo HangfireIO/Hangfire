@@ -32,7 +32,7 @@ merge HangFire.JobParameter as Target
 using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value)
 on Target.JobId = Source.JobId AND Target.Name = Source.Name
 when matched then update set Value = Source.Value
-when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value)";
+when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);";
 
         public string SqlConnection_GetJobParameter =
             @"select Value from HangFire.JobParameter where JobId = @id and Name = @name";
@@ -57,7 +57,7 @@ merge HangFire.Server as Target
 using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
 on Target.Id = Source.Id 
 when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat 
-when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat)";
+when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);";
 
         public string SqlConnection_RemoveServer = @"delete from HangFire.Server where Id = @id";
 

@@ -131,7 +131,7 @@ namespace Hangfire.SqlServer.Tests
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters()
         {
             UseConnections((sql, connection) =>
@@ -474,7 +474,7 @@ select @id";
                 () => connection.GetFirstByLowestScoreFromSet("key", 0, -1)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetFirstByLowestScoreFromSet_ReturnsNull_WhenTheKeyDoesNotExist()
         {
             UseConnection(connection =>
@@ -486,7 +486,7 @@ select @id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetFirstByLowestScoreFromSet_ReturnsTheValueWithTheLowestScore()
         {
             const string arrangeSql = @"
@@ -531,7 +531,7 @@ values
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void AnnounceServer_CreatesOrUpdatesARecord()
         {
             UseConnections((sql, connection) =>
@@ -569,7 +569,7 @@ values
                 () => connection.RemoveServer(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void RemoveServer_RemovesAServerRecord()
         {
             const string arrangeSql = @"
@@ -626,7 +626,7 @@ values
                 () => connection.RemoveTimedOutServers(TimeSpan.FromMinutes(-5))));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void RemoveTimedOutServers_DoItsWorkPerfectly()
         {
             const string arrangeSql = @"
@@ -657,7 +657,7 @@ values (@id, '', @heartbeat)";
                 Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSet(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenKeyDoesNotExist()
         {
             UseConnection(connection =>
@@ -748,7 +748,7 @@ values (@key, 0.0, @value)";
                 Assert.Throws<ArgumentNullException>(() => connection.GetAllEntriesFromHash(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void GetAllEntriesFromHash_ReturnsNull_IfHashDoesNotExist()
         {
             UseConnection(connection =>
@@ -758,7 +758,7 @@ values (@key, 0.0, @value)";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void GetAllEntriesFromHash_ReturnsAllKeysAndTheirValues()
         {
             const string arrangeSql = @"

@@ -121,7 +121,7 @@ namespace Hangfire.Sql {
 
         public void DecrementCounter(string key, TimeSpan expireIn) {
             QueueCommand((c,t) => c.Execute(
-                SqlBook.SqlWriteOnlyTransaction_DecrementCounter,
+                SqlBook.SqlWriteOnlyTransaction_IncrementCounter_expirein,
                 new { key, value = -1, expireAt = DateTime.UtcNow.Add(expireIn) },t));
         }
 

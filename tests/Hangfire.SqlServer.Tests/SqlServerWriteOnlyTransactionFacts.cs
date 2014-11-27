@@ -88,7 +88,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job","HangFire.State")]
         public void SetJobState_AppendsAStateAndSetItToTheJob()
         {
             const string arrangeSql = @"
@@ -126,7 +126,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.State")]
         public void AddJobState_JustAddsANewRecordInATable()
         {
             const string arrangeSql = @"
@@ -184,7 +184,7 @@ select scope_identity() as Id";
                 .Single();
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void IncrementCounter_AddsRecordToCounterTable_WithPositiveValue()
         {
             UseConnection(sql =>
@@ -199,7 +199,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void IncrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
         {
             UseConnection(sql =>
@@ -236,7 +236,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue()
         {
             UseConnection(sql =>
@@ -251,7 +251,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void DecrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
         {
             UseConnection(sql =>
@@ -271,7 +271,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void DecrementCounter_WithExistingKey_AddsAnotherRecord()
         {
             UseConnection(sql =>
@@ -288,7 +288,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_AddsARecord_IfThereIsNo_SuchKeyAndValue()
         {
             UseConnection(sql =>
@@ -303,7 +303,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent()
         {
             UseConnection(sql =>
@@ -320,7 +320,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_DoesNotAddARecord_WhenBothKeyAndValueAreExist()
         {
             UseConnection(sql =>
@@ -337,7 +337,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist()
         {
             UseConnection(sql =>
@@ -352,7 +352,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist()
         {
             UseConnection(sql =>
@@ -369,7 +369,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue()
         {
             UseConnection(sql =>
@@ -386,7 +386,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void RemoveFromSet_DoesNotRemoveRecord_WithSameKey_AndDifferentValue()
         {
             UseConnection(sql =>
@@ -403,7 +403,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void RemoveFromSet_DoesNotRemoveRecord_WithSameValue_AndDifferentKey()
         {
             UseConnection(sql =>
@@ -420,7 +420,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void InsertToList_AddsARecord_WithGivenValues()
         {
             UseConnection(sql =>
@@ -434,7 +434,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void InsertToList_AddsAnotherRecord_WhenBothKeyAndValueAreExist()
         {
             UseConnection(sql =>
@@ -451,7 +451,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void RemoveFromList_RemovesAllRecords_WithGivenKeyAndValue()
         {
             UseConnection(sql =>
@@ -469,7 +469,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void RemoveFromList_DoesNotRemoveRecords_WithSameKey_ButDifferentValue()
         {
             UseConnection(sql =>
@@ -486,7 +486,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void RemoveFromList_DoesNotRemoveRecords_WithSameValue_ButDifferentKey()
         {
             UseConnection(sql =>
@@ -578,7 +578,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesRecords_OnlyOfAGivenKey()
         {
             UseConnection(sql =>
@@ -588,9 +588,7 @@ select scope_identity() as Id";
                     x.InsertToList("my-key", "0");
                     x.TrimList("another-key", 1, 0);
                 });
-
                 var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
-
                 Assert.Equal(1, recordCount);
             });
         }
@@ -650,7 +648,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void RemoveHash_RemovesAllHashRecords()
         {
             UseConnection(sql =>

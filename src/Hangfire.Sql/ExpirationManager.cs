@@ -52,7 +52,8 @@ namespace Hangfire.Sql
                     using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
                         int rowsAffected = connection.Execute(
                             String.Format(_storage.SqlBook.ExpirationManager_Execute, table),
-                            new {now = DateTime.UtcNow});
+                            new {now = DateTime.UtcNow},
+                            transaction);
                         transaction.Commit();
                         Logger.DebugFormat("Removed {0} outdated records from table '{1}'...", rowsAffected, table);
                     }
