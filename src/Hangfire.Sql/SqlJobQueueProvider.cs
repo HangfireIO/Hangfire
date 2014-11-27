@@ -23,7 +23,7 @@ namespace Hangfire.Sql
     {
         protected IConnectionProvider ConnectionProvider { get; private set; }
         protected SqlBook SqkBook { get; private set; }
-        protected SqlStorageOptions Options { get; private set; }
+        public SqlStorageOptions Options { get; private set; }
 
         public SqlJobQueueProvider(IConnectionProvider connectionProvider, SqlBook sqkBook, SqlStorageOptions options)
         {

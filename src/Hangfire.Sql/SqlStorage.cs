@@ -122,31 +122,26 @@ namespace Hangfire.Sql
         {
             const string canNotParseMessage = "<Connection string can not be parsed>";
 
-            try
-            {
+            try {
                 var parts = ConnectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
-                    .ToDictionary(x => x.Key, x => x.Value);
+                    .ToDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
 
                 var builder = new StringBuilder();
 
-                foreach (var alias in new[] { "Data Source", "Server", "Address", "Addr", "Network Address" })
-                {
-                    if (parts.ContainsKey(alias))
-                    {
-                        builder.AppendFormat("{1}", alias, parts[alias]);
+                foreach (var alias in new[] { "Data Source", "Server", "Address", "Addr", "Network Address" }) {
+                    if (parts.ContainsKey(alias)) {
+                        builder.Append(parts[alias]);
                         break;
                     }
                 }
 
                 if (builder.Length != 0) builder.Append("@");
 
-                foreach (var alias in new[] { "Database", "Initial Catalog" })
-                {
-                    if (parts.ContainsKey(alias))
-                    {
-                        builder.AppendFormat("{1}", alias, parts[alias]);
+                foreach (var alias in new[] { "Database", "Initial Catalog" }) {
+                    if (parts.ContainsKey(alias)) {
+                        builder.Append(parts[alias]);
                         break;
                     }
                 }
@@ -155,8 +150,7 @@ namespace Hangfire.Sql
                     ? String.Format("SQL Server: {0}", builder)
                     : canNotParseMessage;
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 return canNotParseMessage;
             }
         }

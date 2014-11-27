@@ -33,7 +33,7 @@ namespace Hangfire.Dashboard
         {
             if (job == null)
             {
-                throw new ArgumentNullException("job");
+                return "Can not find the target method.";
             }
 
             var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
