@@ -9,8 +9,10 @@ namespace Hangfire.SqlServer {
             _connectionString = connectionString;
         }
 
-        public IDbConnection CreateConnection() {
-            return new System.Data.SqlClient.SqlConnection(_connectionString);
+        public IDbConnection CreateAndOpenConnection() {
+            var connection = new System.Data.SqlClient.SqlConnection(_connectionString);
+            connection.Open();
+            return connection;
         }
     }
 }

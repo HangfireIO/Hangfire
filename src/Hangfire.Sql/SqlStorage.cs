@@ -27,6 +27,7 @@ namespace Hangfire.Sql
     public abstract class SqlStorage : JobStorage {
         private static object _sync = new object();
         private SqlBook _sqlBook;
+        private IConnectionProvider _connectionProvider;
         protected SqlStorageOptions Options { get; private set; }
         protected string ConnectionString { get; private set; }
 
@@ -38,8 +39,20 @@ namespace Hangfire.Sql
                     if (_sqlBook == null) {
                         _sqlBook = CreateSqlBook();
                     }
-                    return _sqlBook;
                 }
+                return _sqlBook;
+                
+            }
+        }
+
+        public IConnectionProvider ConnectionProvider {
+            get {
+                lock (_sync) {
+                    if (_connectionProvider == null) {
+                        _connectionProvider = CreateConnectionProvider();
+                    }
+                }
+                return _connectionProvider;
             }
         }
 
@@ -82,18 +95,16 @@ namespace Hangfire.Sql
         }
 
         public IDbConnection CreateAndOpenConnection() {
-            var connection = GetConnectionProvider().CreateConnection();
-            connection.Open();
-            return connection;
+            return ConnectionProvider.CreateAndOpenConnection();
         }
 
         protected abstract ISchemaBuilder GetSchemaBuilder();
 
         protected virtual IPersistentJobQueueProvider GetDefaultPersistentJobQueueProvider() {
-            return new SqlJobQueueProvider(SqlBook, Options); 
+            return new SqlJobQueueProvider(ConnectionProvider, SqlBook, Options); 
         }
 
-        protected abstract IConnectionProvider GetConnectionProvider();
+        protected abstract IConnectionProvider CreateConnectionProvider();
 
         public override IEnumerable<IServerComponent> GetComponents()
         {

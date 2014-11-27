@@ -23,7 +23,7 @@ namespace Hangfire.Sql
 {
     public class SqlFetchedJob : IFetchedJob
     {
-        private readonly IDbConnection _connection;
+        private readonly IConnectionProvider _connectionProvider;
         protected readonly SqlBook SqlBook;
 
         private bool _disposed;
@@ -31,19 +31,18 @@ namespace Hangfire.Sql
         private bool _requeued;
 
         public SqlFetchedJob(
-            IDbConnection connection, 
+            IConnectionProvider connectionProvider, 
             SqlBook sqlBook,
             int id, 
             string jobId, 
             string queue)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connectionProvider == null) throw new ArgumentNullException("connectionProvider");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
 
-            _connection = connection;
+            _connectionProvider = connectionProvider;
             SqlBook = sqlBook;
-
             Id = id;
             JobId = jobId;
             Queue = queue;
@@ -55,31 +54,39 @@ namespace Hangfire.Sql
 
         public void RemoveFromQueue()
         {
-            _connection.Execute(
-                SqlBook.SqlFetchedJob_RemoveFromQueue,
-                new { id = Id });
-
+            using (var connection = _connectionProvider.CreateAndOpenConnection()) {
+                using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
+                    connection.Execute(
+                        SqlBook.SqlFetchedJob_RemoveFromQueue,
+                        new {id = Id},
+                        transaction);
+                    transaction.Commit();
+                }
+            }
             _removedFromQueue = true;
         }
 
         public void Requeue()
         {
-            _connection.Execute(
-                SqlBook.SqlFetchedJob_Requeue,
-                new { id = Id });
-
+            using (var connection = _connectionProvider.CreateAndOpenConnection()) {
+                using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
+                    connection.Execute(
+                        SqlBook.SqlFetchedJob_Requeue,
+                        new {id = Id},
+                        transaction: transaction);
+                    transaction.Commit();
+                }
+            }
             _requeued = true;
         }
 
         public void Dispose()
         {
             if (_disposed) return;
-
             if (!_removedFromQueue && !_requeued)
             {
                 Requeue();
             }
-
             _disposed = true;
         }
     }

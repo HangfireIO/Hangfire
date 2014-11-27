@@ -31,12 +31,12 @@ namespace Hangfire.SqlServer.Msmq
             _monitoringApi = new MsmqJobQueueMonitoringApi(pathPattern, queues);
         }
 
-        public IPersistentJobQueue GetJobQueue(IDbConnection connection)
+        public IPersistentJobQueue GetJobQueue()
         {
             return _jobQueue;
         }
 
-        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
+        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi()
         {
             return _monitoringApi;
         }

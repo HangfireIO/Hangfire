@@ -11,12 +11,12 @@ namespace Hangfire.Oracle {
             return new OracleMonitoringApi(new OracleConnectionProvider(ConnectionString), SqlBook, QueueProviders);
         }
 
-        protected override IConnectionProvider GetConnectionProvider() {
+        protected override IConnectionProvider CreateConnectionProvider() {
             return new OracleConnectionProvider(ConnectionString);
         }
 
         protected override IPersistentJobQueueProvider GetDefaultPersistentJobQueueProvider() {
-            return new OracleJobQueueProvider(SqlBook, Options);
+            return new OracleJobQueueProvider(ConnectionProvider, SqlBook, Options);
         }
 
         public override IStorageConnection GetConnection() {

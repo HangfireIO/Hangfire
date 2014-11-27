@@ -18,7 +18,7 @@ namespace Hangfire.SqlServer.Tests
         public SqlServerWriteOnlyTransactionFacts()
         {
             var defaultProvider = new Mock<IPersistentJobQueueProvider>();
-            defaultProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+            defaultProvider.Setup(x => x.GetJobQueue())
                 .Returns(new Mock<IPersistentJobQueue>().Object);
 
             _queueProviders = new PersistentJobQueueProviderCollection(defaultProvider.Object);
@@ -166,7 +166,7 @@ select scope_identity() as Id";
             {
                 var correctJobQueue = new Mock<IPersistentJobQueue>();
                 var correctProvider = new Mock<IPersistentJobQueueProvider>();
-                correctProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+                correctProvider.Setup(x => x.GetJobQueue())
                     .Returns(correctJobQueue.Object);
 
                 _queueProviders.Add(correctProvider.Object, new [] { "default" });

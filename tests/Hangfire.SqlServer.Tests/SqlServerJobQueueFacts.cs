@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Data;
 using System.Linq;
 using System.Threading;
 using Dapper;
 using Hangfire.Sql;
-using Moq;
 using Xunit;
-using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -20,38 +17,36 @@ namespace Hangfire.SqlServer.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlJobQueue(null, new SqlBook(), new SqlStorageOptions()));
 
-            Assert.Equal("connection", exception.ParamName);
+            Assert.Equal("connectionProvider", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlJobQueue(new Mock<IDbConnection>().Object, new SqlBook(), null));
+                () => new SqlJobQueue(ConnectionUtils.CreateConnectionProvider(), new SqlBook(), null));
 
             Assert.Equal("options", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
-        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsNull()
-        {
-            UseConnection(connection =>
-            {
-                var queue = CreateJobQueue(connection);
-
-                var exception = Assert.Throws<ArgumentNullException>(
-                    () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
-
-                Assert.Equal("queues", exception.ParamName);
+        public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsNull() {
+            SqlJobQueue queue = null;
+            ConnectionUtils.UseConnection((connection, tx) => {
+                queue = CreateJobQueue();
             });
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
+
+            Assert.Equal("queues", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
         public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsEmpty()
         {
-            UseConnection(connection =>
+            ConnectionUtils.UseConnection((connection, tx) =>
             {
-                var queue = CreateJobQueue(connection);
+                var queue = CreateJobQueue();
 
                 var exception = Assert.Throws<ArgumentException>(
                     () => queue.Dequeue(new string[0], CreateTimingOutCancellationToken()));
@@ -63,11 +58,11 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void Dequeue_ThrowsOperationCanceled_WhenCancellationTokenIsSetAtTheBeginning()
         {
-            UseConnection(connection =>
+            ConnectionUtils.UseConnection((connection, tx) =>
             {
                 var cts = new CancellationTokenSource();
                 cts.Cancel();
-                var queue = CreateJobQueue(connection);
+                var queue = CreateJobQueue();
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
@@ -77,17 +72,17 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void Dequeue_ShouldWaitIndefinitely_WhenThereAreNoJobs()
         {
-            UseConnection(connection =>
+            ConnectionUtils.UseConnection((connection, tx) =>
             {
                 var cts = new CancellationTokenSource(200);
-                var queue = CreateJobQueue(connection);
+                var queue = CreateJobQueue();
 
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(DefaultQueues, cts.Token));
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.JobQueue")]
         public void Dequeue_ShouldFetchAJob_FromTheSpecifiedQueue()
         {
             const string arrangeSql = @"
@@ -96,26 +91,28 @@ values (@jobId, @queue);
 select scope_identity() as Id;";
 
             // Arrange
-            UseConnection(connection =>
+            int id = 0;
+            SqlJobQueue queue = null;
+            ConnectionUtils.UseConnection((connection, tx) =>
             {
-                var id = (int)connection.Query(
+                id = (int)connection.Query(
                     arrangeSql,
-                    new { jobId = 1, queue = "default" }).Single().Id;
-                var queue = CreateJobQueue(connection);
-
-                // Act
-                var payload = (SqlFetchedJob)queue.Dequeue(
-                    DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.Equal(id, payload.Id);
-                Assert.Equal("1", payload.JobId);
-                Assert.Equal("default", payload.Queue);
+                    new { jobId = 1, queue = "default" }, transaction: tx).Single().Id;
+                queue = CreateJobQueue();
             });
+            // Act
+            var payload = (SqlFetchedJob)queue.Dequeue(
+                DefaultQueues,
+                CreateTimingOutCancellationToken());
+
+            // Assert
+            Assert.Equal(id, payload.Id);
+            Assert.Equal("1", payload.JobId);
+            Assert.Equal("default", payload.Queue);
+            
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobQueue")]
         public void Dequeue_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue()
         {
             const string arrangeSql = @"
@@ -125,31 +122,32 @@ insert into HangFire.JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             // Arrange
-            UseConnection(connection =>
+            ConnectionUtils.UseConnection((connection, tx) =>
             {
                 connection.Execute(
                     arrangeSql,
-                    new { invocationData = "", arguments = "", queue = "default" });
-                var queue = CreateJobQueue(connection);
+                    new { invocationData = "", arguments = "", queue = "default" }, transaction: tx);
+            });
+            var queue = CreateJobQueue();
 
-                // Act
-                var payload = queue.Dequeue(
-                    DefaultQueues,
-                    CreateTimingOutCancellationToken());
+            // Act
+            var payload = queue.Dequeue(
+                DefaultQueues,
+                CreateTimingOutCancellationToken());
 
-                // Assert
-                Assert.NotNull(payload);
-
+            // Assert
+            Assert.NotNull(payload);
+            ConnectionUtils.UseConnection((connection, tx) =>
+            {
                 var fetchedAt = connection.Query<DateTime?>(
                     "select FetchedAt from HangFire.JobQueue where JobId = @id",
-                    new { id = payload.JobId }).Single();
-
+                    new { id = payload.JobId }, tx).Single();
                 Assert.NotNull(fetchedAt);
                 Assert.True(fetchedAt > DateTime.UtcNow.AddMinutes(-1));
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobQueue")]
         public void Dequeue_ShouldFetchATimedOutJobs_FromTheSpecifiedQueue()
         {
             const string arrangeSql = @"
@@ -159,7 +157,8 @@ insert into HangFire.JobQueue (JobId, Queue, FetchedAt)
 values (scope_identity(), @queue, @fetchedAt)";
 
             // Arrange
-            UseConnection(connection =>
+            SqlJobQueue queue = null;
+            ConnectionUtils.UseConnection((connection, tx) =>
             {
                 connection.Execute(
                     arrangeSql,
@@ -169,20 +168,19 @@ values (scope_identity(), @queue, @fetchedAt)";
                         fetchedAt = DateTime.UtcNow.AddDays(-1),
                         invocationData = "",
                         arguments = ""
-                    });
-                var queue = CreateJobQueue(connection);
-
-                // Act
-                var payload = queue.Dequeue(
-                    DefaultQueues,
-                    CreateTimingOutCancellationToken());
-
-                // Assert
-                Assert.NotEmpty(payload.JobId);
+                    }, tx);
+                queue = CreateJobQueue();
             });
+            // Act
+            var payload = queue.Dequeue(
+                DefaultQueues,
+                CreateTimingOutCancellationToken());
+
+            // Assert
+            Assert.NotEmpty(payload.JobId);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobQueue")]
         public void Dequeue_ShouldSetFetchedAt_OnlyForTheFetchedJob()
         {
             const string arrangeSql = @"
@@ -192,32 +190,32 @@ insert into HangFire.JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
             // Arrange
-            UseConnection(connection =>
-            {
-                connection.Execute(
-                    arrangeSql,
-                    new[]
-                    {
-                        new { queue = "default", invocationData = "", arguments = "" },
-                        new { queue = "default", invocationData = "", arguments = "" }
-                    });
-                var queue = CreateJobQueue(connection);
+            ConnectionUtils.UseConnection((connection, tx) => connection.Execute(
+                arrangeSql,
+                new[]
+                {
+                    new { queue = "default", invocationData = "", arguments = "" },
+                    new { queue = "default", invocationData = "", arguments = "" }
+                },tx));
+            var queue = CreateJobQueue();
 
-                // Act
-                var payload = queue.Dequeue(
-                    DefaultQueues,
-                    CreateTimingOutCancellationToken());
+            // Act
+            var payload = queue.Dequeue(
+                DefaultQueues,
+                CreateTimingOutCancellationToken());
 
                 // Assert
+            ConnectionUtils.UseConnection((connection, tx) =>
+            {
                 var otherJobFetchedAt = connection.Query<DateTime?>(
                     "select FetchedAt from HangFire.JobQueue where JobId != @id",
-                    new { id = payload.JobId }).Single();
+                    new { id = payload.JobId },tx).Single();
 
                 Assert.Null(otherJobFetchedAt);
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobQueue")]
         public void Dequeue_ShouldFetchJobs_OnlyFromSpecifiedQueues()
         {
             const string arrangeSql = @"
@@ -226,22 +224,18 @@ values (@invocationData, @arguments, getutcdate())
 insert into HangFire.JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
-            UseConnection(connection =>
-            {
-                var queue = CreateJobQueue(connection);
-
-                connection.Execute(
-                    arrangeSql,
-                    new { queue = "critical", invocationData = "", arguments = "" });
-                
-                Assert.Throws<OperationCanceledException>(
-                    () => queue.Dequeue(
-                        DefaultQueues,
-                        CreateTimingOutCancellationToken()));
-            });
+            SqlJobQueue queue = CreateJobQueue();
+            ConnectionUtils.UseConnection((connection, tx) => connection.Execute(
+                arrangeSql,
+                new { queue = "critical", invocationData = "", arguments = "" }, tx));
+    
+            Assert.Throws<OperationCanceledException>(
+                () => queue.Dequeue(
+                    DefaultQueues,
+                    CreateTimingOutCancellationToken()));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobQueue")]
         public void Dequeue_ShouldFetchJobs_FromMultipleQueues()
         {
             const string arrangeSql = @"
@@ -250,7 +244,7 @@ values (@invocationData, @arguments, getutcdate())
 insert into HangFire.JobQueue (JobId, Queue)
 values (scope_identity(), @queue)";
 
-            UseConnection(connection =>
+            ConnectionUtils.UseConnection((connection, tx) =>
             {
                 connection.Execute(
                     arrangeSql,
@@ -258,36 +252,32 @@ values (scope_identity(), @queue)";
                     {
                         new { queue = "default", invocationData = "", arguments = "" },
                         new { queue = "critical", invocationData = "", arguments = "" }
-                    });
-
-                var queue = CreateJobQueue(connection);
-
-                var critical = (SqlFetchedJob)queue.Dequeue(
-                    new[] { "critical", "default" },
-                    CreateTimingOutCancellationToken());
-
-                Assert.NotNull(critical.JobId);
-                Assert.Equal("critical", critical.Queue);
-
-                var @default = (SqlFetchedJob)queue.Dequeue(
-                    new[] { "critical", "default" },
-                    CreateTimingOutCancellationToken());
-
-                Assert.NotNull(@default.JobId);
-                Assert.Equal("default", @default.Queue);
+                    },tx);
             });
+            var queue = CreateJobQueue();
+
+            var critical = (SqlFetchedJob)queue.Dequeue(
+                new[] { "critical", "default" },
+                CreateTimingOutCancellationToken());
+
+            Assert.NotNull(critical.JobId);
+            Assert.Equal("critical", critical.Queue);
+
+            var @default = (SqlFetchedJob)queue.Dequeue(
+                new[] { "critical", "default" },
+                CreateTimingOutCancellationToken());
+
+            Assert.NotNull(@default.JobId);
+            Assert.Equal("default", @default.Queue);
         }
 
-        [Fact, CleanDatabase]
-        public void Enqueue_AddsAJobToTheQueue()
-        {
-            UseConnection(connection =>
-            {
-                var queue = CreateJobQueue(connection);
+        [Fact, CleanDatabase("HangFire.JobQueue")]
+        public void Enqueue_AddsAJobToTheQueue() {
+            SqlJobQueue queue = CreateJobQueue();
+            queue.Enqueue("default", "1");
 
-                queue.Enqueue("default", "1");
-
-                var record = connection.Query("select * from HangFire.JobQueue").Single();
+            ConnectionUtils.UseConnection((connection, tx) => {
+                var record = connection.Query("select * from HangFire.JobQueue", transaction:tx).Single();
                 Assert.Equal("1", record.JobId.ToString());
                 Assert.Equal("default", record.Queue);
                 Assert.Null(record.FetchedAt);
@@ -302,17 +292,9 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static SqlJobQueue CreateJobQueue(IDbConnection connection)
+        private static SqlJobQueue CreateJobQueue()
         {
-            return new SqlJobQueue(connection, new SqlBook(), new SqlStorageOptions());
-        }
-
-        private static void UseConnection(Action<SqlConnection> action)
-        {
-            using (var connection = ConnectionUtils.CreateConnection())
-            {
-                action(connection);
-            }
+            return new SqlJobQueue(ConnectionUtils.CreateConnectionProvider(), new SqlBook(), new SqlStorageOptions());
         }
     }
 }

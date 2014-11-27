@@ -10,8 +10,10 @@ namespace Hangfire.Oracle {
             _connectionString = connectionString;
         }
 
-        public IDbConnection CreateConnection() {
-            return new OracleProvider.OracleConnection(_connectionString);
+        public IDbConnection CreateAndOpenConnection() {
+            var connection = new OracleProvider.OracleConnection(_connectionString);
+            connection.Open();
+            return connection;
         }
     }
 }

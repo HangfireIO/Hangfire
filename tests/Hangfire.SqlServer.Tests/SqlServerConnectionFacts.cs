@@ -25,7 +25,7 @@ namespace Hangfire.SqlServer.Tests
             _queue = new Mock<IPersistentJobQueue>();
 
             _provider = new Mock<IPersistentJobQueueProvider>();
-            _provider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+            _provider.Setup(x => x.GetJobQueue())
                 .Returns(_queue.Object);
 
             _providers = new PersistentJobQueueProviderCollection(_provider.Object);

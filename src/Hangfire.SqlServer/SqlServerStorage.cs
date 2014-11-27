@@ -16,7 +16,7 @@ namespace Hangfire.SqlServer {
             return new SqlServerObjectsInstaller();
         }
 
-        protected override IConnectionProvider GetConnectionProvider() {
+        protected override IConnectionProvider CreateConnectionProvider() {
             return new SqlStorageConnectionProvider(ConnectionString);
         }
 

@@ -23,49 +23,47 @@ using Dapper;
 using Hangfire.Sql.Properties;
 using Hangfire.Storage;
 
-namespace Hangfire.Sql
-{
-    public class SqlJobQueue : IPersistentJobQueue
-    {
+namespace Hangfire.Sql {
+    public class SqlJobQueue : IPersistentJobQueue {
         protected SqlStorageOptions Options { get; private set; }
-        protected IDbConnection Connection { get; private set; }
+        protected IConnectionProvider ConnectionProvider { get; private set; }
         protected SqlBook SqlBook { get; private set; }
 
-        public SqlJobQueue(IDbConnection connection, SqlBook sqlBook, SqlStorageOptions options)
-        {
+        public SqlJobQueue(IConnectionProvider connectionProvider, SqlBook sqlBook, SqlStorageOptions options) {
             if (options == null) throw new ArgumentNullException("options");
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connectionProvider == null) throw new ArgumentNullException("connectionProvider");
 
             Options = options;
-            Connection = connection;
+            ConnectionProvider = connectionProvider;
             SqlBook = sqlBook;
         }
 
         [NotNull]
-        public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
-        {
+        public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken) {
             if (queues == null) throw new ArgumentNullException("queues");
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
             FetchedJob fetchedJob;
-            using (var transaction = Connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
-                do {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    // Sql query is splitted to force SQL Server to use 
-                    // INDEX SEEK instead of INDEX SCAN operator.
-                    fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_null);
-                    if (fetchedJob != null) {
-                        break;
-                    }
-                    fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_before);
-                    if (fetchedJob == null) {
-                        cancellationToken.WaitHandle.WaitOne(Options.QueuePollInterval);
+            using (var connection = ConnectionProvider.CreateAndOpenConnection()) {
+                using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
+                    do {
                         cancellationToken.ThrowIfCancellationRequested();
-                    }
-                } while (fetchedJob == null);
-                transaction.Commit();
+                        // Sql query is splitted to force SQL Server to use 
+                        // INDEX SEEK instead of INDEX SCAN operator.
+                        fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_null);
+                        if (fetchedJob != null) {
+                            break;
+                        }
+                        fetchedJob = QueryFetchedJob(queues, SqlBook.SqlJobQueue_Dequeue_fetched_before);
+                        if (fetchedJob == null) {
+                            cancellationToken.WaitHandle.WaitOne(Options.QueuePollInterval);
+                            cancellationToken.ThrowIfCancellationRequested();
+                        }
+                    } while (fetchedJob == null);
+                    transaction.Commit();
+                }
             }
             return new SqlFetchedJob(
-                Connection,
+                ConnectionProvider,
                 SqlBook,
                 fetchedJob.Id,
                 fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
@@ -73,23 +71,30 @@ namespace Hangfire.Sql
         }
 
         protected virtual FetchedJob QueryFetchedJob(string[] queues, string sql) {
-            return Connection.Query<FetchedJob>(
-                sql,
-                new {
-                    queues = queues, 
-                    timeout = Options.InvisibilityTimeout.Negate().TotalSeconds
-                })
-                .SingleOrDefault();
+            using (var connection = ConnectionProvider.CreateAndOpenConnection()) {
+                return connection.Query<FetchedJob>(
+                    sql,
+                    new {
+                        queues = queues,
+                        timeout = Options.InvisibilityTimeout.Negate().TotalSeconds
+                    })
+                    .SingleOrDefault();
+            }
         }
 
-        public void Enqueue(string queue, string jobId)
-        {
-            Connection.Execute(SqlBook.SqlJobQueue_Enqueue, new { jobId = jobId, queue = queue });
+        public void Enqueue(string queue, string jobId) {
+            using (var connection = ConnectionProvider.CreateAndOpenConnection()) {
+                using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted)) {
+                    connection.Execute(SqlBook.SqlJobQueue_Enqueue,
+                        new { jobId = jobId, queue = queue },
+                        transaction);
+                    transaction.Commit();
+                }
+            }
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-        public class FetchedJob
-        {
+        public class FetchedJob {
             public int Id { get; set; }
             public int JobId { get; set; }
             public string Queue { get; set; }

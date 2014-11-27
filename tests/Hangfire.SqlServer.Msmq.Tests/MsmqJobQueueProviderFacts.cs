@@ -12,7 +12,7 @@ namespace Hangfire.Msmq.Tests
         {
             var provider = CreateProvider();
 
-            var jobQueue = provider.GetJobQueue(null);
+            var jobQueue = provider.GetJobQueue();
 
             Assert.NotNull(jobQueue);
         }
@@ -22,7 +22,7 @@ namespace Hangfire.Msmq.Tests
         {
             var provider = CreateProvider();
 
-            var monitoring = provider.GetJobQueueMonitoringApi(null);
+            var monitoring = provider.GetJobQueueMonitoringApi();
 
             Assert.NotNull(monitoring);
         }

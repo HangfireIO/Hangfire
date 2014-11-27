@@ -2,6 +2,6 @@
 
 namespace Hangfire.Sql {
     public interface IConnectionProvider {
-        IDbConnection CreateConnection();
+        IDbConnection CreateAndOpenConnection();
     }
 }

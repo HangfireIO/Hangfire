@@ -17,9 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.Transactions;
 using Dapper;
 using Hangfire.Common;
 using Hangfire.States;
@@ -28,8 +25,8 @@ using IsolationLevel = System.Data.IsolationLevel;
 
 namespace Hangfire.Sql {
     public class SqlWriteOnlyTransaction : IWriteOnlyTransaction {
-        private readonly Queue<Action<IDbConnection>> _commandQueue
-            = new Queue<Action<IDbConnection>>();
+        private readonly Queue<Action<IDbConnection, IDbTransaction>> _commandQueue
+            = new Queue<Action<IDbConnection, IDbTransaction>>();
 
         private readonly IDbConnection _connection;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
@@ -52,27 +49,29 @@ namespace Hangfire.Sql {
 
         public void Commit() {
             using (var transaction = _connection.BeginTransaction(IsolationLevel.Serializable)) {
-                foreach (var command in _commandQueue) {
-                    command(_connection);
+                foreach (Action<IDbConnection, IDbTransaction> command in _commandQueue) {
+                    command(_connection, transaction);
                 }
                 transaction.Commit();
             }
         }
 
         public void ExpireJob(string jobId, TimeSpan expireIn) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_ExpireJob,
-                new { expireAt = DateTime.UtcNow.Add(expireIn), id = jobId }));
+                new { expireAt = DateTime.UtcNow.Add(expireIn), id = jobId },
+                t));
         }
 
         public void PersistJob(string jobId) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_PersistJob,
-                new { pid = jobId }));
+                new { pid = jobId },
+                t));
         }
 
         public virtual void SetJobState(string jobId, IState state) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_SetJobState,
                 new {
                     jobId = jobId,
@@ -81,11 +80,11 @@ namespace Hangfire.Sql {
                     createdAt = DateTime.UtcNow,
                     data = JobHelper.ToJson(state.SerializeData()),
                     id = jobId
-                }));
+                },t));
         }
 
         public void AddJobState(string jobId, IState state) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_AddJobState,
                 new {
                     jobId = jobId,
@@ -93,38 +92,37 @@ namespace Hangfire.Sql {
                     reason = state.Reason,
                     createdAt = DateTime.UtcNow,
                     data = JobHelper.ToJson(state.SerializeData())
-                }));
+                },t));
         }
 
         public void AddToQueue(string queue, string jobId) {
             var provider = _queueProviders.GetProvider(queue);
-            var persistentQueue = provider.GetJobQueue(_connection);
-
-            QueueCommand(_ => persistentQueue.Enqueue(queue, jobId));
+            var persistentQueue = provider.GetJobQueue();
+            QueueCommand((c,t) => persistentQueue.Enqueue(queue, jobId));
         }
 
         public void IncrementCounter(string key) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_IncrementCounter,
-                new { key, value = +1 }));
+                new { key, value = +1 },t));
         }
 
         public void IncrementCounter(string key, TimeSpan expireIn) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_IncrementCounter_expirein,
-                new { key, value = +1, expireAt = DateTime.UtcNow.Add(expireIn) }));
+                new { key, value = +1, expireAt = DateTime.UtcNow.Add(expireIn) },t));
         }
 
         public void DecrementCounter(string key) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_DecrementCounter,
-                new { key, value = -1 }));
+                new { key, value = -1 },t));
         }
 
         public void DecrementCounter(string key, TimeSpan expireIn) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_DecrementCounter,
-                new { key, value = -1, expireAt = DateTime.UtcNow.Add(expireIn) }));
+                new { key, value = -1, expireAt = DateTime.UtcNow.Add(expireIn) },t));
         }
 
         public void AddToSet(string key, string value) {
@@ -132,33 +130,33 @@ namespace Hangfire.Sql {
         }
 
         public void AddToSet(string key, string value, double score) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_AddToSet,
-                new { key, value, score }));
+                new { key, value, score },t));
         }
 
         public void RemoveFromSet(string key, string value) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_RemoveFromSet,
-                new { key, value }));
+                new { key, value },t));
         }
 
         public void InsertToList(string key, string value) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_InsertToList,
-                new { key, value }));
+                new { key, value },t));
         }
 
         public void RemoveFromList(string key, string value) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_RemoveFromList,
-                new { key, value }));
+                new { key, value },t));
         }
 
         public void TrimList(string key, int keepStartingFrom, int keepEndingAt) {
-            QueueCommand(x => x.Execute(
+            QueueCommand((c,t) => c.Execute(
                 SqlBook.SqlWriteOnlyTransaction_TrimList,
-                new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
+                new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 },t));
         }
 
         public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs) {
@@ -168,9 +166,9 @@ namespace Hangfire.Sql {
             foreach (var keyValuePair in keyValuePairs) {
                 var pair = keyValuePair;
 
-                QueueCommand(x => {
-                        x.Execute(SqlBook.SqlWriteOnlyTransaction_SetRangeInHash,
-                            new {key = key, field = pair.Key, value = pair.Value});
+                QueueCommand((c,t) => {
+                        c.Execute(SqlBook.SqlWriteOnlyTransaction_SetRangeInHash,
+                            new {key = key, field = pair.Key, value = pair.Value},t);
                     }
                 );
             }
@@ -179,11 +177,11 @@ namespace Hangfire.Sql {
         public void RemoveHash(string key) {
             if (key == null) throw new ArgumentNullException("key");
 
-            QueueCommand(x => x.Execute(SqlBook.SqlWriteOnlyTransaction_RemoveHash,
-                new { key }));
+            QueueCommand((c,t) => c.Execute(SqlBook.SqlWriteOnlyTransaction_RemoveHash,
+                new { key },t));
         }
 
-        protected internal void QueueCommand(Action<IDbConnection> action) {
+        protected internal void QueueCommand(Action<IDbConnection, IDbTransaction> action) {
             _commandQueue.Enqueue(action);
         }
     }

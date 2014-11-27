@@ -73,7 +73,7 @@ namespace Hangfire.Sql {
                     String.Join(", ", queues)));
             }
 
-            var persistentQueue = providers[0].GetJobQueue(Connection);
+            var persistentQueue = providers[0].GetJobQueue();
             return persistentQueue.Dequeue(queues, cancellationToken);
         }
 

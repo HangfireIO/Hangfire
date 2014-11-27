@@ -19,15 +19,15 @@ namespace Hangfire.Oracle {
             param.Add("data", JobHelper.ToJson(state.SerializeData()));
             param.Add("pid", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
-            QueueCommand(x => {
-                x.Execute(sqls[0], param);
+            QueueCommand((c,t) => {
+                c.Execute(sqls[0], param,t);
                 var stateId = param.Get<int>("pid");
 
                 param = new DynamicParameters();
                 param.Add("stateId", stateId);
                 param.Add("name", state.Name);
                 param.Add("pid", jobId);
-                x.Execute(sqls[1], param);
+                c.Execute(sqls[1], param,t);
             });
         }
     }
