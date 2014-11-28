@@ -42,7 +42,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.Equal("queueProviders", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job")]
         public void ExpireJob_SetsJobExpirationData()
         {
             const string arrangeSql = @"
@@ -65,7 +65,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job")]
         public void PersistJob_ClearsTheJobExpirationData()
         {
             const string arrangeSql = @"
@@ -219,7 +219,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void IncrementCounter_WithExistingKey_AddsAnotherRecord()
         {
             UseConnection(sql =>
@@ -503,7 +503,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_TrimsAList_ToASpecifiedRange()
         {
             UseConnection(sql =>
@@ -525,7 +525,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesRecordsToEnd_IfKeepAndingAt_GreaterThanMaxElementIndex()
         {
             UseConnection(sql =>
@@ -561,7 +561,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesAllRecords_IfStartFromGreaterThanEndingAt()
         {
             UseConnection(sql =>
@@ -605,7 +605,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
         {
             UseConnection(sql =>
@@ -617,7 +617,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void SetRangeInHash_MergesAllRecords()
         {
             UseConnection(sql =>
