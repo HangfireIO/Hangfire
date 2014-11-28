@@ -231,7 +231,7 @@ select scope_identity() as Id";
                     () => connection.GetStateData(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.State")]
         public void GetStateData_ReturnsNull_IfThereIsNoSuchState()
         {
             UseConnection(connection =>
@@ -241,7 +241,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.State")]
         public void GetStateData_ReturnsCorrectData()
         {
             const string arrangeSql = @"
@@ -278,7 +278,7 @@ select @JobId as Id;";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job")]
         public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException()
         {
             const string arrangeSql = @"
@@ -327,7 +327,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void SetParameters_CreatesNewParameter_WhenParameterWithTheGivenNameDoesNotExists()
         {
             const string arrangeSql = @"
@@ -350,7 +350,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void SetParameter_UpdatesValue_WhenParameterWithTheGivenName_AlreadyExists()
         {
             const string arrangeSql = @"
@@ -374,7 +374,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void SetParameter_CanAcceptNulls_AsValues()
         {
             const string arrangeSql = @"
@@ -421,7 +421,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.JobParameter")]
         public void GetParameter_ReturnsNull_WhenParameterDoesNotExists()
         {
             UseConnection(connection =>
@@ -431,7 +431,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void GetParameter_ReturnsParameterValue_WhenJobExists()
         {
             const string arrangeSql = @"
@@ -596,7 +596,7 @@ values
                 () => connection.Heartbeat(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void Heartbeat_UpdatesLastHeartbeat_OfTheServerWithGivenId()
         {
             const string arrangeSql = @"
@@ -669,7 +669,7 @@ values (@id, '', @heartbeat)";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetAllItemsFromSet_ReturnsAllItems()
         {
             const string arrangeSql = @"
@@ -720,7 +720,7 @@ values (@key, 0.0, @value)";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void SetRangeInHash_MergesAllRecords()
         {
             UseConnections((sql, connection) =>
