@@ -59,7 +59,7 @@ namespace Hangfire.Storage
                     dto.NextExecution = JobHelper.DeserializeDateTime(hash["NextExecution"]);
                 }
 
-                if (hash.ContainsKey("LastJobId"))
+                if (hash.ContainsKey("LastJobId") && !string.IsNullOrWhiteSpace(hash["LastJobId"]))
                 {
                     dto.LastJobId = hash["LastJobId"];
 
