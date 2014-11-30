@@ -1,5 +1,7 @@
 ﻿using System;
 using Hangfire.Common;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Common
@@ -112,6 +114,88 @@ namespace Hangfire.Core.Tests.Common
         {
             var result = JobHelper.DeserializeNullableDateTime(WellKnownTimestamp.ToString());
             Assert.Equal(WellKnownDateTime, result);
+        }
+
+        [Fact]
+        public void FromJson_WithObjectType_DecodesFromJsonString()
+        {
+            var result = (ClassA)JobHelper.FromJson(@"{ ""PropertyA"": ""hello"" }", typeof(ClassA));
+            Assert.Equal("hello", result.PropertyA);
+        }
+
+        [Fact]
+        public void ForSerializeUseDefaultConfigurationOfJsonNet()
+        {
+            var result = JobHelper.ToJson(new ClassA("A"));
+            Assert.Equal(@"{""PropertyA"":""A""}", result);
+        }
+
+        [Fact]
+        public void ForSerializeCanUseCustomConfigurationOfJsonNet()
+        {
+            try
+            {
+                JobHelper.SetSerializerSettings(new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+
+                var result = JobHelper.ToJson(new ClassA("A"));
+                Assert.Equal(@"{""propertyA"":""A""}", result);
+            }
+            finally
+            {
+                JobHelper.SetSerializerSettings(null);
+            }
+        }
+
+        [Fact]
+        public void ForDeserializeCanUseCustomConfigurationOfJsonNet()
+        {
+            try
+            {
+                JobHelper.SetSerializerSettings(new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Objects
+                });
+
+                var result = (ClassA)JobHelper.FromJson<IClass>(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }");
+                Assert.Equal("A", result.PropertyA);
+            }
+            finally
+            {
+                JobHelper.SetSerializerSettings(null);
+            }
+        }
+
+        [Fact]
+        public void ForDeserializeWithGenericMethodCanUseCustomConfigurationOfJsonNet()
+        {
+            try
+            {
+                JobHelper.SetSerializerSettings(new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Objects
+                });
+
+                var result = (ClassA)JobHelper.FromJson(@"{ ""$type"": ""Hangfire.Core.Tests.Common.JobHelperFacts+ClassA, Hangfire.Core.Tests"", ""propertyA"":""A"" }", typeof(IClass));
+                Assert.Equal("A", result.PropertyA);
+            }
+            finally
+            {
+                JobHelper.SetSerializerSettings(null);
+            }
+        }
+
+        private interface IClass
+        {
+        }
+
+        private class ClassA : IClass
+        {
+            public ClassA(string propertyA)
+            {
+                PropertyA = propertyA;
+            }
+
+            public string PropertyA { get; private set; }
         }
     }
 }
