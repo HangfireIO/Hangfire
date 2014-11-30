@@ -199,10 +199,12 @@
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
     <Compile Include="Dashboard\RequestExtensions.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
+    <Compile Include="IServerComponentFactory.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
+    <Compile Include="ServerComponentFactory.cs" />
     <Compile Include="Server\AutomaticRetryServerComponentWrapper.cs" />
     <Compile Include="Server\EveryMinuteThrottler.cs" />
     <Compile Include="Server\IScheduleInstant.cs" />
