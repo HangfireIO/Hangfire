@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -22,17 +23,18 @@ using System.Linq;
 using System.Reflection;
 using Common.Logging;
 using Dapper;
+using Hangfire.Sql;
 
 namespace Hangfire.SqlServer
 {
     [ExcludeFromCodeCoverage]
-    internal static class SqlServerObjectsInstaller
+    public class SqlServerObjectsInstaller : ISchemaBuilder
     {
         private const int RequiredSchemaVersion = 3;
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(SqlServerStorage));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(SqlStorage));
 
-        public static void Install(SqlConnection connection)
+        public void BuildDatabase(IDbConnection connection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
@@ -54,7 +56,7 @@ namespace Hangfire.SqlServer
             Log.Info("Hangfire SQL objects installed.");
         }
 
-        private static bool IsSqlEditionSupported(SqlConnection connection)
+        private static bool IsSqlEditionSupported(IDbConnection connection)
         {
             var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
@@ -90,5 +92,7 @@ namespace Hangfire.SqlServer
             public const int SqlAzure = 5;
 // ReSharper restore UnusedMember.Local
         }
+
+       
     }
 }

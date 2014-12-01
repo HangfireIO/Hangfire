@@ -211,6 +211,10 @@
       <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
       <Name>Hangfire.SqlServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Hangfire.Sql\Hangfire.Sql.csproj">
+      <Project>{F7995BC2-BAFE-4381-858D-00D09742C189}</Project>
+      <Name>Hangfire.Sql</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201404132000304_AddSnippet.resx">

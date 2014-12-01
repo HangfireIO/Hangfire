@@ -15,7 +15,7 @@
     <AssemblyName>MvcSample</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -63,6 +63,13 @@
     <Reference Include="Microsoft.Web.Mvc.FixedDisplayModes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Microsoft.AspNet.Mvc.FixedDisplayModes.1.0.1\lib\net40\Microsoft.Web.Mvc.FixedDisplayModes.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.121.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\..\packages\odp.net.managed.121.1.2\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccessDTC">
+      <HintPath>..\..\libs\Oracle.ManagedDataAccessDTC.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -159,6 +166,10 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\HangFire.Oracle\Hangfire.Oracle.csproj">
+      <Project>{d0119b4f-7ae7-49cc-8693-4522ed717524}</Project>
+      <Name>Hangfire.Oracle</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Hangfire.SqlServer.Msmq\Hangfire.SqlServer.Msmq.csproj">
       <Project>{762be479-0aec-47e0-8f9c-34fa54641749}</Project>
       <Name>Hangfire.SqlServer.Msmq</Name>
@@ -170,6 +181,10 @@
     <ProjectReference Include="..\..\src\Hangfire.Core\Hangfire.Core.csproj">
       <Project>{c995ea9e-56ee-4951-8260-d94260a7f4c2}</Project>
       <Name>Hangfire.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Hangfire.Sql\Hangfire.Sql.csproj">
+      <Project>{f7995bc2-bafe-4381-858d-00d09742c189}</Project>
+      <Name>Hangfire.Sql</Name>
     </ProjectReference>
     <ProjectReference Include="..\ConsoleSample\ConsoleSample.csproj">
       <Project>{c02bb718-2ae4-434c-8668-c894ff663fce}</Project>
@@ -194,7 +209,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>0</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:56909/</IISUrl>
+          <IISUrl>http://localhost/hangfire</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

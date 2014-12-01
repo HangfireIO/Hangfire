@@ -151,6 +151,10 @@
       <Project>{C995EA9E-56EE-4951-8260-D94260A7F4C2}</Project>
       <Name>Hangfire.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Hangfire.Sql\Hangfire.Sql.csproj">
+      <Project>{f7995bc2-bafe-4381-858d-00d09742c189}</Project>
+      <Name>Hangfire.Sql</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

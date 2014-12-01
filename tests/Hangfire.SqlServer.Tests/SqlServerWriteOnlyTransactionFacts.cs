@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
+using Hangfire.Sql;
 using Hangfire.States;
 using Moq;
 using Xunit;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -17,7 +18,7 @@ namespace Hangfire.SqlServer.Tests
         public SqlServerWriteOnlyTransactionFacts()
         {
             var defaultProvider = new Mock<IPersistentJobQueueProvider>();
-            defaultProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+            defaultProvider.Setup(x => x.GetJobQueue())
                 .Returns(new Mock<IPersistentJobQueue>().Object);
 
             _queueProviders = new PersistentJobQueueProviderCollection(defaultProvider.Object);
@@ -27,7 +28,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, _queueProviders));
+                () => new SqlWriteOnlyTransaction(null, new SqlBook(), _queueProviders));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -36,12 +37,12 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null));
+                () => new SqlWriteOnlyTransaction(ConnectionUtils.CreateConnection(), new SqlBook(), null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job")]
         public void ExpireJob_SetsJobExpirationData()
         {
             const string arrangeSql = @"
@@ -64,7 +65,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job")]
         public void PersistJob_ClearsTheJobExpirationData()
         {
             const string arrangeSql = @"
@@ -87,7 +88,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job","HangFire.State")]
         public void SetJobState_AppendsAStateAndSetItToTheJob()
         {
             const string arrangeSql = @"
@@ -125,7 +126,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.State")]
         public void AddJobState_JustAddsANewRecordInATable()
         {
             const string arrangeSql = @"
@@ -165,7 +166,7 @@ select scope_identity() as Id";
             {
                 var correctJobQueue = new Mock<IPersistentJobQueue>();
                 var correctProvider = new Mock<IPersistentJobQueueProvider>();
-                correctProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+                correctProvider.Setup(x => x.GetJobQueue())
                     .Returns(correctJobQueue.Object);
 
                 _queueProviders.Add(correctProvider.Object, new [] { "default" });
@@ -183,7 +184,7 @@ select scope_identity() as Id";
                 .Single();
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void IncrementCounter_AddsRecordToCounterTable_WithPositiveValue()
         {
             UseConnection(sql =>
@@ -198,7 +199,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void IncrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
         {
             UseConnection(sql =>
@@ -218,7 +219,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void IncrementCounter_WithExistingKey_AddsAnotherRecord()
         {
             UseConnection(sql =>
@@ -235,7 +236,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue()
         {
             UseConnection(sql =>
@@ -250,7 +251,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void DecrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
         {
             UseConnection(sql =>
@@ -270,7 +271,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Counter")]
         public void DecrementCounter_WithExistingKey_AddsAnotherRecord()
         {
             UseConnection(sql =>
@@ -287,7 +288,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_AddsARecord_IfThereIsNo_SuchKeyAndValue()
         {
             UseConnection(sql =>
@@ -302,7 +303,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent()
         {
             UseConnection(sql =>
@@ -319,7 +320,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_DoesNotAddARecord_WhenBothKeyAndValueAreExist()
         {
             UseConnection(sql =>
@@ -336,7 +337,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist()
         {
             UseConnection(sql =>
@@ -351,7 +352,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void AddToSet_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist()
         {
             UseConnection(sql =>
@@ -368,7 +369,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue()
         {
             UseConnection(sql =>
@@ -385,7 +386,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void RemoveFromSet_DoesNotRemoveRecord_WithSameKey_AndDifferentValue()
         {
             UseConnection(sql =>
@@ -402,7 +403,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void RemoveFromSet_DoesNotRemoveRecord_WithSameValue_AndDifferentKey()
         {
             UseConnection(sql =>
@@ -419,7 +420,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void InsertToList_AddsARecord_WithGivenValues()
         {
             UseConnection(sql =>
@@ -433,7 +434,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void InsertToList_AddsAnotherRecord_WhenBothKeyAndValueAreExist()
         {
             UseConnection(sql =>
@@ -450,7 +451,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void RemoveFromList_RemovesAllRecords_WithGivenKeyAndValue()
         {
             UseConnection(sql =>
@@ -468,7 +469,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void RemoveFromList_DoesNotRemoveRecords_WithSameKey_ButDifferentValue()
         {
             UseConnection(sql =>
@@ -485,7 +486,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void RemoveFromList_DoesNotRemoveRecords_WithSameValue_ButDifferentKey()
         {
             UseConnection(sql =>
@@ -502,7 +503,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_TrimsAList_ToASpecifiedRange()
         {
             UseConnection(sql =>
@@ -524,7 +525,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesRecordsToEnd_IfKeepAndingAt_GreaterThanMaxElementIndex()
         {
             UseConnection(sql =>
@@ -543,7 +544,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesAllRecords_WhenStartingFromValue_GreaterThanMaxElementIndex()
         {
             UseConnection(sql =>
@@ -560,7 +561,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesAllRecords_IfStartFromGreaterThanEndingAt()
         {
             UseConnection(sql =>
@@ -577,7 +578,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.List")]
         public void TrimList_RemovesRecords_OnlyOfAGivenKey()
         {
             UseConnection(sql =>
@@ -587,9 +588,7 @@ select scope_identity() as Id";
                     x.InsertToList("my-key", "0");
                     x.TrimList("another-key", 1, 0);
                 });
-
                 var recordCount = sql.Query<int>("select count(*) from HangFire.List").Single();
-
                 Assert.Equal(1, recordCount);
             });
         }
@@ -606,7 +605,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
         {
             UseConnection(sql =>
@@ -618,7 +617,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void SetRangeInHash_MergesAllRecords()
         {
             UseConnection(sql =>
@@ -649,7 +648,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void RemoveHash_RemovesAllHashRecords()
         {
             UseConnection(sql =>
@@ -680,9 +679,9 @@ select scope_identity() as Id";
 
         private void Commit(
             SqlConnection connection,
-            Action<SqlServerWriteOnlyTransaction> action)
+            Action<SqlWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection, _queueProviders))
+            using (var transaction = new SqlWriteOnlyTransaction(connection, new SqlBook(), _queueProviders))
             {
                 action(transaction);
                 transaction.Commit();

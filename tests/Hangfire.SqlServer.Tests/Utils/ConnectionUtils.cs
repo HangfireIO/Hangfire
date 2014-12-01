@@ -1,5 +1,7 @@
 ﻿using System;
-using System.Data.SqlClient;
+using System.Data;
+using Hangfire.Sql;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -13,6 +15,8 @@ namespace Hangfire.SqlServer.Tests
         private const string DefaultDatabaseName = @"Hangfire.SqlServer.Tests";
         private const string DefaultConnectionStringTemplate
             = @"Server=.\sqlexpress;Database={0};Trusted_Connection=True;";
+
+        private static IConnectionProvider _connectionProvider = CreateConnectionProvider();
 
         public static string GetDatabaseName()
         {
@@ -35,12 +39,24 @@ namespace Hangfire.SqlServer.Tests
                    ?? DefaultConnectionStringTemplate;
         }
 
+        public static IConnectionProvider CreateConnectionProvider() {
+            return new SqlStorageConnectionProvider(GetConnectionString());
+        }
+
         public static SqlConnection CreateConnection()
         {
             var connection = new SqlConnection(GetConnectionString());
             connection.Open();
-
             return connection;
+        }
+
+        public static void UseConnection(Action<IDbConnection, IDbTransaction> action) {
+            using (var connection = _connectionProvider.CreateAndOpenConnection()) {
+                using (var transaction = connection.BeginTransaction()) {
+                    action(connection, transaction);
+                    transaction.Commit();
+                }
+            }
         }
     }
 }

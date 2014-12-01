@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core", "src\Hangfire.Core\Hangfire.Core.csproj", "{C995EA9E-56EE-4951-8260-D94260A7F4C2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Redis", "src\Hangfire.Redis\Hangfire.Redis.csproj", "{8F46F57B-3247-4AA7-B330-57AC088547EB}"
@@ -18,6 +20,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq", "src\Hangfire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq.Tests", "tests\Hangfire.SqlServer.RabbitMq.Tests\Hangfire.SqlServer.RabbitMq.Tests.csproj", "{2654D751-33D5-411D-A187-D057FED9CD25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Sql", "src\Hangfire.Sql\Hangfire.Sql.csproj", "{F7995BC2-BAFE-4381-858D-00D09742C189}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Oracle", "src\HangFire.Oracle\Hangfire.Oracle.csproj", "{D0119B4F-7AE7-49CC-8693-4522ED717524}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +63,17 @@ Global
 		{2654D751-33D5-411D-A187-D057FED9CD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {9FC4F973-0AA1-4E6E-AF9A-561629BE50EC}

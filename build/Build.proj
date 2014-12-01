@@ -25,9 +25,9 @@
     <ToolsPath>$(ProjectRoot)\tools\</ToolsPath>
     <ILRepackPath>$(ToolsPath)ILRepack.exe</ILRepackPath>
     <XunitPath>$(ToolsPath)xunit\</XunitPath>
-    <DefaultSqlServerConnectionStringTemplate>
+    <DefaultSqlStorageConnectionStringTemplate>
       Server=.\sqlexpress;Database={0};Trusted_Connection=True;
-    </DefaultSqlServerConnectionStringTemplate>
+    </DefaultSqlStorageConnectionStringTemplate>
     <DefaultSqlServerTestDatabase>Hangfire.Test</DefaultSqlServerTestDatabase>
   </PropertyGroup>
 
@@ -112,7 +112,7 @@
   
   <Target Name="PrepareForIntegrationTests">
     <SetEnvironmentVariableIfNotExists Name="Hangfire_SqlServer_ConnectionStringTemplate" 
-                                       Value="$(DefaultSqlServerConnectionStringTemplate)" />
+                                       Value="$(DefaultSqlStorageConnectionStringTemplate)" />
     <SetEnvironmentVariableIfNotExists Name="Hangfire_SqlServer_DatabaseName" 
                                        Value="$(DefaultSqlServerTestDatabase)" />
   </Target>

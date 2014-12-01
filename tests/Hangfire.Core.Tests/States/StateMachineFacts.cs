@@ -20,7 +20,7 @@ namespace Hangfire.Core.Tests.States
         private readonly Dictionary<string, string> _parameters;
         private readonly Mock<IState> _state;
         private readonly Mock<IStateChangeProcess> _stateChangeProcess;
-        private readonly Mock<IDisposable> _distributedLock;
+        private readonly Mock<IDistributedLock> _distributedLock;
 
         public StateMachineFacts()
         {
@@ -46,7 +46,7 @@ namespace Hangfire.Core.Tests.States
                     Job = _job
                 });
 
-            _distributedLock = new Mock<IDisposable>();
+            _distributedLock = new Mock<IDistributedLock>();
             _connection
                 .Setup(x => x.AcquireDistributedLock(String.Format("job:{0}:state-lock", JobId), It.IsAny<TimeSpan>()))
                 .Returns(_distributedLock.Object);

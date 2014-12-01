@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Hangfire.Sql;
 using Moq;
 using Xunit;
 
