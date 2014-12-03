@@ -7,7 +7,6 @@
     <Configuration Condition="$(Configuration) == ''">Debug</Configuration>
     <BuildEnvironment Condition="'$(BuildEnvironment)' == ''">local</BuildEnvironment>
     <UseILMerge Condition=" '$(OS)' == 'Windows_NT' ">True</UseILMerge>
-    <Nightly Condition="$(Nightly) == ''">true</Nightly>
     <ProjectRoot>$(MSBuildProjectDirectory)\..</ProjectRoot>
     <ArtifactsDir>$(ProjectRoot)\artifacts\$(Configuration)</ArtifactsDir>
     <ProjectArtifactsDir>$(ArtifactsDir)\projects</ProjectArtifactsDir>
@@ -40,9 +39,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <BuildTagWithSeparator Condition="$(APPVEYOR_BUILD_NUMBER) != '' and $(APPVEYOR_REPO_TAG) == 'False'">-build-$([System.String]::Format('{0:00000}', $([MSBuild]::Add($(APPVEYOR_BUILD_NUMBER), 0))))</BuildTagWithSeparator>
     <PrereleaseTagWithSeparator Condition="$(BuildQuality) != ''">-$(BuildQuality)</PrereleaseTagWithSeparator>
     <AssemblyVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</AssemblyVersion>
-    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)</PackageVersion>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)$(PrereleaseTagWithSeparator)$(BuildTagWithSeparator)</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
