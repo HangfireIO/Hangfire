@@ -25,6 +25,7 @@ branches:
   # whitelist
   only:
     - master
+    - dev
 
 #---------------------------------#
 #       build configuration       #
