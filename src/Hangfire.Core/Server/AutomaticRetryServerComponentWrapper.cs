@@ -16,8 +16,8 @@
 
 using System;
 using System.Threading;
-using Common.Logging;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
@@ -59,7 +59,7 @@ namespace Hangfire.Server
             _innerComponent = innerComponent;
             _maxRetryAttempts = maxRetryAttempts;
             _delayCallback = delayCallback;
-            _logger = LogManager.GetLogger(_innerComponent.GetType());
+            _logger = LogProvider.GetLogger(_innerComponent.GetType());
         }
 
         public IServerComponent InnerComponent

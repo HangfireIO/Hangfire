@@ -16,13 +16,13 @@
 
 using System;
 using System.Threading;
-using Common.Logging;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
     public class ServerWatchdog : IServerComponent
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerWatchdog));
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly ServerWatchdogOptions _options;

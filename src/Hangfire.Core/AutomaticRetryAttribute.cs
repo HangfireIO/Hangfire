@@ -1,6 +1,6 @@
 using System;
-using Common.Logging;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.States;
 
 namespace Hangfire
@@ -13,7 +13,7 @@ namespace Hangfire
 
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
     {
-        private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private const int DefaultRetryAttempts = 10;
 
         private int _attempts;

@@ -15,7 +15,6 @@
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Common.Logging" version="2.2.0" />
       <dependency id="Dapper" version="1.13" />
     </dependencies>
   </metadata>

@@ -17,14 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Common.Logging;
 
 namespace Hangfire.Server
 {
     internal class WorkerManager : IServerComponent
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(WorkerManager));
-
         private readonly SharedWorkerContext _sharedContext;
         private readonly int _workerCount;
 

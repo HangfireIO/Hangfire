@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Common.Logging;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 
@@ -26,7 +26,7 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IServerSupervisor
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(BackgroundJobServer));
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly BackgroundJobServerOptions _options;

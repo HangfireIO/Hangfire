@@ -16,15 +16,15 @@
 
 using System;
 using System.Threading;
-using Common.Logging;
 using Dapper;
+using Hangfire.Logging;
 using Hangfire.Server;
 
 namespace Hangfire.SqlServer
 {
     internal class ExpirationManager : IServerComponent
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(ExpirationManager));
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private static readonly string[] ProcessedTables =
         {
             "Counter",

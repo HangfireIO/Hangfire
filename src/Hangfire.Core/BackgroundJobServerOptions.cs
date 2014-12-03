@@ -16,7 +16,7 @@
 
 using System;
 using System.Linq;
-using Common.Logging;
+using Hangfire.Logging;
 using Hangfire.States;
 
 namespace Hangfire
