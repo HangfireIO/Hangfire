@@ -64,6 +64,10 @@
       <Project>{A523C0E3-097D-4869-977F-15A717EA3E83}</Project>
       <Name>Hangfire.SqlServer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Hangfire.Sql\Hangfire.Sql.csproj">
+      <Project>{f7995bc2-bafe-4381-858d-00d09742c189}</Project>
+      <Name>Hangfire.Sql</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Common\Hangfire.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

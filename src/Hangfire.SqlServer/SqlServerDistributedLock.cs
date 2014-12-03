@@ -18,10 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Dapper;
+using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerDistributedLock : IDisposable
+    internal class SqlServerDistributedLock : IDistributedLock
     {
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";

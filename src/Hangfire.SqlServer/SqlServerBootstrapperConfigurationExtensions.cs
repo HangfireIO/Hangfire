@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Sql;
+
 namespace Hangfire.SqlServer
 {
     public static class SqlServerBootstrapperConfigurationExtensions
@@ -46,7 +48,7 @@ namespace Hangfire.SqlServer
         public static SqlServerStorage UseSqlServerStorage(
             this IBootstrapperConfiguration configuration,
             string nameOrConnectionString,
-            SqlServerStorageOptions options)
+            SqlStorageOptions options)
         {
             var storage = new SqlServerStorage(nameOrConnectionString, options);
             configuration.UseStorage(storage);

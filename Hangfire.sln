@@ -64,6 +64,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq", "src\Hangfire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Sql", "src\Hangfire.Sql\Hangfire.Sql.csproj", "{F7995BC2-BAFE-4381-858D-00D09742C189}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Oracle", "src\HangFire.Oracle\Hangfire.Oracle.csproj", "{D0119B4F-7AE7-49CC-8693-4522ED717524}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +118,14 @@ Global
 		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7995BC2-BAFE-4381-858D-00D09742C189}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0119B4F-7AE7-49CC-8693-4522ED717524}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

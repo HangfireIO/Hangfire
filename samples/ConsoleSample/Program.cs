@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
 using Common.Logging.Simple;
 using Hangfire;
+using Hangfire.Oracle;
+using Hangfire.Sql;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
 
@@ -16,28 +19,30 @@ namespace ConsoleSample
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
                 LogLevel.Info, false, false, true, "");
 
-            var sqlServerStorage = new SqlServerStorage(
+            var storage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
-            sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+            storage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
 
-            JobStorage.Current = sqlServerStorage;
+            //var storage = new OracleStorage("Data Source=//localhost:1521/XE;User Id=hangfire;Password=hangfire;");
+
+            JobStorage.Current = storage;
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
 
             var options = new BackgroundJobServerOptions
             {
-                Queues = new[] { "critical", "default" }
+                Queues = new[] { "critical", "default" },
+                WorkerCount = 1
             };
 
             using (var server = new BackgroundJobServer(options))
             {
                 var count = 1;
-
+                server.Start();
                 while (true)
                 {
                     var command = Console.ReadLine();
-
                     if (command == null || command.Equals("stop", StringComparison.OrdinalIgnoreCase))
                     {
                         break;

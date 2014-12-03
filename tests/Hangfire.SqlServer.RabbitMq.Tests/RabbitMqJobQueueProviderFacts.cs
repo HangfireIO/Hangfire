@@ -15,7 +15,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         {
             var provider = CreateProvider();
 
-            var jobQueue = provider.GetJobQueue(null);
+            var jobQueue = provider.GetJobQueue();
 
             Assert.NotNull(jobQueue);
         }
@@ -25,7 +25,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         {
             var provider = CreateProvider();
 
-            var monitoring = provider.GetJobQueueMonitoringApi(null);
+            var monitoring = provider.GetJobQueueMonitoringApi();
 
             Assert.NotNull(monitoring);
         }

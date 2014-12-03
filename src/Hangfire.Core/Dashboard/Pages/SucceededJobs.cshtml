@@ -1,11 +1,12 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
 @using Common
-@using Pages
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
 @using Hangfire.Storage
-@using States
-@using Storage.Monitoring
-@inherits RazorPage
+@using Hangfire.Storage.Monitoring
+@inherits Hangfire.Dashboard.RazorPage
 @{
     Layout = new LayoutPage { Title = "Succeeded Jobs" };
 

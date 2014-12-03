@@ -1,30 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
 using Hangfire.Common;
+using Hangfire.Sql;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
+using SqlConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Hangfire.SqlServer.Tests
 {
-    public class SqlServerConnectionFacts
+    public class SqlStorageConnectionFacts
     {
         private readonly Mock<IPersistentJobQueue> _queue;
         private readonly Mock<IPersistentJobQueueProvider> _provider;
         private readonly PersistentJobQueueProviderCollection _providers;
 
-        public SqlServerConnectionFacts()
+        public SqlStorageConnectionFacts()
         {
             _queue = new Mock<IPersistentJobQueue>();
 
             _provider = new Mock<IPersistentJobQueueProvider>();
-            _provider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+            _provider.Setup(x => x.GetJobQueue())
                 .Returns(_queue.Object);
 
             _providers = new PersistentJobQueueProviderCollection(_provider.Object);
@@ -34,7 +35,8 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, _providers));
+                () => new SqlStorageConnection(null, new SqlBook(),
+                new SqlServerDistributedLockAcquirer(), _providers));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -43,35 +45,10 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+                () => new SqlStorageConnection(ConnectionUtils.CreateConnection(), new SqlBook(),
+                new SqlServerDistributedLockAcquirer(), null));
 
             Assert.Equal("queueProviders", exception.ParamName);
-        }
-
-        [Fact, CleanDatabase]
-        public void Dispose_DisposesTheConnection_IfOwned()
-        {
-            using (var sqlConnection = ConnectionUtils.CreateConnection())
-            {
-                var connection = new SqlServerConnection(sqlConnection, _providers);
-
-                connection.Dispose();
-
-                Assert.Equal(ConnectionState.Closed, sqlConnection.State);
-            }
-        }
-
-        [Fact, CleanDatabase]
-        public void Dispose_DoesNotDisposeTheConnection_IfNotOwned()
-        {
-            using (var sqlConnection = ConnectionUtils.CreateConnection())
-            {
-                var connection = new SqlServerConnection(sqlConnection, _providers, ownsConnection: false);
-
-                connection.Dispose();
-
-                Assert.Equal(ConnectionState.Open, sqlConnection.State);
-            }
         }
 
         [Fact, CleanDatabase]
@@ -154,7 +131,7 @@ namespace Hangfire.SqlServer.Tests
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters()
         {
             UseConnections((sql, connection) =>
@@ -179,7 +156,7 @@ namespace Hangfire.SqlServer.Tests
                 invocationData.Arguments = sqlJob.Arguments;
 
                 var job = invocationData.Deserialize();
-                Assert.Equal(typeof(SqlServerConnectionFacts), job.Type);
+                Assert.Equal(typeof(SqlStorageConnectionFacts), job.Type);
                 Assert.Equal("SampleMethod", job.Method.Name);
                 Assert.Equal("\"Hello\"", job.Arguments[0]);
 
@@ -254,7 +231,7 @@ select scope_identity() as Id";
                     () => connection.GetStateData(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.State")]
         public void GetStateData_ReturnsNull_IfThereIsNoSuchState()
         {
             UseConnection(connection =>
@@ -264,7 +241,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.State")]
         public void GetStateData_ReturnsCorrectData()
         {
             const string arrangeSql = @"
@@ -301,7 +278,7 @@ select @JobId as Id;";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job")]
         public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException()
         {
             const string arrangeSql = @"
@@ -350,7 +327,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void SetParameters_CreatesNewParameter_WhenParameterWithTheGivenNameDoesNotExists()
         {
             const string arrangeSql = @"
@@ -373,7 +350,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void SetParameter_UpdatesValue_WhenParameterWithTheGivenName_AlreadyExists()
         {
             const string arrangeSql = @"
@@ -397,7 +374,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void SetParameter_CanAcceptNulls_AsValues()
         {
             const string arrangeSql = @"
@@ -444,7 +421,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.JobParameter")]
         public void GetParameter_ReturnsNull_WhenParameterDoesNotExists()
         {
             UseConnection(connection =>
@@ -454,7 +431,7 @@ select scope_identity() as Id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Job", "HangFire.JobParameter")]
         public void GetParameter_ReturnsParameterValue_WhenJobExists()
         {
             const string arrangeSql = @"
@@ -497,7 +474,7 @@ select @id";
                 () => connection.GetFirstByLowestScoreFromSet("key", 0, -1)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetFirstByLowestScoreFromSet_ReturnsNull_WhenTheKeyDoesNotExist()
         {
             UseConnection(connection =>
@@ -509,7 +486,7 @@ select @id";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetFirstByLowestScoreFromSet_ReturnsTheValueWithTheLowestScore()
         {
             const string arrangeSql = @"
@@ -554,7 +531,7 @@ values
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void AnnounceServer_CreatesOrUpdatesARecord()
         {
             UseConnections((sql, connection) =>
@@ -592,7 +569,7 @@ values
                 () => connection.RemoveServer(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void RemoveServer_RemovesAServerRecord()
         {
             const string arrangeSql = @"
@@ -619,7 +596,7 @@ values
                 () => connection.Heartbeat(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void Heartbeat_UpdatesLastHeartbeat_OfTheServerWithGivenId()
         {
             const string arrangeSql = @"
@@ -649,7 +626,7 @@ values
                 () => connection.RemoveTimedOutServers(TimeSpan.FromMinutes(-5))));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Server")]
         public void RemoveTimedOutServers_DoItsWorkPerfectly()
         {
             const string arrangeSql = @"
@@ -680,7 +657,7 @@ values (@id, '', @heartbeat)";
                 Assert.Throws<ArgumentNullException>(() => connection.GetAllItemsFromSet(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenKeyDoesNotExist()
         {
             UseConnection(connection =>
@@ -692,7 +669,7 @@ values (@id, '', @heartbeat)";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.[Set]")]
         public void GetAllItemsFromSet_ReturnsAllItems()
         {
             const string arrangeSql = @"
@@ -743,7 +720,7 @@ values (@key, 0.0, @value)";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void SetRangeInHash_MergesAllRecords()
         {
             UseConnections((sql, connection) =>
@@ -771,7 +748,7 @@ values (@key, 0.0, @value)";
                 Assert.Throws<ArgumentNullException>(() => connection.GetAllEntriesFromHash(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void GetAllEntriesFromHash_ReturnsNull_IfHashDoesNotExist()
         {
             UseConnection(connection =>
@@ -781,7 +758,7 @@ values (@key, 0.0, @value)";
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase("HangFire.Hash")]
         public void GetAllEntriesFromHash_ReturnsAllKeysAndTheirValues()
         {
             const string arrangeSql = @"
@@ -809,19 +786,22 @@ values (@key, @field, @value)";
             });
         }
 
-        private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
+        private void UseConnections(Action<SqlConnection, SqlStorageConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, _providers))
+            using (var connection = new SqlStorageConnection(sqlConnection, new SqlBook(),
+                new SqlServerDistributedLockAcquirer(), _providers))
             {
                 action(sqlConnection, connection);
             }
         }
 
-        private void UseConnection(Action<SqlServerConnection> action)
+        private void UseConnection(Action<SqlStorageConnection> action)
         {
-            using (var connection = new SqlServerConnection( 
+            using (var connection = new SqlStorageConnection( 
                 ConnectionUtils.CreateConnection(),
+                new SqlBook(), 
+                new SqlServerDistributedLockAcquirer(), 
                 _providers))
             {
                 action(connection);
