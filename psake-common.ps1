@@ -13,6 +13,8 @@ Properties {
     $xunit = "$package_dir\xunit.runners*\tools\xunit.console.clr4.exe"
     $ilmerge = "$package_dir\ilmerge.*\content\ilmerge.exe"
     $nuget = "$base_dir\.nuget\nuget.exe"
+    $sharedAssemblyInfo = "$src_dir\SharedAssemblyInfo.cs"
+    $appVeyorConfig = "$base_dir\appveyor.yml"
 }
 
 ### Tasks
@@ -32,6 +34,12 @@ Task Compile -depends Clean {
     Exec { msbuild $solution_path /p:Configuration=$config /nologo /verbosity:minimal }
 }
 
+Task Version {
+    $newVersion = Read-Host "Please enter a new version number (major.minor.patch)"
+    Update-SharedVersion $newVersion
+    Update-AppVeyorVersion $newVersion
+}
+
 ### Functions
 
 function Run-Tests($project) {
@@ -40,8 +48,36 @@ function Run-Tests($project) {
 }
 
 function Get-SharedVersion {
-    $line = Get-Content "$src_dir\SharedAssemblyInfo.cs" | where {$_.Contains("AssemblyVersion")}
+    $line = Get-Content "$sharedAssemblyInfo" | where {$_.Contains("AssemblyVersion")}
     $line.Split('"')[1]
+}
+
+function Update-SharedVersion($version) {
+    Check-Version($version)
+    
+    $versionPattern = 'AssemblyVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)'
+    $versionAssembly = 'AssemblyVersion("' + $version + '")';
+
+    if (Test-Path $sharedAssemblyInfo) {
+        Replace-Content "$sharedAssemblyInfo" $versionPattern $versionAssembly
+    }
+}
+
+function Update-AppveyorVersion($version) {
+    Check-Version($version)
+
+    $versionPattern = "version: [0-9]+(\.([0-9]+|\*)){1,3}"
+    $versionReplace = "version: $version"
+
+    if (Test-Path $appVeyorConfig) {
+        Replace-Content "$appVeyorConfig" $versionPattern $versionReplace
+    }
+}
+
+function Check-Version($version) {
+    if ($version -notmatch "[0-9]+(\.([0-9]+|\*)){1,3}") {
+        Write-Error "Version number incorrect format: $version"
+    }
 }
 
 function Create-Package($project) {
@@ -55,12 +91,16 @@ function Create-Package($project) {
 
     Copy-Item "$nuspec_dir\$project.nuspec" $temp_dir -Force > $null
     Try {
-        (gc "$nuspec_dir\$project.nuspec") -Replace '0.0.0', $version | sc "$nuspec_dir\$project.nuspec"
+        Replace-Content "$nuspec_dir\$project.nuspec" '0.0.0' $version
         Exec { .$nuget pack "$nuspec_dir\$project.nuspec" -OutputDirectory "$build_dir" -BasePath "$build_dir" -Version $version -Symbols }
     }
     Finally {
         Move-Item "$temp_dir\$project.nuspec" $nuspec_dir -Force > $null
     }
+}
+
+function Replace-Content($file, $pattern, $substring) {
+    (gc $file) -Replace $pattern, $substring | sc $file
 }
 
 function Collect-Tool($source) {
