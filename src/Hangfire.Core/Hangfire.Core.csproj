@@ -396,7 +396,6 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_PerPageSelector.generated.cs</LastGenOutput>
     </None>
-    <None Include="ILMerge.doc" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -431,9 +430,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ILMerge.exe" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
