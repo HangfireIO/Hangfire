@@ -51,8 +51,6 @@ function Create-Package($project) {
         $version += "-build-" + $buildNumber.ToString().PadLeft(5, '0')
     }
 
-    $version
-
     New-Item $temp_dir -Type Directory -Force > $null
 
     Copy-Item "$nuspec_dir\$project.nuspec" $temp_dir -Force > $null
@@ -66,6 +64,8 @@ function Create-Package($project) {
 }
 
 function Collect-Tool($source) {
+    "Collecting tool '$source'..."
+
     $destination = "$build_dir\Tools"
 
     New-Item $destination -Type Directory -Force > $null
@@ -73,6 +73,8 @@ function Collect-Tool($source) {
 }
 
 function Collect-Content($source) {
+    "Collecting content '$source'..."
+
     $destination = "$build_dir\Content"
 
     New-Item $destination -Type Directory -Force > $null

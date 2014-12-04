@@ -2,7 +2,7 @@ Properties {
     $solution = "Hangfire.sln"
 }
 
-Include ".\hangfire.ps1"
+Include ".\psake-common.ps1"
 
 Task Default -Depends Compile
 
