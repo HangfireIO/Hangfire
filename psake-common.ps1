@@ -52,7 +52,7 @@ function Run-Tests($project) {
     $assembly = Get-Assembly $tests_dir $project $assembly
 
     if ($appVeyor) {
-        Exec { xunit.console $assembly /appveyor }
+        Exec { xunit.console.clr4 $assembly /appveyor }
     } else {
         Exec { .$xunit $assembly }
     }
