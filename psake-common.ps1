@@ -34,7 +34,7 @@ Task Compile -depends Clean {
 
     $extra = $null
     if ($appVeyor) {
-        $extra = "/logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll'"
+        $extra = "/logger:C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
     }
 
     Exec { msbuild $solution_path /p:Configuration=$config /nologo /verbosity:minimal $extra }
