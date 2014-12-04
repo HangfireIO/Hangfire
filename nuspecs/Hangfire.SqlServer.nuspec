@@ -20,6 +20,8 @@
   <files>
     <file src="Net45\Hangfire.SqlServer.dll" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.xml" target="lib\net45" />
+    <file src="Net45\Hangfire.SqlServer.pdb" target="lib\net45" />
     <file src="Tools\Install.sql" target="tools\install.sql" />
+    <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" />
   </files>
 </package>
