@@ -8,8 +8,7 @@ Properties {
     $framework_dir =  $env:windir + "\Microsoft.Net\Framework\v4.0.30319"
     $temp_dir = "$build_dir\Temp"
     $solution_path = "$base_dir\$solution"
-    $config = "Release"
-    $buildNumber = $null
+    $config = "Release"    
     $xunit = "$package_dir\xunit.runners*\tools\xunit.console.clr4.exe"
     $ilmerge = "$package_dir\ilmerge.*\content\ilmerge.exe"
     $nuget = "$base_dir\.nuget\nuget.exe"
@@ -96,6 +95,7 @@ function Check-Version($version) {
 
 function Create-Package($project) {
     $version = Get-SharedVersion
+    $buildNumber = $env:APPVEYOR_BUILD_NUMBER
 
     if ($buildNumber -ne $null) {
         $version += "-build-" + $buildNumber.ToString().PadLeft(5, '0')
