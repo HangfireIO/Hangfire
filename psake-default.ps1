@@ -4,7 +4,7 @@ Properties {
 
 Include ".\psake-common.ps1"
 
-Task Default -Depends Compile
+Task Default -Depends Test
 
 Task Test -depends Compile {
     Run-Tests "Hangfire.Core.Tests"
