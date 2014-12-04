@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Hangfire.SqlServer</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>0.0.0</version>
     <title>Hangfire SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
@@ -14,8 +14,7 @@
     <tags>Hangfire SqlServer SqlAzure</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Dapper" version="1.13" />
+      <dependency id="Hangfire.Core" version="[0.0.0]" />
     </dependencies>
   </metadata>
   <files>

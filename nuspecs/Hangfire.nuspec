@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Hangfire</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>0.0.0</version>
     <title>Hangfire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
@@ -43,8 +43,8 @@
 * Fixed – Updated UseRabbitMq extension method to actually use the VirtualHost property (by @gaiazov).
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.Core" version="[0.0.0]" />
+      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
       <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
     </dependencies>
   </metadata>
