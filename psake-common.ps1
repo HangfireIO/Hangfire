@@ -15,6 +15,7 @@ Properties {
     $nuget = "$base_dir\.nuget\nuget.exe"
     $sharedAssemblyInfo = "$src_dir\SharedAssemblyInfo.cs"
     $appVeyorConfig = "$base_dir\appveyor.yml"
+    $appVeyor = $env:APPVEYOR
 }
 
 ### Tasks
@@ -31,7 +32,13 @@ Task Clean {
 
 Task Compile -depends Clean {
     "Compiling '$solution'..."
-    Exec { msbuild $solution_path /p:Configuration=$config /nologo /verbosity:minimal }
+
+    $extra = $null
+    if ($appVeyor) {
+        $extra = "/logger:'C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll'"
+    }
+
+    Exec { msbuild $solution_path /p:Configuration=$config /nologo /verbosity:minimal $extra }
 }
 
 Task Version {
@@ -44,7 +51,12 @@ Task Version {
 
 function Run-Tests($project) {
     $assembly = Get-Assembly $tests_dir $project $assembly
-    Exec { .$xunit $assembly }
+
+    if ($appVeyor) {
+        Exec { xunit.console $assembly /appveyor }
+    } else {
+        Exec { .$xunit $assembly }
+    }
 }
 
 function Get-SharedVersion {
@@ -59,6 +71,7 @@ function Update-SharedVersion($version) {
     $versionAssembly = 'AssemblyVersion("' + $version + '")';
 
     if (Test-Path $sharedAssemblyInfo) {
+        "Patching $sharedAssemblyInfo..."
         Replace-Content "$sharedAssemblyInfo" $versionPattern $versionAssembly
     }
 }
@@ -70,6 +83,7 @@ function Update-AppveyorVersion($version) {
     $versionReplace = "version: $version"
 
     if (Test-Path $appVeyorConfig) {
+        "Patching $appVeyorConfig..."
         Replace-Content "$appVeyorConfig" $versionPattern $versionReplace
     }
 }
