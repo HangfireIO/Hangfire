@@ -6,18 +6,18 @@ Include ".\psake-common.ps1"
 
 Task Default -Depends Collect
 
-Task Test -depends Compile {
-    Run-Tests "Hangfire.Core.Tests"
-    Run-Tests "Hangfire.SqlServer.Tests"
-    Run-Tests "Hangfire.SqlServer.Msmq.Tests"
+Task Test -Depends Compile -Description "Run unit and integration tests." {
+    Run-XunitTests "Hangfire.Core.Tests"
+    Run-XunitTests "Hangfire.SqlServer.Tests"
+    Run-XunitTests "Hangfire.SqlServer.Msmq.Tests"
 }
 
-Task Merge -depends Test {
+Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
     Merge-Assembly "Hangfire.Core" @("NCrontab", "CronExpressionDescriptor", "Microsoft.Owin")
     Merge-Assembly "Hangfire.SqlServer" @("Dapper")
 }
 
-Task Collect -depends Merge {
+Task Collect -Depends Merge -Description "Copy all artifacts to the build folder." {
     Collect-Assembly "Hangfire.Core" "Net45"
     Collect-Assembly "Hangfire.SqlServer" "Net45"
     Collect-Assembly "Hangfire.SqlServer.Msmq" "Net45"
@@ -27,10 +27,16 @@ Task Collect -depends Merge {
     Collect-Tool "src\Hangfire.SqlServer\Install.sql"
 }
 
-Task Pack -depends Collect {
-    Create-Package "Hangfire"
-    Create-Package "Hangfire.Core"
-    Create-Package "Hangfire.SqlServer"
-    Create-Package "Hangfire.SqlServer.Msmq"
-    Create-Package "Hangfire.SqlServer.RabbitMq"
+Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {
+    Remove-Directory "$temp_dir"
+
+    $version = Get-BuildVersion
+
+    Create-Zip "$build_dir\Hangfire-$version.zip" "$build_dir"
+
+    Create-Package "Hangfire" $version
+    Create-Package "Hangfire.Core" $version
+    Create-Package "Hangfire.SqlServer" $version
+    Create-Package "Hangfire.SqlServer.Msmq" $version
+    Create-Package "Hangfire.SqlServer.RabbitMq" $version
 }

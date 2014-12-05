@@ -27,14 +27,14 @@ Properties {
 
 ## Tasks
 
-Task Clean {
+Task Clean -Description "Clean up build and project folders." {
     Clean-Directory $build_dir
 
     "Cleaning up '$solution'..."
     Exec { msbuild $solution_path /target:Clean /nologo /verbosity:minimal }
 }
 
-Task Compile -depends Clean {
+Task Compile -Depends Clean -Description "Compile all the projects in a solution." {
     "Compiling '$solution'..."
 
     $extra = $null
@@ -45,17 +45,10 @@ Task Compile -depends Clean {
     Exec { msbuild $solution_path /p:Configuration=$config /nologo /verbosity:minimal $extra }
 }
 
-Task Version {
+Task Version -Description "Patch AssemblyInfo and AppVeyor version files." {
     $newVersion = Read-Host "Please enter a new version number (major.minor.patch)"
     Update-SharedVersion $newVersion
     Update-AppVeyorVersion $newVersion
-}
-
-Task Archive -depends Pack {
-    Remove-Directory "$temp_dir"
-
-    $version = Get-BuildVersion
-    Create-Zip "$build_dir\Hangfire-$version.zip" "$build_dir"
 }
 
 ## Functions
@@ -130,11 +123,9 @@ function Collect-Assembly($project, $version) {
 
 ### Pack functions
 
-function Create-Package($project) {
+function Create-Package($project, $version) {
     Create-Directory $temp_dir
     Copy-Files "$nuspec_dir\$project.nuspec" $temp_dir
-
-    $version = Get-BuildVersion
 
     Try {
         Replace-Content "$nuspec_dir\$project.nuspec" '0.0.0' $version
