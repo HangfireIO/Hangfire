@@ -29,7 +29,7 @@
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
       <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
-      <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
+      <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
     </dependencies>
   </metadata>
   <files>
