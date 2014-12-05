@@ -22,6 +22,7 @@
 * Breaking – Use `LibLog` package instead of `Common.Logging` for logging.
 * Added – Generation of NuGet symbol packages with `*.pdb` and source files.
 * Changed – `Hangfire.SqlServer` is now merged with `Dapper` package.
+* Changed – `Dapper` package updated to 1.38.
 * Changed – Use ILMerge instead of ILRepack (found there is a NuGet package for it).
 * Other – Use psake instead of MSBuild for project build automation.
     </releaseNotes>
