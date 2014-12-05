@@ -21,9 +21,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Common.Logging;
 using Dapper;
 using Hangfire.Sql;
+using Hangfire.Logging;
 
 namespace Hangfire.SqlServer
 {
@@ -32,7 +32,7 @@ namespace Hangfire.SqlServer
     {
         private const int RequiredSchemaVersion = 3;
 
-        private static readonly ILog Log = LogManager.GetLogger(typeof(SqlStorage));
+        private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
         public void BuildDatabase(IDbConnection connection)
         {

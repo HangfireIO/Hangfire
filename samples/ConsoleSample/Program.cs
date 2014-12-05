@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Logging;
-using Common.Logging.Simple;
 using Hangfire;
-using Hangfire.Oracle;
-using Hangfire.Sql;
+using Hangfire.Logging;
+using Hangfire.Logging.LogProviders;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
 
@@ -16,8 +14,7 @@ namespace ConsoleSample
     {
         public static void Main()
         {
-            LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(
-                LogLevel.Info, false, false, true, "");
+            LogProvider.SetCurrentLogProvider(new ColouredConsoleLogProvider());
 
             var storage = new SqlServerStorage(
                 @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");

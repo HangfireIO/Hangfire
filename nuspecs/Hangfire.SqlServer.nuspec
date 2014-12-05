@@ -2,26 +2,32 @@
 <package >
   <metadata>
     <id>Hangfire.SqlServer</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>0.0.0</version>
     <title>Hangfire SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
-    <description>SQL Server / SQL Azure job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
+    <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
-    <tags>Hangfire SqlServer SqlAzure</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
+    <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
+    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.3.0
+* Breaking – Use `LibLog` package instead of `Common.Logging` for logging.
+* Added – Generation of NuGet symbol packages with `*.pdb` and source files.
+* Changed – `Hangfire.SqlServer` is now merged with `Dapper` package.
+    </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Common.Logging" version="2.2.0" />
-      <dependency id="Dapper" version="1.13" />
+      <dependency id="Hangfire.Core" version="[0.0.0]" />
     </dependencies>
   </metadata>
   <files>
     <file src="Net45\Hangfire.SqlServer.dll" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.xml" target="lib\net45" />
+    <file src="Net45\Hangfire.SqlServer.pdb" target="lib\net45" />
     <file src="Tools\Install.sql" target="tools\install.sql" />
+    <file src="..\src\Hangfire.SqlServer\**\*.cs" target="src" />
   </files>
 </package>

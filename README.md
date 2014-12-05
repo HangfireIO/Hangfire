@@ -113,15 +113,28 @@ Related Projects
 * [Hangfire.Azure.QueueStorage](https://github.com/HangfireIO/Hangfire.Azure.QueueStorage)
 * [Hangfire.Azure.ServiceBusQueue](https://github.com/HangfireIO/Hangfire.Azure.ServiceBusQueue)
 
-Roadmap
---------
+Building the sources
+---------------------
 
-* Full documentation for product and its API.
-* More tutorials and articles that describe the features and use cases.
-* ~~Recurring jobs support to fully cover all background needs.~~
-* Support for other job storages, ~~including Microsoft Azure Storage~~.
-* Make it easier to maintain jobs, even on large-scale systems.
-* Deliver the solution to the 90% of ASP.NET developers :smile:.
+To build a solution and get assembly files, just run the following command. All build artifacts, including `*.pdb` files will be placed into the `build` folder. **Before proposing a pull request, please use this command to ensure everything is ok.** Btw, you can execute this command from Package Manager Console window.
+
+```
+build
+```
+
+To build NuGet packages as well as an archive file, use the `pack` command as shown below. You can find the result files in the `build` folder.
+
+```
+build pack
+```
+
+To see the full list of avalable commands, pass the `-docs` switch:
+
+```
+build -docs
+```
+
+Hangfire uses [psake](https://github.com/psake/psake) build automation tool. All psake tasks and functions defined in `psake-build.ps1` (for this project) and `psake-common.ps1` (for other Hangfire projects) files. Thanks to the psake project, they are very simple to use and modify!
 
 License
 --------
