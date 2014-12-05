@@ -18,8 +18,8 @@ services:
 
 # Run the build script
 before_script: 
- - mono  --runtime=v4.0 ./.nuget/nuget.exe install .nuget/packages.config -OutputDirectory packages
- - mono  --runtime=v4.0 ./.nuget/nuget.exe restore Hangfire.Mono.sln
+ - mono  --runtime=v4.0 .nuget/Nuget.exe install .nuget/packages.config -OutputDirectory packages
+ - mono  --runtime=v4.0 .nuget/NuGet.exe restore Hangfire.Mono.sln
 script:
  - ./build.sh
 after_script:
