@@ -140,7 +140,7 @@ function Create-Package($project, $version) {
 
 function Get-BuildVersion {
     $version = Get-SharedVersion
-    $buildNumber = $env:APPVEYOR_BUILD_VERSION
+    $buildNumber = $env:APPVEYOR_BUILD_NUMBER
 
     if ($env:APPVEYOR_REPO_TAG -ne "True" -And $buildNumber -ne $null) {
         $version += "-build-" + $buildNumber.ToString().PadLeft(5, '0')
