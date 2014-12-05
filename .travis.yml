@@ -17,14 +17,8 @@ services:
   - rabbitmq
 
 # Run the build script
-before_script: 
- - mono  --runtime=v4.0 .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
- - mono  --runtime=v4.0 .nuget/NuGet.exe restore Hangfire.Mono.sln
 script:
  - ./build.sh
-after_script:
- - mono --runtime=v4.0 ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.x86.exe tests/Hangfire.Core.Tests/bin/Debug/Hangfire.Core.Tests.dll
- - mono --runtime=v4.0 ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.x86.exe tests/Hangfire.SqlServer.RabbitMq.Tests/bin/Debug/Hangfire.SqlServer.RabbitMq.Tests.dll
 
 # Only watch the master branch.
 branches:
