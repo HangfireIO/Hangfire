@@ -63,7 +63,7 @@
       <Name>Hangfire.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Hangfire.SqlServer\Hangfire.SqlServer.csproj">
-      <Project>{A523C0E3-097D-4869-977F-15A717EA3E83}</Project>
+      <Project>{a523c0e3-097d-4869-977f-15a717ea3e83}</Project>
       <Name>Hangfire.SqlServer</Name>
     </ProjectReference>
     <ProjectReference Include="..\Hangfire.Sql\Hangfire.Sql.csproj">
