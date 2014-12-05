@@ -1,29 +1,34 @@
 Properties {
+    ### Directories
     $base_dir = resolve-path .
     $build_dir = "$base_dir\build"
     $src_dir = "$base_dir\src"
     $tests_dir = "$base_dir\tests"
     $package_dir = "$base_dir\packages"
     $nuspec_dir = "$base_dir\nuspecs"
-    $framework_dir =  $env:windir + "\Microsoft.Net\Framework\v4.0.30319"
     $temp_dir = "$build_dir\Temp"
-    $solution_path = "$base_dir\$solution"
-    $config = "Release"    
-    $xunit = "$package_dir\xunit.runners*\tools\xunit.console.clr4.exe"
-    $ilmerge = "$package_dir\ilmerge.*\content\ilmerge.exe"
+    $framework_dir =  $env:windir + "\Microsoft.Net\Framework\v4.0.30319"
+
+    ### Tools
     $nuget = "$base_dir\.nuget\nuget.exe"
-    $sharedAssemblyInfo = "$src_dir\SharedAssemblyInfo.cs"
+    $ilmerge = "$package_dir\ilmerge.*\content\ilmerge.exe"
+    $xunit = "$package_dir\xunit.runners*\tools\xunit.console.clr4.exe"
+    $7zip = "$package_dir\7-Zip.CommandLine.*\tools\7za.exe"
+
+    ### AppVeyor-related
     $appVeyorConfig = "$base_dir\appveyor.yml"
     $appVeyor = $env:APPVEYOR
+
+    ### Project information
+    $solution_path = "$base_dir\$solution"
+    $config = "Release"    
+    $sharedAssemblyInfo = "$src_dir\SharedAssemblyInfo.cs"
 }
 
-### Tasks
+## Tasks
 
 Task Clean {
-    If (Test-Path $build_dir) {
-        "Cleaning up '$build_dir'..."
-        Remove-Item "$build_dir\*" -Recurse -Force
-    }
+    Clean-Directory $build_dir
 
     "Cleaning up '$solution'..."
     Exec { msbuild $solution_path /target:Clean /nologo /verbosity:minimal }
@@ -46,16 +51,111 @@ Task Version {
     Update-AppVeyorVersion $newVersion
 }
 
-### Functions
+Task Archive -depends Pack {
+    Remove-Directory "$temp_dir"
 
-function Run-Tests($project) {
-    $assembly = Get-Assembly $tests_dir $project $assembly
+    $version = Get-BuildVersion
+    Create-Zip "$build_dir\Hangfire-$version.zip" "$build_dir"
+}
+
+## Functions
+
+### Test functions
+
+function Run-XunitTests($project) {
+    $assembly = Get-Assembly $tests_dir $project
 
     if ($appVeyor) {
         Exec { xunit.console.clr4 $assembly /appveyor }
     } else {
         Exec { .$xunit $assembly }
     }
+}
+
+### Merge functions
+
+function Merge-Assembly($project, $internalizeAssemblies) {
+    "Merging '$project' with $internalizeAssemblies..."
+
+    $internalizePaths = @()
+
+    foreach ($assembly in $internalizeAssemblies) {
+        $internalizePaths += Get-SrcAssembly $project $assembly
+    }
+
+    $primaryAssemblyPath = Get-SrcAssembly $project
+
+    Create-Directory $temp_dir
+    
+    Exec { .$ilmerge /targetplatform:"v4,$framework_dir" `
+        /out:"$temp_dir\$project.dll" `
+        /target:library `
+        /internalize `
+        $primaryAssemblyPath `
+        $internalizePaths `
+    }
+
+    Move-Files "$temp_dir\$project.*" (Get-SrcOutputDir $project)
+}
+
+### Collect functions
+
+function Collect-Tool($source) {
+    "Collecting tool '$source'..."
+
+    $destination = "$build_dir\Tools"
+
+    Create-Directory $destination
+    Copy-Files "$base_dir\$source" $destination
+}
+
+function Collect-Content($source) {
+    "Collecting content '$source'..."
+
+    $destination = "$build_dir\Content"
+
+    Create-Directory $destination
+    Copy-Files "$base_dir\$source" $destination
+}
+
+function Collect-Assembly($project, $version) {
+    "Collecting assembly '$project.dll' into '$version'..."
+
+    $source = (Get-SrcOutputDir $project) + "\$project.*"
+    $destination = "$build_dir\$version"
+
+    Create-Directory $destination
+    Copy-Files $source $destination
+}
+
+### Pack functions
+
+function Create-Package($project) {
+    Create-Directory $temp_dir
+    Copy-Files "$nuspec_dir\$project.nuspec" $temp_dir
+
+    $version = Get-BuildVersion
+
+    Try {
+        Replace-Content "$nuspec_dir\$project.nuspec" '0.0.0' $version
+        Exec { .$nuget pack "$nuspec_dir\$project.nuspec" -OutputDirectory "$build_dir" -BasePath "$build_dir" -Version $version -Symbols }
+    }
+    Finally {
+        Move-Files "$temp_dir\$project.nuspec" $nuspec_dir
+    }
+}
+
+### Version functions
+
+function Get-BuildVersion {
+    $version = Get-SharedVersion
+    $buildNumber = 1345
+
+    if ("False" -ne "True" -And $buildNumber -ne $null) {
+        $version += "-build-" + $buildNumber.ToString().PadLeft(5, '0')
+    }
+
+    return $version
 }
 
 function Get-SharedVersion {
@@ -93,79 +193,44 @@ function Check-Version($version) {
     }
 }
 
-function Create-Package($project) {
-    $version = Get-SharedVersion
-    $buildNumber = $env:APPVEYOR_BUILD_NUMBER
+### Archive functions
 
-    if ($buildNumber -ne $null) {
-        $version += "-build-" + $buildNumber.ToString().PadLeft(5, '0')
-    }
+function Create-Zip($file, $dir){
+    if (Test-Path -path $file) { Remove-Item $file }
+    Create-Directory $dir
+    Exec { & $7zip a -mx -tzip $file $dir\* } 
+}
 
-    New-Item $temp_dir -Type Directory -Force > $null
+### Common functions
 
-    Copy-Item "$nuspec_dir\$project.nuspec" $temp_dir -Force > $null
-    Try {
-        Replace-Content "$nuspec_dir\$project.nuspec" '0.0.0' $version
-        Exec { .$nuget pack "$nuspec_dir\$project.nuspec" -OutputDirectory "$build_dir" -BasePath "$build_dir" -Version $version -Symbols }
+function Create-Directory($dir) {
+    New-Item -Path $dir -Type Directory -Force > $null
+}
+
+function Clean-Directory($dir) {
+    If (Test-Path $dir) {
+        "Cleaning up '$dir'..."
+        Remove-Item "$dir\*" -Recurse -Force
     }
-    Finally {
-        Move-Item "$temp_dir\$project.nuspec" $nuspec_dir -Force > $null
+}
+
+function Remove-Directory($dir) {
+    if (Test-Path $dir) {
+        "Removing $dir"
+        Remove-Item $dir -Recurse -Force
     }
+}
+
+function Copy-Files($source, $destination) {
+    Copy-Item "$source" $destination -Force > $null
+}
+
+function Move-Files($source, $destination) {
+    Move-Item "$source" $destination -Force > $null
 }
 
 function Replace-Content($file, $pattern, $substring) {
     (gc $file) -Replace $pattern, $substring | sc $file
-}
-
-function Collect-Tool($source) {
-    "Collecting tool '$source'..."
-
-    $destination = "$build_dir\Tools"
-
-    New-Item $destination -Type Directory -Force > $null
-    Copy-Item "$base_dir\$source" $destination -Force > $null
-}
-
-function Collect-Content($source) {
-    "Collecting content '$source'..."
-
-    $destination = "$build_dir\Content"
-
-    New-Item $destination -Type Directory -Force > $null
-    Copy-Item "$base_dir\$source" $destination -Force > $null
-}
-
-function Collect-Assembly($project, $version) {
-    "Collecting assembly '$project.dll' into '$version'..."
-
-    $source = (Get-SrcOutputDir $project) + "\$project.*"
-    $destination = "$build_dir\$version"
-
-    New-Item $destination -Type Directory -Force > $null
-    Copy-Item $source $destination -Force > $null
-}
-
-function Merge-Assembly($project, $internalizeAssemblies) {
-    "Merging '$project' with $internalizeAssemblies..."
-
-    $internalizePaths = @()
-
-    foreach ($assembly in $internalizeAssemblies) {
-        $internalizePaths += Get-SrcAssembly $project $assembly
-    }
-
-    $primaryAssemblyPath = Get-SrcAssembly $project
-    New-Item -Path "$temp_dir" -Type Directory -Force > $null
-
-    Exec { .$ilmerge /targetplatform:"v4,$framework_dir" `
-        /out:"$temp_dir\$project.dll" `
-        /target:library `
-        /internalize `
-        $primaryAssemblyPath `
-        $internalizePaths `
-    }
-
-    Move-Item -Force "$temp_dir\$project.*" (Get-SrcOutputDir $project)
 }
 
 function Get-SrcAssembly($project, $assembly) {
