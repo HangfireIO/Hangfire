@@ -6,6 +6,9 @@
 #   - All section names are case-sensitive.
 #   - Section names should be unique on each level.
 
+# Don't edit manually! Use `build.bat version` command instead!
+version: 1.3.0-build-0{build}
+
 #---------------------------------#
 #    environment configuration    #
 #---------------------------------#
@@ -32,7 +35,7 @@ branches:
 #---------------------------------#
 
 # to run your custom scripts instead of automatic MSBuild
-build_script: build-ci.cmd
+build_script: build.bat pack
 
 #---------------------------------#
 #       tests configuration       #
@@ -45,5 +48,5 @@ test: off
 #---------------------------------#
 
 artifacts:
-  - path: artifacts\release\packages\*.nupkg
-  - path: artifacts\release\samples\*.zip
+  - path: 'build\**\*.nupkg'
+  - path: 'build\**\*.zip'

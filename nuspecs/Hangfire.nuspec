@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Hangfire</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>0.0.0</version>
     <title>Hangfire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
@@ -19,32 +19,15 @@
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
 1.3.0
-* Changed – Use `LibLog` package instead of `Common.Logging` for logging.
-    
-1.2.2
-* Changed – Add constraint for Common.Logging package to support only versions 2.2.0 and below.
-* Fixed – QueuePollInterval option for SQL Server storage do not work.
-    
-1.2.1
-* Added – Ability to pass existing `SqlConnection` to `SqlServerStorage`.
-* Changed – Throw `NotSupportedException` for methods returning `Task`.
-* Fixed – Dashboard throws exception for deleted job in 1.2.
-* Fixed – SqlServerStorage.ToString() uses case sensitive checks.
-    
-1.2.0
-* Removed – HANGFIRE.REDIS PACKAGE MOVED TO PRO VERSION.
-* Added – Support for **generic types and methods** for background jobs (by @gorbach).
-* Added – GetDescription method to Cron (by @djrineh).
-* Added – Support for System.Threading.CancellationToken.
-* Added – Make Job(Type, MethodInfo, string[]) ctor public.
-* Changed – Provide a ceiling value for `WorkerCount` setting.
-* Fixed – Call `Dispose` method instead of `Stop` for graceful shutdown.
-* Fixed – ArgumentException: No conversion available between `Func` and `OwinMiddleware`.
-* Fixed – Updated UseRabbitMq extension method to actually use the VirtualHost property (by @gaiazov).
+* Breaking – Use `LibLog` package instead of `Common.Logging` for logging.
+* Added – Generation of NuGet symbol packages with `*.pdb` and source files.
+* Changed – `Hangfire.SqlServer` is now merged with `Dapper` package.
+* Changed – Use ILMerge instead of ILRepack (found there is a NuGet package for it).
+* Other – Use psake instead of MSBuild for project build automation.
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.Core" version="[0.0.0]" />
+      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
       <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
     </dependencies>
   </metadata>
