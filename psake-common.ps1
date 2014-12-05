@@ -186,6 +186,11 @@ function Check-Version($version) {
 
 ### Archive functions
 
+function Create-Archive($name) {
+    Remove-Directory $temp_dir
+    Create-Zip "$build_dir\$name.zip" "$build_dir"
+}
+
 function Create-Zip($file, $dir){
     if (Test-Path -path $file) { Remove-Item $file }
     Create-Directory $dir
@@ -207,7 +212,7 @@ function Clean-Directory($dir) {
 
 function Remove-Directory($dir) {
     if (Test-Path $dir) {
-        "Removing $dir"
+        "Removing '$dir'..."
         Remove-Item $dir -Recurse -Force
     }
 }

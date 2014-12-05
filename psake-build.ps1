@@ -28,11 +28,9 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
 }
 
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {
-    Remove-Directory "$temp_dir"
-
     $version = Get-BuildVersion
 
-    Create-Zip "$build_dir\Hangfire-$version.zip" "$build_dir"
+    Create-Archive "Hangfire-$version"
 
     Create-Package "Hangfire" $version
     Create-Package "Hangfire.Core" $version
