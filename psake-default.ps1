@@ -4,7 +4,7 @@ Properties {
 
 Include ".\psake-common.ps1"
 
-Task Default -Depends Test
+Task Default -Depends Collect
 
 Task Test -depends Compile {
     Run-Tests "Hangfire.Core.Tests"
@@ -18,15 +18,13 @@ Task Merge -depends Test {
 }
 
 Task Collect -depends Merge {
-    Collect-Content "content\readme.txt"
-
     Collect-Assembly "Hangfire.Core" "Net45"
-
     Collect-Assembly "Hangfire.SqlServer" "Net45"
-    Collect-Tool "src\Hangfire.SqlServer\Install.sql"
-
     Collect-Assembly "Hangfire.SqlServer.Msmq" "Net45"
     Collect-Assembly "Hangfire.SqlServer.RabbitMq" "Net45"
+
+    Collect-Content "content\readme.txt"
+    Collect-Tool "src\Hangfire.SqlServer\Install.sql"
 }
 
 Task Pack -depends Collect {
