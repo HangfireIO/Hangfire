@@ -18,9 +18,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{15E186DF-8918-44F1-9285-9756EDAECA5D}"
 	ProjectSection(SolutionItems) = preProject
 		appveyor.yml = appveyor.yml
-		default.ps1 = default.ps1
-		hangfire.ps1 = hangfire.ps1
-		src\Common\Hangfire.ruleset = src\Common\Hangfire.ruleset
+		src\Hangfire.ruleset = src\Hangfire.ruleset
+		psake-build.ps1 = psake-build.ps1
+		psake-common.ps1 = psake-common.ps1
 		src\Common\SharedAssemblyInfo.cs = src\Common\SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
@@ -51,6 +51,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq.Tests", "tests\Hangfire.SqlServer.RabbitMq.Tests\Hangfire.SqlServer.RabbitMq.Tests.csproj", "{2654D751-33D5-411D-A187-D057FED9CD25}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq", "src\Hangfire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{F710C9CF-69F9-4373-9B74-ABB185BF985B}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
