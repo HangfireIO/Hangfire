@@ -27,6 +27,11 @@ Properties {
 
 ## Tasks
 
+Task Restore -Description "Restore NuGet packages for solution." {
+    "Restoring NuGet packages for '$solution'..."
+    Exec { .$nuget restore $solution }
+}
+
 Task Clean -Description "Clean up build and project folders." {
     Clean-Directory $build_dir
 
@@ -34,7 +39,7 @@ Task Clean -Description "Clean up build and project folders." {
     Exec { msbuild $solution_path /target:Clean /nologo /verbosity:minimal }
 }
 
-Task Compile -Depends Clean -Description "Compile all the projects in a solution." {
+Task Compile -Depends Clean, Restore -Description "Compile all the projects in a solution." {
     "Compiling '$solution'..."
 
     $extra = $null
