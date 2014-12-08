@@ -95,6 +95,20 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Creates a new background job based on a specified method call expression
+        /// and schedules it to be enqueued at the given moment of time.
+        /// </summary>
+        /// 
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string Schedule(Expression<Action> methodCall, DateTimeOffset enqueueAt)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, enqueueAt);
+        }
+
+        /// <summary>
         /// Creates a new background job based on a specified instance method
         /// call expression and schedules it to be enqueued after a given delay.
         /// </summary>
@@ -107,6 +121,21 @@ namespace Hangfire
         {
             var client = ClientFactory();
             return client.Schedule(methodCall, delay);
+        }
+
+        /// <summary>
+        /// Creates a new background job based on a specified method call expression
+        /// and schedules it to be enqueued at the given moment of time.
+        /// </summary>
+        /// 
+        /// <typeparam name="T">The type whose method will be invoked during the job processing.</typeparam>
+        /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
+        /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
+        /// <returns>Unique identifier of a created job.</returns>
+        public static string Schedule<T>(Expression<Action<T>> methodCall, DateTimeOffset enqueueAt)
+        {
+            var client = ClientFactory();
+            return client.Schedule(methodCall, enqueueAt);
         }
 
         /// <summary>
