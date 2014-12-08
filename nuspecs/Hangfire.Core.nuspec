@@ -28,6 +28,6 @@
     <file src="Net45\Hangfire.Core.dll" target="lib\net45" />
     <file src="Net45\Hangfire.Core.xml" target="lib\net45" />
     <file src="Net45\Hangfire.Core.pdb" target="lib\net45" />
-    <file src="..\src\Hangfire.Core\**\*.cs" target="src" />
+    <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" />
   </files>
 </package>
