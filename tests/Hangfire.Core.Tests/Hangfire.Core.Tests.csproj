@@ -136,6 +136,7 @@
     <Compile Include="StatisticsHistoryAttributeFacts.cs" />
     <Compile Include="Storage\InvocationDataFacts.cs" />
     <Compile Include="Storage\MonitoringTypeFacts.cs" />
+    <Compile Include="Storage\StorageConnectionExtensionsFacts.cs" />
     <Compile Include="Utils\GlobalLockAttribute.cs" />
     <Compile Include="Utils\PossibleHangingFactAttribute.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
