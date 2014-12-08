@@ -112,6 +112,7 @@ Related Projects
 * [Hangfire.TinyIoC](https://github.com/richclement/HangFire.TinyIoC) by [@richclement](https://github.com/richclement)
 * [Hangfire.Azure.QueueStorage](https://github.com/HangfireIO/Hangfire.Azure.QueueStorage)
 * [Hangfire.Azure.ServiceBusQueue](https://github.com/HangfireIO/Hangfire.Azure.ServiceBusQueue)
+* [Hangfire.Mongo](https://github.com/sergun/Hangfire.Mongo) by [@sergun](https://github.com/sergun)
 
 Roadmap
 --------
