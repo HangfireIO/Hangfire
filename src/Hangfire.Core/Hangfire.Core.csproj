@@ -78,6 +78,7 @@
     <Compile Include="..\Common\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="JobActivationContext.cs" />
     <Compile Include="AutomaticRetryAttribute.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
@@ -198,6 +199,7 @@
     </Compile>
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
     <Compile Include="Dashboard\RequestExtensions.cs" />
+    <Compile Include="IJobActivationContext.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
