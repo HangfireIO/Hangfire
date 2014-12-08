@@ -1,12 +1,32 @@
-﻿using System.Reflection;
+﻿// // This file is part of Hangfire.
+// // Copyright © 2013-2014 Sergey Odinokov.
+// // 
+// // Hangfire is free software: you can redistribute it and/or modify
+// // it under the terms of the GNU Lesser General Public License as 
+// // published by the Free Software Foundation, either version 3 
+// // of the License, or any later version.
+// // 
+// // Hangfire is distributed in the hope that it will be useful,
+// // but WITHOUT ANY WARRANTY; without even the implied warranty of
+// // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// // GNU Lesser General Public License for more details.
+// // 
+// // You should have received a copy of the GNU Lesser General Public 
+// // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
+
+using System.Reflection;
 using Hangfire.Sql;
 
-namespace Hangfire.Oracle {
-    public class OracleSqlBook : SqlBook {
-        public OracleSqlBook() {
+namespace Hangfire.Oracle
+{
+    public class OracleSqlBook : SqlBook
+    {
+        public OracleSqlBook()
+        {
             FixSqls();
 
-            ProcessedTables = new[] {
+            ProcessedTables = new[]
+            {
                 "Counter",
                 "Job",
                 "ListTable",
@@ -47,7 +67,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 ";
 
             SqlConnection_GetFirstByLowestScoreFromSet =
-@"select Value from 
+                @"select Value from 
 (select Value from SetTable where Key = :key and Score between :pfrom and :pto order by Score)
 where rownum <= 1";
 
@@ -88,35 +108,41 @@ select r.Id
  where r.rown between :pstart and :pend";
 
             ExpirationManager_Execute = "delete from {0} where ExpireAt < :now";
-
         }
 
-        private void FixSqls() {
+        private void FixSqls()
+        {
             var fields = GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var fieldInfo in fields) {
-                if (fieldInfo.FieldType != typeof(string)) {
+            foreach (var fieldInfo in fields)
+            {
+                if (fieldInfo.FieldType != typeof (string))
+                {
                     continue;
                 }
                 fieldInfo.SetValue(this, FromSqlServerToOracle(fieldInfo.GetValue(this).ToString()));
             }
         }
 
-        private string FromSqlServerToOracle(string sql) {
+        private string FromSqlServerToOracle(string sql)
+        {
             return sql.Remove("[", "]")
-                      .Replace("HangFire.Set", "SetTable")
-                      .Replace("HangFire.List", "ListTable")
-                      .Replace("HangFire.Hash", "HashTable")
-                      .Replace("@", ":")
-                      .Replace("= N'", "= '")
-                      .Replace(" as ", " ")
-                      .Remove("HangFire.")
-                      ;
+                .Replace("HangFire.Set", "SetTable")
+                .Replace("HangFire.List", "ListTable")
+                .Replace("HangFire.Hash", "HashTable")
+                .Replace("@", ":")
+                .Replace("= N'", "= '")
+                .Replace(" as ", " ")
+                .Remove("HangFire.")
+                ;
         }
     }
 
-    public static class StringExt {
-        public static string Remove(this string str, params string[] parts) {
-            foreach (var part in parts) {
+    public static class StringExt
+    {
+        public static string Remove(this string str, params string[] parts)
+        {
+            foreach (var part in parts)
+            {
                 str = str.Replace(part, "");
             }
             return str;

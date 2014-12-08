@@ -1,6 +1,23 @@
-namespace Hangfire.Sql {
-    public class SqlBook {
+// // This file is part of Hangfire.
+// // Copyright © 2013-2014 Sergey Odinokov.
+// // 
+// // Hangfire is free software: you can redistribute it and/or modify
+// // it under the terms of the GNU Lesser General Public License as 
+// // published by the Free Software Foundation, either version 3 
+// // of the License, or any later version.
+// // 
+// // Hangfire is distributed in the hope that it will be useful,
+// // but WITHOUT ANY WARRANTY; without even the implied warranty of
+// // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// // GNU Lesser General Public License for more details.
+// // 
+// // You should have received a copy of the GNU Lesser General Public 
+// // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+namespace Hangfire.Sql
+{
+    public class SqlBook
+    {
         public string[] ProcessedTables =
         {
             "Counter",
@@ -19,7 +36,8 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
 insert into HangFire.JobParameter (JobId, Name, Value)
 values (@jobId, @name, @value)";
 
-        public string SqlConnection_GetJobData = @"select InvocationData, StateName, Arguments, CreatedAt from HangFire.Job where Id = @id";
+        public string SqlConnection_GetJobData =
+            @"select InvocationData, StateName, Arguments, CreatedAt from HangFire.Job where Id = @id";
 
         public string SqlConnection_GetStateData = @"
 select s.Name, s.Reason, s.Data
@@ -51,7 +69,7 @@ when matched then update set Value = Source.Value
 when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
         public string SqlConnection_GetAllEntriesFromHash = "select Field, Value from HangFire.Hash where [Key] = @key";
-        
+
         public string SqlConnection_AnnounceServer = @"
 merge HangFire.Server as Target
 using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
@@ -63,7 +81,8 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
         public string SqlConnection_Heartbeat = @"update HangFire.Server set LastHeartbeat = @now where Id = @id";
 
-        public string SqlConnection_RemoveTimedOutServers = @"delete from HangFire.Server where LastHeartbeat < @timeOutAt";
+        public string SqlConnection_RemoveTimedOutServers =
+            @"delete from HangFire.Server where LastHeartbeat < @timeOutAt";
 
         public string SqlMonitoringApi_Servers = @"select * from HangFire.Server";
         public string SqlMonitoringApi_JobDetails = @"
@@ -133,7 +152,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public string SqlWriteOnlyTransaction_DecrementCounter =
             @"insert into HangFire.Counter ([Key], [Value]) values (@key, @value)";
-        
+
         public string SqlWriteOnlyTransaction_DecrementCounter_expirein =
             @"insert into HangFire.Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)";
 
