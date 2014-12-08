@@ -1,18 +1,18 @@
-// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
-// Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
-// of the License, or any later version.
-// 
-// Hangfire is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
+// // This file is part of Hangfire.
+// // Copyright © 2013-2014 Sergey Odinokov.
+// // 
+// // Hangfire is free software: you can redistribute it and/or modify
+// // it under the terms of the GNU Lesser General Public License as 
+// // published by the Free Software Foundation, either version 3 
+// // of the License, or any later version.
+// // 
+// // Hangfire is distributed in the hope that it will be useful,
+// // but WITHOUT ANY WARRANTY; without even the implied warranty of
+// // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// // GNU Lesser General Public License for more details.
+// // 
+// // You should have received a copy of the GNU Lesser General Public 
+// // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections;
@@ -23,7 +23,8 @@ namespace Hangfire.Sql
     public class PersistentJobQueueProviderCollection : IEnumerable<IPersistentJobQueueProvider>
     {
         private readonly List<IPersistentJobQueueProvider> _providers
-            = new List<IPersistentJobQueueProvider>(); 
+            = new List<IPersistentJobQueueProvider>();
+
         private readonly Dictionary<string, IPersistentJobQueueProvider> _providersByQueue
             = new Dictionary<string, IPersistentJobQueueProvider>(StringComparer.OrdinalIgnoreCase);
 
@@ -31,7 +32,10 @@ namespace Hangfire.Sql
 
         public PersistentJobQueueProviderCollection(IPersistentJobQueueProvider defaultProvider)
         {
-            if (defaultProvider == null) throw new ArgumentNullException("defaultProvider");
+            if (defaultProvider == null)
+            {
+                throw new ArgumentNullException("defaultProvider");
+            }
 
             _defaultProvider = defaultProvider;
 
@@ -40,8 +44,14 @@ namespace Hangfire.Sql
 
         public void Add(IPersistentJobQueueProvider provider, IEnumerable<string> queues)
         {
-            if (provider == null) throw new ArgumentNullException("provider");
-            if (queues == null) throw new ArgumentNullException("queues");
+            if (provider == null)
+            {
+                throw new ArgumentNullException("provider");
+            }
+            if (queues == null)
+            {
+                throw new ArgumentNullException("queues");
+            }
 
             _providers.Add(provider);
 
@@ -53,7 +63,7 @@ namespace Hangfire.Sql
 
         public IPersistentJobQueueProvider GetProvider(string queue)
         {
-            return _providersByQueue.ContainsKey(queue) 
+            return _providersByQueue.ContainsKey(queue)
                 ? _providersByQueue[queue]
                 : _defaultProvider;
         }

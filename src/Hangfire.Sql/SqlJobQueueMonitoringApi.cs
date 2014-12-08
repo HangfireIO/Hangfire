@@ -1,18 +1,18 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
-// 
-// Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
-// of the License, or any later version.
-// 
-// Hangfire is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
+﻿// // This file is part of Hangfire.
+// // Copyright © 2013-2014 Sergey Odinokov.
+// // 
+// // Hangfire is free software: you can redistribute it and/or modify
+// // it under the terms of the GNU Lesser General Public License as 
+// // published by the Free Software Foundation, either version 3 
+// // of the License, or any later version.
+// // 
+// // Hangfire is distributed in the hope that it will be useful,
+// // but WITHOUT ANY WARRANTY; without even the implied warranty of
+// // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// // GNU Lesser General Public License for more details.
+// // 
+// // You should have received a copy of the GNU Lesser General Public 
+// // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,10 @@ namespace Hangfire.Sql
 
         public SqlJobQueueMonitoringApi(IConnectionProvider connectionProvider, SqlBook sqlBook)
         {
-            if (connectionProvider == null) throw new ArgumentNullException("connectionProvider");
+            if (connectionProvider == null)
+            {
+                throw new ArgumentNullException("connectionProvider");
+            }
             _connectionProvider = connectionProvider;
             _connectionProvider = connectionProvider;
             _sqlBook = sqlBook;
@@ -36,14 +39,17 @@ namespace Hangfire.Sql
 
         public IEnumerable<string> GetQueues()
         {
-            using (var connection = _connectionProvider.CreateAndOpenConnection()) {
-                return connection.Query(_sqlBook.SqlJobQueueMonitoringApi_GetQueues).Select(x => (string)x.Queue).ToList();                
+            using (var connection = _connectionProvider.CreateAndOpenConnection())
+            {
+                return
+                    connection.Query(_sqlBook.SqlJobQueueMonitoringApi_GetQueues).Select(x => (string) x.Queue).ToList();
             }
         }
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
-            using (var connection = _connectionProvider.CreateAndOpenConnection()) {
+            using (var connection = _connectionProvider.CreateAndOpenConnection())
+            {
                 return connection.Query<JobIdDto>(
                     _sqlBook.SqlJobQueueMonitoringApi_GetEnqueuedJobIds,
                     new {queue = queue, pstart = from + 1, pend = @from + perPage})
@@ -55,7 +61,8 @@ namespace Hangfire.Sql
 
         public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
         {
-            using (var connection = _connectionProvider.CreateAndOpenConnection()) {
+            using (var connection = _connectionProvider.CreateAndOpenConnection())
+            {
                 return connection.Query<JobIdDto>(
                     _sqlBook.SqlJobQueueMonitoringApi_GetFetchedJobIds,
                     new {queue = queue, start = from + 1, end = @from + perPage})
@@ -67,12 +74,14 @@ namespace Hangfire.Sql
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            using (var connection = _connectionProvider.CreateAndOpenConnection()) {
+            using (var connection = _connectionProvider.CreateAndOpenConnection())
+            {
                 var result =
-                    connection.Query(_sqlBook.SqlJobQueueMonitoringApi_GetEnqueuedAndFetchedCount, new { queue = queue })
+                    connection.Query(_sqlBook.SqlJobQueueMonitoringApi_GetEnqueuedAndFetchedCount, new {queue = queue})
                         .Single();
 
-                return new EnqueuedAndFetchedCountDto {
+                return new EnqueuedAndFetchedCountDto
+                {
                     EnqueuedCount = result.EnqueuedCount,
                     FetchedCount = result.FetchedCount
                 };
