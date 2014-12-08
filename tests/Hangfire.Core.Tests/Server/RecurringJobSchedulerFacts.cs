@@ -161,7 +161,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_TakesIntoConsideration_LastExecutionTime_ConvertedToLocalTimezone()
         {
             var time = DateTime.UtcNow;
-            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(DateTime.UtcNow);
+            _recurringJob["LastExecution"] = JobHelper.SerializeDateTime(time);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
