@@ -13,6 +13,9 @@ Task Test -Depends Compile -Description "Run unit and integration tests." {
 }
 
 Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
+    # Remove `NCrontab.pdb` file to be able to prepare a symbol package for Hangfire.Core.
+    Remove-Item ((Get-SrcOutputDir "Hangfire.Core") + "\NCrontab.pdb")
+
     Merge-Assembly "Hangfire.Core" @("NCrontab", "CronExpressionDescriptor", "Microsoft.Owin")
     Merge-Assembly "Hangfire.SqlServer" @("Dapper")
 }
