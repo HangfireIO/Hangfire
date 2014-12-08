@@ -169,20 +169,16 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly DateTimeOffset DateTimeOffsetValue = new DateTimeOffset(new DateTime(2012, 12, 12), TimeSpan.FromHours(1));
-
-	    public void Method(DateTimeOffset value)
-	    {
-            // Don't run this test on Mono – https://bugzilla.xamarin.com/show_bug.cgi?id=25158
-	        if (Type.GetType("Mono.Runtime") == null)
-	        {
-	            Assert.Equal(DateTimeOffsetValue, value);
-	        }
-	    }
+		public void Method(DateTimeOffset value) {  Assert.Equal(DateTimeOffsetValue, value); }
 
 		[Fact]
 		public void DateTimeOffsetValues_AreBeingDeserializedCorrectly()
 		{
-			CreateAndPerform(DateTimeOffsetValue);
+			// Don't run this test on Mono – https://bugzilla.xamarin.com/show_bug.cgi?id=25158
+                	if (Type.GetType("Mono.Runtime") == null)
+	        	{
+				CreateAndPerform(DateTimeOffsetValue);
+			}
 		}
 
 		private static readonly CultureInfo CultureInfoValue = CultureInfo.GetCultureInfo("ru-RU");
