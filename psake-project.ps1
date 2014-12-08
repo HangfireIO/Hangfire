@@ -2,7 +2,7 @@ Properties {
     $solution = "Hangfire.sln"
 }
 
-Include ".\psake-common.ps1"
+Include "packages\Hangfire.Build.*\tools\psake-common.ps1"
 
 Task Default -Depends Collect
 
