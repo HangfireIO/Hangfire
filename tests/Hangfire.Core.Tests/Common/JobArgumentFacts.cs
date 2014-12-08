@@ -78,7 +78,7 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(DoubleValue);
 		}
 
-        private const Single SingleValue = 3.14159265359F;
+        private const Single SingleValue = 3.1415F;
 		public void Method(Single value) { Assert.Equal(SingleValue, value); }
 
 		[Fact]
