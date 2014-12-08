@@ -68,7 +68,7 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(DecimalValue);
 		}
 
-		private const Double DoubleValue = Double.MaxValue;
+        private const Double DoubleValue = 3.14159265359D;
 		public void Method(Double value) { Assert.Equal(DoubleValue, value); }
 
 		[Fact]
