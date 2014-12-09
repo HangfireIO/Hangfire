@@ -394,7 +394,8 @@ namespace Hangfire.Logging
             new Tuple<IsLoggerAvailable, CreateLogProvider>(NLogLogProvider.IsLoggerAvailable, () => new NLogLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, () => new Log4NetLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, () => new EntLibLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider())
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider()),
+            new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider())
         };
 
         private static ILogProvider ResolveLogProvider()
@@ -1360,6 +1361,122 @@ namespace Hangfire.Logging.LogProviders
             string description,
             params object[] args
             );
+    }
+
+    public class ElmahLogProvider : ILogProvider
+    {
+        private static bool _providerIsAvailableOverride = true;
+
+        private const LogLevel DefaultMinLevel = LogLevel.Error;
+        private readonly Type _errorType;
+
+        private readonly LogLevel _minLevel;
+        private readonly Func<object> _getErrorLogDelegate;
+
+        public ElmahLogProvider()
+            : this(DefaultMinLevel)
+        {
+        }
+
+        public ElmahLogProvider(LogLevel minLevel)
+        {
+            if (!IsLoggerAvailable())
+            {
+                throw new InvalidOperationException("`Elmah.ErrorLog` or `Elmah.Error` type not found");
+            }
+
+            _minLevel = minLevel;
+
+            _errorType = GetErrorType();
+            _getErrorLogDelegate = GetGetErrorLogMethodCall();
+        }
+
+        public static bool ProviderIsAvailableOverride
+        {
+            get { return _providerIsAvailableOverride; }
+            set { _providerIsAvailableOverride = value; }
+        }
+
+        public ILog GetLogger(string name)
+        {
+            return new ElmahLog(_minLevel, _getErrorLogDelegate(), _errorType);
+        }
+
+        public static bool IsLoggerAvailable()
+        {
+            return ProviderIsAvailableOverride && GetLogManagerType() != null && GetErrorType() != null;
+        }
+
+        private static Type GetLogManagerType()
+        {
+            return Type.GetType("Elmah.ErrorLog, Elmah");
+        }
+
+        private static Type GetHttpContextType()
+        {
+            return Type.GetType(String.Format(
+                "System.Web.HttpContext, System.Web, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
+                Environment.Version));
+        }
+
+        private static Type GetErrorType()
+        {
+            return Type.GetType("Elmah.Error, Elmah");
+        }
+
+        private static Func<object> GetGetErrorLogMethodCall()
+        {
+            Type logManagerType = GetLogManagerType();
+            Type httpContextType = GetHttpContextType();
+            MethodInfo method = logManagerType.GetMethod("GetDefault", new[] { httpContextType });
+            ConstantExpression contextValue = Expression.Constant(null, httpContextType);
+            MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { contextValue });
+            return Expression.Lambda<Func<object>>(methodCall).Compile();
+        }
+
+        public class ElmahLog : ILog
+        {
+            private readonly LogLevel _minLevel;
+            private readonly Type _errorType;
+            private readonly dynamic _errorLog;
+
+            public ElmahLog(LogLevel minLevel, dynamic errorLog, Type errorType)
+            {
+                _minLevel = minLevel;
+                _errorType = errorType;
+                _errorLog = errorLog;
+            }
+
+            public bool Log(LogLevel logLevel, Func<string> messageFunc)
+            {
+                if (messageFunc == null) return logLevel >= _minLevel;
+
+                Log<Exception>(logLevel, messageFunc, null);
+                return true;
+            }
+
+            public void Log<TException>(LogLevel logLevel, Func<string> messageFunc, TException exception) where TException : Exception
+            {
+                var message = messageFunc();
+
+                dynamic error = exception == null
+                    ? Activator.CreateInstance(_errorType)
+                    : Activator.CreateInstance(_errorType, exception);
+
+                error.Message = message;
+                error.Type = logLevel.ToString();
+                error.Time = DateTime.Now;
+
+                try
+                {
+                    _errorLog.Log(error);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.Print("Error: {0}\n{1}", ex.Message, ex.StackTrace);
+                }
+            }
+        }
     }
 
     public class ColouredConsoleLogProvider : ILogProvider
