@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using Hangfire.Logging;
+using Hangfire.Server;
 using Hangfire.States;
 
 namespace Hangfire
@@ -37,6 +38,8 @@ namespace Hangfire
             Queues = new[] { EnqueuedState.DefaultQueue };
             ShutdownTimeout = TimeSpan.FromSeconds(15);
             SchedulePollingInterval = TimeSpan.FromSeconds(15);
+
+            ServerWatchdogOptions = new ServerWatchdogOptions();
         }
 
         public string ServerName
@@ -75,6 +78,7 @@ namespace Hangfire
 
         public TimeSpan ShutdownTimeout { get; set; }
         public TimeSpan SchedulePollingInterval { get; set; }
+        public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
 
         public void WriteToLog(ILog logger)
         {

@@ -150,8 +150,8 @@ namespace Hangfire
 
             yield return new WorkerManager(sharedWorkerContext, _options.WorkerCount);
             yield return new ServerHeartbeat(_storage, _serverId);
-            yield return new ServerWatchdog(_storage);
             yield return new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval);
+            yield return new ServerWatchdog(_storage, _options.ServerWatchdogOptions);
 
             yield return new RecurringJobScheduler(
                 _storage, 

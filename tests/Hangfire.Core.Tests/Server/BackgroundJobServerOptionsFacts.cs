@@ -63,6 +63,14 @@ namespace Hangfire.Core.Tests.Server
                 () => options.Queues = new string[0]);
         }
 
+        [Fact]
+        public void ServerWatchDogOptions_IsNonNullByDefault()
+        {
+            var options = CreateOptions();
+
+            Assert.NotNull(options.ServerWatchdogOptions);
+        }
+
         private BackgroundJobServerOptions CreateOptions()
         {
             return new BackgroundJobServerOptions();
