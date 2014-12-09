@@ -21,6 +21,7 @@
 1.3.0
 * Added – Generation of NuGet symbol packages with `*.pdb` and source files.
 * Added – Allow to customize serialization settings of Json.NET (by @fpellet).
+* Added – Ability to configure `ServerTimeout` option.
 * Breaking – Use `LibLog` package instead of `Common.Logging` for logging.
 * Changed – `Hangfire.SqlServer` is now merged with `Dapper` package.
 * Changed – `Dapper` package updated to 1.38.
