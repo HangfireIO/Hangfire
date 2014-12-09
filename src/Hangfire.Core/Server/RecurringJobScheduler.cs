@@ -79,7 +79,11 @@ namespace Hangfire.Server
                     }
                     catch (JobLoadException ex)
                     {
-                        Logger.WarnFormat("Recurring job '{0}' can not be scheduled due to job load exception.", ex, recurringJobId);
+                        Logger.WarnException(
+                            String.Format(
+                                "Recurring job '{0}' can not be scheduled due to job load exception.",
+                                recurringJobId),
+                            ex);
                     }
                 }
 

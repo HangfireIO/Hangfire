@@ -65,10 +65,11 @@ namespace Hangfire
             {
                 if (LogEvents)
                 {
-                    Logger.ErrorFormat(
-                        "Failed to process the job '{0}': an exception occurred.",
-                        failedState.Exception,
-                        context.JobId);
+                    Logger.ErrorException(
+                        String.Format(
+                            "Failed to process the job '{0}': an exception occurred.",
+                            context.JobId),
+                        failedState.Exception);
                 }
             }
         }
@@ -94,13 +95,14 @@ namespace Hangfire
 
             if (LogEvents)
             {
-                Logger.WarnFormat(
-                    "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
-                    failedState.Exception,
-                    context.JobId,
-                    retryAttempt,
-                    Attempts,
-                    delay);
+                Logger.WarnException(
+                    String.Format(
+                        "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
+                        context.JobId,
+                        retryAttempt,
+                        Attempts,
+                        delay),
+                    failedState.Exception);
             }
         }
 
@@ -113,16 +115,17 @@ namespace Hangfire
         {
             context.CandidateState = new DeletedState
             {
-                Reason = string.Format("Automatic deletion after retry count exceeded {0}", Attempts)
+                Reason = String.Format("Automatic deletion after retry count exceeded {0}", Attempts)
             };
 
             if (LogEvents)
             {
-                Logger.WarnFormat(
-                    "Failed to process the job '{0}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {1}",
-                    failedState.Exception,
-                    context.JobId,
-                    Attempts);
+                Logger.WarnException(
+                    String.Format(
+                        "Failed to process the job '{0}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {1}.",
+                        context.JobId,
+                        Attempts),
+                    failedState.Exception);
             }
         }
 

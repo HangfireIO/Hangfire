@@ -155,10 +155,11 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
-                _logger.FatalFormat(
-                    "Fatal error occurred during execution of '{0}' component. It will be stopped. See the exception for details.",
-                    ex,
-                    _component);
+                _logger.FatalException(
+                    String.Format(
+                        "Fatal error occurred during execution of '{0}' component. It will be stopped. See the exception for details.",
+                        _component),
+                    ex);
             }
         }
 
