@@ -113,6 +113,7 @@ Related Projects
 * [Hangfire.Azure.QueueStorage](https://github.com/HangfireIO/Hangfire.Azure.QueueStorage)
 * [Hangfire.Azure.ServiceBusQueue](https://github.com/HangfireIO/Hangfire.Azure.ServiceBusQueue)
 * [Hangfire.Mongo](https://github.com/sergun/Hangfire.Mongo) by [@sergun](https://github.com/sergun)
+* [Hangfire.CompositeC1](https://bitbucket.org/burningice/hangfire.compositec1) by [@burningice](https://bitbucket.org/burningice)
 
 Building the sources
 ---------------------
