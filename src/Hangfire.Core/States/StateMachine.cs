@@ -54,11 +54,8 @@ namespace Hangfire.States
                 createdAt,
                 TimeSpan.FromHours(1));
 
-            using (_connection.AcquireDistributedJobLock(jobId, JobLockTimeout))
-            {
-                var context = new StateContext(jobId, job, createdAt, _connection);
-                _stateChangeProcess.ChangeState(context, state, null);
-            }
+            var context = new StateContext(jobId, job, createdAt, _connection);
+            _stateChangeProcess.ChangeState(context, state, null);
 
             return jobId;
         }
