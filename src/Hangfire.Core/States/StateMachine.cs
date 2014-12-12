@@ -76,9 +76,7 @@ namespace Hangfire.States
             // execution of this method. To guarantee this behavior, we are
             // using distributed application locks and rely on fact, that
             // any state transitions will be made only within a such lock.
-            using (_connection.AcquireDistributedLock(
-                String.Format("job:{0}:state-lock", jobId),
-                JobLockTimeout))
+            using (_connection.AcquireDistributedJobLock(jobId, JobLockTimeout))
             {
                 var jobData = _connection.GetJobData(jobId);
 

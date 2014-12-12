@@ -23,6 +23,19 @@ namespace Hangfire.Storage
 {
     public static class StorageConnectionExtensions
     {
+        public static IDisposable AcquireDistributedJobLock(
+            [NotNull] this IStorageConnection connection, 
+            [NotNull] string jobId, 
+            TimeSpan timeout)
+        {
+            if (connection == null) throw new ArgumentNullException("connection");
+            if (jobId == null) throw new ArgumentNullException("jobId");
+
+            return connection.AcquireDistributedLock(
+                String.Format("job:{0}:state-lock", jobId),
+                timeout);
+        }
+
         public static List<RecurringJobDto> GetRecurringJobs([NotNull] this IStorageConnection connection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
