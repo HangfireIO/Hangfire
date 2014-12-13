@@ -15,18 +15,16 @@ namespace Hangfire.Core.Tests
             JobIdValue = "job-id";
             JobValue = Job.FromExpression(() => Console.WriteLine());
             CreatedAtValue = DateTime.UtcNow;
-            ConnectionValue = new Mock<IStorageConnection>();
             StateMachineValue = new Mock<IStateMachine>();
 
             _context = new Lazy<StateContext>(
-                () => new StateContext(JobIdValue, JobValue, CreatedAtValue, ConnectionValue.Object, StateMachineValue.Object));
+                () => new StateContext(JobIdValue, JobValue, CreatedAtValue, StateMachineValue.Object));
         }
 
         public string JobIdValue { get; set; }
         public Job JobValue { get; set; }
         public DateTime CreatedAtValue { get; set; }
 
-        public Mock<IStorageConnection> ConnectionValue { get; set; }
         public Mock<IStateMachine> StateMachineValue { get; set; } 
 
         public StateContext Object

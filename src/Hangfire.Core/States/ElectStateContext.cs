@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Storage;
 
 namespace Hangfire.States
 {
@@ -26,16 +28,26 @@ namespace Hangfire.States
         private readonly IList<IState> _traversedStates = new List<IState>();
         private IState _candidateState;
 
-        internal ElectStateContext(StateContext context, IState candidateState, string currentState)
+        internal ElectStateContext(
+            [NotNull] StateContext context, 
+            [NotNull] IStorageConnection connection, 
+            [NotNull] IState candidateState, 
+            [CanBeNull] string currentState)
             : base(context)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
             if (candidateState == null) throw new ArgumentNullException("candidateState");
 
             _candidateState = candidateState;
 
+            Connection = connection;
             CurrentState = currentState;
         }
 
+        [NotNull]
+        public IStorageConnection Connection { get; private set; }
+
+        [NotNull]
         public IState CandidateState
         {
             get { return _candidateState; }
@@ -54,8 +66,11 @@ namespace Hangfire.States
             }
         }
 
+        [CanBeNull]
         public string CurrentState { get; private set; }
-        public IState[] TraversedStates { get { return _traversedStates.ToArray(); } } 
+
+        [NotNull]
+        public IState[] TraversedStates { get { return _traversedStates.ToArray(); } }
 
         public void SetJobParameter<T>(string name, T value)
         {

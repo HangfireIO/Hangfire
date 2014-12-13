@@ -17,26 +17,34 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.Storage;
 
 namespace Hangfire.States
 {
     internal class StateChangeProcess : IStateChangeProcess
     {
+        private readonly IStorageConnection _connection;
         private readonly StateHandlerCollection _handlers;
 
         private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
-        public StateChangeProcess(StateHandlerCollection handlers)
+        public StateChangeProcess([NotNull] IStorageConnection connection, [NotNull] StateHandlerCollection handlers)
         {
+            if (connection == null) throw new ArgumentNullException("connection");
             if (handlers == null) throw new ArgumentNullException("handlers");
 
+            _connection = connection;
             _handlers = handlers;
         }
 
-        internal StateChangeProcess(StateHandlerCollection handlers, IEnumerable<object> filters)
-            : this(handlers)
+        internal StateChangeProcess(
+            IStorageConnection connection, 
+            StateHandlerCollection handlers, 
+            IEnumerable<object> filters)
+            : this(connection, handlers)
         {
             if (filters == null) throw new ArgumentNullException("filters");
 
@@ -48,7 +56,7 @@ namespace Hangfire.States
             try
             {
                 var filterInfo = GetFilters(context.Job);
-                var electStateContext = new ElectStateContext(context, toState, oldStateName);
+                var electStateContext = new ElectStateContext(context, _connection, toState, oldStateName);
                 
                 foreach (var filter in filterInfo.ElectStateFilters)
                 {
@@ -86,7 +94,7 @@ namespace Hangfire.States
 
         private void ApplyState(ApplyStateContext context, IEnumerable<IApplyStateFilter> filters)
         {
-            using (var transaction = context.Connection.CreateWriteTransaction())
+            using (var transaction = _connection.CreateWriteTransaction())
             {
                 foreach (var state in context.TraversedStates)
                 {

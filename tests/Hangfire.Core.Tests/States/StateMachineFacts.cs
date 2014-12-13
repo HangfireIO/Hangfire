@@ -53,7 +53,7 @@ namespace Hangfire.Core.Tests.States
 
             _stateChangeProcess
                 .Setup(x => x.ChangeState(
-                    It.Is<StateContext>(s => s.JobId == JobId && s.Job == _job && s.Connection == _connection.Object), 
+                    It.Is<StateContext>(s => s.JobId == JobId && s.Job == _job), 
                     _state.Object, 
                     OldStateName))
                 .Returns(true);

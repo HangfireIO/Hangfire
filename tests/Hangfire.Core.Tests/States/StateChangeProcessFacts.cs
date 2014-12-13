@@ -19,27 +19,35 @@ namespace Hangfire.Core.Tests.States
 
         private readonly StateContextMock _context;
         private readonly Mock<IState> _state;
+        private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public StateChangeProcessFacts()
         {
-            var connection = new Mock<IStorageConnection>();
+            _connection = new Mock<IStorageConnection>();
             _transaction = new Mock<IWriteOnlyTransaction>();
-            connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
+            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
-            _context = new StateContextMock();
-            _context.JobIdValue = JobId;
-            _context.ConnectionValue = connection;
+            _context = new StateContextMock { JobIdValue = JobId };
 
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new StateChangeProcess(null, _handlers, _filters));
+
+            Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenHandlersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeProcess(null, _filters));
+                () => new StateChangeProcess(_connection.Object, null, _filters));
 
             Assert.Equal("handlers", exception.ParamName);
         }
@@ -48,7 +56,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenFiltersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeProcess(_handlers, null));
+                () => new StateChangeProcess(_connection.Object, _handlers, null));
 
             Assert.Equal("filters", exception.ParamName);
         }
@@ -280,7 +288,7 @@ namespace Hangfire.Core.Tests.States
 
         private StateChangeProcess CreateProcess()
         {
-            return new StateChangeProcess(_handlers, _filters);
+            return new StateChangeProcess(_connection.Object, _handlers, _filters);
         }
 
         private Mock<IStateHandler> CreateStateHandler(string stateName)

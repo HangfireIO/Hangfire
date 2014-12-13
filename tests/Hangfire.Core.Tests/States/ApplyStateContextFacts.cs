@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Common;
 using Hangfire.States;
-using Hangfire.Storage;
 using Moq;
 using Xunit;
 
@@ -22,17 +21,12 @@ namespace Hangfire.Core.Tests.States
 
         public ApplyStateContextFacts()
         {
-            var connection = new Mock<IStorageConnection>();
-            var transaction = new Mock<IWriteOnlyTransaction>();
-            connection.Setup(x => x.CreateWriteTransaction()).Returns(transaction.Object);
-
             _job = Job.FromExpression(() => Console.WriteLine());
 
             _stateContext = new StateContextMock
             {
                 JobIdValue = JobId, 
-                JobValue = _job, 
-                ConnectionValue = connection
+                JobValue = _job,
             };
 
             _newState = new Mock<IState>();

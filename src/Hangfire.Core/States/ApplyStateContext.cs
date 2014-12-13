@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
-using Hangfire.Storage;
 
 namespace Hangfire.States
 {
@@ -38,10 +37,6 @@ namespace Hangfire.States
             TraversedStates = traversedStates;
             JobExpirationTimeout = TimeSpan.FromDays(1);
         }
-        
-        // Hiding the connection from filters, because their methods are being 
-        // executed inside a transaction. This property can break them.
-        private new IStorageConnection Connection { get { return base.Connection; } }
 
         [CanBeNull]
         public string OldStateName { get; private set; }

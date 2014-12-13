@@ -17,29 +17,25 @@
 using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.Storage;
 
 namespace Hangfire.States
 {
     public class StateContext
     {
-        public StateContext(string jobId, Job job, DateTime createdAt, IStorageConnection connection,
-            [NotNull] IStateMachine stateMachine)
+        public StateContext(string jobId, Job job, DateTime createdAt, [NotNull] IStateMachine stateMachine)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
+            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             
             JobId = jobId;
             Job = job;
             CreatedAt = createdAt;
 
-            Connection = connection;
             StateMachine = stateMachine;
         }
 
         internal StateContext(StateContext context)
-            : this(context.JobId, context.Job, context.CreatedAt, context.Connection, context.StateMachine)
+            : this(context.JobId, context.Job, context.CreatedAt, context.StateMachine)
         {
         }
 
@@ -48,6 +44,5 @@ namespace Hangfire.States
         public DateTime CreatedAt { get; private set; }
 
         public IStateMachine StateMachine { get; private set; }
-        public IStorageConnection Connection { get; private set; }
     }
 }

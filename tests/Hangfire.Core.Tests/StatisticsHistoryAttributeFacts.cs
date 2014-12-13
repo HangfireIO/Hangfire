@@ -18,7 +18,7 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
 
             _context = new ElectStateContextMock();
-            _context.StateContextValue.ConnectionValue = _connection;
+            _context.ConnectionValue = _connection;
             _context.CandidateStateValue = new SucceededState(null, 11, 123);
             
             _transaction = new Mock<IWriteOnlyTransaction>();
