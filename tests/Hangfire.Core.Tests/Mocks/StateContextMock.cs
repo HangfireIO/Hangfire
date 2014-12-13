@@ -18,14 +18,15 @@ namespace Hangfire.Core.Tests
             ConnectionValue = new Mock<IStorageConnection>();
 
             _context = new Lazy<StateContext>(
-                () => new StateContext(JobIdValue, JobValue, CreatedAtValue, ConnectionValue.Object));
+                () => new StateContext(JobIdValue, JobValue, CreatedAtValue, ConnectionValue.Object, StateMachineValue.Object));
         }
 
         public string JobIdValue { get; set; }
         public Job JobValue { get; set; }
         public DateTime CreatedAtValue { get; set; }
 
-        public Mock<IStorageConnection> ConnectionValue { get; set; } 
+        public Mock<IStorageConnection> ConnectionValue { get; set; }
+        public Mock<IStateMachine> StateMachineValue { get; set; } 
 
         public StateContext Object
         {

@@ -14,19 +14,21 @@ namespace Hangfire.Core.Tests.States
         private readonly Job _job;
         private readonly DateTime _createdAt;
         private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<IStateMachine> _stateMachine;
 
         public StateContextFacts()
         {
             _job = Job.FromExpression(() => Console.WriteLine());
             _createdAt = new DateTime(2012, 12, 12);
             _connection = new Mock<IStorageConnection>();
+            _stateMachine = new Mock<IStateMachine>();
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(null, _job, _createdAt, _connection.Object));
+                () => new StateContext(null, _job, _createdAt, _connection.Object, _stateMachine.Object));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -35,7 +37,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenJobIdIsEmpty()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(String.Empty, _job, _createdAt, _connection.Object));
+                () => new StateContext(String.Empty, _job, _createdAt, _connection.Object, _stateMachine.Object));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -43,16 +45,25 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void Ctor_DoesNotThrowAnException_WhenJobIsNull()
         {
-            Assert.DoesNotThrow(() => new StateContext(JobId, null, _createdAt, _connection.Object));
+            Assert.DoesNotThrow(() => new StateContext(JobId, null, _createdAt, _connection.Object, _stateMachine.Object));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(JobId, _job, _createdAt, null));
+                () => new StateContext(JobId, _job, _createdAt, null, _stateMachine.Object));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new StateContext(JobId, _job, _createdAt, _connection.Object, null));
+
+            Assert.Equal("stateMachine", exception.ParamName);
         }
 
         [Fact]
@@ -64,6 +75,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_createdAt, context.CreatedAt);
             Assert.Same(_job, context.Job);
             Assert.Same(_connection.Object, context.Connection);
+            Assert.Same(_stateMachine.Object, context.StateMachine);
         }
 
         [Fact]
@@ -76,11 +88,12 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(context.CreatedAt, contextCopy.CreatedAt);
             Assert.Same(context.Job, contextCopy.Job);
             Assert.Same(context.Connection, contextCopy.Connection);
+            Assert.Same(context.StateMachine, contextCopy.StateMachine);
         }
 
         private StateContext CreateContext()
         {
-            return new StateContext(JobId, _job, _createdAt, _connection.Object);
+            return new StateContext(JobId, _job, _createdAt, _connection.Object, _stateMachine.Object);
         }
     }
 }

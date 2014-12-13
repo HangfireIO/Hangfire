@@ -54,7 +54,7 @@ namespace Hangfire.States
                 createdAt,
                 TimeSpan.FromHours(1));
 
-            var context = new StateContext(jobId, job, createdAt, _connection);
+            var context = new StateContext(jobId, job, createdAt, _connection, this);
             _stateChangeProcess.ChangeState(context, state, null);
 
             return jobId;
@@ -118,7 +118,7 @@ namespace Hangfire.States
                     }
                 }
 
-                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt, _connection);
+                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt, _connection, this);
                 var stateChanged = _stateChangeProcess.ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;
