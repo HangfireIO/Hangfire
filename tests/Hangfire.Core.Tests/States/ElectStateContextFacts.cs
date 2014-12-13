@@ -48,6 +48,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Same(_candidateState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
             Assert.Same(_connection.Object, context.Connection);
+            Assert.Empty(context.TraversedStates);
         }
 
         [Fact]
@@ -67,6 +68,17 @@ namespace Hangfire.Core.Tests.States
             context.CandidateState = newState.Object;
 
             Assert.Same(newState.Object, context.CandidateState);
+        }
+
+        [Fact]
+        public void SetCandidateState_AddsPreviousCandidateState_ToTraversedStatesList()
+        {
+            var context = CreateContext();
+            var state = new Mock<IState>();
+
+            context.CandidateState = state.Object;
+
+            Assert.Contains(_candidateState.Object, context.TraversedStates);
         }
 
         [Fact]

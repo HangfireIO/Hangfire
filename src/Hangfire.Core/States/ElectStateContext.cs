@@ -15,12 +15,15 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Common;
 
 namespace Hangfire.States
 {
     public class ElectStateContext : StateContext
     {
+        private readonly IList<IState> _traversedStates = new List<IState>();
         private IState _candidateState;
 
         internal ElectStateContext(StateContext context, IState candidateState, string currentState)
@@ -28,7 +31,8 @@ namespace Hangfire.States
         {
             if (candidateState == null) throw new ArgumentNullException("candidateState");
 
-            CandidateState = candidateState;
+            _candidateState = candidateState;
+
             CurrentState = currentState;
         }
 
@@ -41,11 +45,17 @@ namespace Hangfire.States
                 {
                     throw new ArgumentNullException("value", "The CandidateState property can not be set to null.");
                 }
-                _candidateState = value;
+
+                if (_candidateState != value)
+                {
+                    _traversedStates.Add(_candidateState);
+                    _candidateState = value;
+                }
             }
         }
 
         public string CurrentState { get; private set; }
+        public IState[] TraversedStates { get { return _traversedStates.ToArray(); } } 
 
         public void SetJobParameter<T>(string name, T value)
         {

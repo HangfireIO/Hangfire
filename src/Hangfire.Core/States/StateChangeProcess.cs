@@ -48,12 +48,15 @@ namespace Hangfire.States
             try
             {
                 var filterInfo = GetFilters(context.Job);
-
                 var electStateContext = new ElectStateContext(context, toState, oldStateName);
-                var electedState = ElectState(electStateContext, filterInfo.ElectStateFilters);
+                
+                foreach (var filter in filterInfo.ElectStateFilters)
+                {
+                    filter.OnStateElection(electStateContext);
+                }
 
-                var applyStateContext = new ApplyStateContext(context, electedState, oldStateName);
-                ApplyState(applyStateContext, filterInfo.ApplyStateFilters);
+                var applyStateContext = new ApplyStateContext(context, electStateContext.CandidateState, oldStateName);
+                ApplyState(applyStateContext, electStateContext.TraversedStates, filterInfo.ApplyStateFilters);
 
                 // State transition was succeeded.
                 return true;
@@ -69,50 +72,25 @@ namespace Hangfire.States
 
                 // We should not use any state changed filters, because
                 // some of the could cause an exception.
-                ApplyState(applyStateContext, Enumerable.Empty<IApplyStateFilter>());
+                ApplyState(applyStateContext, Enumerable.Empty<IState>(), Enumerable.Empty<IApplyStateFilter>());
 
                 // State transition was failed due to exception.
                 return false;
             }
         }
 
-        private static IState ElectState(
-            ElectStateContext context, 
-            IEnumerable<IElectStateFilter> filters)
-        {
-            var statesToAppend = new List<IState>();
-
-            foreach (var filter in filters)
-            {
-                var oldState = context.CandidateState;
-                filter.OnStateElection(context);
-
-                if (oldState != context.CandidateState)
-                {
-                    statesToAppend.Add(oldState);
-                }
-            }
-
-            if (statesToAppend.Count > 0)
-            {
-                using (var transaction = context.Connection.CreateWriteTransaction())
-                {
-                    foreach (var state in statesToAppend)
-                    {
-                        transaction.AddJobState(context.JobId, state);
-                    }
-
-                    transaction.Commit();
-                }
-            }
-
-            return context.CandidateState;
-        }
-
-        private void ApplyState(ApplyStateContext context, IEnumerable<IApplyStateFilter> filters)
+        private void ApplyState(
+            ApplyStateContext context, 
+            IEnumerable<IState> traversedStates, 
+            IEnumerable<IApplyStateFilter> filters)
         {
             using (var transaction = context.Connection.CreateWriteTransaction())
             {
+                foreach (var state in traversedStates)
+                {
+                    transaction.AddJobState(context.JobId, state);
+                }
+
                 foreach (var handler in _handlers.GetHandlers(context.OldStateName))
                 {
                     handler.Unapply(context, transaction);
