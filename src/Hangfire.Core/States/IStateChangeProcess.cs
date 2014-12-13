@@ -18,6 +18,6 @@ namespace Hangfire.States
 {
     public interface IStateChangeProcess
     {
-        bool ChangeState(StateContext context, IState toState, string oldStateName);
+        bool ChangeState(IStateMachine stateMachine, StateContext context, IState toState, string oldStateName);
     }
 }

@@ -25,7 +25,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(null, _job, _createdAt, _stateMachine.Object));
+                () => new StateContext(null, _job, _createdAt));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -34,7 +34,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenJobIdIsEmpty()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(String.Empty, _job, _createdAt, _stateMachine.Object));
+                () => new StateContext(String.Empty, _job, _createdAt));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -42,16 +42,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void Ctor_DoesNotThrowAnException_WhenJobIsNull()
         {
-            Assert.DoesNotThrow(() => new StateContext(JobId, null, _createdAt, _stateMachine.Object));
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(JobId, _job, _createdAt, null));
-
-            Assert.Equal("stateMachine", exception.ParamName);
+            Assert.DoesNotThrow(() => new StateContext(JobId, null, _createdAt));
         }
 
         [Fact]
@@ -62,7 +53,6 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(JobId, context.JobId);
             Assert.Equal(_createdAt, context.CreatedAt);
             Assert.Same(_job, context.Job);
-            Assert.Same(_stateMachine.Object, context.StateMachine);
         }
 
         [Fact]
@@ -74,12 +64,11 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(context.JobId, contextCopy.JobId);
             Assert.Equal(context.CreatedAt, contextCopy.CreatedAt);
             Assert.Same(context.Job, contextCopy.Job);
-            Assert.Same(context.StateMachine, contextCopy.StateMachine);
         }
 
         private StateContext CreateContext()
         {
-            return new StateContext(JobId, _job, _createdAt, _stateMachine.Object);
+            return new StateContext(JobId, _job, _createdAt);
         }
     }
 }

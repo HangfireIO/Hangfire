@@ -51,12 +51,12 @@ namespace Hangfire.States
             _getFiltersThunk = md => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
-        public bool ChangeState(StateContext context, IState toState, string oldStateName)
+        public bool ChangeState(IStateMachine stateMachine, StateContext context, IState toState, string oldStateName)
         {
             try
             {
                 var filterInfo = GetFilters(context.Job);
-                var electStateContext = new ElectStateContext(context, _connection, toState, oldStateName);
+                var electStateContext = new ElectStateContext(context, _connection, stateMachine, toState, oldStateName);
                 
                 foreach (var filter in filterInfo.ElectStateFilters)
                 {

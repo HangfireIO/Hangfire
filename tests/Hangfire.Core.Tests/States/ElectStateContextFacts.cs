@@ -13,10 +13,12 @@ namespace Hangfire.Core.Tests.States
         private readonly StateContextMock _stateContext;
         private readonly Mock<IState> _candidateState;
         private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<IStateMachine> _stateMachine;
 
         public ElectStateContextFacts()
         {
             _connection = new Mock<IStorageConnection>();
+            _stateMachine = new Mock<IStateMachine>();
 
             _stateContext = new StateContextMock();
             _stateContext.JobIdValue = JobId;
@@ -31,10 +33,25 @@ namespace Hangfire.Core.Tests.States
                 () => new ElectStateContext(
                     _stateContext.Object,
                     null,
+                    _stateMachine.Object,
                     _candidateState.Object,
                     null));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ElectStateContext(
+                    _stateContext.Object,
+                    _connection.Object,
+                    null,
+                    _candidateState.Object,
+                    null));
+
+            Assert.Equal("stateMachine", exception.ParamName);
         }
 
         [Fact]
@@ -44,6 +61,7 @@ namespace Hangfire.Core.Tests.States
                 () => new ElectStateContext(
                     _stateContext.Object,
                     _connection.Object,
+                    _stateMachine.Object,
                     null,
                     null));
 
@@ -58,9 +76,10 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal(_stateContext.Object.JobId, context.JobId);
             Assert.Equal(_stateContext.Object.Job, context.Job);
 
+            Assert.Same(_connection.Object, context.Connection);
+            Assert.Same(_stateMachine.Object, context.StateMachine);
             Assert.Same(_candidateState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
-            Assert.Same(_connection.Object, context.Connection);
             Assert.Empty(context.TraversedStates);
         }
 
@@ -145,6 +164,7 @@ namespace Hangfire.Core.Tests.States
             return new ElectStateContext(
                 _stateContext.Object,
                 _connection.Object,
+                _stateMachine.Object,
                 _candidateState.Object,
                 "State");
         }

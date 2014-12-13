@@ -53,6 +53,7 @@ namespace Hangfire.Core.Tests.States
 
             _stateChangeProcess
                 .Setup(x => x.ChangeState(
+                    It.IsNotNull<IStateMachine>(),
                     It.Is<StateContext>(s => s.JobId == JobId && s.Job == _job), 
                     _state.Object, 
                     OldStateName))
@@ -135,6 +136,7 @@ namespace Hangfire.Core.Tests.States
             stateMachine.CreateInState(_job, _parameters, _state.Object);
 
             _stateChangeProcess.Verify(x => x.ChangeState(
+                It.IsNotNull<IStateMachine>(),
                 It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job == _job),
                 _state.Object,
                 null));
@@ -201,6 +203,7 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _stateChangeProcess.Verify(x => x.ChangeState(
+                It.IsNotNull<IStateMachine>(),
                 It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job.Type.Name.Equals("Console")),
                 _state.Object,
                 OldStateName));
@@ -219,6 +222,7 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _stateChangeProcess.Verify(x => x.ChangeState(
+                It.IsNotNull<IStateMachine>(),
                 It.IsNotNull<StateContext>(),
                 _state.Object,
                 OldStateName));
@@ -241,7 +245,7 @@ namespace Hangfire.Core.Tests.States
             _connection.Verify(x => x.GetJobData(JobId));
 
             _stateChangeProcess.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
+                x => x.ChangeState(It.IsNotNull<IStateMachine>(), It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
                 Times.Never);
         }
 
@@ -259,7 +263,7 @@ namespace Hangfire.Core.Tests.States
             Assert.False(result);
 
             _stateChangeProcess.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
+                x => x.ChangeState(It.IsNotNull<IStateMachine>(), It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
                 Times.Never);
         }
 
@@ -268,7 +272,7 @@ namespace Hangfire.Core.Tests.States
         {
             // Arrange
             _stateChangeProcess
-                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
+                .Setup(x => x.ChangeState(It.IsNotNull<IStateMachine>(), It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
                 .Returns(false);
 
             var stateMachine = CreateStateMachine();
@@ -278,7 +282,7 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _stateChangeProcess.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()));
+                x => x.ChangeState(It.IsNotNull<IStateMachine>(), It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()));
 
             Assert.False(result);
         }
@@ -296,7 +300,7 @@ namespace Hangfire.Core.Tests.States
                 });
 
             _stateChangeProcess
-                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
+                .Setup(x => x.ChangeState(It.IsNotNull<IStateMachine>(), It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
                 .Returns(true);
 
             var stateMachine = CreateStateMachine();
@@ -306,6 +310,7 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _stateChangeProcess.Verify(x => x.ChangeState(
+                It.IsNotNull<IStateMachine>(),
                 It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job == null),
                 It.Is<FailedState>(s => s.Exception != null),
                 OldStateName));
@@ -326,7 +331,7 @@ namespace Hangfire.Core.Tests.States
                 });
 
             _stateChangeProcess
-                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
+                .Setup(x => x.ChangeState(It.IsNotNull<IStateMachine>(), It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
                 .Returns(true);
 
             _state.Setup(x => x.IgnoreJobLoadException).Returns(true);
@@ -338,6 +343,7 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _stateChangeProcess.Verify(x => x.ChangeState(
+                It.IsNotNull<IStateMachine>(),
                 It.IsAny<StateContext>(),
                 _state.Object,
                 OldStateName));
