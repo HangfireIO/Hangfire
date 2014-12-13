@@ -36,8 +36,13 @@ namespace Hangfire.States
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var process = new StateChangeProcess(connection, _handlers);
+            var process = CreateProcess();
             return new StateMachine(connection, process);
+        }
+
+        public IStateChangeProcess CreateProcess()
+        {
+            return new StateChangeProcess(_handlers);
         }
     }
 }

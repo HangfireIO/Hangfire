@@ -55,7 +55,7 @@ namespace Hangfire.States
                 TimeSpan.FromHours(1));
 
             var context = new StateContext(jobId, job, createdAt);
-            _stateChangeProcess.ChangeState(this, context, state, null);
+            ChangeState(context, state, null);
 
             return jobId;
         }
@@ -119,9 +119,55 @@ namespace Hangfire.States
                 }
 
                 var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt);
-                var stateChanged = _stateChangeProcess.ChangeState(this, context, toState, jobData.State);
+                var stateChanged = ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;
+            }
+        }
+
+        private bool ChangeState(StateContext context, IState toState, string oldStateName)
+        {
+            try
+            {
+                var electStateContext = new ElectStateContext(context, _connection, this, toState, oldStateName);
+                _stateChangeProcess.ElectState(_connection, electStateContext);
+
+                var applyStateContext = new ApplyStateContext(
+                    context,
+                    electStateContext.CandidateState,
+                    oldStateName,
+                    electStateContext.TraversedStates);
+
+                ApplyState(applyStateContext, true);
+
+                // State transition has been succeeded.
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var failedState = new FailedState(ex)
+                {
+                    Reason = "An exception occurred during the transition of job's state"
+                };
+
+                var applyStateContext = new ApplyStateContext(context, failedState, oldStateName, Enumerable.Empty<IState>());
+
+                // We should not use any state changed filters, because
+                // some of the could cause an exception.
+                ApplyState(applyStateContext, false);
+
+                // State transition has been failed due to exception.
+                return false;
+            }
+        }
+
+        private void ApplyState(ApplyStateContext context, bool useFilters)
+        {
+            using (var transaction = _connection.CreateWriteTransaction())
+            {
+                _stateChangeProcess.ApplyState(transaction, context, useFilters);
+
+                transaction.Commit();
             }
         }
     }

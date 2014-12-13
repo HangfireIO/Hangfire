@@ -21,5 +21,6 @@ namespace Hangfire.States
     public interface IStateMachineFactory
     {
         IStateMachine Create(IStorageConnection connection);
+        IStateChangeProcess CreateProcess();
     }
 }
