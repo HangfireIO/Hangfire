@@ -90,7 +90,7 @@ namespace Hangfire.Server
                     Reason = "Enqueued as a scheduled job"
                 };
 
-                stateMachine.TryToChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName });
+                stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName });
 
                 return true;
             }

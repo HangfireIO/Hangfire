@@ -156,7 +156,7 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, null);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 "job-id",
                 _state.Object,
                 null));
@@ -169,7 +169,7 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, "State");
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 "job-id",
                 _state.Object,
                 new[] { "State" }));
@@ -178,7 +178,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void ChangeState_ReturnsTheResult_OfStateMachineInvocation()
         {
-            _stateMachine.Setup(x => x.TryToChangeState("job-id", _state.Object, null))
+            _stateMachine.Setup(x => x.ChangeState("job-id", _state.Object, null))
                 .Returns(true);
             var client = CreateClient();
 

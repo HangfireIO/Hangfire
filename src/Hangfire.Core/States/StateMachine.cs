@@ -60,7 +60,7 @@ namespace Hangfire.States
             return jobId;
         }
 
-        public bool TryToChangeState(
+        public bool ChangeState(
             string jobId, IState toState, string[] fromStates)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");

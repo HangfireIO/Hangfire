@@ -151,7 +151,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.TryToChangeState(null, _state.Object, FromOldState));
+                () => stateMachine.ChangeState(null, _state.Object, FromOldState));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -162,7 +162,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.TryToChangeState(JobId, null, FromOldState));
+                () => stateMachine.ChangeState(JobId, null, FromOldState));
 
             Assert.Equal("toState", exception.ParamName);
         }
@@ -173,7 +173,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentException>(
-                () => stateMachine.TryToChangeState(JobId, _state.Object, new string[0]));
+                () => stateMachine.ChangeState(JobId, _state.Object, new string[0]));
 
             Assert.Equal("fromStates", exception.ParamName);
         }
@@ -183,7 +183,7 @@ namespace Hangfire.Core.Tests.States
         {
             var stateMachine = CreateStateMachine();
 
-            stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             _distributedLock.Verify(x => x.Dispose());
         }
@@ -195,7 +195,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             _process.Verify(x => x.ApplyState(
@@ -214,7 +214,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            stateMachine.TryToChangeState(JobId, _state.Object, null);
+            stateMachine.ChangeState(JobId, _state.Object, null);
 
             // Assert
             _process.Verify(x => x.ApplyState(
@@ -233,7 +233,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             Assert.False(result);
@@ -251,7 +251,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(
+            var result = stateMachine.ChangeState(
                 JobId, _state.Object, new [] { "AnotherState" });
 
             // Assert
@@ -272,7 +272,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             _process.Verify(x => x.ApplyState(_transaction.Object, It.IsNotNull<ApplyStateContext>(), false));
@@ -295,7 +295,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             _process.Verify(x => x.ApplyState(
@@ -323,7 +323,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             _process.Verify(x => x.ApplyState(
@@ -341,7 +341,7 @@ namespace Hangfire.Core.Tests.States
             var machine = CreateStateMachine();
 
             // Act
-            var result = machine.TryToChangeState(JobId, _state.Object, new[] { OldStateName });
+            var result = machine.ChangeState(JobId, _state.Object, new[] { OldStateName });
 
             // Assert
             _process.Verify(x => x.ApplyState(
@@ -367,7 +367,7 @@ namespace Hangfire.Core.Tests.States
             var machine = CreateStateMachine();
 
             // Act
-            machine.TryToChangeState(JobId, _state.Object, new[] { OldStateName });
+            machine.ChangeState(JobId, _state.Object, new[] { OldStateName });
 
             // Assert - Sequence
             _process.Verify(x => x.ApplyState(
@@ -389,7 +389,7 @@ namespace Hangfire.Core.Tests.States
             var machine = CreateStateMachine();
 
             // Act
-            var result = machine.TryToChangeState(JobId, _state.Object, new[] { OldStateName });
+            var result = machine.ChangeState(JobId, _state.Object, new[] { OldStateName });
 
             // Assert
             _process.Verify(x => x.ApplyState(
