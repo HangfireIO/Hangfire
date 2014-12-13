@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
-using Moq.Sequences;
 using Xunit;
 
 namespace Hangfire.Core.Tests.States
@@ -16,41 +16,45 @@ namespace Hangfire.Core.Tests.States
         private const string NewState = "NewState";
 
         private readonly Mock<IState> _newState;
-        private readonly List<IApplyStateFilter> _filters;
-        private readonly StateHandlerCollection _handlers;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly StateContextMock _stateContext;
-        private readonly Mock<IStorageConnection> _connection;
         private readonly Job _job;
+        private readonly IEnumerable<IState> _traversedStates = Enumerable.Empty<IState>();
 
         public ApplyStateContextFacts()
         {
-            _connection = new Mock<IStorageConnection>();
+            var connection = new Mock<IStorageConnection>();
+            var transaction = new Mock<IWriteOnlyTransaction>();
+            connection.Setup(x => x.CreateWriteTransaction()).Returns(transaction.Object);
 
             _job = Job.FromExpression(() => Console.WriteLine());
 
-            _stateContext = new StateContextMock();
-            _stateContext.JobIdValue = JobId;
-            _stateContext.JobValue = _job;
-            _stateContext.ConnectionValue = _connection;
+            _stateContext = new StateContextMock
+            {
+                JobIdValue = JobId, 
+                JobValue = _job, 
+                ConnectionValue = connection
+            };
 
             _newState = new Mock<IState>();
             _newState.Setup(x => x.Name).Returns(NewState);
-
-            _filters = new List<IApplyStateFilter>();
-            _handlers = new StateHandlerCollection();
-
-            _transaction = new Mock<IWriteOnlyTransaction>();
-            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenNewStateIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ApplyStateContext(_stateContext.Object, null, OldState));
+                () => new ApplyStateContext(_stateContext.Object, null, OldState, _traversedStates));
 
             Assert.Equal("newState", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenTraversedStatesIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ApplyStateContext(_stateContext.Object, _newState.Object, OldState, null));
+
+            Assert.Equal("traversedStates", exception.ParamName);
         }
 
         [Fact]
@@ -59,11 +63,13 @@ namespace Hangfire.Core.Tests.States
             var context = new ApplyStateContext(
                 _stateContext.Object,
                 _newState.Object,
-                OldState);
+                OldState,
+                _traversedStates);
 
             Assert.Equal(OldState, context.OldStateName);
             Assert.Same(_newState.Object, context.NewState);
             Assert.Same(_job, context.Job);
+            Assert.Same(_traversedStates, context.TraversedStates);
         }
     }
 }

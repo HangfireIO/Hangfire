@@ -55,10 +55,15 @@ namespace Hangfire.States
                     filter.OnStateElection(electStateContext);
                 }
 
-                var applyStateContext = new ApplyStateContext(context, electStateContext.CandidateState, oldStateName);
-                ApplyState(applyStateContext, electStateContext.TraversedStates, filterInfo.ApplyStateFilters);
+                var applyStateContext = new ApplyStateContext(
+                    context, 
+                    electStateContext.CandidateState, 
+                    oldStateName,
+                    electStateContext.TraversedStates);
 
-                // State transition was succeeded.
+                ApplyState(applyStateContext, filterInfo.ApplyStateFilters);
+
+                // State transition has been succeeded.
                 return true;
             }
             catch (Exception ex)
@@ -68,25 +73,22 @@ namespace Hangfire.States
                     Reason = "An exception occurred during the transition of job's state"
                 };
 
-                var applyStateContext = new ApplyStateContext(context, failedState, oldStateName);
+                var applyStateContext = new ApplyStateContext(context, failedState, oldStateName, Enumerable.Empty<IState>());
 
                 // We should not use any state changed filters, because
                 // some of the could cause an exception.
-                ApplyState(applyStateContext, Enumerable.Empty<IState>(), Enumerable.Empty<IApplyStateFilter>());
+                ApplyState(applyStateContext, Enumerable.Empty<IApplyStateFilter>());
 
-                // State transition was failed due to exception.
+                // State transition has been failed due to exception.
                 return false;
             }
         }
 
-        private void ApplyState(
-            ApplyStateContext context, 
-            IEnumerable<IState> traversedStates, 
-            IEnumerable<IApplyStateFilter> filters)
+        private void ApplyState(ApplyStateContext context, IEnumerable<IApplyStateFilter> filters)
         {
             using (var transaction = context.Connection.CreateWriteTransaction())
             {
-                foreach (var state in traversedStates)
+                foreach (var state in context.TraversedStates)
                 {
                     transaction.AddJobState(context.JobId, state);
                 }
