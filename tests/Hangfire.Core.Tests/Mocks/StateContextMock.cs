@@ -16,6 +16,7 @@ namespace Hangfire.Core.Tests
             JobValue = Job.FromExpression(() => Console.WriteLine());
             CreatedAtValue = DateTime.UtcNow;
             ConnectionValue = new Mock<IStorageConnection>();
+            StateMachineValue = new Mock<IStateMachine>();
 
             _context = new Lazy<StateContext>(
                 () => new StateContext(JobIdValue, JobValue, CreatedAtValue, ConnectionValue.Object, StateMachineValue.Object));
