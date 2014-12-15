@@ -28,7 +28,7 @@ namespace Hangfire.States
         private readonly IList<IState> _traversedStates = new List<IState>();
         private IState _candidateState;
 
-        internal ElectStateContext(
+        public ElectStateContext(
             [NotNull] StateContext context, 
             [NotNull] IStorageConnection connection, 
             [NotNull] IStateMachine stateMachine,
