@@ -9,13 +9,13 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class JobPerformanceProcessFacts
+    public class DefaultJobPerformanceProcessFacts
     {
         private readonly PerformContext _context;
         private readonly Mock<IJobPerformer> _performer;
         private readonly IList<object> _filters; 
 
-        public JobPerformanceProcessFacts()
+        public DefaultJobPerformanceProcessFacts()
         {
             var workerContext = new WorkerContextMock();
 
@@ -465,9 +465,9 @@ namespace Hangfire.Core.Tests.Server
         {
         }
 
-        private JobPerformanceProcess CreateProcess()
+        private DefaultJobPerformanceProcess CreateProcess()
         {
-            return new JobPerformanceProcess(_filters);
+            return new DefaultJobPerformanceProcess(_filters);
         }
 
         private Mock<T> CreateFilter<T>()

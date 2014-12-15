@@ -10,12 +10,12 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Client
 {
-    public class JobCreationProcessFacts
+    public class DefaultJobCreationProcessFacts
     {
         private readonly Mock<CreateContext> _context;
         private readonly IList<object> _filters;
 
-        public JobCreationProcessFacts()
+        public DefaultJobCreationProcessFacts()
         {
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
@@ -310,9 +310,9 @@ namespace Hangfire.Core.Tests.Client
         {
         }
 
-        private JobCreationProcess CreateProcess()
+        private DefaultJobCreationProcess CreateProcess()
         {
-            return new JobCreationProcess(_filters);
+            return new DefaultJobCreationProcess(_filters);
         }
     }
 }

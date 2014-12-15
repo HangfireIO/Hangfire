@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.States
 {
-    public class StateChangeProcessFacts
+    public class DefaultStateChangeProcessFacts
     {
         private const string OldStateName = "OldState";
         private const string StateName = "State";
@@ -23,7 +23,7 @@ namespace Hangfire.Core.Tests.States
         private readonly ElectStateContextMock _electStateContext;
         private readonly ApplyStateContextMock _applyStateContext;
 
-        public StateChangeProcessFacts()
+        public DefaultStateChangeProcessFacts()
         {
             _connection = new Mock<IStorageConnection>();
             _transaction = new Mock<IWriteOnlyTransaction>();
@@ -51,7 +51,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenHandlersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeProcess(null, _filters));
+                () => new DefaultStateChangeProcess(null, _filters));
 
             Assert.Equal("handlers", exception.ParamName);
         }
@@ -60,7 +60,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenFiltersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeProcess(_handlers, null));
+                () => new DefaultStateChangeProcess(_handlers, null));
 
             Assert.Equal("filters", exception.ParamName);
         }
@@ -247,9 +247,9 @@ namespace Hangfire.Core.Tests.States
             _transaction.Verify(x => x.AddJobState(JobId, _state.Object));
         }
 
-        private StateChangeProcess CreateProcess()
+        private DefaultStateChangeProcess CreateProcess()
         {
-            return new StateChangeProcess(_handlers, _filters);
+            return new DefaultStateChangeProcess(_handlers, _filters);
         }
 
         private Mock<IStateHandler> CreateStateHandler(string stateName)

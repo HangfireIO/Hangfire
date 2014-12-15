@@ -19,7 +19,7 @@ namespace Hangfire.Client
     /// <summary>
     /// This interface acts as extensibility point for the process
     /// of job creation. See the default implementation in the
-    /// <see cref="JobCreationProcess"/> class.
+    /// <see cref="DefaultJobCreationProcess"/> class.
     /// </summary>
     public interface IJobCreationProcess
     {

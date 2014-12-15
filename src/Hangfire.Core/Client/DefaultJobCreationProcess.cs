@@ -21,23 +21,23 @@ using Hangfire.Common;
 
 namespace Hangfire.Client
 {
-    internal class JobCreationProcess : IJobCreationProcess
+    internal class DefaultJobCreationProcess : IJobCreationProcess
     {
-        public static JobCreationProcess Instance { get; private set; }
+        public static DefaultJobCreationProcess Instance { get; private set; }
 
-        static JobCreationProcess()
+        static DefaultJobCreationProcess()
         {
-            Instance = new JobCreationProcess();
+            Instance = new DefaultJobCreationProcess();
         }
 
         private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
-        public JobCreationProcess()
+        public DefaultJobCreationProcess()
         {
         }
 
-        internal JobCreationProcess(IEnumerable<object> filters)
+        internal DefaultJobCreationProcess(IEnumerable<object> filters)
             : this()
         {
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));

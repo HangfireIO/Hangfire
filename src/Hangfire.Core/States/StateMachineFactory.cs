@@ -42,7 +42,7 @@ namespace Hangfire.States
 
         public IStateChangeProcess CreateProcess()
         {
-            return new StateChangeProcess(_handlers);
+            return new DefaultStateChangeProcess(_handlers);
         }
     }
 }
