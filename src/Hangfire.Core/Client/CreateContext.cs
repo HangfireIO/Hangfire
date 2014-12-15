@@ -44,7 +44,7 @@ namespace Hangfire.Client
             _parameters = context._parameters;
         }
 
-        internal CreateContext(
+        public CreateContext(
             IStorageConnection connection,
             IStateMachineFactory stateMachineFactory,
             Job job,
