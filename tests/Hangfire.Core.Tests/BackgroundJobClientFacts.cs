@@ -114,6 +114,17 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void CreateJob_ReturnsJobIdentifier()
+        {
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns("some-job");
+            var client = CreateClient();
+
+            var id = client.Create(_job, _state.Object);
+
+            Assert.Equal("some-job", id);
+        }
+
+        [Fact]
         public void CreateJob_WrapsProcessException_IntoItsOwnException()
         {
             var client = CreateClient();

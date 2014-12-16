@@ -43,7 +43,7 @@ namespace Hangfire.Client
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
-        public void Run(CreateContext context)
+        public string Run(CreateContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
 
@@ -63,6 +63,8 @@ namespace Hangfire.Client
                     throw;
                 }
             }
+
+            return context.JobId;
         }
 
         private JobFilterInfo GetFilters(Job job)

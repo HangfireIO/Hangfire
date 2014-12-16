@@ -73,7 +73,7 @@ namespace Hangfire.Client
         /// </summary>
         public IDictionary<string, object> Items { get; private set; }
 
-        public string JobId { get; private set; }
+        public virtual string JobId { get; private set; }
         public Job Job { get; private set; }
 
         /// <summary>

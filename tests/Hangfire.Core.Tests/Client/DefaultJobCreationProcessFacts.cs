@@ -12,6 +12,7 @@ namespace Hangfire.Core.Tests.Client
 {
     public class DefaultJobCreationProcessFacts
     {
+        private static readonly string JobId = "some-job";
         private readonly Mock<CreateContext> _context;
         private readonly IList<object> _filters;
 
@@ -25,6 +26,7 @@ namespace Hangfire.Core.Tests.Client
             _filters = new List<object>();
             _context = new Mock<CreateContext>(
                 connection.Object, stateMachineFactory.Object, job, state.Object);
+            _context.SetupGet(x => x.JobId).Returns(JobId);
         }
 
         [Fact]
@@ -46,6 +48,16 @@ namespace Hangfire.Core.Tests.Client
             process.Run(_context.Object);
 
             _context.Verify(x => x.CreateJob(), Times.Once);
+        }
+
+        [Fact]
+        public void Run_ReturnsJobIdentifier()
+        {
+            var process = CreateProcess();
+
+            var result = process.Run(_context.Object);
+
+            Assert.Equal(JobId, result);
         }
 
         [Fact]
