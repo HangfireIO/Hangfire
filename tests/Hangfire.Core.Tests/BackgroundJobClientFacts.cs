@@ -110,13 +110,13 @@ namespace Hangfire.Core.Tests
 
             client.Create(_job, _state.Object);
 
-            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>()));
+            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>(), It.IsNotNull<IStateMachine>()));
         }
 
         [Fact]
         public void CreateJob_ReturnsJobIdentifier()
         {
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns("some-job");
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>())).Returns("some-job");
             var client = CreateClient();
 
             var id = client.Create(_job, _state.Object);
@@ -128,7 +128,7 @@ namespace Hangfire.Core.Tests
         public void CreateJob_WrapsProcessException_IntoItsOwnException()
         {
             var client = CreateClient();
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>()))
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>()))
                 .Throws<InvalidOperationException>();
 
             var exception = Assert.Throws<CreateJobFailedException>(

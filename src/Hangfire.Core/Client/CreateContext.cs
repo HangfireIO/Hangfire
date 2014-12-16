@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -28,32 +29,25 @@ namespace Hangfire.Client
     /// </summary>
     public class CreateContext
     {
-        private readonly IStateMachineFactory _stateMachineFactory;
-
         private readonly IDictionary<string, string> _parameters
             = new Dictionary<string, string>();
 
         internal CreateContext(CreateContext context)
-            : this(context.Connection, context._stateMachineFactory, context.Job, context.InitialState)
+            : this(context.Connection, context.Job, context.InitialState)
         {
             Items = context.Items;
-            JobId = context.JobId;
             _parameters = context._parameters;
         }
 
         public CreateContext(
             IStorageConnection connection,
-            IStateMachineFactory stateMachineFactory,
             Job job,
             IState initialState)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             if (job == null) throw new ArgumentNullException("job");
             if (initialState == null) throw new ArgumentNullException("initialState");
-
-            _stateMachineFactory = stateMachineFactory;
-
+            
             Connection = connection;
             Job = job;
             InitialState = initialState;
@@ -70,7 +64,14 @@ namespace Hangfire.Client
         /// </summary>
         public IDictionary<string, object> Items { get; private set; }
 
-        public virtual string JobId { get; private set; }
+        public IDictionary<string, string> Parameters
+        {
+            get
+            {
+                return _parameters.ToDictionary(x => x.Key, x => x.Value);
+            }
+        } 
+
         public Job Job { get; private set; }
 
         /// <summary>
@@ -135,12 +136,6 @@ namespace Hangfire.Client
                     "Could not get a value of the job parameter `{0}`. See inner exception for details.",
                     name), ex);
             }
-        }
-
-        internal virtual void CreateJob()
-        {
-            var stateMachine = _stateMachineFactory.Create(Connection);
-            JobId = stateMachine.CreateInState(Job, _parameters, InitialState);
         }
     }
 }

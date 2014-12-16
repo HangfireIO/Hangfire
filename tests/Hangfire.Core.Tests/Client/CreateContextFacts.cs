@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -14,44 +13,28 @@ namespace Hangfire.Core.Tests.Client
         private readonly Job _job;
         private readonly Mock<IState> _state;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IStateMachine> _stateMachine;
-        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
 
         public CreateContextFacts()
         {
             _job = Job.FromExpression(() => Method());
             _state = new Mock<IState>();
             _connection = new Mock<IStorageConnection>();
-            _stateMachine = new Mock<IStateMachine>();
-
-            _stateMachineFactory = new Mock<IStateMachineFactory>();
-            _stateMachineFactory.Setup(x => x.Create(It.IsNotNull<IStorageConnection>()))
-                .Returns(_stateMachine.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(null, _stateMachineFactory.Object, _job, _state.Object));
+                () => new CreateContext(null, _job, _state.Object));
 
             Assert.Equal("connection", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_connection.Object, null, _job, _state.Object));
-
-            Assert.Equal("stateMachineFactory", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(_connection.Object, _stateMachineFactory.Object, null, _state.Object));
+                () => new CreateContext(_connection.Object, null, _state.Object));
 
             Assert.Equal("job", exception.ParamName);
         }
@@ -61,7 +44,7 @@ namespace Hangfire.Core.Tests.Client
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new CreateContext(
-                    _connection.Object, _stateMachineFactory.Object, _job, null));
+                    _connection.Object, _job, null));
 
             Assert.Equal("initialState", exception.ParamName);
         }
@@ -76,7 +59,6 @@ namespace Hangfire.Core.Tests.Client
             Assert.Same(_state.Object, context.InitialState);
 
             Assert.NotNull(context.Items);
-            Assert.Null(context.JobId);
         }
 
         [Fact]
@@ -86,15 +68,6 @@ namespace Hangfire.Core.Tests.Client
             var contextCopy = new CreateContext(context);
 
             Assert.Same(context.Items, contextCopy.Items);
-        }
-
-        [Fact]
-        public void CopyCtor_CopiesJobId_FromTheGivenContext()
-        {
-            var context = CreateContext();
-            var contextCopy = new CreateContext(context);
-
-            Assert.Same(context.JobId, contextCopy.JobId);
         }
 
         [Fact]
@@ -197,81 +170,13 @@ namespace Hangfire.Core.Tests.Client
             Assert.Equal("value", value);
         }
 
-        [Fact]
-        public void CreateJob_DelegatesItsExecution_ToStateMachine()
-        {
-            var context = CreateContext();
-
-            context.CreateJob();
-
-            _stateMachine.Verify(x => x.CreateInState(
-                context.Job,
-                It.IsNotNull<Dictionary<string, string>>(),
-                context.InitialState));
-        }
-
-        [Fact]
-        public void CreateJob_SetsTheJobIdProperty()
-        {
-            var context = CreateContext();
-            _stateMachine
-                .Setup(x => x.CreateInState(context.Job, It.IsAny<Dictionary<string, string>>(), context.InitialState))
-                .Returns("id");
-
-            context.CreateJob();
-
-            Assert.Equal("id", context.JobId);
-        }
-
-        [Fact]
-        public void CreateJob_PassesParametersAsJsonObjects()
-        {
-            var context = CreateContext();
-            context.SetJobParameter("name", new { key = "value" });
-
-            context.CreateJob();
-
-            _stateMachine.Verify(x => x.CreateInState(
-                It.IsAny<Job>(),
-                It.Is<Dictionary<string, string>>(
-                    d => d.ContainsKey("name") && d["name"] == "{\"key\":\"value\"}"),
-                It.IsAny<IState>()));
-        }
-
-        [Fact]
-        public void GetJobParameter_DoesNotThrowAnException_AfterCreateJobWasCalled()
-        {
-            var context = CreateContext();
-
-            context.CreateJob();
-
-            Assert.DoesNotThrow(
-                () => context.GetJobParameter<string>("name"));
-        }
-
-        [Fact]
-        public void CopyCtor_CopiesJobId_WhenItWasSet()
-        {
-            _stateMachine.Setup(x => x.CreateInState(
-                _job, It.IsAny<Dictionary<string, string>>(), _state.Object))
-                .Returns("id");
-
-            var context = CreateContext();
-            context.CreateJob();
-
-            var contextCopy = new CreateContext(context);
-
-            Assert.Equal("id", contextCopy.JobId);
-        }
-
         public static void Method()
         {
         }
 
         private CreateContext CreateContext()
         {
-            return new CreateContext(
-                _connection.Object, _stateMachineFactory.Object, _job, _state.Object);
+            return new CreateContext(_connection.Object, _job, _state.Object);
         }
     }
 }

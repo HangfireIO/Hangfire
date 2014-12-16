@@ -10,6 +10,7 @@ namespace Hangfire.Core.Tests.Client
 {
     public class CreatedContextFacts
     {
+        private const string JobId = "some-job";
         private readonly Exception _exception;
         
         public CreatedContextFacts()
@@ -21,7 +22,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenCreateContextIsNull()
         {
             Assert.Throws<NullReferenceException>(
-                () => new CreatedContext(null, false, null));
+                () => new CreatedContext(null, JobId, false, null));
         }
 
         [Fact]
@@ -31,6 +32,7 @@ namespace Hangfire.Core.Tests.Client
 
             Assert.True(context.Canceled);
             Assert.Same(_exception, context.Exception);
+            Assert.Equal(JobId, context.JobId);
         }
 
         [Fact]
@@ -63,12 +65,8 @@ namespace Hangfire.Core.Tests.Client
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
             
-            var stateMachineFactory = new Mock<IStateMachineFactory>();
-
-            var createContext = new CreateContext(
-                connection.Object, stateMachineFactory.Object, job, state.Object);
-
-            return new CreatedContext(createContext, true, _exception);
+            var createContext = new CreateContext(connection.Object, job, state.Object);
+            return new CreatedContext(createContext, JobId, true, _exception);
         }
     }
 }

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Common;
+using Hangfire.States;
 
 namespace Hangfire.Client
 {
@@ -43,15 +44,17 @@ namespace Hangfire.Client
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
-        public string Run(CreateContext context)
+        public string Run(CreateContext context, IStateMachine stateMachine)
         {
             if (context == null) throw new ArgumentNullException("context");
+            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
 
             var filterInfo = GetFilters(context.Job);
 
             try
             {
-                CreateWithFilters(context, filterInfo.ClientFilters);
+                var createdContext = CreateWithFilters(context, stateMachine, filterInfo.ClientFilters);
+                return createdContext.JobId;
             }
             catch (Exception ex)
             {
@@ -62,9 +65,9 @@ namespace Hangfire.Client
                 {
                     throw;
                 }
-            }
 
-            return context.JobId;
+                return null;
+            }
         }
 
         private JobFilterInfo GetFilters(Job job)
@@ -72,21 +75,22 @@ namespace Hangfire.Client
             return new JobFilterInfo(_getFiltersThunk(job));
         }
 
-        private static void CreateWithFilters(
+        private static CreatedContext CreateWithFilters(
             CreateContext context,
+            IStateMachine stateMachine,
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                context.CreateJob();
-                return new CreatedContext(context, false, null);
+                var jobId = stateMachine.CreateInState(context.Job, context.Parameters, context.InitialState);
+                return new CreatedContext(context, jobId, false, null);
             };
 
             var thunk = filters.Reverse().Aggregate(continuation,
                 (next, filter) => () => InvokeClientFilter(filter, preContext, next));
 
-            thunk();
+            return thunk();
         }
 
         private static CreatedContext InvokeClientFilter(
@@ -97,8 +101,7 @@ namespace Hangfire.Client
             filter.OnCreating(preContext);
             if (preContext.Canceled)
             {
-                return new CreatedContext(
-                    preContext, true, null);
+                return new CreatedContext(preContext, null, true, null);
             }
 
             var wasError = false;
@@ -110,8 +113,7 @@ namespace Hangfire.Client
             catch (Exception ex)
             {
                 wasError = true;
-                postContext = new CreatedContext(
-                    preContext, false, ex);
+                postContext = new CreatedContext(preContext, null, false, ex);
 
                 filter.OnCreated(postContext);
 

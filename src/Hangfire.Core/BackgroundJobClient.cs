@@ -87,8 +87,10 @@ namespace Hangfire
             {
                 using (var connection = _storage.GetConnection())
                 {
-                    var context = new CreateContext(connection, _stateMachineFactory, job, state);
-                    return _process.Run(context);
+                    var context = new CreateContext(connection, job, state);
+                    var stateMachine = _stateMachineFactory.Create(connection);
+
+                    return _process.Run(context, stateMachine);
                 }
             }
             catch (Exception ex)

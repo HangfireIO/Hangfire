@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
+using Hangfire.States;
+
 namespace Hangfire.Client
 {
     /// <summary>
@@ -26,6 +29,7 @@ namespace Hangfire.Client
         /// <summary>
         /// Runs the process of job creation with the specified context.
         /// </summary>
-        string Run(CreateContext context);
+        [CanBeNull]
+        string Run([NotNull] CreateContext context, [NotNull] IStateMachine stateMachine);
     }
 }
