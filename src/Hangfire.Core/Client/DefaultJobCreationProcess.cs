@@ -21,7 +21,7 @@ using Hangfire.Common;
 
 namespace Hangfire.Client
 {
-    internal class DefaultJobCreationProcess : IJobCreationProcess
+    public class DefaultJobCreationProcess : IJobCreationProcess
     {
         public static DefaultJobCreationProcess Instance { get; private set; }
 
