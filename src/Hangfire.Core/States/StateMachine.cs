@@ -38,7 +38,7 @@ namespace Hangfire.States
             _stateChangeProcess = stateChangeProcess;
         }
 
-        public string CreateInState(
+        public string CreateJob(
             Job job,
             IDictionary<string, string> parameters,
             IState state)

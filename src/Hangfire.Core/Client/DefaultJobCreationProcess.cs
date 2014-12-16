@@ -83,7 +83,7 @@ namespace Hangfire.Client
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                var jobId = stateMachine.CreateInState(context.Job, context.Parameters, context.InitialState);
+                var jobId = stateMachine.CreateJob(context.Job, context.Parameters, context.InitialState);
                 return new CreatedContext(context, jobId, false, null);
             };
 

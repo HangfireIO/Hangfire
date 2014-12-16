@@ -27,7 +27,7 @@ namespace Hangfire.Core.Tests.Client
             _context = new Mock<CreateContext>(connection.Object, job, state.Object);
 
             _stateMachine = new Mock<IStateMachine>();
-            _stateMachine.Setup(x => x.CreateInState(
+            _stateMachine.Setup(x => x.CreateJob(
                 job,
                 It.IsNotNull<IDictionary<string, string>>(),
                 state.Object)).Returns(JobId);
@@ -63,7 +63,7 @@ namespace Hangfire.Core.Tests.Client
             process.Run(_context.Object, _stateMachine.Object);
 
             _stateMachine.Verify(
-                x => x.CreateInState(It.IsNotNull<Job>(), It.IsNotNull<IDictionary<string, string>>(), It.IsNotNull<IState>()), 
+                x => x.CreateJob(It.IsNotNull<Job>(), It.IsNotNull<IDictionary<string, string>>(), It.IsNotNull<IState>()), 
                 Times.Once);
         }
 
@@ -121,7 +121,7 @@ namespace Hangfire.Core.Tests.Client
             _filters.Add(filter2.Object);
 
             _stateMachine
-                .Setup(x => x.CreateInState(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
+                .Setup(x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
                 .Throws<InvalidOperationException>();
 
             var process = CreateProcess();
@@ -162,7 +162,7 @@ namespace Hangfire.Core.Tests.Client
 
             filter.Setup(x => x.OnCreating(It.IsNotNull<CreatingContext>())).InSequence();
 
-            _stateMachine.Setup(x => x.CreateInState(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
+            _stateMachine.Setup(x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
                 .InSequence();
 
             filter.Setup(x => x.OnCreated(It.IsNotNull<CreatedContext>())).InSequence();
@@ -217,7 +217,7 @@ namespace Hangfire.Core.Tests.Client
             Assert.Null(jobId);
 
             _stateMachine.Verify(
-                x => x.CreateInState(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()), 
+                x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()), 
                 Times.Never);
 
             filter.Verify(x => x.OnCreated(It.IsAny<CreatedContext>()), Times.Never);
@@ -263,7 +263,7 @@ namespace Hangfire.Core.Tests.Client
 
             // Assert
             _stateMachine.Verify(
-                x => x.CreateInState(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()), 
+                x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()), 
                 Times.Never);
 
             filter.Verify(x => x.OnCreated(It.IsAny<CreatedContext>()), Times.Never);
@@ -370,7 +370,7 @@ namespace Hangfire.Core.Tests.Client
         private void SetupStateMachineThrowsException(Exception exception)
         {
             _stateMachine
-                .Setup(x => x.CreateInState(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
+                .Setup(x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
                 .Throws(exception);
         }
 
@@ -378,7 +378,7 @@ namespace Hangfire.Core.Tests.Client
             where TException : Exception, new()
         {
             _stateMachine
-                .Setup(x => x.CreateInState(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
+                .Setup(x => x.CreateJob(It.IsAny<Job>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<IState>()))
                 .Throws<TException>();
         }
     }

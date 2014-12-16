@@ -21,7 +21,7 @@ namespace Hangfire.States
 {
     public interface IStateMachine
     {
-        string CreateInState(Job job, IDictionary<string, string> parameters, IState state);
+        string CreateJob(Job job, IDictionary<string, string> parameters, IState state);
         bool ChangeState(string jobId, IState toState, string[] fromStates);
     }
 }
