@@ -50,5 +50,12 @@ namespace Hangfire.Client
         /// object handles an exception occurred during the creation of the job.
         /// </summary>
         public bool ExceptionHandled { get; set; }
+
+        public override void SetJobParameter(string name, object value)
+        {
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+
+            throw new InvalidOperationException("Could not set parameter for a created job.");
+        }
     }
 }

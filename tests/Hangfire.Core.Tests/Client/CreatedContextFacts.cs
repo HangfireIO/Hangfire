@@ -10,6 +10,13 @@ namespace Hangfire.Core.Tests.Client
 {
     public class CreatedContextFacts
     {
+        private readonly Exception _exception;
+        
+        public CreatedContextFacts()
+        {
+            _exception = new Exception();
+        }
+
         [Fact]
         public void Ctor_ThrowsAnException_WhenCreateContextIsNull()
         {
@@ -20,20 +27,48 @@ namespace Hangfire.Core.Tests.Client
         [Fact]
         public void Ctor_CorrectlySetsAllProperties()
         {
+            var context = CreateContext();
+
+            Assert.True(context.Canceled);
+            Assert.Same(_exception, context.Exception);
+        }
+
+        [Fact]
+        public void SetJobParameter_ThrowsAnException_WhenParameterNameIsNull()
+        {
+            var context = CreateContext();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => context.SetJobParameter(null, null));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void SetJobParameter_ThrowsAnException_AfterCreateJobWasCalled()
+        {
+            // TODO: incorrect test.
+
+            var context = CreateContext();
+
+            Assert.Throws<InvalidOperationException>(
+                () => context.SetJobParameter("name", "value"));
+        }
+
+        public static void TestMethod() { }
+
+        private CreatedContext CreateContext()
+        {
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
-            var exception = new Exception();
+            
             var stateMachineFactory = new Mock<IStateMachineFactory>();
 
             var createContext = new CreateContext(
                 connection.Object, stateMachineFactory.Object, job, state.Object);
-            var context = new CreatedContext(createContext, true, exception);
 
-            Assert.True(context.Canceled);
-            Assert.Same(exception, context.Exception);
+            return new CreatedContext(createContext, true, _exception);
         }
-
-        public static void TestMethod() { }
     }
 }

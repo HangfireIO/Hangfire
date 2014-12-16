@@ -239,16 +239,6 @@ namespace Hangfire.Core.Tests.Client
         }
 
         [Fact]
-        public void SetJobParameter_ThrowsAnException_AfterCreateJobWasCalled()
-        {
-            var context = CreateContext();
-            context.CreateJob();
-
-            Assert.Throws<InvalidOperationException>(
-                () => context.SetJobParameter("name", "value"));
-        }
-
-        [Fact]
         public void GetJobParameter_DoesNotThrowAnException_AfterCreateJobWasCalled()
         {
             var context = CreateContext();
@@ -272,18 +262,6 @@ namespace Hangfire.Core.Tests.Client
             var contextCopy = new CreateContext(context);
 
             Assert.Equal("id", contextCopy.JobId);
-        }
-
-        [Fact]
-        public void CopyCtor_CopiesTheFactThatJobWasCreated()
-        {
-            var context = CreateContext();
-            context.CreateJob();
-
-            var contextCopy = new CreateContext(context);
-
-            Assert.Throws<InvalidOperationException>(
-                () => contextCopy.SetJobParameter("name", "value"));
         }
 
         public static void Method()

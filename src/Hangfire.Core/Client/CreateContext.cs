@@ -33,14 +33,11 @@ namespace Hangfire.Client
         private readonly IDictionary<string, string> _parameters
             = new Dictionary<string, string>();
 
-        private bool _jobWasCreated;
-
         internal CreateContext(CreateContext context)
             : this(context.Connection, context._stateMachineFactory, context.Job, context.InitialState)
         {
             Items = context.Items;
             JobId = context.JobId;
-            _jobWasCreated = context._jobWasCreated;
             _parameters = context._parameters;
         }
 
@@ -94,14 +91,9 @@ namespace Hangfire.Client
         /// <param name="value">The value of the parameter.</param>
         /// 
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
-        public void SetJobParameter(string name, object value)
+        public virtual void SetJobParameter(string name, object value)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
-
-            if (_jobWasCreated)
-            {
-                throw new InvalidOperationException("Could not set parameter for a created job.");
-            }
 
             var serializedValue = JobHelper.ToJson(value);
 
@@ -148,9 +140,7 @@ namespace Hangfire.Client
         internal virtual void CreateJob()
         {
             var stateMachine = _stateMachineFactory.Create(Connection);
-
             JobId = stateMachine.CreateInState(Job, _parameters, InitialState);
-            _jobWasCreated = true;
         }
     }
 }
