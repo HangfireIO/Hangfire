@@ -38,7 +38,6 @@ namespace Hangfire.Client
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (job == null) throw new ArgumentNullException("job");
-            if (initialState == null) throw new ArgumentNullException("initialState");
             
             Connection = connection;
             Job = job;

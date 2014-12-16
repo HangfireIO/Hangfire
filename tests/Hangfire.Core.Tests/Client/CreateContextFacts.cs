@@ -40,13 +40,9 @@ namespace Hangfire.Core.Tests.Client
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStateIsNull()
+        public void Ctor_DoesNotThrowAnException_WhenStateIsNull()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new CreateContext(
-                    _connection.Object, _job, null));
-
-            Assert.Equal("initialState", exception.ParamName);
+            Assert.DoesNotThrow(() => new CreateContext(_connection.Object, _job, null));
         }
 
         [Fact]
