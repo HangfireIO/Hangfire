@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Common;
-using Hangfire.States;
 
 namespace Hangfire.Client
 {
@@ -44,16 +43,16 @@ namespace Hangfire.Client
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
-        public string Run(CreateContext context, IStateMachine stateMachine)
+        public string Run(CreateContext context, IJobCreator creator)
         {
             if (context == null) throw new ArgumentNullException("context");
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
+            if (creator == null) throw new ArgumentNullException("creator");
 
             var filterInfo = GetFilters(context.Job);
 
             try
             {
-                var createdContext = CreateWithFilters(context, stateMachine, filterInfo.ClientFilters);
+                var createdContext = CreateWithFilters(context, creator, filterInfo.ClientFilters);
                 return createdContext.JobId;
             }
             catch (Exception ex)
@@ -77,13 +76,13 @@ namespace Hangfire.Client
 
         private static CreatedContext CreateWithFilters(
             CreateContext context,
-            IStateMachine stateMachine,
+            IJobCreator creator,
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                var jobId = stateMachine.CreateJob(context.Job, context.Parameters, context.InitialState);
+                var jobId = creator.CreateJob(context.Job, context.Parameters, context.InitialState);
                 return new CreatedContext(context, jobId, false, null);
             };
 

@@ -14,12 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using Hangfire.Client;
+using System.Collections.Generic;
+using Hangfire.Common;
+using Hangfire.States;
 
-namespace Hangfire.States
+namespace Hangfire.Client
 {
-    public interface IStateMachine : IJobCreator
+    public interface IJobCreator
     {
-        bool ChangeState(string jobId, IState toState, string[] fromStates);
+        string CreateJob(Job job, IDictionary<string, string> parameters, IState state);
     }
 }
