@@ -58,7 +58,7 @@ namespace Hangfire.Client
         /// </summary>
         public bool ExceptionHandled { get; set; }
 
-        public override void SetJobParameter(string name, object value)
+        public void SetJobParameter(string name, object value)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 
