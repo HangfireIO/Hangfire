@@ -75,6 +75,16 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Process_ReturnsTheGiven_StateChangingProcess()
+        {
+            var stateMachine = CreateStateMachine();
+
+            var result = stateMachine.Process;
+
+            Assert.Same(_process.Object, result);
+        }
+
+        [Fact]
         public void CreateJob_ThrowsAnException_WhenJobIsNull()
         {
             var stateMachine = CreateStateMachine();

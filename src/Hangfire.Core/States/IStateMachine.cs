@@ -20,6 +20,8 @@ namespace Hangfire.States
 {
     public interface IStateMachine : IJobCreator
     {
+        IStateChangeProcess Process { get; }
+
         bool ChangeState(string jobId, IState toState, string[] fromStates);
     }
 }
