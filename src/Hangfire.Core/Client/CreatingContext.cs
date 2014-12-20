@@ -30,7 +30,7 @@ namespace Hangfire.Client
         private readonly IDictionary<string, string> _parameters
             = new Dictionary<string, string>();
 
-        internal CreatingContext(CreateContext context)
+        public CreatingContext(CreateContext context)
             : base(context)
         {
         }
