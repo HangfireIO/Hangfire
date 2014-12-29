@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Hangfire.SqlServer.MSMQ</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>0.0.0</version>
     <title>Hangfire MSMQ Queues for SQL Server Storage</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
@@ -14,12 +14,14 @@
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
+      <dependency id="Hangfire.Core" version="[0.0.0]" />
+      <dependency id="Hangfire.SqlServer" version="1.2.2" />
     </dependencies>
   </metadata>
   <files>
     <file src="Net45\Hangfire.SqlServer.Msmq.dll" target="lib\net45" />
     <file src="Net45\Hangfire.SqlServer.Msmq.xml" target="lib\net45" />
+    <file src="Net45\Hangfire.SqlServer.Msmq.pdb" target="lib\net45" />
+    <file src="..\src\Hangfire.SqlServer.Msmq\**\*.cs" target="src" />
   </files>
 </package>

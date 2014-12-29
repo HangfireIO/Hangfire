@@ -22,7 +22,7 @@ namespace Hangfire.Server
     {
         public ServerWatchdogOptions()
         {
-            ServerTimeout = TimeSpan.FromMinutes(1);
+            ServerTimeout = TimeSpan.FromMinutes(5);
             CheckInterval = TimeSpan.FromMinutes(5);
         }
 

@@ -16,8 +16,8 @@
 
 using System;
 using System.Threading;
-using Common.Logging;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
@@ -59,7 +59,7 @@ namespace Hangfire.Server
             _innerComponent = innerComponent;
             _maxRetryAttempts = maxRetryAttempts;
             _delayCallback = delayCallback;
-            _logger = LogManager.GetLogger(_innerComponent.GetType());
+            _logger = LogProvider.GetLogger(_innerComponent.GetType());
         }
 
         public IServerComponent InnerComponent
@@ -92,13 +92,14 @@ namespace Hangfire.Server
 
                     var nextTry = _delayCallback(i);
 
-                    _logger.ErrorFormat(
-                        "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
-                        ex,
-                        _maxRetryAttempts,
-                        i + 1,
-                        _maxRetryAttempts,
-                        nextTry);
+                    _logger.ErrorException(
+                        String.Format(
+                            "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
+                            _innerComponent,
+                            i + 1,
+                            _maxRetryAttempts,
+                            nextTry),
+                        ex);
 
                     // Break the loop when the wait handle was signaled.
                     cancellationToken.WaitHandle.WaitOne(nextTry);

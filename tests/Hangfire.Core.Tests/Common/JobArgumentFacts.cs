@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -68,7 +69,7 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(DecimalValue);
 		}
 
-		private const Double DoubleValue = Double.MaxValue;
+        private const Double DoubleValue = 3.14159265359D;
 		public void Method(Double value) { Assert.Equal(DoubleValue, value); }
 
 		[Fact]
@@ -77,7 +78,7 @@ namespace Hangfire.Core.Tests.Common
 			CreateAndPerform(DoubleValue);
 		}
 
-		private const Single SingleValue = Single.MaxValue;
+        private const Single SingleValue = 3.1415F;
 		public void Method(Single value) { Assert.Equal(SingleValue, value); }
 
 		[Fact]
@@ -168,12 +169,16 @@ namespace Hangfire.Core.Tests.Common
 		}
 
 		private static readonly DateTimeOffset DateTimeOffsetValue = new DateTimeOffset(new DateTime(2012, 12, 12), TimeSpan.FromHours(1));
-		public void Method(DateTimeOffset value) { Assert.Equal(DateTimeOffsetValue, value); }
+		public void Method(DateTimeOffset value) {  Assert.Equal(DateTimeOffsetValue, value); }
 
 		[Fact]
 		public void DateTimeOffsetValues_AreBeingDeserializedCorrectly()
 		{
-			CreateAndPerform(DateTimeOffsetValue);
+			// Don't run this test on Mono – https://bugzilla.xamarin.com/show_bug.cgi?id=25158
+                	if (Type.GetType("Mono.Runtime") == null)
+	        	{
+				CreateAndPerform(DateTimeOffsetValue);
+			}
 		}
 
 		private static readonly CultureInfo CultureInfoValue = CultureInfo.GetCultureInfo("ru-RU");

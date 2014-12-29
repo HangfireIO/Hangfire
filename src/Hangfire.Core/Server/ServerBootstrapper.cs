@@ -16,14 +16,14 @@
 
 using System;
 using System.Threading;
-using Common.Logging;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
     public class ServerBootstrapper : IServerComponent, IDisposable
     {
         private const string BootstrapperId = "{4deecd4f-19f6-426b-aa87-6cd1a03eaa48}";
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerBootstrapper));
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly string _serverId;

@@ -20,8 +20,8 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using Common.Logging;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
 
