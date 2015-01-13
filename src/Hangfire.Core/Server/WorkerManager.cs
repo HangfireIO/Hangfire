@@ -60,7 +60,7 @@ namespace Hangfire.Server
         internal virtual IServerSupervisor CreateWorkerSupervisor(WorkerContext context)
         {
             return new ServerSupervisor(
-                new Worker(context),
+                new AutomaticRetryServerComponentWrapper(new Worker(context)),
                 new ServerSupervisorOptions { LowerLogVerbosity = true });
         }
     }

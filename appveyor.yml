@@ -50,3 +50,24 @@ test: off
 artifacts:
   - path: 'build\**\*.nupkg'
   - path: 'build\**\*.zip'
+
+#---------------------------------#
+#      deployment configuration   #
+#---------------------------------#
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: Kx+tJBMfq/OK7sMpvQDdigFOIIfzYkVmIHxNQetanQdIA5Mb8zm/VhAkrId4x5zW
+    artifact: /.*\.zip/
+    draft: true
+    on:
+      branch: master
+      appveyor_repo_tag: true
+
+  - provider: NuGet
+    api_key: 
+      secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
+    on:
+      branch: master
+      appveyor_repo_tag: true
