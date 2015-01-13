@@ -21,16 +21,16 @@ using Hangfire.Common;
 
 namespace Hangfire.Server
 {
-    internal class JobPerformanceProcess : IJobPerformanceProcess
+    internal class DefaultJobPerformanceProcess : IJobPerformanceProcess
     {
         private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
-        public JobPerformanceProcess()
+        public DefaultJobPerformanceProcess()
         {
         }
 
-        internal JobPerformanceProcess(IEnumerable<object> filters)
+        internal DefaultJobPerformanceProcess(IEnumerable<object> filters)
             : this()
         {
             if (filters != null)

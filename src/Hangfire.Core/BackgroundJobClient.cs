@@ -34,7 +34,7 @@ namespace Hangfire
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
         /// with the default connection and default global 
-        /// <see cref="JobCreationProcess"/> instance.
+        /// <see cref="DefaultJobCreationProcess"/> instance.
         /// </summary>
         public BackgroundJobClient()
             : this(JobStorage.Current)
@@ -44,7 +44,7 @@ namespace Hangfire
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
         /// with a specified storage and the default global
-        /// <see cref="JobCreationProcess"/> instance.
+        /// <see cref="DefaultJobCreationProcess"/> instance.
         /// </summary>
         public BackgroundJobClient(JobStorage storage)
             : this(storage, new StateMachineFactory(storage))
@@ -52,7 +52,7 @@ namespace Hangfire
         }
 
         public BackgroundJobClient(JobStorage storage, IStateMachineFactory stateMachineFactory)
-            : this(storage, stateMachineFactory, JobCreationProcess.Instance)
+            : this(storage, stateMachineFactory, DefaultJobCreationProcess.Instance)
         {
         }
 
@@ -87,10 +87,10 @@ namespace Hangfire
             {
                 using (var connection = _storage.GetConnection())
                 {
-                    var context = new CreateContext(connection, _stateMachineFactory, job, state);
-                    _process.Run(context);
+                    var context = new CreateContext(connection, job, state);
+                    var stateMachine = _stateMachineFactory.Create(connection);
 
-                    return context.JobId;
+                    return _process.Run(context, stateMachine);
                 }
             }
             catch (Exception ex)

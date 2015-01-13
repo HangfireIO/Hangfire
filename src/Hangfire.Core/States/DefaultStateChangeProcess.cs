@@ -23,21 +23,21 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
-    internal class StateChangeProcess : IStateChangeProcess
+    internal class DefaultStateChangeProcess : IStateChangeProcess
     {
         private readonly StateHandlerCollection _handlers;
 
         private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
-        public StateChangeProcess([NotNull] StateHandlerCollection handlers)
+        public DefaultStateChangeProcess([NotNull] StateHandlerCollection handlers)
         {
             if (handlers == null) throw new ArgumentNullException("handlers");
 
             _handlers = handlers;
         }
 
-        internal StateChangeProcess(StateHandlerCollection handlers, IEnumerable<object> filters)
+        internal DefaultStateChangeProcess(StateHandlerCollection handlers, IEnumerable<object> filters)
             : this(handlers)
         {
             if (filters == null) throw new ArgumentNullException("filters");

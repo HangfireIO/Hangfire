@@ -13,7 +13,6 @@ namespace Hangfire.Core.Tests
 {
     public class PreserveCultureAttributeFacts
     {
-        private readonly CreatedContext _createdContext;
         private readonly CreatingContext _creatingContext;
         private readonly PerformingContext _performingContext;
         private readonly PerformedContext _performedContext;
@@ -25,12 +24,10 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => Sample());
             var state = new Mock<IState>();
-            var stateMachineFactory = new Mock<IStateMachineFactory>();
 
             var createContext = new CreateContext(
-                _connection.Object, stateMachineFactory.Object, job, state.Object);
+                _connection.Object, job, state.Object);
             _creatingContext = new CreatingContext(createContext);
-            _createdContext = new CreatedContext(createContext, false, null);
 
             var workerContext = new WorkerContextMock();
 

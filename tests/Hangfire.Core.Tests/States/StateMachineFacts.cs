@@ -75,47 +75,57 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void CreateInState_ThrowsAnException_WhenJobIsNull()
+        public void Process_ReturnsTheGiven_StateChangingProcess()
+        {
+            var stateMachine = CreateStateMachine();
+
+            var result = stateMachine.Process;
+
+            Assert.Same(_process.Object, result);
+        }
+
+        [Fact]
+        public void CreateJob_ThrowsAnException_WhenJobIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.CreateInState(null, _parameters, _state.Object));
+                () => stateMachine.CreateJob(null, _parameters, _state.Object));
 
             Assert.Equal("job", exception.ParamName);
         }
 
         [Fact]
-        public void CreateInState_ThrowsAnException_WhenParametersIsNull()
+        public void CreateJob_ThrowsAnException_WhenParametersIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.CreateInState(_job, null, _state.Object));
+                () => stateMachine.CreateJob(_job, null, _state.Object));
 
             Assert.Equal("parameters", exception.ParamName);
         }
 
         [Fact]
-        public void CreateInState_ThrowsAnException_WhenStateIsNull()
+        public void CreateJob_ThrowsAnException_WhenStateIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException> (
-                () => stateMachine.CreateInState(_job, _parameters, null));
+                () => stateMachine.CreateJob(_job, _parameters, null));
 
             Assert.Equal("state", exception.ParamName);
         }
 
         [Fact]
-        public void CreateInState_CreatesExpiredJob()
+        public void CreateJob_CreatesExpiredJob()
         {
             var job = Job.FromExpression(() => Console.WriteLine("SomeString"));
             _parameters.Add("Name", "Value");
 
             var stateMachine = CreateStateMachine();
 
-            stateMachine.CreateInState(job, _parameters, _state.Object);
+            stateMachine.CreateJob(job, _parameters, _state.Object);
 
             _connection.Verify(x => x.CreateExpiredJob(
 				job,
@@ -125,11 +135,11 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void CreateInState_ChangesTheStateOfACreatedJob()
+        public void CreateJob_ChangesTheStateOfACreatedJob()
         {
             var stateMachine = CreateStateMachine();
 
-            stateMachine.CreateInState(_job, _parameters, _state.Object);
+            stateMachine.CreateJob(_job, _parameters, _state.Object);
 
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
@@ -139,10 +149,10 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void CreateInState_ReturnsNewJobId()
+        public void CreateJob_ReturnsNewJobId()
         {
             var stateMachine = CreateStateMachine();
-            Assert.Equal(JobId, stateMachine.CreateInState(_job, _parameters, _state.Object));
+            Assert.Equal(JobId, stateMachine.CreateJob(_job, _parameters, _state.Object));
         }
 
         [Fact]
