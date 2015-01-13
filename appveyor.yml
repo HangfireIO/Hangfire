@@ -50,3 +50,18 @@ test: off
 artifacts:
   - path: 'build\**\*.nupkg'
   - path: 'build\**\*.zip'
+
+#---------------------------------#
+#      deployment configuration   #
+#---------------------------------#
+
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: Kx+tJBMfq/OK7sMpvQDdigFOIIfzYkVmIHxNQetanQdIA5Mb8zm/VhAkrId4x5zW
+  artifact: /.*\.zip/
+  draft: true
+  prerelease: false
+  on:
+    branch: master
+    appveyor_repo_tag: true
