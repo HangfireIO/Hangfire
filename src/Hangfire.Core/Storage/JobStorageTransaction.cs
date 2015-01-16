@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.States;
 
 namespace Hangfire.Storage
@@ -44,5 +45,35 @@ namespace Hangfire.Storage
         public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
         public abstract void RemoveHash(string key);
         public abstract void Commit();
+
+        public virtual void ExpireSet([NotNull] string key, TimeSpan expireIn)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void ExpireList([NotNull] string key, TimeSpan expireIn)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void ExpireHash([NotNull] string key, TimeSpan expireIn)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void PersistSet([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void PersistList([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void PersistHash([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

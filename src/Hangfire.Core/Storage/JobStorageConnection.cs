@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 
@@ -45,5 +46,29 @@ namespace Hangfire.Storage
         public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
         public abstract Dictionary<string, string> GetAllEntriesFromHash(string key);
 
+        public virtual string GetValueFromHash([NotNull] string key, [NotNull] string name)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual long GetSetCount([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual long GetListCount([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
+        {
+            throw new NotSupportedException();
+        }
+
+        public List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
+        {
+            throw new NotSupportedException();
+        }
     }
 }
