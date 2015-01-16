@@ -29,11 +29,27 @@ namespace Hangfire.Dashboard
         private string _innerContent;
 
         public RazorPage Layout { get; protected set; }
-        public IOwinRequest Request { get; internal set; }
-        public IOwinResponse Response { get; internal set; }
         public JobStorage Storage { get; internal set; }
 
+        internal IOwinRequest Request { private get; set; }
+        internal IOwinResponse Response { private get; set; }
+
+        public string RequestPath
+        {
+            get { return Request.Path.Value; }
+        }
+
         public abstract void Execute();
+
+        public string Query(string key)
+        {
+            return Request.Query[key];
+        }
+
+        public string LinkTo(string relativeUrl)
+        {
+            return Request.PathBase + relativeUrl;
+        }
 
         public string TransformText()
         {

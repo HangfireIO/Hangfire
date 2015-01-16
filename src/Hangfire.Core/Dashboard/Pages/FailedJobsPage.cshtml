@@ -10,13 +10,13 @@
 
     int from, perPage;
 
-    int.TryParse(Request.Query["from"], out from);
-    int.TryParse(Request.Query["count"], out perPage);
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.FailedCount())
     {
-        BasePageUrl = Request.LinkTo("/failed")
+        BasePageUrl = LinkTo("/failed")
     };
 
     JobList<FailedJobDto> failedJobs = monitor
@@ -34,14 +34,14 @@ else
     <div class="js-jobs-list">
         <div class="btn-toolbar btn-toolbar-top">
             <button class="js-jobs-list-command btn btn-sm btn-primary"
-                    data-url="@Request.LinkTo("/failed/requeue")"
+                    data-url="@LinkTo("/failed/requeue")"
                     data-loading-text="Enqueueing...">
                 <span class="glyphicon glyphicon-repeat"></span>
                 Requeue jobs
             </button>
 
             <button class="js-jobs-list-command btn btn-sm btn-default"
-                    data-url="@Request.LinkTo("/failed/delete")"
+                    data-url="@LinkTo("/failed/delete")"
                     data-loading-text="Deleting..."
                     data-confirm="Do you really want to DELETE ALL selected jobs?">
                 <span class="glyphicon glyphicon-remove"></span>
@@ -74,7 +74,7 @@ else
                             }
                         </td>
                         <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                            <a href="@Request.LinkTo("/job/" + job.Key)">
+                            <a href="@LinkTo("/job/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>
                             @if (!job.Value.InFailedState)
@@ -92,7 +92,7 @@ else
                         </td>
                         <td>
                             <div>
-                                <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
+                                <a class="job-method" href="@LinkTo("/job/" + job.Key)">
                                     @HtmlHelper.DisplayJob(job.Value.Job)
                                 </a>
                             </div>

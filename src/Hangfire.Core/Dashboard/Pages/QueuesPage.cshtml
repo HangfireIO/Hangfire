@@ -35,7 +35,7 @@ else
             {
                 <tr>
                     <td>
-                        <a class="label-queue" href="@Request.LinkTo("/queues/" + queue.Name)">
+                        <a class="label-queue" href="@LinkTo("/queues/" + queue.Name)">
                             @queue.Name
                         </a>
                     </td>
@@ -43,7 +43,7 @@ else
                     <td>
                         @if (queue.Fetched.HasValue)
                         {
-                            <a href="@Request.LinkTo("/queues/fetched/" + queue.Name)">
+                            <a href="@LinkTo("/queues/fetched/" + queue.Name)">
                                 @queue.Fetched
                             </a>
                         }
@@ -73,7 +73,7 @@ else
                                     {
                                         <tr class="@(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
                                             <td class="min-width">
-                                                <a href="@Request.LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
+                                                <a href="@LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
                                                 @if (!job.Value.InEnqueuedState)
                                                 {
                                                     <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
@@ -85,7 +85,7 @@ else
                                                 </span>
                                             </td>
                                             <td>
-                                                <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
+                                                <a class="job-method" href="@LinkTo("/job/" + job.Key)">
                                                     @HtmlHelper.DisplayJob(job.Value.Job)
                                                 </a>
                                             </td>

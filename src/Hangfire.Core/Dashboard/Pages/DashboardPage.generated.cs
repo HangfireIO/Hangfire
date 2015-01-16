@@ -69,7 +69,7 @@ WriteLiteral("\r\n");
     IDictionary<DateTime, long> succeeded = null;
     IDictionary<DateTime, long> failed = null;
 
-    var period = Request.Query["period"]?? "day";
+    var period = Query("period") ?? "day";
 
     var monitor = Storage.GetMonitoringApi();
     if ("week".Equals(period, StringComparison.OrdinalIgnoreCase))

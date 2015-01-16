@@ -78,7 +78,7 @@ WriteLiteral(" - Hangfire</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" co
 
             
             #line 16 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/css"));
+                            Write(LinkTo("/css"));
 
             
             #line default
@@ -103,7 +103,7 @@ WriteLiteral(@""" />
 
             
             #line 31 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                 Write(Request.LinkTo("/"));
+                                                 Write(LinkTo("/"));
 
             
             #line default
@@ -147,7 +147,7 @@ WriteLiteral("\r\n                    <div id=\"stats\" class=\"list-group\">\r\
 
             
             #line 57 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(Request.Path.Value.Equals("/") || Request.Path.Value.Length == 0 ? "active" : null);
+                                              Write(RequestPath.Equals("/") || RequestPath.Length == 0 ? "active" : null);
 
             
             #line default
@@ -157,7 +157,7 @@ WriteLiteral("\"\r\n                           href=\"");
 
             
             #line 58 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/"));
+                            Write(LinkTo("/"));
 
             
             #line default
@@ -169,7 +169,7 @@ WriteLiteral("\">\r\n                            <span class=\"glyphicon glyphic
 
             
             #line 63 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(Request.Path.Value.Equals("/servers") ? "active" : null);
+                                              Write(RequestPath.Equals("/servers") ? "active" : null);
 
             
             #line default
@@ -179,7 +179,7 @@ WriteLiteral("\"\r\n                           href=\"");
 
             
             #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/servers"));
+                            Write(LinkTo("/servers"));
 
             
             #line default
@@ -201,7 +201,7 @@ WriteLiteral("</span>\r\n                            <span class=\"glyphicon gly
 
             
             #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(Request.Path.Value.Equals("/recurring") ? "active" : null);
+                                              Write(RequestPath.Equals("/recurring") ? "active" : null);
 
             
             #line default
@@ -211,7 +211,7 @@ WriteLiteral("\"\r\n                           href=\"");
 
             
             #line 71 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/recurring"));
+                            Write(LinkTo("/recurring"));
 
             
             #line default
@@ -235,7 +235,7 @@ WriteLiteral("\r\n                            </span>\r\n\r\n                   
 
             
             #line 80 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(Request.Path.Value.StartsWith("/queues") ? "active" : null);
+                                              Write(RequestPath.StartsWith("/queues") ? "active" : null);
 
             
             #line default
@@ -245,7 +245,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
             
             #line 81 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/queues"));
+                            Write(LinkTo("/queues"));
 
             
             #line default
@@ -285,7 +285,7 @@ WriteLiteral(@"
 
             
             #line 94 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(Request.Path.Value.Equals("/scheduled") ? "active" : null);
+                                                           Write(RequestPath.Equals("/scheduled") ? "active" : null);
 
             
             #line default
@@ -295,7 +295,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
             
             #line 95 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/scheduled"));
+                            Write(LinkTo("/scheduled"));
 
             
             #line default
@@ -318,7 +318,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
             
             #line 101 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(Request.Path.Value.Equals("/processing") ? "active" : null);
+                                                           Write(RequestPath.Equals("/processing") ? "active" : null);
 
             
             #line default
@@ -328,7 +328,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
             
             #line 102 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/processing"));
+                            Write(LinkTo("/processing"));
 
             
             #line default
@@ -351,7 +351,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
             
             #line 108 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(Request.Path.Value.Equals("/succeeded") ? "active" : null);
+                                                           Write(RequestPath.Equals("/succeeded") ? "active" : null);
 
             
             #line default
@@ -361,7 +361,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
             
             #line 109 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/succeeded"));
+                            Write(LinkTo("/succeeded"));
 
             
             #line default
@@ -384,7 +384,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
             
             #line 115 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(Request.Path.Value.Equals("/failed") ? "active" : null);
+                                                           Write(RequestPath.Equals("/failed") ? "active" : null);
 
             
             #line default
@@ -394,7 +394,7 @@ WriteLiteral("\" \r\n                           href=\"");
 
             
             #line 116 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/failed"));
+                            Write(LinkTo("/failed"));
 
             
             #line default
@@ -417,7 +417,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
             
             #line 122 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(Request.Path.Value.Equals("/deleted") ? "active" : null);
+                                                           Write(RequestPath.Equals("/deleted") ? "active" : null);
 
             
             #line default
@@ -427,7 +427,7 @@ WriteLiteral("\"\r\n                           href=\"");
 
             
             #line 123 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(Request.LinkTo("/deleted"));
+                            Write(LinkTo("/deleted"));
 
             
             #line default
@@ -462,7 +462,7 @@ WriteLiteral("                        <ol class=\"breadcrumb\">\r\n             
 
             
             #line 135 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                    Write(Request.LinkTo("/"));
+                                    Write(LinkTo("/"));
 
             
             #line default
@@ -635,7 +635,7 @@ WriteLiteral(@" GMT
 
             
             #line 175 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                          Write(Request.LinkTo("/stats"));
+                          Write(LinkTo("/stats"));
 
             
             #line default
@@ -646,7 +646,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = windo
 
             
             #line 179 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                Write(Request.LinkTo("/js"));
+                Write(LinkTo("/js"));
 
             
             #line default

@@ -11,13 +11,13 @@
 
     int from, perPage;
 
-    int.TryParse(Request.Query["from"], out from);
-    int.TryParse(Request.Query["count"], out perPage);
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.SucceededListCount())
     {
-        BasePageUrl = Request.LinkTo("/succeeded")
+        BasePageUrl = LinkTo("/succeeded")
     };
 
     JobList<SucceededJobDto> succeededJobs = monitor
@@ -35,7 +35,7 @@ else
     <div class="js-jobs-list">
         <div class="btn-toolbar btn-toolbar-top">
             <button class="js-jobs-list-command btn btn-sm btn-primary"
-                    data-url="@Request.LinkTo("/succeeded/requeue")"
+                    data-url="@LinkTo("/succeeded/requeue")"
                     data-loading-text="Enqueueing...">
                 <span class="glyphicon glyphicon-repeat"></span>
                 Requeue jobs
@@ -67,7 +67,7 @@ else
                             }
                         </td>
                         <td class="min-width">
-                            <a href="@Request.LinkTo("/job/" + job.Key)">
+                            <a href="@LinkTo("/job/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>
                             @if (job.Value != null && !job.Value.InSucceededState)
@@ -85,7 +85,7 @@ else
                         else
                         {
                             <td>
-                                <a class="job-method" href="@Request.LinkTo("/job/" + job.Key)">
+                                <a class="job-method" href="@LinkTo("/job/" + job.Key)">
                                     @HtmlHelper.DisplayJob(job.Value.Job)
                                 </a>
                             </td>
