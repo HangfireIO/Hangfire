@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Hangfire.Annotations;
 using Hangfire.Storage.Monitoring;
@@ -8,13 +9,13 @@ namespace Hangfire.Dashboard
 {
     public static class SidebarMenu
     {
-        private static readonly List<Func<RazorPage, JobStorage, StatisticsDto, string>> ItemFuncList
-            = new List<Func<RazorPage, JobStorage, StatisticsDto, string>>();
+        private static readonly List<KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>> ItemFuncList
+            = new List<KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>>();
 
         static SidebarMenu()
         {
             // Dashboard
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-900, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item {0}"" href=""{1}"">
     <span class=""glyphicon glyphicon-dashboard""></span>
     Dashboard
@@ -23,7 +24,7 @@ namespace Hangfire.Dashboard
                 page.LinkTo("/")));
 
             // Servers
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-800, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item {0}"" href=""{1}"">
     <span id=""stats-servers"" class=""label label-default pull-right"">{2}</span>
     <span class=""glyphicon glyphicon-hdd""></span>
@@ -34,7 +35,7 @@ namespace Hangfire.Dashboard
                 stats.Servers));
 
             // Recurring jobs
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-700, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item {0}"" href=""{1}"">
     <span id=""stats-recurring"" class=""label label-default pull-right"">{2}</span>
     <span class=""glyphicon glyphicon-time""></span>
@@ -45,7 +46,7 @@ namespace Hangfire.Dashboard
                 stats.Recurring));
 
             // Queues
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-600, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item {0}"" href=""{1}"">
     <span class=""label label-default pull-right"">
         <span id=""stats-enqueued"" title=""Enqueued jobs count"">{2}</span>
@@ -61,7 +62,7 @@ namespace Hangfire.Dashboard
                 stats.Queues));
 
             // Scheduled
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-500, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
     <span id=""stats-scheduled"" class=""label label-info pull-right"">{2}</span>
     Scheduled
@@ -71,7 +72,7 @@ namespace Hangfire.Dashboard
                 stats.Scheduled));
 
             // Processing
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-400, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
     <span id=""stats-processing"" class=""label label-warning pull-right"">{2}</span>
     Processing
@@ -81,7 +82,7 @@ namespace Hangfire.Dashboard
                 stats.Processing));
 
             // Succeeded
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-300, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
     <span id=""stats-succeeded"" class=""label label-success pull-right"">{2}</span>
     Succeeded
@@ -91,7 +92,7 @@ namespace Hangfire.Dashboard
                 stats.Succeeded));
 
             // Failed
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-200, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
     <span id=""stats-failed"" class=""label label-danger pull-right"">{2}</span>
     Failed
@@ -101,7 +102,7 @@ namespace Hangfire.Dashboard
                 stats.Failed));
 
             // Deleted
-            AddItem((page, storage, stats) => String.Format(
+            AddItem(-100, (page, storage, stats) => String.Format(
                 @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
     <span id=""stats-deleted"" class=""label label-default pull-right"">{2}</span>
     Deleted
@@ -113,18 +114,25 @@ namespace Hangfire.Dashboard
 
         public static void AddItem([NotNull] Func<RazorPage, JobStorage, string> itemFunc)
         {
-            if (itemFunc == null) throw new ArgumentNullException("itemFunc");
-
-            AddItem((page, storage, statistics) => itemFunc(page, storage));
+            AddItem(0, itemFunc);
         }
 
-        internal static void AddItem([NotNull] Func<RazorPage, JobStorage, StatisticsDto, string> itemFunc)
+        public static void AddItem(double order, [NotNull] Func<RazorPage, JobStorage, string> itemFunc)
+        {
+            if (itemFunc == null) throw new ArgumentNullException("itemFunc");
+
+            AddItem(order, (page, storage, statistics) => itemFunc(page, storage));
+        }
+
+        internal static void AddItem(double order, [NotNull] Func<RazorPage, JobStorage, StatisticsDto, string> itemFunc)
         {
             if (itemFunc == null) throw new ArgumentNullException("itemFunc");
 
             lock (ItemFuncList)
             {
-                ItemFuncList.Add(itemFunc);
+                ItemFuncList.Add(new KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>(
+                    order,
+                    itemFunc));
             }
         }
 
@@ -138,16 +146,16 @@ namespace Hangfire.Dashboard
             var monitoringApi = storage.GetMonitoringApi();
             var statistics = monitoringApi.GetStatistics();
 
-            Func<RazorPage, JobStorage, StatisticsDto, string>[] funcList;
+            KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>[] funcList;
 
             lock (ItemFuncList)
             {
                 funcList = ItemFuncList.ToArray();
             }
 
-            foreach (var func in funcList)
+            foreach (var pair in funcList.OrderBy(x => x.Key))
             {
-                builder.AppendLine(func(page, storage, statistics));
+                builder.AppendLine(pair.Value(page, storage, statistics));
             }
 
             return new NonEscapedString(builder.ToString());
