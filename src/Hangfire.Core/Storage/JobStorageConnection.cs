@@ -61,12 +61,12 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
-        public List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
+        public virtual List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
         {
             throw new NotSupportedException();
         }
 
-        public List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
+        public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
         {
             throw new NotSupportedException();
         }
