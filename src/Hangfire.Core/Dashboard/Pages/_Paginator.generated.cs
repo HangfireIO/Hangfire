@@ -23,7 +23,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class Paginator : RazorPage
+    public partial class Paginator : RazorPage
     {
 #line hidden
 
@@ -190,12 +190,12 @@ WriteLiteral("        <div class=\"btn-toolbar-spacer\"></div>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n    <div class=\"btn-toolbar-label\">Total jobs: ");
+WriteLiteral("\r\n    <div class=\"btn-toolbar-label\">Total items: ");
 
 
             
             #line 38 "..\..\Dashboard\Pages\_Paginator.cshtml"
-                                          Write(_pager.TotalRecordCount);
+                                           Write(_pager.TotalRecordCount);
 
             
             #line default
