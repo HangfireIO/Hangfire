@@ -1,10 +1,9 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
 @using System.Collections.Generic
+@using Hangfire.Dashboard.Pages
 @using Newtonsoft.Json
-@using Pages
-@using Hangfire.Storage
-@inherits RazorPage
+@inherits Hangfire.Dashboard.RazorPage
 @{
     Layout = new LayoutPage { Title = "Dashboard" };
     IDictionary<DateTime, long> succeeded = null;

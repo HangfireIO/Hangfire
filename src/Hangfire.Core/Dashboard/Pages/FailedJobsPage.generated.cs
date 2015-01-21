@@ -22,25 +22,25 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 3 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-    using Common;
-    
-    #line default
-    #line hidden
-    
-    #line 5 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-    using Hangfire.Storage;
+    using Hangfire.Common;
     
     #line default
     #line hidden
     
     #line 4 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-    using Pages;
+    using Hangfire.Dashboard;
+    
+    #line default
+    #line hidden
+    
+    #line 5 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+    using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
     
     #line 6 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-    using Storage.Monitoring;
+    using Hangfire.Storage.Monitoring;
     
     #line default
     #line hidden

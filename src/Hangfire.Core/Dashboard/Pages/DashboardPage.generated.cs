@@ -26,26 +26,20 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
-    #line 6 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-    using Hangfire.Storage;
-    
-    #line default
-    #line hidden
-    
     #line 4 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-    using Newtonsoft.Json;
+    using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
     
     #line 5 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-    using Pages;
+    using Newtonsoft.Json;
     
     #line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class DashboardPage : RazorPage
+    internal partial class DashboardPage : Hangfire.Dashboard.RazorPage
     {
 #line hidden
 
@@ -61,9 +55,8 @@ WriteLiteral("\r\n");
 
 
 
-
             
-            #line 8 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 7 "..\..\Dashboard\Pages\DashboardPage.cshtml"
   
     Layout = new LayoutPage { Title = "Dashboard" };
     IDictionary<DateTime, long> succeeded = null;
@@ -93,7 +86,7 @@ WriteLiteral("\r\n<h3>Realtime graph</h3>\r\n<div id=\"realtimeGraph\"></div>\r\
 
 
             
-            #line 33 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 32 "..\..\Dashboard\Pages\DashboardPage.cshtml"
                                                         Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -104,7 +97,7 @@ WriteLiteral("\">\r\n            Day\r\n        </a>\r\n        <a href=\"?perio
 
 
             
-            #line 36 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 35 "..\..\Dashboard\Pages\DashboardPage.cshtml"
                                                          Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -114,7 +107,7 @@ WriteLiteral("\">Week</a>\r\n    </div>\r\n    History graph\r\n</h3>\r\n\r\n");
 
 
             
-            #line 41 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 40 "..\..\Dashboard\Pages\DashboardPage.cshtml"
  if (succeeded != null && failed != null)
 {
 
@@ -125,7 +118,7 @@ WriteLiteral("    <div id=\"historyGraph\" \r\n          data-succeeded=\"");
 
 
             
-            #line 44 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 43 "..\..\Dashboard\Pages\DashboardPage.cshtml"
                      Write(JsonConvert.SerializeObject(succeeded));
 
             
@@ -135,7 +128,7 @@ WriteLiteral("\" \r\n          data-failed=\"");
 
 
             
-            #line 45 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\DashboardPage.cshtml"
                   Write(JsonConvert.SerializeObject(failed));
 
             
@@ -145,7 +138,7 @@ WriteLiteral("\">\r\n    </div>\r\n");
 
 
             
-            #line 47 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 46 "..\..\Dashboard\Pages\DashboardPage.cshtml"
 }
             
             #line default

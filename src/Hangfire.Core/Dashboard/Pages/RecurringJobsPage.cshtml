@@ -1,11 +1,11 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
 @using System.Collections.Generic
-@using System.Linq
-@using Common
-@using Pages
+@using CronExpressionDescriptor
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
 @using Hangfire.Storage
-@using Storage.Monitoring
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Recurring jobs" };
@@ -64,7 +64,7 @@ else
                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id" />
                         </td>
                         <td class="min-width">@job.Id</td>
-                        <td class="min-width">@(CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron))</td>
+                        <td class="min-width">@ExpressionDescriptor.GetDescription(job.Cron)</td>
                         <td>
                             @if (job.Job != null)
                             {

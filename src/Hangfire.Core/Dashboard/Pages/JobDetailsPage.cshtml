@@ -1,12 +1,10 @@
 ﻿@* Generator: Template TypeVisibility: Internal *@
 @using System
 @using System.Linq
-@using System.Runtime.CompilerServices
-@using System.Web
-@using Common
-@using Pages
-@using Hangfire.Storage
-@using Storage.Monitoring
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Storage.Monitoring
 @inherits RazorPage
 @{
     var monitor = Storage.GetMonitoringApi();

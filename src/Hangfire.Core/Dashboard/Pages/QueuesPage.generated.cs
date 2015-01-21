@@ -17,35 +17,35 @@ namespace Hangfire.Dashboard.Pages
     
     #line default
     #line hidden
-    using System.Collections.Generic;
     
     #line 3 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-    using System.Linq;
+    using System.Collections.Generic;
     
     #line default
     #line hidden
+    using System.Linq;
     using System.Text;
     
     #line 4 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-    using Common;
-    
-    #line default
-    #line hidden
-    
-    #line 6 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-    using Hangfire.Storage;
+    using Hangfire.Common;
     
     #line default
     #line hidden
     
     #line 5 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-    using Pages;
+    using Hangfire.Dashboard;
+    
+    #line default
+    #line hidden
+    
+    #line 6 "..\..\Dashboard\Pages\QueuesPage.cshtml"
+    using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
     
     #line 7 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-    using Storage.Monitoring;
+    using Hangfire.Storage.Monitoring;
     
     #line default
     #line hidden

@@ -17,25 +17,25 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 2 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-    using Common;
-    
-    #line default
-    #line hidden
-    
-    #line 4 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-    using Hangfire.Storage;
+    using Hangfire.Common;
     
     #line default
     #line hidden
     
     #line 3 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-    using Pages;
+    using Hangfire.Dashboard;
+    
+    #line default
+    #line hidden
+    
+    #line 4 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
+    using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
     
     #line 5 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-    using Storage.Monitoring;
+    using Hangfire.Storage.Monitoring;
     
     #line default
     #line hidden
