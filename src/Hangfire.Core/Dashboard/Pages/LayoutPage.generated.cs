@@ -28,6 +28,12 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 4 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+    using Hangfire.Dashboard;
+    
+    #line default
+    #line hidden
+    
+    #line 5 "..\..\Dashboard\Pages\LayoutPage.cshtml"
     using Hangfire.Storage.Monitoring;
     
     #line default
@@ -48,11 +54,12 @@ WriteLiteral("\r\n");
 
 
 
+
 WriteLiteral("<!DOCTYPE html>\r\n\r\n<html lang=\"en\">\r\n<head>\r\n    <title>");
 
 
             
-            #line 10 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 11 "..\..\Dashboard\Pages\LayoutPage.cshtml"
       Write(Title);
 
             
@@ -64,7 +71,7 @@ WriteLiteral(" - Hangfire</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" co
 
 
             
-            #line 14 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 15 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                             Write(LinkTo("/css"));
 
             
@@ -89,7 +96,7 @@ WriteLiteral(@""" />
 
 
             
-            #line 29 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 30 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                  Write(LinkTo("/"));
 
             
@@ -114,342 +121,38 @@ WriteLiteral(@""">Hangfire Dashboard</a>
             <!-- Begin page content -->
 
             <div class=""container"">
-                <div class=""col-md-3"">
-");
+                <div class=""row"">
+                    <div class=""col-md-3"">
+                        <div id=""stats"" class=""list-group"">
+                            ");
 
 
             
-            #line 49 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                      
-                        var monitor = Storage.GetMonitoringApi();
-                        StatisticsDto statistics = monitor.GetStatistics();
-                    
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                    <div id=\"stats\" class=\"list-group\">\r\n                      " +
-"  <a class=\"list-group-item ");
-
-
-            
-            #line 55 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(RequestPath.Equals("/") || RequestPath.Length == 0 ? "active" : null);
+            #line 52 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                       Write(SidebarMenu.Render(this, Storage));
 
             
             #line default
             #line hidden
-WriteLiteral("\"\r\n                           href=\"");
+WriteLiteral("\r\n                        </div>\r\n                    </div>\r\n                   " +
+" <div class=\"col-md-9\">\r\n");
 
 
             
             #line 56 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/"));
+                         if (Breadcrumbs != null)
+                        {
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                            <span class=\"glyphicon glyphicon-dashboard\"></spa" +
-"n>\r\n                            Dashboard\r\n                        </a>\r\n\r\n     " +
-"                   <a class=\"list-group-item ");
+WriteLiteral("                            <ol class=\"breadcrumb\">\r\n                            " +
+"    <li><a href=\"");
 
 
             
-            #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(RequestPath.Equals("/servers") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\"\r\n                           href=\"");
-
-
-            
-            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/servers"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span class=\"label label-default pull-right\">");
-
-
-            
-            #line 63 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                                    Write(statistics.Servers);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</span>\r\n                            <span class=\"glyphicon glyphicon-hdd\"></span" +
-">\r\n                            Servers\r\n                        </a>\r\n          " +
-"              \r\n                        <a class=\"list-group-item ");
-
-
-            
-            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(RequestPath.Equals("/recurring") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\"\r\n                           href=\"");
-
-
-            
-            #line 69 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/recurring"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span id=\"stats-recurring\" class=\"label label-def" +
-"ault pull-right\">\r\n                                ");
-
-
-            
-            #line 71 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                           Write(statistics.Recurring);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </span>\r\n\r\n                            <span class=" +
-"\"glyphicon glyphicon-time\"></span>\r\n                            Recurring jobs\r\n" +
-"                        </a>\r\n\r\n                        <a class=\"list-group-ite" +
-"m ");
-
-
-            
-            #line 78 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                              Write(RequestPath.StartsWith("/queues") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                           href=\"");
-
-
-            
-            #line 79 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/queues"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span class=\"label label-default pull-right\">\r\n  " +
-"                              <span id=\"stats-enqueued\" title=\"Enqueued jobs cou" +
-"nt\">\r\n                                    ");
-
-
-            
-            #line 82 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                               Write(statistics.Enqueued);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                </span>\r\n                                / \r\n  " +
-"                              <span id=\"stats-queues\" title=\"Queues count\">\r\n   " +
-"                                 ");
-
-
-            
-            #line 86 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                               Write(statistics.Queues);
-
-            
-            #line default
-            #line hidden
-WriteLiteral(@"
-                                </span>
-                            </span>
-                            <span class=""glyphicon glyphicon-inbox""></span>
-                            Queues
-                        </a>
-                        <a class=""list-group-item stats-indent ");
-
-
-            
-            #line 92 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(RequestPath.Equals("/scheduled") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                           href=\"");
-
-
-            
-            #line 93 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/scheduled"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span id=\"stats-scheduled\" class=\"label label-inf" +
-"o pull-right\">\r\n                                ");
-
-
-            
-            #line 95 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                           Write(statistics.Scheduled);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </span>\r\n                            Scheduled\r\n   " +
-"                     </a>\r\n                        <a class=\"list-group-item sta" +
-"ts-indent ");
-
-
-            
-            #line 99 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(RequestPath.Equals("/processing") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                           href=\"");
-
-
-            
-            #line 100 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/processing"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span id=\"stats-processing\" class=\"label label-wa" +
-"rning pull-right\">\r\n                                ");
-
-
-            
-            #line 102 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                           Write(statistics.Processing);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </span>\r\n                            Processing\r\n  " +
-"                      </a>\r\n                        <a class=\"list-group-item st" +
-"ats-indent ");
-
-
-            
-            #line 106 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(RequestPath.Equals("/succeeded") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                           href=\"");
-
-
-            
-            #line 107 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/succeeded"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span id=\"stats-succeeded\" class=\"label label-suc" +
-"cess pull-right\">\r\n                                ");
-
-
-            
-            #line 109 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                           Write(statistics.Succeeded);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </span>\r\n                            Succeeded\r\n   " +
-"                     </a>\r\n                        <a class=\"list-group-item sta" +
-"ts-indent ");
-
-
-            
-            #line 113 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(RequestPath.Equals("/failed") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" \r\n                           href=\"");
-
-
-            
-            #line 114 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/failed"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span id=\"stats-failed\" class=\"label label-danger" +
-" pull-right\">\r\n                                ");
-
-
-            
-            #line 116 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                           Write(statistics.Failed);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </span>\r\n                            Failed\r\n      " +
-"                  </a>\r\n                        <a class=\"list-group-item stats-" +
-"indent ");
-
-
-            
-            #line 120 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(RequestPath.Equals("/deleted") ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\"\r\n                           href=\"");
-
-
-            
-            #line 121 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/deleted"));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <span id=\"stats-deleted\" class=\"label label-defau" +
-"lt pull-right\">\r\n                                ");
-
-
-            
-            #line 123 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                           Write(statistics.Deleted);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </span>\r\n                            Deleted\r\n     " +
-"                   </a>\r\n                    </div>\r\n                </div>\r\n   " +
-"             <div class=\"col-md-9\">\r\n");
-
-
-            
-            #line 130 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                     if (Breadcrumbs != null)
-                    {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                        <ol class=\"breadcrumb\">\r\n                            <li>" +
-"<a href=\"");
-
-
-            
-            #line 133 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                    Write(LinkTo("/"));
+            #line 59 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                        Write(LinkTo("/"));
 
             
             #line default
@@ -458,19 +161,19 @@ WriteLiteral("\"><span class=\"glyphicon glyphicon-home\"></span></a></li>\r\n")
 
 
             
-            #line 134 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                             foreach (var breadcrumb in Breadcrumbs)
-                            {
+            #line 60 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                 foreach (var breadcrumb in Breadcrumbs)
+                                {
 
             
             #line default
             #line hidden
-WriteLiteral("                                <li><a href=\"");
+WriteLiteral("                                    <li><a href=\"");
 
 
             
-            #line 136 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                        Write(breadcrumb.Value);
+            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                            Write(breadcrumb.Value);
 
             
             #line default
@@ -479,8 +182,8 @@ WriteLiteral("\">");
 
 
             
-            #line 136 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                           Write(breadcrumb.Key);
+            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                                               Write(breadcrumb.Key);
 
             
             #line default
@@ -489,38 +192,38 @@ WriteLiteral("</a></li>\r\n");
 
 
             
-            #line 137 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            }
+            #line 63 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                }
 
             
             #line default
             #line hidden
-WriteLiteral("                            <li class=\"active\">");
+WriteLiteral("                                <li class=\"active\">");
 
 
             
-            #line 138 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                           Write(BreadcrumbsTitle ?? Title);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</li>\r\n                        </ol>\r\n");
-
-
-            
-            #line 140 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                    }
+            #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                               Write(BreadcrumbsTitle ?? Title);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                    <h1 class=\"page-header\">\r\n                        ");
+WriteLiteral("</li>\r\n                            </ol>\r\n");
 
 
             
-            #line 143 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(Title);
+            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        <h1 class=\"page-header\">\r\n                            ");
+
+
+            
+            #line 69 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                       Write(Title);
 
             
             #line default
@@ -529,19 +232,19 @@ WriteLiteral("\r\n");
 
 
             
-            #line 144 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                         if (!String.IsNullOrEmpty(Subtitle))
-                        {
+            #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                             if (!String.IsNullOrEmpty(Subtitle))
+                            {
 
             
             #line default
             #line hidden
-WriteLiteral("                            <small>");
+WriteLiteral("                                <small>");
 
 
             
-            #line 146 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                              Write(Subtitle);
+            #line 72 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                                  Write(Subtitle);
 
             
             #line default
@@ -550,23 +253,24 @@ WriteLiteral("</small>\r\n");
 
 
             
-            #line 147 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                        }
+            #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                            }
 
             
             #line default
             #line hidden
-WriteLiteral("                    </h1>\r\n                    ");
+WriteLiteral("                        </h1>\r\n                        ");
 
 
             
-            #line 149 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-               Write(RenderBody());
+            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                   Write(RenderBody());
 
             
             #line default
             #line hidden
 WriteLiteral(@"
+                    </div>
                 </div>
             </div>
         </div>
@@ -580,7 +284,7 @@ WriteLiteral(@"
 
 
             
-            #line 159 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 86 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion);
 
             
@@ -591,7 +295,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
 
             
-            #line 162 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 89 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
@@ -601,7 +305,7 @@ WriteLiteral("</li>\r\n                    <li>Time: ");
 
 
             
-            #line 163 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          Write(DateTime.UtcNow);
 
             
@@ -621,7 +325,7 @@ WriteLiteral(@" GMT
 
 
             
-            #line 173 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 100 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                           Write(LinkTo("/stats"));
 
             
@@ -632,7 +336,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = windo
 
 
             
-            #line 177 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 104 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(LinkTo("/js"));
 
             

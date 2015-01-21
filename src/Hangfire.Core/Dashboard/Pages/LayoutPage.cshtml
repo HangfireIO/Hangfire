@@ -1,6 +1,7 @@
 ﻿@* Generator: Template TypeVisibility: Public *@
 @using System
 @using System.Diagnostics
+@using Hangfire.Dashboard
 @using Hangfire.Storage.Monitoring
 @inherits Hangfire.Dashboard.RazorPage
 <!DOCTYPE html>
@@ -45,108 +46,34 @@
             <!-- Begin page content -->
 
             <div class="container">
-                <div class="col-md-3">
-                    @{
-                        var monitor = Storage.GetMonitoringApi();
-                        StatisticsDto statistics = monitor.GetStatistics();
-                    }
-
-                    <div id="stats" class="list-group">
-                        <a class="list-group-item @(RequestPath.Equals("/") || RequestPath.Length == 0 ? "active" : null)"
-                           href="@LinkTo("/")">
-                            <span class="glyphicon glyphicon-dashboard"></span>
-                            Dashboard
-                        </a>
-
-                        <a class="list-group-item @(RequestPath.Equals("/servers") ? "active" : null)"
-                           href="@LinkTo("/servers")">
-                            <span class="label label-default pull-right">@statistics.Servers</span>
-                            <span class="glyphicon glyphicon-hdd"></span>
-                            Servers
-                        </a>
-                        
-                        <a class="list-group-item @(RequestPath.Equals("/recurring") ? "active" : null)"
-                           href="@LinkTo("/recurring")">
-                            <span id="stats-recurring" class="label label-default pull-right">
-                                @statistics.Recurring
-                            </span>
-
-                            <span class="glyphicon glyphicon-time"></span>
-                            Recurring jobs
-                        </a>
-
-                        <a class="list-group-item @(RequestPath.StartsWith("/queues") ? "active" : null)" 
-                           href="@LinkTo("/queues")">
-                            <span class="label label-default pull-right">
-                                <span id="stats-enqueued" title="Enqueued jobs count">
-                                    @statistics.Enqueued
-                                </span>
-                                / 
-                                <span id="stats-queues" title="Queues count">
-                                    @statistics.Queues
-                                </span>
-                            </span>
-                            <span class="glyphicon glyphicon-inbox"></span>
-                            Queues
-                        </a>
-                        <a class="list-group-item stats-indent @(RequestPath.Equals("/scheduled") ? "active" : null)" 
-                           href="@LinkTo("/scheduled")">
-                            <span id="stats-scheduled" class="label label-info pull-right">
-                                @statistics.Scheduled
-                            </span>
-                            Scheduled
-                        </a>
-                        <a class="list-group-item stats-indent @(RequestPath.Equals("/processing") ? "active" : null)" 
-                           href="@LinkTo("/processing")">
-                            <span id="stats-processing" class="label label-warning pull-right">
-                                @statistics.Processing
-                            </span>
-                            Processing
-                        </a>
-                        <a class="list-group-item stats-indent @(RequestPath.Equals("/succeeded") ? "active" : null)" 
-                           href="@LinkTo("/succeeded")">
-                            <span id="stats-succeeded" class="label label-success pull-right">
-                                @statistics.Succeeded
-                            </span>
-                            Succeeded
-                        </a>
-                        <a class="list-group-item stats-indent @(RequestPath.Equals("/failed") ? "active" : null)" 
-                           href="@LinkTo("/failed")">
-                            <span id="stats-failed" class="label label-danger pull-right">
-                                @statistics.Failed
-                            </span>
-                            Failed
-                        </a>
-                        <a class="list-group-item stats-indent @(RequestPath.Equals("/deleted") ? "active" : null)"
-                           href="@LinkTo("/deleted")">
-                            <span id="stats-deleted" class="label label-default pull-right">
-                                @statistics.Deleted
-                            </span>
-                            Deleted
-                        </a>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div id="stats" class="list-group">
+                            @SidebarMenu.Render(this, Storage)
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-9">
-                    @if (Breadcrumbs != null)
-                    {
-                        <ol class="breadcrumb">
-                            <li><a href="@LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
-                            @foreach (var breadcrumb in Breadcrumbs)
-                            {
-                                <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
-                            }
-                            <li class="active">@(BreadcrumbsTitle ?? Title)</li>
-                        </ol>
-                    }
-
-                    <h1 class="page-header">
-                        @Title
-                        @if (!String.IsNullOrEmpty(Subtitle))
+                    <div class="col-md-9">
+                        @if (Breadcrumbs != null)
                         {
-                            <small>@Subtitle</small>
+                            <ol class="breadcrumb">
+                                <li><a href="@LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
+                                @foreach (var breadcrumb in Breadcrumbs)
+                                {
+                                    <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
+                                }
+                                <li class="active">@(BreadcrumbsTitle ?? Title)</li>
+                            </ol>
                         }
-                    </h1>
-                    @RenderBody()
+
+                        <h1 class="page-header">
+                            @Title
+                            @if (!String.IsNullOrEmpty(Subtitle))
+                            {
+                                <small>@Subtitle</small>
+                            }
+                        </h1>
+                        @RenderBody()
+                    </div>
                 </div>
             </div>
         </div>
