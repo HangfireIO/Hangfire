@@ -279,13 +279,25 @@ WriteLiteral(@"
             <div class=""container"">
                 <ul class=""list-inline credit"">
                     <li>
-                        <a href=""http://hangfire.io/"" target=""_blank"">Hangfire 
-                            ");
+                        <a href=""http://hangfire.io/"" target=""_blank"">Hangfire
+");
 
 
             
             #line 86 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                       Write(FileVersionInfo.GetVersionInfo(GetType().Assembly.Location).ProductVersion);
+                              
+                                var version = GetType().Assembly.GetName().Version;
+                            
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            ");
+
+
+            
+            #line 89 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                       Write(String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build));
 
             
             #line default
@@ -295,7 +307,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
 
             
-            #line 89 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 92 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
@@ -305,7 +317,7 @@ WriteLiteral("</li>\r\n                    <li>Time: ");
 
 
             
-            #line 90 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 93 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          Write(DateTime.UtcNow);
 
             
@@ -325,7 +337,7 @@ WriteLiteral(@" GMT
 
 
             
-            #line 100 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 103 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                           Write(LinkTo("/stats"));
 
             
@@ -336,7 +348,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = windo
 
 
             
-            #line 104 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 107 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(LinkTo("/js"));
 
             
