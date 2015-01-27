@@ -61,7 +61,7 @@ namespace Hangfire
             if (job == null) throw new ArgumentNullException("job");
             if (cronExpression == null) throw new ArgumentNullException("cronExpression");
 
-            CrontabSchedule.Parse(cronExpression);
+            ValidateCronExpression(cronExpression);
 
             using (var connection = _storage.GetConnection())
             {
@@ -114,6 +114,19 @@ namespace Hangfire
                 transaction.RemoveFromSet("recurring-jobs", recurringJobId);
 
                 transaction.Commit();
+            }
+        }
+
+        private static void ValidateCronExpression(string cronExpression)
+        {
+            try
+            {
+                var schedule = CrontabSchedule.Parse(cronExpression);
+                schedule.GetNextOccurrence(DateTime.UtcNow);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException("CRON expression is invalid. Please see the inner exception for details.", "cronExpression", ex);
             }
         }
     }
