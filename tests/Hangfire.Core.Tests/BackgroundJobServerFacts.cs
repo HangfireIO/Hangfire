@@ -92,14 +92,21 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void GetBootstrapSupervisor_ReturnsNonNullResult()
+        public void GetBootstrapSupervisor_ReturnsBootstrapper_WrappedWithAutomaticRetry()
         {
+            // Arrange
             var server = CreateServer();
 
+            // Act
             var supervisor = server.GetBootstrapSupervisor();
 
+            // Assert
             Assert.NotNull(supervisor);
-            Assert.IsType<ServerBootstrapper>(((ServerSupervisor) supervisor).Component);
+
+            var wrapper = ((ServerSupervisor) supervisor).Component;
+
+            Assert.IsType<AutomaticRetryServerComponentWrapper>(wrapper);
+            Assert.IsType<ServerBootstrapper>(((AutomaticRetryServerComponentWrapper)wrapper).InnerComponent);
         }
 
         [Fact]
