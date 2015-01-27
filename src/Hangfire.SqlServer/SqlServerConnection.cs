@@ -200,11 +200,15 @@ where j.Id = @jobId";
                 return null;
             }
 
+            var data = new Dictionary<string, string>(
+                JobHelper.FromJson<Dictionary<string, string>>(sqlState.Data),
+                StringComparer.OrdinalIgnoreCase);
+
             return new StateData
             {
                 Name = sqlState.Name,
                 Reason = sqlState.Reason,
-                Data = JobHelper.FromJson<Dictionary<string, string>>(sqlState.Data)
+                Data = data
             };
         }
 

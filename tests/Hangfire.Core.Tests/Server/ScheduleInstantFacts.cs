@@ -9,11 +9,11 @@ namespace Hangfire.Core.Tests.Server
     public class ScheduleInstantFacts
     {
         private readonly CrontabSchedule _schedule;
-        private readonly DateTime _localTime;
+        private DateTime _utcTime;
 
         public ScheduleInstantFacts()
         {
-            _localTime = new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc);
+            _utcTime = new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc);
             _schedule = CrontabSchedule.Parse("* * * * *");
         }
 
@@ -40,19 +40,20 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new ScheduleInstant(_localTime, null));
+                () => new ScheduleInstant(_utcTime, null));
 
             Assert.Equal("schedule", exception.ParamName);
         }
 
         [Fact]
-        public void LocalTime_ReturnsCorrectValue()
+        public void UtcTime_ReturnsNormalizedValue()
         {
+            _utcTime = new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Utc);
             var instant = CreateInstant();
 
             var value = instant.UtcTime;
 
-            Assert.Equal(_localTime, value);
+            Assert.Equal(new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc), value);
         }
 
         [Fact]
@@ -62,7 +63,7 @@ namespace Hangfire.Core.Tests.Server
 
             var value = instant.NextOccurrence;
 
-            Assert.Equal(_schedule.GetNextOccurrence(_localTime), value);
+            Assert.Equal(_schedule.GetNextOccurrence(_utcTime), value);
         }
 
         [Fact]
@@ -112,7 +113,7 @@ namespace Hangfire.Core.Tests.Server
 
         private ScheduleInstant CreateInstant(DateTime? localTime = null)
         {
-            return new ScheduleInstant(localTime ?? _localTime, _schedule);
+            return new ScheduleInstant(localTime ?? _utcTime, _schedule);
         }
     }
 }
