@@ -286,7 +286,9 @@ select * from HangFire.State where JobId = @id order by Id desc";
                                 StateName = x.Name,
                                 CreatedAt = x.CreatedAt,
                                 Reason = x.Reason,
-                                Data = JobHelper.FromJson<Dictionary<string, string>>(x.Data)
+                                Data = new Dictionary<string, string>(
+                                    JobHelper.FromJson<Dictionary<string, string>>(x.Data),
+                                    StringComparer.OrdinalIgnoreCase)
                             })
                             .ToList();
 
@@ -549,7 +551,10 @@ select * from (
 
             foreach (var job in jobs)
             {
-                var stateData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                var stateData = new Dictionary<string, string>(
+                    JobHelper.FromJson<Dictionary<string, string>>(job.StateData),
+                    StringComparer.OrdinalIgnoreCase);
+
                 var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
 
                 result.Add(new KeyValuePair<string, TDto>(
