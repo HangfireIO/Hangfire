@@ -85,6 +85,28 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsInvalid()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => manager.AddOrUpdate(_id, _job, "* * *"));
+
+            Assert.Equal("cronExpression", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenCronExpression_HaveInvalidParts()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => manager.AddOrUpdate(_id, _job, "* * * * 9999"));
+
+            Assert.Equal("cronExpression", exception.ParamName);
+        }
+
+        [Fact]
         public void AddOrUpdate_AddsAJob_ToTheRecurringJobsSet()
         {
             var manager = CreateManager();

@@ -102,7 +102,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Server Core";
+            return "Server Bootstrapper";
         }
 
         public void Dispose()

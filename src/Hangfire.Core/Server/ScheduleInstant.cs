@@ -36,7 +36,7 @@ namespace Hangfire.Server
 
             _schedule = schedule;
 
-            UtcTime = utcTime;
+            UtcTime = utcTime.AddSeconds(-utcTime.Second);
             NextOccurrence = _schedule.GetNextOccurrence(UtcTime);
         }
 
