@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Hangfire.Common;
 using Hangfire.Storage;
 
@@ -25,6 +26,7 @@ namespace Hangfire.States
     internal class StateMachine : IStateMachine
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan JobFetchTimeout = TimeSpan.FromSeconds(15);
 
         private readonly IStorageConnection _connection;
         private readonly IStateChangeProcess _stateChangeProcess;
@@ -80,7 +82,7 @@ namespace Hangfire.States
                 String.Format("job:{0}:state-lock", jobId),
                 JobLockTimeout))
             {
-                var jobData = _connection.GetJobData(jobId);
+                var jobData = GetJobData(jobId, JobFetchTimeout);
 
                 if (jobData == null)
                 {
@@ -124,6 +126,36 @@ namespace Hangfire.States
                 var stateChanged = _stateChangeProcess.ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;
+            }
+        }
+
+        private JobData GetJobData(string jobId, TimeSpan timeout)
+        {
+            var started = DateTime.UtcNow;
+            var firstAttempt = true;
+
+            while (true)
+            {
+                var jobData = _connection.GetJobData(jobId);
+                if (jobData == null)
+                {
+                    return null;
+                }
+
+                if (!String.IsNullOrEmpty(jobData.State))
+                {
+                    return jobData;
+                }
+
+                if (DateTime.UtcNow >= started.Add(timeout))
+                {
+                    throw new TimeoutException(String.Format(
+                        "Timeout expired while trying to fetch a non-null state for background job '{0}'.",
+                        jobId));
+                }
+
+                Thread.Sleep(firstAttempt ? 0 : 100);
+                firstAttempt = false;
             }
         }
     }
