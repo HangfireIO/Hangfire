@@ -255,6 +255,45 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void ChangeState_ThrowsTimeoutException_WhenStateIsNull_ForALongTime()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetJobData(It.IsAny<string>())).Returns(new JobData
+            {
+                Job = _job,
+                State = null
+            });
+
+            var stateMachine = CreateStateMachine();
+
+            // Act & Assert
+            Assert.Throws<TimeoutException>(() =>
+                stateMachine.ChangeState(JobId, _state.Object, FromOldState));
+        }
+
+        [Fact]
+        public void ChangeState_WaitsFor_NonNullStateValue()
+        {
+            // Arrange
+            var results = new Queue<JobData>();
+            results.Enqueue(new JobData { Job = _job, State = null });
+            results.Enqueue(new JobData { Job = _job, State = null });
+            results.Enqueue(new JobData { Job = _job, State = OldStateName });
+
+            _connection.Setup(x => x.GetJobData(It.IsAny<string>()))
+                .Returns(results.Dequeue);
+
+            var stateMachine = CreateStateMachine();
+
+            // Act
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
+
+            // Assert
+            Assert.Equal(0, results.Count);
+            Assert.True(result);
+        }
+
+        [Fact]
         public void ChangeState_ReturnsFalse_WhenFromStatesArgumentDoesNotContainCurrentState()
         {
             // Arrange
