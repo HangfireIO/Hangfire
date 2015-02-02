@@ -29,20 +29,39 @@ namespace Hangfire.Storage
         {
         }
 
+        // Common
         public abstract IWriteOnlyTransaction CreateWriteTransaction();
         public abstract IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
+
+        // Background jobs
         public abstract string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn);
         public abstract IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken);
         public abstract void SetJobParameter(string id, string name, string value);
         public abstract string GetJobParameter(string id, string name);
         public abstract JobData GetJobData(string jobId);
         public abstract StateData GetStateData(string jobId);
+
+        // Servers
         public abstract void AnnounceServer(string serverId, ServerContext context);
         public abstract void RemoveServer(string serverId);
         public abstract void Heartbeat(string serverId);
         public abstract int RemoveTimedOutServers(TimeSpan timeOut);
+
+        // Sets
         public abstract HashSet<string> GetAllItemsFromSet(string key);
         public abstract string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+
+        public virtual long GetSetCount([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
+        {
+            throw new NotSupportedException();
+        }
+
+        // Hashes
         public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
         public abstract Dictionary<string, string> GetAllEntriesFromHash(string key);
 
@@ -51,22 +70,18 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
-        public virtual long GetSetCount([NotNull] string key)
-        {
-            throw new NotSupportedException();
-        }
-
+        // Lists
         public virtual long GetListCount([NotNull] string key)
         {
             throw new NotSupportedException();
         }
 
-        public virtual List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
+        public virtual List<string> GetAllItemsFromList([NotNull] string key)
         {
             throw new NotSupportedException();
         }
 
-        public virtual List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
+        public virtual List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
         {
             throw new NotSupportedException();
         }
