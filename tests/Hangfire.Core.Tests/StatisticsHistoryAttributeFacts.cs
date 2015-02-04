@@ -84,7 +84,7 @@ namespace Hangfire.Core.Tests
 
             _transaction.Verify(x => x.IncrementCounter(
                 It.Is<string>(key => key == prefix + thisDay || key == prefix + prevDay),
-                It.Is<TimeSpan>(expire => expire.TotalDays >= 28)));
+                It.Is<TimeSpan>(expire => expire.TotalDays >= 27)));
 
             _transaction.Verify(x => x.IncrementCounter(
                 It.Is<string>(date => date == prefix + thisHour || date == prefix + prevHour),
