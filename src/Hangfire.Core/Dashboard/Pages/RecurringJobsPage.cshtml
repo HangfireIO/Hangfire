@@ -1,11 +1,11 @@
-﻿@* Generator: Template TypeVisibility: Internal *@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: true *@
 @using System
 @using System.Collections.Generic
-@using System.Linq
-@using Common
-@using Pages
+@using CronExpressionDescriptor
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
 @using Hangfire.Storage
-@using Storage.Monitoring
 @inherits RazorPage
 @{
     Layout = new LayoutPage { Title = "Recurring jobs" };
@@ -64,7 +64,7 @@ else
                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id" />
                         </td>
                         <td class="min-width">@job.Id</td>
-                        <td class="min-width">@(CronExpressionDescriptor.ExpressionDescriptor.GetDescription(job.Cron))</td>
+                        <td class="min-width">@ExpressionDescriptor.GetDescription(job.Cron)</td>
                         <td>
                             @if (job.Job != null)
                             {
@@ -90,11 +90,23 @@ else
                         <td class="align-right min-width">
                             @if (job.LastExecution != null)
                             {
-                                <a href="@Request.LinkTo("/job/" + job.LastJobId)">
-                                    <span class="label label-default label-hover" data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))" style="@(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
-                                        @job.LastExecution.Value
-                                    </span>
-                                </a>
+                                if (!String.IsNullOrEmpty(job.LastJobId))
+                                {
+                                    <a href="@Request.LinkTo("/job/" + job.LastJobId)">
+                                        <span class="label label-default label-hover" data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))" style="@(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
+                                            @job.LastExecution.Value
+                                        </span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <em>
+                                        Canceled
+                                        <span data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))">
+                                            @job.LastExecution.Value
+                                        </span>
+                                    </em>
+                                }
                             }
                             else
                             {
