@@ -26,6 +26,13 @@ namespace Hangfire.SqlServer.RabbitMQ
         {
         }
 
+        public RabbitMqConnectionConfiguration(Uri uri)
+        {
+            if (uri == null) throw new ArgumentNullException("uri");
+
+            Uri = uri;
+        }
+
         public RabbitMqConnectionConfiguration(string host, int port, string username, string password)
         {
             if (host == null) throw new ArgumentNullException("host");
@@ -48,5 +55,7 @@ namespace Hangfire.SqlServer.RabbitMQ
         public string VirtualHost { get; set; }
 
         public int Port { get; set; }
+
+        public Uri Uri { get; set; }
     }
 }
