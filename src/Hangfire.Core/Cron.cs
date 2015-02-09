@@ -162,6 +162,38 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Returns cron expression that fires every month on the first specified day of the week.
+        /// </summary>
+        /// <param name="dayOfWeek">The day of week in which the schedule will be activated.</param>
+        public static string Monthly(DayOfWeek dayOfWeek)
+        {
+            return Monthly(dayOfWeek, 0);
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every month on the first specified day of the week 
+        /// and hour in UTC.
+        /// </summary>
+        /// <param name="dayOfWeek">The day of week in which the schedule will be activated.</param>
+        /// <param name="hour">The hour in which the schedule will be activated (0-23).</param>
+        public static string Monthly(DayOfWeek dayOfWeek, int hour)
+        {
+            return Monthly(dayOfWeek, 0, 0);
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every month on the first specified day of the week,
+        /// hour and minute in UTC.
+        /// </summary>
+        /// <param name="dayOfWeek">The day of week in which the schedule will be activated.</param>
+        /// <param name="hour">The hour in which the schedule will be activated (0-23).</param>
+        /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
+        public static string Monthly(DayOfWeek dayOfWeek, int hour, int minute)
+        {
+            return String.Format("{0} {1} 1-7 * {2}", minute, hour, (int)dayOfWeek);
+        }
+
+        /// <summary>
         /// Returns cron expression that fires every year on Jan, 1st at 00:00 UTC.
         /// </summary>
         public static string Yearly()
