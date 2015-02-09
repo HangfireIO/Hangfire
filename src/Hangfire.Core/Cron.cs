@@ -178,7 +178,7 @@ namespace Hangfire
         /// <param name="hour">The hour in which the schedule will be activated (0-23).</param>
         public static string Monthly(DayOfWeek dayOfWeek, int hour)
         {
-            return Monthly(dayOfWeek, 0, 0);
+            return Monthly(dayOfWeek, hour, 0);
         }
 
         /// <summary>
