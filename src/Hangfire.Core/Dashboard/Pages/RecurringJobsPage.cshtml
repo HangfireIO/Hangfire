@@ -1,4 +1,4 @@
-﻿@* Generator: Template TypeVisibility: Internal *@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: true *@
 @using System
 @using System.Collections.Generic
 @using CronExpressionDescriptor
@@ -90,11 +90,23 @@ else
                         <td class="align-right min-width">
                             @if (job.LastExecution != null)
                             {
-                                <a href="@LinkTo("/job/" + job.LastJobId)">
-                                    <span class="label label-default label-hover" data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))" style="@(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
-                                        @job.LastExecution.Value
-                                    </span>
-                                </a>
+                                if (!String.IsNullOrEmpty(job.LastJobId))
+                                {
+                                    <a href="@LinkTo("/job/" + job.LastJobId)">
+                                        <span class="label label-default label-hover" data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))" style="@(job.LastJobState != null && JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.LastJobState) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.LastJobState]) : null)">
+                                            @job.LastExecution.Value
+                                        </span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <em>
+                                        Canceled
+                                        <span data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))">
+                                            @job.LastExecution.Value
+                                        </span>
+                                    </em>
+                                }
                             }
                             else
                             {

@@ -113,12 +113,20 @@ namespace Hangfire.Server
                 var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                 var jobId = _client.Create(job, state);
 
+                if (String.IsNullOrEmpty(jobId))
+                {
+                    Logger.DebugFormat(
+                        "Recurring job '{0}' execution at '{1}' has been canceled.", 
+                        recurringJobId,
+                        instant.UtcTime);
+                }
+
                 connection.SetRangeInHash(
                     String.Format("recurring-job:{0}", recurringJobId),
                     new Dictionary<string, string>
                         {
                             { "LastExecution", JobHelper.SerializeDateTime(instant.UtcTime) },
-                            { "LastJobId", jobId },
+                            { "LastJobId", jobId ?? String.Empty },
                         });
             }
 
