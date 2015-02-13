@@ -61,6 +61,11 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        public virtual void AddRangeToSet([NotNull] string key, [NotNull] IList<string> items)
+        {
+            throw new NotSupportedException();
+        }
+
         // Hashes
         public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
         public abstract Dictionary<string, string> GetAllEntriesFromHash(string key);
