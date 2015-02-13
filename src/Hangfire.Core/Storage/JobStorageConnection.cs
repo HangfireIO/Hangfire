@@ -70,6 +70,11 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        public virtual long GetHashCount([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
         // Lists
         public virtual long GetListCount([NotNull] string key)
         {
