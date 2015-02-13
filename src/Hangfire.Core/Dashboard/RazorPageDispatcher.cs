@@ -40,6 +40,7 @@ namespace Hangfire.Dashboard
             page.Request = owinContext.Request;
             page.Response = owinContext.Response;
             page.Storage = context.JobStorage;
+            page.BackToSitePath = context.BackToSitePath;
 
             return owinContext.Response.WriteAsync(page.TransformText());
         }

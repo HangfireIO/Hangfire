@@ -48,6 +48,12 @@ namespace Hangfire
         void UseDashboardPath(string path);
 
         /// <summary>
+        /// Tells bootstrapper to pass the given path to the dashboard middleware to map the Back To Site link in the dashboard.
+        /// </summary>
+        /// <param name="path">BackToSite path, '~/' by default</param>
+        void UseBackToSitePath(string path);
+
+        /// <summary>
         /// Tells bootstrapper to register the given instance of the
         /// <see cref="JobStorage"/> class globally.
         /// </summary>

@@ -30,6 +30,7 @@ namespace Hangfire.Dashboard
         };
 
         internal static readonly string DefaultDashboardPath = "/hangfire";
+        internal static readonly string DefaultBackToSitePath = "/";
 
         /// <summary>
         /// Maps dashboard to the app builder pipeline at "/hangfire"
@@ -39,7 +40,7 @@ namespace Hangfire.Dashboard
         /// <param name="app">The app builder</param>
         public static void MapHangfireDashboard(this IAppBuilder app)
         {
-            MapHangfireDashboard(app, DefaultDashboardPath);
+            MapHangfireDashboard(app, DefaultDashboardPath, DefaultBackToSitePath);
         }
 
         /// <summary>
@@ -53,7 +54,23 @@ namespace Hangfire.Dashboard
             this IAppBuilder app,
             string dashboardPath)
         {
-            MapHangfireDashboard(app, dashboardPath, DefaultAuthorizationFilters);
+            MapHangfireDashboard(app, dashboardPath, DefaultBackToSitePath, DefaultAuthorizationFilters);
+        }
+
+        /// <summary>
+        /// Maps dashboard to the app builder pipeline at the specified
+        /// path with authorization filter that blocks all remote requests
+        /// and <see cref="JobStorage.Current"/> storage instance.
+        /// </summary>
+        /// <param name="app">The app builder</param>
+        /// <param name="dashboardPath">The path to map dashboard</param>
+        /// <param name="backToSitePath">The path to map site</param>
+        public static void MapHangfireDashboard(
+            this IAppBuilder app,
+            string dashboardPath,
+            string backToSitePath)
+        {
+            MapHangfireDashboard(app, dashboardPath, backToSitePath, DefaultAuthorizationFilters);
         }
 
         /// <summary>
@@ -63,13 +80,15 @@ namespace Hangfire.Dashboard
         /// </summary>
         /// <param name="app">The app builder</param>
         /// <param name="dashboardPath">The path to map dashboard</param>
+        /// <param name="backToSitePath">The path to map site</param>
         /// <param name="authorizationFilters">Array of authorization filters</param>
         public static void MapHangfireDashboard(
             this IAppBuilder app, 
             string dashboardPath,
+            string backToSitePath,
             IEnumerable<IAuthorizationFilter> authorizationFilters)
         {
-            MapHangfireDashboard(app, dashboardPath, authorizationFilters, JobStorage.Current);
+            MapHangfireDashboard(app, dashboardPath, backToSitePath, authorizationFilters, JobStorage.Current);
         }
 
         /// <summary>
@@ -79,11 +98,13 @@ namespace Hangfire.Dashboard
         /// </summary>
         /// <param name="app">The app builder</param>
         /// <param name="dashboardPath">The path to map dashboard</param>
+        /// <param name="backToSitePath">The path to map site</param>
         /// <param name="authorizationFilters">Array of authorization filters</param>
         /// <param name="storage">The storage instance</param>
         public static void MapHangfireDashboard(
             [NotNull] this IAppBuilder app,
             string dashboardPath,
+            string backToSitePath,
             IEnumerable<IAuthorizationFilter> authorizationFilters,
             JobStorage storage)
         {
@@ -92,6 +113,7 @@ namespace Hangfire.Dashboard
             SignatureConversions.AddConversions(app);
 
             app.Map(dashboardPath, subApp => subApp.Use<DashboardMiddleware>(
+                backToSitePath,
                 storage,
                 DashboardRoutes.Routes,
                 authorizationFilters));

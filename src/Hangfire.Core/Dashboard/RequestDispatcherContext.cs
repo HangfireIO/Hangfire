@@ -24,19 +24,23 @@ namespace Hangfire.Dashboard
     public class RequestDispatcherContext
     {
         public RequestDispatcherContext(
+            [NotNull] string backToSitePath,
             [NotNull] JobStorage jobStorage,
             [NotNull] IDictionary<string, object> owinEnvironment, 
             [NotNull] Match uriMatch)
         {
+            if (backToSitePath == null) throw new ArgumentNullException("backToSitePath");
             if (jobStorage == null) throw new ArgumentNullException("jobStorage");
             if (owinEnvironment == null) throw new ArgumentNullException("owinEnvironment");
             if (uriMatch == null) throw new ArgumentNullException("uriMatch");
 
+            BackToSitePath = backToSitePath;
             JobStorage = jobStorage;
             OwinEnvironment = owinEnvironment;
             UriMatch = uriMatch;
         }
 
+        public string BackToSitePath { get; private set; }
         public JobStorage JobStorage { get; private set; }
         public IDictionary<string, object> OwinEnvironment { get; private set; } 
         public Match UriMatch { get; private set; }

@@ -63,7 +63,7 @@ namespace Hangfire
                 app.RunHangfireServer(server());
             }
 
-            app.MapHangfireDashboard(configuration.DashboardPath, configuration.AuthorizationFilters);
+            app.MapHangfireDashboard(configuration.DashboardPath, configuration.BackToSitePath, configuration.AuthorizationFilters);
         }
     }
 }

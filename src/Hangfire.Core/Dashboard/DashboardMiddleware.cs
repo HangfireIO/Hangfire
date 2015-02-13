@@ -25,21 +25,25 @@ namespace Hangfire.Dashboard
 {
     internal class DashboardMiddleware : OwinMiddleware
     {
+        private readonly string _backToSitePath;
         private readonly JobStorage _storage;
         private readonly RouteCollection _routes;
         private readonly IEnumerable<IAuthorizationFilter> _authorizationFilters;
 
         public DashboardMiddleware(
             OwinMiddleware next, 
+            [NotNull] string backToSitePath,
             [NotNull] JobStorage storage,
             [NotNull] RouteCollection routes, 
             [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters)
             : base(next)
         {
+            if (backToSitePath == null) throw new ArgumentNullException("backToSitePath");
             if (storage == null) throw new ArgumentNullException("storage");
             if (routes == null) throw new ArgumentNullException("routes");
             if (authorizationFilters == null) throw new ArgumentNullException("authorizationFilters");
 
+            _backToSitePath = backToSitePath;
             _storage = storage;
             _routes = routes;
             _authorizationFilters = authorizationFilters;
@@ -64,6 +68,7 @@ namespace Hangfire.Dashboard
             }
 
             var dispatcherContext = new RequestDispatcherContext(
+                _backToSitePath,
                 _storage,
                 context.Environment,
                 dispatcher.Item2);
