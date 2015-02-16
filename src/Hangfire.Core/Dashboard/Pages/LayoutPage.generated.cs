@@ -120,7 +120,7 @@ WriteLiteral(@""">Hangfire Dashboard</a>
 
             <!-- Begin page content -->
 
-            <div class=""container"">
+            <div class=""container"" style=""margin-bottom: 20px;"">
                 <div class=""row"">
                     <div class=""col-md-3"">
                         <div id=""stats"" class=""list-group"">
