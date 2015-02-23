@@ -46,7 +46,7 @@ namespace Hangfire.Common
         /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
-        public Job(Type type, MethodInfo method) 
+        public Job(Type type, MethodInfo method)
             : this(type, method, new string[0])
         {
         }
@@ -92,6 +92,11 @@ namespace Hangfire.Common
         /// </summary>
         public string[] Arguments { get; private set; }
 
+        /// <summary>
+        /// Allows external reference to the arguments
+        /// </summary>
+        public object[] DeserializedArguments { get; private set; }
+
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
             if (activator == null) throw new ArgumentNullException("activator");
@@ -102,12 +107,12 @@ namespace Hangfire.Common
             object result = null;
             try
             {
-                var deserializedArguments = DeserializeArguments(cancellationToken);
+                DeserializedArguments = DeserializeArguments(cancellationToken);
                 if (!Method.IsStatic)
                 {
                     instance = Activate(activator);
-                }                
-                result = InvokeMethod(instance, deserializedArguments);
+                }
+                result = InvokeMethod(instance, DeserializedArguments);
             }
             finally
             {
@@ -160,8 +165,8 @@ namespace Hangfire.Common
             // Static methods can not be overridden in the derived classes, 
             // so we can take the method's declaring type.
             return new Job(
-                callExpression.Method.DeclaringType, 
-                callExpression.Method, 
+                callExpression.Method.DeclaringType,
+                callExpression.Method,
                 GetArguments(callExpression));
         }
 
@@ -183,8 +188,8 @@ namespace Hangfire.Common
             }
 
             return new Job(
-                typeof(T), 
-                callExpression.Method, 
+                typeof(T),
+                callExpression.Method,
                 GetArguments(callExpression));
         }
 
@@ -208,7 +213,7 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Only public methods can be invoked in the background.");
             }
 
-            if (typeof (Task).IsAssignableFrom(Method.ReturnType))
+            if (typeof(Task).IsAssignableFrom(Method.ReturnType))
             {
                 throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
             }
@@ -276,32 +281,32 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
                     {
                         value = cancellationToken;
                     }
                     else
                     {
-	                    try
-	                    {
-							value = argument != null
-								? JobHelper.FromJson(argument, parameter.ParameterType)
-								: null;
-	                    }
-	                    catch (Exception)
-	                    {
-		                    if (parameter.ParameterType == typeof (object))
-		                    {
-			                    // Special case for handling object types, because string can not
-			                    // be converted to object type.
-			                    value = argument;
-		                    }
-		                    else
-		                    {
-			                    var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-			                    value = converter.ConvertFromInvariantString(argument);
-		                    }
-	                    }
+                        try
+                        {
+                            value = argument != null
+                                ? JobHelper.FromJson(argument, parameter.ParameterType)
+                                : null;
+                        }
+                        catch (Exception)
+                        {
+                            if (parameter.ParameterType == typeof(object))
+                            {
+                                // Special case for handling object types, because string can not
+                                // be converted to object type.
+                                value = argument;
+                            }
+                            else
+                            {
+                                var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
+                                value = converter.ConvertFromInvariantString(argument);
+                            }
+                        }
                     }
 
                     result.Add(value);
@@ -372,11 +377,11 @@ namespace Hangfire.Common
                 {
                     if (argument is DateTime)
                     {
-                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                        value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-	                    value = JobHelper.ToJson(argument);
+                        value = JobHelper.ToJson(argument);
                     }
                 }
 
