@@ -1,7 +1,7 @@
 Hangfire 
 =========
 
-#### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) |  [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
+#### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) |[Twitter](https://twitter.com/hangfireio) |  [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
 
 | Windows / .NET | Linux / Mono
 | --- | ---
