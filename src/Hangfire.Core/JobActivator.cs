@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Common;
 
 namespace Hangfire
 {
@@ -41,6 +42,18 @@ namespace Hangfire
         }
 
         public virtual object ActivateJob(Type jobType)
+        {
+            return Activator.CreateInstance(jobType);
+        }
+
+        /// <summary>
+        /// Override that allows the Job details to be passed in so that implementor 
+        /// can retrieve more information about the job to properly create the given type
+        /// </summary>
+        /// <param name="jobType"></param>
+        /// <param name="job">The job that is about to be created</param>
+        /// <returns></returns>
+        public virtual object ActivateJob(Type jobType, Job job)
         {
             return Activator.CreateInstance(jobType);
         }
