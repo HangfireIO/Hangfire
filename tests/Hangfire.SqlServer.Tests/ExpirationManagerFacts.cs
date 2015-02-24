@@ -14,7 +14,8 @@ namespace Hangfire.SqlServer.Tests
 
         public ExpirationManagerFacts()
         {
-            _token = new CancellationToken(true);
+            var cts = new CancellationTokenSource();
+            _token = cts.Token;
         }
 
         [Fact]
@@ -197,7 +198,7 @@ select scope_identity() as Id";
         private ExpirationManager CreateManager(SqlConnection connection)
         {
             var storage = new SqlServerStorage(connection);
-            return new ExpirationManager(storage);
+            return new ExpirationManager(storage, TimeSpan.Zero);
         }
     }
 }

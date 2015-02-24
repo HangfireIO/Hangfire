@@ -22,7 +22,7 @@ using Hangfire.States;
 
 namespace Hangfire.Dashboard
 {
-    internal static class JobHistoryRenderer
+    public static class JobHistoryRenderer
     {
         private static readonly IDictionary<string, Func<IDictionary<string, string>, NonEscapedString>> 
             Renderers = new Dictionary<string, Func<IDictionary<string, string>, NonEscapedString>>();

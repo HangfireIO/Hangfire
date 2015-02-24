@@ -119,7 +119,7 @@ namespace Hangfire
                 _storage, 
                 new Lazy<IServerSupervisor>(GetSupervisors));
 
-            return new ServerSupervisor(
+            return CreateSupervisor(
                 bootstrapper, 
                 new ServerSupervisorOptions
                 {
@@ -162,7 +162,12 @@ namespace Hangfire
 
         private static ServerSupervisor CreateSupervisor(IServerComponent component)
         {
-            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component));
+            return CreateSupervisor(component, new ServerSupervisorOptions());
+        }
+
+        private static ServerSupervisor CreateSupervisor(IServerComponent component, ServerSupervisorOptions options)
+        {
+            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component), options);
         }
     }
 }

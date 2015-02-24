@@ -1,4 +1,4 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <package >
   <metadata>
     <id>Hangfire.SqlServer</id>
@@ -13,6 +13,13 @@
     <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.3.3
+* Fixed – Enqueued job is not being processed with MSMQ or RabbitMQ.  
+    
+1.3.2
+* Fixed – Sql Timeouts in ExpirationManager.
+* Fixed – KeyNotFoundException on /hangfire/succeeded page.
     
 1.3.0
 * Added – Generation of NuGet symbol packages with `*.pdb` and source files.

@@ -222,7 +222,7 @@ namespace Hangfire
         /// <returns>English description.</returns>
         public static string GetDescription(string cronExpression)
         {
-            string[] expressionParts = cronExpression.Split(Convert.ToChar(" "));
+            string[] expressionParts = cronExpression.Split(' ');
 
             if (expressionParts.Length != 5)
             {

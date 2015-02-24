@@ -14,6 +14,14 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.3.3
+* Fixed – Enqueued job is not being processed with MSMQ or RabbitMQ.
+    
+1.3.2
+* Fixed – Fatal error occurred during execution of 'Server Core' component.
+* Fixed – Hangfire version freezes at 1.0.0.0 on Dashboard.
+* Fixed – Recurring job does not trigger.
+    
 1.3.1
 * Fixed – Worker stops processing on storage exceptions.
     

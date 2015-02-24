@@ -12,4 +12,3 @@ using System.Runtime.InteropServices;
 
 // Don't edit manually! Use `build.bat version` command instead!
 [assembly: AssemblyVersion("1.4.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
