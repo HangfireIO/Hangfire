@@ -26,7 +26,7 @@ namespace Hangfire
         {
             Servers = new List<Func<BackgroundJobServer>>();
             DashboardPath = DashboardOwinExtensions.DefaultDashboardPath;
-            BackToSitePath = DashboardOwinExtensions.DefaultBackToSitePath;
+            AppPath = DashboardOwinExtensions.DefaultAppPath;
 
             AuthorizationFilters = DashboardOwinExtensions.DefaultAuthorizationFilters;
 
@@ -34,7 +34,7 @@ namespace Hangfire
         }
 
         public string DashboardPath { get; private set; }
-        public string BackToSitePath { get; private set; }
+        public string AppPath { get; private set; }
         public JobStorage Storage { get; private set; }
         public JobActivator Activator { get; private set; }
         public List<Func<BackgroundJobServer>> Servers { get; private set; }
@@ -56,9 +56,9 @@ namespace Hangfire
             DashboardPath = path;
         }
 
-        public void UseBackToSitePath(string path)
+        public void UseAppPath(string path)
         {
-            BackToSitePath = path;
+            AppPath = path;
         }
 
         public void UseStorage(JobStorage storage)
