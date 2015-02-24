@@ -356,7 +356,7 @@ namespace Hangfire.Core.Tests.Common
         public void Perform_ThrowsPerformanceException_WhenActivatorThrowsAnException()
         {
             var exception = new InvalidOperationException();
-            _activator.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws(exception);
+            _activator.Setup(x => x.ActivateJob(It.IsAny<Type>(), It.IsAny<Job>())).Throws(exception);
 
             var job = Job.FromExpression(() => InstanceMethod());
 
@@ -369,7 +369,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void Perform_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
-            _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
+            _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>(), It.IsNotNull<Job>())).Returns(null);
             var job = Job.FromExpression(() => InstanceMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
