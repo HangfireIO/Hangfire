@@ -26,7 +26,7 @@ namespace Hangfire.SqlServer
         {
             QueuePollInterval = TimeSpan.FromSeconds(15);
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
-
+            JobExpirationCheckInterval = TimeSpan.FromHours(1);
             PrepareSchemaIfNecessary = true;
         }
 
@@ -55,5 +55,7 @@ namespace Hangfire.SqlServer
         public TimeSpan InvisibilityTimeout { get; set; }
 
         public bool PrepareSchemaIfNecessary { get; set; }
+
+        public TimeSpan JobExpirationCheckInterval { get; set; }
     }
 }
