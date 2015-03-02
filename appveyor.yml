@@ -40,7 +40,7 @@ branches:
 build_script: build.bat pack
 
 after_build:
-  - ps: .\packages\coveralls.io.*\tools\coveralls.net.exe --opencover coverage.xml
+  - packages\coveralls.io.1.2.2\tools\coveralls.net --opencover coverage.xml
 
 #---------------------------------#
 #       tests configuration       #
