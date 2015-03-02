@@ -78,7 +78,7 @@ namespace Hangfire.Server
             var stateMachine = _context.StateMachineFactory.Create(connection);
             var processingState = new ProcessingState(_context.ServerId, _context.WorkerNumber);
 
-            if (!stateMachine.TryToChangeState(
+            if (!stateMachine.ChangeState(
                 jobId,
                 processingState,
                 new[] { EnqueuedState.StateName, ProcessingState.StateName }))
@@ -133,7 +133,7 @@ namespace Hangfire.Server
 
             // Ignore return value, because we should not do
             // anything when current state is not Processing.
-            stateMachine.TryToChangeState(jobId, state, new[] { ProcessingState.StateName });
+            stateMachine.ChangeState(jobId, state, new[] { ProcessingState.StateName });
         }
     }
 }

@@ -28,7 +28,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerConnection : IStorageConnection
+    internal class SqlServerConnection : JobStorageConnection
     {
         private readonly SqlConnection _connection;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
@@ -56,7 +56,7 @@ namespace Hangfire.SqlServer
         public SqlConnection Connection { get { return _connection; } }
         public bool OwnsConnection { get; private set; }
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (OwnsConnection)
             {
@@ -64,12 +64,12 @@ namespace Hangfire.SqlServer
             }
         }
 
-        public IWriteOnlyTransaction CreateWriteTransaction()
+        public override IWriteOnlyTransaction CreateWriteTransaction()
         {
             return new SqlServerWriteOnlyTransaction(_connection, _queueProviders);
         }
 
-        public IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
+        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
             return new SqlServerDistributedLock(
                 String.Format("HangFire:{0}", resource),
@@ -77,7 +77,7 @@ namespace Hangfire.SqlServer
                 _connection);
         }
 
-        public IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
+        public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
             if (queues == null || queues.Length == 0) throw new ArgumentNullException("queues");
 
@@ -97,7 +97,7 @@ namespace Hangfire.SqlServer
             return persistentQueue.Dequeue(queues, cancellationToken);
         }
 
-        public string CreateExpiredJob(
+        public override string CreateExpiredJob(
             Job job,
             IDictionary<string, string> parameters, 
             DateTime createdAt,
@@ -147,7 +147,7 @@ values (@jobId, @name, @value)";
             return jobId;
         }
 
-        public JobData GetJobData(string id)
+        public override JobData GetJobData(string id)
         {
             if (id == null) throw new ArgumentNullException("id");
 
@@ -184,7 +184,7 @@ values (@jobId, @name, @value)";
             };
         }
 
-        public StateData GetStateData(string jobId)
+        public override StateData GetStateData(string jobId)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
 
@@ -212,7 +212,7 @@ where j.Id = @jobId";
             };
         }
 
-        public void SetJobParameter(string id, string name, string value)
+        public override void SetJobParameter(string id, string name, string value)
         {
             if (id == null) throw new ArgumentNullException("id");
             if (name == null) throw new ArgumentNullException("name");
@@ -226,7 +226,7 @@ where j.Id = @jobId";
                 new { jobId = id, name, value });
         }
 
-        public string GetJobParameter(string id, string name)
+        public override string GetJobParameter(string id, string name)
         {
             if (id == null) throw new ArgumentNullException("id");
             if (name == null) throw new ArgumentNullException("name");
@@ -237,7 +237,7 @@ where j.Id = @jobId";
                 .SingleOrDefault();
         }
 
-        public HashSet<string> GetAllItemsFromSet(string key)
+        public override HashSet<string> GetAllItemsFromSet(string key)
         {
             if (key == null) throw new ArgumentNullException("key");
 
@@ -248,7 +248,7 @@ where j.Id = @jobId";
             return new HashSet<string>(result);
         }
 
-        public string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
+        public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             if (key == null) throw new ArgumentNullException("key");
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
@@ -259,7 +259,7 @@ where j.Id = @jobId";
                 .SingleOrDefault();
         }
 
-        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
@@ -282,7 +282,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             }
         }
 
-        public Dictionary<string, string> GetAllEntriesFromHash(string key)
+        public override Dictionary<string, string> GetAllEntriesFromHash(string key)
         {
             if (key == null) throw new ArgumentNullException("key");
 
@@ -294,7 +294,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             return result.Count != 0 ? result : null;
         }
 
-        public void AnnounceServer(string serverId, ServerContext context)
+        public override void AnnounceServer(string serverId, ServerContext context)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");
             if (context == null) throw new ArgumentNullException("context");
@@ -315,7 +315,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
         }
 
-        public void RemoveServer(string serverId)
+        public override void RemoveServer(string serverId)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");
 
@@ -324,7 +324,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 new { id = serverId });
         }
 
-        public void Heartbeat(string serverId)
+        public override void Heartbeat(string serverId)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");
 
@@ -333,7 +333,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 new { now = DateTime.UtcNow, id = serverId });
         }
 
-        public int RemoveTimedOutServers(TimeSpan timeOut)
+        public override int RemoveTimedOutServers(TimeSpan timeOut)
         {
             if (timeOut.Duration() != timeOut)
             {

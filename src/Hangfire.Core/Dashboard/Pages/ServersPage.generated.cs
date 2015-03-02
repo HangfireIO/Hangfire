@@ -17,35 +17,40 @@ namespace Hangfire.Dashboard.Pages
     
     #line default
     #line hidden
-    using System.Collections.Generic;
     
     #line 3 "..\..\Dashboard\Pages\ServersPage.cshtml"
+    using System.Collections.Generic;
+    
+    #line default
+    #line hidden
+    
+    #line 4 "..\..\Dashboard\Pages\ServersPage.cshtml"
     using System.Linq;
     
     #line default
     #line hidden
     using System.Text;
     
-    #line 4 "..\..\Dashboard\Pages\ServersPage.cshtml"
-    using Common;
+    #line 5 "..\..\Dashboard\Pages\ServersPage.cshtml"
+    using Hangfire.Common;
     
     #line default
     #line hidden
     
     #line 6 "..\..\Dashboard\Pages\ServersPage.cshtml"
-    using Hangfire.Storage;
-    
-    #line default
-    #line hidden
-    
-    #line 5 "..\..\Dashboard\Pages\ServersPage.cshtml"
-    using Pages;
+    using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
     #line 7 "..\..\Dashboard\Pages\ServersPage.cshtml"
-    using Storage.Monitoring;
+    using Hangfire.Dashboard.Pages;
+    
+    #line default
+    #line hidden
+    
+    #line 8 "..\..\Dashboard\Pages\ServersPage.cshtml"
+    using Hangfire.Storage.Monitoring;
     
     #line default
     #line hidden
@@ -69,8 +74,9 @@ WriteLiteral("\r\n");
 
 
 
+
             
-            #line 9 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 10 "..\..\Dashboard\Pages\ServersPage.cshtml"
   
     Layout = new LayoutPage { Title = "Servers" };
     
@@ -85,7 +91,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 17 "..\..\Dashboard\Pages\ServersPage.cshtml"
  if (servers.Count == 0)
 {
 
@@ -97,7 +103,7 @@ WriteLiteral("    <div class=\"alert alert-warning\">\r\n        There are no ac
 
 
             
-            #line 21 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 22 "..\..\Dashboard\Pages\ServersPage.cshtml"
 }
 else
 {
@@ -120,7 +126,7 @@ WriteLiteral(@"    <table class=""table"">
 
 
             
-            #line 35 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 36 "..\..\Dashboard\Pages\ServersPage.cshtml"
              foreach (var server in servers)
             {
 
@@ -131,7 +137,7 @@ WriteLiteral("                <tr>\r\n                    <td>");
 
 
             
-            #line 38 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 39 "..\..\Dashboard\Pages\ServersPage.cshtml"
                    Write(server.Name.ToUpperInvariant());
 
             
@@ -141,7 +147,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 39 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 40 "..\..\Dashboard\Pages\ServersPage.cshtml"
                    Write(server.WorkersCount);
 
             
@@ -151,7 +157,7 @@ WriteLiteral("</td>\r\n                    <td>");
 
 
             
-            #line 40 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 41 "..\..\Dashboard\Pages\ServersPage.cshtml"
                    Write(HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel))));
 
             
@@ -161,7 +167,7 @@ WriteLiteral("</td>\r\n                    <td data-moment=\"");
 
 
             
-            #line 41 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 42 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                 Write(JobHelper.ToTimestamp(server.StartedAt));
 
             
@@ -171,7 +177,7 @@ WriteLiteral("\">");
 
 
             
-            #line 41 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 42 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                                                           Write(server.StartedAt);
 
             
@@ -181,7 +187,7 @@ WriteLiteral("</td>\r\n                    <td>\r\n");
 
 
             
-            #line 43 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\ServersPage.cshtml"
                          if (server.Heartbeat.HasValue)
                         {
 
@@ -192,7 +198,7 @@ WriteLiteral("                            <span data-moment=\"");
 
 
             
-            #line 45 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
                                           Write(JobHelper.ToTimestamp(server.Heartbeat.Value));
 
             
@@ -202,7 +208,7 @@ WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 47 "..\..\Dashboard\Pages\ServersPage.cshtml"
                            Write(server.Heartbeat);
 
             
@@ -212,7 +218,7 @@ WriteLiteral("\r\n                            </span>\r\n");
 
 
             
-            #line 48 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 49 "..\..\Dashboard\Pages\ServersPage.cshtml"
                         }
 
             
@@ -222,7 +228,7 @@ WriteLiteral("                    </td>\r\n                </tr>\r\n");
 
 
             
-            #line 51 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 52 "..\..\Dashboard\Pages\ServersPage.cshtml"
             }
 
             
@@ -232,7 +238,7 @@ WriteLiteral("        </tbody>\r\n    </table>\r\n");
 
 
             
-            #line 54 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 55 "..\..\Dashboard\Pages\ServersPage.cshtml"
 }
             
             #line default

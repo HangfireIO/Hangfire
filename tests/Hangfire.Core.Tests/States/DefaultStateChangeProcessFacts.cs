@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.States
 {
-    public class StateChangeProcessFacts
+    public class DefaultStateChangeProcessFacts
     {
         private const string OldStateName = "OldState";
         private const string StateName = "State";
@@ -17,29 +17,41 @@ namespace Hangfire.Core.Tests.States
         private readonly StateHandlerCollection _handlers = new StateHandlerCollection();
         private readonly List<object> _filters = new List<object>();
 
-        private readonly StateContextMock _context;
         private readonly Mock<IState> _state;
+        private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly ElectStateContextMock _electStateContext;
+        private readonly ApplyStateContextMock _applyStateContext;
 
-        public StateChangeProcessFacts()
+        public DefaultStateChangeProcessFacts()
         {
-            var connection = new Mock<IStorageConnection>();
+            _connection = new Mock<IStorageConnection>();
             _transaction = new Mock<IWriteOnlyTransaction>();
-            connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
-
-            _context = new StateContextMock();
-            _context.JobIdValue = JobId;
-            _context.ConnectionValue = connection;
+            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
+
+            var context = new StateContextMock { JobIdValue = JobId };
+            _electStateContext = new ElectStateContextMock
+            {
+                StateContextValue = context,
+                CandidateStateValue = _state.Object,
+                CurrentStateValue = OldStateName
+            };
+            _applyStateContext = new ApplyStateContextMock
+            {
+                StateContextValue = context,
+                NewStateValue = _state.Object,
+                OldStateValue = OldStateName
+            };
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenHandlersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeProcess(null, _filters));
+                () => new DefaultStateChangeProcess(null, _filters));
 
             Assert.Equal("handlers", exception.ParamName);
         }
@@ -48,29 +60,33 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenFiltersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeProcess(_handlers, null));
+                () => new DefaultStateChangeProcess(_handlers, null));
 
             Assert.Equal("filters", exception.ParamName);
         }
 
         [Fact, Sequence]
-        public void ChangeState_CommitsTheNewState_AndReturnsTrue()
+        public void ElectState_CallsElectionFilters()
         {
             // Arrange
-            _transaction.Setup(x => x.SetJobState(JobId, _state.Object)).InSequence();
-            _transaction.Setup(x => x.Commit()).InSequence();
+            var filter1 = CreateFilter<IElectStateFilter>();
+            var filter2 = CreateFilter<IElectStateFilter>();
+
+            filter1.Setup(x => x.OnStateElection(_electStateContext.Object))
+                .InSequence();
+            filter2.Setup(x => x.OnStateElection(_electStateContext.Object))
+                .InSequence();
 
             var process = CreateProcess();
 
             // Act
-            var result = process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ElectState(_connection.Object, _electStateContext.Object);
 
             // Assert - Sequence
-            Assert.True(result);
         }
 
         [Fact, Sequence]
-        public void ChangeState_CallsUnapplyHandlers_BeforeSettingTheState()
+        public void ApplyState_CallsUnapplyHandlers_BeforeSettingTheState()
         {
             // Arrange
             var handler1 = CreateStateHandler(OldStateName);
@@ -90,20 +106,20 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             // Assert - Sequence
         }
 
         [Fact]
-        public void ChangeState_DoesNotCallUnapplyHandlers_ForDifferentStates()
+        public void ApplyState_DoesNotCallUnapplyHandlers_ForDifferentStates()
         {
             // Arrange
             var handler = CreateStateHandler(StateName);
             var process = CreateProcess();
 
             // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             // Assert
             handler.Verify(
@@ -112,7 +128,7 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact, Sequence]
-        public void ChangeState_ShouldCallApplyHandlers_AfterSettingTheState()
+        public void ApplyState_ShouldCallApplyHandlers_AfterSettingTheState()
         {
             // Arrange
             var handler1 = CreateStateHandler(StateName);
@@ -130,20 +146,20 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             // Assert - Sequence
         }
 
         [Fact]
-        public void ChangeState_DoesNotCallApplyHandlers_ForDifferentStates()
+        public void ApplyState_DoesNotCallApplyHandlers_ForDifferentStates()
         {
             // Arrange
             var handler = CreateStateHandler(OldStateName);
             var process = CreateProcess();
 
             // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             // Assert
             handler.Verify(
@@ -152,29 +168,29 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void ChangeState_SetsJobExpiration_IfStateIsFinal()
+        public void ApplyState_SetsJobExpiration_IfStateIsFinal()
         {
             _state.Setup(x => x.IsFinal).Returns(true);
             var process = CreateProcess();
 
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             _transaction.Verify(x => x.ExpireJob(JobId, It.IsAny<TimeSpan>()));
         }
 
         [Fact]
-        public void ChangeState_PersistTheJob_IfStateIsNotFinal()
+        public void ApplyState_PersistTheJob_IfStateIsNotFinal()
         {
             _state.Setup(x => x.IsFinal).Returns(false);
             var process = CreateProcess();
 
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             _transaction.Verify(x => x.PersistJob(JobId));
         }
 
         [Fact, Sequence]
-        public void ChangeState_CallsStateUnappliedFilters_BeforeSettingTheState()
+        public void ApplyState_CallsStateUnappliedFilters_BeforeSettingTheState()
         {
             // Arrange
             var filter1 = CreateFilter<IApplyStateFilter>();
@@ -191,13 +207,13 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             // Assert - Sequence
         }
 
         [Fact, Sequence]
-        public void ChangeState_CallsStateAppliedFilters_AfterSettingTheState()
+        public void ApplyState_CallsStateAppliedFilters_AfterSettingTheState()
         {
             // Arrange
             var filter1 = CreateFilter<IApplyStateFilter>();
@@ -211,76 +227,29 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             // Assert - Sequence
         }
-
+        
         [Fact]
-        public void ChangeState_SetsAnotherState_WhenItWasElected()
+        public void ApplyState_AddsJobHistory_ForTraversedStates()
         {
             // Arrange
-            var anotherState = new Mock<IState>();
-            var filter = CreateFilter<IElectStateFilter>();
-
-            filter.Setup(x => x.OnStateElection(It.IsNotNull<ElectStateContext>()))
-                .Callback((ElectStateContext context) => context.CandidateState = anotherState.Object);
+            _applyStateContext.TraversedStatesValue = new[] { _state.Object };
 
             var process = CreateProcess();
 
             // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
-
-            // Assert - Sequence
-            _transaction.Verify(x => x.SetJobState(JobId, anotherState.Object));
-        }
-
-        [Fact]
-        public void ChangeState_AddsJobHistory_WhenAFilterChangesCandidateState()
-        {
-            // Arrange
-            var newState = new Mock<IState>();
-            var filter = CreateFilter<IElectStateFilter>();
-
-            filter.Setup(x => x.OnStateElection(It.IsNotNull<ElectStateContext>()))
-                .Callback((ElectStateContext x) => x.CandidateState = newState.Object);
-
-            var process = CreateProcess();
-
-            // Act
-            process.ChangeState(_context.Object, _state.Object, OldStateName);
+            process.ApplyState(_transaction.Object, _applyStateContext.Object, true);
 
             // Assert
             _transaction.Verify(x => x.AddJobState(JobId, _state.Object));
-            _transaction.Verify(x => x.Commit());
         }
 
-        [Fact]
-        public void ChangeState_AppliesFailedState_WhenThereIsAnException_AndReturnsFalse()
+        private DefaultStateChangeProcess CreateProcess()
         {
-            // Arrange
-            var exception = new NotSupportedException();
-            var filter = CreateFilter<IApplyStateFilter>();
-
-            filter.Setup(x => x.OnStateApplied(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()))
-                .Throws(exception);
-
-            var process = CreateProcess();
-
-            // Act
-            var result = process.ChangeState(_context.Object, _state.Object, OldStateName);
-
-            // Assert
-            _transaction.Verify(x => x.SetJobState(
-                JobId, 
-                It.Is<FailedState>(s => s.Exception == exception)));
-
-            Assert.False(result);
-        }
-
-        private StateChangeProcess CreateProcess()
-        {
-            return new StateChangeProcess(_handlers, _filters);
+            return new DefaultStateChangeProcess(_handlers, _filters);
         }
 
         private Mock<IStateHandler> CreateStateHandler(string stateName)

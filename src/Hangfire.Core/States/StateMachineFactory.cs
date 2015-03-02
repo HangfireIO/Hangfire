@@ -21,24 +21,23 @@ namespace Hangfire.States
 {
     public class StateMachineFactory : IStateMachineFactory
     {
-        private readonly IStateChangeProcess _stateChangeProcess;
+        private readonly StateHandlerCollection _handlers;
 
         public StateMachineFactory(JobStorage storage)
         {
             if (storage == null) throw new ArgumentNullException("storage");
 
-            var handlers = new StateHandlerCollection();
-            handlers.AddRange(GlobalStateHandlers.Handlers);
-            handlers.AddRange(storage.GetStateHandlers());
-            
-            _stateChangeProcess = new StateChangeProcess(handlers);
+            _handlers = new StateHandlerCollection();
+            _handlers.AddRange(GlobalStateHandlers.Handlers);
+            _handlers.AddRange(storage.GetStateHandlers());
         }
 
         public IStateMachine Create(IStorageConnection connection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            
-            return new StateMachine(connection, _stateChangeProcess);
+
+            var process = new DefaultStateChangeProcess(_handlers);
+            return new StateMachine(connection, process);
         }
     }
 }

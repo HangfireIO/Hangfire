@@ -15,34 +15,31 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.Storage;
 
 namespace Hangfire.States
 {
     public class StateContext
     {
-        public StateContext(string jobId, Job job, DateTime createdAt, IStorageConnection connection)
+        public StateContext([NotNull] string jobId, [CanBeNull] Job job, DateTime createdAt)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
             if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
             
             JobId = jobId;
             Job = job;
             CreatedAt = createdAt;
-
-            Connection = connection;
         }
 
         internal StateContext(StateContext context)
-            : this(context.JobId, context.Job, context.CreatedAt, context.Connection)
+            : this(context.JobId, context.Job, context.CreatedAt)
         {
         }
 
+        [NotNull]
         public string JobId { get; private set; }
+        [CanBeNull]
         public Job Job { get; private set; }
         public DateTime CreatedAt { get; private set; }
-
-        public IStorageConnection Connection { get; private set; }
     }
 }

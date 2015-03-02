@@ -19,12 +19,13 @@ namespace Hangfire.Core.Tests.States
         private readonly Job _job;
         private readonly Dictionary<string, string> _parameters;
         private readonly Mock<IState> _state;
-        private readonly Mock<IStateChangeProcess> _stateChangeProcess;
+        private readonly Mock<IStateChangeProcess> _process;
         private readonly Mock<IDisposable> _distributedLock;
+        private readonly Mock<IWriteOnlyTransaction> _transaction; 
 
         public StateMachineFacts()
         {
-            _stateChangeProcess = new Mock<IStateChangeProcess>();
+            _process = new Mock<IStateChangeProcess>();
 
             _job = Job.FromExpression(() => Console.WriteLine());
             _parameters = new Dictionary<string, string>();
@@ -32,6 +33,9 @@ namespace Hangfire.Core.Tests.States
             _state.Setup(x => x.Name).Returns(StateName);
 
             _connection = new Mock<IStorageConnection>();
+            _transaction = new Mock<IWriteOnlyTransaction>();
+
+            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
             _connection.Setup(x => x.CreateExpiredJob(
                 It.IsAny<Job>(),
@@ -50,20 +54,13 @@ namespace Hangfire.Core.Tests.States
             _connection
                 .Setup(x => x.AcquireDistributedLock(String.Format("job:{0}:state-lock", JobId), It.IsAny<TimeSpan>()))
                 .Returns(_distributedLock.Object);
-
-            _stateChangeProcess
-                .Setup(x => x.ChangeState(
-                    It.Is<StateContext>(s => s.JobId == JobId && s.Job == _job && s.Connection == _connection.Object), 
-                    _state.Object, 
-                    OldStateName))
-                .Returns(true);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateMachine(null, _stateChangeProcess.Object));
+                () => new StateMachine(null, _process.Object));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -78,47 +75,57 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void CreateInState_ThrowsAnException_WhenJobIsNull()
+        public void Process_ReturnsTheGiven_StateChangingProcess()
+        {
+            var stateMachine = CreateStateMachine();
+
+            var result = stateMachine.Process;
+
+            Assert.Same(_process.Object, result);
+        }
+
+        [Fact]
+        public void CreateJob_ThrowsAnException_WhenJobIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.CreateInState(null, _parameters, _state.Object));
+                () => stateMachine.CreateJob(null, _parameters, _state.Object));
 
             Assert.Equal("job", exception.ParamName);
         }
 
         [Fact]
-        public void CreateInState_ThrowsAnException_WhenParametersIsNull()
+        public void CreateJob_ThrowsAnException_WhenParametersIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.CreateInState(_job, null, _state.Object));
+                () => stateMachine.CreateJob(_job, null, _state.Object));
 
             Assert.Equal("parameters", exception.ParamName);
         }
 
         [Fact]
-        public void CreateInState_ThrowsAnException_WhenStateIsNull()
+        public void CreateJob_ThrowsAnException_WhenStateIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException> (
-                () => stateMachine.CreateInState(_job, _parameters, null));
+                () => stateMachine.CreateJob(_job, _parameters, null));
 
             Assert.Equal("state", exception.ParamName);
         }
 
         [Fact]
-        public void CreateInState_CreatesExpiredJob()
+        public void CreateJob_CreatesExpiredJob()
         {
             var job = Job.FromExpression(() => Console.WriteLine("SomeString"));
             _parameters.Add("Name", "Value");
 
             var stateMachine = CreateStateMachine();
 
-            stateMachine.CreateInState(job, _parameters, _state.Object);
+            stateMachine.CreateJob(job, _parameters, _state.Object);
 
             _connection.Verify(x => x.CreateExpiredJob(
 				job,
@@ -128,64 +135,65 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void CreateInState_ChangesTheStateOfACreatedJob()
+        public void CreateJob_ChangesTheStateOfACreatedJob()
         {
             var stateMachine = CreateStateMachine();
 
-            stateMachine.CreateInState(_job, _parameters, _state.Object);
+            stateMachine.CreateJob(_job, _parameters, _state.Object);
 
-            _stateChangeProcess.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job == _job),
-                _state.Object,
-                null));
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object,
+                It.Is<ApplyStateContext>(sc => sc.JobId == JobId && sc.Job == _job
+                    && sc.NewState == _state.Object && sc.OldStateName == null),
+                true));
         }
 
         [Fact]
-        public void CreateInState_ReturnsNewJobId()
+        public void CreateJob_ReturnsNewJobId()
         {
             var stateMachine = CreateStateMachine();
-            Assert.Equal(JobId, stateMachine.CreateInState(_job, _parameters, _state.Object));
+            Assert.Equal(JobId, stateMachine.CreateJob(_job, _parameters, _state.Object));
         }
 
         [Fact]
-        public void TryToChangeState_ThrowsAnException_WhenJobIdIsNull()
+        public void ChangeState_ThrowsAnException_WhenJobIdIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.TryToChangeState(null, _state.Object, FromOldState));
+                () => stateMachine.ChangeState(null, _state.Object, FromOldState));
 
             Assert.Equal("jobId", exception.ParamName);
         }
 
         [Fact]
-        public void TryToChangeState_ThrowsAnException_WhenToStateIsNull()
+        public void ChangeState_ThrowsAnException_WhenToStateIsNull()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.TryToChangeState(JobId, null, FromOldState));
+                () => stateMachine.ChangeState(JobId, null, FromOldState));
 
             Assert.Equal("toState", exception.ParamName);
         }
 
         [Fact]
-        public void TryToChangeState_ThrowsAnException_WhenFromStatesIsEmpty()
+        public void ChangeState_ThrowsAnException_WhenFromStatesIsEmpty()
         {
             var stateMachine = CreateStateMachine();
 
             var exception = Assert.Throws<ArgumentException>(
-                () => stateMachine.TryToChangeState(JobId, _state.Object, new string[0]));
+                () => stateMachine.ChangeState(JobId, _state.Object, new string[0]));
 
             Assert.Equal("fromStates", exception.ParamName);
         }
 
         [Fact]
-        public void TryToChangeState_WorksWithinAJobLock()
+        public void ChangeState_WorksWithinAJobLock()
         {
             var stateMachine = CreateStateMachine();
 
-            stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             _distributedLock.Verify(x => x.Dispose());
         }
@@ -197,35 +205,36 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
-            _stateChangeProcess.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job.Type.Name.Equals("Console")),
-                _state.Object,
-                OldStateName));
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object,
+                It.Is<ApplyStateContext>(sc => sc.JobId == JobId && sc.Job.Type.Name.Equals("Console")
+                    && sc.NewState == _state.Object && sc.OldStateName == OldStateName),
+                true));
 
             Assert.True(result);
         }
 
         [Fact]
-        public void TryToChangeState_ChangesTheStateOfTheJob_WhenFromStatesIsNull()
+        public void ChangeState_ChangesTheStateOfTheJob_WhenFromStatesIsNull()
         {
             // Arrange
             var stateMachine = CreateStateMachine();
 
             // Act
-            stateMachine.TryToChangeState(JobId, _state.Object, null);
+            stateMachine.ChangeState(JobId, _state.Object, null);
 
             // Assert
-            _stateChangeProcess.Verify(x => x.ChangeState(
-                It.IsNotNull<StateContext>(),
-                _state.Object,
-                OldStateName));
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object,
+                It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName),
+                true));
         }
 
         [Fact]
-        public void TryToChangeState_ReturnsFalse_WhenJobIsNotFound()
+        public void ChangeState_ReturnsFalse_WhenJobIsNotFound()
         {
             // Arrange
             _connection.Setup(x => x.GetJobData(It.IsAny<string>()))
@@ -234,19 +243,19 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             Assert.False(result);
             _connection.Verify(x => x.GetJobData(JobId));
 
-            _stateChangeProcess.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
+            _process.Verify(
+                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), It.IsAny<bool>()),
                 Times.Never);
         }
 
         [Fact]
-        public void TryToChangeState_ThrowsTimeoutException_WhenStateIsNull_ForALongTime()
+        public void ChangeState_ThrowsTimeoutException_WhenStateIsNull_ForALongTime()
         {
             // Arrange
             _connection.Setup(x => x.GetJobData(It.IsAny<string>())).Returns(new JobData
@@ -259,11 +268,11 @@ namespace Hangfire.Core.Tests.States
 
             // Act & Assert
             Assert.Throws<TimeoutException>(() =>
-                stateMachine.TryToChangeState(JobId, _state.Object, FromOldState));
+                stateMachine.ChangeState(JobId, _state.Object, FromOldState));
         }
 
         [Fact]
-        public void TryToChangeState_WaitsFor_NonNullStateValue()
+        public void ChangeState_WaitsFor_NonNullStateValue()
         {
             // Arrange
             var results = new Queue<JobData>();
@@ -277,7 +286,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
             Assert.Equal(0, results.Count);
@@ -285,45 +294,43 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void TryToChangeState_ReturnsFalse_WhenFromStatesArgumentDoesNotContainCurrentState()
+        public void ChangeState_ReturnsFalse_WhenFromStatesArgumentDoesNotContainCurrentState()
         {
             // Arrange
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(
+            var result = stateMachine.ChangeState(
                 JobId, _state.Object, new [] { "AnotherState" });
 
             // Assert
             Assert.False(result);
 
-            _stateChangeProcess.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()),
+            _process.Verify(
+                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), It.IsAny<bool>()),
                 Times.Never);
         }
 
         [Fact]
-        public void TryToChangeState_ReturnsFalse_WhenStateChangeReturnsFalse()
+        public void ChangeState_ReturnsFalse_WhenApplyStateThrowsException()
         {
             // Arrange
-            _stateChangeProcess
-                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
-                .Returns(false);
+            _process.Setup(x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), true))
+                .Throws(new Exception());
 
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
-            _stateChangeProcess.Verify(
-                x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()));
+            _process.Verify(x => x.ApplyState(_transaction.Object, It.IsNotNull<ApplyStateContext>(), false));
 
             Assert.False(result);
         }
 
         [Fact]
-        public void TryToChangeState_MoveJobToTheFailedState_IfMethodDataCouldNotBeResolved()
+        public void ChangeState_MoveJobToTheFailedState_IfMethodDataCouldNotBeResolved()
         {
             // Arrange
             _connection.Setup(x => x.GetJobData(JobId))
@@ -334,26 +341,22 @@ namespace Hangfire.Core.Tests.States
                     LoadException = new JobLoadException("asd", new InvalidOperationException())
                 });
 
-            _stateChangeProcess
-                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
-                .Returns(true);
-
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
-            _stateChangeProcess.Verify(x => x.ChangeState(
-                It.Is<StateContext>(sc => sc.JobId == JobId && sc.Job == null),
-                It.Is<FailedState>(s => s.Exception != null),
-                OldStateName));
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object,
+                It.Is<ApplyStateContext>(ctx => ctx.JobId == JobId && ctx.Job == null && ctx.NewState is FailedState),
+                true));
 
             Assert.False(result);
         }
 
         [Fact]
-        public void TryToChangeState_MoveJobToTheGivenState_IfStateIgnoresThisException_AndMethodDataCouldNotBeResolved()
+        public void ChangeState_MoveJobToTheGivenState_IfStateIgnoresThisException_AndMethodDataCouldNotBeResolved()
         {
             // Arrange
             _connection.Setup(x => x.GetJobData(JobId))
@@ -364,31 +367,93 @@ namespace Hangfire.Core.Tests.States
                     LoadException = new JobLoadException("asd", new Exception())
                 });
 
-            _stateChangeProcess
-                .Setup(x => x.ChangeState(It.IsAny<StateContext>(), It.IsAny<IState>(), It.IsAny<string>()))
-                .Returns(true);
-
             _state.Setup(x => x.IgnoreJobLoadException).Returns(true);
 
             var stateMachine = CreateStateMachine();
 
             // Act
-            var result = stateMachine.TryToChangeState(JobId, _state.Object, FromOldState);
+            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState);
 
             // Assert
-            _stateChangeProcess.Verify(x => x.ChangeState(
-                It.IsAny<StateContext>(),
-                _state.Object,
-                OldStateName));
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object, 
+                It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object),
+                true));
 
             Assert.True(result);
+        }
+
+        [Fact]
+        public void ChangeState_CommitsTheNewState_AndReturnsTrue()
+        {
+            // Arrange
+            var machine = CreateStateMachine();
+
+            // Act
+            var result = machine.ChangeState(JobId, _state.Object, new[] { OldStateName });
+
+            // Assert
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object,
+                It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName
+                    && ctx.Job == _job && ctx.JobId == JobId),
+                true));
+
+            _transaction.Verify(x => x.Commit());
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ChangeState_SetsAnotherState_WhenItWasElected()
+        {
+            // Arrange
+            var anotherState = new Mock<IState>();
+
+            _process.Setup(x => x.ElectState(_connection.Object, It.IsAny<ElectStateContext>()))
+                .Callback((IStorageConnection connection, ElectStateContext context) => context.CandidateState = anotherState.Object);
+
+            var machine = CreateStateMachine();
+
+            // Act
+            machine.ChangeState(JobId, _state.Object, new[] { OldStateName });
+
+            // Assert - Sequence
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object, 
+                It.Is<ApplyStateContext>(ctx => ctx.NewState == anotherState.Object),
+                true));
+        }
+
+        [Fact]
+        public void ChangeState_AppliesFailedState_WhenThereIsAnException_AndReturnsFalse()
+        {
+            // Arrange
+            var exception = new NotSupportedException();
+
+            _process.Setup(
+                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), true))
+                .Throws(exception);
+
+            var machine = CreateStateMachine();
+
+            // Act
+            var result = machine.ChangeState(JobId, _state.Object, new[] { OldStateName });
+
+            // Assert
+            _process.Verify(x => x.ApplyState(
+                _transaction.Object,
+                It.Is<ApplyStateContext>(ctx => ctx.NewState is FailedState && ((FailedState)ctx.NewState).Exception == exception),
+                false));
+
+            Assert.False(result);
         }
 
         private StateMachine CreateStateMachine()
         {
             return new StateMachine(
                 _connection.Object,
-                _stateChangeProcess.Object);
+                _process.Object);
         }
     }
 }

@@ -110,14 +110,25 @@ namespace Hangfire.Core.Tests
 
             client.Create(_job, _state.Object);
 
-            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>()));
+            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>(), It.IsNotNull<IStateMachine>()));
+        }
+
+        [Fact]
+        public void CreateJob_ReturnsJobIdentifier()
+        {
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>())).Returns("some-job");
+            var client = CreateClient();
+
+            var id = client.Create(_job, _state.Object);
+
+            Assert.Equal("some-job", id);
         }
 
         [Fact]
         public void CreateJob_WrapsProcessException_IntoItsOwnException()
         {
             var client = CreateClient();
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>()))
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>()))
                 .Throws<InvalidOperationException>();
 
             var exception = Assert.Throws<CreateJobFailedException>(
@@ -156,7 +167,7 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, null);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 "job-id",
                 _state.Object,
                 null));
@@ -169,7 +180,7 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, "State");
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 "job-id",
                 _state.Object,
                 new[] { "State" }));
@@ -178,7 +189,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void ChangeState_ReturnsTheResult_OfStateMachineInvocation()
         {
-            _stateMachine.Setup(x => x.TryToChangeState("job-id", _state.Object, null))
+            _stateMachine.Setup(x => x.ChangeState("job-id", _state.Object, null))
                 .Returns(true);
             var client = CreateClient();
 

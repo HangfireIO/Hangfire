@@ -144,7 +144,7 @@ namespace Hangfire
                 _serverId,
                 _options.Queues,
                 _storage,
-                new JobPerformanceProcess(),
+                new DefaultJobPerformanceProcess(),
                 JobActivator.Current,
                 stateMachineFactory);
 

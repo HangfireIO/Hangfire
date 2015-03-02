@@ -114,7 +114,7 @@ namespace Hangfire.SqlServer
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new ExpirationManager(this);
+            yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
         }
 
         public override void WriteOptionsToLog(ILog logger)

@@ -27,16 +27,8 @@ html, body {
 /* Custom page CSS
 -------------------------------------------------- */
 
-#wrap > .container {
-  padding: 0 0px 20px;
-}
 .container .credit {
   margin: 20px 0;
-}
-
-#footer > .container {
-  padding-left: 15px;
-  padding-right: 15px;
 }
 
 .page-header {
@@ -430,4 +422,8 @@ a:hover .label-hover {
 
 a.job-method {
     color: inherit;    
+}
+
+.list-group .glyphicon {
+    top: 2px;
 }
