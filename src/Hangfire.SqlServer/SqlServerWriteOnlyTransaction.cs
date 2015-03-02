@@ -25,7 +25,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerWriteOnlyTransaction : IWriteOnlyTransaction
+    internal class SqlServerWriteOnlyTransaction : JobStorageTransaction
     {
         private readonly Queue<Action<SqlConnection>> _commandQueue
             = new Queue<Action<SqlConnection>>();
@@ -44,11 +44,7 @@ namespace Hangfire.SqlServer
             _queueProviders = queueProviders;
         }
 
-        public void Dispose()
-        {
-        }
-
-        public void Commit()
+        public override void Commit()
         {
             using (var transaction = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -65,21 +61,21 @@ namespace Hangfire.SqlServer
             }
         }
 
-        public void ExpireJob(string jobId, TimeSpan expireIn)
+        public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
             QueueCommand(x => x.Execute(
                 @"update HangFire.Job set ExpireAt = @expireAt where Id = @id",
                 new { expireAt = DateTime.UtcNow.Add(expireIn), id = jobId }));
         }
 
-        public void PersistJob(string jobId)
+        public override void PersistJob(string jobId)
         {
             QueueCommand(x => x.Execute(
                 @"update HangFire.Job set ExpireAt = NULL where Id = @id",
                 new { id = jobId }));
         }
 
-        public void SetJobState(string jobId, IState state)
+        public override void SetJobState(string jobId, IState state)
         {
             const string addAndSetStateSql = @"
 insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)
@@ -99,7 +95,7 @@ update HangFire.Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id =
                 }));
         }
 
-        public void AddJobState(string jobId, IState state)
+        public override void AddJobState(string jobId, IState state)
         {
             const string addStateSql = @"
 insert into HangFire.State (JobId, Name, Reason, CreatedAt, Data)
@@ -117,7 +113,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
                 }));
         }
 
-        public void AddToQueue(string queue, string jobId)
+        public override void AddToQueue(string queue, string jobId)
         {
             var provider = _queueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue(_connection);
@@ -125,40 +121,40 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             QueueCommand(_ => persistentQueue.Enqueue(queue, jobId));
         }
 
-        public void IncrementCounter(string key)
+        public override void IncrementCounter(string key)
         {
             QueueCommand(x => x.Execute(
                 @"insert into HangFire.Counter ([Key], [Value]) values (@key, @value)",
                 new { key, value = +1 }));
         }
 
-        public void IncrementCounter(string key, TimeSpan expireIn)
+        public override void IncrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(x => x.Execute(
                 @"insert into HangFire.Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new { key, value = +1, expireAt = DateTime.UtcNow.Add(expireIn) }));
         }
 
-        public void DecrementCounter(string key)
+        public override void DecrementCounter(string key)
         {
             QueueCommand(x => x.Execute(
                 @"insert into HangFire.Counter ([Key], [Value]) values (@key, @value)",
                 new { key, value = -1 }));
         }
 
-        public void DecrementCounter(string key, TimeSpan expireIn)
+        public override void DecrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(x => x.Execute(
                 @"insert into HangFire.Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)",
                 new { key, value = -1, expireAt = DateTime.UtcNow.Add(expireIn) }));
         }
 
-        public void AddToSet(string key, string value)
+        public override void AddToSet(string key, string value)
         {
             AddToSet(key, value, 0.0);
         }
 
-        public void AddToSet(string key, string value, double score)
+        public override void AddToSet(string key, string value, double score)
         {
             const string addSql = @"
 merge HangFire.[Set] as Target
@@ -172,28 +168,28 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
                 new { key, value, score }));
         }
 
-        public void RemoveFromSet(string key, string value)
+        public override void RemoveFromSet(string key, string value)
         {
             QueueCommand(x => x.Execute(
                 @"delete from HangFire.[Set] where [Key] = @key and Value = @value",
                 new { key, value }));
         }
 
-        public void InsertToList(string key, string value)
+        public override void InsertToList(string key, string value)
         {
             QueueCommand(x => x.Execute(
                 @"insert into HangFire.List ([Key], Value) values (@key, @value)",
                 new { key, value }));
         }
 
-        public void RemoveFromList(string key, string value)
+        public override void RemoveFromList(string key, string value)
         {
             QueueCommand(x => x.Execute(
                 @"delete from HangFire.List where [Key] = @key and Value = @value",
                 new { key, value }));
         }
 
-        public void TrimList(string key, int keepStartingFrom, int keepEndingAt)
+        public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
             const string trimSql = @"
 with cte as (
@@ -205,7 +201,7 @@ delete from cte where row_num not between @start and @end and [Key] = @key";
                 new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
         }
 
-        public void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
+        public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
@@ -226,7 +222,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             }
         }
 
-        public void RemoveHash(string key)
+        public override void RemoveHash(string key)
         {
             if (key == null) throw new ArgumentNullException("key");
 

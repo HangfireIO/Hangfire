@@ -21,37 +21,39 @@ using Hangfire.Common;
 
 namespace Hangfire.Client
 {
-    internal class JobCreationProcess : IJobCreationProcess
+    public class DefaultJobCreationProcess : IJobCreationProcess
     {
-        public static JobCreationProcess Instance { get; private set; }
+        public static DefaultJobCreationProcess Instance { get; private set; }
 
-        static JobCreationProcess()
+        static DefaultJobCreationProcess()
         {
-            Instance = new JobCreationProcess();
+            Instance = new DefaultJobCreationProcess();
         }
 
         private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
             = JobFilterProviders.Providers.GetFilters;
 
-        public JobCreationProcess()
+        public DefaultJobCreationProcess()
         {
         }
 
-        internal JobCreationProcess(IEnumerable<object> filters)
+        internal DefaultJobCreationProcess(IEnumerable<object> filters)
             : this()
         {
             _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
         }
 
-        public void Run(CreateContext context)
+        public string Run(CreateContext context, IJobCreator creator)
         {
             if (context == null) throw new ArgumentNullException("context");
+            if (creator == null) throw new ArgumentNullException("creator");
 
             var filterInfo = GetFilters(context.Job);
 
             try
             {
-                CreateWithFilters(context, filterInfo.ClientFilters);
+                var createdContext = CreateWithFilters(context, creator, filterInfo.ClientFilters);
+                return createdContext.JobId;
             }
             catch (Exception ex)
             {
@@ -62,6 +64,8 @@ namespace Hangfire.Client
                 {
                     throw;
                 }
+
+                return null;
             }
         }
 
@@ -70,21 +74,22 @@ namespace Hangfire.Client
             return new JobFilterInfo(_getFiltersThunk(job));
         }
 
-        private static void CreateWithFilters(
+        private static CreatedContext CreateWithFilters(
             CreateContext context,
+            IJobCreator creator,
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                context.CreateJob();
-                return new CreatedContext(context, false, null);
+                var jobId = creator.CreateJob(context.Job, preContext.Parameters, context.InitialState);
+                return new CreatedContext(context, jobId, false, null);
             };
 
             var thunk = filters.Reverse().Aggregate(continuation,
                 (next, filter) => () => InvokeClientFilter(filter, preContext, next));
 
-            thunk();
+            return thunk();
         }
 
         private static CreatedContext InvokeClientFilter(
@@ -95,8 +100,7 @@ namespace Hangfire.Client
             filter.OnCreating(preContext);
             if (preContext.Canceled)
             {
-                return new CreatedContext(
-                    preContext, true, null);
+                return new CreatedContext(preContext, null, true, null);
             }
 
             var wasError = false;
@@ -108,8 +112,7 @@ namespace Hangfire.Client
             catch (Exception ex)
             {
                 wasError = true;
-                postContext = new CreatedContext(
-                    preContext, false, ex);
+                postContext = new CreatedContext(preContext, null, false, ex);
 
                 filter.OnCreated(postContext);
 

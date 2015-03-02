@@ -16,8 +16,14 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
+    #line 2 "..\..\Dashboard\Pages\_Paginator.cshtml"
+    using Hangfire.Dashboard;
+    
+    #line default
+    #line hidden
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class Paginator : RazorPage
+    public partial class Paginator : RazorPage
     {
 #line hidden
 
@@ -28,11 +34,12 @@ namespace Hangfire.Dashboard.Pages
 WriteLiteral("\r\n");
 
 
+
 WriteLiteral("<div class=\"btn-toolbar\">\r\n");
 
 
             
-            #line 4 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 5 "..\..\Dashboard\Pages\_Paginator.cshtml"
      if (_pager.TotalPageCount > 1)
     {
 
@@ -43,7 +50,7 @@ WriteLiteral("        <div class=\"btn-group paginator\">\r\n");
 
 
             
-            #line 7 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 8 "..\..\Dashboard\Pages\_Paginator.cshtml"
              foreach (var page in _pager.PagerItems)
             {
                 switch (page.Type)
@@ -57,7 +64,7 @@ WriteLiteral("                        <a href=\"");
 
 
             
-            #line 12 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 13 "..\..\Dashboard\Pages\_Paginator.cshtml"
                             Write(_pager.PageUrl(page.PageIndex));
 
             
@@ -67,7 +74,7 @@ WriteLiteral("\" class=\"btn btn-default ");
 
 
             
-            #line 12 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 13 "..\..\Dashboard\Pages\_Paginator.cshtml"
                                                                                      Write(_pager.CurrentPage == page.PageIndex ? "active" : null);
 
             
@@ -77,7 +84,7 @@ WriteLiteral("\">\r\n                            ");
 
 
             
-            #line 13 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 14 "..\..\Dashboard\Pages\_Paginator.cshtml"
                        Write(page.PageIndex);
 
             
@@ -87,7 +94,7 @@ WriteLiteral("  \r\n                        </a>\r\n");
 
 
             
-            #line 15 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 16 "..\..\Dashboard\Pages\_Paginator.cshtml"
                         break;
                     case Pager.ItemType.NextPage:
 
@@ -98,7 +105,7 @@ WriteLiteral("                        <a href=\"");
 
 
             
-            #line 17 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 18 "..\..\Dashboard\Pages\_Paginator.cshtml"
                             Write(_pager.PageUrl(page.PageIndex));
 
             
@@ -108,7 +115,7 @@ WriteLiteral("\" class=\"btn btn-default ");
 
 
             
-            #line 17 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 18 "..\..\Dashboard\Pages\_Paginator.cshtml"
                                                                                      Write(page.Disabled ? "disabled" : null);
 
             
@@ -118,7 +125,7 @@ WriteLiteral("\">\r\n                            Next\r\n                       
 
 
             
-            #line 20 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 21 "..\..\Dashboard\Pages\_Paginator.cshtml"
                         break;
                     case Pager.ItemType.PrevPage:
 
@@ -129,7 +136,7 @@ WriteLiteral("                        <a href=\"");
 
 
             
-            #line 22 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 23 "..\..\Dashboard\Pages\_Paginator.cshtml"
                             Write(_pager.PageUrl(page.PageIndex));
 
             
@@ -139,7 +146,7 @@ WriteLiteral("\" class=\"btn btn-default ");
 
 
             
-            #line 22 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 23 "..\..\Dashboard\Pages\_Paginator.cshtml"
                                                                                      Write(page.Disabled ? "disabled" : null);
 
             
@@ -149,7 +156,7 @@ WriteLiteral("\">\r\n                            Prev\r\n                       
 
 
             
-            #line 25 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 26 "..\..\Dashboard\Pages\_Paginator.cshtml"
                         break;
                     case Pager.ItemType.MorePage:
 
@@ -161,7 +168,7 @@ WriteLiteral("                        <a href=\"#\" class=\"btn btn-default disa
 
 
             
-            #line 30 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 31 "..\..\Dashboard\Pages\_Paginator.cshtml"
                         break;
                 }
             }
@@ -177,18 +184,18 @@ WriteLiteral("        <div class=\"btn-toolbar-spacer\"></div>\r\n");
 
 
             
-            #line 35 "..\..\Dashboard\Pages\_Paginator.cshtml"
+            #line 36 "..\..\Dashboard\Pages\_Paginator.cshtml"
     }
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n    <div class=\"btn-toolbar-label\">Total jobs: ");
+WriteLiteral("\r\n    <div class=\"btn-toolbar-label\">Total items: ");
 
 
             
-            #line 37 "..\..\Dashboard\Pages\_Paginator.cshtml"
-                                          Write(_pager.TotalRecordCount);
+            #line 38 "..\..\Dashboard\Pages\_Paginator.cshtml"
+                                           Write(_pager.TotalRecordCount);
 
             
             #line default

@@ -27,7 +27,7 @@ using System.ComponentModel;
 
 namespace Hangfire.Dashboard
 {
-    internal static class HtmlHelper
+    public static class HtmlHelper
     {
         public static string DisplayJob(Job job)
         {

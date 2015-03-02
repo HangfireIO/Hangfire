@@ -72,7 +72,7 @@ namespace Hangfire.Core.Tests.Server
 
 			scheduler.Execute(_cts.Token);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 JobId,
                 It.IsAny<EnqueuedState>(),
                 new[] { ScheduledState.StateName }));
@@ -88,7 +88,7 @@ namespace Hangfire.Core.Tests.Server
 			scheduler.Execute(_cts.Token);
 
             _stateMachine.Verify(
-                x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()),
+                x => x.ChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()),
                 Times.Never);
         }
 

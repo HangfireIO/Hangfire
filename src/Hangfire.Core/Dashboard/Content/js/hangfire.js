@@ -343,11 +343,9 @@
                     e.stopPropagation();
                 });
 
-                $(this).on('click', 'a', function(e) {
-                    e.stopPropagation();
-                });
+                $(this).on('click', '.js-jobs-list-row', function (e) {
+                    if ($(e.target).is('a')) return;
 
-                $(this).on('click', '.js-jobs-list-row', function () {
                     toggleRowSelection(this);
                     updateListState();
                 });

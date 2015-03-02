@@ -40,7 +40,9 @@ namespace Hangfire.States
             _stateChangeProcess = stateChangeProcess;
         }
 
-        public string CreateInState(
+        public IStateChangeProcess Process { get { return _stateChangeProcess; } }
+
+        public string CreateJob(
             Job job,
             IDictionary<string, string> parameters,
             IState state)
@@ -56,13 +58,13 @@ namespace Hangfire.States
                 createdAt,
                 TimeSpan.FromHours(1));
 
-            var context = new StateContext(jobId, job, createdAt, _connection);
-            _stateChangeProcess.ChangeState(context, state, null);
+            var context = new StateContext(jobId, job, createdAt);
+            ChangeState(context, state, null);
 
             return jobId;
         }
 
-        public bool TryToChangeState(
+        public bool ChangeState(
             string jobId, IState toState, string[] fromStates)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
@@ -78,9 +80,7 @@ namespace Hangfire.States
             // execution of this method. To guarantee this behavior, we are
             // using distributed application locks and rely on fact, that
             // any state transitions will be made only within a such lock.
-            using (_connection.AcquireDistributedLock(
-                String.Format("job:{0}:state-lock", jobId),
-                JobLockTimeout))
+            using (_connection.AcquireDistributedJobLock(jobId, JobLockTimeout))
             {
                 var jobData = GetJobData(jobId, JobFetchTimeout);
 
@@ -122,11 +122,57 @@ namespace Hangfire.States
                     }
                 }
 
-                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt, _connection);
-                var stateChanged = _stateChangeProcess.ChangeState(context, toState, jobData.State);
+                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt);
+                var stateChanged = ChangeState(context, toState, jobData.State);
 
                 return loadSucceeded && stateChanged;
             }
+        }
+
+        private bool ChangeState(StateContext context, IState toState, string oldStateName)
+        {
+            try
+            {
+                var electStateContext = new ElectStateContext(context, _connection, this, toState, oldStateName);
+                _stateChangeProcess.ElectState(_connection, electStateContext);
+
+                var applyStateContext = new ApplyStateContext(
+                    context,
+                    electStateContext.CandidateState,
+                    oldStateName,
+                    electStateContext.TraversedStates);
+
+                ApplyState(applyStateContext, true);
+
+                // State transition has been succeeded.
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var failedState = new FailedState(ex)
+                {
+                    Reason = "An exception occurred during the transition of job's state"
+                };
+
+                var applyStateContext = new ApplyStateContext(context, failedState, oldStateName, Enumerable.Empty<IState>());
+
+                // We should not use any state changed filters, because
+                // some of the could cause an exception.
+                ApplyState(applyStateContext, false);
+
+                // State transition has been failed due to exception.
+                return false;
+            }
+        }
+
+        private void ApplyState(ApplyStateContext context, bool useFilters)
+        {
+            using (var transaction = _connection.CreateWriteTransaction())
+            {
+                _stateChangeProcess.ApplyState(transaction, context, useFilters);
+
+                transaction.Commit();
+			}
         }
 
         private JobData GetJobData(string jobId, TimeSpan timeout)

@@ -52,7 +52,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.Create(_connection.Object))
                 .Returns(_stateMachine.Object);
 
-            _stateMachine.Setup(x => x.TryToChangeState(
+            _stateMachine.Setup(x => x.ChangeState(
                 It.IsAny<string>(),
                 It.IsAny<IState>(),
                 It.IsAny<string[]>())).Returns(true);
@@ -98,7 +98,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_RequeuesAJob_WhenThereWasAnException()
         {
             _stateMachine
-                .Setup(x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()))
+                .Setup(x => x.ChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()))
                 .Throws<InvalidOperationException>();
 
             var worker = CreateWorker();
@@ -115,7 +115,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _stateMachine
-                .Setup(x => x.TryToChangeState(
+                .Setup(x => x.ChangeState(
                     JobId, It.IsAny<ProcessingState>(), It.IsAny<string[]>()))
                 .InSequence()
                 .Returns(true);
@@ -124,7 +124,7 @@ namespace Hangfire.Core.Tests.Server
                 .InSequence();
 
             _stateMachine
-                .Setup(x => x.TryToChangeState(
+                .Setup(x => x.ChangeState(
                     JobId, It.IsAny<SucceededState>(), It.IsAny<string[]>()))
                 .InSequence()
                 .Returns(true);
@@ -144,7 +144,7 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_token);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 It.IsAny<string>(),
                 It.Is<ProcessingState>(state => state.ServerId == _context.Object.ServerId),
                 It.IsAny<string[]>()));
@@ -157,7 +157,7 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_token);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 It.IsAny<string>(),
                 It.IsAny<ProcessingState>(),
                 It.Is<string[]>(
@@ -170,7 +170,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _stateMachine
-                .Setup(x => x.TryToChangeState(
+                .Setup(x => x.ChangeState(
                     It.IsAny<string>(),
                     It.IsAny<ProcessingState>(),
                     It.IsAny<string[]>()))
@@ -213,7 +213,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _stateMachine.Verify(
-                x => x.TryToChangeState(It.IsAny<string>(), It.IsAny<FailedState>(), It.IsAny<string[]>()),
+                x => x.ChangeState(It.IsAny<string>(), It.IsAny<FailedState>(), It.IsAny<string[]>()),
                 Times.Never);
             _fetchedJob.Verify(x => x.Requeue());
         }
@@ -241,7 +241,7 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_token);
 
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 It.IsAny<string>(),
                 It.IsAny<SucceededState>(),
                 It.Is<string[]>(states => states.Length == 1 && states[0] == ProcessingState.StateName)));
@@ -262,7 +262,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_token);
 
             // Assert
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 JobId,
                 It.Is<FailedState>(state => state.Exception == exception && state.Reason.Contains("Internal")),
                 It.IsAny<string[]>()));
@@ -283,7 +283,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_token);
 
             // Assert
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 JobId,
                 It.Is<FailedState>(state => state.Exception == exception && state.Reason == "hello"),
                 It.IsAny<string[]>()));
@@ -302,7 +302,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_token);
 
             // Assert
-            _stateMachine.Verify(x => x.TryToChangeState(
+            _stateMachine.Verify(x => x.ChangeState(
                 JobId,
                 It.IsAny<FailedState>(),
                 It.IsAny<string[]>()));

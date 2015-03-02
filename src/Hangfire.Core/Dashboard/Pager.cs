@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace Hangfire.Dashboard
 {
-    internal class Pager
+    public class Pager
     {
         private const int PageItemsCount = 7;
         private const int DefaultRecordsPerPage = 10;
