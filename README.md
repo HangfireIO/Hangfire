@@ -1,11 +1,7 @@
-Hangfire 
+Hangfire [![Latest version](https://img.shields.io/nuget/v/Nuget.Core.svg)](https://www.nuget.org/packages?q=hangfire) [![Build status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) [![Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg?branch=dev)](https://travis-ci.org/HangfireIO/Hangfire) [![Coverage Status](https://coveralls.io/repos/HangfireIO/Hangfire/badge.svg?branch=dev)](https://coveralls.io/r/HangfireIO/Hangfire?branch=dev)
 =========
 
 #### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) |[Twitter](https://twitter.com/hangfireio) |  [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
-
-| Windows / .NET | Linux / Mono
-| --- | ---
-| <a href="https://ci.appveyor.com/project/odinserj/hangfire-525"><img title="Build status" width="113" src="https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9/branch/master?retina=true" /></a> | <a href="https://travis-ci.org/HangfireIO/Hangfire"><img src="https://travis-ci.org/HangfireIO/Hangfire.svg?branch=master" alt="Travis CI Build"></a>
 
 Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. CPU and I/O intensive, long-running and short-running jobs are supported. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
 
