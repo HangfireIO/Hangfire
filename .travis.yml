@@ -10,6 +10,8 @@ install:
  - sudo apt-get update -qq
  - sudo apt-get install -qq mono-devel mono-gmcs cli-common-dev
  - mozroots --import --sync
+ - travis_retry mono --runtime=v4.0 .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
+ - travis_retry mono --runtime=v4.0 .nuget/NuGet.exe restore Hangfire.Mono.sln
 cache: apt
 
 services:
