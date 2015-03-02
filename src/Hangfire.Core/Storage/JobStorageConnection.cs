@@ -66,6 +66,16 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
+        public virtual void RemoveSet([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual TimeSpan GetSetTtl([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
         // Hashes
         public abstract void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs);
         public abstract Dictionary<string, string> GetAllEntriesFromHash(string key);
@@ -76,6 +86,11 @@ namespace Hangfire.Storage
         }
 
         public virtual long GetHashCount([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual TimeSpan GetHashTtl([NotNull] string key)
         {
             throw new NotSupportedException();
         }
@@ -92,6 +107,17 @@ namespace Hangfire.Storage
         }
 
         public virtual List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual TimeSpan GetListTtl([NotNull] string key)
+        {
+            throw new NotSupportedException();
+        }
+
+        // Counters
+        public virtual long GetCounter([NotNull] string key)
         {
             throw new NotSupportedException();
         }
