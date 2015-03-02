@@ -23,7 +23,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    public partial class Paginator : RazorPage
+    public partial class _Paginator : RazorPage
     {
 #line hidden
 
