@@ -54,7 +54,7 @@ Task Pack -Depends Collect -Description "Create NuGet packages and archive files
 function Run-OpenCover($assembly) {
 	Exec {
 		if ($env:APPVEYOR) {
-			$xunit_path = "xunit.console.clr4"
+			$xunit_path = Resolve-Path "xunit.console.clr4.exe"
 			$extra = "/appveyor"
 		}
 		else {
