@@ -61,16 +61,6 @@ namespace Hangfire.Storage
             throw new NotSupportedException();
         }
 
-        public virtual void AddRangeToSet([NotNull] string key, [NotNull] IList<string> items)
-        {
-            throw new NotSupportedException();
-        }
-
-        public virtual void RemoveSet([NotNull] string key)
-        {
-            throw new NotSupportedException();
-        }
-
         public virtual TimeSpan GetSetTtl([NotNull] string key)
         {
             throw new NotSupportedException();
