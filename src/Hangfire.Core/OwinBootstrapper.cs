@@ -18,6 +18,7 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Server;
+using Hangfire.UnitOfWork;
 using Owin;
 
 namespace Hangfire
@@ -44,6 +45,11 @@ namespace Hangfire
             if (configuration.Activator != null)
             {
                 JobActivator.Current = configuration.Activator;
+            }
+
+            if (configuration.UnitOfWorkManager != null)
+            {
+                UnitOfWorkManager.Current = configuration.UnitOfWorkManager;
             }
 
             if (configuration.Storage == null)

@@ -1,6 +1,7 @@
 ﻿using System;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.UnitOfWork;
 using Moq;
 using Xunit;
 
@@ -13,6 +14,7 @@ namespace Hangfire.Core.Tests.Server
 
         private readonly Mock<IJobPerformanceProcess> _performanceProcess;
         private readonly Mock<JobActivator> _activator;
+        private readonly Mock<IUnitOfWorkManager> _unitOfWorkManager;
         private readonly Mock<IStateMachineFactory> _stateMachineFactory;
         private readonly Mock<JobStorage> _storage;
 
@@ -20,6 +22,7 @@ namespace Hangfire.Core.Tests.Server
         {
             _performanceProcess = new Mock<IJobPerformanceProcess>();
             _activator = new Mock<JobActivator>();
+            _unitOfWorkManager = new Mock<IUnitOfWorkManager>();
             _stateMachineFactory = new Mock<IStateMachineFactory>();
             _storage = new Mock<JobStorage>();
         }
@@ -29,7 +32,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SharedWorkerContext(
-                    null, Queues, _storage.Object, _performanceProcess.Object, _activator.Object, _stateMachineFactory.Object));
+                    null, Queues, _storage.Object, _performanceProcess.Object, _activator.Object, _unitOfWorkManager.Object, _stateMachineFactory.Object));
 
             Assert.Equal("serverId", exception.ParamName);
         }
@@ -39,7 +42,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SharedWorkerContext(
-                    ServerId, null, _storage.Object, _performanceProcess.Object, _activator.Object, _stateMachineFactory.Object));
+                    ServerId, null, _storage.Object, _performanceProcess.Object, _activator.Object, _unitOfWorkManager.Object, _stateMachineFactory.Object));
 
             Assert.Equal("queues", exception.ParamName);
         }
@@ -49,7 +52,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SharedWorkerContext(
-                    ServerId, Queues, null, _performanceProcess.Object, _activator.Object, _stateMachineFactory.Object));
+                    ServerId, Queues, null, _performanceProcess.Object, _activator.Object, _unitOfWorkManager.Object, _stateMachineFactory.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -59,7 +62,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SharedWorkerContext(
-                    ServerId, Queues, _storage.Object, null, _activator.Object, _stateMachineFactory.Object));
+                    ServerId, Queues, _storage.Object, null, _activator.Object, _unitOfWorkManager.Object, _stateMachineFactory.Object));
 
             Assert.Equal("performanceProcess", exception.ParamName);
         }
@@ -69,9 +72,19 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SharedWorkerContext(
-                    ServerId, Queues, _storage.Object, _performanceProcess.Object, null, _stateMachineFactory.Object));
+                    ServerId, Queues, _storage.Object, _performanceProcess.Object, null, _unitOfWorkManager.Object, _stateMachineFactory.Object));
 
             Assert.Equal("activator", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenUnitOfWorkManagerIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SharedWorkerContext(
+                    ServerId, Queues, _storage.Object, _performanceProcess.Object, _activator.Object, null, _stateMachineFactory.Object));
+
+            Assert.Equal("unitOfWorkManager", exception.ParamName);
         }
 
         [Fact]
@@ -79,7 +92,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SharedWorkerContext(
-                    ServerId, Queues, _storage.Object, _performanceProcess.Object, _activator.Object, null));
+                    ServerId, Queues, _storage.Object, _performanceProcess.Object, _activator.Object, _unitOfWorkManager.Object, null));
 
             Assert.Equal("stateMachineFactory", exception.ParamName);
         }
@@ -114,7 +127,7 @@ namespace Hangfire.Core.Tests.Server
         private SharedWorkerContext CreateContext()
         {
             return new SharedWorkerContext(
-                ServerId, Queues, _storage.Object, _performanceProcess.Object, _activator.Object, _stateMachineFactory.Object);
+                ServerId, Queues, _storage.Object, _performanceProcess.Object, _activator.Object, _unitOfWorkManager.Object, _stateMachineFactory.Object);
         }
     }
 }

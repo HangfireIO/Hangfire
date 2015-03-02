@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.UnitOfWork;
+
 namespace Hangfire.Server
 {
     public interface IJobPerformer
     {
-        object Perform(JobActivator activator, IJobCancellationToken cancellationToken);
+        object Perform(JobActivator activator, IUnitOfWorkManager unitOfWorkManager, IJobCancellationToken cancellationToken);
     }
 }

@@ -83,7 +83,7 @@ namespace Hangfire.Server
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                result = performer.Perform(context.Activator, context.CancellationToken);
+                result = performer.Perform(context.Activator, context.UnitOfWorkManager, context.CancellationToken);
                 return new PerformedContext(context, result, false, null);
             };
 

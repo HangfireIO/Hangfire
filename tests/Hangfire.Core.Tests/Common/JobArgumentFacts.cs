@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using Hangfire.Common;
+using Hangfire.UnitOfWork;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -13,6 +13,7 @@ namespace Hangfire.Core.Tests.Common
 	public class JobArgumentFacts
 	{
 		private readonly Mock<JobActivator> _activator;
+	    private readonly Mock<IUnitOfWorkManager> _unitOfWorkManager;
 		private readonly Mock<IJobCancellationToken> _token;
 
 		public JobArgumentFacts()
@@ -20,6 +21,9 @@ namespace Hangfire.Core.Tests.Common
 			_activator = new Mock<JobActivator>();
 			_activator.Setup(x => x.ActivateJob(It.IsAny<Type>()))
 				      .Returns(() => new JobArgumentFacts());
+
+            _unitOfWorkManager = new Mock<IUnitOfWorkManager>();
+		    _unitOfWorkManager.Setup(x => x.Begin()).Returns(() => new object());
 
 			_token = new Mock<IJobCancellationToken>();
 		}
@@ -317,7 +321,7 @@ namespace Hangfire.Core.Tests.Common
 			foreach (var method in serializationMethods)
 			{
 				var job = new Job(type, methodInfo, new[] { method.Item2() });
-				job.Perform(_activator.Object, _token.Object);	
+				job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);	
 			}
 		}
 	}

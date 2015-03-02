@@ -16,6 +16,7 @@
 
 using System;
 using Hangfire.Dashboard;
+using Hangfire.UnitOfWork;
 
 namespace Hangfire
 {
@@ -58,8 +59,15 @@ namespace Hangfire
         /// Tells bootstrapper to register the given instance of the
         /// <see cref="JobActivator"/> class globally.
         /// </summary>
-        /// <param name="activator">Job storage</param>
+        /// <param name="activator">Job activator</param>
         void UseActivator(JobActivator activator);
+
+        /// <summary>
+        /// Tells bootstrapper to register the given instance of the
+        /// <see cref="IUnitOfWorkManager"/> class globally.
+        /// </summary>
+        /// <param name="unitOfWorkManager">Unit of work manager</param>
+        void UseUnitOfWorkManager(IUnitOfWorkManager unitOfWorkManager);
 
         /// <summary>
         /// Tells bootstrapper to start the given job server on application
