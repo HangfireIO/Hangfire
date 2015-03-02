@@ -134,6 +134,36 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Monthly_WithDayOfTheWeek_ReturnsFormattedStringWithDay()
+        {
+            DayOfWeek day = DayOfWeek.Tuesday;
+            string expected = "0 0 1-7 * " + ((int)day).ToString();
+            string actual = Cron.Monthly(day);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Monthly_WithDayOfTheWeek_ReturnsFormattedStringWithDayHour()
+        {
+            DayOfWeek day = DayOfWeek.Tuesday;
+            int hour = 5;
+            string expected = "0 " + hour.ToString() + " 1-7 * " + ((int)day).ToString();
+            string actual = Cron.Monthly(day, hour);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void Monthly_WithDayOfTheWeek_ReturnsFormattedStringWithDayHourMinute()
+        {
+            DayOfWeek day = DayOfWeek.Tuesday;
+            int hour = 5;
+            int minute = 5;
+            string expected = minute.ToString() + " " + hour.ToString() + " 1-7 * " + ((int)day).ToString();
+            string actual = Cron.Monthly(day, hour, minute);
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
         public void Yearly_WithoutMonthDayHourMinute_ReturnsFormattedStringWithDefaults()
         {
             string expected = "0 0 1 1 *";
