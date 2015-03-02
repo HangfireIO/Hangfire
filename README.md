@@ -1,7 +1,7 @@
 Hangfire 
 =========
 
-#### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) | [Twitter](https://twitter.com/hangfire_net) | [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
+#### [Official Site](http://hangfire.io) | [Blog](http://odinserj.net) | [Documentation](http://docs.hangfire.io) | [Forum](http://discuss.hangfire.io) |[Twitter](https://twitter.com/hangfireio) |  [NuGet Packages](https://www.nuget.org/packages?q=hangfire)
 
 | Windows / .NET | Linux / Mono
 | --- | ---
@@ -115,6 +115,7 @@ Related Projects
 * [Hangfire.Mongo](https://github.com/sergun/Hangfire.Mongo) by [@sergun](https://github.com/sergun)
 * [Hangfire.CompositeC1](https://bitbucket.org/burningice/hangfire.compositec1) by [@burningice](https://bitbucket.org/burningice)
 * [Hangfire.PostgreSql](https://github.com/frankhommers/Hangfire.PostgreSql) by [@frankhommers](https://github.com/frankhommers)
+* [Hangfire.Firebird](https://github.com/rsegerink/Hangfire.Firebird) by [@rsegerink](https://github.com/rsegerink)
 
 Building the sources
 ---------------------
@@ -156,3 +157,12 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses).
+
+Legal
+------
+
+By submitting a Pull Request, you disavow any rights or claims to any changes submitted to the Hangfire project and assign the copyright of those changes to Sergey Odinokov.
+
+If you cannot or do not want to reassign those rights (your employment contract for your employer may not allow this), you should not submit a PR. Open an issue and someone else can do the work.
+
+This is a legal way of saying "If you submit a PR to us, that code becomes ours". 99.9% of the time that's what you intend anyways; we hope it doesn't scare you away from contributing.
