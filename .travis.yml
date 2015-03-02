@@ -1,17 +1,12 @@
 # Travis-CI Build for Hangfire
 # see travis-ci.org for details
 
-# Mono/.NET are not officially supported. The following is a workaround.
-language: c
+language: csharp
 
 # Make sure build dependencies are installed.
 install:
- - sudo add-apt-repository -y ppa:directhex/monoxide
- - sudo apt-get update -qq
- - sudo apt-get install -qq mono-devel mono-gmcs cli-common-dev
- - mozroots --import --sync
- - travis_retry mono --runtime=v4.0 .nuget/NuGet.exe install .nuget/packages.config -OutputDirectory packages
- - travis_retry mono --runtime=v4.0 .nuget/NuGet.exe restore Hangfire.Mono.sln
+ - travis_retry nuget install .nuget/packages.config -OutputDirectory packages
+ - travis_retry nuget restore Hangfire.Mono.sln
 cache: apt
 
 services:
@@ -20,7 +15,9 @@ services:
 
 # Run the build script
 script:
- - ./build.sh
+ - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
+ - mono ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.x86.exe tests/Hangfire.Core.Tests/bin/Debug/Hangfire.Core.Tests.dll
+ - mono ./packages/xunit.runners.1.9.2/tools/xunit.console.clr4.x86.exe tests/Hangfire.SqlServer.RabbitMq.Tests/bin/Debug/Hangfire.SqlServer.RabbitMq.Tests.dll
 
 # Only watch the master branch.
 branches:
