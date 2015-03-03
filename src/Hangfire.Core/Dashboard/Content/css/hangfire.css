@@ -166,10 +166,6 @@ a:hover .label-hover {
     border-color: #e7e7e7;
 }
 
-#stats .stats-indent {
-    padding-left: 36px;
-}
-
 .table td.failed-job-details {
     padding-top: 0;
     padding-bottom: 0;
@@ -426,4 +422,68 @@ a.job-method {
 
 .list-group .glyphicon {
     top: 2px;
+}
+
+.metric {
+    display: inline-block;
+    min-width: 10px;
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: transparent;
+    border-radius: 10px;
+    border: solid 1px;
+}
+
+.metric.highlighted {
+    font-weight: bold;
+    color: #fff!important;
+}
+
+.metric-default {
+    color: #777;
+    border-color: #777;
+}
+
+.metric-default.highlighted {
+    background-color: #777;
+}
+
+.metric-info {
+    color: #5bc0de;
+    border-color: #5bc0de;
+}
+
+.metric-info.highlighted {
+    background-color: #5bc0de;
+}
+
+.metric-warning {
+    color: #f0ad4e;
+    border-color: #f0ad4e;
+}
+
+.metric-warning.highlighted {
+    background-color: #f0ad4e;
+}
+
+.metric-success {
+    color: #5cb85c;
+    border-color: #5cb85c;
+}
+
+.metric-success.highlighted {
+    background-color: #5cb85c;
+}
+
+.metric-danger {
+    color: #d9534f;
+    border-color: #d9534f;
+}
+
+.metric-danger.highlighted {
+    background-color: #d9534f;
 }

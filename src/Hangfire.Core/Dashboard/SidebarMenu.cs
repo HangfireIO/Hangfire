@@ -7,156 +7,273 @@ using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
+    public enum MetricStyle
+    {
+        None,
+        Info,
+        Success,
+        Warning,
+        Danger
+    }
+
+    public class DashboardMetric
+    {
+        public DashboardMetric(params long[] values)
+        {
+            Values = values;
+        }
+
+        public long[] Values { get; private set; }
+        public MetricStyle Style { get; set; }
+        public bool Highlighted { get; set; }
+    }
+
+    public class DashboardMenuItem
+    {
+        public string Text { get; set; }
+        public string Url { get; set; }
+        public bool Active { get; set; }
+        
+        public DashboardMetric Metric { get; set; }
+
+        public double Order { get; set; }
+    }
+
+    public class RazorPageContext
+    {
+        public RazorPageContext(RazorPage page, StatisticsDto statistics)
+        {
+            Page = page;
+            Statistics = statistics;
+        }
+
+        public RazorPage Page { get; private set; }
+        public StatisticsDto Statistics { get; private set; }
+    }
+
+    public static class DashboardMenu
+    {
+        private static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
+            = new List<Func<RazorPageContext, DashboardMenuItem>>();
+
+        static DashboardMenu()
+        {
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Jobs",
+                Url = context.Page.LinkTo("/queues"),
+                Active = context.Page.RequestPath.StartsWith("/queues"),
+                Metric = context.Statistics.Failed != 0 
+                    ? new DashboardMetric(context.Statistics.Failed)
+                    {
+                        Style = MetricStyle.Danger,
+                        Highlighted = true
+                    }
+                    : new DashboardMetric(context.Statistics.Enqueued)
+                    {
+                        Style = MetricStyle.Success
+                    }
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Retries",
+                Url = "#",
+                Active = false,
+                Metric = new DashboardMetric(12)
+                {
+                    Style = MetricStyle.Warning
+                }
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Recurring",
+                Url = context.Page.LinkTo("/recurring"),
+                Active = context.Page.RequestPath.StartsWith("/recurring"),
+                Metric = new DashboardMetric(context.Statistics.Recurring)
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Servers",
+                Url = context.Page.LinkTo("/servers"),
+                Active = context.Page.RequestPath.Equals("/servers"),
+                Metric = new DashboardMetric(context.Statistics.Servers)
+                {
+                    Style = context.Statistics.Servers == 0 ? MetricStyle.Warning : MetricStyle.None,
+                    Highlighted = context.Statistics.Servers == 0
+                }
+            });
+        }
+
+        public static NonEscapedString Render(RazorPage page)
+        {
+            var monitoringApi = page.Storage.GetMonitoringApi();
+            var statistics = monitoringApi.GetStatistics();
+
+            var context = new RazorPageContext(page, statistics);
+            var builder = new StringBuilder();
+
+            if (Items.Count == 0) return null;
+
+            builder.Append("<ul class=\"nav navbar-nav\">");
+
+            foreach (var itemsFunc in Items)
+            {
+                var item = itemsFunc(context);
+
+                builder.AppendFormat("<li{0}>", item.Active ? " class=\"active\"" : null);
+                builder.AppendFormat("<a href=\"{0}\">", item.Url);
+                // TODO: Escape string
+                builder.Append(item.Text);
+
+                if (item.Metric != null)
+                {
+                    string className;
+                    switch (item.Metric.Style)
+                    {
+                        case MetricStyle.Info:
+                            className = "metric-info";
+                            break;
+                        case MetricStyle.Success:
+                            className = "metric-success";
+                            break;
+                        case MetricStyle.Warning:
+                            className = "metric-warning";
+                            break;
+                        case MetricStyle.Danger:
+                            className = "metric-danger";
+                            break;
+                        default:
+                            className = "metric-default";
+                            break;
+                    }
+
+                    builder.AppendFormat(
+                        " <span class=\"metric {0}{1}\">{2}</span>",
+                        className,
+                        item.Metric.Highlighted ? " highlighted" : null,
+                        String.Join("&nbsp;/&nbsp;", item.Metric.Values));
+                }
+
+                builder.Append("</a></li>");
+            }
+
+            builder.Append("</ul>");
+            return new NonEscapedString(builder.ToString());
+        }
+    }
+
     public static class SidebarMenu
     {
-        private static readonly List<KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>> ItemFuncList
-            = new List<KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>>();
+        private static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
+            = new List<Func<RazorPageContext, DashboardMenuItem>>();
 
         static SidebarMenu()
         {
-            // Dashboard
-            AddItem(-900, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item {0}"" href=""{1}"">
-    <span class=""glyphicon glyphicon-dashboard""></span>
-    Dashboard
-</a>",
-                page.RequestPath.Equals("/") || page.RequestPath.Length == 0 ? "active" : null,
-                page.LinkTo("/")));
-
-            // Servers
-            AddItem(-800, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item {0}"" href=""{1}"">
-    <span id=""stats-servers"" class=""label label-default pull-right"">{2}</span>
-    <span class=""glyphicon glyphicon-hdd""></span>
-    Servers
-</a>",
-                page.RequestPath.Equals("/servers") ? "active" : null,
-                page.LinkTo("/servers"),
-                stats.Servers));
-
-            // Recurring jobs
-            AddItem(-700, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item {0}"" href=""{1}"">
-    <span id=""stats-recurring"" class=""label label-default pull-right"">{2}</span>
-    <span class=""glyphicon glyphicon-time""></span>
-    Recurring jobs
-</a>",
-                page.RequestPath.Equals("/recurring") ? "active" : null,
-                page.LinkTo("/recurring"),
-                stats.Recurring));
-
-            // Queues
-            AddItem(-600, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item {0}"" href=""{1}"">
-    <span class=""label label-default pull-right"">
-        <span id=""stats-enqueued"" title=""Enqueued jobs count"">{2}</span>
-        / 
-        <span id=""stats-queues"" title=""Queues count"">{3}</span>
-    </span>
-    <span class=""glyphicon glyphicon-inbox""></span>
-    Queues
-</a>",
-                page.RequestPath.StartsWith("/queues") ? "active" : null,
-                page.LinkTo("/queues"),
-                stats.Enqueued,
-                stats.Queues));
-
-            // Scheduled
-            AddItem(-500, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
-    <span id=""stats-scheduled"" class=""label label-info pull-right"">{2}</span>
-    Scheduled
-</a>",
-                page.RequestPath.Equals("/scheduled") ? "active" : null,
-                page.LinkTo("/scheduled"),
-                stats.Scheduled));
-
-            // Processing
-            AddItem(-400, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
-    <span id=""stats-processing"" class=""label label-warning pull-right"">{2}</span>
-    Processing
-</a>",
-                page.RequestPath.Equals("/processing") ? "active" : null,
-                page.LinkTo("/processing"),
-                stats.Processing));
-
-            // Succeeded
-            AddItem(-300, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
-    <span id=""stats-succeeded"" class=""label label-success pull-right"">{2}</span>
-    Succeeded
-</a>",
-                page.RequestPath.Equals("/succeeded") ? "active" : null,
-                page.LinkTo("/succeeded"),
-                stats.Succeeded));
-
-            // Failed
-            AddItem(-200, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
-    <span id=""stats-failed"" class=""label label-danger pull-right"">{2}</span>
-    Failed
-</a>",
-                page.RequestPath.Equals("/failed") ? "active" : null,
-                page.LinkTo("/failed"),
-                stats.Failed));
-
-            // Deleted
-            AddItem(-100, (page, storage, stats) => String.Format(
-                @"<a class=""list-group-item stats-indent {0}"" href=""{1}"">
-    <span id=""stats-deleted"" class=""label label-default pull-right"">{2}</span>
-    Deleted
-</a>",
-                page.RequestPath.Equals("/deleted") ? "active" : null,
-                page.LinkTo("/deleted"),
-                stats.Deleted));
-        }
-
-        public static void AddItem([NotNull] Func<RazorPage, JobStorage, string> itemFunc)
-        {
-            AddItem(0, itemFunc);
-        }
-
-        public static void AddItem(double order, [NotNull] Func<RazorPage, JobStorage, string> itemFunc)
-        {
-            if (itemFunc == null) throw new ArgumentNullException("itemFunc");
-
-            AddItem(order, (page, storage, statistics) => itemFunc(page, storage));
-        }
-
-        internal static void AddItem(double order, [NotNull] Func<RazorPage, JobStorage, StatisticsDto, string> itemFunc)
-        {
-            if (itemFunc == null) throw new ArgumentNullException("itemFunc");
-
-            lock (ItemFuncList)
+            Items.Add(context => new DashboardMenuItem
             {
-                ItemFuncList.Add(new KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>(
-                    order,
-                    itemFunc));
-            }
+                Text = "Enqueued",
+                Url = context.Page.LinkTo("/queues"),
+                Active = context.Page.RequestPath.StartsWith("/queues"),
+                Metric = new DashboardMetric(context.Statistics.Enqueued, context.Statistics.Queues)
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Scheduled",
+                Url = context.Page.LinkTo("/scheduled"),
+                Active = context.Page.RequestPath.Equals("/scheduled"),
+                Metric = new DashboardMetric(context.Statistics.Scheduled)
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Processing",
+                Url = context.Page.LinkTo("/processing"),
+                Active = context.Page.RequestPath.Equals("/processing"),
+                Metric = new DashboardMetric(context.Statistics.Processing)
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Succeeded",
+                Url = context.Page.LinkTo("/succeeded"),
+                Active = context.Page.RequestPath.Equals("/succeeded"),
+                Metric = new DashboardMetric(context.Statistics.Succeeded)
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Failed",
+                Url = context.Page.LinkTo("/failed"),
+                Active = context.Page.RequestPath.Equals("/failed"),
+                Metric = new DashboardMetric(context.Statistics.Failed)
+            });
+
+            Items.Add(context => new DashboardMenuItem
+            {
+                Text = "Deleted",
+                Url = context.Page.LinkTo("/deleted"),
+                Active = context.Page.RequestPath.Equals("/deleted"),
+                Metric = new DashboardMetric(context.Statistics.Deleted)
+            });
         }
 
-        internal static NonEscapedString Render([NotNull] RazorPage page, [NotNull] JobStorage storage)
+        internal static NonEscapedString Render([NotNull] RazorPage page)
         {
             if (page == null) throw new ArgumentNullException("page");
-            if (storage == null) throw new ArgumentNullException("storage");
 
             var builder = new StringBuilder();
 
-            var monitoringApi = storage.GetMonitoringApi();
+            var monitoringApi = page.Storage.GetMonitoringApi();
             var statistics = monitoringApi.GetStatistics();
+            var context = new RazorPageContext(page, statistics);
 
-            KeyValuePair<double, Func<RazorPage, JobStorage, StatisticsDto, string>>[] funcList;
+            builder.Append("<div id=\"stats\" class=\"list-group\">");
 
-            lock (ItemFuncList)
+            foreach (var itemsFunc in Items)
             {
-                funcList = ItemFuncList.ToArray();
+                var item = itemsFunc(context);
+
+                builder.AppendFormat("<a href=\"{0}\" class=\"list-group-item{1}\">", item.Url, item.Active ? " active" : null);
+                // TODO: Escape string
+                builder.Append(item.Text);
+
+                if (item.Metric != null)
+                {
+                    string className;
+                    switch (item.Metric.Style)
+                    {
+                        case MetricStyle.Info:
+                            className = "metric-info";
+                            break;
+                        case MetricStyle.Success:
+                            className = "metric-success";
+                            break;
+                        case MetricStyle.Warning:
+                            className = "metric-warning";
+                            break;
+                        case MetricStyle.Danger:
+                            className = "metric-danger";
+                            break;
+                        default:
+                            className = "metric-default";
+                            break;
+                    }
+
+                    builder.AppendFormat(
+                        " <span class=\"pull-right metric {0}{1}\">{2}</span>",
+                        className,
+                        item.Metric.Highlighted ? " highlighted" : null,
+                        String.Join("&nbsp;/&nbsp;", item.Metric.Values));
+                }
+
+                builder.Append("</a>");
             }
 
-            foreach (var pair in funcList.OrderBy(x => x.Key))
-            {
-                builder.AppendLine(pair.Value(page, storage, statistics));
-            }
+            builder.Append("</div>");
 
             return new NonEscapedString(builder.ToString());
         }

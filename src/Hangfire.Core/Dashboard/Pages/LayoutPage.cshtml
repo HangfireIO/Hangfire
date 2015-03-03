@@ -28,6 +28,7 @@
                         <a class="navbar-brand" href="@LinkTo("/")">Hangfire Dashboard</a>
                     </div>
                     <div class="collapse navbar-collapse">
+                        @DashboardMenu.Render(this)
                         <ul class="nav navbar-nav navbar-right">
                             <li>
                                 <a href="@AppPath">
@@ -46,9 +47,7 @@
             <div class="container" style="margin-bottom: 20px;">
                 <div class="row">
                     <div class="col-md-3">
-                        <div id="stats" class="list-group">
-                            @SidebarMenu.Render(this, Storage)
-                        </div>
+                        @SidebarMenu.Render(this)
                     </div>
                     <div class="col-md-9">
                         @if (Breadcrumbs != null)
