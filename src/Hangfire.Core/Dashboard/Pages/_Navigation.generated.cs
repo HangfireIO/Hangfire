@@ -44,7 +44,7 @@ WriteLiteral("\r\n");
 
             
             #line 5 "..\..\Dashboard\Pages\_Navigation.cshtml"
- if (DashboardMenu.Items.Count > 0)
+ if (NavigationMenu.Items.Count > 0)
 {
 
             
@@ -55,7 +55,7 @@ WriteLiteral("    <ul class=\"nav navbar-nav\">\r\n");
 
             
             #line 8 "..\..\Dashboard\Pages\_Navigation.cshtml"
-         foreach (var item in DashboardMenu.Items)
+         foreach (var item in NavigationMenu.Items)
         {
             var itemValue = item(this);
 

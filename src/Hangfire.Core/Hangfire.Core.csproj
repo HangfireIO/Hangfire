@@ -79,6 +79,9 @@
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\JobsSidebarMenu.cs" />
+    <Compile Include="Dashboard\MenuItem.cs" />
+    <Compile Include="Dashboard\NavigationMenu.cs" />
     <Compile Include="Dashboard\Pages\Breadcrumbs.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
     </Compile>
@@ -210,7 +213,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
-    <Compile Include="Dashboard\JobsSidebarMenu.cs" />
+    <Compile Include="Dashboard\Metric.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />

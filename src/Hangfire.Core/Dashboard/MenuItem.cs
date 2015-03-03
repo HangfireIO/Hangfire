@@ -1,4 +1,4 @@
-﻿// This file is part of Hangfire.
+// This file is part of Hangfire.
 // Copyright © 2015 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
@@ -14,20 +14,20 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using Hangfire.Annotations;
-
-namespace Hangfire.Dashboard.Pages
+namespace Hangfire.Dashboard
 {
-    partial class SidebarMenu
+    public class MenuItem
     {
-        public SidebarMenu([NotNull] IEnumerable<Func<RazorPage, MenuItem>> items)
+        public MenuItem(string text, string url)
         {
-            if (items == null) throw new ArgumentNullException("items");
-            Items = items;
+            Text = text;
+            Url = url;
         }
 
-        public IEnumerable<Func<RazorPage, MenuItem>> Items { get; private set; }
+        public string Text { get; private set; }
+        public string Url { get; private set; }
+
+        public bool Active { get; set; }
+        public Metric Metric { get; set; }
     }
 }
