@@ -36,7 +36,8 @@ namespace Hangfire.Dashboard
                     }
                     : new Metric(page.Statistics.Enqueued)
                     {
-                        Style = MetricStyle.Success
+                        Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.None,
+                        Highlighted = page.Statistics.Enqueued > 0
                     }
             });
 

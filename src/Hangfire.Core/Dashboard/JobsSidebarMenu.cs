@@ -30,18 +30,28 @@ namespace Hangfire.Dashboard
             {
                 Active = page.RequestPath.StartsWith("/jobs/enqueued"),
                 Metric = new Metric(page.Statistics.Enqueued, page.Statistics.Queues)
+                {
+                    Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.None,
+                    Highlighted = page.Statistics.Enqueued > 0
+                }
             });
 
             Items.Add(page => new MenuItem("Scheduled", page.LinkTo("/jobs/scheduled"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/scheduled"),
                 Metric = new Metric(page.Statistics.Scheduled)
+                {
+                    Style = page.Statistics.Scheduled > 0 ? MetricStyle.Info : MetricStyle.None
+                }
             });
 
             Items.Add(page => new MenuItem("Processing", page.LinkTo("/jobs/processing"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/processing"),
                 Metric = new Metric(page.Statistics.Processing)
+                {
+                    Style = page.Statistics.Processing > 0 ? MetricStyle.Warning : MetricStyle.None
+                }
             });
 
             Items.Add(page => new MenuItem("Succeeded", page.LinkTo("/jobs/succeeded"))
@@ -54,6 +64,10 @@ namespace Hangfire.Dashboard
             {
                 Active = page.RequestPath.StartsWith("/jobs/failed"),
                 Metric = new Metric(page.Statistics.Failed)
+                {
+                    Style = page.Statistics.Failed > 0 ? MetricStyle.Danger : MetricStyle.None,
+                    Highlighted = page.Statistics.Failed > 0
+                }
             });
 
             Items.Add(page => new MenuItem("Deleted", page.LinkTo("/jobs/deleted"))
