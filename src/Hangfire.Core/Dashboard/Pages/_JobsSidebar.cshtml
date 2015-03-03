@@ -1,0 +1,28 @@
+﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+@using System
+@using Hangfire.Dashboard
+@inherits RazorPage
+@if (SidebarMenu.Items.Count > 0)
+{
+    var monitoringApi = Storage.GetMonitoringApi();
+    var statistics = monitoringApi.GetStatistics();
+
+    var context = new RazorPageContext(this, statistics);
+
+    <div id="stats" class="list-group">
+        @foreach (var item in SidebarMenu.Items)
+        {
+            var itemValue = item(context);
+            <a href="@itemValue.Url" class="list-group-item @(itemValue.Active ? "active" : null)">
+                @itemValue.Text
+                @if (itemValue.Metric != null)
+                {
+                    var metricClass = itemValue.Metric.Style.ToClassName();
+                    var highlighted = itemValue.Metric.Highlighted ? "highlighted" : null;
+                    
+                    <span class="pull-right metric @metricClass @highlighted">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)))</span>
+                }
+            </a>
+        }
+    </div>
+}

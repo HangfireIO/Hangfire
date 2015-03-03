@@ -79,6 +79,16 @@
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\Pages\_JobsSidebar.generated.cs">
+      <DependentUpon>_JobsSidebar.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Navigation.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Navigation.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\RequestDispatcherContext.cs" />
     <Compile Include="Dashboard\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
@@ -390,6 +400,14 @@
     <None Include="Dashboard\Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>SucceededJobs1.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_JobsSidebar.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_JobsSidebar.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_Navigation.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Navigation.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_Paginator.cshtml">
       <Generator>RazorGenerator</Generator>

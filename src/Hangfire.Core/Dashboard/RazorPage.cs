@@ -98,6 +98,11 @@ namespace Hangfire.Dashboard
 
         protected NonEscapedString RenderPartial(RazorPage page)
         {
+            page.Request = Request;
+            page.Response = Response;
+            page.Storage = Storage;
+            page.AppPath = AppPath;
+
             page.Execute();
             return new NonEscapedString(page._content.ToString());
         }

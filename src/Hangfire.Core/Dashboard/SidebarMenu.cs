@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Hangfire.Annotations;
 using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
@@ -14,6 +11,21 @@ namespace Hangfire.Dashboard
         Success,
         Warning,
         Danger
+    }
+
+    public static class MetricStyleExtensions
+    {
+        public static string ToClassName(this MetricStyle style)
+        {
+            switch (style)
+            {
+                case MetricStyle.Info:    return "metric-info";
+                case MetricStyle.Success: return "metric-success";
+                case MetricStyle.Warning: return "metric-warning";
+                case MetricStyle.Danger:  return "metric-danger";
+                default:                  return "metric-default";
+            }
+        }
     }
 
     public class DashboardMetric
@@ -53,7 +65,7 @@ namespace Hangfire.Dashboard
 
     public static class DashboardMenu
     {
-        private static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
+        public static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
             = new List<Func<RazorPageContext, DashboardMenuItem>>();
 
         static DashboardMenu()
@@ -106,68 +118,11 @@ namespace Hangfire.Dashboard
                 }
             });
         }
-
-        public static NonEscapedString Render(RazorPage page)
-        {
-            var monitoringApi = page.Storage.GetMonitoringApi();
-            var statistics = monitoringApi.GetStatistics();
-
-            var context = new RazorPageContext(page, statistics);
-            var builder = new StringBuilder();
-
-            if (Items.Count == 0) return null;
-
-            builder.Append("<ul class=\"nav navbar-nav\">");
-
-            foreach (var itemsFunc in Items)
-            {
-                var item = itemsFunc(context);
-
-                builder.AppendFormat("<li{0}>", item.Active ? " class=\"active\"" : null);
-                builder.AppendFormat("<a href=\"{0}\">", item.Url);
-                // TODO: Escape string
-                builder.Append(item.Text);
-
-                if (item.Metric != null)
-                {
-                    string className;
-                    switch (item.Metric.Style)
-                    {
-                        case MetricStyle.Info:
-                            className = "metric-info";
-                            break;
-                        case MetricStyle.Success:
-                            className = "metric-success";
-                            break;
-                        case MetricStyle.Warning:
-                            className = "metric-warning";
-                            break;
-                        case MetricStyle.Danger:
-                            className = "metric-danger";
-                            break;
-                        default:
-                            className = "metric-default";
-                            break;
-                    }
-
-                    builder.AppendFormat(
-                        " <span class=\"metric {0}{1}\">{2}</span>",
-                        className,
-                        item.Metric.Highlighted ? " highlighted" : null,
-                        String.Join("&nbsp;/&nbsp;", item.Metric.Values));
-                }
-
-                builder.Append("</a></li>");
-            }
-
-            builder.Append("</ul>");
-            return new NonEscapedString(builder.ToString());
-        }
     }
 
     public static class SidebarMenu
     {
-        private static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
+        public static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
             = new List<Func<RazorPageContext, DashboardMenuItem>>();
 
         static SidebarMenu()
@@ -219,63 +174,6 @@ namespace Hangfire.Dashboard
                 Active = context.Page.RequestPath.StartsWith("/jobs/deleted"),
                 Metric = new DashboardMetric(context.Statistics.Deleted)
             });
-        }
-
-        internal static NonEscapedString Render([NotNull] RazorPage page)
-        {
-            if (page == null) throw new ArgumentNullException("page");
-
-            var builder = new StringBuilder();
-
-            var monitoringApi = page.Storage.GetMonitoringApi();
-            var statistics = monitoringApi.GetStatistics();
-            var context = new RazorPageContext(page, statistics);
-
-            builder.Append("<div id=\"stats\" class=\"list-group\">");
-
-            foreach (var itemsFunc in Items)
-            {
-                var item = itemsFunc(context);
-
-                builder.AppendFormat("<a href=\"{0}\" class=\"list-group-item{1}\">", item.Url, item.Active ? " active" : null);
-                // TODO: Escape string
-                builder.Append(item.Text);
-
-                if (item.Metric != null)
-                {
-                    string className;
-                    switch (item.Metric.Style)
-                    {
-                        case MetricStyle.Info:
-                            className = "metric-info";
-                            break;
-                        case MetricStyle.Success:
-                            className = "metric-success";
-                            break;
-                        case MetricStyle.Warning:
-                            className = "metric-warning";
-                            break;
-                        case MetricStyle.Danger:
-                            className = "metric-danger";
-                            break;
-                        default:
-                            className = "metric-default";
-                            break;
-                    }
-
-                    builder.AppendFormat(
-                        " <span class=\"pull-right metric {0}{1}\">{2}</span>",
-                        className,
-                        item.Metric.Highlighted ? " highlighted" : null,
-                        String.Join("&nbsp;/&nbsp;", item.Metric.Values));
-                }
-
-                builder.Append("</a>");
-            }
-
-            builder.Append("</div>");
-
-            return new NonEscapedString(builder.ToString());
         }
     }
 }

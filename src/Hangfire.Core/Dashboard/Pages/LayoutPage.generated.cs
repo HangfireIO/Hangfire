@@ -27,6 +27,12 @@ namespace Hangfire.Dashboard.Pages
     #line default
     #line hidden
     
+    #line 4 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+    using Hangfire.Dashboard.Pages;
+    
+    #line default
+    #line hidden
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
     public partial class LayoutPage : Hangfire.Dashboard.RazorPage
     {
@@ -41,11 +47,12 @@ WriteLiteral("\r\n");
 
 
 
+
 WriteLiteral("<!DOCTYPE html>\r\n\r\n<html lang=\"en\">\r\n<head>\r\n    <title>");
 
 
             
-            #line 9 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 10 "..\..\Dashboard\Pages\LayoutPage.cshtml"
       Write(Title);
 
             
@@ -57,7 +64,7 @@ WriteLiteral(" - Hangfire</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" co
 
 
             
-            #line 13 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 14 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                             Write(LinkTo("/css"));
 
             
@@ -82,7 +89,7 @@ WriteLiteral(@""" />
 
 
             
-            #line 28 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 29 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                  Write(LinkTo("/"));
 
             
@@ -93,8 +100,8 @@ WriteLiteral("\">Hangfire Dashboard</a>\r\n                    </div>\r\n       
 
 
             
-            #line 31 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(DashboardMenu.Render(this));
+            #line 32 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                   Write(RenderPartial(new Navigation()));
 
             
             #line default
@@ -104,7 +111,7 @@ WriteLiteral("\r\n                        <ul class=\"nav navbar-nav navbar-righ
 
 
             
-            #line 34 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 35 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                     Write(AppPath);
 
             
@@ -130,8 +137,8 @@ WriteLiteral(@""">
 
 
             
-            #line 50 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(SidebarMenu.Render(this));
+            #line 51 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                   Write(RenderPartial(new JobsSidebar()));
 
             
             #line default
@@ -140,7 +147,7 @@ WriteLiteral("\r\n                    </div>\r\n                    <div class=\
 
 
             
-            #line 53 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          if (Breadcrumbs != null)
                         {
 
@@ -152,7 +159,7 @@ WriteLiteral("                            <ol class=\"breadcrumb\">\r\n         
 
 
             
-            #line 56 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 57 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                         Write(LinkTo("/"));
 
             
@@ -162,7 +169,7 @@ WriteLiteral("\"><span class=\"glyphicon glyphicon-home\"></span></a></li>\r\n")
 
 
             
-            #line 57 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 58 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                  foreach (var breadcrumb in Breadcrumbs)
                                 {
 
@@ -173,7 +180,7 @@ WriteLiteral("                                    <li><a href=\"");
 
 
             
-            #line 59 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 60 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                             Write(breadcrumb.Value);
 
             
@@ -183,7 +190,7 @@ WriteLiteral("\">");
 
 
             
-            #line 59 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 60 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                                Write(breadcrumb.Key);
 
             
@@ -193,7 +200,7 @@ WriteLiteral("</a></li>\r\n");
 
 
             
-            #line 60 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                 }
 
             
@@ -203,7 +210,7 @@ WriteLiteral("                                <li class=\"active\">");
 
 
             
-            #line 61 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                                Write(BreadcrumbsTitle ?? Title);
 
             
@@ -213,7 +220,7 @@ WriteLiteral("</li>\r\n                            </ol>\r\n");
 
 
             
-            #line 63 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         }
 
             
@@ -223,7 +230,7 @@ WriteLiteral("\r\n                        <h1 class=\"page-header\">\r\n        
 
 
             
-            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(Title);
 
             
@@ -233,7 +240,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                              if (!String.IsNullOrEmpty(Subtitle))
                             {
 
@@ -244,7 +251,7 @@ WriteLiteral("                                <small>");
 
 
             
-            #line 69 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                                   Write(Subtitle);
 
             
@@ -254,7 +261,7 @@ WriteLiteral("</small>\r\n");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 71 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                             }
 
             
@@ -264,7 +271,7 @@ WriteLiteral("                        </h1>\r\n                        ");
 
 
             
-            #line 72 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(RenderBody());
 
             
@@ -285,7 +292,7 @@ WriteLiteral(@"
 
 
             
-            #line 83 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                               
                                 var version = GetType().Assembly.GetName().Version;
                             
@@ -297,7 +304,7 @@ WriteLiteral("                            ");
 
 
             
-            #line 86 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 87 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                        Write(String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build));
 
             
@@ -308,7 +315,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
 
             
-            #line 89 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
@@ -318,7 +325,7 @@ WriteLiteral("</li>\r\n                    <li>Time: ");
 
 
             
-            #line 90 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 91 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                          Write(DateTime.UtcNow);
 
             
@@ -338,7 +345,7 @@ WriteLiteral(@" GMT
 
 
             
-            #line 100 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 101 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                           Write(LinkTo("/stats"));
 
             
@@ -349,7 +356,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = windo
 
 
             
-            #line 104 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 105 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(LinkTo("/js"));
 
             

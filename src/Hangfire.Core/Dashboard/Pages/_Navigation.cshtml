@@ -1,0 +1,27 @@
+﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+@using System
+@using Hangfire.Dashboard
+@inherits RazorPage
+@if (DashboardMenu.Items.Count > 0)
+{
+    var monitoringApi = Storage.GetMonitoringApi();
+    var statistics = monitoringApi.GetStatistics();
+
+    var context = new RazorPageContext(this, statistics);
+    
+    <ul class="nav navbar-nav">
+        @foreach (var item in DashboardMenu.Items)
+        {
+            var itemValue = item(context);
+            <li class="@(itemValue.Active ? "active" : null)">
+                <a href="@itemValue.Url">
+                    @itemValue.Text
+                    @if (itemValue.Metric != null)
+                    {
+                        <span class="metric @itemValue.Metric.Style.ToClassName() @(itemValue.Metric.Highlighted ? "highlighted" : null)">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)))</span>
+                    }
+                </a>
+            </li>
+        }
+    </ul>
+}
