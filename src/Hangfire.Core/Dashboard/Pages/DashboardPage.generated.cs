@@ -58,7 +58,7 @@ WriteLiteral("\r\n");
             
             #line 7 "..\..\Dashboard\Pages\DashboardPage.cshtml"
   
-    Layout = new LayoutPage { Title = "Dashboard" };
+    Layout = new LayoutPage("Dashboard");
     IDictionary<DateTime, long> succeeded = null;
     IDictionary<DateTime, long> failed = null;
 
@@ -80,69 +80,80 @@ WriteLiteral("\r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n<h3>Realtime graph</h3>\r\n<div id=\"realtimeGraph\"></div>\r\n\r\n<h3>\r\n    <div class" +
-"=\"btn-group pull-right\" style=\"margin-top: 2px;\">\r\n        <a href=\"?period=day\"" +
-" class=\"btn btn-sm btn-default ");
+WriteLiteral(@"
+<div class=""row"">
+    <div class=""col-md-12"">
+        <h1 class=""page-header"">Dashboard</h1>
+
+        <h3>Realtime graph</h3>
+        <div id=""realtimeGraph""></div>
+
+        <h3>
+            <div class=""btn-group pull-right"" style=""margin-top: 2px;"">
+                <a href=""?period=day"" class=""btn btn-sm btn-default ");
 
 
             
-            #line 32 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-                                                        Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n            Day\r\n        </a>\r\n        <a href=\"?period=week\" class=\"btn btn-" +
-"sm btn-default ");
-
-
-            
-            #line 35 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-                                                         Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
+            #line 36 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+                                                                Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">Week</a>\r\n    </div>\r\n    History graph\r\n</h3>\r\n\r\n");
+WriteLiteral("\">\r\n                    Day\r\n                </a>\r\n                <a href=\"?peri" +
+"od=week\" class=\"btn btn-sm btn-default ");
 
 
             
-            #line 40 "..\..\Dashboard\Pages\DashboardPage.cshtml"
- if (succeeded != null && failed != null)
-{
-
-            
-            #line default
-            #line hidden
-WriteLiteral("    <div id=\"historyGraph\" \r\n          data-succeeded=\"");
-
-
-            
-            #line 43 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-                     Write(JsonConvert.SerializeObject(succeeded));
+            #line 39 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+                                                                 Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\" \r\n          data-failed=\"");
+WriteLiteral("\">Week</a>\r\n            </div>\r\n            History graph\r\n        </h3>\r\n\r\n");
 
 
             
             #line 44 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-                  Write(JsonConvert.SerializeObject(failed));
+         if (succeeded != null && failed != null)
+        {
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n    </div>\r\n");
+WriteLiteral("            <div id=\"historyGraph\"\r\n                 data-succeeded=\"");
 
 
             
-            #line 46 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-}
+            #line 47 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+                            Write(JsonConvert.SerializeObject(succeeded));
+
             
             #line default
             #line hidden
+WriteLiteral("\"\r\n                 data-failed=\"");
+
+
+            
+            #line 48 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+                         Write(JsonConvert.SerializeObject(failed));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n            </div>\r\n");
+
+
+            
+            #line 50 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    </div>\r\n</div>");
+
 
         }
     }

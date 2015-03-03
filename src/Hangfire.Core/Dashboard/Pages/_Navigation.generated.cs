@@ -28,7 +28,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    public partial class Navigation : RazorPage
+    internal partial class Navigation : RazorPage
     {
 #line hidden
 

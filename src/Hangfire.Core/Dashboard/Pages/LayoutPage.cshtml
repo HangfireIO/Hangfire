@@ -2,9 +2,8 @@
 @using System
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
-@inherits Hangfire.Dashboard.RazorPage
+@inherits RazorPage
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <title>@Title - Hangfire</title>
@@ -44,35 +43,8 @@
             </div>
 
             <!-- Begin page content -->
-
             <div class="container" style="margin-bottom: 20px;">
-                <div class="row">
-                    <div class="col-md-3">
-                        @RenderPartial(new JobsSidebar())
-                    </div>
-                    <div class="col-md-9">
-                        @if (Breadcrumbs != null)
-                        {
-                            <ol class="breadcrumb">
-                                <li><a href="@LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
-                                @foreach (var breadcrumb in Breadcrumbs)
-                                {
-                                    <li><a href="@breadcrumb.Value">@breadcrumb.Key</a></li>
-                                }
-                                <li class="active">@(BreadcrumbsTitle ?? Title)</li>
-                            </ol>
-                        }
-
-                        <h1 class="page-header">
-                            @Title
-                            @if (!String.IsNullOrEmpty(Subtitle))
-                            {
-                                <small>@Subtitle</small>
-                            }
-                        </h1>
-                        @RenderBody()
-                    </div>
-                </div>
+                @RenderBody()
             </div>
         </div>
 

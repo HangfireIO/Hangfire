@@ -3,10 +3,9 @@
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
-@using Hangfire.Storage.Monitoring
 @inherits RazorPage
 @{
-    Layout = new LayoutPage { Title = "Failed Jobs" };
+    Layout = new LayoutPage("Failed Jobs");
 
     int from, perPage;
 
@@ -14,118 +13,126 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    Pager pager = new Pager(from, perPage, monitor.FailedCount())
+    var pager = new Pager(from, perPage, monitor.FailedCount())
     {
         BasePageUrl = LinkTo("/jobs/failed")
     };
 
-    JobList<FailedJobDto> failedJobs = monitor
-        .FailedJobs(pager.FromRecord, pager.RecordsPerPage);
+    var failedJobs = monitor.FailedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
-@if (pager.TotalPageCount == 0)
-{
-    <div class="alert alert-success">
-        You have no failed jobs at the moment.
+<div class="row">
+    <div class="col-md-3">
+        @RenderPartial(new JobsSidebar())
     </div>
-}
-else
-{
-    <div class="js-jobs-list">
-        <div class="btn-toolbar btn-toolbar-top">
-            <button class="js-jobs-list-command btn btn-sm btn-primary"
-                    data-url="@LinkTo("/jobs/failed/requeue")"
-                    data-loading-text="Enqueueing...">
-                <span class="glyphicon glyphicon-repeat"></span>
-                Requeue jobs
-            </button>
+    <div class="col-md-9">
+        <h1 class="page-header">Failed Jobs</h1>
 
-            <button class="js-jobs-list-command btn btn-sm btn-default"
-                    data-url="@LinkTo("/jobs/failed/delete")"
-                    data-loading-text="Deleting..."
-                    data-confirm="Do you really want to DELETE ALL selected jobs?">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete selected
-            </button>
+        @if (pager.TotalPageCount == 0)
+        {
+            <div class="alert alert-success">
+                You have no failed jobs at the moment.
+            </div>
+        }
+        else
+        {
+            <div class="js-jobs-list">
+                <div class="btn-toolbar btn-toolbar-top">
+                    <button class="js-jobs-list-command btn btn-sm btn-primary"
+                            data-url="@LinkTo("/jobs/failed/requeue")"
+                            data-loading-text="Enqueueing...">
+                        <span class="glyphicon glyphicon-repeat"></span>
+                        Requeue jobs
+                    </button>
 
-            @RenderPartial(new PerPageSelector(pager))
-        </div>
+                    <button class="js-jobs-list-command btn btn-sm btn-default"
+                            data-url="@LinkTo("/jobs/failed/delete")"
+                            data-loading-text="Deleting..."
+                            data-confirm="Do you really want to DELETE ALL selected jobs?">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete selected
+                    </button>
 
-        <table class="table failed-table">
-            <thead>
-                <tr>
-                    <th class="min-width">
-                        <input type="checkbox" class="js-jobs-list-select-all" />
-                    </th>
-                    <th class="min-width">Id</th>
-                    <th>Failed</th>
-                    <th>Job</th>
-                </tr>
-            </thead>
-            <tbody>
-                @{ var index = 0; }
-                @foreach (var job in failedJobs)
-                {
-                    <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
-                        <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                            @if (job.Value.InFailedState)
-                            {
-                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
-                            }
-                        </td>
-                        <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                            <a href="@LinkTo("/jobs/" + job.Key)">
-                                @HtmlHelper.JobId(job.Key)
-                            </a>
-                            @if (!job.Value.InFailedState)
-                            {
-                                <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
-                            }
-                        </td>
-                        <td class="min-width">
-                            @if (job.Value.FailedAt.HasValue)
-                            {
-                                <span data-moment="@JobHelper.ToTimestamp(job.Value.FailedAt.Value)">
-                                    @job.Value.FailedAt
-                                </span>
-                            }
-                        </td>
-                        <td>
-                            <div>
-                                <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
-                                    @HtmlHelper.DisplayJob(job.Value.Job)
-                                </a>
-                            </div>
-                            @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
-                            {
-                                <div style="color: #888;">
-                                    @job.Value.Reason <a class="expander" href="#">More&nbsp;details...</a>
-                                </div>
-                            }
-                        </td>
+                    @RenderPartial(new PerPageSelector(pager))
+                </div>
+
+                <table class="table failed-table">
+                    <thead>
+                    <tr>
+                        <th class="min-width">
+                            <input type="checkbox" class="js-jobs-list-select-all"/>
+                        </th>
+                        <th class="min-width">Id</th>
+                        <th>Failed</th>
+                        <th>Job</th>
                     </tr>
-                    if (job.Value.InFailedState)
+                    </thead>
+                    <tbody>
+                    @{ var index = 0; }
+                    @foreach (var job in failedJobs)
                     {
-                        <tr>
-                            <td colspan="2" class="failed-job-details">
-                                <div class="expandable" style="@(index++ == 0 ? "display: block;" : null)">
-                                    <h4>@job.Value.ExceptionType</h4>
-                                    <p>
-                                        @job.Value.ExceptionMessage
-                                    </p>
-
-                                    @if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
-                                    {
-                                        <pre class="stack-trace">@HtmlHelper.MarkupStackTrace(job.Value.ExceptionDetails)</pre>
-                                    }
+                        <tr class="js-jobs-list-row @(!job.Value.InFailedState ? "obsolete-data" : null) @(job.Value.InFailedState ? "hover" : null)">
+                            <td rowspan="@(job.Value.InFailedState ? "2" : "1")">
+                                @if (job.Value.InFailedState)
+                                {
+                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
+                                }
+                            </td>
+                            <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
+                                <a href="@LinkTo("/jobs/" + job.Key)">
+                                    @HtmlHelper.JobId(job.Key)
+                                </a>
+                                @if (!job.Value.InFailedState)
+                                {
+                                    <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                                }
+                            </td>
+                            <td class="min-width">
+                                @if (job.Value.FailedAt.HasValue)
+                                {
+                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.FailedAt.Value)">
+                                            @job.Value.FailedAt
+                                        </span>
+                                }
+                            </td>
+                            <td>
+                                <div>
+                                    <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
+                                        @HtmlHelper.DisplayJob(job.Value.Job)
+                                    </a>
                                 </div>
+                                @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
+                                {
+                                    <div style="color: #888;">
+                                        @job.Value.Reason <a class="expander" href="#">More&nbsp;details...</a>
+                                    </div>
+                                }
                             </td>
                         </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
+                        if (job.Value.InFailedState)
+                        {
+                            <tr>
+                                <td colspan="2" class="failed-job-details">
+                                    <div class="expandable" style="@(index++ == 0 ? "display: block;" : null)">
+                                        <h4>@job.Value.ExceptionType</h4>
+                                        <p>
+                                            @job.Value.ExceptionMessage
+                                        </p>
 
-    @RenderPartial(new Paginator(pager))
-}
+                                        @if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
+                                        {
+                                            <pre class="stack-trace">@HtmlHelper.MarkupStackTrace(job.Value.ExceptionDetails)</pre>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            @RenderPartial(new Paginator(pager))
+        }
+    </div>
+</div>

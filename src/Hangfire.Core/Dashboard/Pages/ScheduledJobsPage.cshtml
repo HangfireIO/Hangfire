@@ -2,10 +2,9 @@
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
-@using Hangfire.Storage.Monitoring
 @inherits RazorPage
 @{
-    Layout = new LayoutPage { Title = "Scheduled Jobs" };
+    Layout = new LayoutPage("Scheduled Jobs");
 
     int from, perPage;
 
@@ -13,94 +12,103 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    Pager pager = new Pager(from, perPage, monitor.ScheduledCount())
+    var pager = new Pager(from, perPage, monitor.ScheduledCount())
     {
         BasePageUrl = LinkTo("/jobs/scheduled")
     };
 
-    JobList<ScheduledJobDto> scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
+    var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
-@if (pager.TotalPageCount == 0)
-{
-    <div class="alert alert-info">
-        There are no scheduled jobs.
+<div class="row">
+    <div class="col-md-3">
+        @RenderPartial(new JobsSidebar())
     </div>
-}
-else
-{
-    <div class="js-jobs-list">
-        <div class="btn-toolbar btn-toolbar-top">
-            <button class="js-jobs-list-command btn btn-sm btn-primary"
-                    data-url="@LinkTo("/jobs/scheduled/enqueue")"
-                    data-loading-text="Enqueueing...">
-                <span class="glyphicon glyphicon-play"></span>
-                Enqueue now
-            </button>
+    <div class="col-md-9">
+        <h1 class="page-header">Scheduled Jobs</h1>
 
-            <button class="js-jobs-list-command btn btn-sm btn-default"
-                    data-url="@LinkTo("/jobs/scheduled/delete")"
-                    data-loading-text="Deleting..."
-                    data-confirm="Do you really want to DELETE ALL selected jobs?">
-                <span class="glyphicon glyphicon-remove"></span>
-                Delete selected
-            </button>
+        @if (pager.TotalPageCount == 0)
+        {
+            <div class="alert alert-info">
+                There are no scheduled jobs.
+            </div>
+        }
+        else
+        {
+            <div class="js-jobs-list">
+                <div class="btn-toolbar btn-toolbar-top">
+                    <button class="js-jobs-list-command btn btn-sm btn-primary"
+                            data-url="@LinkTo("/jobs/scheduled/enqueue")"
+                            data-loading-text="Enqueueing...">
+                        <span class="glyphicon glyphicon-play"></span>
+                        Enqueue now
+                    </button>
 
-            @RenderPartial(new PerPageSelector(pager))
-        </div>
+                    <button class="js-jobs-list-command btn btn-sm btn-default"
+                            data-url="@LinkTo("/jobs/scheduled/delete")"
+                            data-loading-text="Deleting..."
+                            data-confirm="Do you really want to DELETE ALL selected jobs?">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete selected
+                    </button>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="min-width">
-                        <input type="checkbox" class="js-jobs-list-select-all" />
-                    </th>
-                    <th class="min-width">Id</th>
-                    <th>Enqueue</th>
-                    <th>Job</th>
-                    <th class="align-right">Scheduled</th>
-                </tr>
-            </thead>
-            @foreach (var job in scheduledJobs)
-            {
-                <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
-                    <td>
-                        @if (job.Value.InScheduledState)
-                        {
-                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
-                        }
-                    </td>
-                    <td class="min-width">
-                        <a href="@LinkTo("/jobs/" + job.Key)">
-                            @HtmlHelper.JobId(job.Key)
-                        </a>
-                        @if (!job.Value.InScheduledState)
-                        {
-                            <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
-                        }
-                    </td>
-                    <td class="min-width">
-                        <span data-moment="@JobHelper.ToTimestamp(job.Value.EnqueueAt)">
-                            @job.Value.EnqueueAt
-                        </span>
-                    </td>
-                    <td>
-                        <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
-                            @HtmlHelper.DisplayJob(job.Value.Job)
-                        </a>
-                    </td>
-                    <td class="align-right">
-                        @if (job.Value.ScheduledAt != null)
-                        {
-                            <span data-moment="@JobHelper.ToTimestamp(job.Value.ScheduledAt.Value)">
-                                @job.Value.ScheduledAt
-                            </span>
-                        }
-                    </td>
-                </tr>
-            }
-        </table>
+                    @RenderPartial(new PerPageSelector(pager))
+                </div>
+
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th class="min-width">
+                            <input type="checkbox" class="js-jobs-list-select-all"/>
+                        </th>
+                        <th class="min-width">Id</th>
+                        <th>Enqueue</th>
+                        <th>Job</th>
+                        <th class="align-right">Scheduled</th>
+                    </tr>
+                    </thead>
+                    @foreach (var job in scheduledJobs)
+                    {
+                        <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
+                            <td>
+                                @if (job.Value.InScheduledState)
+                                {
+                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
+                                }
+                            </td>
+                            <td class="min-width">
+                                <a href="@LinkTo("/jobs/" + job.Key)">
+                                    @HtmlHelper.JobId(job.Key)
+                                </a>
+                                @if (!job.Value.InScheduledState)
+                                {
+                                    <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
+                                }
+                            </td>
+                            <td class="min-width">
+                                <span data-moment="@JobHelper.ToTimestamp(job.Value.EnqueueAt)">
+                                    @job.Value.EnqueueAt
+                                </span>
+                            </td>
+                            <td>
+                                <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
+                                    @HtmlHelper.DisplayJob(job.Value.Job)
+                                </a>
+                            </td>
+                            <td class="align-right">
+                                @if (job.Value.ScheduledAt != null)
+                                {
+                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.ScheduledAt.Value)">
+                                        @job.Value.ScheduledAt
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+
+            @RenderPartial(new Paginator(pager))
+        }
     </div>
-
-    @RenderPartial(new Paginator(pager))
-}
+</div>

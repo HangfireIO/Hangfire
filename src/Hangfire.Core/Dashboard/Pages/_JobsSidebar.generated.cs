@@ -44,7 +44,7 @@ WriteLiteral("\r\n");
 
             
             #line 5 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
- if (SidebarMenu.Items.Count > 0)
+ if (JobsSidebarMenu.Items.Count > 0)
 {
     var monitoringApi = Storage.GetMonitoringApi();
     var statistics = monitoringApi.GetStatistics();
@@ -60,7 +60,7 @@ WriteLiteral("    <div id=\"stats\" class=\"list-group\">\r\n");
 
             
             #line 13 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
-         foreach (var item in SidebarMenu.Items)
+         foreach (var item in JobsSidebarMenu.Items)
         {
             var itemValue = item(context);
 

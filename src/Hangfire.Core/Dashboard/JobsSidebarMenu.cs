@@ -120,12 +120,12 @@ namespace Hangfire.Dashboard
         }
     }
 
-    public static class SidebarMenu
+    public static class JobsSidebarMenu
     {
         public static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
             = new List<Func<RazorPageContext, DashboardMenuItem>>();
 
-        static SidebarMenu()
+        static JobsSidebarMenu()
         {
             Items.Add(context => new DashboardMenuItem
             {

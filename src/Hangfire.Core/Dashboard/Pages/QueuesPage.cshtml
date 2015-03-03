@@ -1,74 +1,79 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
-@using System.Collections.Generic
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
-@using Hangfire.Storage.Monitoring
 @inherits RazorPage
 @{
-    Layout = new LayoutPage { Title = "Queues" };
+    Layout = new LayoutPage("Queues");
 
     var monitor = Storage.GetMonitoringApi();
-    IList<QueueWithTopEnqueuedJobsDto> queues = monitor.Queues();
+    var queues = monitor.Queues();
 }
 
-@if (queues.Count == 0)
-{
-    <div class="alert alert-warning">
-        No queued jobs found. Try to enqueue a job.
+<div class="row">
+    <div class="col-md-3">
+        @RenderPartial(new JobsSidebar())
     </div>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Queue</th>
-                <th>Length</th>
-                <th>Fetched</th>
-                <th>Next jobs</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var queue in queues)
-            {
+    <div class="col-md-9">
+        <h1 class="page-header">Queues</h1>
+
+        @if (queues.Count == 0)
+        {
+            <div class="alert alert-warning">
+                No queued jobs found. Try to enqueue a job.
+            </div>
+        }
+        else
+        {
+            <table class="table table-striped">
+                <thead>
                 <tr>
-                    <td>
-                        <a class="label-queue" href="@LinkTo("/jobs/enqueued/" + queue.Name)">
-                            @queue.Name
-                        </a>
-                    </td>
-                    <td>@queue.Length</td>
-                    <td>
-                        @if (queue.Fetched.HasValue)
-                        {
-                            <a href="@LinkTo("/jobs/enqueued/fetched/" + queue.Name)">
-                                @queue.Fetched
+                    <th>Queue</th>
+                    <th>Length</th>
+                    <th>Fetched</th>
+                    <th>Next jobs</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var queue in queues)
+                {
+                    <tr>
+                        <td>
+                            <a class="label-queue" href="@LinkTo("/jobs/enqueued/" + queue.Name)">
+                                @queue.Name
                             </a>
-                        }
-                        else
-                        {
-                            <em>N/A</em>
-                        }
-                    </td>
-                    <td>
-                        @if (queue.FirstJobs.Count == 0)
-                        {
-                            <em>No jobs queued.</em>
-                        }
-                        else
-                        {
-                            <table class="table table-condensed table-bordered table-inner">
-                                <thead>
+                        </td>
+                        <td>@queue.Length</td>
+                        <td>
+                            @if (queue.Fetched.HasValue)
+                            {
+                                <a href="@LinkTo("/jobs/enqueued/fetched/" + queue.Name)">
+                                    @queue.Fetched
+                                </a>
+                            }
+                            else
+                            {
+                                <em>N/A</em>
+                            }
+                        </td>
+                        <td>
+                            @if (queue.FirstJobs.Count == 0)
+                            {
+                                <em>No jobs queued.</em>
+                            }
+                            else
+                            {
+                                <table class="table table-condensed table-bordered table-inner">
+                                    <thead>
                                     <tr>
                                         <th class="min-width">Id</th>
                                         <th class="min-width">State</th>
                                         <th>Job</th>
                                         <th class="align-right min-width">Enqueued</th>
                                     </tr>
-                                </thead>
-                                <tbody>
+                                    </thead>
+                                    <tbody>
                                     @foreach (var job in queue.FirstJobs)
                                     {
                                         <tr class="@(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
@@ -81,8 +86,8 @@ else
                                             </td>
                                             <td class="min-width">
                                                 <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
-                                                    @job.Value.State
-                                                </span>
+                                                            @job.Value.State
+                                                        </span>
                                             </td>
                                             <td>
                                                 <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
@@ -93,8 +98,8 @@ else
                                                 @if (job.Value.EnqueuedAt.HasValue)
                                                 {
                                                     <span data-moment="@JobHelper.ToTimestamp(job.Value.EnqueuedAt.Value)">
-                                                        @job.Value.EnqueuedAt
-                                                    </span>
+                                                                @job.Value.EnqueuedAt
+                                                            </span>
                                                 }
                                                 else
                                                 {
@@ -103,12 +108,14 @@ else
                                             </td>
                                         </tr>
                                     }
-                                </tbody>
-                            </table>
-                        }
-                </td>
-            </tr>
-            }
-        </tbody>
-    </table>
-}
+                                    </tbody>
+                                </table>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

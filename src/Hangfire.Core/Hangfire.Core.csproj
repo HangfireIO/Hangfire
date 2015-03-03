@@ -79,6 +79,14 @@
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\Pages\Breadcrumbs.cs">
+      <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Breadcrumbs.generated.cs">
+      <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Dashboard\Pages\_JobsSidebar.generated.cs">
       <DependentUpon>_JobsSidebar.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -199,7 +207,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
-    <Compile Include="Dashboard\SidebarMenu.cs" />
+    <Compile Include="Dashboard\JobsSidebarMenu.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
@@ -400,6 +408,10 @@
     <None Include="Dashboard\Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>SucceededJobs1.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_Breadcrumbs.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Breadcrumbs.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_JobsSidebar.cshtml">
       <Generator>RazorGenerator</Generator>
