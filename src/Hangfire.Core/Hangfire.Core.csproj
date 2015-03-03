@@ -82,13 +82,16 @@
     <Compile Include="Dashboard\Pages\Breadcrumbs.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Dashboard\Pages\SidebarMenu.cs">
+      <DependentUpon>_SidebarMenu.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\Pages\_Breadcrumbs.generated.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Dashboard\Pages\_JobsSidebar.generated.cs">
-      <DependentUpon>_JobsSidebar.cshtml</DependentUpon>
+    <Compile Include="Dashboard\Pages\_SidebarMenu.generated.cs">
+      <DependentUpon>_SidebarMenu.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -413,9 +416,9 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>_Breadcrumbs.generated.cs</LastGenOutput>
     </None>
-    <None Include="Dashboard\Pages\_JobsSidebar.cshtml">
+    <None Include="Dashboard\Pages\_SidebarMenu.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>_JobsSidebar.generated.cs</LastGenOutput>
+      <LastGenOutput>_SidebarMenu.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_Navigation.cshtml">
       <Generator>RazorGenerator</Generator>

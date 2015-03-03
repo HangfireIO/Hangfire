@@ -46,11 +46,6 @@ WriteLiteral("\r\n");
             #line 5 "..\..\Dashboard\Pages\_Navigation.cshtml"
  if (DashboardMenu.Items.Count > 0)
 {
-    var monitoringApi = Storage.GetMonitoringApi();
-    var statistics = monitoringApi.GetStatistics();
-
-    var context = new RazorPageContext(this, statistics);
-    
 
             
             #line default
@@ -59,10 +54,10 @@ WriteLiteral("    <ul class=\"nav navbar-nav\">\r\n");
 
 
             
-            #line 13 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 8 "..\..\Dashboard\Pages\_Navigation.cshtml"
          foreach (var item in DashboardMenu.Items)
         {
-            var itemValue = item(context);
+            var itemValue = item(this);
 
             
             #line default
@@ -71,7 +66,7 @@ WriteLiteral("            <li class=\"");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 11 "..\..\Dashboard\Pages\_Navigation.cshtml"
                    Write(itemValue.Active ? "active" : null);
 
             
@@ -81,7 +76,7 @@ WriteLiteral("\">\r\n                <a href=\"");
 
 
             
-            #line 17 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 12 "..\..\Dashboard\Pages\_Navigation.cshtml"
                     Write(itemValue.Url);
 
             
@@ -91,7 +86,7 @@ WriteLiteral("\">\r\n                    ");
 
 
             
-            #line 18 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 13 "..\..\Dashboard\Pages\_Navigation.cshtml"
                Write(itemValue.Text);
 
             
@@ -101,7 +96,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 19 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 14 "..\..\Dashboard\Pages\_Navigation.cshtml"
                      if (itemValue.Metric != null)
                     {
 
@@ -112,7 +107,7 @@ WriteLiteral("                        <span class=\"metric ");
 
 
             
-            #line 21 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 16 "..\..\Dashboard\Pages\_Navigation.cshtml"
                                        Write(itemValue.Metric.Style.ToClassName());
 
             
@@ -122,7 +117,7 @@ WriteLiteral(" ");
 
 
             
-            #line 21 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 16 "..\..\Dashboard\Pages\_Navigation.cshtml"
                                                                               Write(itemValue.Metric.Highlighted ? "highlighted" : null);
 
             
@@ -132,7 +127,7 @@ WriteLiteral("\">");
 
 
             
-            #line 21 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 16 "..\..\Dashboard\Pages\_Navigation.cshtml"
                                                                                                                                       Write(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)));
 
             
@@ -142,7 +137,7 @@ WriteLiteral("</span>\r\n");
 
 
             
-            #line 22 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 17 "..\..\Dashboard\Pages\_Navigation.cshtml"
                     }
 
             
@@ -152,7 +147,7 @@ WriteLiteral("                </a>\r\n            </li>\r\n");
 
 
             
-            #line 25 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 20 "..\..\Dashboard\Pages\_Navigation.cshtml"
         }
 
             
@@ -162,7 +157,7 @@ WriteLiteral("    </ul>\r\n");
 
 
             
-            #line 27 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 22 "..\..\Dashboard\Pages\_Navigation.cshtml"
 }
             
             #line default

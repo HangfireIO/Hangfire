@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Hangfire.Storage.Monitoring;
 
 namespace Hangfire.Dashboard
 {
@@ -51,43 +50,31 @@ namespace Hangfire.Dashboard
         public double Order { get; set; }
     }
 
-    public class RazorPageContext
-    {
-        public RazorPageContext(RazorPage page, StatisticsDto statistics)
-        {
-            Page = page;
-            Statistics = statistics;
-        }
-
-        public RazorPage Page { get; private set; }
-        public StatisticsDto Statistics { get; private set; }
-    }
-
     public static class DashboardMenu
     {
-        public static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
-            = new List<Func<RazorPageContext, DashboardMenuItem>>();
+        public static readonly List<Func<RazorPage, DashboardMenuItem>> Items
+            = new List<Func<RazorPage, DashboardMenuItem>>();
 
         static DashboardMenu()
         {
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Jobs",
-                Url = context.Page.LinkTo("/jobs/enqueued"),
-                Active = context.Page.RequestPath.StartsWith("/jobs"),
-                Metric = context.Statistics.Failed != 0 
-                    ? new DashboardMetric(context.Statistics.Failed)
+                Url = page.LinkTo("/jobs/enqueued"),
+                Active = page.RequestPath.StartsWith("/jobs"),
+                Metric = page.Statistics.Failed != 0
+                    ? new DashboardMetric(page.Statistics.Failed)
                     {
                         Style = MetricStyle.Danger,
                         Highlighted = true
                     }
-                    : new DashboardMetric(context.Statistics.Enqueued)
+                    : new DashboardMetric(page.Statistics.Enqueued)
                     {
                         Style = MetricStyle.Success
                     }
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Retries",
                 Url = "#",
@@ -98,23 +85,23 @@ namespace Hangfire.Dashboard
                 }
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Recurring",
-                Url = context.Page.LinkTo("/recurring"),
-                Active = context.Page.RequestPath.StartsWith("/recurring"),
-                Metric = new DashboardMetric(context.Statistics.Recurring)
+                Url = page.LinkTo("/recurring"),
+                Active = page.RequestPath.StartsWith("/recurring"),
+                Metric = new DashboardMetric(page.Statistics.Recurring)
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Servers",
-                Url = context.Page.LinkTo("/servers"),
-                Active = context.Page.RequestPath.Equals("/servers"),
-                Metric = new DashboardMetric(context.Statistics.Servers)
+                Url = page.LinkTo("/servers"),
+                Active = page.RequestPath.Equals("/servers"),
+                Metric = new DashboardMetric(page.Statistics.Servers)
                 {
-                    Style = context.Statistics.Servers == 0 ? MetricStyle.Warning : MetricStyle.None,
-                    Highlighted = context.Statistics.Servers == 0
+                    Style = page.Statistics.Servers == 0 ? MetricStyle.Warning : MetricStyle.None,
+                    Highlighted = page.Statistics.Servers == 0
                 }
             });
         }
@@ -122,57 +109,57 @@ namespace Hangfire.Dashboard
 
     public static class JobsSidebarMenu
     {
-        public static readonly List<Func<RazorPageContext, DashboardMenuItem>> Items
-            = new List<Func<RazorPageContext, DashboardMenuItem>>();
+        public static readonly List<Func<RazorPage, DashboardMenuItem>> Items
+            = new List<Func<RazorPage, DashboardMenuItem>>();
 
         static JobsSidebarMenu()
         {
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Enqueued",
-                Url = context.Page.LinkTo("/jobs/enqueued"),
-                Active = context.Page.RequestPath.StartsWith("/jobs/enqueued"),
-                Metric = new DashboardMetric(context.Statistics.Enqueued, context.Statistics.Queues)
+                Url = page.LinkTo("/jobs/enqueued"),
+                Active = page.RequestPath.StartsWith("/jobs/enqueued"),
+                Metric = new DashboardMetric(page.Statistics.Enqueued, page.Statistics.Queues)
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Scheduled",
-                Url = context.Page.LinkTo("/jobs/scheduled"),
-                Active = context.Page.RequestPath.StartsWith("/jobs/scheduled"),
-                Metric = new DashboardMetric(context.Statistics.Scheduled)
+                Url = page.LinkTo("/jobs/scheduled"),
+                Active = page.RequestPath.StartsWith("/jobs/scheduled"),
+                Metric = new DashboardMetric(page.Statistics.Scheduled)
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Processing",
-                Url = context.Page.LinkTo("/jobs/processing"),
-                Active = context.Page.RequestPath.StartsWith("/jobs/processing"),
-                Metric = new DashboardMetric(context.Statistics.Processing)
+                Url = page.LinkTo("/jobs/processing"),
+                Active = page.RequestPath.StartsWith("/jobs/processing"),
+                Metric = new DashboardMetric(page.Statistics.Processing)
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Succeeded",
-                Url = context.Page.LinkTo("/jobs/succeeded"),
-                Active = context.Page.RequestPath.StartsWith("/jobs/succeeded"),
-                Metric = new DashboardMetric(context.Statistics.Succeeded)
+                Url = page.LinkTo("/jobs/succeeded"),
+                Active = page.RequestPath.StartsWith("/jobs/succeeded"),
+                Metric = new DashboardMetric(page.Statistics.Succeeded)
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Failed",
-                Url = context.Page.LinkTo("/jobs/failed"),
-                Active = context.Page.RequestPath.StartsWith("/jobs/failed"),
-                Metric = new DashboardMetric(context.Statistics.Failed)
+                Url = page.LinkTo("/jobs/failed"),
+                Active = page.RequestPath.StartsWith("/jobs/failed"),
+                Metric = new DashboardMetric(page.Statistics.Failed)
             });
 
-            Items.Add(context => new DashboardMenuItem
+            Items.Add(page => new DashboardMenuItem
             {
                 Text = "Deleted",
-                Url = context.Page.LinkTo("/jobs/deleted"),
-                Active = context.Page.RequestPath.StartsWith("/jobs/deleted"),
-                Metric = new DashboardMetric(context.Statistics.Deleted)
+                Url = page.LinkTo("/jobs/deleted"),
+                Active = page.RequestPath.StartsWith("/jobs/deleted"),
+                Metric = new DashboardMetric(page.Statistics.Deleted)
             });
         }
     }

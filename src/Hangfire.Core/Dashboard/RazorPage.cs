@@ -17,12 +17,15 @@
 using System;
 using System.Net;
 using System.Text;
+using Hangfire.Storage.Monitoring;
 using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
     public abstract class RazorPage 
     {
+        private Lazy<StatisticsDto> _statisticsLazy;
+
         public static Func<Exception, RazorPage> ExceptionHandler;
 
         private readonly StringBuilder _content = new StringBuilder();
@@ -31,6 +34,15 @@ namespace Hangfire.Dashboard
         public RazorPage Layout { get; protected set; }
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
+
+        public StatisticsDto Statistics
+        {
+            get
+            {
+                if (_statisticsLazy == null) throw new InvalidOperationException("Page is not initialized.");
+                return _statisticsLazy.Value;
+            }
+        }
 
         internal IOwinRequest Request { private get; set; }
         internal IOwinResponse Response { private get; set; }
@@ -65,15 +77,37 @@ namespace Hangfire.Dashboard
 
             if (Layout != null)
             {
-                Layout.Request = Request;
-                Layout.Response = Response;
-                Layout.Storage = Storage;
-                Layout.AppPath = AppPath;
-
+                Layout.Assign(this);
                 return Layout.TransformText(_content.ToString());
             }
 
             return _content.ToString();
+        }
+
+        public void Assign(RazorPage parentPage)
+        {
+            Request = parentPage.Request;
+            Response = parentPage.Response;
+            Storage = parentPage.Storage;
+            AppPath = parentPage.AppPath;
+
+            _statisticsLazy = parentPage._statisticsLazy;
+        }
+
+        internal void Assign(RequestDispatcherContext context)
+        {
+            var owinContext = new OwinContext(context.OwinEnvironment);
+
+            Request = owinContext.Request;
+            Response = owinContext.Response;
+            Storage = context.JobStorage;
+            AppPath = context.AppPath;
+
+            _statisticsLazy = new Lazy<StatisticsDto>(() =>
+            {
+                var monitoring = Storage.GetMonitoringApi();
+                return monitoring.GetStatistics();
+            });
         }
 
         protected void WriteLiteral(string textToAppend)
@@ -96,15 +130,12 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(_innerContent);
         }
 
-        protected NonEscapedString RenderPartial(RazorPage page)
+        protected NonEscapedString RenderPartial(RazorPage partial)
         {
-            page.Request = Request;
-            page.Response = Response;
-            page.Storage = Storage;
-            page.AppPath = AppPath;
+            partial.Assign(this);
+            partial.Execute();
 
-            page.Execute();
-            return new NonEscapedString(page._content.ToString());
+            return new NonEscapedString(partial._content.ToString());
         }
 
         private string Encode(string text)

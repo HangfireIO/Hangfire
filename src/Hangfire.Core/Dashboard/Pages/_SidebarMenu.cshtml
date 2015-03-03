@@ -2,17 +2,12 @@
 @using System
 @using Hangfire.Dashboard
 @inherits RazorPage
-@if (JobsSidebarMenu.Items.Count > 0)
+@if (Items.Any())
 {
-    var monitoringApi = Storage.GetMonitoringApi();
-    var statistics = monitoringApi.GetStatistics();
-
-    var context = new RazorPageContext(this, statistics);
-
     <div id="stats" class="list-group">
-        @foreach (var item in JobsSidebarMenu.Items)
+        @foreach (var item in Items)
         {
-            var itemValue = item(context);
+            var itemValue = item(this);
             <a href="@itemValue.Url" class="list-group-item @(itemValue.Active ? "active" : null)">
                 @itemValue.Text
                 @if (itemValue.Metric != null)

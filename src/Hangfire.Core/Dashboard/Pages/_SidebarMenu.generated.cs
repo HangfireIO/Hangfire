@@ -12,7 +12,7 @@
 namespace Hangfire.Dashboard.Pages
 {
     
-    #line 2 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+    #line 2 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
     using System;
     
     #line default
@@ -21,14 +21,14 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
-    #line 3 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+    #line 3 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
     using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    public partial class JobsSidebar : RazorPage
+    public partial class SidebarMenu : RazorPage
     {
 #line hidden
 
@@ -43,14 +43,9 @@ WriteLiteral("\r\n");
 
 
             
-            #line 5 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
- if (JobsSidebarMenu.Items.Count > 0)
+            #line 5 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+ if (Items.Any())
 {
-    var monitoringApi = Storage.GetMonitoringApi();
-    var statistics = monitoringApi.GetStatistics();
-
-    var context = new RazorPageContext(this, statistics);
-
 
             
             #line default
@@ -59,10 +54,10 @@ WriteLiteral("    <div id=\"stats\" class=\"list-group\">\r\n");
 
 
             
-            #line 13 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
-         foreach (var item in JobsSidebarMenu.Items)
+            #line 8 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+         foreach (var item in Items)
         {
-            var itemValue = item(context);
+            var itemValue = item(this);
 
             
             #line default
@@ -71,7 +66,7 @@ WriteLiteral("            <a href=\"");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 11 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
                 Write(itemValue.Url);
 
             
@@ -81,7 +76,7 @@ WriteLiteral("\" class=\"list-group-item ");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 11 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
                                                         Write(itemValue.Active ? "active" : null);
 
             
@@ -91,7 +86,7 @@ WriteLiteral("\">\r\n                ");
 
 
             
-            #line 17 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 12 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
            Write(itemValue.Text);
 
             
@@ -101,7 +96,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 18 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 13 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
                  if (itemValue.Metric != null)
                 {
                     var metricClass = itemValue.Metric.Style.ToClassName();
@@ -115,7 +110,7 @@ WriteLiteral("                    <span class=\"pull-right metric ");
 
 
             
-            #line 23 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 18 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
                                               Write(metricClass);
 
             
@@ -125,7 +120,7 @@ WriteLiteral(" ");
 
 
             
-            #line 23 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 18 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
                                                            Write(highlighted);
 
             
@@ -135,7 +130,7 @@ WriteLiteral("\">");
 
 
             
-            #line 23 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 18 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
                                                                           Write(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)));
 
             
@@ -145,7 +140,7 @@ WriteLiteral("</span>\r\n");
 
 
             
-            #line 24 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 19 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
                 }
 
             
@@ -155,7 +150,7 @@ WriteLiteral("            </a>\r\n");
 
 
             
-            #line 26 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 21 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
         }
 
             
@@ -165,7 +160,7 @@ WriteLiteral("    </div>\r\n");
 
 
             
-            #line 28 "..\..\Dashboard\Pages\_JobsSidebar.cshtml"
+            #line 23 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
 }
 
             

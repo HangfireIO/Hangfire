@@ -96,7 +96,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
             
             #line 28 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-   Write(RenderPartial(new JobsSidebar()));
+   Write(RenderPartial(new SidebarMenu(JobsSidebarMenu.Items)));
 
             
             #line default

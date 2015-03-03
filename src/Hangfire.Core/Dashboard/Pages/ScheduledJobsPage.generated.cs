@@ -77,7 +77,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
             
             #line 25 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-   Write(RenderPartial(new JobsSidebar()));
+   Write(RenderPartial(new SidebarMenu(JobsSidebarMenu.Items)));
 
             
             #line default

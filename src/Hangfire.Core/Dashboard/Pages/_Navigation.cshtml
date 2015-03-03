@@ -4,15 +4,10 @@
 @inherits RazorPage
 @if (DashboardMenu.Items.Count > 0)
 {
-    var monitoringApi = Storage.GetMonitoringApi();
-    var statistics = monitoringApi.GetStatistics();
-
-    var context = new RazorPageContext(this, statistics);
-    
     <ul class="nav navbar-nav">
         @foreach (var item in DashboardMenu.Items)
         {
-            var itemValue = item(context);
+            var itemValue = item(this);
             <li class="@(itemValue.Active ? "active" : null)">
                 <a href="@itemValue.Url">
                     @itemValue.Text
