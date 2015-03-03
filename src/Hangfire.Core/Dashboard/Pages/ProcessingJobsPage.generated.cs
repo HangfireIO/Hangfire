@@ -70,7 +70,7 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.ProcessingCount())
     {
-        BasePageUrl = LinkTo("/processing")
+        BasePageUrl = LinkTo("/jobs/processing")
     };
 
     JobList<ProcessingJobDto> processingJobs = monitor
@@ -111,7 +111,7 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
 
             
             #line 36 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                         Write(LinkTo("/processing/requeue"));
+                         Write(LinkTo("/jobs/processing/requeue"));
 
             
             #line default
@@ -128,7 +128,7 @@ WriteLiteral(@"""
 
             
             #line 43 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                         Write(LinkTo("/processing/delete"));
+                         Write(LinkTo("/jobs/processing/delete"));
 
             
             #line default
@@ -235,7 +235,7 @@ WriteLiteral("                        </td>\r\n                        <td class
 
             
             #line 76 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                                Write(LinkTo("/job/" + job.Key));
+                                Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
@@ -289,7 +289,7 @@ WriteLiteral("\r\n                        </td>\r\n                        <td>\
 
             
             #line 88 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                                                   Write(LinkTo("/job/" + job.Key));
+                                                   Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default

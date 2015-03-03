@@ -14,7 +14,7 @@
             Subtitle = "Enqueued jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {
-                    { "Queues", LinkTo("/queues") }
+                    { "Queues", LinkTo("/jobs/enqueued") }
                 }
         };
 
@@ -26,7 +26,7 @@
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
     {
-        BasePageUrl = LinkTo("/queues/" + Queue)
+        BasePageUrl = LinkTo("/jobs/enqueued/" + Queue)
     };
 
     JobList<EnqueuedJobDto> enqueuedJobs = monitor
@@ -44,7 +44,7 @@ else
     <div class="js-jobs-list">
         <div class="btn-toolbar btn-toolbar-top">
             <button class="js-jobs-list-command btn btn-sm btn-default"
-                    data-url="@LinkTo("/enqueued/delete")"
+                    data-url="@LinkTo("/jobs/enqueued/delete")"
                     data-loading-text="Deleting..."
                     data-confirm="Do you really want to DELETE ALL selected jobs?">
                 <span class="glyphicon glyphicon-remove"></span>
@@ -74,7 +74,7 @@ else
                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                         </td>
                         <td class="min-width">
-                            <a href="@LinkTo("/job/" + job.Key)">
+                            <a href="@LinkTo("/jobs/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>
                             @if (!job.Value.InEnqueuedState)
@@ -88,7 +88,7 @@ else
                             </span>
                         </td>
                         <td>
-                            <a class="job-method" href="@LinkTo("/job/" + job.Key)">
+                            <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
                                 @HtmlHelper.DisplayJob(job.Value.Job)
                             </a>
                         </td>

@@ -14,8 +14,8 @@
             Subtitle = "Fetched jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {
-                    { "Queues", LinkTo("/queues") },
-                    { Queue.ToUpperInvariant(), LinkTo("/queues/" + Queue) }
+                    { "Queues", LinkTo("/jobs/enqueued") },
+                    { Queue.ToUpperInvariant(), LinkTo("/jobs/enqueued/" + Queue) }
                 },
             BreadcrumbsTitle = "Fetched jobs",
         };
@@ -28,7 +28,7 @@
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
     {
-        BasePageUrl = LinkTo("/queues/fetched/" + Queue)
+        BasePageUrl = LinkTo("/jobs/enqueued/fetched/" + Queue)
     };
 
     JobList<FetchedJobDto> fetchedJobs = monitor
@@ -46,14 +46,14 @@ else
     <div class="js-jobs-list">
         <div class="btn-toolbar btn-toolbar-top">
             <button class="js-jobs-list-command btn btn-sm btn-primary"
-                    data-url="@LinkTo("/enqueued/requeue")"
+                    data-url="@LinkTo("/jobs/enqueued/requeue")"
                     data-loading-text="Enqueueing...">
                 <span class="glyphicon glyphicon-repeat"></span>
                 Requeue jobs
             </button>
 
             <button class="js-jobs-list-command btn btn-sm btn-default"
-                    data-url="@LinkTo("/enqueued/delete")"
+                    data-url="@LinkTo("/jobs/enqueued/delete")"
                     data-loading-text="Deleting..."
                     data-confirm="Do you really want to DELETE ALL selected jobs?">
                 <span class="glyphicon glyphicon-remove"></span>
@@ -83,7 +83,7 @@ else
                             <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
                         </td>
                         <td class="min-width">
-                            <a href="@LinkTo("/job/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
+                            <a href="@LinkTo("/jobs/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
                         </td>
                         <td class="min-width">
                             <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
@@ -91,7 +91,7 @@ else
                             </span>
                         </td>
                         <td>
-                            <a class="job-method" href="@LinkTo("/job/" + job.Key)">
+                            <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
                                 @HtmlHelper.DisplayJob(job.Value.Job)
                             </a>
                         </td>

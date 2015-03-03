@@ -338,7 +338,7 @@ WriteLiteral("                                    <a href=\"");
 
             
             #line 95 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                        Write(LinkTo("/job/" + job.LastJobId));
+                                        Write(LinkTo("/jobs/" + job.LastJobId));
 
             
             #line default

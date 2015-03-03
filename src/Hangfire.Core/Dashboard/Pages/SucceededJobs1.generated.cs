@@ -76,7 +76,7 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.SucceededListCount())
     {
-        BasePageUrl = LinkTo("/succeeded")
+        BasePageUrl = LinkTo("/jobs/succeeded")
     };
 
     JobList<SucceededJobDto> succeededJobs = monitor
@@ -117,7 +117,7 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
 
             
             #line 37 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                         Write(LinkTo("/succeeded/requeue"));
+                         Write(LinkTo("/jobs/succeeded/requeue"));
 
             
             #line default
@@ -219,7 +219,7 @@ WriteLiteral("                        </td>\r\n                        <td class
 
             
             #line 69 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                Write(LinkTo("/job/" + job.Key));
+                                Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
@@ -286,7 +286,7 @@ WriteLiteral("                            <td>\r\n                              
 
             
             #line 87 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                                       Write(LinkTo("/job/" + job.Key));
+                                                       Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default

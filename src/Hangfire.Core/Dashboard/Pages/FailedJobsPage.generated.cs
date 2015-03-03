@@ -76,7 +76,7 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.FailedCount())
     {
-        BasePageUrl = LinkTo("/failed")
+        BasePageUrl = LinkTo("/jobs/failed")
     };
 
     JobList<FailedJobDto> failedJobs = monitor
@@ -117,7 +117,7 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
 
             
             #line 37 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                         Write(LinkTo("/failed/requeue"));
+                         Write(LinkTo("/jobs/failed/requeue"));
 
             
             #line default
@@ -134,7 +134,7 @@ WriteLiteral(@"""
 
             
             #line 44 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                         Write(LinkTo("/failed/delete"));
+                         Write(LinkTo("/jobs/failed/delete"));
 
             
             #line default
@@ -268,7 +268,7 @@ WriteLiteral("\">\r\n                            <a href=\"");
 
             
             #line 77 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                Write(LinkTo("/job/" + job.Key));
+                                Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
@@ -352,7 +352,7 @@ WriteLiteral("                        </td>\r\n                        <td>\r\n 
 
             
             #line 95 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                       Write(LinkTo("/job/" + job.Key));
+                                                       Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default

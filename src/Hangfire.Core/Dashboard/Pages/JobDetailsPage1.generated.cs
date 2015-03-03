@@ -142,7 +142,7 @@ WriteLiteral("</span>\r\n        </span>\r\n\r\n        <span class=\"job-snippe
 
             
             #line 37 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                         Write(LinkTo("/actions/requeue/" + JobId));
+                                                         Write(LinkTo("/jobs/actions/requeue/" + JobId));
 
             
             #line default
@@ -153,7 +153,7 @@ WriteLiteral("\" data-loading-text=\"Enqueueing...\">Requeue</button>\r\n       
 
             
             #line 38 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                       Write(LinkTo("/actions/delete/" + JobId));
+                                                       Write(LinkTo("/jobs/actions/delete/" + JobId));
 
             
             #line default

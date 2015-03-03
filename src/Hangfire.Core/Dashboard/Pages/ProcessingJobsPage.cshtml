@@ -15,7 +15,7 @@
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.ProcessingCount())
     {
-        BasePageUrl = LinkTo("/processing")
+        BasePageUrl = LinkTo("/jobs/processing")
     };
 
     JobList<ProcessingJobDto> processingJobs = monitor
@@ -33,14 +33,14 @@ else
     <div class="js-jobs-list">
         <div class="btn-toolbar btn-toolbar-top">
             <button class="js-jobs-list-command btn btn-sm btn-primary"
-                    data-url="@LinkTo("/processing/requeue")"
+                    data-url="@LinkTo("/jobs/processing/requeue")"
                     data-loading-text="Enqueueing...">
                 <span class="glyphicon glyphicon-repeat"></span>
                 Requeue jobs
             </button>
 
             <button class="js-jobs-list-command btn btn-sm btn-default"
-                    data-url="@LinkTo("/processing/delete")"
+                    data-url="@LinkTo("/jobs/processing/delete")"
                     data-loading-text="Deleting..."
                     data-confirm="Do you really want to DELETE ALL selected jobs?">
                 <span class="glyphicon glyphicon-remove"></span>
@@ -73,7 +73,7 @@ else
                             }
                         </td>
                         <td class="min-width">
-                            <a href="@LinkTo("/job/" + job.Key)">
+                            <a href="@LinkTo("/jobs/" + job.Key)">
                                 @HtmlHelper.JobId(job.Key)
                             </a>
                             @if (!job.Value.InProcessingState)
@@ -85,7 +85,7 @@ else
                             @job.Value.ServerId.ToUpperInvariant()
                         </td>
                         <td>
-                            <a class="job-method" href="@LinkTo("/job/" + job.Key)">
+                            <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
                                 @HtmlHelper.DisplayJob(job.Value.Job)
                             </a>
                         </td>

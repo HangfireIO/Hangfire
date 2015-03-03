@@ -85,8 +85,8 @@ WriteLiteral("\r\n");
             Subtitle = "Fetched jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {
-                    { "Queues", LinkTo("/queues") },
-                    { Queue.ToUpperInvariant(), LinkTo("/queues/" + Queue) }
+                    { "Queues", LinkTo("/jobs/enqueued") },
+                    { Queue.ToUpperInvariant(), LinkTo("/jobs/enqueued/" + Queue) }
                 },
             BreadcrumbsTitle = "Fetched jobs",
         };
@@ -99,7 +99,7 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
     {
-        BasePageUrl = LinkTo("/queues/fetched/" + Queue)
+        BasePageUrl = LinkTo("/jobs/enqueued/fetched/" + Queue)
     };
 
     JobList<FetchedJobDto> fetchedJobs = monitor
@@ -139,7 +139,7 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
 
             
             #line 49 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                         Write(LinkTo("/enqueued/requeue"));
+                         Write(LinkTo("/jobs/enqueued/requeue"));
 
             
             #line default
@@ -156,7 +156,7 @@ WriteLiteral(@"""
 
             
             #line 56 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                         Write(LinkTo("/enqueued/delete"));
+                         Write(LinkTo("/jobs/enqueued/delete"));
 
             
             #line default
@@ -223,7 +223,7 @@ WriteLiteral("\" />\r\n                        </td>\r\n                        
 
             
             #line 86 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                Write(LinkTo("/job/" + job.Key));
+                                Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
@@ -233,7 +233,7 @@ WriteLiteral("\">");
 
             
             #line 86 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                                            Write(HtmlHelper.JobId(job.Key));
+                                                             Write(HtmlHelper.JobId(job.Key));
 
             
             #line default
@@ -265,7 +265,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
             
             #line 94 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                                   Write(LinkTo("/job/" + job.Key));
+                                                   Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default

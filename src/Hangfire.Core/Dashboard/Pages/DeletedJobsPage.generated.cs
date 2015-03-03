@@ -70,7 +70,7 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.DeletedListCount())
     {
-        BasePageUrl = LinkTo("/deleted")
+        BasePageUrl = LinkTo("/jobs/deleted")
     };
 
     JobList<DeletedJobDto> jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
@@ -109,7 +109,7 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
 
             
             #line 35 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                         Write(LinkTo("/deleted/requeue"));
+                         Write(LinkTo("/jobs/deleted/requeue"));
 
             
             #line default
@@ -209,7 +209,7 @@ WriteLiteral("                        </td>\r\n                        <td class
 
             
             #line 64 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                Write(LinkTo("/job/" + job.Key));
+                                Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
@@ -276,7 +276,7 @@ WriteLiteral("                            <td>\r\n                              
 
             
             #line 82 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                                       Write(LinkTo("/job/" + job.Key));
+                                                       Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default

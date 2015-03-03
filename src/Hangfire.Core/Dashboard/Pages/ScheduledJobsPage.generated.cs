@@ -70,7 +70,7 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.ScheduledCount())
     {
-        BasePageUrl = LinkTo("/scheduled")
+        BasePageUrl = LinkTo("/jobs/scheduled")
     };
 
     JobList<ScheduledJobDto> scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
@@ -110,7 +110,7 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
 
             
             #line 35 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                         Write(LinkTo("/scheduled/enqueue"));
+                         Write(LinkTo("/jobs/scheduled/enqueue"));
 
             
             #line default
@@ -127,7 +127,7 @@ WriteLiteral(@"""
 
             
             #line 42 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                         Write(LinkTo("/scheduled/delete"));
+                         Write(LinkTo("/jobs/scheduled/delete"));
 
             
             #line default
@@ -233,7 +233,7 @@ WriteLiteral("                    </td>\r\n                    <td class=\"min-w
 
             
             #line 74 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                            Write(LinkTo("/job/" + job.Key));
+                            Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
@@ -297,7 +297,7 @@ WriteLiteral("\r\n                        </span>\r\n                    </td>\r
 
             
             #line 88 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                               Write(LinkTo("/job/" + job.Key));
+                                               Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default

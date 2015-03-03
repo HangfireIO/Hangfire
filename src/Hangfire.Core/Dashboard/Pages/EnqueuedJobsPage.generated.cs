@@ -85,7 +85,7 @@ WriteLiteral("\r\n");
             Subtitle = "Enqueued jobs",
             Breadcrumbs = new Dictionary<string, string>
                 {
-                    { "Queues", LinkTo("/queues") }
+                    { "Queues", LinkTo("/jobs/enqueued") }
                 }
         };
 
@@ -97,7 +97,7 @@ WriteLiteral("\r\n");
     var monitor = Storage.GetMonitoringApi();
     Pager pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
     {
-        BasePageUrl = LinkTo("/queues/" + Queue)
+        BasePageUrl = LinkTo("/jobs/enqueued/" + Queue)
     };
 
     JobList<EnqueuedJobDto> enqueuedJobs = monitor
@@ -137,7 +137,7 @@ WriteLiteral("    <div class=\"js-jobs-list\">\r\n        <div class=\"btn-toolb
 
             
             #line 47 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                         Write(LinkTo("/enqueued/delete"));
+                         Write(LinkTo("/jobs/enqueued/delete"));
 
             
             #line default
@@ -213,7 +213,7 @@ WriteLiteral("\" />\r\n                        </td>\r\n                        
 
             
             #line 77 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                Write(LinkTo("/job/" + job.Key));
+                                Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
@@ -277,7 +277,7 @@ WriteLiteral("\r\n                            </span>\r\n                       
 
             
             #line 91 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                                   Write(LinkTo("/job/" + job.Key));
+                                                   Write(LinkTo("/jobs/" + job.Key));
 
             
             #line default
