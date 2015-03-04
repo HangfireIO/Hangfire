@@ -99,16 +99,32 @@ WriteLiteral("\r\n");
             #line 14 "..\..\Dashboard\Pages\_Navigation.cshtml"
                      if (itemValue.Metric != null)
                     {
+                        var className = itemValue.Metric.Style.ToClassName();
+                        var highlighted = itemValue.Metric.Highlighted ? "highlighted" : null;
+                        var title = !String.IsNullOrWhiteSpace(itemValue.Metric.Title)
+                            ? new NonEscapedString(String.Format("title=\"{0}\" data-placement=\"bottom\" data-container=\"body\"", itemValue.Metric.Title))
+                            : null;
+                        
 
             
             #line default
             #line hidden
-WriteLiteral("                        <span class=\"metric ");
+WriteLiteral("                        <span ");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\_Navigation.cshtml"
-                                       Write(itemValue.Metric.Style.ToClassName());
+            #line 22 "..\..\Dashboard\Pages\_Navigation.cshtml"
+                         Write(title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" class=\"metric ");
+
+
+            
+            #line 22 "..\..\Dashboard\Pages\_Navigation.cshtml"
+                                              Write(className);
 
             
             #line default
@@ -117,8 +133,8 @@ WriteLiteral(" ");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\_Navigation.cshtml"
-                                                                              Write(itemValue.Metric.Highlighted ? "highlighted" : null);
+            #line 22 "..\..\Dashboard\Pages\_Navigation.cshtml"
+                                                         Write(highlighted);
 
             
             #line default
@@ -127,8 +143,8 @@ WriteLiteral("\">");
 
 
             
-            #line 16 "..\..\Dashboard\Pages\_Navigation.cshtml"
-                                                                                                                                      Write(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)));
+            #line 22 "..\..\Dashboard\Pages\_Navigation.cshtml"
+                                                                        Write(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)));
 
             
             #line default
@@ -137,7 +153,7 @@ WriteLiteral("</span>\r\n");
 
 
             
-            #line 17 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 23 "..\..\Dashboard\Pages\_Navigation.cshtml"
                     }
 
             
@@ -147,7 +163,7 @@ WriteLiteral("                </a>\r\n            </li>\r\n");
 
 
             
-            #line 20 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 26 "..\..\Dashboard\Pages\_Navigation.cshtml"
         }
 
             
@@ -157,7 +173,7 @@ WriteLiteral("    </ul>\r\n");
 
 
             
-            #line 22 "..\..\Dashboard\Pages\_Navigation.cshtml"
+            #line 28 "..\..\Dashboard\Pages\_Navigation.cshtml"
 }
             
             #line default

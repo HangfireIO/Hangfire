@@ -13,7 +13,13 @@
                     @itemValue.Text
                     @if (itemValue.Metric != null)
                     {
-                        <span class="metric @itemValue.Metric.Style.ToClassName() @(itemValue.Metric.Highlighted ? "highlighted" : null)">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)))</span>
+                        var className = itemValue.Metric.Style.ToClassName();
+                        var highlighted = itemValue.Metric.Highlighted ? "highlighted" : null;
+                        var title = !String.IsNullOrWhiteSpace(itemValue.Metric.Title)
+                            ? new NonEscapedString(String.Format("title=\"{0}\" data-placement=\"bottom\" data-container=\"body\"", itemValue.Metric.Title))
+                            : null;
+                        
+                        <span @title class="metric @className @highlighted">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)))</span>
                     }
                 </a>
             </li>

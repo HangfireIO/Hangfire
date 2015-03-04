@@ -26,6 +26,7 @@ namespace Hangfire.Dashboard
         public long[] Values { get; private set; }
         public MetricStyle Style { get; set; }
         public bool Highlighted { get; set; }
+        public string Title { get; set; }
     }
 
     public enum MetricStyle

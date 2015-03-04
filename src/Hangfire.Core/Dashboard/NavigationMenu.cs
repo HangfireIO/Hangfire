@@ -32,7 +32,8 @@ namespace Hangfire.Dashboard
                     ? new Metric(page.Statistics.Failed)
                     {
                         Style = MetricStyle.Danger,
-                        Highlighted = true
+                        Highlighted = true,
+                        Title = String.Format("{0} failed job(s) found. Retry or delete them manually.", page.Statistics.Failed)
                     }
                     : new Metric(page.Statistics.Enqueued)
                     {
