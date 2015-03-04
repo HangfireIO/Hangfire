@@ -67,6 +67,7 @@
                             <th class="min-width">State</th>
                             <th>Job</th>
                             <th>Reason</th>
+                            <th class="align-right">Retry</th>
                             <th class="align-right">Created</th>
                         </tr>
                     </thead>
@@ -91,7 +92,7 @@
                                 </td>
                                 @if (jobData == null)
                                 {
-                                    <td colspan="4"><em>Job expired.</em></td>
+                                    <td colspan="5"><em>Job expired.</em></td>
                                 }
                                 else
                                 {
@@ -116,6 +117,14 @@
                                         @if (stateData != null)
                                         {
                                             @: @stateData.Reason
+                                        }
+                                    </td>
+                                    <td class="align-right">
+                                        @if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
+                                        {
+                                            <span data-moment="@JobHelper.ToTimestamp(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"]))">
+                                                @JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"])
+                                            </span>
                                         }
                                     </td>
                                     <td class="align-right">
