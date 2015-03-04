@@ -29,18 +29,22 @@ namespace Hangfire.Dashboard
             Items.Add(page => new MenuItem("Jobs", page.LinkTo("/jobs/enqueued"))
             {
                 Active = page.RequestPath.StartsWith("/jobs"),
-                Metric = page.Statistics.Failed != 0
+                Metrics = new []
+                {
+                    new Metric(page.Statistics.Enqueued)
+                    {
+                        Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.None,
+                        Highlighted = page.Statistics.Enqueued > 0 && page.Statistics.Failed == 0
+                    },
+                    page.Statistics.Failed > 0
                     ? new Metric(page.Statistics.Failed)
                     {
                         Style = MetricStyle.Danger,
                         Highlighted = true,
                         Title = String.Format("{0} failed job(s) found. Retry or delete them manually.", page.Statistics.Failed)
                     }
-                    : new Metric(page.Statistics.Enqueued)
-                    {
-                        Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.None,
-                        Highlighted = page.Statistics.Enqueued > 0
-                    }
+                    : null
+                }
             });
 
             Items.Add(page =>
@@ -74,13 +78,18 @@ namespace Hangfire.Dashboard
                 Metric = new Metric(page.Statistics.Recurring)
             });
 
-            Items.Add(page => new MenuItem("Servers", page.LinkTo("/servers"))
+            Items.Add(page => new MenuItem(
+                "Servers", 
+                page.LinkTo("/servers"))
             {
                 Active = page.RequestPath.Equals("/servers"),
                 Metric = new Metric(page.Statistics.Servers)
                 {
                     Style = page.Statistics.Servers == 0 ? MetricStyle.Warning : MetricStyle.None,
-                    Highlighted = page.Statistics.Servers == 0
+                    Highlighted = page.Statistics.Servers == 0,
+                    Title = page.Statistics.Servers == 0
+                        ? "No active servers found. Jobs will not be processed."
+                        : null
                 }
             });
         }

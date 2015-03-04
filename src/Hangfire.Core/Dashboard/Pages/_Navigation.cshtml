@@ -1,5 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
 @using System
+@using System.Collections.Generic
 @using Hangfire.Dashboard
 @inherits RazorPage
 @if (NavigationMenu.Items.Count > 0)
@@ -14,15 +15,16 @@
             <li class="@(itemValue.Active ? "active" : null)">
                 <a href="@itemValue.Url">
                     @itemValue.Text
-                    @if (itemValue.Metric != null)
+
+                    @foreach(var metric in itemValue.GetAllMetrics())
                     {
-                        var className = itemValue.Metric.Style.ToClassName();
-                        var highlighted = itemValue.Metric.Highlighted ? "highlighted" : null;
-                        var title = !String.IsNullOrWhiteSpace(itemValue.Metric.Title)
-                            ? new NonEscapedString(String.Format("title=\"{0}\" data-placement=\"bottom\" data-container=\"body\"", itemValue.Metric.Title))
+                        var className = metric.Style.ToClassName();
+                        var highlighted = metric.Highlighted ? "highlighted" : null;
+                        var title = !String.IsNullOrWhiteSpace(metric.Title)
+                            ? new NonEscapedString(String.Format("title=\"{0}\" data-placement=\"bottom\" data-container=\"body\"", metric.Title))
                             : null;
                         
-                        <span @title class="metric @className @highlighted">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)))</span>
+                        <span @title class="metric @className @highlighted">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", metric.Values)))</span>
                     }
                 </a>
             </li>

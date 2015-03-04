@@ -14,6 +14,9 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Hangfire.Dashboard
 {
     public class MenuItem
@@ -29,5 +32,16 @@ namespace Hangfire.Dashboard
 
         public bool Active { get; set; }
         public Metric Metric { get; set; }
+        public IEnumerable<Metric> Metrics { get; set; }
+
+        public IEnumerable<Metric> GetAllMetrics()
+        {
+            var metrics = new List<Metric>();
+
+            if (Metric != null) { metrics.Add(Metric); }
+            if (Metrics != null) { metrics.AddRange(Metrics.Where(x => x != null)); }
+
+            return metrics;
+        }
     }
 }
