@@ -1,0 +1,122 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System
+@using System.Collections.Generic
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Storage
+@inherits RazorPage
+@{
+    Layout = new LayoutPage("Retries");
+    
+    int from, perPage;
+
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
+
+    Pager pager;
+    List<string> jobIds;
+
+    using (var connection = Storage.GetConnection())
+    {
+        var storageConnection = connection as JobStorageConnection;
+        
+        pager = new Pager(from, perPage, storageConnection.GetSetCount("retries"));
+        jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+    }
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="page-header">Retries</h1>
+        @if (jobIds.Count == 0)
+        {
+            <div class="alert alert-info">
+                All is OK – you have no retries.
+            </div>
+        }
+        else
+        {
+            <div class="js-jobs-list">
+                <div class="btn-toolbar btn-toolbar-top">
+                    <button class="js-jobs-list-command btn btn-sm btn-primary"
+                            data-url="@LinkTo("/jobs/scheduled/enqueue")"
+                            data-loading-text="Enqueueing...">
+                        <span class="glyphicon glyphicon-repeat"></span>
+                        Enqueue jobs
+                    </button>
+
+                    <button class="js-jobs-list-command btn btn-sm btn-default"
+                            data-url="@LinkTo("/jobs/scheduled/delete")"
+                            data-loading-text="Deleting..."
+                            data-confirm="Do you really want to DELETE ALL selected jobs?">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete selected
+                    </button>
+
+                    @RenderPartial(new PerPageSelector(pager))
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="min-width">
+                                <input type="checkbox" class="js-jobs-list-select-all" />
+                            </th>
+                            <th class="min-width">Id</th>
+                            <th class="min-width">State</th>
+                            <th>Job</th>
+                            <th class="align-right">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var jobId in jobIds)
+                        {
+                            JobData jobData;
+
+                            using (var connection = Storage.GetConnection())
+                            {
+                                jobData = connection.GetJobData(jobId);
+                            }
+
+                            <tr class="js-jobs-list-row @(jobData != null ? "hover" : null)">
+                                <td>
+                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId" />
+                                </td>
+                                <td class="min-width">
+                                    <a href="@LinkTo("/jobs/" + jobId)">@HtmlHelper.JobId(jobId)</a>
+                                </td>
+                                @if (jobData == null)
+                                {
+                                    <td colspan="3"><em>Job expired.</em></td>
+                                }
+                                else
+                                {
+                                    <td class="min-width">
+                                        @if (!String.IsNullOrWhiteSpace(jobData.State))
+                                        {
+                                            <span class="label label-default" style="@(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(jobData.State)))">
+                                                @jobData.State
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <em>No state</em>
+                                        }
+                                    </td>
+                                    <td>@HtmlHelper.DisplayJob(jobData.Job)</td>
+                                    <td class="align-right">
+                                        <span data-moment="@JobHelper.ToTimestamp(jobData.CreatedAt)">
+                                            @jobData.CreatedAt
+                                        </span>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @RenderPartial(new Paginator(pager))
+            </div>
+        }
+    </div>
+</div>

@@ -163,6 +163,7 @@ namespace Hangfire.Dashboard
                 (manager, jobId) => manager.Trigger(jobId));
 
             Routes.AddRazorPage("/servers", x => new ServersPage());
+            Routes.AddRazorPage("/retries", x => new RetriesPage());
 
             #endregion
         }

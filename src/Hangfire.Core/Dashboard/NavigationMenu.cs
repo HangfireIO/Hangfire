@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Storage;
 
 namespace Hangfire.Dashboard
 {
@@ -40,6 +41,31 @@ namespace Hangfire.Dashboard
                         Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.None,
                         Highlighted = page.Statistics.Enqueued > 0
                     }
+            });
+
+            Items.Add(page =>
+            {
+                long retryCount;
+
+                using (var connection = page.Storage.GetConnection())
+                {
+                    var storageConnection = connection as JobStorageConnection;
+                    if (storageConnection == null)
+                    {
+                        return null;
+                    }
+
+                    retryCount = storageConnection.GetSetCount("retries");
+                }
+
+                return new MenuItem("Retries", page.LinkTo("/retries"))
+                {
+                    Active = page.RequestPath.StartsWith("/retries"),
+                    Metric = new Metric(retryCount)
+                    {
+                        Style = retryCount > 0 ? MetricStyle.Warning : MetricStyle.None
+                    }
+                };
             });
 
             Items.Add(page => new MenuItem("Recurring Jobs", page.LinkTo("/recurring"))

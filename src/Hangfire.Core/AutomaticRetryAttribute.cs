@@ -2,6 +2,7 @@ using System;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -11,7 +12,7 @@ namespace Hangfire
         Delete
     }
 
-    public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
+    public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private const int DefaultRetryAttempts = 10;
@@ -135,6 +136,22 @@ namespace Hangfire
             var random = new Random();
             return (int)Math.Round(
                 Math.Pow(retryCount - 1, 4) + 15 + (random.Next(30) * (retryCount)));
+        }
+
+        public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            if (context.NewState is ScheduledState && context.NewState.Reason.StartsWith("Retry attempt"))
+            {
+                transaction.AddToSet("retries", context.JobId);
+            }
+        }
+
+        public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            if (context.OldStateName == ScheduledState.StateName)
+            {
+                transaction.RemoveFromSet("retries", context.JobId);
+            }
         }
     }
 }

@@ -85,6 +85,11 @@
     <Compile Include="Dashboard\Pages\Breadcrumbs.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Dashboard\Pages\RetriesPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RetriesPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\Pages\SidebarMenu.cs">
       <DependentUpon>_SidebarMenu.cshtml</DependentUpon>
     </Compile>
@@ -402,6 +407,10 @@
     <None Include="Dashboard\Pages\RecurringJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>RecurringJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\RetriesPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>RetriesPage.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\ScheduledJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
