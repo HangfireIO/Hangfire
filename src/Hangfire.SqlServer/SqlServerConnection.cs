@@ -344,5 +344,14 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 @"delete from HangFire.Server where LastHeartbeat < @timeOutAt",
                 new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) });
         }
+
+        public override long GetSetCount(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            return _connection.Query<int>(
+                "select count([Key]) from HangFire.[Set] where [Key] = @key",
+                new { key = key }).First();
+        }
     }
 }

@@ -843,6 +843,48 @@ values (@key, @field, @value)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void GetSetCount_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetCount(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetSetCount_ReturnsZero_WhenSetDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount("my-set");
+                Assert.Equal(0, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetSetCount_ReturnsNumberOfElements_InASet()
+        {
+            const string arrangeSql = @"
+insert into Hangfire.[Set] ([Key], [Value], [Score])
+values (@key, @value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "value-1" },
+                    new { Key = "set-2", Value = "value-1" },
+                    new { Key = "set-1", Value = "value-2" }
+                });
+
+                var result = connection.GetSetCount("set-1");
+
+                Assert.Equal(2, result);
+            });
+        }
+
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
