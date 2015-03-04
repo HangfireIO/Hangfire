@@ -192,17 +192,19 @@ WriteLiteral("</li>\r\n                    <li>Time: ");
             
             #line default
             #line hidden
-WriteLiteral(@" GMT
-                    </li>
-                </ul>
-            </div>
-        </div>
-        
-        <script>
-            (function (hangFire) {
-                hangFire.config = {
-                    pollInterval: 2000,
-                    pollUrl: '");
+WriteLiteral(" GMT</li>\r\n                    <li>Generated: ");
+
+
+            
+            #line 64 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                               Write(GenerationTime.Elapsed.TotalMilliseconds.ToString("N"));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("ms</li>\r\n                </ul>\r\n            </div>\r\n        </div>\r\n        \r\n   " +
+"     <script>\r\n            (function (hangFire) {\r\n                hangFire.conf" +
+"ig = {\r\n                    pollInterval: 2000,\r\n                    pollUrl: \'");
 
 
             

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 using Hangfire.Storage.Monitoring;
@@ -24,16 +25,22 @@ namespace Hangfire.Dashboard
 {
     public abstract class RazorPage 
     {
-        private Lazy<StatisticsDto> _statisticsLazy;
-
         public static Func<Exception, RazorPage> ExceptionHandler;
+
+        private Lazy<StatisticsDto> _statisticsLazy;
 
         private readonly StringBuilder _content = new StringBuilder();
         private string _innerContent;
 
+        protected RazorPage()
+        {
+            GenerationTime = Stopwatch.StartNew();
+        }
+
         public RazorPage Layout { get; protected set; }
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
+        public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
         {
@@ -91,6 +98,7 @@ namespace Hangfire.Dashboard
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
 
+            GenerationTime = parentPage.GenerationTime;
             _statisticsLazy = parentPage._statisticsLazy;
         }
 

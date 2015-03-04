@@ -60,8 +60,8 @@
                         </a>
                     </li>
                     <li>@Storage</li>
-                    <li>Time: @DateTime.UtcNow GMT
-                    </li>
+                    <li>Time: @DateTime.UtcNow GMT</li>
+                    <li>Generated: @(GenerationTime.Elapsed.TotalMilliseconds.ToString("N"))ms</li>
                 </ul>
             </div>
         </div>
