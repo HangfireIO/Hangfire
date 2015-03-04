@@ -42,12 +42,7 @@ namespace Hangfire.Dashboard
                     }
             });
 
-            Items.Add(page => new MenuItem("Retries", "#")
-            {
-                Metric = new Metric(12) { Style = MetricStyle.Warning }
-            });
-
-            Items.Add(page => new MenuItem("Recurring", page.LinkTo("/recurring"))
+            Items.Add(page => new MenuItem("Recurring Jobs", page.LinkTo("/recurring"))
             {
                 Active = page.RequestPath.StartsWith("/recurring"),
                 Metric = new Metric(page.Statistics.Recurring)
