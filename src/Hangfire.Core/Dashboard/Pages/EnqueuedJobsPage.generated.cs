@@ -274,24 +274,24 @@ WriteLiteral("                            </td>\r\n                            <
 
             
             #line 88 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                                                     Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null);
+                                                                    Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.Value.State)));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                        ");
+WriteLiteral("\">\r\n                                    ");
 
 
             
             #line 89 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                   Write(job.Value.State);
+                               Write(job.Value.State);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                    </span>\r\n                            </td>\r" +
-"\n                            <td>\r\n                                <a class=\"job" +
-"-method\" href=\"");
+WriteLiteral("\r\n                                </span>\r\n                            </td>\r\n   " +
+"                         <td>\r\n                                <a class=\"job-met" +
+"hod\" href=\"");
 
 
             

@@ -87,19 +87,12 @@
 
                 foreach (var entry in job.History)
                 {
-                    var background = JobHistoryRenderer.BackgroundStateColors.ContainsKey(entry.StateName)
-                        ? JobHistoryRenderer.BackgroundStateColors[entry.StateName]
-                        : null;
-
-                    if (index == 0)
-                    {
-                        background = JobHistoryRenderer.ForegroundStateColors.ContainsKey(entry.StateName)
-                            ? JobHistoryRenderer.ForegroundStateColors[entry.StateName]
-                            : null;
-                    }
+                    var background = index == 0
+                        ? JobHistoryRenderer.GetForegroundStateColor(entry.StateName)
+                        : JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
 
                     <div class="job-history @(index == 0 ? "job-history-current" : null)">
-                        <div class="job-history-heading" style="@(background != null ? String.Format("background-color: {0};", background) : null)">
+                        <div class="job-history-heading" style="@String.Format("background-color: {0};", background)">
                             <span class="pull-right" data-moment-title="@(JobHelper.ToTimestamp(entry.CreatedAt))">
                                 @HtmlHelper.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt))
                                 @{ nextEntry++; }
@@ -138,7 +131,7 @@
                         }
                     </div>
 
-                    index++;
+                        index++;
                 }
             }
         }

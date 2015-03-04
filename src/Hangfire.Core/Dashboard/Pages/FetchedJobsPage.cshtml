@@ -87,7 +87,7 @@
                                 <a href="@LinkTo("/jobs/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
                             </td>
                             <td class="min-width">
-                                <span class="label label-default" style="@(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null)">
+                                <span class="label label-default" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.Value.State))">
                                         @job.Value.State
                                     </span>
                             </td>

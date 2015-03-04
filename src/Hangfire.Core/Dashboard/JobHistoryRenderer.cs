@@ -26,9 +26,10 @@ namespace Hangfire.Dashboard
     {
         private static readonly IDictionary<string, Func<IDictionary<string, string>, NonEscapedString>> 
             Renderers = new Dictionary<string, Func<IDictionary<string, string>, NonEscapedString>>();
-        public static readonly IDictionary<string, string> BackgroundStateColors
+
+        private static readonly IDictionary<string, string> BackgroundStateColors
             = new Dictionary<string, string>();
-        public static readonly IDictionary<string, string> ForegroundStateColors
+        private static readonly IDictionary<string, string> ForegroundStateColors
             = new Dictionary<string, string>();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
@@ -54,6 +55,36 @@ namespace Hangfire.Dashboard
             ForegroundStateColors.Add(ProcessingState.StateName, "#f0ad4e");
             ForegroundStateColors.Add(ScheduledState.StateName, "#5bc0de");
             ForegroundStateColors.Add(DeletedState.StateName, "#777");
+        }
+
+        public static void AddBackgroundStateColor(string stateName, string color)
+        {
+            BackgroundStateColors.Add(stateName, color);
+        }
+
+        public static string GetBackgroundStateColor(string stateName)
+        {
+            if (stateName == null || !BackgroundStateColors.ContainsKey(stateName))
+            {
+                return "inherit";
+            }
+
+            return BackgroundStateColors[stateName];
+        }
+
+        public static void AddForegroundStateColor(string stateName, string color)
+        {
+            ForegroundStateColors.Add(stateName, color);
+        }
+
+        public static string GetForegroundStateColor(string stateName)
+        {
+            if (stateName == null || !ForegroundStateColors.ContainsKey(stateName))
+            {
+                return "inherit";
+            }
+
+            return ForegroundStateColors[stateName];
         }
 
         public static void Register(string state, Func<IDictionary<string, string>, NonEscapedString> renderer)

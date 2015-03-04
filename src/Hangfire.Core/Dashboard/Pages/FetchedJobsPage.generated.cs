@@ -262,7 +262,7 @@ WriteLiteral("</a>\r\n                            </td>\r\n                     
 
             
             #line 90 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                                                     Write(JobHistoryRenderer.ForegroundStateColors.ContainsKey(job.Value.State) ? String.Format("background-color: {0};", JobHistoryRenderer.ForegroundStateColors[job.Value.State]) : null);
+                                                                    Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.Value.State)));
 
             
             #line default

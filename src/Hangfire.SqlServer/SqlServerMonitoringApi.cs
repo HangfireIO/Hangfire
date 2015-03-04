@@ -532,9 +532,10 @@ select * from (
 
             foreach (var job in jobs)
             {
-                var stateData = new Dictionary<string, string>(
-                    JobHelper.FromJson<Dictionary<string, string>>(job.StateData),
-                    StringComparer.OrdinalIgnoreCase);
+                var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                var stateData = deserializedData != null
+                    ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
+                    : null;
 
                 var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
 
