@@ -149,7 +149,9 @@ namespace Hangfire
 
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
-            if (context.NewState is ScheduledState && context.NewState.Reason.StartsWith("Retry attempt"))
+            if (context.NewState is ScheduledState && 
+                context.NewState.Reason != null && 
+                context.NewState.Reason.StartsWith("Retry attempt"))
             {
                 transaction.AddToSet("retries", context.JobId);
             }
