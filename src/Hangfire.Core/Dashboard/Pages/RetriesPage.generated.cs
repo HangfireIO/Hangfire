@@ -322,17 +322,29 @@ WriteLiteral("                                    </td>\r\n");
 
 
 
-WriteLiteral("                                    <td>");
+WriteLiteral("                                    <td>\r\n                                       " +
+" <a class=\"job-method\" href=\"");
 
 
             
-            #line 107 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                   Write(HtmlHelper.DisplayJob(jobData.Job));
+            #line 108 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                                               Write(LinkTo("/jobs/" + jobId));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n");
+WriteLiteral("\">\r\n                                            ");
+
+
+            
+            #line 109 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                       Write(HtmlHelper.DisplayJob(jobData.Job));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                        </a>\r\n                                 " +
+"   </td>\r\n");
 
 
 
@@ -341,7 +353,7 @@ WriteLiteral("                                    <td class=\"align-right\">\r\n
 
 
             
-            #line 109 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                       Write(JobHelper.ToTimestamp(jobData.CreatedAt));
 
             
@@ -351,7 +363,7 @@ WriteLiteral("\">\r\n                                            ");
 
 
             
-            #line 110 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 114 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                        Write(jobData.CreatedAt);
 
             
@@ -362,7 +374,7 @@ WriteLiteral("\r\n                                        </span>\r\n           
 
 
             
-            #line 113 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 117 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                 }
 
             
@@ -372,7 +384,7 @@ WriteLiteral("                            </tr>\r\n");
 
 
             
-            #line 115 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 119 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                         }
 
             
@@ -382,7 +394,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
 
             
-            #line 118 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 122 "..\..\Dashboard\Pages\RetriesPage.cshtml"
            Write(RenderPartial(new Paginator(pager)));
 
             
@@ -392,7 +404,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 120 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 124 "..\..\Dashboard\Pages\RetriesPage.cshtml"
         }
 
             

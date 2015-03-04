@@ -104,7 +104,11 @@
                                             <em>No state</em>
                                         }
                                     </td>
-                                    <td>@HtmlHelper.DisplayJob(jobData.Job)</td>
+                                    <td>
+                                        <a class="job-method" href="@LinkTo("/jobs/" + jobId)">
+                                            @HtmlHelper.DisplayJob(jobData.Job)
+                                        </a>
+                                    </td>
                                     <td class="align-right">
                                         <span data-moment="@JobHelper.ToTimestamp(jobData.CreatedAt)">
                                             @jobData.CreatedAt
