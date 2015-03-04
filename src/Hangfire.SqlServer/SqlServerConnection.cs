@@ -353,5 +353,21 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
                 "select count([Key]) from HangFire.[Set] where [Key] = @key",
                 new { key = key }).First();
         }
+
+        public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            var query = @"
+select [Value] from (
+	select [Value], row_number() over (order by [Value] ASC) as row_num 
+	from Hangfire.[Set]
+	where [Key] = @key 
+) as s where s.row_num between @startingFrom and @endingAt";
+
+            return _connection
+                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 })
+                .ToList();
+        }
     }
 }

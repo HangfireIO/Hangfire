@@ -885,6 +885,40 @@ values (@key, @value, 0.0)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(() => connection.GetRangeFromSet(null, 0, 1));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetRangeFromSet_ReturnsPagedElements()
+        {
+            const string arrangeSql = @"
+insert into Hangfire.[Set] ([Key], [Value], [Score])
+values (@key, @value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "1" },
+                    new { Key = "set-1", Value = "2" },
+                    new { Key = "set-1", Value = "3" },
+                    new { Key = "set-1", Value = "4" },
+                    new { Key = "set-2", Value = "4" },
+                    new { Key = "set-1", Value = "5" }
+                });
+
+                var result = connection.GetRangeFromSet("set-1", 2, 3);
+
+                Assert.Equal(new [] { "3", "4" }, result);
+            });
+        }
+
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
