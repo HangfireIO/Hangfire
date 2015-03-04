@@ -8,6 +8,9 @@
         @foreach (var item in NavigationMenu.Items)
         {
             var itemValue = item(this);
+
+            if (itemValue == null) { continue; }
+            
             <li class="@(itemValue.Active ? "active" : null)">
                 <a href="@itemValue.Url">
                     @itemValue.Text
