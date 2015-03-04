@@ -66,6 +66,7 @@
                             <th class="min-width">Id</th>
                             <th class="min-width">State</th>
                             <th>Job</th>
+                            <th>Reason</th>
                             <th class="align-right">Created</th>
                         </tr>
                     </thead>
@@ -73,10 +74,12 @@
                         @foreach (var jobId in jobIds)
                         {
                             JobData jobData;
+                            StateData stateData;
 
                             using (var connection = Storage.GetConnection())
                             {
                                 jobData = connection.GetJobData(jobId);
+                                stateData = connection.GetStateData(jobId);
                             }
 
                             <tr class="js-jobs-list-row @(jobData != null ? "hover" : null)">
@@ -88,7 +91,7 @@
                                 </td>
                                 @if (jobData == null)
                                 {
-                                    <td colspan="3"><em>Job expired.</em></td>
+                                    <td colspan="4"><em>Job expired.</em></td>
                                 }
                                 else
                                 {
@@ -108,6 +111,12 @@
                                         <a class="job-method" href="@LinkTo("/jobs/" + jobId)">
                                             @HtmlHelper.DisplayJob(jobData.Job)
                                         </a>
+                                    </td>
+                                    <td>
+                                        @if (stateData != null)
+                                        {
+                                            @: @stateData.Reason
+                                        }
                                     </td>
                                     <td class="align-right">
                                         <span data-moment="@JobHelper.ToTimestamp(jobData.CreatedAt)">

@@ -177,6 +177,7 @@ WriteLiteral(@"
                             <th class=""min-width"">Id</th>
                             <th class=""min-width"">State</th>
                             <th>Job</th>
+                            <th>Reason</th>
                             <th class=""align-right"">Created</th>
                         </tr>
                     </thead>
@@ -185,14 +186,16 @@ WriteLiteral(@"
 
 
             
-            #line 73 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 74 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                          foreach (var jobId in jobIds)
                         {
                             JobData jobData;
+                            StateData stateData;
 
                             using (var connection = Storage.GetConnection())
                             {
                                 jobData = connection.GetJobData(jobId);
+                                stateData = connection.GetStateData(jobId);
                             }
 
 
@@ -203,7 +206,7 @@ WriteLiteral("                            <tr class=\"js-jobs-list-row ");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 85 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                     Write(jobData != null ? "hover" : null);
 
             
@@ -214,7 +217,7 @@ WriteLiteral("\">\r\n                                <td>\r\n                   
 
 
             
-            #line 84 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 87 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                                                                          Write(jobId);
 
             
@@ -225,7 +228,7 @@ WriteLiteral("\" />\r\n                                </td>\r\n                
 
 
             
-            #line 87 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                         Write(LinkTo("/jobs/" + jobId));
 
             
@@ -235,7 +238,7 @@ WriteLiteral("\">");
 
 
             
-            #line 87 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                                    Write(HtmlHelper.JobId(jobId));
 
             
@@ -245,18 +248,18 @@ WriteLiteral("</a>\r\n                                </td>\r\n");
 
 
             
-            #line 89 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 92 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                  if (jobData == null)
                                 {
 
             
             #line default
             #line hidden
-WriteLiteral("                                    <td colspan=\"3\"><em>Job expired.</em></td>\r\n");
+WriteLiteral("                                    <td colspan=\"4\"><em>Job expired.</em></td>\r\n");
 
 
             
-            #line 92 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 95 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                 }
                                 else
                                 {
@@ -268,7 +271,7 @@ WriteLiteral("                                    <td class=\"min-width\">\r\n")
 
 
             
-            #line 96 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 99 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                          if (!String.IsNullOrWhiteSpace(jobData.State))
                                         {
 
@@ -280,7 +283,7 @@ WriteLiteral("                                            <span class=\"label la
 
 
             
-            #line 98 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 101 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                                                  Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(jobData.State)));
 
             
@@ -290,7 +293,7 @@ WriteLiteral("\">\r\n                                                ");
 
 
             
-            #line 99 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 102 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                            Write(jobData.State);
 
             
@@ -300,7 +303,7 @@ WriteLiteral("\r\n                                            </span>\r\n");
 
 
             
-            #line 101 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 104 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                         }
                                         else
                                         {
@@ -312,7 +315,7 @@ WriteLiteral("                                            <em>No state</em>\r\n"
 
 
             
-            #line 105 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 108 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                         }
 
             
@@ -327,7 +330,7 @@ WriteLiteral("                                    <td>\r\n                      
 
 
             
-            #line 108 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 111 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                                Write(LinkTo("/jobs/" + jobId));
 
             
@@ -337,7 +340,7 @@ WriteLiteral("\">\r\n                                            ");
 
 
             
-            #line 109 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 112 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                        Write(HtmlHelper.DisplayJob(jobData.Job));
 
             
@@ -348,12 +351,49 @@ WriteLiteral("\r\n                                        </a>\r\n              
 
 
 
+WriteLiteral("                                    <td>\r\n");
+
+
+            
+            #line 116 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                         if (stateData != null)
+                                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                            ");
+
+WriteLiteral(" ");
+
+
+            
+            #line 118 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                          Write(stateData.Reason);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
+
+
+            
+            #line 119 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    </td>\r\n");
+
+
+
 WriteLiteral("                                    <td class=\"align-right\">\r\n                   " +
 "                     <span data-moment=\"");
 
 
             
-            #line 113 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 122 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                                       Write(JobHelper.ToTimestamp(jobData.CreatedAt));
 
             
@@ -363,7 +403,7 @@ WriteLiteral("\">\r\n                                            ");
 
 
             
-            #line 114 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 123 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                        Write(jobData.CreatedAt);
 
             
@@ -374,7 +414,7 @@ WriteLiteral("\r\n                                        </span>\r\n           
 
 
             
-            #line 117 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 126 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                 }
 
             
@@ -384,7 +424,7 @@ WriteLiteral("                            </tr>\r\n");
 
 
             
-            #line 119 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 128 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                         }
 
             
@@ -394,7 +434,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
 
             
-            #line 122 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 131 "..\..\Dashboard\Pages\RetriesPage.cshtml"
            Write(RenderPartial(new Paginator(pager)));
 
             
@@ -404,7 +444,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 124 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 133 "..\..\Dashboard\Pages\RetriesPage.cshtml"
         }
 
             

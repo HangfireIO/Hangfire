@@ -83,15 +83,24 @@ namespace Hangfire
         /// <param name="failedState">Object which contains details about the current failed state.</param>
         private void ScheduleAgainLater(ElectStateContext context, int retryAttempt, FailedState failedState)
         {
+            context.SetJobParameter("RetryCount", retryAttempt);
+
             var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
 
-            context.SetJobParameter("RetryCount", retryAttempt);
+            const int maxMessageLength = 50;
+            var exceptionMessage = failedState.Exception.Message;
 
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
             context.CandidateState = new ScheduledState(delay)
             {
-                Reason = String.Format("Retry attempt {0} of {1}", retryAttempt, Attempts)
+                Reason = String.Format(
+                    "Retry attempt {0} of {1}: {2}", 
+                    retryAttempt, 
+                    Attempts,
+                    exceptionMessage.Length > maxMessageLength
+                    ? exceptionMessage.Substring(0, maxMessageLength - 1) + "…"
+                    : exceptionMessage)
             };
 
             if (LogEvents)
