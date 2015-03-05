@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Hangfire.Common;
@@ -177,7 +178,7 @@ namespace Hangfire.States
 
         private JobData GetJobData(string jobId, TimeSpan timeout)
         {
-            var started = DateTime.UtcNow;
+            var stopwatch =  Stopwatch.StartNew();
             var firstAttempt = true;
 
             while (true)
@@ -193,7 +194,7 @@ namespace Hangfire.States
                     return jobData;
                 }
 
-                if (DateTime.UtcNow >= started.Add(timeout))
+                if (stopwatch.Elapsed >= timeout)
                 {
                     throw new TimeoutException(String.Format(
                         "Timeout expired while trying to fetch a non-null state for background job '{0}'.",
