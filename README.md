@@ -1,7 +1,7 @@
 Hangfire 
 =========
 
-[![Latest version](https://img.shields.io/nuget/v/Nuget.Core.svg)](https://www.nuget.org/packages?q=hangfire) [![Build status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) [![Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg?branch=dev)](https://travis-ci.org/HangfireIO/Hangfire) [![Coverage Status](https://coveralls.io/repos/HangfireIO/Hangfire/badge.svg?branch=dev)](https://coveralls.io/r/HangfireIO/Hangfire?branch=dev)
+[![Latest version](https://img.shields.io/nuget/v/Hangfire.svg)](https://www.nuget.org/packages?q=hangfire) [![Build status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) [![Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg?branch=dev)](https://travis-ci.org/HangfireIO/Hangfire) [![Coverage Status](https://coveralls.io/repos/HangfireIO/Hangfire/badge.svg?branch=dev)](https://coveralls.io/r/HangfireIO/Hangfire?branch=dev)
 
 Official site – http://hangfire.io
 
