@@ -31,11 +31,13 @@ namespace Hangfire.Dashboard
                 Active = page.RequestPath.StartsWith("/jobs"),
                 Metrics = new []
                 {
-                    new Metric(page.Statistics.Enqueued)
+                    page.Statistics.Enqueued > 0 || page.Statistics.Failed == 0
+                    ? new Metric(page.Statistics.Enqueued)
                     {
                         Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.None,
                         Highlighted = page.Statistics.Enqueued > 0 && page.Statistics.Failed == 0
-                    },
+                    }
+                    : null,
                     page.Statistics.Failed > 0
                     ? new Metric(page.Statistics.Failed)
                     {

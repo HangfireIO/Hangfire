@@ -36,12 +36,14 @@ namespace Hangfire.Dashboard
 
         public IEnumerable<Metric> GetAllMetrics()
         {
-            var metrics = new List<Metric>();
+            var metrics = new List<Metric> { Metric };
+            
+            if (Metrics != null)
+            {
+                metrics.AddRange(Metrics);
+            }
 
-            if (Metric != null) { metrics.Add(Metric); }
-            if (Metrics != null) { metrics.AddRange(Metrics.Where(x => x != null)); }
-
-            return metrics;
+            return metrics.Where(x => x != null).ToList();
         }
     }
 }
