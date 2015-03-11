@@ -22,6 +22,7 @@ namespace MvcSample
                 DashboardPage.Metrics.Add(SqlServerStorage.ActiveConnections);
                 DashboardMetrics.Add(SqlServerStorage.TotalConnections);
                 DashboardPage.Metrics.Add(SqlServerStorage.TotalConnections);
+                DashboardPage.Metrics.Add(DashboardMetrics.FailedCount);
 
                 config
                     .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
