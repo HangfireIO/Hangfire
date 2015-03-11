@@ -1,6 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True TrimLeadingUnderscores : true *@
-@using System
 @using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
 @inherits RazorPage
 @if (Items.Any())
 {
@@ -10,13 +10,12 @@
             var itemValue = item(this);
             <a href="@itemValue.Url" class="list-group-item @(itemValue.Active ? "active" : null)">
                 @itemValue.Text
-                @if (itemValue.Metric != null)
-                {
-                    var metricClass = itemValue.Metric.Style.ToClassName();
-                    var highlighted = itemValue.Metric.Highlighted ? "highlighted" : null;
-                    
-                    <span class="pull-right metric @metricClass @highlighted">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)))</span>
-                }
+                <span class="pull-right">
+                    @foreach (var metric in itemValue.GetAllMetrics())
+                    {
+                        @RenderPartial(new InlineMetric(metric))
+                    }
+                </span>
             </a>
         }
     </div>

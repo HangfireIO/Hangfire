@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using Hangfire.Storage;
 
 namespace Hangfire.Dashboard
 {
@@ -31,68 +30,27 @@ namespace Hangfire.Dashboard
                 Active = page.RequestPath.StartsWith("/jobs"),
                 Metrics = new []
                 {
-                    page.Statistics.Enqueued > 0 || page.Statistics.Failed == 0
-                    ? new Metric(page.Statistics.Enqueued)
-                    {
-                        Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.None,
-                        Highlighted = page.Statistics.Enqueued > 0 && page.Statistics.Failed == 0
-                    }
-                    : null,
-                    page.Statistics.Failed > 0
-                    ? new Metric(page.Statistics.Failed)
-                    {
-                        Style = MetricStyle.Danger,
-                        Highlighted = true,
-                        Title = String.Format("{0} failed job(s) found. Retry or delete them manually.", page.Statistics.Failed)
-                    }
-                    : null
+                    DashboardMetrics.EnqueuedCountOrNull,
+                    DashboardMetrics.FailedCountOrNull
                 }
             });
 
-            Items.Add(page =>
+            Items.Add(page => new MenuItem("Retries", page.LinkTo("/retries"))
             {
-                long retryCount;
-
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var storageConnection = connection as JobStorageConnection;
-                    if (storageConnection == null)
-                    {
-                        return null;
-                    }
-
-                    retryCount = storageConnection.GetSetCount("retries");
-                }
-
-                return new MenuItem("Retries", page.LinkTo("/retries"))
-                {
-                    Active = page.RequestPath.StartsWith("/retries"),
-                    Metric = new Metric(retryCount)
-                    {
-                        Style = retryCount > 0 ? MetricStyle.Warning : MetricStyle.None
-                    }
-                };
+                Active = page.RequestPath.StartsWith("/retries"),
+                Metric = DashboardMetrics.RetriesCount
             });
 
             Items.Add(page => new MenuItem("Recurring Jobs", page.LinkTo("/recurring"))
             {
                 Active = page.RequestPath.StartsWith("/recurring"),
-                Metric = new Metric(page.Statistics.Recurring)
+                Metric = DashboardMetrics.RecurringJobCount
             });
 
-            Items.Add(page => new MenuItem(
-                "Servers", 
-                page.LinkTo("/servers"))
+            Items.Add(page => new MenuItem("Servers", page.LinkTo("/servers"))
             {
                 Active = page.RequestPath.Equals("/servers"),
-                Metric = new Metric(page.Statistics.Servers)
-                {
-                    Style = page.Statistics.Servers == 0 ? MetricStyle.Warning : MetricStyle.None,
-                    Highlighted = page.Statistics.Servers == 0,
-                    Title = page.Statistics.Servers == 0
-                        ? "No active servers found. Jobs will not be processed."
-                        : null
-                }
+                Metric = DashboardMetrics.ServerCount
             });
         }
     }

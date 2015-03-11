@@ -1,9 +1,10 @@
-﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True *@
 @using System
 @using System.Collections.Generic
+@using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Newtonsoft.Json
-@inherits Hangfire.Dashboard.RazorPage
+@inherits RazorPage
 @{
     Layout = new LayoutPage("Dashboard");
     IDictionary<DateTime, long> succeeded = null;
@@ -27,9 +28,23 @@
 <div class="row">
     <div class="col-md-12">
         <h1 class="page-header">Dashboard</h1>
-
+        @if (Metrics.Count > 0)
+        {
+            <div class="row">
+                @foreach (var metric in Metrics)
+                {
+                    <div class="col-md-2">
+                        @RenderPartial(new BlockMetric(metric))
+                    </div>
+                }
+            </div>
+        }
         <h3>Realtime graph</h3>
         <div id="realtimeGraph"></div>
+        <div style="display: none;">
+            <span data-metric="succeeded:count"></span>
+            <span data-metric="failed:count"></span>
+        </div>
 
         <h3>
             <div class="btn-group pull-right" style="margin-top: 2px;">

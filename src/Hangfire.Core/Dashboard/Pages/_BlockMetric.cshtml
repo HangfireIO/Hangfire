@@ -1,0 +1,16 @@
+﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+@using Hangfire.Dashboard
+@inherits RazorPage
+@{
+    var metric = DashboardMetric.Func(this);
+    var className = metric == null ? "metric-null" : metric.Style.ToClassName();
+    var highlighted = metric != null && metric.Highlighted ? "highlighted" : null;
+}
+<div class="metric @className @highlighted">
+    <div class="metric-body" data-metric="@DashboardMetric.Name">
+        @(metric != null ? metric.Value : null)
+    </div>
+    <div class="metric-description">
+        @DashboardMetric.Title
+    </div>
+</div>

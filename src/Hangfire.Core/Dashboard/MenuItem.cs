@@ -31,12 +31,12 @@ namespace Hangfire.Dashboard
         public string Url { get; private set; }
 
         public bool Active { get; set; }
-        public Metric Metric { get; set; }
-        public IEnumerable<Metric> Metrics { get; set; }
+        public DashboardMetric Metric { get; set; }
+        public DashboardMetric[] Metrics { get; set; }
 
-        public IEnumerable<Metric> GetAllMetrics()
+        public IEnumerable<DashboardMetric> GetAllMetrics()
         {
-            var metrics = new List<Metric> { Metric };
+            var metrics = new List<DashboardMetric> { Metric };
             
             if (Metrics != null)
             {

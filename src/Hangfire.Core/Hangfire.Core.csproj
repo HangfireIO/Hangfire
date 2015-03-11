@@ -78,12 +78,20 @@
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
+    <Compile Include="Dashboard\DashboardMetrics.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
     <Compile Include="Dashboard\JobsSidebarMenu.cs" />
     <Compile Include="Dashboard\MenuItem.cs" />
     <Compile Include="Dashboard\NavigationMenu.cs" />
     <Compile Include="Dashboard\Pages\Breadcrumbs.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\BlockMetric.cs">
+      <DependentUpon>_BlockMetric.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\DashboardPage.cs" />
+    <Compile Include="Dashboard\Pages\InlineMetric.cs">
+      <DependentUpon>_InlineMetric.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Dashboard\Pages\RetriesPage.generated.cs">
       <AutoGen>True</AutoGen>
@@ -92,6 +100,16 @@
     </Compile>
     <Compile Include="Dashboard\Pages\SidebarMenu.cs">
       <DependentUpon>_SidebarMenu.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_BlockMetric.generated.cs">
+      <DependentUpon>_BlockMetric.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_InlineMetric.generated.cs">
+      <DependentUpon>_InlineMetric.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Dashboard\Pages\_Breadcrumbs.generated.cs">
       <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
@@ -423,6 +441,14 @@
     <None Include="Dashboard\Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>SucceededJobs1.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_BlockMetric.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_BlockMetric.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_InlineMetric.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_InlineMetric.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_Breadcrumbs.cshtml">
       <Generator>RazorGenerator</Generator>

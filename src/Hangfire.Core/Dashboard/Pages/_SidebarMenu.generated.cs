@@ -11,18 +11,19 @@
 
 namespace Hangfire.Dashboard.Pages
 {
-    
-    #line 2 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
     using System;
-    
-    #line default
-    #line hidden
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     
-    #line 3 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+    #line 2 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
     using Hangfire.Dashboard;
+    
+    #line default
+    #line hidden
+    
+    #line 3 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+    using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
@@ -92,65 +93,37 @@ WriteLiteral("\">\r\n                ");
             
             #line default
             #line hidden
-WriteLiteral("\r\n");
+WriteLiteral("\r\n                <span class=\"pull-right\">\r\n");
 
 
             
-            #line 13 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
-                 if (itemValue.Metric != null)
-                {
-                    var metricClass = itemValue.Metric.Style.ToClassName();
-                    var highlighted = itemValue.Metric.Highlighted ? "highlighted" : null;
-                    
+            #line 14 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+                     foreach (var metric in itemValue.GetAllMetrics())
+                    {
+                        
+            
+            #line default
+            #line hidden
+            
+            #line 16 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+                   Write(RenderPartial(new InlineMetric(metric)));
 
             
             #line default
             #line hidden
-WriteLiteral("                    <span class=\"pull-right metric ");
-
-
             
-            #line 18 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
-                                              Write(metricClass);
+            #line 16 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+                                                                
+                    }
 
             
             #line default
             #line hidden
-WriteLiteral(" ");
+WriteLiteral("                </span>\r\n            </a>\r\n");
 
 
             
-            #line 18 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
-                                                           Write(highlighted);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">");
-
-
-            
-            #line 18 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
-                                                                          Write(new NonEscapedString(String.Join("&nbsp;/&nbsp;", itemValue.Metric.Values)));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</span>\r\n");
-
-
-            
-            #line 19 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
-                }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("            </a>\r\n");
-
-
-            
-            #line 21 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+            #line 20 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
         }
 
             
@@ -160,7 +133,7 @@ WriteLiteral("    </div>\r\n");
 
 
             
-            #line 23 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
+            #line 22 "..\..\Dashboard\Pages\_SidebarMenu.cshtml"
 }
 
             

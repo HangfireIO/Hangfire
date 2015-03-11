@@ -1,7 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
-@using System
-@using System.Collections.Generic
 @using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
 @inherits RazorPage
 @if (NavigationMenu.Items.Count > 0)
 {
@@ -11,20 +10,14 @@
             var itemValue = item(this);
 
             if (itemValue == null) { continue; }
-            
+
             <li class="@(itemValue.Active ? "active" : null)">
                 <a href="@itemValue.Url">
                     @itemValue.Text
 
-                    @foreach(var metric in itemValue.GetAllMetrics())
+                    @foreach (var metric in itemValue.GetAllMetrics())
                     {
-                        var className = metric.Style.ToClassName();
-                        var highlighted = metric.Highlighted ? "highlighted" : null;
-                        var title = !String.IsNullOrWhiteSpace(metric.Title)
-                            ? new NonEscapedString(String.Format("title=\"{0}\" data-placement=\"bottom\" data-container=\"body\"", metric.Title))
-                            : null;
-                        
-                        <span @title class="metric @className @highlighted">@(new NonEscapedString(String.Join("&nbsp;/&nbsp;", metric.Values)))</span>
+                        @RenderPartial(new InlineMetric(metric))
                     }
                 </a>
             </li>

@@ -18,12 +18,13 @@ namespace Hangfire.Dashboard
 {
     public class Metric
     {
-        public Metric(params long[] values)
+        public Metric(string value)
         {
-            Values = values;
+            Value = value;
         }
 
-        public long[] Values { get; private set; }
+        public string Value { get; private set; }
+        public long IntValue { get; set; }
         public MetricStyle Style { get; set; }
         public bool Highlighted { get; set; }
         public string Title { get; set; }
@@ -31,11 +32,11 @@ namespace Hangfire.Dashboard
 
     public enum MetricStyle
     {
-        None,
+        Default,
         Info,
         Success,
         Warning,
-        Danger
+        Danger,
     }
 
     public static class MetricStyleExtensions
@@ -44,11 +45,12 @@ namespace Hangfire.Dashboard
         {
             switch (style)
             {
+                case MetricStyle.Default: return "metric-default";
                 case MetricStyle.Info:    return "metric-info";
                 case MetricStyle.Success: return "metric-success";
                 case MetricStyle.Warning: return "metric-warning";
                 case MetricStyle.Danger:  return "metric-danger";
-                default:                  return "metric-default";
+                default:                  return "metric-null";
             }
         }
     }

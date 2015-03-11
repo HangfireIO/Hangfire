@@ -424,7 +424,7 @@ a.job-method {
     top: 2px;
 }
 
-.metric {
+span.metric {
     display: inline-block;
     min-width: 10px;
     padding: 2px 6px;
@@ -436,54 +436,91 @@ a.job-method {
     background-color: transparent;
     border-radius: 10px;
     border: solid 1px;
+    -webkit-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -moz-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -ms-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -o-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
 }
 
-.metric.highlighted {
+span.metric.highlighted {
     font-weight: bold;
     color: #fff!important;
 }
 
-.metric-default {
+span.metric-default {
     color: #777;
     border-color: #777;
 }
 
-.metric-default.highlighted {
+span.metric-default.highlighted {
     background-color: #777;
 }
 
-.metric-info {
+div.metric {
+    border: solid 1px transparent;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    margin-bottom: 20px;
+}
+
+div.metric .metric-body {
+    padding: 15px 15px 0;
+    font-size: 26px;
+    text-align: center;
+}
+
+div.metric .metric-description {
+    padding: 0 15px 15px;
+    text-align: center;
+}
+
+div.metric.metric-default {
+    border-color: #ddd;
+}
+
+div.metric-info,
+span.metric-info {
     color: #5bc0de;
     border-color: #5bc0de;
 }
 
-.metric-info.highlighted {
+span.metric-info.highlighted {
     background-color: #5bc0de;
 }
 
-.metric-warning {
+div.metric-warning,
+span.metric-warning {
     color: #f0ad4e;
     border-color: #f0ad4e;
 }
 
-.metric-warning.highlighted {
+span.metric-warning.highlighted {
     background-color: #f0ad4e;
 }
 
-.metric-success {
+div.metric-success,
+span.metric-success {
     color: #5cb85c;
     border-color: #5cb85c;
 }
 
-.metric-success.highlighted {
+span.metric-success.highlighted {
     background-color: #5cb85c;
 }
 
-.metric-danger {
+div.metric-danger,
+span.metric-danger {
     color: #d9534f;
     border-color: #d9534f;
 }
 
-.metric-danger.highlighted {
+span.metric-danger.highlighted {
     background-color: #d9534f;
+}
+
+span.metric-null,
+div.metric-null {
+    display: none;
 }
