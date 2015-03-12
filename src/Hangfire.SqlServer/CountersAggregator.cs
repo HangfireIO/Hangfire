@@ -55,12 +55,12 @@ namespace Hangfire.SqlServer
                         new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
                 }
 
-                if (removedCount > 0)
+                if (removedCount >= NumberOfRecordsInSinglePass)
                 {
                     cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
-            } while (removedCount != 0);
+            } while (removedCount >= NumberOfRecordsInSinglePass);
 
             cancellationToken.WaitHandle.WaitOne(_interval);
         }
@@ -83,7 +83,7 @@ DECLARE @RecordsToAggregate TABLE
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
-DELETE TOP (@count) [Hangfire].[Counter]
+DELETE TOP (@count) [Hangfire].[Counter] with (readpast)
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
 
 SET NOCOUNT ON
