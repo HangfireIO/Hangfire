@@ -327,7 +327,7 @@ WriteLiteral(" ");
 
             
             #line 99 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                      Write(HtmlHelper.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value), false));
+                                      Write(HtmlHelper.ToHumanDuration(job.Value.TotalDuration.Value, false));
 
             
             #line default

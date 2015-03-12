@@ -96,7 +96,7 @@
                                 <td class="min-width align-right">
                                     @if (job.Value.TotalDuration.HasValue)
                                     {
-                                        @: @HtmlHelper.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value), false)
+                                        @: @HtmlHelper.ToHumanDuration(job.Value.TotalDuration.Value, false)
                                     }
                                 </td>
                                 <td class="min-width align-right">

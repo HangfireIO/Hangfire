@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Globalization;
 using System.Linq;
 using System.Transactions;
 using Dapper;
@@ -178,7 +179,7 @@ namespace Hangfire.SqlServer
                     Job = job,
                     Result = stateData.ContainsKey("Result") ? stateData["Result"] : null,
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
-                        ? (long?)long.Parse(stateData["PerformanceDuration"]) + (long?)long.Parse(stateData["Latency"])
+                        ? (double?)double.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture) + (double?)double.Parse(stateData["Latency"], CultureInfo.InvariantCulture)
                         : null,
                     SucceededAt = JobHelper.DeserializeNullableDateTime(stateData["SucceededAt"])
                 }));

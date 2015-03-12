@@ -70,54 +70,61 @@ namespace Hangfire.Dashboard
         public static string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
         {
             if (duration == null) return null;
+            return ToHumanDuration(duration.Value.TotalMilliseconds, displaySign);
+        }
 
+        public static string ToHumanDuration(double? duration, bool displaySign = true)
+        {
+            if (duration == null) return null;
+
+            var timespan = TimeSpan.FromMilliseconds(duration.Value);
             var builder = new StringBuilder();
             if (displaySign)
             {
-                builder.Append(duration.Value.TotalMilliseconds < 0 ? "-" : "+");
+                builder.Append(timespan.TotalMilliseconds < 0 ? "-" : "+");
             }
 
-            duration = duration.Value.Duration();
+            timespan = timespan.Duration();
 
-            if (duration.Value.Days > 0)
+            if (timespan.Days > 0)
             {
-                builder.AppendFormat("{0}d ", duration.Value.Days);
+                builder.AppendFormat("{0}d ", timespan.Days);
             }
 
-            if (duration.Value.Hours > 0)
+            if (timespan.Hours > 0)
             {
-                builder.AppendFormat("{0}h ", duration.Value.Hours);
+                builder.AppendFormat("{0}h ", timespan.Hours);
             }
 
-            if (duration.Value.Minutes > 0)
+            if (timespan.Minutes > 0)
             {
-                builder.AppendFormat("{0}m ", duration.Value.Minutes);
+                builder.AppendFormat("{0}m ", timespan.Minutes);
             }
 
-            if (duration.Value.TotalHours < 1)
+            if (timespan.TotalHours < 1)
             {
-                if (duration.Value.Seconds > 0)
+                if (timespan.Seconds > 0)
                 {
-                    builder.Append(duration.Value.Seconds);
-                    if (duration.Value.Milliseconds > 0)
+                    builder.Append(timespan.Seconds);
+                    if (timespan.Milliseconds > 0)
                     {
-                        builder.AppendFormat(".{0}", duration.Value.Milliseconds);
+                        builder.AppendFormat(".{0}", timespan.Milliseconds);
                     }
 
                     builder.Append("s ");
                 }
                 else
                 {
-                    if (duration.Value.Milliseconds > 0)
+                    if (timespan.Milliseconds > 0 && builder.Length > 1)
                     {
-                        builder.AppendFormat("{0}ms ", duration.Value.Milliseconds);
+                        builder.AppendFormat("{0}ms ", timespan.Milliseconds);
                     }
                 }
             }
 
             if (builder.Length <= 1)
             {
-                builder.Append(" <1ms ");
+                builder.AppendFormat("{0:N} ms ", duration);
             }
 
             builder.Remove(builder.Length - 1, 1);

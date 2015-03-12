@@ -133,9 +133,7 @@ namespace Hangfire.Server
                 var duration = Stopwatch.StartNew();
 
                 var result = _context.PerformanceProcess.Run(performContext, jobData.Job);
-                duration.Stop();
-
-                return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                return new SucceededState(result, latency, duration.Elapsed.TotalMilliseconds);
             }
             catch (OperationCanceledException)
             {
