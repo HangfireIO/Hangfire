@@ -162,7 +162,6 @@
                 }
             };
 
-            intervalFunc();
             this._intervalId = setInterval(intervalFunc, this._pollInterval);
         };
 
