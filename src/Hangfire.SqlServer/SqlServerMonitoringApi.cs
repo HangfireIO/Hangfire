@@ -289,13 +289,14 @@ select * from HangFire.State where JobId = @id order by Id desc";
                                 Reason = x.Reason,
                                 Data = new Dictionary<string, string>(
                                     JobHelper.FromJson<Dictionary<string, string>>(x.Data),
-                                    StringComparer.OrdinalIgnoreCase)
+                                    StringComparer.OrdinalIgnoreCase),
                             })
                             .ToList();
 
                     return new JobDetailsDto
                     {
                         CreatedAt = job.CreatedAt,
+                        ExpireAt = job.ExpireAt,
                         Job = DeserializeJob(job.InvocationData, job.Arguments),
                         History = history,
                         Properties = parameters

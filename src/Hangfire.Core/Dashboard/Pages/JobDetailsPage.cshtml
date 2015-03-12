@@ -33,6 +33,14 @@
         }
         else
         {
+            if (job.ExpireAt.HasValue)
+            {
+                <div class="alert alert-info">
+                    <strong>The job has been finished</strong>.
+                    It will be removed automatically <em><abbr data-moment="@JobHelper.ToTimestamp(job.ExpireAt.Value)">@job.ExpireAt</abbr></em>.
+                </div>
+            }
+
             <div class="job-snippet-header">
                 <span class="job-snippet-tab">
                     Job ID: <span class="job-snippet-id">@HtmlHelper.JobId(JobId.ToString(), false)</span>
