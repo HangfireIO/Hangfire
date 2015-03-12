@@ -15,7 +15,7 @@
 -- License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 3;
+SET @TARGET_SCHEMA_VERSION = 4;
 
 PRINT 'Installing Hangfire SQL objects...';
 
@@ -297,13 +297,35 @@ BEGIN
 		SET @CURRENT_SCHEMA_VERSION = 3;
 	END
 
-	/*IF @CURRENT_SCHEMA_VERSION = 3
+	IF @CURRENT_SCHEMA_VERSION = 3
 	BEGIN
 		PRINT 'Installing schema version 4';
 
-		-- Insert migration here
+		CREATE TABLE [HangFire].[AggregatedCounter] (
+			[Id] [int] IDENTITY(1,1) NOT NULL,
+			[Key] [nvarchar](100) NOT NULL,
+			[Value] [bigint] NOT NULL,
+			[ExpireAt] [datetime] NULL,
+
+			CONSTRAINT [PK_Hangfire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC)
+		);
+		PRINT 'Created table [HangFire].[AggregatedCounter]';
+
+		CREATE UNIQUE NONCLUSTERED INDEX [UX_Hangfire_CounterAggregated_Key] ON [HangFire].[AggregatedCounter] (
+			[Key] ASC
+		);
+		PRINT 'Created index [UX_Hangfire_CounterAggregated_Key]';
 
 		SET @CURRENT_SCHEMA_VERSION = 4;
+	END
+
+	/*IF @CURRENT_SCHEMA_VERSION = 4
+	BEGIN
+		PRINT 'Installing schema version 5';
+
+		-- Insert migration here
+
+		SET @CURRENT_SCHEMA_VERSION = 5;
 	END*/
 
 	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

@@ -27,6 +27,7 @@ namespace Hangfire.SqlServer
             QueuePollInterval = TimeSpan.FromSeconds(15);
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
+            CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
         }
 
@@ -57,5 +58,6 @@ namespace Hangfire.SqlServer
         public bool PrepareSchemaIfNecessary { get; set; }
 
         public TimeSpan JobExpirationCheckInterval { get; set; }
+        public TimeSpan CountersAggregateInterval { get; set; }
     }
 }

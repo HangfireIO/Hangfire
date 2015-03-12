@@ -28,7 +28,7 @@ namespace Hangfire.SqlServer
     [ExcludeFromCodeCoverage]
     internal static class SqlServerObjectsInstaller
     {
-        private const int RequiredSchemaVersion = 3;
+        private const int RequiredSchemaVersion = 4;
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 

@@ -30,7 +30,7 @@ namespace Hangfire.SqlServer
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private static readonly string[] ProcessedTables =
         {
-            "Counter",
+            "AggregatedCounter",
             "Job",
             "List",
             "Set",
@@ -55,7 +55,6 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            
             foreach (var table in ProcessedTables)
             {
                 Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
@@ -75,7 +74,7 @@ delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;",
 
                     if (removedCount > 0)
                     {
-                        Logger.Info(String.Format("Removed {0} outdated record(s) from '{1}' table.", removedCount,
+                        Logger.Trace(String.Format("Removed {0} outdated record(s) from '{1}' table.", removedCount,
                             table));
 
                         cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);

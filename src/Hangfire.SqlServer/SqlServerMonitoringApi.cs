@@ -326,8 +326,16 @@ select StateName as [State], count(Id) as [Count] From HangFire.Job
 group by StateName
 having StateName is not null;
 select count(Id) from HangFire.Server;
-select sum([Value]) from HangFire.Counter where [Key] = N'stats:succeeded';
-select sum([Value]) from HangFire.Counter where [Key] = N'stats:deleted';
+select sum(s.[Value]) from (
+    select sum([Value]) as [Value] from HangFire.Counter where [Key] = N'stats:succeeded'
+    union all
+    select [Value] from HangFire.AggregatedCounter where [Key] = N'stats:succeeded'
+) as s;
+select sum(s.[Value]) from (
+    select sum([Value]) as [Value] from HangFire.Counter where [Key] = N'stats:deleted'
+    union all
+    select [Value] from HangFire.AggregatedCounter where [Key] = N'stats:deleted'
+) as s;
 select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
 ";
 
@@ -345,8 +353,8 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
 
                     stats.Servers = multi.Read<int>().Single();
 
-                    stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
-                    stats.Deleted = multi.Read<int?>().SingleOrDefault() ?? 0;
+                    stats.Succeeded = multi.Read<long?>().SingleOrDefault() ?? 0;
+                    stats.Deleted = multi.Read<long?>().SingleOrDefault() ?? 0;
 
                     stats.Recurring = multi.Read<int>().Single();
                 }
@@ -397,9 +405,8 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
             IDictionary<string, DateTime> keyMaps)
         {
             const string sqlQuery = @"
-select [Key], count([Value]) as Count from [HangFire].[Counter]
-group by [Key]
-having [Key] in @keys";
+select [Key], [Value] as Count from [HangFire].[AggregatedCounter]
+where [Key] in @keys";
 
             var valuesMap = connection.Query(
                 sqlQuery,
