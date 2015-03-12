@@ -307,14 +307,28 @@ BEGIN
 			[Value] [bigint] NOT NULL,
 			[ExpireAt] [datetime] NULL,
 
-			CONSTRAINT [PK_Hangfire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC)
+			CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC)
 		);
 		PRINT 'Created table [HangFire].[AggregatedCounter]';
 
-		CREATE UNIQUE NONCLUSTERED INDEX [UX_Hangfire_CounterAggregated_Key] ON [HangFire].[AggregatedCounter] (
+		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_CounterAggregated_Key] ON [HangFire].[AggregatedCounter] (
 			[Key] ASC
 		);
-		PRINT 'Created index [UX_Hangfire_CounterAggregated_Key]';
+		PRINT 'Created index [UX_HangFire_CounterAggregated_Key]';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		PRINT 'Created indexes for [ExpireAt] columns';
 
 		SET @CURRENT_SCHEMA_VERSION = 4;
 	END
