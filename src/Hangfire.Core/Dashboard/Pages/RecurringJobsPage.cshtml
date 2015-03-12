@@ -10,10 +10,26 @@
 @{
     Layout = new LayoutPage("Recurring jobs");
 	List<RecurringJobDto> recurringJobs;
+    
+    int from, perPage;
+
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
+
+    Pager pager = null;
 
 	using (var connection = Storage.GetConnection())
 	{
-		recurringJobs = connection.GetRecurringJobs();
+	    var storageConnection = connection as JobStorageConnection;
+	    if (storageConnection != null)
+	    {
+	        pager = new Pager(from, perPage, storageConnection.GetRecurringJobCount());
+	        recurringJobs = storageConnection.GetRecurringJobs(pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+	    }
+	    else
+	    {
+            recurringJobs = connection.GetRecurringJobs();
+	    }
 	}
 }
 
@@ -45,6 +61,11 @@
                         <span class="glyphicon glyphicon-remove"></span>
                         Remove
                     </button>
+
+                    @if (pager != null)
+                    {
+                        @: @RenderPartial(new PerPageSelector(pager))
+                    }
                 </div>
 
                 <table class="table">
@@ -121,6 +142,10 @@
                     }
                     </tbody>
                 </table>
+                @if (pager != null)
+                {
+                    @: @RenderPartial(new Paginator(pager))
+                }
             </div>
         }
     </div>
