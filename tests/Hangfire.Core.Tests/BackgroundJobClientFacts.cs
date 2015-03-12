@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -170,7 +171,8 @@ namespace Hangfire.Core.Tests
             _stateMachine.Verify(x => x.ChangeState(
                 "job-id",
                 _state.Object,
-                null));
+                null,
+                It.IsAny<CancellationToken>()));
         }
 
         [Fact]
@@ -183,13 +185,14 @@ namespace Hangfire.Core.Tests
             _stateMachine.Verify(x => x.ChangeState(
                 "job-id",
                 _state.Object,
-                new[] { "State" }));
+                new[] { "State" },
+                It.IsAny<CancellationToken>()));
         }
 
         [Fact]
         public void ChangeState_ReturnsTheResult_OfStateMachineInvocation()
         {
-            _stateMachine.Setup(x => x.ChangeState("job-id", _state.Object, null))
+            _stateMachine.Setup(x => x.ChangeState("job-id", _state.Object, null, It.IsAny<CancellationToken>()))
                 .Returns(true);
             var client = CreateClient();
 

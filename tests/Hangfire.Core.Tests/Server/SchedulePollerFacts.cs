@@ -75,7 +75,8 @@ namespace Hangfire.Core.Tests.Server
             _stateMachine.Verify(x => x.ChangeState(
                 JobId,
                 It.IsAny<EnqueuedState>(),
-                new[] { ScheduledState.StateName }));
+                new[] { ScheduledState.StateName },
+                It.IsAny<CancellationToken>()));
         }
 
         [Fact]
@@ -88,7 +89,7 @@ namespace Hangfire.Core.Tests.Server
 			scheduler.Execute(_cts.Token);
 
             _stateMachine.Verify(
-                x => x.ChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>()),
+                x => x.ChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 

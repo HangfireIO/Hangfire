@@ -27,7 +27,7 @@ namespace Hangfire.States
     internal class StateMachine : IStateMachine
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
-        private static readonly TimeSpan JobFetchTimeout = TimeSpan.FromSeconds(15);
+        
 
         private readonly IStorageConnection _connection;
         private readonly IStateChangeProcess _stateChangeProcess;
@@ -65,8 +65,7 @@ namespace Hangfire.States
             return jobId;
         }
 
-        public bool ChangeState(
-            string jobId, IState toState, string[] fromStates)
+        public bool ChangeState(string jobId, IState toState, string[] fromStates, CancellationToken cancellationToken)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (toState == null) throw new ArgumentNullException("toState");
@@ -83,7 +82,7 @@ namespace Hangfire.States
             // any state transitions will be made only within a such lock.
             using (_connection.AcquireDistributedJobLock(jobId, JobLockTimeout))
             {
-                var jobData = GetJobData(jobId, JobFetchTimeout);
+                var jobData = GetJobData(jobId, cancellationToken);
 
                 if (jobData == null)
                 {
@@ -176,9 +175,8 @@ namespace Hangfire.States
 			}
         }
 
-        private JobData GetJobData(string jobId, TimeSpan timeout)
+        private JobData GetJobData(string jobId, CancellationToken cancellationToken)
         {
-            var stopwatch =  Stopwatch.StartNew();
             var firstAttempt = true;
 
             while (true)
@@ -194,11 +192,9 @@ namespace Hangfire.States
                     return jobData;
                 }
 
-                if (stopwatch.Elapsed >= timeout)
+                if (cancellationToken.IsCancellationRequested)
                 {
-                    throw new TimeoutException(String.Format(
-                        "Timeout expired while trying to fetch a non-null state for background job '{0}'.",
-                        jobId));
+                    return null;
                 }
 
                 Thread.Sleep(firstAttempt ? 0 : 100);
