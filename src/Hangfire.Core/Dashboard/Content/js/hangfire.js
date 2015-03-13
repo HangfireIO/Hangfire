@@ -73,7 +73,6 @@
         }
 
         RealtimeGraph.prototype.appendHistory = function (statistics) {
-            console.log(statistics);
             var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
             var newFailed = parseInt(statistics["failed:count"].intValue);
 
