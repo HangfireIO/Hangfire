@@ -40,14 +40,14 @@
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@LinkTo("/jobs/scheduled/enqueue")"
+                            data-url="@Url.To("/jobs/scheduled/enqueue")"
                             data-loading-text="Enqueueing...">
                         <span class="glyphicon glyphicon-repeat"></span>
                         Enqueue jobs
                     </button>
 
                     <button class="js-jobs-list-command btn btn-sm btn-default"
-                            data-url="@LinkTo("/jobs/scheduled/delete")"
+                            data-url="@Url.To("/jobs/scheduled/delete")"
                             data-loading-text="Deleting..."
                             data-confirm="Do you really want to DELETE ALL selected jobs?">
                         <span class="glyphicon glyphicon-remove"></span>
@@ -88,7 +88,7 @@
                                     <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId" />
                                 </td>
                                 <td class="min-width">
-                                    <a href="@LinkTo("/jobs/" + jobId)">@Html.JobId(jobId)</a>
+                                    <a href="@Url.JobDetails(jobId)">@Html.JobId(jobId)</a>
                                 </td>
                                 @if (jobData == null)
                                 {
@@ -109,7 +109,7 @@
                                         }
                                     </td>
                                     <td>
-                                        <a class="job-method" href="@LinkTo("/jobs/" + jobId)">
+                                        <a class="job-method" href="@Url.JobDetails(jobId)">
                                             @Html.DisplayJob(jobData.Job)
                                         </a>
                                     </td>

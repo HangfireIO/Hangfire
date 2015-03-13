@@ -10,7 +10,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="@LinkTo("/css")" />
+    <link rel="stylesheet" href="@Url.To("/css")" />
 </head>
     <body>
         <!-- Wrap all page content here -->
@@ -25,7 +25,7 @@
                             <span class="icon-bar"></span>
                             <span class="icon-bar"></span>
                         </button>
-                        <a class="navbar-brand" href="@LinkTo("/")">Hangfire Dashboard</a>
+                        <a class="navbar-brand" href="@Url.Home()">Hangfire Dashboard</a>
                     </div>
                     <div class="collapse navbar-collapse">
                         @RenderPartial(new Navigation())
@@ -70,10 +70,10 @@
             (function (hangFire) {
                 hangFire.config = {
                     pollInterval: 2000,
-                    pollUrl: '@(LinkTo("/stats"))'
+                    pollUrl: '@(Url.To("/stats"))'
                 };
             })(window.Hangfire = window.Hangfire || {});
         </script>
-        <script src="@LinkTo("/js")"></script>
+        <script src="@Url.To("/js")"></script>
     </body>
 </html>

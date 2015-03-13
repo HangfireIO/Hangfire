@@ -40,6 +40,7 @@ namespace Hangfire.Dashboard
 
         public RazorPage Layout { get; protected set; }
         public HtmlHelper Html { get; private set; }
+        public UrlHelper Url { get; private set; }
 
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
@@ -69,11 +70,6 @@ namespace Hangfire.Dashboard
             return Request.Query[key];
         }
 
-        public string LinkTo(string relativeUrl)
-        {
-            return Request.PathBase + relativeUrl;
-        }
-
         public string TransformText()
         {
             return TransformText(null);
@@ -100,6 +96,7 @@ namespace Hangfire.Dashboard
             Response = parentPage.Response;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
+            Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
             _statisticsLazy = parentPage._statisticsLazy;
@@ -113,6 +110,7 @@ namespace Hangfire.Dashboard
             Response = owinContext.Response;
             Storage = context.JobStorage;
             AppPath = context.AppPath;
+            Url = new UrlHelper(context.OwinEnvironment);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
             {

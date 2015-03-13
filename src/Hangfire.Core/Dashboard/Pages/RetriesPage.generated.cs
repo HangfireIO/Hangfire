@@ -126,7 +126,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
             
             #line 43 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                 Write(LinkTo("/jobs/scheduled/enqueue"));
+                                 Write(Url.To("/jobs/scheduled/enqueue"));
 
             
             #line default
@@ -143,7 +143,7 @@ WriteLiteral(@"""
 
             
             #line 50 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                 Write(LinkTo("/jobs/scheduled/delete"));
+                                 Write(Url.To("/jobs/scheduled/delete"));
 
             
             #line default
@@ -230,7 +230,7 @@ WriteLiteral("\" />\r\n                                </td>\r\n                
 
             
             #line 91 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                        Write(LinkTo("/jobs/" + jobId));
+                                        Write(Url.JobDetails(jobId));
 
             
             #line default
@@ -240,7 +240,7 @@ WriteLiteral("\">");
 
             
             #line 91 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                                   Write(Html.JobId(jobId));
+                                                                Write(Html.JobId(jobId));
 
             
             #line default
@@ -332,7 +332,7 @@ WriteLiteral("                                    <td>\r\n                      
 
             
             #line 112 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                               Write(LinkTo("/jobs/" + jobId));
+                                                               Write(Url.JobDetails(jobId));
 
             
             #line default

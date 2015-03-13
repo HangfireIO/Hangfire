@@ -190,7 +190,7 @@ WriteLiteral("</span>\r\n                </span>\r\n\r\n                <span cl
 
             
             #line 50 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                                 Write(LinkTo("/jobs/actions/requeue/" + JobId));
+                                                                 Write(Url.To("/jobs/actions/requeue/" + JobId));
 
             
             #line default
@@ -201,7 +201,7 @@ WriteLiteral("\" data-loading-text=\"Enqueueing...\">Requeue</button>\r\n       
 
             
             #line 51 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                               Write(LinkTo("/jobs/actions/delete/" + JobId));
+                                                               Write(Url.To("/jobs/actions/delete/" + JobId));
 
             
             #line default

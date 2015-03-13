@@ -139,7 +139,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
             
             #line 51 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                 Write(LinkTo("/recurring/trigger"));
+                                 Write(Url.To("/recurring/trigger"));
 
             
             #line default
@@ -156,7 +156,7 @@ WriteLiteral(@"""
 
             
             #line 58 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                 Write(LinkTo("/recurring/remove"));
+                                 Write(Url.To("/recurring/remove"));
 
             
             #line default
@@ -389,7 +389,7 @@ WriteLiteral("                                        <a href=\"");
 
             
             #line 120 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                            Write(LinkTo("/jobs/" + job.LastJobId));
+                                            Write(Url.JobDetails(job.LastJobId));
 
             
             #line default

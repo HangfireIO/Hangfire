@@ -48,14 +48,14 @@
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@LinkTo("/recurring/trigger")"
+                            data-url="@Url.To("/recurring/trigger")"
                             data-loading-text="Triggering...">
                         <span class="glyphicon glyphicon-play-circle"></span>
                         Trigger now
                     </button>
 
                     <button class="js-jobs-list-command btn btn-sm btn-default"
-                            data-url="@LinkTo("/recurring/remove")"
+                            data-url="@Url.To("/recurring/remove")"
                             data-loading-text="Removing..."
                             data-confirm="Do you really want to REMOVE ALL selected jobs?">
                         <span class="glyphicon glyphicon-remove"></span>
@@ -117,7 +117,7 @@
                                 {
                                     if (!String.IsNullOrEmpty(job.LastJobId))
                                     {
-                                        <a href="@LinkTo("/jobs/" + job.LastJobId)">
+                                        <a href="@Url.JobDetails(job.LastJobId)">
                                             <span class="label label-default label-hover" data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.LastJobState))">
                                                     @job.LastExecution.Value
                                                 </span>

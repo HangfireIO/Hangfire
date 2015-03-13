@@ -15,11 +15,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.FetchedCount(Queue))
-    {
-        BasePageUrl = LinkTo("/jobs/enqueued/fetched/" + Queue)
-    };
-
+    var pager = new Pager(from, perPage, monitor.FetchedCount(Queue));
     var fetchedJobs = monitor.FetchedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 
@@ -30,8 +26,8 @@
     <div class="col-md-9">
         @RenderPartial(new Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
         {
-            { "Queues", LinkTo("/jobs/enqueued") },
-            { Queue.ToUpperInvariant(), LinkTo("/jobs/enqueued/" + Queue) }
+            { "Queues", Url.LinkToQueues() },
+            { Queue.ToUpperInvariant(), Url.Queue(Queue) }
         }))
 
         <h1 class="page-header">@Queue.ToUpperInvariant() <small>Fetched jobs</small></h1>
@@ -47,14 +43,14 @@
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@LinkTo("/jobs/enqueued/requeue")"
+                            data-url="@Url.To("/jobs/enqueued/requeue")"
                             data-loading-text="Enqueueing...">
                         <span class="glyphicon glyphicon-repeat"></span>
                         Requeue jobs
                     </button>
 
                     <button class="js-jobs-list-command btn btn-sm btn-default"
-                            data-url="@LinkTo("/jobs/enqueued/delete")"
+                            data-url="@Url.To("/jobs/enqueued/delete")"
                             data-loading-text="Deleting..."
                             data-confirm="Do you really want to DELETE ALL selected jobs?">
                         <span class="glyphicon glyphicon-remove"></span>
@@ -84,7 +80,7 @@
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                             </td>
                             <td class="min-width">
-                                <a href="@LinkTo("/jobs/" + job.Key)">@Html.JobId(job.Key)</a>
+                                <a href="@Url.JobDetails(job.Key)">@Html.JobId(job.Key)</a>
                             </td>
                             <td class="min-width">
                                 <span class="label label-default" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.Value.State))">
@@ -92,7 +88,7 @@
                                     </span>
                             </td>
                             <td>
-                                <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
+                                <a class="job-method" href="@Url.JobDetails(job.Key)">
                                     @Html.DisplayJob(job.Value.Job)
                                 </a>
                             </td>

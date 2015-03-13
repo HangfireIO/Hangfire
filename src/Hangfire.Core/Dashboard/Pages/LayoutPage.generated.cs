@@ -65,7 +65,7 @@ WriteLiteral(" - Hangfire</title>\r\n    <meta http-equiv=\"X-UA-Compatible\" co
 
             
             #line 13 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                            Write(LinkTo("/css"));
+                            Write(Url.To("/css"));
 
             
             #line default
@@ -90,7 +90,7 @@ WriteLiteral(@""" />
 
             
             #line 28 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                                                 Write(LinkTo("/"));
+                                                 Write(Url.Home());
 
             
             #line default
@@ -209,7 +209,7 @@ WriteLiteral("ms</li>\r\n                </ul>\r\n            </div>\r\n        
 
             
             #line 73 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                          Write(LinkTo("/stats"));
+                          Write(Url.To("/stats"));
 
             
             #line default
@@ -220,7 +220,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = windo
 
             
             #line 77 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                Write(LinkTo("/js"));
+                Write(Url.To("/js"));
 
             
             #line default

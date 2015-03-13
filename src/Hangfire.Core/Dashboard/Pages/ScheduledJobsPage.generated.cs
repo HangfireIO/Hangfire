@@ -61,11 +61,7 @@ WriteLiteral("\r\n");
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.ScheduledCount())
-    {
-        BasePageUrl = LinkTo("/jobs/scheduled")
-    };
-
+    var pager = new Pager(from, perPage, monitor.ScheduledCount());
     var scheduledJobs = monitor.ScheduledJobs(pager.FromRecord, pager.RecordsPerPage);
 
 
@@ -76,7 +72,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
 
             
-            #line 25 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 21 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
    Write(RenderPartial(new SidebarMenu(JobsSidebarMenu.Items)));
 
             
@@ -87,7 +83,7 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 clas
 
 
             
-            #line 30 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 26 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
          if (pager.TotalPageCount == 0)
         {
 
@@ -99,7 +95,7 @@ WriteLiteral("            <div class=\"alert alert-info\">\r\n                Th
 
 
             
-            #line 35 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 31 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
         }
         else
         {
@@ -113,8 +109,8 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
 
             
-            #line 41 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                 Write(LinkTo("/jobs/scheduled/enqueue"));
+            #line 37 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                 Write(Url.To("/jobs/scheduled/enqueue"));
 
             
             #line default
@@ -130,8 +126,8 @@ WriteLiteral(@"""
 
 
             
-            #line 48 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                 Write(LinkTo("/jobs/scheduled/delete"));
+            #line 44 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                 Write(Url.To("/jobs/scheduled/delete"));
 
             
             #line default
@@ -147,7 +143,7 @@ WriteLiteral(@"""
 
 
             
-            #line 55 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 51 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                Write(RenderPartial(new PerPageSelector(pager)));
 
             
@@ -172,7 +168,7 @@ WriteLiteral(@"
 
 
             
-            #line 70 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 66 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                      foreach (var job in scheduledJobs)
                     {
 
@@ -183,7 +179,7 @@ WriteLiteral("                        <tr class=\"js-jobs-list-row ");
 
 
             
-            #line 72 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                                 Write(!job.Value.InScheduledState ? "obsolete-data" : null);
 
             
@@ -193,7 +189,7 @@ WriteLiteral(" ");
 
 
             
-            #line 72 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                                                                                         Write(job.Value.InScheduledState ? "hover" : null);
 
             
@@ -203,7 +199,7 @@ WriteLiteral("\">\r\n                            <td>\r\n");
 
 
             
-            #line 74 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 70 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                  if (job.Value.InScheduledState)
                                 {
 
@@ -215,7 +211,7 @@ WriteLiteral("                                    <input type=\"checkbox\" class
 
 
             
-            #line 76 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 72 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                                                                                          Write(job.Key);
 
             
@@ -225,7 +221,7 @@ WriteLiteral("\"/>\r\n");
 
 
             
-            #line 77 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 73 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                 }
 
             
@@ -236,8 +232,8 @@ WriteLiteral("                            </td>\r\n                            <
 
 
             
-            #line 80 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                    Write(LinkTo("/jobs/" + job.Key));
+            #line 76 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                    Write(Url.JobDetails(job.Key));
 
             
             #line default
@@ -246,7 +242,7 @@ WriteLiteral("\">\r\n                                    ");
 
 
             
-            #line 81 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 77 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                Write(Html.JobId(job.Key));
 
             
@@ -256,7 +252,7 @@ WriteLiteral("\r\n                                </a>\r\n");
 
 
             
-            #line 83 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 79 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                  if (!job.Value.InScheduledState)
                                 {
 
@@ -268,7 +264,7 @@ WriteLiteral("                                    <span title=\"Job\'s state has
 
 
             
-            #line 86 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                 }
 
             
@@ -279,7 +275,7 @@ WriteLiteral("                            </td>\r\n                            <
 
 
             
-            #line 89 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 85 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                               Write(JobHelper.ToTimestamp(job.Value.EnqueueAt));
 
             
@@ -289,7 +285,7 @@ WriteLiteral("\">\r\n                                    ");
 
 
             
-            #line 90 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 86 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                Write(job.Value.EnqueueAt);
 
             
@@ -301,8 +297,8 @@ WriteLiteral("\r\n                                </span>\r\n                   
 
 
             
-            #line 94 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                                       Write(LinkTo("/jobs/" + job.Key));
+            #line 90 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                                       Write(Url.JobDetails(job.Key));
 
             
             #line default
@@ -311,7 +307,7 @@ WriteLiteral("\">\r\n                                    ");
 
 
             
-            #line 95 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 91 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                Write(Html.DisplayJob(job.Value.Job));
 
             
@@ -322,7 +318,7 @@ WriteLiteral("\r\n                                </a>\r\n                      
 
 
             
-            #line 99 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 95 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                  if (job.Value.ScheduledAt != null)
                                 {
 
@@ -333,7 +329,7 @@ WriteLiteral("                                    <span data-moment=\"");
 
 
             
-            #line 101 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 97 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                                   Write(JobHelper.ToTimestamp(job.Value.ScheduledAt.Value));
 
             
@@ -343,7 +339,7 @@ WriteLiteral("\">\r\n                                        ");
 
 
             
-            #line 102 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 98 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                    Write(job.Value.ScheduledAt);
 
             
@@ -353,7 +349,7 @@ WriteLiteral("\r\n                                    </span>\r\n");
 
 
             
-            #line 104 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 100 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                 }
 
             
@@ -363,7 +359,7 @@ WriteLiteral("                            </td>\r\n                        </tr>
 
 
             
-            #line 107 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 103 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                     }
 
             
@@ -373,21 +369,21 @@ WriteLiteral("                </table>\r\n            </div>\r\n");
 
 
             
-            #line 110 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 106 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
 
             
             
             #line default
             #line hidden
             
-            #line 111 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 107 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
        Write(RenderPartial(new Paginator(pager)));
 
             
             #line default
             #line hidden
             
-            #line 111 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 107 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
                                                 
         }
 

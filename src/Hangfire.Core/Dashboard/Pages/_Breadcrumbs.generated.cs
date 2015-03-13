@@ -40,7 +40,7 @@ WriteLiteral("\r\n<ol class=\"breadcrumb\">\r\n    <li><a href=\"");
 
             
             #line 6 "..\..\Dashboard\Pages\_Breadcrumbs.cshtml"
-            Write(LinkTo("/"));
+            Write(Url.Home());
 
             
             #line default

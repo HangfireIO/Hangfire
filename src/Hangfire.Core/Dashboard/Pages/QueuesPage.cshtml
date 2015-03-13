@@ -40,7 +40,7 @@
                 {
                     <tr>
                         <td>
-                            <a class="label-queue" href="@LinkTo("/jobs/enqueued/" + queue.Name)">
+                            <a class="label-queue" href="@Url.Queue(queue.Name)">
                                 @queue.Name
                             </a>
                         </td>
@@ -48,7 +48,7 @@
                         <td>
                             @if (queue.Fetched.HasValue)
                             {
-                                <a href="@LinkTo("/jobs/enqueued/fetched/" + queue.Name)">
+                                <a href="@Url.To("/jobs/enqueued/fetched/" + queue.Name)">
                                     @queue.Fetched
                                 </a>
                             }
@@ -78,7 +78,7 @@
                                     {
                                         <tr class="@(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
                                             <td class="min-width">
-                                                <a href="@LinkTo("/jobs/" + job.Key)">@Html.JobId(job.Key)</a>
+                                                <a href="@Url.JobDetails(job.Key)">@Html.JobId(job.Key)</a>
                                                 @if (!job.Value.InEnqueuedState)
                                                 {
                                                     <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
@@ -97,7 +97,7 @@
                                                 }
                                             </td>
                                             <td>
-                                                <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
+                                                <a class="job-method" href="@Url.JobDetails(job.Key)">
                                                     @Html.DisplayJob(job.Value.Job)
                                                 </a>
                                             </td>

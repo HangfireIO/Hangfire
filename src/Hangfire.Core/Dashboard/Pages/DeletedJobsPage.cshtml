@@ -12,11 +12,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.DeletedListCount())
-    {
-        BasePageUrl = LinkTo("/jobs/deleted")
-    };
-
+    var pager = new Pager(from, perPage, monitor.DeletedListCount());
     var jobs = monitor.DeletedJobs(pager.FromRecord, pager.RecordsPerPage);
 }
 
@@ -38,7 +34,7 @@
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
-                            data-url="@LinkTo("/jobs/deleted/requeue")"
+                            data-url="@Url.To("/jobs/deleted/requeue")"
                             data-loading-text="Enqueueing...">
                         <span class="glyphicon glyphicon-repeat"></span>
                         Requeue jobs
@@ -67,7 +63,7 @@
                                 }
                             </td>
                             <td class="min-width">
-                                <a href="@LinkTo("/jobs/" + job.Key)">
+                                <a href="@Url.JobDetails(job.Key)">
                                     @Html.JobId(job.Key)
                                 </a>
                                 @if (job.Value != null && !job.Value.InDeletedState)
@@ -85,7 +81,7 @@
                             else
                             {
                                 <td>
-                                    <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
+                                    <a class="job-method" href="@Url.JobDetails(job.Key)">
                                         @Html.DisplayJob(job.Value.Job)
                                     </a>
                                 </td>

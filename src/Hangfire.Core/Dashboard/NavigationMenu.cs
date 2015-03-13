@@ -25,7 +25,7 @@ namespace Hangfire.Dashboard
 
         static NavigationMenu()
         {
-            Items.Add(page => new MenuItem("Jobs", page.LinkTo("/jobs/enqueued"))
+            Items.Add(page => new MenuItem("Jobs", page.Url.LinkToQueues())
             {
                 Active = page.RequestPath.StartsWith("/jobs"),
                 Metrics = new []
@@ -35,19 +35,19 @@ namespace Hangfire.Dashboard
                 }
             });
 
-            Items.Add(page => new MenuItem("Retries", page.LinkTo("/retries"))
+            Items.Add(page => new MenuItem("Retries", page.Url.To("/retries"))
             {
                 Active = page.RequestPath.StartsWith("/retries"),
                 Metric = DashboardMetrics.RetriesCount
             });
 
-            Items.Add(page => new MenuItem("Recurring Jobs", page.LinkTo("/recurring"))
+            Items.Add(page => new MenuItem("Recurring Jobs", page.Url.To("/recurring"))
             {
                 Active = page.RequestPath.StartsWith("/recurring"),
                 Metric = DashboardMetrics.RecurringJobCount
             });
 
-            Items.Add(page => new MenuItem("Servers", page.LinkTo("/servers"))
+            Items.Add(page => new MenuItem("Servers", page.Url.To("/servers"))
             {
                 Active = page.RequestPath.Equals("/servers"),
                 Metric = DashboardMetrics.ServerCount

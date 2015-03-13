@@ -3,7 +3,7 @@
 @inherits RazorPage
 
 <ol class="breadcrumb">
-    <li><a href="@LinkTo("/")"><span class="glyphicon glyphicon-home"></span></a></li>
+    <li><a href="@Url.Home()"><span class="glyphicon glyphicon-home"></span></a></li>
     @foreach (var item in Items)
     {
         <li><a href="@item.Value">@item.Key</a></li>

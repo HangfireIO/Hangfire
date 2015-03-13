@@ -130,7 +130,7 @@ WriteLiteral("                    <tr>\r\n                        <td>\r\n      
 
             
             #line 43 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                    Write(LinkTo("/jobs/enqueued/" + queue.Name));
+                                                    Write(Url.Queue(queue.Name));
 
             
             #line default
@@ -172,7 +172,7 @@ WriteLiteral("                                <a href=\"");
 
             
             #line 51 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                    Write(LinkTo("/jobs/enqueued/fetched/" + queue.Name));
+                                    Write(Url.To("/jobs/enqueued/fetched/" + queue.Name));
 
             
             #line default
@@ -269,7 +269,7 @@ WriteLiteral("\">\r\n                                            <td class=\"min
 
             
             #line 81 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                    Write(LinkTo("/jobs/" + job.Key));
+                                                    Write(Url.JobDetails(job.Key));
 
             
             #line default
@@ -279,7 +279,7 @@ WriteLiteral("\">");
 
             
             #line 81 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                                                 Write(Html.JobId(job.Key));
+                                                                              Write(Html.JobId(job.Key));
 
             
             #line default
@@ -369,7 +369,7 @@ WriteLiteral("                                            </td>\r\n             
 
             
             #line 100 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                                       Write(LinkTo("/jobs/" + job.Key));
+                                                                       Write(Url.JobDetails(job.Key));
 
             
             #line default

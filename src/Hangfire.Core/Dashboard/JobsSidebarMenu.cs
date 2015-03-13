@@ -26,37 +26,37 @@ namespace Hangfire.Dashboard
 
         static JobsSidebarMenu()
         {
-            Items.Add(page => new MenuItem("Enqueued", page.LinkTo("/jobs/enqueued"))
+            Items.Add(page => new MenuItem("Enqueued", page.Url.LinkToQueues())
             {
                 Active = page.RequestPath.StartsWith("/jobs/enqueued"),
                 Metric = DashboardMetrics.EnqueuedAndQueueCount
             });
 
-            Items.Add(page => new MenuItem("Scheduled", page.LinkTo("/jobs/scheduled"))
+            Items.Add(page => new MenuItem("Scheduled", page.Url.To("/jobs/scheduled"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/scheduled"),
                 Metric = DashboardMetrics.ScheduledCount
             });
 
-            Items.Add(page => new MenuItem("Processing", page.LinkTo("/jobs/processing"))
+            Items.Add(page => new MenuItem("Processing", page.Url.To("/jobs/processing"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/processing"),
                 Metric = DashboardMetrics.ProcessingCount
             });
 
-            Items.Add(page => new MenuItem("Succeeded", page.LinkTo("/jobs/succeeded"))
+            Items.Add(page => new MenuItem("Succeeded", page.Url.To("/jobs/succeeded"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/succeeded"),
                 Metric = DashboardMetrics.SucceededCount
             });
 
-            Items.Add(page => new MenuItem("Failed", page.LinkTo("/jobs/failed"))
+            Items.Add(page => new MenuItem("Failed", page.Url.To("/jobs/failed"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/failed"),
                 Metric = DashboardMetrics.FailedCount
             });
 
-            Items.Add(page => new MenuItem("Deleted", page.LinkTo("/jobs/deleted"))
+            Items.Add(page => new MenuItem("Deleted", page.Url.To("/jobs/deleted"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/deleted"),
                 Metric = DashboardMetrics.DeletedCount

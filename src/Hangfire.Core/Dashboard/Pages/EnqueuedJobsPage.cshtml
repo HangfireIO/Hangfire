@@ -15,11 +15,7 @@
     int.TryParse(Query("count"), out perPage);
 
     var monitor = Storage.GetMonitoringApi();
-    var pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue))
-    {
-        BasePageUrl = LinkTo("/jobs/enqueued/" + Queue)
-    };
-
+    var pager = new Pager(from, perPage, monitor.EnqueuedCount(Queue));
     var enqueuedJobs = monitor.EnqueuedJobs(Queue, pager.FromRecord, pager.RecordsPerPage);
 }
 
@@ -30,7 +26,7 @@
     <div class="col-md-9">
         @RenderPartial(new Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
         {
-            { "Queues", LinkTo("/jobs/enqueued") }
+            { "Queues", Url.LinkToQueues() }
         }))
 
         <h1 class="page-header">@Queue.ToUpperInvariant() <small>Enqueued jobs</small></h1>
@@ -46,7 +42,7 @@
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-default"
-                            data-url="@LinkTo("/jobs/enqueued/delete")"
+                            data-url="@Url.To("/jobs/enqueued/delete")"
                             data-loading-text="Deleting..."
                             data-confirm="Do you really want to DELETE ALL selected jobs?">
                         <span class="glyphicon glyphicon-remove"></span>
@@ -76,7 +72,7 @@
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                             </td>
                             <td class="min-width">
-                                <a href="@LinkTo("/jobs/" + job.Key)">
+                                <a href="@Url.JobDetails(job.Key)">
                                     @Html.JobId(job.Key)
                                 </a>
                                 @if (!job.Value.InEnqueuedState)
@@ -90,7 +86,7 @@
                                 </span>
                             </td>
                             <td>
-                                <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
+                                <a class="job-method" href="@Url.JobDetails(job.Key)">
                                     @Html.DisplayJob(job.Value.Job)
                                 </a>
                             </td>
