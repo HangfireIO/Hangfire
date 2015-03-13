@@ -234,6 +234,10 @@ a:hover .label-hover {
 
 /* Job Snippet styles */
 
+.job-snippet {
+    margin-bottom: 20px;
+}
+
 .job-snippet-header {
     margin-bottom: -1px;
     height: 29px;
@@ -264,7 +268,7 @@ a:hover .label-hover {
     text-shadow: 0 1px white;
 }
 
-.job-snippet {
+.job-snippet-body {
     display: table;
     width: 100%;
     border: solid 1px #eee;
@@ -274,12 +278,12 @@ a:hover .label-hover {
     border-top-left-radius: 0;
 }
 
-.job-snippet > * {
+.job-snippet-body > * {
     display: table-cell;
     vertical-align: top;
 }
 
-.job-snippet pre {
+.job-snippet-body pre {
     border: none;
     margin: 0;
     background: inherit;
@@ -288,7 +292,7 @@ a:hover .label-hover {
     border-radius: 0;
 }
 
-.job-snippet pre code {
+.job-snippet-body pre code {
     display: block; 
     color: black;
 }
@@ -307,23 +311,23 @@ a:hover .label-hover {
     color: #777;
 }
 
-.job-snippet pre .comment {
+.job-snippet-body pre .comment {
     color: rgb(0, 128, 0);
 }
 
-.job-snippet pre .keyword {
+.job-snippet-body pre .keyword {
     color: rgb(0, 0, 255);
 }
 
-.job-snippet pre .string {
+.job-snippet-body pre .string {
     color: rgb(163, 21, 21);
 }
 
-.job-snippet pre .type {
+.job-snippet-body pre .type {
     color: rgb(43, 145, 175);
 }
 
-.job-snippet pre .xmldoc {
+.job-snippet-body pre .xmldoc {
     color: rgb(128, 128, 128);
 }
 

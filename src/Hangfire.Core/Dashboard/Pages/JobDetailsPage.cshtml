@@ -1,5 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
+@using System.CodeDom
 @using System.Linq
 @using Hangfire.Common
 @using Hangfire.Dashboard
@@ -41,48 +42,50 @@
                 </div>
             }
 
-            <div class="job-snippet-header">
-                <span class="job-snippet-tab">
-                    Job ID: <span class="job-snippet-id">@Html.JobId(JobId.ToString(), false)</span>
-                </span>
-
-                <span class="job-snippet-buttons pull-right">
-                    <button class="btn btn-xs btn-default" data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)" data-loading-text="Enqueueing...">Requeue</button>
-                    <button class="btn btn-xs btn-death" data-ajax="@Url.To("/jobs/actions/delete/" + JobId)" data-loading-text="Deleting..." data-confirm="Do you really want to delete this job?">Delete</button>
-                </span>
-
-                <div class="clearfix"></div>
-            </div>
             <div class="job-snippet">
-                <div class="job-snippet-code">
-                    @if (job.CreatedAt.HasValue)
-                    {
-                        <div class="pull-right job-creation-date">
-                            Created
-                            <span data-moment="@JobHelper.ToTimestamp(job.CreatedAt.Value)"></span>
-                        </div>
-                    }
-                    @if (job != null)
-                    {
-                        <pre><code>@JobMethodCallRenderer.Render(job.Job)</code></pre>
-                    }
+                <div class="job-snippet-header">
+                    <span class="job-snippet-tab">
+                        Job ID: <span class="job-snippet-id">@Html.JobId(JobId.ToString(), false)</span>
+                    </span>
+
+                    <span class="job-snippet-buttons pull-right">
+                        <button class="btn btn-xs btn-default" data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)" data-loading-text="Enqueueing...">Requeue</button>
+                        <button class="btn btn-xs btn-death" data-ajax="@Url.To("/jobs/actions/delete/" + JobId)" data-loading-text="Deleting..." data-confirm="Do you really want to delete this job?">Delete</button>
+                    </span>
+
                     <div class="clearfix"></div>
                 </div>
-
-                @if (job.Properties.Count > 0)
-                {
-                    <div class="job-snippet-properties">
-                        <dl>
-                            @foreach (var property in job.Properties)
-                            {
-                                <dt>@property.Key</dt>
-                                <dd>
-                                    <pre>@property.Value</pre>
-                                </dd>
-                            }
-                        </dl>
+                <div class="job-snippet-body">
+                    <div class="job-snippet-code">
+                        @if (job.CreatedAt.HasValue)
+                        {
+                            <div class="pull-right job-creation-date">
+                                Created
+                                <span data-moment="@JobHelper.ToTimestamp(job.CreatedAt.Value)"></span>
+                            </div>
+                        }
+                        @if (job != null)
+                        {
+                            <pre><code>@JobMethodCallRenderer.Render(job.Job)</code></pre>
+                        }
+                        <div class="clearfix"></div>
                     </div>
-                }
+
+                    @if (job.Properties.Count > 0)
+                    {
+                        <div class="job-snippet-properties">
+                            <dl>
+                                @foreach (var property in job.Properties)
+                                {
+                                    <dt>@property.Key</dt>
+                                    <dd>
+                                        <pre>@property.Value</pre>
+                                    </dd>
+                                }
+                            </dl>
+                        </div>
+                    }
+                </div>
             </div>
 
             if (job.History.Count > 0)
