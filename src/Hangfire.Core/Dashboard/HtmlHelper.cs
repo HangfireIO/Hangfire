@@ -110,7 +110,7 @@ namespace Hangfire.Dashboard
                 return displayNameAttribute.DisplayName;
             }
         }
-
+        
         public NonEscapedString Raw(string value)
         {
             return new NonEscapedString(value);
@@ -122,6 +122,40 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(Guid.TryParse(jobId, out guid)
                 ? (shorten ? jobId.Substring(0, 8) : jobId)
                 : "#" + jobId);
+        }
+
+        public NonEscapedString StateLabel(string stateName)
+        {
+            if (String.IsNullOrWhiteSpace(stateName))
+            {
+                return Raw("<em>No state</em>");
+            }
+
+            return Raw(String.Format(
+                "<span class=\"label label-default\" style=\"background-color: {0};\">{1}</span>",
+                JobHistoryRenderer.GetForegroundStateColor(stateName),
+                stateName));
+        }
+
+        public NonEscapedString JobIdLink(string jobId)
+        {
+            return Raw(String.Format("<a href=\"{0}\">{1}</a>", _page.Url.JobDetails(jobId), HtmlEncode(jobId)));
+        }
+
+        public NonEscapedString JobNameLink(string jobId, Job job)
+        {
+            return Raw(String.Format(
+                "<a class=\"job-method\" href=\"{0}\">{1}</a>",
+                _page.Url.JobDetails(jobId),
+                 HtmlEncode(DisplayJob(job))));
+        }
+
+        public NonEscapedString RelativeTime(DateTime value)
+        {
+            return Raw(String.Format(
+                "<span data-moment=\"{0}\">{1}</span>",
+                JobHelper.ToTimestamp(value),
+                value));
         }
 
         public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
@@ -358,6 +392,11 @@ namespace Hangfire.Dashboard
         {
             Debug.Assert(writer != null);
             WebUtility.HtmlEncode(text, writer);
+        }
+
+        public string HtmlEncode(string text)
+        {
+            return WebUtility.HtmlEncode(text);
         }
     }
 }

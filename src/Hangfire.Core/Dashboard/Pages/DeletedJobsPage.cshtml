@@ -1,5 +1,4 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
-@using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -63,9 +62,7 @@
                                 }
                             </td>
                             <td class="min-width">
-                                <a href="@Url.JobDetails(job.Key)">
-                                    @Html.JobId(job.Key)
-                                </a>
+                                @Html.JobIdLink(job.Key)
                                 @if (job.Value != null && !job.Value.InDeletedState)
                                 {
                                     <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
@@ -74,23 +71,17 @@
 
                             @if (job.Value == null)
                             {
-                                <td colspan="2">
-                                    <em>Job has expired.</em>
-                                </td>
+                                <td colspan="2"><em>Job has expired.</em></td>
                             }
                             else
                             {
                                 <td>
-                                    <a class="job-method" href="@Url.JobDetails(job.Key)">
-                                        @Html.DisplayJob(job.Value.Job)
-                                    </a>
+                                    @Html.JobNameLink(job.Key, job.Value.Job)
                                 </td>
                                 <td class="align-right">
                                     @if (job.Value.DeletedAt.HasValue)
                                     {
-                                        <span data-moment="@JobHelper.ToTimestamp(job.Value.DeletedAt.Value)">
-                                                @job.Value.DeletedAt
-                                            </span>
+                                        @Html.RelativeTime(job.Value.DeletedAt.Value)
                                     }
                                 </td>
                             }
@@ -98,8 +89,9 @@
                     }
                     </tbody>
                 </table>
+
+                @Html.Paginator(pager)
             </div>
-            @Html.Paginator(pager)
         }
     </div>
 </div>

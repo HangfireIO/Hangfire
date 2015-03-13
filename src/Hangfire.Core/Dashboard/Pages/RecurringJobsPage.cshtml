@@ -2,7 +2,6 @@
 @using System
 @using System.Collections.Generic
 @using CronExpressionDescriptor
-@using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Storage
@@ -103,9 +102,7 @@
                             <td class="align-right min-width">
                                 @if (job.NextExecution != null)
                                 {
-                                    <span data-moment="@(JobHelper.ToTimestamp(job.NextExecution.Value))">
-                                            @job.NextExecution.Value
-                                        </span>
+                                    @Html.RelativeTime(job.NextExecution.Value)
                                 }
                                 else
                                 {
@@ -118,18 +115,16 @@
                                     if (!String.IsNullOrEmpty(job.LastJobId))
                                     {
                                         <a href="@Url.JobDetails(job.LastJobId)">
-                                            <span class="label label-default label-hover" data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.LastJobState))">
-                                                    @job.LastExecution.Value
-                                                </span>
+                                            <span class="label label-default label-hover" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.LastJobState))">
+                                                @Html.RelativeTime(job.LastExecution.Value)
+                                            </span>
                                         </a>
                                     }
                                     else
                                     {
                                         <em>
                                             Canceled
-                                            <span data-moment="@(JobHelper.ToTimestamp(job.LastExecution.Value))">
-                                                    @job.LastExecution.Value
-                                                </span>
+                                            @Html.RelativeTime(job.LastExecution.Value)
                                         </em>
                                     }
                                 }
@@ -142,6 +137,7 @@
                     }
                     </tbody>
                 </table>
+
                 @if (pager != null)
                 {
                     @: @Html.Paginator(pager)

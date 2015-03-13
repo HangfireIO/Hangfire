@@ -1,5 +1,4 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
-@using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -74,9 +73,7 @@
                                 }
                             </td>
                             <td class="min-width">
-                                <a href="@Url.JobDetails(job.Key)">
-                                    @Html.JobId(job.Key)
-                                </a>
+                                @Html.JobIdLink(job.Key)
                                 @if (!job.Value.InProcessingState)
                                 {
                                     <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
@@ -86,24 +83,21 @@
                                 @job.Value.ServerId.ToUpperInvariant()
                             </td>
                             <td>
-                                <a class="job-method" href="@Url.JobDetails(job.Key)">
-                                    @Html.DisplayJob(job.Value.Job)
-                                </a>
+                                @Html.JobNameLink(job.Key, job.Value.Job)
                             </td>
                             <td class="align-right">
                                 @if (job.Value.StartedAt.HasValue)
                                 {
-                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.StartedAt.Value)">
-                                            @job.Value.StartedAt
-                                        </span>
+                                    @Html.RelativeTime(job.Value.StartedAt.Value)
                                 }
                             </td>
                         </tr>
                     }
                     </tbody>
                 </table>
+
+                @Html.Paginator(pager)
             </div>
-            @Html.Paginator(pager)
         }
     </div>
 </div>

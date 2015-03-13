@@ -1,8 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
-@using System
 @using System.Collections
 @using System.Collections.Generic
-@using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -64,50 +62,45 @@
 
             <table class="table">
                 <thead>
-                    <tr>
-                        <th class="min-width">
-                            <input type="checkbox" class="js-jobs-list-select-all" />
-                        </th>
-                        <th class="min-width">Id</th>
-                        <th class="min-width">State</th>
-                        <th>Job</th>
-                        <th class="align-right">Fetched</th>
-                    </tr>
+                <tr>
+                    <th class="min-width">
+                        <input type="checkbox" class="js-jobs-list-select-all"/>
+                    </th>
+                    <th class="min-width">Id</th>
+                    <th class="min-width">State</th>
+                    <th>Job</th>
+                    <th class="align-right">Fetched</th>
+                </tr>
                 </thead>
                 <tbody>
-                    @foreach (var job in fetchedJobs)
-                    {
-                        <tr class="js-jobs-list-row hover">
-                            <td>
-                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
-                            </td>
-                            <td class="min-width">
-                                <a href="@Url.JobDetails(job.Key)">@Html.JobId(job.Key)</a>
-                            </td>
-                            <td class="min-width">
-                                <span class="label label-default" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.Value.State))">
-                                    @job.Value.State
-                                </span>
-                            </td>
-                            <td>
-                                <a class="job-method" href="@Url.JobDetails(job.Key)">
-                                    @Html.DisplayJob(job.Value.Job)
-                                </a>
-                            </td>
-                            <td class="align-right">
-                                @if (job.Value.FetchedAt.HasValue)
-                                {
-                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.FetchedAt.Value)">
-                                        @job.Value.FetchedAt
-                                    </span>
-                                }
-                            </td>
-                        </tr>
-                    }
+                @foreach (var job in fetchedJobs)
+                {
+                    <tr class="js-jobs-list-row hover">
+                        <td>
+                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
+                        </td>
+                        <td class="min-width">
+                            @Html.JobIdLink(job.Key)
+                        </td>
+                        <td class="min-width">
+                            @Html.StateLabel(job.Value.State)
+                        </td>
+                        <td>
+                            @Html.JobNameLink(job.Key, job.Value.Job)
+                        </td>
+                        <td class="align-right">
+                            @if (job.Value.FetchedAt.HasValue)
+                            {
+                                @Html.RelativeTime(job.Value.FetchedAt.Value)
+                            }
+                        </td>
+                    </tr>
+                }
                 </tbody>
             </table>
+
+            @Html.Paginator(pager)
         </div>
-        @Html.Paginator(pager)
         }
-</div>
+    </div>
 </div>

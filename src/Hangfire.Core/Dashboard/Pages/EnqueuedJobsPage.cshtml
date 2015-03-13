@@ -1,8 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
-@using System
 @using System.Collections
 @using System.Collections.Generic
-@using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -72,30 +70,22 @@
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                             </td>
                             <td class="min-width">
-                                <a href="@Url.JobDetails(job.Key)">
-                                    @Html.JobId(job.Key)
-                                </a>
+                                @Html.JobIdLink(job.Key)
                                 @if (!job.Value.InEnqueuedState)
                                 {
                                     <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
                                 }
                             </td>
                             <td class="min-width">
-                                <span class="label label-default" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.Value.State))">
-                                    @job.Value.State
-                                </span>
+                                @Html.StateLabel(job.Value.State)
                             </td>
                             <td>
-                                <a class="job-method" href="@Url.JobDetails(job.Key)">
-                                    @Html.DisplayJob(job.Value.Job)
-                                </a>
+                                @Html.JobNameLink(job.Key, job.Value.Job)
                             </td>
                             <td class="align-right">
                                 @if (job.Value.EnqueuedAt.HasValue)
                                 {
-                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.EnqueuedAt.Value)">
-                                            @job.Value.EnqueuedAt
-                                        </span>
+                                    @Html.RelativeTime(job.Value.EnqueuedAt.Value)
                                 }
                                 else
                                 {
@@ -106,8 +96,9 @@
                     }
                     </tbody>
                 </table>
+
+                @Html.Paginator(pager)
             </div>
-            @Html.Paginator(pager)
         }
     </div>
 </div>

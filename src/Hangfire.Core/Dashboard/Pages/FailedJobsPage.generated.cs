@@ -22,18 +22,12 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     #line 3 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-    using Hangfire.Common;
-    
-    #line default
-    #line hidden
-    
-    #line 4 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
     using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
-    #line 5 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+    #line 4 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
     using Hangfire.Dashboard.Pages;
     
     #line default
@@ -55,9 +49,8 @@ WriteLiteral("\r\n");
 
 
 
-
             
-            #line 7 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 6 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
   
     Layout = new LayoutPage("Failed Jobs");
 
@@ -78,7 +71,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
 
             
-            #line 22 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 21 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
    Write(Html.JobsSidebar());
 
             
@@ -89,7 +82,7 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 clas
 
 
             
-            #line 27 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 26 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
          if (pager.TotalPageCount == 0)
         {
 
@@ -101,7 +94,7 @@ WriteLiteral("            <div class=\"alert alert-success\">\r\n               
 
 
             
-            #line 32 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 31 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
         }
         else
         {
@@ -115,7 +108,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
 
             
-            #line 38 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 37 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                  Write(Url.To("/jobs/failed/requeue"));
 
             
@@ -132,7 +125,7 @@ WriteLiteral(@"""
 
 
             
-            #line 45 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                  Write(Url.To("/jobs/failed/delete"));
 
             
@@ -149,7 +142,7 @@ WriteLiteral(@"""
 
 
             
-            #line 52 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 51 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                Write(Html.PerPageSelector(pager));
 
             
@@ -158,7 +151,7 @@ WriteLiteral(@"""
 WriteLiteral(@"
                 </div>
 
-                <table class=""table failed-table"">
+                <table class=""table"">
                     <thead>
                     <tr>
                         <th class=""min-width"">
@@ -174,7 +167,7 @@ WriteLiteral(@"
 
 
             
-            #line 67 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 66 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                        var index = 0; 
 
             
@@ -182,7 +175,7 @@ WriteLiteral(@"
             #line hidden
 
             
-            #line 68 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                      foreach (var job in failedJobs)
                     {
 
@@ -193,7 +186,7 @@ WriteLiteral("                        <tr class=\"js-jobs-list-row ");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 69 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                                 Write(!job.Value.InFailedState ? "obsolete-data" : null);
 
             
@@ -203,7 +196,7 @@ WriteLiteral(" ");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 69 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                                                                                      Write(job.Value.InFailedState ? "hover" : null);
 
             
@@ -213,7 +206,7 @@ WriteLiteral("\">\r\n                            <td rowspan=\"");
 
 
             
-            #line 71 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 70 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                      Write(job.Value.InFailedState ? "2" : "1");
 
             
@@ -223,7 +216,7 @@ WriteLiteral("\">\r\n");
 
 
             
-            #line 72 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 71 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                  if (job.Value.InFailedState)
                                 {
 
@@ -235,7 +228,7 @@ WriteLiteral("                                    <input type=\"checkbox\" class
 
 
             
-            #line 74 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 73 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                                                                                          Write(job.Key);
 
             
@@ -245,7 +238,7 @@ WriteLiteral("\"/>\r\n");
 
 
             
-            #line 75 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 74 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                 }
 
             
@@ -256,37 +249,27 @@ WriteLiteral("                            </td>\r\n                            <
 
 
             
-            #line 77 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                                        Write(job.Value.InFailedState ? "2" : "1");
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                <a href=\"");
+WriteLiteral("\">\r\n                                ");
+
+
+            
+            #line 77 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                           Write(Html.JobIdLink(job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
 
 
             
             #line 78 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                    Write(Url.JobDetails(job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                                    ");
-
-
-            
-            #line 79 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                               Write(Html.JobId(job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                </a>\r\n");
-
-
-            
-            #line 81 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                  if (!job.Value.InFailedState)
                                 {
 
@@ -298,7 +281,7 @@ WriteLiteral("                                    <span title=\"Job\'s state has
 
 
             
-            #line 84 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 81 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                 }
 
             
@@ -309,71 +292,44 @@ WriteLiteral("                            </td>\r\n                            <
 
 
             
-            #line 87 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                  if (job.Value.FailedAt.HasValue)
                                 {
+                                    
+            
+            #line default
+            #line hidden
+            
+            #line 86 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                               Write(Html.RelativeTime(job.Value.FailedAt.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("                                    <span data-moment=\"");
-
-
             
-            #line 89 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                  Write(JobHelper.ToTimestamp(job.Value.FailedAt.Value));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                                            ");
-
-
-            
-            #line 90 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                       Write(job.Value.FailedAt);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                        </span>\r\n");
-
-
-            
-            #line 92 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 86 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                                                                                
                                 }
 
             
             #line default
             #line hidden
 WriteLiteral("                            </td>\r\n                            <td>\r\n            " +
-"                    <div>\r\n                                    <a class=\"job-met" +
-"hod\" href=\"");
+"                    <div>\r\n                                    ");
 
 
             
-            #line 96 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                           Write(Url.JobDetails(job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                                        ");
-
-
-            
-            #line 97 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                   Write(Html.DisplayJob(job.Value.Job));
+            #line 91 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+                               Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                    </a>\r\n                                </div" +
-">\r\n");
+WriteLiteral("\r\n                                </div>\r\n");
 
 
             
-            #line 100 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 93 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                  if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                                 {
 
@@ -385,7 +341,7 @@ WriteLiteral("                                    <div style=\"color: #888;\">\r
 
 
             
-            #line 103 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 96 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                    Write(job.Value.Reason);
 
             
@@ -396,7 +352,7 @@ WriteLiteral(" <a class=\"expander\" href=\"#\">More&nbsp;details...</a>\r\n    
 
 
             
-            #line 105 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 98 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                 }
 
             
@@ -406,7 +362,7 @@ WriteLiteral("                            </td>\r\n                        </tr>
 
 
             
-            #line 108 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 101 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                         if (job.Value.InFailedState)
                         {
 
@@ -419,7 +375,7 @@ WriteLiteral("                            <tr>\r\n                              
 
 
             
-            #line 112 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 105 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                                                Write(index++ == 0 ? "display: block;" : null);
 
             
@@ -429,7 +385,7 @@ WriteLiteral("\">\r\n                                        <h4>");
 
 
             
-            #line 113 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 106 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                        Write(job.Value.ExceptionType);
 
             
@@ -440,7 +396,7 @@ WriteLiteral("</h4>\r\n                                        <p>\r\n          
 
 
             
-            #line 115 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 108 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                        Write(job.Value.ExceptionMessage);
 
             
@@ -450,7 +406,7 @@ WriteLiteral("\r\n                                        </p>\r\n\r\n");
 
 
             
-            #line 118 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 111 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                          if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
                                         {
 
@@ -461,7 +417,7 @@ WriteLiteral("                                            <pre class=\"stack-tra
 
 
             
-            #line 120 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                                                 Write(Html.MarkupStackTrace(job.Value.ExceptionDetails));
 
             
@@ -471,7 +427,7 @@ WriteLiteral("</pre>\r\n");
 
 
             
-            #line 121 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 114 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                                         }
 
             
@@ -482,33 +438,28 @@ WriteLiteral("                                    </div>\r\n                    
 
 
             
-            #line 125 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+            #line 118 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
                         }
                     }
 
             
             #line default
             #line hidden
-WriteLiteral("                    </tbody>\r\n                </table>\r\n            </div>\r\n");
+WriteLiteral("                    </tbody>\r\n                </table>\r\n\r\n                ");
 
 
             
-            #line 130 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-
-            
-            
-            #line default
-            #line hidden
-            
-            #line 131 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-       Write(Html.Paginator(pager));
+            #line 123 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
+           Write(Html.Paginator(pager));
 
             
             #line default
             #line hidden
+WriteLiteral("\r\n            </div>\r\n");
+
+
             
-            #line 131 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                  
+            #line 125 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
         }
 
             

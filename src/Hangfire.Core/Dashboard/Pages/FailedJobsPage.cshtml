@@ -1,6 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
-@using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -52,7 +51,7 @@
                     @Html.PerPageSelector(pager)
                 </div>
 
-                <table class="table failed-table">
+                <table class="table">
                     <thead>
                     <tr>
                         <th class="min-width">
@@ -75,9 +74,7 @@
                                 }
                             </td>
                             <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
-                                <a href="@Url.JobDetails(job.Key)">
-                                    @Html.JobId(job.Key)
-                                </a>
+                                @Html.JobIdLink(job.Key)
                                 @if (!job.Value.InFailedState)
                                 {
                                     <span title="Job's state has been changed while fetching data." class="glyphicon glyphicon-question-sign"></span>
@@ -86,16 +83,12 @@
                             <td class="min-width">
                                 @if (job.Value.FailedAt.HasValue)
                                 {
-                                    <span data-moment="@JobHelper.ToTimestamp(job.Value.FailedAt.Value)">
-                                            @job.Value.FailedAt
-                                        </span>
+                                    @Html.RelativeTime(job.Value.FailedAt.Value)
                                 }
                             </td>
                             <td>
                                 <div>
-                                    <a class="job-method" href="@Url.JobDetails(job.Key)">
-                                        @Html.DisplayJob(job.Value.Job)
-                                    </a>
+                                    @Html.JobNameLink(job.Key, job.Value.Job)
                                 </div>
                                 @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                                 {
@@ -126,9 +119,9 @@
                     }
                     </tbody>
                 </table>
-            </div>
 
-            @Html.Paginator(pager)
+                @Html.Paginator(pager)
+            </div>
         }
     </div>
 </div>

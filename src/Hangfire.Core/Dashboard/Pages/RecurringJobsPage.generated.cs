@@ -33,24 +33,18 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     #line 5 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-    using Hangfire.Common;
-    
-    #line default
-    #line hidden
-    
-    #line 6 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
     using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
-    #line 7 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+    #line 6 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
     using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
     
-    #line 8 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+    #line 7 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
     using Hangfire.Storage;
     
     #line default
@@ -75,9 +69,8 @@ WriteLiteral("\r\n");
 
 
 
-
             
-            #line 10 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 9 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
   
     Layout = new LayoutPage("Recurring jobs");
 	List<RecurringJobDto> recurringJobs;
@@ -112,7 +105,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n      
 
 
             
-            #line 40 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 39 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
          if (recurringJobs.Count == 0)
         {
 
@@ -124,7 +117,7 @@ WriteLiteral("            <div class=\"alert alert-info\">\r\n                No
 
 
             
-            #line 45 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 44 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
         }
         else
         {
@@ -138,7 +131,7 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
 
             
-            #line 51 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 50 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                  Write(Url.To("/recurring/trigger"));
 
             
@@ -155,7 +148,7 @@ WriteLiteral(@"""
 
 
             
-            #line 58 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 57 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                  Write(Url.To("/recurring/remove"));
 
             
@@ -172,7 +165,7 @@ WriteLiteral(@"""
 
 
             
-            #line 65 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 64 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                      if (pager != null)
                     {
 
@@ -185,7 +178,7 @@ WriteLiteral(" ");
 
 
             
-            #line 67 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 66 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                       Write(Html.PerPageSelector(pager));
 
             
@@ -195,7 +188,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 68 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                     }
 
             
@@ -221,7 +214,7 @@ WriteLiteral(@"                </div>
 
 
             
-            #line 85 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 84 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                      foreach (var job in recurringJobs)
                     {
 
@@ -234,7 +227,7 @@ WriteLiteral("                        <tr class=\"js-jobs-list-row hover\">\r\n 
 
 
             
-            #line 89 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 88 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                                                                                      Write(job.Id);
 
             
@@ -245,7 +238,7 @@ WriteLiteral("\"/>\r\n                            </td>\r\n                     
 
 
             
-            #line 91 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 90 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                              Write(job.Id);
 
             
@@ -255,7 +248,7 @@ WriteLiteral("</td>\r\n                            <td class=\"min-width\">");
 
 
             
-            #line 92 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 91 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                              Write(ExpressionDescriptor.GetDescription(job.Cron));
 
             
@@ -265,7 +258,7 @@ WriteLiteral("</td>\r\n                            <td>\r\n");
 
 
             
-            #line 94 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 93 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                  if (job.Job != null)
                                 {
 
@@ -278,7 +271,7 @@ WriteLiteral(" ");
 
 
             
-            #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 95 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                   Write(Html.DisplayJob(job.Job));
 
             
@@ -288,7 +281,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 97 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                 }
                                 else
                                 {
@@ -300,7 +293,7 @@ WriteLiteral("                                    <em>");
 
 
             
-            #line 100 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 99 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                    Write(job.LoadException.InnerException.Message);
 
             
@@ -310,7 +303,7 @@ WriteLiteral("</em>\r\n");
 
 
             
-            #line 101 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 100 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                 }
 
             
@@ -321,38 +314,23 @@ WriteLiteral("                            </td>\r\n                            <
 
 
             
-            #line 104 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 103 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                  if (job.NextExecution != null)
                                 {
+                                    
+            
+            #line default
+            #line hidden
+            
+            #line 105 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                               Write(Html.RelativeTime(job.NextExecution.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("                                    <span data-moment=\"");
-
-
             
-            #line 106 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                   Write(JobHelper.ToTimestamp(job.NextExecution.Value));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                                            ");
-
-
-            
-            #line 107 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                       Write(job.NextExecution.Value);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                        </span>\r\n");
-
-
-            
-            #line 109 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 105 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                               
                                 }
                                 else
                                 {
@@ -364,7 +342,7 @@ WriteLiteral("                                    <em>N/A</em>\r\n");
 
 
             
-            #line 113 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 110 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                 }
 
             
@@ -375,7 +353,7 @@ WriteLiteral("                            </td>\r\n                            <
 
 
             
-            #line 116 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 113 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                  if (job.LastExecution != null)
                                 {
                                     if (!String.IsNullOrEmpty(job.LastJobId))
@@ -388,49 +366,39 @@ WriteLiteral("                                        <a href=\"");
 
 
             
-            #line 120 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 117 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                             Write(Url.JobDetails(job.LastJobId));
 
             
             #line default
             #line hidden
 WriteLiteral("\">\r\n                                            <span class=\"label label-default " +
-"label-hover\" data-moment=\"");
+"label-hover\" style=\"");
 
 
             
-            #line 121 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                                                                   Write(JobHelper.ToTimestamp(job.LastExecution.Value));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\" style=\"");
-
-
-            
-            #line 121 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                                                                                                                            Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.LastJobState)));
+            #line 118 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                                            Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.LastJobState)));
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                                                    ");
+WriteLiteral("\">\r\n                                                ");
+
+
+            
+            #line 119 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                           Write(Html.RelativeTime(job.LastExecution.Value));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                            </span>\r\n                          " +
+"              </a>\r\n");
 
 
             
             #line 122 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                               Write(job.LastExecution.Value);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                                </span>\r\n                      " +
-"                  </a>\r\n");
-
-
-            
-            #line 125 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                     }
                                     else
                                     {
@@ -439,33 +407,21 @@ WriteLiteral("\r\n                                                </span>\r\n   
             #line default
             #line hidden
 WriteLiteral("                                        <em>\r\n                                   " +
-"         Canceled\r\n                                            <span data-moment" +
-"=\"");
+"         Canceled\r\n                                            ");
 
 
             
-            #line 130 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                           Write(JobHelper.ToTimestamp(job.LastExecution.Value));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                                                    ");
-
-
-            
-            #line 131 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                               Write(job.LastExecution.Value);
+            #line 127 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                       Write(Html.RelativeTime(job.LastExecution.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                                </span>\r\n                      " +
-"                  </em>\r\n");
+WriteLiteral("\r\n                                        </em>\r\n");
 
 
             
-            #line 134 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 129 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                     }
                                 }
                                 else
@@ -478,7 +434,7 @@ WriteLiteral("                                    <em>N/A</em>\r\n");
 
 
             
-            #line 139 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 134 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                 }
 
             
@@ -488,17 +444,17 @@ WriteLiteral("                            </td>\r\n                        </tr>
 
 
             
-            #line 142 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 137 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                     }
 
             
             #line default
             #line hidden
-WriteLiteral("                    </tbody>\r\n                </table>\r\n");
+WriteLiteral("                    </tbody>\r\n                </table>\r\n\r\n");
 
 
             
-            #line 145 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 141 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                  if (pager != null)
                 {
 
@@ -511,7 +467,7 @@ WriteLiteral(" ");
 
 
             
-            #line 147 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 143 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                   Write(Html.Paginator(pager));
 
             
@@ -521,7 +477,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 148 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 144 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                 }
 
             
@@ -531,7 +487,7 @@ WriteLiteral("            </div>\r\n");
 
 
             
-            #line 150 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+            #line 146 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
         }
 
             
