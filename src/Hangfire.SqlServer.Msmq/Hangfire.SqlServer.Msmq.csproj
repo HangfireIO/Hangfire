@@ -24,6 +24,7 @@
     <DocumentationFile>bin\Debug\Hangfire.SqlServer.Msmq.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
     <NoWarn>1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -50,6 +51,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="MessageQueueExtensions.cs" />
     <Compile Include="MsmqFetchedJob.cs" />
     <Compile Include="MsmqJobQueue.cs" />
     <Compile Include="MsmqJobQueueMonitoringApi.cs" />
