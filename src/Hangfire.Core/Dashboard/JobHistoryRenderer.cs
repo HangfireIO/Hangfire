@@ -158,7 +158,7 @@ namespace Hangfire.Dashboard
 
         private static NonEscapedString FailedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
         {
-            var stackTrace = html.MarkupStackTrace(stateData["ExceptionDetails"]).ToString();
+            var stackTrace = html.StackTrace(stateData["ExceptionDetails"]).ToString();
             return new NonEscapedString(String.Format(
                 "<h4 class=\"exception-type\">{0}</h4><p>{1}</p>{2}",
                 stateData["ExceptionType"],

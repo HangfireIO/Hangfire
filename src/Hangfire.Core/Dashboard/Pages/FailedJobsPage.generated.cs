@@ -418,7 +418,7 @@ WriteLiteral("                                            <pre class=\"stack-tra
 
             
             #line 113 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                                Write(Html.MarkupStackTrace(job.Value.ExceptionDetails));
+                                                                Write(Html.StackTrace(job.Value.ExceptionDetails));
 
             
             #line default

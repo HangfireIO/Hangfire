@@ -79,7 +79,7 @@ WriteLiteral("\r\n");
 
     if (job != null)
     {
-        title = job.Job != null ? Html.DisplayJob(job.Job) : null;
+        title = job.Job != null ? Html.JobName(job.Job) : null;
     }
 
     title = title ?? "Job";

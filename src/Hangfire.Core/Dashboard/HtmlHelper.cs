@@ -86,7 +86,20 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(partialPage.ToString());
         }
 
-        public string DisplayJob(Job job)
+        public NonEscapedString Raw(string value)
+        {
+            return new NonEscapedString(value);
+        }
+
+        public NonEscapedString JobId(string jobId, bool shorten = true)
+        {
+            Guid guid;
+            return new NonEscapedString(Guid.TryParse(jobId, out guid)
+                ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
+                : "#" + jobId);
+        }
+
+        public string JobName(Job job)
         {
             if (job == null)
             {
@@ -109,19 +122,6 @@ namespace Hangfire.Dashboard
             {
                 return displayNameAttribute.DisplayName;
             }
-        }
-        
-        public NonEscapedString Raw(string value)
-        {
-            return new NonEscapedString(value);
-        }
-
-        public NonEscapedString JobId(string jobId, bool shorten = true)
-        {
-            Guid guid;
-            return new NonEscapedString(Guid.TryParse(jobId, out guid)
-                ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
-                : "#" + jobId);
         }
 
         public NonEscapedString StateLabel(string stateName)
@@ -147,7 +147,7 @@ namespace Hangfire.Dashboard
             return Raw(String.Format(
                 "<a class=\"job-method\" href=\"{0}\">{1}</a>",
                 _page.Url.JobDetails(jobId),
-                 HtmlEncode(DisplayJob(job))));
+                 HtmlEncode(JobName(job))));
         }
 
         public NonEscapedString RelativeTime(DateTime value)
@@ -243,7 +243,7 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(label);
         }
 
-        public NonEscapedString MarkupStackTrace(string stackTrace)
+        public NonEscapedString StackTrace(string stackTrace)
         {
             using (var writer = new StringWriter())
             {
