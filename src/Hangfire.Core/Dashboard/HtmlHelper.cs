@@ -139,7 +139,9 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString JobIdLink(string jobId)
         {
-            return Raw(String.Format("<a href=\"{0}\">{1}</a>", _page.Url.JobDetails(jobId), HtmlEncode(jobId)));
+            return Raw(String.Format("<a href=\"{0}\">{1}</a>", 
+                _page.Url.JobDetails(jobId), 
+                JobId(jobId)));
         }
 
         public NonEscapedString JobNameLink(string jobId, Job job)
