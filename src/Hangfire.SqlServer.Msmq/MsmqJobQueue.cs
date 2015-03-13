@@ -57,7 +57,7 @@ namespace Hangfire.SqlServer.Msmq
                     {
                         transaction.Begin();
 
-                        var message = queueIndex == 0
+                        var message = queueIndex == queues.Length - 1
                             ? messageQueue.Receive(SyncReceiveTimeout, transaction)
                             : messageQueue.Receive(new TimeSpan(1), transaction);
 
