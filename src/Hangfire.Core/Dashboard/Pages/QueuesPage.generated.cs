@@ -279,7 +279,7 @@ WriteLiteral("\">");
 
             
             #line 81 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                                                                 Write(HtmlHelper.JobId(job.Key));
+                                                                                 Write(Html.JobId(job.Key));
 
             
             #line default
@@ -379,7 +379,7 @@ WriteLiteral("\">\r\n                                                    ");
 
             
             #line 101 "..\..\Dashboard\Pages\QueuesPage.cshtml"
-                                               Write(HtmlHelper.DisplayJob(job.Value.Job));
+                                               Write(Html.DisplayJob(job.Value.Job));
 
             
             #line default

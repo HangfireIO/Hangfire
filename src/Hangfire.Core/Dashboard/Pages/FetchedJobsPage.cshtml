@@ -84,7 +84,7 @@
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                             </td>
                             <td class="min-width">
-                                <a href="@LinkTo("/jobs/" + job.Key)">@HtmlHelper.JobId(job.Key)</a>
+                                <a href="@LinkTo("/jobs/" + job.Key)">@Html.JobId(job.Key)</a>
                             </td>
                             <td class="min-width">
                                 <span class="label label-default" style="@String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.Value.State))">
@@ -93,7 +93,7 @@
                             </td>
                             <td>
                                 <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
-                                    @HtmlHelper.DisplayJob(job.Value.Job)
+                                    @Html.DisplayJob(job.Value.Job)
                                 </a>
                             </td>
                             <td class="align-right">

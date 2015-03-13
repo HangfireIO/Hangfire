@@ -240,7 +240,7 @@ WriteLiteral("\">");
 
             
             #line 91 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                                   Write(HtmlHelper.JobId(jobId));
+                                                                   Write(Html.JobId(jobId));
 
             
             #line default
@@ -342,7 +342,7 @@ WriteLiteral("\">\r\n                                            ");
 
             
             #line 113 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                       Write(HtmlHelper.DisplayJob(jobData.Job));
+                                       Write(Html.DisplayJob(jobData.Job));
 
             
             #line default

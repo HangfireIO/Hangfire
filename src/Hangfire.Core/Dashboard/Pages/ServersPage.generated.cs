@@ -146,7 +146,7 @@ WriteLiteral("</td>\r\n                        <td>");
 
             
             #line 43 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                       Write(HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel))));
+                       Write(Html.Raw(String.Join(" ", server.Queues.Select(Html.QueueLabel))));
 
             
             #line default

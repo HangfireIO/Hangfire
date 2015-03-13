@@ -78,7 +78,7 @@
                             </td>
                             <td class="min-width">
                                 <a href="@LinkTo("/jobs/" + job.Key)">
-                                    @HtmlHelper.JobId(job.Key)
+                                    @Html.JobId(job.Key)
                                 </a>
                                 @if (!job.Value.InScheduledState)
                                 {
@@ -92,7 +92,7 @@
                             </td>
                             <td>
                                 <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
-                                    @HtmlHelper.DisplayJob(job.Value.Job)
+                                    @Html.DisplayJob(job.Value.Job)
                                 </a>
                             </td>
                             <td class="align-right">

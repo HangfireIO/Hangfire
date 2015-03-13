@@ -88,7 +88,7 @@
                                     <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId" />
                                 </td>
                                 <td class="min-width">
-                                    <a href="@LinkTo("/jobs/" + jobId)">@HtmlHelper.JobId(jobId)</a>
+                                    <a href="@LinkTo("/jobs/" + jobId)">@Html.JobId(jobId)</a>
                                 </td>
                                 @if (jobData == null)
                                 {
@@ -110,7 +110,7 @@
                                     </td>
                                     <td>
                                         <a class="job-method" href="@LinkTo("/jobs/" + jobId)">
-                                            @HtmlHelper.DisplayJob(jobData.Job)
+                                            @Html.DisplayJob(jobData.Job)
                                         </a>
                                     </td>
                                     <td>

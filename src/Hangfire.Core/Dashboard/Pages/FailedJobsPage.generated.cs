@@ -281,7 +281,7 @@ WriteLiteral("\">\r\n                                    ");
 
             
             #line 83 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                               Write(HtmlHelper.JobId(job.Key));
+                               Write(Html.JobId(job.Key));
 
             
             #line default
@@ -367,7 +367,7 @@ WriteLiteral("\">\r\n                                        ");
 
             
             #line 101 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                   Write(HtmlHelper.DisplayJob(job.Value.Job));
+                                   Write(Html.DisplayJob(job.Value.Job));
 
             
             #line default
@@ -466,7 +466,7 @@ WriteLiteral("                                            <pre class=\"stack-tra
 
             
             #line 124 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                                Write(HtmlHelper.MarkupStackTrace(job.Value.ExceptionDetails));
+                                                                Write(Html.MarkupStackTrace(job.Value.ExceptionDetails));
 
             
             #line default

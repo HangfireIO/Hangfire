@@ -80,7 +80,7 @@
                             </td>
                             <td class="min-width" rowspan="@(job.Value.InFailedState ? "2" : "1")">
                                 <a href="@LinkTo("/jobs/" + job.Key)">
-                                    @HtmlHelper.JobId(job.Key)
+                                    @Html.JobId(job.Key)
                                 </a>
                                 @if (!job.Value.InFailedState)
                                 {
@@ -98,7 +98,7 @@
                             <td>
                                 <div>
                                     <a class="job-method" href="@LinkTo("/jobs/" + job.Key)">
-                                        @HtmlHelper.DisplayJob(job.Value.Job)
+                                        @Html.DisplayJob(job.Value.Job)
                                     </a>
                                 </div>
                                 @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
@@ -121,7 +121,7 @@
 
                                         @if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
                                         {
-                                            <pre class="stack-trace">@HtmlHelper.MarkupStackTrace(job.Value.ExceptionDetails)</pre>
+                                            <pre class="stack-trace">@Html.MarkupStackTrace(job.Value.ExceptionDetails)</pre>
                                         }
                                     </div>
                                 </td>

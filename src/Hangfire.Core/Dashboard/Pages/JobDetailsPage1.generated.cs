@@ -72,7 +72,7 @@ WriteLiteral("\r\n");
 
     if (job != null)
     {
-        title = job.Job != null ? HtmlHelper.DisplayJob(job.Job) : null;
+        title = job.Job != null ? Html.DisplayJob(job.Job) : null;
     }
 
     title = title ?? "Job";
@@ -178,7 +178,7 @@ WriteLiteral("            <div class=\"job-snippet-header\">\r\n                
 
             
             #line 46 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                    Write(HtmlHelper.JobId(JobId.ToString(), false));
+                                                    Write(Html.JobId(JobId.ToString(), false));
 
             
             #line default
@@ -408,7 +408,7 @@ WriteLiteral("\">\r\n                                ");
 
             
             #line 105 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                           Write(HtmlHelper.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt)));
+                           Write(Html.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt)));
 
             
             #line default
@@ -472,7 +472,7 @@ WriteLiteral("                            </h4>\r\n                        </div
             #line 118 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
                          if (JobHistoryRenderer.Exists(entry.StateName))
                         {
-                            var rendered = JobHistoryRenderer.Render(entry.StateName, entry.Data);
+                            var rendered = Html.RenderHistory(entry.StateName, entry.Data);
                             if (rendered != null)
                             {
 

@@ -35,9 +35,12 @@ namespace Hangfire.Dashboard
         protected RazorPage()
         {
             GenerationTime = Stopwatch.StartNew();
+            Html = new HtmlHelper();
         }
 
         public RazorPage Layout { get; protected set; }
+        public HtmlHelper Html { get; private set; }
+
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
         public Stopwatch GenerationTime { get; private set; }

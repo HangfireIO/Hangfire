@@ -224,7 +224,7 @@ WriteLiteral("\">\r\n                                    ");
 
             
             #line 71 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                               Write(HtmlHelper.JobId(job.Key));
+                               Write(Html.JobId(job.Key));
 
             
             #line default
@@ -291,7 +291,7 @@ WriteLiteral("\">\r\n                                        ");
 
             
             #line 89 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                   Write(HtmlHelper.DisplayJob(job.Value.Job));
+                                   Write(Html.DisplayJob(job.Value.Job));
 
             
             #line default

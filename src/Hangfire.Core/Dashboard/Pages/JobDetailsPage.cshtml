@@ -13,7 +13,7 @@
 
     if (job != null)
     {
-        title = job.Job != null ? HtmlHelper.DisplayJob(job.Job) : null;
+        title = job.Job != null ? Html.DisplayJob(job.Job) : null;
     }
 
     title = title ?? "Job";
@@ -43,7 +43,7 @@
 
             <div class="job-snippet-header">
                 <span class="job-snippet-tab">
-                    Job ID: <span class="job-snippet-id">@HtmlHelper.JobId(JobId.ToString(), false)</span>
+                    Job ID: <span class="job-snippet-id">@Html.JobId(JobId.ToString(), false)</span>
                 </span>
 
                 <span class="job-snippet-buttons pull-right">
@@ -102,7 +102,7 @@
                     <div class="job-history @(index == 0 ? "job-history-current" : null)">
                         <div class="job-history-heading" style="@String.Format("background-color: {0};", background)">
                             <span class="pull-right" data-moment-title="@(JobHelper.ToTimestamp(entry.CreatedAt))">
-                                @HtmlHelper.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt))
+                                @Html.ToHumanDuration(entry.CreatedAt - (nextEntry < entriesCreationTime.Length ? entriesCreationTime[nextEntry] : job.CreatedAt))
                                 @{ nextEntry++; }
                             </span>
                             <h4 class="job-history-title">
@@ -117,7 +117,7 @@
 
                         @if (JobHistoryRenderer.Exists(entry.StateName))
                         {
-                            var rendered = JobHistoryRenderer.Render(entry.StateName, entry.Data);
+                            var rendered = Html.RenderHistory(entry.StateName, entry.Data);
                             if (rendered != null)
                             {
                                 <div class="job-history-body">

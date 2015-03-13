@@ -247,7 +247,7 @@ WriteLiteral("\">\r\n                                    ");
 
             
             #line 81 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                               Write(HtmlHelper.JobId(job.Key));
+                               Write(Html.JobId(job.Key));
 
             
             #line default
@@ -312,7 +312,7 @@ WriteLiteral("\">\r\n                                    ");
 
             
             #line 95 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                               Write(HtmlHelper.DisplayJob(job.Value.Job));
+                               Write(Html.DisplayJob(job.Value.Job));
 
             
             #line default

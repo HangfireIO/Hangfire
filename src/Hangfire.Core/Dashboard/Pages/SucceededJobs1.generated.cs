@@ -232,7 +232,7 @@ WriteLiteral("\">\r\n                                    ");
 
             
             #line 75 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                               Write(HtmlHelper.JobId(job.Key));
+                               Write(Html.JobId(job.Key));
 
             
             #line default
@@ -299,7 +299,7 @@ WriteLiteral("\">\r\n                                        ");
 
             
             #line 93 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                   Write(HtmlHelper.DisplayJob(job.Value.Job));
+                                   Write(Html.DisplayJob(job.Value.Job));
 
             
             #line default
@@ -327,7 +327,7 @@ WriteLiteral(" ");
 
             
             #line 99 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                      Write(HtmlHelper.ToHumanDuration(job.Value.TotalDuration.Value, false));
+                                      Write(Html.ToHumanDuration(job.Value.TotalDuration.Value, false));
 
             
             #line default

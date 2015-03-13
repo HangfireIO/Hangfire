@@ -27,9 +27,9 @@ using System.ComponentModel;
 
 namespace Hangfire.Dashboard
 {
-    public static class HtmlHelper
+    public class HtmlHelper
     {
-        public static string DisplayJob(Job job)
+        public string DisplayJob(Job job)
         {
             if (job == null)
             {
@@ -54,12 +54,12 @@ namespace Hangfire.Dashboard
             }
         }
 
-        public static NonEscapedString Raw(string value)
+        public NonEscapedString Raw(string value)
         {
             return new NonEscapedString(value);
         }
 
-        public static NonEscapedString JobId(string jobId, bool shorten = true)
+        public NonEscapedString JobId(string jobId, bool shorten = true)
         {
             Guid guid;
             return new NonEscapedString(Guid.TryParse(jobId, out guid)
@@ -67,13 +67,13 @@ namespace Hangfire.Dashboard
                 : "#" + jobId);
         }
 
-        public static string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
+        public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
         {
             if (duration == null) return null;
             return ToHumanDuration(duration.Value.TotalMilliseconds, displaySign);
         }
 
-        public static string ToHumanDuration(double? duration, bool displaySign = true)
+        public string ToHumanDuration(double? duration, bool displaySign = true)
         {
             if (duration == null) return null;
 
@@ -132,12 +132,12 @@ namespace Hangfire.Dashboard
             return builder.ToString();
         }
 
-        public static string FormatProperties(IDictionary<string, string> properties)
+        public string FormatProperties(IDictionary<string, string> properties)
         {
             return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
         }
 
-        public static NonEscapedString QueueLabel(string queue)
+        public NonEscapedString QueueLabel(string queue)
         {
             string label;
             if (queue != null)
@@ -152,7 +152,7 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(label);
         }
 
-        public static NonEscapedString MarkupStackTrace(string stackTrace)
+        public NonEscapedString MarkupStackTrace(string stackTrace)
         {
             using (var writer = new StringWriter())
             {

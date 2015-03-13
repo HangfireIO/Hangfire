@@ -25,8 +25,8 @@ namespace Hangfire.Dashboard
 {
     public static class JobHistoryRenderer
     {
-        private static readonly IDictionary<string, Func<IDictionary<string, string>, NonEscapedString>> 
-            Renderers = new Dictionary<string, Func<IDictionary<string, string>, NonEscapedString>>();
+        private static readonly IDictionary<string, Func<HtmlHelper, IDictionary<string, string>, NonEscapedString>>
+            Renderers = new Dictionary<string, Func<HtmlHelper, IDictionary<string, string>, NonEscapedString>>();
 
         private static readonly IDictionary<string, string> BackgroundStateColors
             = new Dictionary<string, string>();
@@ -88,7 +88,7 @@ namespace Hangfire.Dashboard
             return ForegroundStateColors[stateName];
         }
 
-        public static void Register(string state, Func<IDictionary<string, string>, NonEscapedString> renderer)
+        public static void Register(string state, Func<HtmlHelper, IDictionary<string, string>, NonEscapedString> renderer)
         {
             if (!Renderers.ContainsKey(state))
             {
@@ -105,17 +105,19 @@ namespace Hangfire.Dashboard
             return Renderers.ContainsKey(state);
         }
 
-        public static NonEscapedString Render(string state, IDictionary<string, string> properties)
+        public static NonEscapedString RenderHistory(
+            this HtmlHelper helper,
+            string state, IDictionary<string, string> properties)
         {
-            return Renderers[state](properties);
+            return Renderers[state](helper, properties);
         }
 
-        public static NonEscapedString NullRenderer(IDictionary<string, string> properties)
+        public static NonEscapedString NullRenderer(HtmlHelper helper, IDictionary<string, string> properties)
         {
             return null;
         }
 
-        public static NonEscapedString SucceededRenderer(IDictionary<string, string> stateData)
+        public static NonEscapedString SucceededRenderer(HtmlHelper html, IDictionary<string, string> stateData)
         {
             var builder = new StringBuilder();
             builder.Append("<dl class=\"dl-horizontal\">");
@@ -125,7 +127,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("Latency"))
             {
                 var latency = double.Parse(stateData["Latency"], CultureInfo.InvariantCulture);
-                builder.AppendFormat("<dt>Latency:</dt><dd>{0}</dd>", HtmlHelper.ToHumanDuration(latency, false));
+                builder.AppendFormat("<dt>Latency:</dt><dd>{0}</dd>", html.ToHumanDuration(latency, false));
 
                 itemsAdded = true;
             }
@@ -133,7 +135,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("PerformanceDuration"))
             {
                 var duration = double.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture);
-                builder.AppendFormat("<dt>Duration:</dt><dd>{0}</dd>", HtmlHelper.ToHumanDuration(duration, false));
+                builder.AppendFormat("<dt>Duration:</dt><dd>{0}</dd>", html.ToHumanDuration(duration, false));
 
                 itemsAdded = true;
             }
@@ -154,9 +156,9 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
 
-        private static NonEscapedString FailedRenderer(IDictionary<string, string> stateData)
+        private static NonEscapedString FailedRenderer(HtmlHelper html, IDictionary<string, string> stateData)
         {
-            var stackTrace = HtmlHelper.MarkupStackTrace(stateData["ExceptionDetails"]).ToString();
+            var stackTrace = html.MarkupStackTrace(stateData["ExceptionDetails"]).ToString();
             return new NonEscapedString(String.Format(
                 "<h4 class=\"exception-type\">{0}</h4><p>{1}</p>{2}",
                 stateData["ExceptionType"],
@@ -164,7 +166,7 @@ namespace Hangfire.Dashboard
                 stackTrace != null ? "<pre class=\"stack-trace\">" + stackTrace + "</pre>" : null));
         }
 
-        private static NonEscapedString ProcessingRenderer(IDictionary<string, string> stateData)
+        private static NonEscapedString ProcessingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             var builder = new StringBuilder();
             builder.Append("<dl class=\"dl-horizontal\">");
@@ -199,14 +201,14 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(builder.ToString());
         }
 
-        private static NonEscapedString EnqueuedRenderer(IDictionary<string, string> stateData)
+        private static NonEscapedString EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             return new NonEscapedString(String.Format(
                 "<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-queue label-primary\">{0}</span></dd></dl>",
                 stateData["Queue"]));
         }
 
-        private static NonEscapedString ScheduledRenderer(IDictionary<string, string> stateData)
+        private static NonEscapedString ScheduledRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             var enqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]);
 

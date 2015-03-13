@@ -40,7 +40,7 @@
                     <tr>
                         <td>@server.Name.ToUpperInvariant()</td>
                         <td>@server.WorkersCount</td>
-                        <td>@HtmlHelper.Raw(String.Join(" ", server.Queues.Select(HtmlHelper.QueueLabel)))</td>
+                        <td>@Html.Raw(String.Join(" ", server.Queues.Select(Html.QueueLabel)))</td>
                         <td data-moment="@JobHelper.ToTimestamp(server.StartedAt)">@server.StartedAt</td>
                         <td>
                             @if (server.Heartbeat.HasValue)

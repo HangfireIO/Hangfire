@@ -279,7 +279,7 @@ WriteLiteral(" ");
 
             
             #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                  Write(HtmlHelper.DisplayJob(job.Job));
+                                  Write(Html.DisplayJob(job.Job));
 
             
             #line default
