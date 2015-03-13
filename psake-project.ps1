@@ -62,6 +62,6 @@ function Run-OpenCover($assembly) {
 		}
 		
 		$opencover_path = Resolve-Path $opencover
-		.$opencover_path `"-target:$xunit_path`" `"-targetargs:$base_dir\tests\$assembly\bin\$config\$assembly.dll /noshadow $extra`" `"-filter:$coverage_filter`" -mergeoutput `"-output:$coverage_file`" -register:user
+		.$opencover_path `"-target:$xunit_path`" `"-targetargs:$base_dir\tests\$assembly\bin\$config\$assembly.dll /noshadow $extra`" `"-filter:$coverage_filter`" -mergeoutput `"-output:$coverage_file`" -register:user -returntargetcode
 	}
 }
