@@ -151,7 +151,7 @@ namespace Hangfire.Dashboard
                     return client.Delete(context.UriMatch.Groups["JobId"].Value);
                 });
 
-            Routes.AddRazorPage("/jobs/(?<JobId>.+)", x => new JobDetailsPage(x.Groups["JobId"].Value));
+            Routes.AddRazorPage("/jobs/details/(?<JobId>.+)", x => new JobDetailsPage(x.Groups["JobId"].Value));
 
             Routes.AddRazorPage("/recurring", x => new RecurringJobsPage());
             Routes.AddRecurringBatchCommand(

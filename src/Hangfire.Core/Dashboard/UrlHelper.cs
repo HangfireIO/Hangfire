@@ -43,7 +43,7 @@ namespace Hangfire.Dashboard
 
         public string JobDetails(string jobId)
         {
-            return To("/job/" + jobId);
+            return To("/jobs/details/" + jobId);
         }
 
         public string LinkToQueues()
