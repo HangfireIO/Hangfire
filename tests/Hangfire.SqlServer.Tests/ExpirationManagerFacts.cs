@@ -67,13 +67,13 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void Execute_Processes_CounterTable()
+        public void Execute_Processes_AggregatedCounterTable()
         {
             using (var connection = CreateConnection())
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.Counter ([Key], [Value], ExpireAt) 
+insert into HangFire.AggregatedCounter ([Key], [Value], ExpireAt) 
 values ('key', 1, @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -174,7 +174,7 @@ values ('key', 'field', '', @expireAt)";
         private static int CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
         {
             const string insertSql = @"
-insert into HangFire.Counter ([Key], [Value], [ExpireAt])
+insert into HangFire.AggregatedCounter ([Key], [Value], [ExpireAt])
 values ('key', 1, @expireAt)
 select scope_identity() as Id";
 
