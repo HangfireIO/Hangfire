@@ -328,7 +328,7 @@ a:hover .label-hover {
 }
 
 .job-snippet-properties {
-    max-width: 300px;
+    max-width: 140px;
     background-color: #f5f5f5;
     padding: 14px 10px;
     -ms-border-top-right-radius: 4px;
