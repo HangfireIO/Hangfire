@@ -120,7 +120,7 @@ namespace Hangfire.Dashboard
         {
             Guid guid;
             return new NonEscapedString(Guid.TryParse(jobId, out guid)
-                ? (shorten ? jobId.Substring(0, 8) : jobId)
+                ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
                 : "#" + jobId);
         }
 
