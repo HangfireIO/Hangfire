@@ -36,7 +36,7 @@
             if (job.ExpireAt.HasValue)
             {
                 <div class="alert alert-info">
-                    <strong>The job has been finished</strong>.
+                    <strong>The job is finished</strong>.
                     It will be removed automatically <em><abbr data-moment="@JobHelper.ToTimestamp(job.ExpireAt.Value)">@job.ExpireAt</abbr></em>.
                 </div>
             }

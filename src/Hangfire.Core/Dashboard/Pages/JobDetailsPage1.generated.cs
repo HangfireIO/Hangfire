@@ -140,8 +140,8 @@ WriteLiteral("\' has expired or could not be found on the server.\r\n");
             #line default
             #line hidden
 WriteLiteral("                <div class=\"alert alert-info\">\r\n                    <strong>The j" +
-"ob has been finished</strong>.\r\n                    It will be removed automatic" +
-"ally <em><abbr data-moment=\"");
+"ob is finished</strong>.\r\n                    It will be removed automatically <" +
+"em><abbr data-moment=\"");
 
 
             
