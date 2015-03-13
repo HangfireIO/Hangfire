@@ -101,7 +101,7 @@ WriteLiteral("\">Hangfire Dashboard</a>\r\n                    </div>\r\n       
 
             
             #line 31 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(RenderPartial(new Navigation()));
+                   Write(Html.RenderPartial(new Navigation()));
 
             
             #line default

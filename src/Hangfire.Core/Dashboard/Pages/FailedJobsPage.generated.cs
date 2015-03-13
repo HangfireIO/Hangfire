@@ -79,7 +79,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
             
             #line 22 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-   Write(RenderPartial(new SidebarMenu(JobsSidebarMenu.Items)));
+   Write(Html.JobsSidebar());
 
             
             #line default
@@ -150,7 +150,7 @@ WriteLiteral(@"""
 
             
             #line 52 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-               Write(RenderPartial(new PerPageSelector(pager)));
+               Write(Html.PerPageSelector(pager));
 
             
             #line default
@@ -501,14 +501,14 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
             #line hidden
             
             #line 131 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-       Write(RenderPartial(new Paginator(pager)));
+       Write(Html.Paginator(pager));
 
             
             #line default
             #line hidden
             
             #line 131 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                
+                                  
         }
 
             

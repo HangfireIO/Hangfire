@@ -54,7 +54,7 @@
                         Delete selected
                     </button>
 
-                    @RenderPartial(new PerPageSelector(pager))
+                    @Html.PerPageSelector(pager)
                 </div>
 
                 <table class="table table-hover">
@@ -137,7 +137,7 @@
                         }
                     </tbody>
                 </table>
-                @RenderPartial(new Paginator(pager))
+                @Html.Paginator(pager)
             </div>
         }
     </div>

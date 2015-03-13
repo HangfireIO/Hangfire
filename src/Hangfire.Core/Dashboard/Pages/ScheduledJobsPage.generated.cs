@@ -73,7 +73,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
             
             #line 21 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-   Write(RenderPartial(new SidebarMenu(JobsSidebarMenu.Items)));
+   Write(Html.JobsSidebar());
 
             
             #line default
@@ -144,7 +144,7 @@ WriteLiteral(@"""
 
             
             #line 51 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-               Write(RenderPartial(new PerPageSelector(pager)));
+               Write(Html.PerPageSelector(pager));
 
             
             #line default
@@ -377,14 +377,14 @@ WriteLiteral("                </table>\r\n            </div>\r\n");
             #line hidden
             
             #line 107 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-       Write(RenderPartial(new Paginator(pager)));
+       Write(Html.Paginator(pager));
 
             
             #line default
             #line hidden
             
             #line 107 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                                
+                                  
         }
 
             

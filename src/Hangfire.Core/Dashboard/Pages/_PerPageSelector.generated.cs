@@ -17,7 +17,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    public partial class PerPageSelector : Hangfire.Dashboard.RazorPage
+    internal partial class PerPageSelector : Hangfire.Dashboard.RazorPage
     {
 #line hidden
 

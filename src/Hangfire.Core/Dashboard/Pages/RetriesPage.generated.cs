@@ -160,7 +160,7 @@ WriteLiteral(@"""
 
             
             #line 57 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-               Write(RenderPartial(new PerPageSelector(pager)));
+               Write(Html.PerPageSelector(pager));
 
             
             #line default
@@ -481,7 +481,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
             
             #line 140 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-           Write(RenderPartial(new Paginator(pager)));
+           Write(Html.Paginator(pager));
 
             
             #line default

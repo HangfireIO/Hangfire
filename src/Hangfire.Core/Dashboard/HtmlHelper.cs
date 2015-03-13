@@ -24,11 +24,68 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Hangfire.Common;
 using System.ComponentModel;
+using Hangfire.Annotations;
+using Hangfire.Dashboard.Pages;
 
 namespace Hangfire.Dashboard
 {
     public class HtmlHelper
     {
+        private readonly RazorPage _page;
+
+        public HtmlHelper([NotNull] RazorPage page)
+        {
+            if (page == null) throw new ArgumentNullException("page");
+            _page = page;
+        }
+
+        public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
+        {
+            if (items == null) throw new ArgumentNullException("items");
+            return RenderPartial(new Breadcrumbs(title, items));
+        }
+
+        public NonEscapedString JobsSidebar()
+        {
+            return RenderPartial(new SidebarMenu(JobsSidebarMenu.Items));
+        }
+
+        public NonEscapedString SidebarMenu([NotNull] IEnumerable<Func<RazorPage, MenuItem>> items)
+        {
+            if (items == null) throw new ArgumentNullException("items");
+            return RenderPartial(new SidebarMenu(items));
+        }
+
+        public NonEscapedString BlockMetric([NotNull] DashboardMetric metric)
+        {
+            if (metric == null) throw new ArgumentNullException("metric");
+            return RenderPartial(new BlockMetric(metric));
+        }
+
+        public NonEscapedString InlineMetric([NotNull] DashboardMetric metric)
+        {
+            if (metric == null) throw new ArgumentNullException("metric");
+            return RenderPartial(new InlineMetric(metric));
+        }
+
+        public NonEscapedString Paginator([NotNull] Pager pager)
+        {
+            if (pager == null) throw new ArgumentNullException("pager");
+            return RenderPartial(new Paginator(pager));
+        }
+
+        public NonEscapedString PerPageSelector([NotNull] Pager pager)
+        {
+            if (pager == null) throw new ArgumentNullException("pager");
+            return RenderPartial(new PerPageSelector(pager));
+        }
+
+        public NonEscapedString RenderPartial(RazorPage partialPage)
+        {
+            partialPage.Assign(_page);
+            return new NonEscapedString(partialPage.ToString());
+        }
+
         public string DisplayJob(Job job)
         {
             if (job == null)

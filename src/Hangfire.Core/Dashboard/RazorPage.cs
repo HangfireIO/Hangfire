@@ -30,12 +30,12 @@ namespace Hangfire.Dashboard
         private Lazy<StatisticsDto> _statisticsLazy;
 
         private readonly StringBuilder _content = new StringBuilder();
-        private string _innerContent;
+        private string _body;
 
         protected RazorPage()
         {
             GenerationTime = Stopwatch.StartNew();
-            Html = new HtmlHelper();
+            Html = new HtmlHelper(this);
         }
 
         public RazorPage Layout { get; protected set; }
@@ -70,24 +70,9 @@ namespace Hangfire.Dashboard
             return Request.Query[key];
         }
 
-        public string TransformText()
+        public override string ToString()
         {
             return TransformText(null);
-        }
-
-        public string TransformText(string innerContent)
-        {
-            _innerContent = innerContent;
-
-            Execute();
-
-            if (Layout != null)
-            {
-                Layout.Assign(this);
-                return Layout.TransformText(_content.ToString());
-            }
-
-            return _content.ToString();
         }
 
         public void Assign(RazorPage parentPage)
@@ -136,18 +121,25 @@ namespace Hangfire.Dashboard
 
         protected virtual object RenderBody()
         {
-            return new NonEscapedString(_innerContent);
+            return new NonEscapedString(_body);
         }
 
-        protected NonEscapedString RenderPartial(RazorPage partial)
+        private string TransformText(string body)
         {
-            partial.Assign(this);
-            partial.Execute();
-
-            return new NonEscapedString(partial._content.ToString());
+            _body = body;
+            
+            Execute();
+            
+            if (Layout != null)
+            {
+                Layout.Assign(this);
+                return Layout.TransformText(_content.ToString());
+            }
+            
+            return _content.ToString();
         }
 
-        private string Encode(string text)
+        private static string Encode(string text)
         {
             return string.IsNullOrEmpty(text)
                        ? string.Empty

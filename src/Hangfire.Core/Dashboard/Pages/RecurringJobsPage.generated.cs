@@ -186,7 +186,7 @@ WriteLiteral(" ");
 
             
             #line 67 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                      Write(RenderPartial(new PerPageSelector(pager)));
+                      Write(Html.PerPageSelector(pager));
 
             
             #line default
@@ -512,7 +512,7 @@ WriteLiteral(" ");
 
             
             #line 147 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                  Write(RenderPartial(new Paginator(pager)));
+                  Write(Html.Paginator(pager));
 
             
             #line default

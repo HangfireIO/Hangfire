@@ -115,7 +115,7 @@ WriteLiteral("                    <div class=\"col-md-2\">\r\n                  
 
             
             #line 37 "..\..\Dashboard\Pages\DashboardPage.cshtml"
-                   Write(RenderPartial(new BlockMetric(metric)));
+                   Write(Html.BlockMetric(metric));
 
             
             #line default

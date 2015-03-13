@@ -1,6 +1,5 @@
-﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
 @using Hangfire.Dashboard
-@using Hangfire.Dashboard.Pages
 @inherits RazorPage
 @if (Items.Any())
 {
@@ -13,7 +12,7 @@
                 <span class="pull-right">
                     @foreach (var metric in itemValue.GetAllMetrics())
                     {
-                        @RenderPartial(new InlineMetric(metric))
+                        @Html.InlineMetric(metric)
                     }
                 </span>
             </a>

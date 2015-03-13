@@ -23,7 +23,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    public partial class InlineMetric : RazorPage
+    internal partial class InlineMetric : RazorPage
     {
 #line hidden
 

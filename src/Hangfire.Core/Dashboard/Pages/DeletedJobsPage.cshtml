@@ -18,7 +18,7 @@
 
 <div class="row">
     <div class="col-md-3">
-        @RenderPartial(new SidebarMenu(JobsSidebarMenu.Items))
+        @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
         <h1 class="page-header">Deleted Jobs</h1>
@@ -39,7 +39,7 @@
                         <span class="glyphicon glyphicon-repeat"></span>
                         Requeue jobs
                     </button>
-                    @RenderPartial(new PerPageSelector(pager))
+                    @Html.PerPageSelector(pager)
                 </div>
                 <table class="table">
                     <thead>
@@ -99,7 +99,7 @@
                     </tbody>
                 </table>
             </div>
-            @RenderPartial(new Paginator(pager))
+            @Html.Paginator(pager)
         }
     </div>
 </div>

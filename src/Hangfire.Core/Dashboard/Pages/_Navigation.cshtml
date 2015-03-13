@@ -1,6 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
 @using Hangfire.Dashboard
-@using Hangfire.Dashboard.Pages
 @inherits RazorPage
 @if (NavigationMenu.Items.Count > 0)
 {
@@ -17,7 +16,7 @@
 
                     @foreach (var metric in itemValue.GetAllMetrics())
                     {
-                        @RenderPartial(new InlineMetric(metric))
+                        @Html.InlineMetric(metric)
                     }
                 </a>
             </li>

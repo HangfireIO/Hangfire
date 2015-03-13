@@ -38,7 +38,7 @@ namespace Hangfire.Dashboard
             var page = _pageFunc(context.UriMatch);
             page.Assign(context);
 
-            return owinContext.Response.WriteAsync(page.TransformText());
+            return owinContext.Response.WriteAsync(page.ToString());
         }
     }
 }

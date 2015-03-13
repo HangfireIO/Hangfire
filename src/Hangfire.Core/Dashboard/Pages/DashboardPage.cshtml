@@ -34,7 +34,7 @@
                 @foreach (var metric in Metrics)
                 {
                     <div class="col-md-2">
-                        @RenderPartial(new BlockMetric(metric))
+                        @Html.BlockMetric(metric)
                     </div>
                 }
             </div>

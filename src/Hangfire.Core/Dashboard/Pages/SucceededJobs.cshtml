@@ -1,5 +1,4 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
-@using System
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
@@ -19,7 +18,7 @@
 
 <div class="row">
     <div class="col-md-3">
-        @RenderPartial(new SidebarMenu(JobsSidebarMenu.Items))
+        @Html.JobsSidebar()
     </div>
     <div class="col-md-9">
         <h1 class="page-header">Succeeded Jobs</h1>
@@ -41,7 +40,7 @@
                         Requeue jobs
                     </button>
 
-                    @RenderPartial(new PerPageSelector(pager))
+                    @Html.PerPageSelector(pager)
                 </div>
 
                 <table class="table">
@@ -109,7 +108,7 @@
                     </tbody>
                 </table>
             </div>
-            @RenderPartial(new Paginator(pager))
+            @Html.Paginator(pager)
         }
     </div>
 </div>

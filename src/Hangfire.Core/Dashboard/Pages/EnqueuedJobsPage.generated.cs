@@ -92,7 +92,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
             
             #line 24 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-   Write(RenderPartial(new SidebarMenu(JobsSidebarMenu.Items)));
+   Write(Html.JobsSidebar());
 
             
             #line default
@@ -102,10 +102,10 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        ");
 
             
             #line 27 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-   Write(RenderPartial(new Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
+   Write(Html.Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
         {
             { "Queues", Url.LinkToQueues() }
-        })));
+        }));
 
             
             #line default
@@ -168,7 +168,7 @@ WriteLiteral(@"""
 
             
             #line 52 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-               Write(RenderPartial(new PerPageSelector(pager)));
+               Write(Html.PerPageSelector(pager));
 
             
             #line default
@@ -382,14 +382,14 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
             #line hidden
             
             #line 110 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-       Write(RenderPartial(new Paginator(pager)));
+       Write(Html.Paginator(pager));
 
             
             #line default
             #line hidden
             
             #line 110 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                                
+                                  
         }
 
             

@@ -73,7 +73,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
             
             #line 21 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-   Write(RenderPartial(new SidebarMenu(JobsSidebarMenu.Items)));
+   Write(Html.JobsSidebar());
 
             
             #line default
@@ -122,7 +122,7 @@ WriteLiteral("\"\r\n                            data-loading-text=\"Enqueueing..
 
             
             #line 42 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-               Write(RenderPartial(new PerPageSelector(pager)));
+               Write(Html.PerPageSelector(pager));
 
             
             #line default
@@ -369,14 +369,14 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
             #line hidden
             
             #line 102 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-       Write(RenderPartial(new Paginator(pager)));
+       Write(Html.Paginator(pager));
 
             
             #line default
             #line hidden
             
             #line 102 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                                
+                                  
         }
 
             
