@@ -33,7 +33,7 @@ WriteLiteral("\r\n    <div class=\"btn-group pull-right paginator\">\r\n");
 
             
             #line 5 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
-         foreach (var count in new[] { 10, 20, 50, 100 })
+         foreach (var count in new[] { 10, 20, 50, 100, 500 })
         {
 
             
