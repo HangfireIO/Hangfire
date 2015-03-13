@@ -186,7 +186,7 @@ select scope_identity() as Id";
         private static bool IsEntryExpired(SqlConnection connection, int entryId)
         {
             var count = connection.Query<int>(
-                    "select count(*) from HangFire.Counter where Id = @id", new { id = entryId }).Single();
+                    "select count(*) from HangFire.AggregatedCounter where Id = @id", new { id = entryId }).Single();
             return count == 0;
         }
 
