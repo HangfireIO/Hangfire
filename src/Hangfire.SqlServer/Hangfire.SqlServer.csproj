@@ -80,6 +80,7 @@
     <Compile Include="SqlServerObjectsInstaller.cs" />
     <Compile Include="SqlServerJobQueueMonitoringApi.cs" />
     <Compile Include="SqlServerStorage.cs" />
+    <Compile Include="SqlServerStorageExtensions.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />

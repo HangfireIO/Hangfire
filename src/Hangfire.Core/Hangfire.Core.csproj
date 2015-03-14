@@ -238,6 +238,8 @@
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
     <Compile Include="Dashboard\Metric.cs" />
     <Compile Include="Dashboard\UrlHelper.cs" />
+    <Compile Include="GlobalConfiguration.cs" />
+    <Compile Include="GlobalConfigurationExtensions.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />

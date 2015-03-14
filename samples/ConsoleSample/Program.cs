@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hangfire;
-using Hangfire.Logging;
 using Hangfire.Logging.LogProviders;
-using Hangfire.SqlServer;
-using Hangfire.SqlServer.Msmq;
 
 namespace ConsoleSample
 {
@@ -13,13 +10,10 @@ namespace ConsoleSample
     {
         public static void Main()
         {
-            LogProvider.SetCurrentLogProvider(new ColouredConsoleLogProvider());
-
-            var sqlServerStorage = new SqlServerStorage(
-                @"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;");
-            sqlServerStorage.UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
-
-            JobStorage.Current = sqlServerStorage;
+            GlobalConfiguration.Configuration
+                .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
+                .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical")
+                .UseLogProvider(new ColouredConsoleLogProvider());
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");

@@ -53,6 +53,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="MessageQueueExtensions.cs" />
+    <Compile Include="MsmqExtensions.cs" />
     <Compile Include="MsmqFetchedJob.cs" />
     <Compile Include="MsmqJobQueue.cs" />
     <Compile Include="MsmqJobQueueMonitoringApi.cs" />
