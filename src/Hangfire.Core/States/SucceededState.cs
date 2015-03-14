@@ -26,7 +26,7 @@ namespace Hangfire.States
     {
         public static readonly string StateName = "Succeeded";
 
-        public SucceededState(object result, double latency, double performanceDuration)
+        public SucceededState(object result, long latency, long performanceDuration)
         {
             Result = result;
             Latency = latency;
@@ -36,8 +36,8 @@ namespace Hangfire.States
 
         public object Result { get; private set; }
         public DateTime SucceededAt { get; private set; }
-        public double Latency { get; private set; }
-        public double PerformanceDuration { get; private set; }
+        public long Latency { get; private set; }
+        public long PerformanceDuration { get; private set; }
 
         public string Name { get { return StateName; } }
         public string Reason { get; set; }

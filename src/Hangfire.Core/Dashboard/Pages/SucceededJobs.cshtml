@@ -1,4 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -86,7 +87,7 @@
                                 <td class="min-width align-right">
                                     @if (job.Value.TotalDuration.HasValue)
                                     {
-                                        @: @Html.ToHumanDuration(job.Value.TotalDuration.Value, false)
+                                        @Html.ToHumanDuration(TimeSpan.FromMilliseconds(job.Value.TotalDuration.Value), false)
                                     }
                                 </td>
                                 <td class="min-width align-right">
