@@ -17,6 +17,8 @@
 using System;
 using System.ComponentModel;
 using Hangfire.Annotations;
+using Hangfire.Dashboard;
+using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
 
 namespace Hangfire
@@ -65,6 +67,19 @@ namespace Hangfire
             if (filter == null) throw new ArgumentNullException("filter");
 
             return configuration.Use(filter, x => GlobalJobFilters.Filters.Add(x));
+        }
+
+        public static IGlobalConfiguration UseDashboardMetric(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] DashboardMetric metric)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (metric == null) throw new ArgumentNullException("metric");
+
+            DashboardMetrics.AddMetric(metric);
+            DashboardPage.Metrics.Add(metric);
+
+            return configuration;
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

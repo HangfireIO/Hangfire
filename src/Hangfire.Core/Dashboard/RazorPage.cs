@@ -25,8 +25,6 @@ namespace Hangfire.Dashboard
 {
     public abstract class RazorPage 
     {
-        public static Func<Exception, RazorPage> ExceptionHandler;
-
         private Lazy<StatisticsDto> _statisticsLazy;
 
         private readonly StringBuilder _content = new StringBuilder();

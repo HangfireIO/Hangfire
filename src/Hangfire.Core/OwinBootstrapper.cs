@@ -46,12 +46,10 @@ namespace Hangfire
                 JobActivator.Current = configuration.Activator;
             }
 
-            if (configuration.Storage == null)
+            if (configuration.Storage != null)
             {
-                throw new InvalidOperationException("Job storage was not configured. Please call either `UseStorage` method or its overloads.");
+                JobStorage.Current = configuration.Storage;
             }
-
-            JobStorage.Current = configuration.Storage;
 
             foreach (var filter in configuration.Filters)
             {

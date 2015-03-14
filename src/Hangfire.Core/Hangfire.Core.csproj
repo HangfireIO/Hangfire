@@ -78,6 +78,7 @@
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
+    <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
     <Compile Include="Dashboard\DashboardMiddleware.cs" />
     <Compile Include="Dashboard\JobsSidebarMenu.cs" />
@@ -89,7 +90,9 @@
     <Compile Include="Dashboard\Pages\BlockMetric.cs">
       <DependentUpon>_BlockMetric.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Dashboard\Pages\DashboardPage.cs" />
+    <Compile Include="Dashboard\Pages\DashboardPage.cs">
+      <DependentUpon>DashboardPage.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\Pages\InlineMetric.cs">
       <DependentUpon>_InlineMetric.cshtml</DependentUpon>
     </Compile>

@@ -1,31 +1,64 @@
-﻿using System;
+﻿// This file is part of Hangfire.
+// Copyright © 2015 Sergey Odinokov.
+// 
+// Hangfire is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as 
+// published by the Free Software Foundation, either version 3 
+// of the License, or any later version.
+// 
+// Hangfire is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public 
+// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Storage;
 
 namespace Hangfire.Dashboard
 {
-    public class DashboardMetric
+    public static class DashboardMetrics
     {
-        public DashboardMetric(string name, Func<RazorPage, Metric> func)
-            : this(name, name, func)
+        private static readonly Dictionary<string, DashboardMetric> Metrics = new Dictionary<string, DashboardMetric>();
+
+        static DashboardMetrics()
         {
+            AddMetric(ServerCount);
+            AddMetric(RecurringJobCount);
+            AddMetric(RetriesCount);
+            AddMetric(EnqueuedCountOrNull);
+            AddMetric(FailedCountOrNull);
+            AddMetric(EnqueuedAndQueueCount);
+            AddMetric(ScheduledCount);
+            AddMetric(ProcessingCount);
+            AddMetric(SucceededCount);
+            AddMetric(FailedCount);
+            AddMetric(DeletedCount);
         }
 
-        public DashboardMetric(string name, string title, Func<RazorPage, Metric> func)
+        public static void AddMetric([NotNull] DashboardMetric metric)
         {
-            Name = name;
-            Title = title;
-            Func = func;
+            if (metric == null) throw new ArgumentNullException("metric");
+
+            lock (Metrics)
+            {
+                Metrics[metric.Name] = metric;
+            }
         }
 
-        public string Name { get; private set; }
-        public Func<RazorPage, Metric> Func { get; private set; }
+        public static IEnumerable<DashboardMetric> GetMetrics()
+        {
+            lock (Metrics)
+            {
+                return Metrics.Values.ToList();
+            }
+        }
 
-        public string Title { get; set; }
-    }
-
-    public class DashboardMetrics
-    {
         public static readonly DashboardMetric ServerCount = new DashboardMetric(
             "servers:count", 
             "Servers",
@@ -134,27 +167,5 @@ namespace Hangfire.Dashboard
             "deleted:count",
             "Deleted Jobs",
             page => new Metric(page.Statistics.Deleted.ToString("N0")));
-
-        static DashboardMetrics()
-        {
-            Add(ServerCount);
-            Add(RecurringJobCount);
-            Add(RetriesCount);
-            Add(EnqueuedCountOrNull);
-            Add(FailedCountOrNull);
-            Add(EnqueuedAndQueueCount);
-            Add(ScheduledCount);
-            Add(ProcessingCount);
-            Add(SucceededCount);
-            Add(FailedCount);
-            Add(DeletedCount);
-        }
-
-        public static List<DashboardMetric> Metrics = new List<DashboardMetric>(); 
-
-        public static void Add(DashboardMetric metric)
-        {
-            Metrics.Add(metric);
-        }
     }
 }

@@ -35,7 +35,7 @@ namespace Hangfire.Dashboard
             var page = new StubPage();
             page.Assign(context);
 
-            var metrics = DashboardMetrics.Metrics.Where(x => requestedMetrics.Contains(x.Name));
+            var metrics = DashboardMetrics.GetMetrics().Where(x => requestedMetrics.Contains(x.Name));
             var result = new Dictionary<string, Metric>();
 
             foreach (var metric in metrics)

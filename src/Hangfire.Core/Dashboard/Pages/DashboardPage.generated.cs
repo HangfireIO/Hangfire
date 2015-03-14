@@ -45,7 +45,7 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    public partial class DashboardPage : RazorPage
+    internal partial class DashboardPage : RazorPage
     {
 #line hidden
 
