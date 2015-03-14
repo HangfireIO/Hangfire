@@ -74,7 +74,7 @@ namespace Hangfire
             return configuration.Use(filter);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>([NotNull] this IGlobalConfiguration configuration, T entry)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
