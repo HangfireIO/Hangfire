@@ -241,6 +241,7 @@
     <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="GlobalConfigurationExtensions.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
+    <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />

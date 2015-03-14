@@ -14,19 +14,19 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System.ComponentModel;
+
 namespace Hangfire
 {
-    public class GlobalConfiguration : IGlobalConfiguration
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public interface IGlobalConfiguration<out T> : IGlobalConfiguration
     {
-        private static readonly IGlobalConfiguration _configuration = new GlobalConfiguration();
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        T Entry { get; }
+    }
 
-        public static IGlobalConfiguration Configuration
-        {
-            get { return _configuration; }
-        }
-
-        internal GlobalConfiguration()
-        {
-        }
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public interface IGlobalConfiguration
+    {
     }
 }

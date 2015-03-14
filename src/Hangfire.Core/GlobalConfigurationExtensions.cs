@@ -21,6 +21,7 @@ using Hangfire.Logging;
 
 namespace Hangfire
 {
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class GlobalConfigurationExtensions
     {
         public static IGlobalConfiguration<TStorage> UseStorage<TStorage>(
@@ -31,9 +32,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (storage == null) throw new ArgumentNullException("storage");
 
-            JobStorage.Current = storage;
-
-            return configuration.Use(storage);
+            return configuration.Use(storage, x => JobStorage.Current = x);
         }
 
         public static IGlobalConfiguration<TActivator> UseActivator<TActivator>(
@@ -44,9 +43,7 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (activator == null) throw new ArgumentNullException("activator");
 
-            JobActivator.Current = activator;
-
-            return configuration.Use(activator);
+            return configuration.Use(activator, x => JobActivator.Current = x);
         }
 
         public static IGlobalConfiguration<TLogProvider> UseLogProvider<TLogProvider>(
@@ -56,10 +53,8 @@ namespace Hangfire
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (provider == null) throw new ArgumentNullException("provider");
-
-            LogProvider.SetCurrentLogProvider(provider);
-
-            return configuration.Use(provider);
+            
+            return configuration.Use(provider, x => LogProvider.SetCurrentLogProvider(x));
         }
 
         public static IGlobalConfiguration<TFilter> UseFilter<TFilter>(
@@ -69,15 +64,18 @@ namespace Hangfire
             if (configuration == null) throw new ArgumentNullException("configuration");
             if (filter == null) throw new ArgumentNullException("filter");
 
-            GlobalJobFilters.Filters.Add(filter);
-
-            return configuration.Use(filter);
+            return configuration.Use(filter, x => GlobalJobFilters.Filters.Add(x));
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static IGlobalConfiguration<T> Use<T>([NotNull] this IGlobalConfiguration configuration, T entry)
+        public static IGlobalConfiguration<T> Use<T>(
+            [NotNull] this IGlobalConfiguration configuration, T entry,
+            [NotNull] Action<T> entryAction)
         {
             if (configuration == null) throw new ArgumentNullException("configuration");
+
+            entryAction(entry);
+
             return new ConfigurationEntry<T>(entry);
         }
 
