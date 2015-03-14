@@ -179,7 +179,7 @@ namespace Hangfire.SqlServer
                     Job = job,
                     Result = stateData.ContainsKey("Result") ? stateData["Result"] : null,
                     TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
-                        ? (double?)double.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture) + (double?)double.Parse(stateData["Latency"], CultureInfo.InvariantCulture)
+                        ? (long?)((double?)double.Parse(stateData["PerformanceDuration"], CultureInfo.InvariantCulture) + (double?)double.Parse(stateData["Latency"], CultureInfo.InvariantCulture))
                         : null,
                     SucceededAt = JobHelper.DeserializeNullableDateTime(stateData["SucceededAt"])
                 }));
