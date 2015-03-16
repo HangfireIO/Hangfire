@@ -1,4 +1,5 @@
-﻿using Hangfire.Server;
+﻿using System;
+using Hangfire.Server;
 using NCrontab;
 using Xunit;
 
@@ -13,7 +14,7 @@ namespace Hangfire.Core.Tests.Server
             var schedule = CrontabSchedule.Parse("* * * * *");
 
             IScheduleInstant instant = null;
-            Assert.DoesNotThrow(() => instant = factory.GetInstant(schedule));
+            Assert.DoesNotThrow(() => instant = factory.GetInstant(schedule, TimeZoneInfo.Utc));
 
             Assert.NotNull(instant);
         }

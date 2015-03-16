@@ -82,17 +82,6 @@ namespace Hangfire.Common
             return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
         }
 
-        public static DateTimeOffset DeserializeDateTimeOffset(string value)
-        {
-            long timestamp;
-            if (long.TryParse(value, out timestamp))
-            {
-                return DateTime.SpecifyKind(FromTimestamp(timestamp), DateTimeKind.Utc);
-            }
-
-            return DateTimeOffset.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-        }
-
         public static DateTime? DeserializeNullableDateTime(string value)
         {
             if (String.IsNullOrEmpty(value))
