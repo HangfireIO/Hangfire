@@ -12,13 +12,13 @@
 namespace Hangfire.Dashboard.Pages
 {
     
-    #line 2 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+    #line 2 "..\..\Dashboard\Pages\HomePage.cshtml"
     using System;
     
     #line default
     #line hidden
     
-    #line 3 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+    #line 3 "..\..\Dashboard\Pages\HomePage.cshtml"
     using System.Collections.Generic;
     
     #line default
@@ -26,26 +26,26 @@ namespace Hangfire.Dashboard.Pages
     using System.Linq;
     using System.Text;
     
-    #line 4 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+    #line 4 "..\..\Dashboard\Pages\HomePage.cshtml"
     using Hangfire.Dashboard;
     
     #line default
     #line hidden
     
-    #line 5 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+    #line 5 "..\..\Dashboard\Pages\HomePage.cshtml"
     using Hangfire.Dashboard.Pages;
     
     #line default
     #line hidden
     
-    #line 6 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+    #line 6 "..\..\Dashboard\Pages\HomePage.cshtml"
     using Newtonsoft.Json;
     
     #line default
     #line hidden
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class DashboardPage : RazorPage
+    internal partial class HomePage : RazorPage
     {
 #line hidden
 
@@ -63,7 +63,7 @@ WriteLiteral("\r\n");
 
 
             
-            #line 8 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 8 "..\..\Dashboard\Pages\HomePage.cshtml"
   
     Layout = new LayoutPage("Dashboard");
     IDictionary<DateTime, long> succeeded = null;
@@ -92,7 +92,7 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n      
 
 
             
-            #line 31 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 31 "..\..\Dashboard\Pages\HomePage.cshtml"
          if (Metrics.Count > 0)
         {
 
@@ -103,7 +103,7 @@ WriteLiteral("            <div class=\"row\">\r\n");
 
 
             
-            #line 34 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 34 "..\..\Dashboard\Pages\HomePage.cshtml"
                  foreach (var metric in Metrics)
                 {
 
@@ -114,7 +114,7 @@ WriteLiteral("                    <div class=\"col-md-2\">\r\n                  
 
 
             
-            #line 37 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 37 "..\..\Dashboard\Pages\HomePage.cshtml"
                    Write(Html.BlockMetric(metric));
 
             
@@ -124,7 +124,7 @@ WriteLiteral("\r\n                    </div>\r\n");
 
 
             
-            #line 39 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 39 "..\..\Dashboard\Pages\HomePage.cshtml"
                 }
 
             
@@ -134,7 +134,7 @@ WriteLiteral("            </div>\r\n");
 
 
             
-            #line 41 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 41 "..\..\Dashboard\Pages\HomePage.cshtml"
         }
 
             
@@ -153,7 +153,7 @@ WriteLiteral(@"        <h3>Realtime graph</h3>
 
 
             
-            #line 51 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 51 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                 Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -164,7 +164,7 @@ WriteLiteral("\">\r\n                    Day\r\n                </a>\r\n        
 
 
             
-            #line 54 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                  Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -174,7 +174,7 @@ WriteLiteral("\">Week</a>\r\n            </div>\r\n            History graph\r\n
 
 
             
-            #line 59 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 59 "..\..\Dashboard\Pages\HomePage.cshtml"
          if (succeeded != null && failed != null)
         {
 
@@ -185,7 +185,7 @@ WriteLiteral("            <div id=\"historyGraph\"\r\n                 data-succ
 
 
             
-            #line 62 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 62 "..\..\Dashboard\Pages\HomePage.cshtml"
                             Write(JsonConvert.SerializeObject(succeeded));
 
             
@@ -195,7 +195,7 @@ WriteLiteral("\"\r\n                 data-failed=\"");
 
 
             
-            #line 63 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 63 "..\..\Dashboard\Pages\HomePage.cshtml"
                          Write(JsonConvert.SerializeObject(failed));
 
             
@@ -205,7 +205,7 @@ WriteLiteral("\">\r\n            </div>\r\n");
 
 
             
-            #line 65 "..\..\Dashboard\Pages\DashboardPage.cshtml"
+            #line 65 "..\..\Dashboard\Pages\HomePage.cshtml"
         }
 
             

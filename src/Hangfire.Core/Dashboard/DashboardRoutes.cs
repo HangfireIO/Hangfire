@@ -43,7 +43,7 @@ namespace Hangfire.Dashboard
         static DashboardRoutes()
         {
             Routes = new RouteCollection();
-            Routes.AddRazorPage("/", x => new DashboardPage());
+            Routes.AddRazorPage("/", x => new HomePage());
             Routes.Add("/stats", new JsonStats());
             
             #region Embedded static content

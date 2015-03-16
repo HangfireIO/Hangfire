@@ -2,7 +2,7 @@
 
 namespace Hangfire.Dashboard.Pages
 {
-    partial class DashboardPage
+    partial class HomePage
     {
         public static readonly List<DashboardMetric> Metrics = new List<DashboardMetric>(); 
     }

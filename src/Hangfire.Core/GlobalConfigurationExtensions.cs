@@ -77,7 +77,7 @@ namespace Hangfire
             if (metric == null) throw new ArgumentNullException("metric");
 
             DashboardMetrics.AddMetric(metric);
-            DashboardPage.Metrics.Add(metric);
+            HomePage.Metrics.Add(metric);
 
             return configuration;
         }

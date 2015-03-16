@@ -90,8 +90,8 @@
     <Compile Include="Dashboard\Pages\BlockMetric.cs">
       <DependentUpon>_BlockMetric.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Dashboard\Pages\DashboardPage.cs">
-      <DependentUpon>DashboardPage.cshtml</DependentUpon>
+    <Compile Include="Dashboard\Pages\HomePage.cs">
+      <DependentUpon>HomePage.cshtml</DependentUpon>
     </Compile>
     <Compile Include="Dashboard\Pages\InlineMetric.cs">
       <DependentUpon>_InlineMetric.cshtml</DependentUpon>
@@ -144,8 +144,8 @@
     <Compile Include="Dashboard\NonEscapedString.cs" />
     <Compile Include="Dashboard\IRequestDispatcher.cs" />
     <Compile Include="Dashboard\Pager.cs" />
-    <Compile Include="Dashboard\Pages\DashboardPage.generated.cs">
-      <DependentUpon>DashboardPage.cshtml</DependentUpon>
+    <Compile Include="Dashboard\Pages\HomePage.generated.cs">
+      <DependentUpon>HomePage.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -393,9 +393,9 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="Dashboard\Pages\DashboardPage.cshtml">
+    <None Include="Dashboard\Pages\HomePage.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
+      <LastGenOutput>HomePage.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\DeletedJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
