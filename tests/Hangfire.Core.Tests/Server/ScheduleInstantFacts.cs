@@ -9,30 +9,12 @@ namespace Hangfire.Core.Tests.Server
     public class ScheduleInstantFacts
     {
         private readonly CrontabSchedule _schedule;
-        private DateTime _utcTime;
+        private DateTime _now;
 
         public ScheduleInstantFacts()
         {
-            _utcTime = new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc);
+            _now = new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc);
             _schedule = CrontabSchedule.Parse("* * * * *");
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenLocalTimeArgument_HasLocalKind()
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => new ScheduleInstant(new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Local), _schedule));
-
-            Assert.Equal("utcTime", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenLocalTimeArgument_HasUnspecifiedKind()
-        {
-            var exception = Assert.Throws<ArgumentException>(
-                () => new ScheduleInstant(new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Unspecified), _schedule));
-
-            Assert.Equal("utcTime", exception.ParamName);
         }
 
         [Fact]
@@ -40,18 +22,18 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new ScheduleInstant(_utcTime, null));
+                () => new ScheduleInstant(_now, null));
 
             Assert.Equal("schedule", exception.ParamName);
         }
 
         [Fact]
-        public void UtcTime_ReturnsNormalizedValue()
+        public void Now_ReturnsNormalizedValue()
         {
-            _utcTime = new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Utc);
+            _now = new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Utc);
             var instant = CreateInstant();
 
-            var value = instant.UtcTime;
+            var value = instant.Now;
 
             Assert.Equal(new DateTime(2012, 12, 12, 12, 12, 0, DateTimeKind.Utc), value);
         }
@@ -63,15 +45,7 @@ namespace Hangfire.Core.Tests.Server
 
             var value = instant.NextOccurrence;
 
-            Assert.Equal(_schedule.GetNextOccurrence(_utcTime), value);
-        }
-
-        [Fact]
-        public void GetMatches_ThrowsAnException_WhenLastTime_IsNotUtc()
-        {
-            var instant = CreateInstant();
-
-            Assert.Throws<ArgumentException>(() => instant.GetMatches(DateTime.Now));
+            Assert.Equal(_schedule.GetNextOccurrence(_now), value);
         }
 
         [Fact]
@@ -113,7 +87,7 @@ namespace Hangfire.Core.Tests.Server
 
         private ScheduleInstant CreateInstant(DateTime? localTime = null)
         {
-            return new ScheduleInstant(localTime ?? _utcTime, _schedule);
+            return new ScheduleInstant(localTime ?? _now, _schedule);
         }
     }
 }

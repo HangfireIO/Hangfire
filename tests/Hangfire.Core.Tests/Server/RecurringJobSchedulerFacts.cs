@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Setting up the successful path
             _instant = new Mock<IScheduleInstant>();
-            _instant.Setup(x => x.GetMatches(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.UtcTime });
+            _instant.Setup(x => x.GetMatches(It.IsAny<DateTimeOffset?>())).Returns(new[] { _instant.Object.Now });
 
             _instantFactory.Setup(x => x.GetInstant(It.IsNotNull<CrontabSchedule>()))
                 .Returns(() => _instant.Object);
@@ -128,20 +128,20 @@ namespace Hangfire.Core.Tests.Server
             _connection.Verify(x => x.SetRangeInHash(
                 jobKey,
                 It.Is<Dictionary<string, string>>(rj =>
-                    rj.ContainsKey("LastExecution") && rj["LastExecution"] 
-                        == JobHelper.SerializeDateTime(_instant.Object.UtcTime))));
+                    rj.ContainsKey("LastExecution") && rj["LastExecution"]
+                        == JobHelper.SerializeDateTime(_instant.Object.Now.UtcDateTime))));
 
             _connection.Verify(x => x.SetRangeInHash(
                 jobKey,
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence))));
+                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence.UtcDateTime))));
         }
 
         [Fact]
         public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt()
         {
-            _instant.Setup(x => x.GetMatches(It.IsAny<DateTime?>())).Returns(Enumerable.Empty<DateTime>);
+            _instant.Setup(x => x.GetMatches(It.IsAny<DateTimeOffset?>())).Returns(Enumerable.Empty<DateTimeOffset>);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
@@ -154,7 +154,7 @@ namespace Hangfire.Core.Tests.Server
                 String.Format("recurring-job:{0}", RecurringJobId),
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence))));
+                        == JobHelper.SerializeDateTime(_instant.Object.NextOccurrence.UtcDateTime))));
         }
 
         [Fact]

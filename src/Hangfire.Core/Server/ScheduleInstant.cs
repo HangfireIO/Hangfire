@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Annotations;
 using NCrontab;
 
@@ -25,35 +26,27 @@ namespace Hangfire.Server
     {
         private readonly CrontabSchedule _schedule;
 
-        public ScheduleInstant(DateTime utcTime, [NotNull] CrontabSchedule schedule)
+        public ScheduleInstant(DateTimeOffset now, [NotNull] CrontabSchedule schedule)
         {
-            if (utcTime.Kind != DateTimeKind.Utc)
-            {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "utcTime");
-            }
-
             if (schedule == null) throw new ArgumentNullException("schedule");
 
             _schedule = schedule;
 
-            UtcTime = utcTime.AddSeconds(-utcTime.Second);
-            NextOccurrence = _schedule.GetNextOccurrence(UtcTime);
+            Now = now.AddSeconds(-now.Second);
+            NextOccurrence = _schedule.GetNextOccurrence(Now.UtcDateTime);
         }
 
-        public DateTime UtcTime { get; private set; }
-        public DateTime NextOccurrence { get; private set; }
+        public DateTimeOffset Now { get; private set; }
+        public DateTimeOffset NextOccurrence { get; private set; }
 
-        public IEnumerable<DateTime> GetMatches(DateTime? lastMachingTime)
+        public IEnumerable<DateTimeOffset> GetMatches(DateTimeOffset? lastMachingTime)
         {
-            if (lastMachingTime.HasValue && lastMachingTime.Value.Kind != DateTimeKind.Utc)
-            {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastMachingTime");
-            }
-            
-            var baseTime = lastMachingTime ?? UtcTime.AddSeconds(-1);
-            var endTime = UtcTime.AddSeconds(1);
+            var baseTime = lastMachingTime ?? Now.AddSeconds(-1);
+            var endTime = Now.AddSeconds(1);
 
-            return _schedule.GetNextOccurrences(baseTime, endTime);
+            return _schedule.GetNextOccurrences(baseTime.UtcDateTime, endTime.UtcDateTime)
+                .Select(x => (DateTimeOffset)x)
+                .ToList();
         }
     }
 }

@@ -106,26 +106,26 @@ namespace Hangfire.Server
 
             var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
                 ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
-                : (DateTime?)null;
+                : (DateTimeOffset?)null;
 
             if (instant.GetMatches(lastExecutionTime).Any())
             {
                 var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                 var jobId = _client.Create(job, state);
-
+                
                 if (String.IsNullOrEmpty(jobId))
                 {
                     Logger.DebugFormat(
                         "Recurring job '{0}' execution at '{1}' has been canceled.", 
                         recurringJobId,
-                        instant.UtcTime);
+                        instant.Now);
                 }
 
                 connection.SetRangeInHash(
                     String.Format("recurring-job:{0}", recurringJobId),
                     new Dictionary<string, string>
                         {
-                            { "LastExecution", JobHelper.SerializeDateTime(instant.UtcTime) },
+                            { "LastExecution", JobHelper.SerializeDateTime(instant.Now.UtcDateTime) },
                             { "LastJobId", jobId ?? String.Empty },
                         });
             }
@@ -136,7 +136,7 @@ namespace Hangfire.Server
                 {
                     {
                         "NextExecution", 
-                        JobHelper.SerializeDateTime(instant.NextOccurrence)
+                        JobHelper.SerializeDateTime(instant.NextOccurrence.UtcDateTime)
                     }
                 });
         }
