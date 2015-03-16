@@ -105,7 +105,7 @@ namespace Hangfire.Server
             var instant = _instantFactory.GetInstant(cronSchedule);
 
             var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
-                ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
+                ? JobHelper.DeserializeDateTimeOffset(recurringJob["LastExecution"])
                 : (DateTimeOffset?)null;
 
             if (instant.GetMatches(lastExecutionTime).Any())
