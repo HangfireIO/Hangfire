@@ -21,7 +21,6 @@ using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using NCrontab;
-using NodaTime;
 
 namespace Hangfire
 {
@@ -58,14 +57,14 @@ namespace Hangfire
             [NotNull] Job job,
             [NotNull] string cronExpression)
         {
-            AddOrUpdate(recurringJobId, job, cronExpression, DateTimeZoneProviders.Tzdb.GetZoneOrNull("UTC"));
+            AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
         }
 
         public void AddOrUpdate(
             [NotNull] string recurringJobId, 
             [NotNull] Job job, 
             [NotNull] string cronExpression, 
-            [NotNull] DateTimeZone timeZone)
+            [NotNull] TimeZoneInfo timeZone)
         {
             if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
             if (job == null) throw new ArgumentNullException("job");

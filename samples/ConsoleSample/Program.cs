@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.Logging.LogProviders;
-using NodaTime;
 
 namespace ConsoleSample
 {
@@ -24,19 +23,19 @@ namespace ConsoleSample
             manager.AddOrUpdate(
                 "Hawaiian", 
                 Job.FromExpression(() => Console.WriteLine("Hawaiian")), 
-                "29 06 * * *", 
-                DateTimeZoneProviders.Tzdb.GetZoneOrNull("Pacific/Honolulu"));
+                "01 08 * * *",
+                TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
 
             manager.AddOrUpdate(
                 "UTC",
                 Job.FromExpression(() => Console.WriteLine("UTC")),
-                "29 16 * * *");
+                "01 18 * * *");
 
             manager.AddOrUpdate(
                 "Russian",
                 Job.FromExpression(() => Console.WriteLine("Russian")),
-                "29 19 * * *",
-                DateTimeZoneProviders.Tzdb.GetSystemDefault());
+                "01 21 * * *",
+                TimeZoneInfo.Local);
 
             var options = new BackgroundJobServerOptions
             {

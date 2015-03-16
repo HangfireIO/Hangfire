@@ -262,20 +262,35 @@ WriteLiteral("</td>\r\n                            <td class=\"min-width\">\r\n"
             #line 94 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                  if (!String.IsNullOrWhiteSpace(job.TimeZone))
                                 {
-                                    
-            
-            #line default
-            #line hidden
-            
-            #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                               Write(job.TimeZone);
 
             
             #line default
             #line hidden
+WriteLiteral("                                    <span title=\"");
+
+
             
             #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                 
+                                            Write(TimeZoneInfo.FindSystemTimeZoneById(job.TimeZone).DisplayName);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" data-container=\"body\">");
+
+
+            
+            #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                                                                                  Write(job.TimeZone);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</span>\r\n");
+
+
+            
+            #line 97 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
                                 }
                                 else
                                 {

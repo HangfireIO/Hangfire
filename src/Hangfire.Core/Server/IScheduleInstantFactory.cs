@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using NCrontab;
-using NodaTime;
 
 namespace Hangfire.Server
 {
     internal interface IScheduleInstantFactory
     {
-        IScheduleInstant GetInstant(CrontabSchedule schedule, DateTimeZone timeZone);
+        IScheduleInstant GetInstant(CrontabSchedule schedule, TimeZoneInfo timeZone);
     }
 }

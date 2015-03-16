@@ -93,7 +93,7 @@
                             <td class="min-width">
                                 @if (!String.IsNullOrWhiteSpace(job.TimeZone))
                                 {
-                                    @job.TimeZone
+                                    <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZone).DisplayName" data-container="body">@job.TimeZone</span>
                                 }
                                 else
                                 {

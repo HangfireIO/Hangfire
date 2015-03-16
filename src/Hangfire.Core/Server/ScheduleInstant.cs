@@ -19,55 +19,49 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using NCrontab;
-using NodaTime;
 
 namespace Hangfire.Server
 {
     internal class ScheduleInstant : IScheduleInstant
     {
-        private readonly DateTimeZone _timeZone;
+        private readonly TimeZoneInfo _timeZone;
         private readonly CrontabSchedule _schedule;
 
-        public ScheduleInstant(Instant now, DateTimeZone timeZone, [NotNull] CrontabSchedule schedule)
+        public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CrontabSchedule schedule)
         {
             if (schedule == null) throw new ArgumentNullException("schedule");
+            if (nowInstant.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", "nowInstant");
+            }
 
             _timeZone = timeZone;
             _schedule = schedule;
 
-            var zonedNow = now.InZone(_timeZone);
-            var roundedNow = zonedNow.Minus(Duration.FromSeconds(zonedNow.Second));
-
-            NowInstant = roundedNow.ToInstant();
-            NextInstant = _schedule.GetNextOccurrence(roundedNow.LocalDateTime).InZoneLeniently(_timeZone).ToInstant();
+            NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
+            NextInstant = TimeZoneInfo.ConvertTimeToUtc(
+                _schedule.GetNextOccurrence(TimeZoneInfo.ConvertTimeFromUtc(NowInstant, _timeZone)),
+                _timeZone);
         }
 
-        public Instant NowInstant { get; private set; }
-        public Instant NextInstant { get; private set; }
+        public DateTime NowInstant { get; private set; }
+        public DateTime NextInstant { get; private set; }
 
-        public IEnumerable<Instant> GetNextInstants(Instant? lastInstant)
+        public IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant)
         {
-            var baseTime = lastInstant ?? NowInstant.Minus(Duration.FromSeconds(-1));
-            var endTime = NowInstant.Plus(Duration.FromSeconds(1));
+            if (lastInstant.HasValue && lastInstant.Value.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastInstant");
+            }
 
-            return _schedule.GetNextOccurrences(baseTime.InZone(_timeZone).LocalDateTime, endTime.InZone(_timeZone).LocalDateTime)
-                .Select(x => x.InZoneLeniently(_timeZone).ToInstant())
-                .ToList();
-        }
-    }
+            var baseTime = lastInstant ?? NowInstant.AddSeconds(-1);
+            var endTime = NowInstant.AddSeconds(1);
 
-    internal static class CronScheduleExtensions
-    {
-        public static LocalDateTime GetNextOccurrence(this CrontabSchedule schedule, LocalDateTime baseTime)
-        {
-            return LocalDateTime.FromDateTime(schedule.GetNextOccurrence(baseTime.ToDateTimeUnspecified()));
-        }
-
-        public static IEnumerable<LocalDateTime> GetNextOccurrences(
-            this CrontabSchedule schedule, LocalDateTime baseTime, LocalDateTime endTime)
-        {
-            return schedule.GetNextOccurrences(baseTime.ToDateTimeUnspecified(), endTime.ToDateTimeUnspecified())
-                .Select(LocalDateTime.FromDateTime)
+            return _schedule
+                .GetNextOccurrences(
+                    TimeZoneInfo.ConvertTimeFromUtc(baseTime, _timeZone),
+                    TimeZoneInfo.ConvertTimeFromUtc(endTime, _timeZone))
+                .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
                 .ToList();
         }
     }
