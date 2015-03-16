@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using NodaTime;
 
@@ -22,8 +21,8 @@ namespace Hangfire.Server
 {
     internal interface IScheduleInstant
     {
-        Instant Now { get; }
-        Instant NextOccurrence { get; }
-        IEnumerable<Instant> GetMatches(Instant? lastMachingTime);
+        Instant NowInstant { get; }
+        Instant NextInstant { get; }
+        IEnumerable<Instant> GetNextInstants(Instant? lastInstant);
     }
 }

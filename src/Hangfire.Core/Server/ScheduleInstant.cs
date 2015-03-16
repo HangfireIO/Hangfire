@@ -38,17 +38,17 @@ namespace Hangfire.Server
             var zonedNow = now.InZone(_timeZone);
             var roundedNow = zonedNow.Minus(Duration.FromSeconds(zonedNow.Second));
 
-            Now = roundedNow.ToInstant();
-            NextOccurrence = _schedule.GetNextOccurrence(roundedNow.LocalDateTime).InZoneLeniently(_timeZone).ToInstant();
+            NowInstant = roundedNow.ToInstant();
+            NextInstant = _schedule.GetNextOccurrence(roundedNow.LocalDateTime).InZoneLeniently(_timeZone).ToInstant();
         }
 
-        public Instant Now { get; private set; }
-        public Instant NextOccurrence { get; private set; }
+        public Instant NowInstant { get; private set; }
+        public Instant NextInstant { get; private set; }
 
-        public IEnumerable<Instant> GetMatches(Instant? lastMachingTime)
+        public IEnumerable<Instant> GetNextInstants(Instant? lastInstant)
         {
-            var baseTime = lastMachingTime ?? Now.Minus(Duration.FromSeconds(-1));
-            var endTime = Now.Plus(Duration.FromSeconds(1));
+            var baseTime = lastInstant ?? NowInstant.Minus(Duration.FromSeconds(-1));
+            var endTime = NowInstant.Plus(Duration.FromSeconds(1));
 
             return _schedule.GetNextOccurrences(baseTime.InZone(_timeZone).LocalDateTime, endTime.InZone(_timeZone).LocalDateTime)
                 .Select(x => x.InZoneLeniently(_timeZone).ToInstant())
@@ -56,7 +56,7 @@ namespace Hangfire.Server
         }
     }
 
-    public static class CronScheduleExtensions
+    internal static class CronScheduleExtensions
     {
         public static LocalDateTime GetNextOccurrence(this CrontabSchedule schedule, LocalDateTime baseTime)
         {

@@ -118,7 +118,7 @@ namespace Hangfire.Server
 
             var changedFields = new Dictionary<string, string>();
             
-            if (instant.GetMatches(lastExecutionTime).Any())
+            if (instant.GetNextInstants(lastExecutionTime).Any())
             {
                 var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                 var jobId = _client.Create(job, state);
@@ -128,14 +128,14 @@ namespace Hangfire.Server
                     Logger.DebugFormat(
                         "Recurring job '{0}' execution at '{1}' has been canceled.", 
                         recurringJobId,
-                        instant.Now);
+                        instant.NowInstant);
                 }
 
-                changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.Now.ToDateTimeUtc()));
+                changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.NowInstant.ToDateTimeUtc()));
                 changedFields.Add("LastJobId", jobId ?? String.Empty);
             }
 
-            changedFields.Add("NextExecution", JobHelper.SerializeDateTime(instant.NextOccurrence.ToDateTimeUtc()));
+            changedFields.Add("NextExecution", JobHelper.SerializeDateTime(instant.NextInstant.ToDateTimeUtc()));
 
             connection.SetRangeInHash(
                 String.Format("recurring-job:{0}", recurringJobId),
