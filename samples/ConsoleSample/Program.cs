@@ -19,23 +19,9 @@ namespace ConsoleSample
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
 
-            var manager = new RecurringJobManager();
-            manager.AddOrUpdate(
-                "Hawaiian", 
-                Job.FromExpression(() => Console.WriteLine("Hawaiian")), 
-                "01 08 * * *",
-                TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
-
-            manager.AddOrUpdate(
-                "UTC",
-                Job.FromExpression(() => Console.WriteLine("UTC")),
-                "01 18 * * *");
-
-            manager.AddOrUpdate(
-                "Russian",
-                Job.FromExpression(() => Console.WriteLine("Russian")),
-                "01 21 * * *",
-                TimeZoneInfo.Local);
+            RecurringJob.AddOrUpdate("Hawaiian", () => Console.WriteLine("Hawaiian"),  "15 08 * * *", TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time"));
+            RecurringJob.AddOrUpdate("UTC", () => Console.WriteLine("UTC"), "15 18 * * *");
+            RecurringJob.AddOrUpdate("Russian", () => Console.WriteLine("Russian"), "15 21 * * *", TimeZoneInfo.Local);
 
             var options = new BackgroundJobServerOptions
             {
