@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Common;
 using Hangfire.Logging.LogProviders;
+using NodaTime;
 
 namespace ConsoleSample
 {
@@ -17,6 +19,24 @@ namespace ConsoleSample
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
+
+            var manager = new RecurringJobManager();
+            manager.AddOrUpdate(
+                "Hawaiian", 
+                Job.FromExpression(() => Console.WriteLine("Hawaiian")), 
+                "29 06 * * *", 
+                DateTimeZoneProviders.Tzdb.GetZoneOrNull("Pacific/Honolulu"));
+
+            manager.AddOrUpdate(
+                "UTC",
+                Job.FromExpression(() => Console.WriteLine("UTC")),
+                "29 16 * * *");
+
+            manager.AddOrUpdate(
+                "Russian",
+                Job.FromExpression(() => Console.WriteLine("Russian")),
+                "29 19 * * *",
+                DateTimeZoneProviders.Tzdb.GetSystemDefault());
 
             var options = new BackgroundJobServerOptions
             {

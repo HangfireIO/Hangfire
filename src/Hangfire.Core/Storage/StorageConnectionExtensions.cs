@@ -109,6 +109,11 @@ namespace Hangfire.Storage
                     dto.LastExecution = JobHelper.DeserializeDateTime(hash["LastExecution"]);
                 }
 
+                if (hash.ContainsKey("TimeZone"))
+                {
+                    dto.TimeZone = hash["TimeZone"];
+                }
+
                 result.Add(dto);
             }
 

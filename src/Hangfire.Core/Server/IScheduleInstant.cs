@@ -16,13 +16,14 @@
 
 using System;
 using System.Collections.Generic;
+using NodaTime;
 
 namespace Hangfire.Server
 {
     internal interface IScheduleInstant
     {
-        DateTimeOffset Now { get; }
-        DateTimeOffset NextOccurrence { get; }
-        IEnumerable<DateTimeOffset> GetMatches(DateTimeOffset? lastMachingTime);
+        Instant Now { get; }
+        Instant NextOccurrence { get; }
+        IEnumerable<Instant> GetMatches(Instant? lastMachingTime);
     }
 }

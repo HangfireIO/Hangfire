@@ -16,14 +16,15 @@
 
 using System;
 using NCrontab;
+using NodaTime;
 
 namespace Hangfire.Server
 {
     internal class ScheduleInstantFactory : IScheduleInstantFactory
     {
-        public IScheduleInstant GetInstant(CrontabSchedule schedule)
+        public IScheduleInstant GetInstant(CrontabSchedule schedule, DateTimeZone timeZone)
         {
-            return new ScheduleInstant(DateTime.UtcNow, schedule);
+            return new ScheduleInstant(SystemClock.Instance.Now, timeZone, schedule);
         }
     }
 }

@@ -24,6 +24,7 @@ using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 using NCrontab;
+using NodaTime;
 
 namespace Hangfire.Server
 {
@@ -102,11 +103,18 @@ namespace Hangfire.Server
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
             var cronSchedule = CrontabSchedule.Parse(cron);
-            var instant = _instantFactory.GetInstant(cronSchedule);
 
+            var timeZoneProvider = DateTimeZoneProviders.Tzdb;
+
+            var timeZone = recurringJob.ContainsKey("TimeZone")
+                ? timeZoneProvider.GetZoneOrNull(recurringJob["TimeZone"]) ?? timeZoneProvider.GetSystemDefault()
+                : timeZoneProvider["UTC"];
+
+            var instant = _instantFactory.GetInstant(cronSchedule, timeZone);
+            
             var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
-                ? JobHelper.DeserializeDateTimeOffset(recurringJob["LastExecution"])
-                : (DateTimeOffset?)null;
+                ? Instant.FromDateTimeUtc(JobHelper.DeserializeDateTime(recurringJob["LastExecution"]))
+                : (Instant?)null;
 
             var changedFields = new Dictionary<string, string>();
             
@@ -123,11 +131,11 @@ namespace Hangfire.Server
                         instant.Now);
                 }
 
-                changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.Now.UtcDateTime));
+                changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.Now.ToDateTimeUtc()));
                 changedFields.Add("LastJobId", jobId ?? String.Empty);
             }
 
-            changedFields.Add("NextExecution", JobHelper.SerializeDateTime(instant.NextOccurrence.UtcDateTime));
+            changedFields.Add("NextExecution", JobHelper.SerializeDateTime(instant.NextOccurrence.ToDateTimeUtc()));
 
             connection.SetRangeInHash(
                 String.Format("recurring-job:{0}", recurringJobId),
