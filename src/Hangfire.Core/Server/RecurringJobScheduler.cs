@@ -108,6 +108,8 @@ namespace Hangfire.Server
                 ? JobHelper.DeserializeDateTimeOffset(recurringJob["LastExecution"])
                 : (DateTimeOffset?)null;
 
+            var changedFields = new Dictionary<string, string>();
+            
             if (instant.GetMatches(lastExecutionTime).Any())
             {
                 var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
@@ -121,24 +123,15 @@ namespace Hangfire.Server
                         instant.Now);
                 }
 
-                connection.SetRangeInHash(
-                    String.Format("recurring-job:{0}", recurringJobId),
-                    new Dictionary<string, string>
-                        {
-                            { "LastExecution", JobHelper.SerializeDateTime(instant.Now.UtcDateTime) },
-                            { "LastJobId", jobId ?? String.Empty },
-                        });
+                changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.Now.UtcDateTime));
+                changedFields.Add("LastJobId", jobId ?? String.Empty);
             }
+
+            changedFields.Add("NextExecution", JobHelper.SerializeDateTime(instant.NextOccurrence.UtcDateTime));
 
             connection.SetRangeInHash(
                 String.Format("recurring-job:{0}", recurringJobId),
-                new Dictionary<string, string>
-                {
-                    {
-                        "NextExecution", 
-                        JobHelper.SerializeDateTime(instant.NextOccurrence.UtcDateTime)
-                    }
-                });
+                changedFields);
         }
     }
 }
