@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hangfire;
-using Hangfire.Common;
 using Hangfire.Logging.LogProviders;
 
 namespace ConsoleSample

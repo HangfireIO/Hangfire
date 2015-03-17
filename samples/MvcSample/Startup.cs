@@ -19,11 +19,8 @@ namespace MvcSample
                 .UseDashboardMetric(SqlServerStorage.ActiveConnections)
                 .UseDashboardMetric(SqlServerStorage.TotalConnections)
                 .UseDashboardMetric(DashboardMetrics.FailedCount);
-
-            app.UseHangfire(config =>
-            {
-                config.UseAuthorizationFilters();
-            });
+            
+            app.UseHangfireDashboard();
         }
     }
 }

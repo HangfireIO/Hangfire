@@ -68,6 +68,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AppBuilderExtensions.cs" />
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
     <Compile Include="AutomaticRetryAttribute.cs" />
     <Compile Include="BackgroundJobServer.cs" />
@@ -80,7 +81,8 @@
     <Compile Include="Dashboard\CommandDispatcher.cs" />
     <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
-    <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="DashboardOptions.cs" />
+    <Compile Include="Obsolete\DashboardMiddleware.cs" />
     <Compile Include="Dashboard\JobsSidebarMenu.cs" />
     <Compile Include="Dashboard\MenuItem.cs" />
     <Compile Include="Dashboard\NavigationMenu.cs" />
@@ -132,7 +134,7 @@
     <Compile Include="Dashboard\RequestDispatcherContext.cs" />
     <Compile Include="Dashboard\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
-    <Compile Include="Dashboard\DashboardOwinExtensions.cs" />
+    <Compile Include="Obsolete\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
@@ -243,9 +245,10 @@
     <Compile Include="Dashboard\UrlHelper.cs" />
     <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="GlobalConfigurationExtensions.cs" />
-    <Compile Include="IBootstrapperConfiguration.cs" />
+    <Compile Include="Obsolete\IBootstrapperConfiguration.cs" />
     <Compile Include="IGlobalConfiguration.cs" />
-    <Compile Include="OwinBootstrapper.cs" />
+    <Compile Include="Obsolete\OwinBootstrapper.cs" />
+    <Compile Include="Dashboard\MiddlewareExtensions.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
@@ -298,10 +301,10 @@
     <Compile Include="Server\ScheduleInstant.cs" />
     <Compile Include="Server\ScheduleInstantFactory.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
-    <Compile Include="Server\ServerOwinExtensions.cs" />
+    <Compile Include="Obsolete\ServerOwinExtensions.cs" />
     <Compile Include="Server\SharedWorkerContext.cs" />
-    <Compile Include="StartupConfiguration.cs" />
-    <Compile Include="BootstrapperConfigurationExtensions.cs" />
+    <Compile Include="Obsolete\StartupConfiguration.cs" />
+    <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
