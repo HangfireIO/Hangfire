@@ -74,7 +74,8 @@
                             <input type="checkbox" class="js-jobs-list-select-all"/>
                         </th>
                         <th class="min-width">Id</th>
-                        <th class="min-width">Cron (UTC)</th>
+                        <th class="min-width">Cron</th>
+                        <th>Time zone</th>
                         <th>Job</th>
                         <th class="align-right min-width">Next execution</th>
                         <th class="align-right min-width">Last execution</th>
@@ -89,6 +90,16 @@
                             </td>
                             <td class="min-width">@job.Id</td>
                             <td class="min-width">@ExpressionDescriptor.GetDescription(job.Cron)</td>
+                            <td class="min-width">
+                                @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
+                                {
+                                    <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
+                                }
+                                else
+                                {
+                                    @: UTC
+                                }
+                            </td>
                             <td>
                                 @if (job.Job != null)
                                 {

@@ -102,43 +102,50 @@ namespace Hangfire.Server
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
             var cronSchedule = CrontabSchedule.Parse(cron);
-            var instant = _instantFactory.GetInstant(cronSchedule);
 
-            var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
-                ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
-                : (DateTime?)null;
-
-            if (instant.GetMatches(lastExecutionTime).Any())
+            try
             {
-                var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
-                var jobId = _client.Create(job, state);
+                var timeZone = recurringJob.ContainsKey("TimeZoneId")
+                ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
+                : TimeZoneInfo.Utc;
 
-                if (String.IsNullOrEmpty(jobId))
+                var instant = _instantFactory.GetInstant(cronSchedule, timeZone);
+
+                var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
+                    ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
+                    : (DateTime?)null;
+
+                var changedFields = new Dictionary<string, string>();
+
+                if (instant.GetNextInstants(lastExecutionTime).Any())
                 {
-                    Logger.DebugFormat(
-                        "Recurring job '{0}' execution at '{1}' has been canceled.", 
-                        recurringJobId,
-                        instant.UtcTime);
+                    var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
+                    var jobId = _client.Create(job, state);
+
+                    if (String.IsNullOrEmpty(jobId))
+                    {
+                        Logger.DebugFormat(
+                            "Recurring job '{0}' execution at '{1}' has been canceled.",
+                            recurringJobId,
+                            instant.NowInstant);
+                    }
+
+                    changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.NowInstant));
+                    changedFields.Add("LastJobId", jobId ?? String.Empty);
                 }
+
+                changedFields.Add("NextExecution", JobHelper.SerializeDateTime(instant.NextInstant));
 
                 connection.SetRangeInHash(
                     String.Format("recurring-job:{0}", recurringJobId),
-                    new Dictionary<string, string>
-                        {
-                            { "LastExecution", JobHelper.SerializeDateTime(instant.UtcTime) },
-                            { "LastJobId", jobId ?? String.Empty },
-                        });
+                    changedFields);
             }
-
-            connection.SetRangeInHash(
-                String.Format("recurring-job:{0}", recurringJobId),
-                new Dictionary<string, string>
-                {
-                    {
-                        "NextExecution", 
-                        JobHelper.SerializeDateTime(instant.NextOccurrence)
-                    }
-                });
+            catch (TimeZoneNotFoundException ex)
+            {
+                Logger.ErrorException(
+                    String.Format("Recurring job '{0}' was not triggered: {1}.", recurringJobId, ex.Message),
+                    ex);
+            }
         }
     }
 }
