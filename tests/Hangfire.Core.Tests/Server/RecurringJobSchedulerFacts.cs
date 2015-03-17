@@ -47,7 +47,7 @@ namespace Hangfire.Core.Tests.Server
             {
                 { "Cron", "* * * * *" },
                 { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
-                { "TimeZone", _timeZone.Id }
+                { "TimeZoneId", _timeZone.Id }
             };
 
             _connection = new Mock<IStorageConnection>();
@@ -201,7 +201,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time");
-            _recurringJob["TimeZone"] = timeZone.Id;
+            _recurringJob["TimeZoneId"] = timeZone.Id;
 
             var scheduler = CreateScheduler();
 
@@ -215,7 +215,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_GetInstance_UseUtcTimeZone_WhenItIsNotProvided()
         {
-            _recurringJob.Remove("TimeZone");
+            _recurringJob.Remove("TimeZoneId");
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);
@@ -226,7 +226,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_GetInstance_DoesNotCreateAJob_WhenGivenOneIsNotFound()
         {
-            _recurringJob["TimeZone"] = "Some garbage";
+            _recurringJob["TimeZoneId"] = "Some garbage";
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_token);

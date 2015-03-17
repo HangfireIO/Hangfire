@@ -260,7 +260,7 @@ WriteLiteral("</td>\r\n                            <td class=\"min-width\">\r\n"
 
             
             #line 94 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                 if (!String.IsNullOrWhiteSpace(job.TimeZone))
+                                 if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                 {
 
             
@@ -271,7 +271,7 @@ WriteLiteral("                                    <span title=\"");
 
             
             #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                            Write(TimeZoneInfo.FindSystemTimeZoneById(job.TimeZone).DisplayName);
+                                            Write(TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName);
 
             
             #line default
@@ -281,7 +281,7 @@ WriteLiteral("\" data-container=\"body\">");
 
             
             #line 96 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                                                                                                  Write(job.TimeZone);
+                                                                                                                                    Write(job.TimeZoneId);
 
             
             #line default

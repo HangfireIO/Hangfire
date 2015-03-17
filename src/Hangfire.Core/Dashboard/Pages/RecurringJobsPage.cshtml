@@ -91,9 +91,9 @@
                             <td class="min-width">@job.Id</td>
                             <td class="min-width">@ExpressionDescriptor.GetDescription(job.Cron)</td>
                             <td class="min-width">
-                                @if (!String.IsNullOrWhiteSpace(job.TimeZone))
+                                @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                 {
-                                    <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZone).DisplayName" data-container="body">@job.TimeZone</span>
+                                    <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
                                 }
                                 else
                                 {

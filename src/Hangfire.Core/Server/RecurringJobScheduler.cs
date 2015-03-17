@@ -105,8 +105,8 @@ namespace Hangfire.Server
 
             try
             {
-                var timeZone = recurringJob.ContainsKey("TimeZone")
-                ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZone"])
+                var timeZone = recurringJob.ContainsKey("TimeZoneId")
+                ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                 : TimeZoneInfo.Utc;
 
                 var instant = _instantFactory.GetInstant(cronSchedule, timeZone);

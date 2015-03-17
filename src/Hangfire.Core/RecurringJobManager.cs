@@ -80,7 +80,7 @@ namespace Hangfire
                 
                 recurringJob["Job"] = JobHelper.ToJson(invocationData);
                 recurringJob["Cron"] = cronExpression;
-                recurringJob["TimeZone"] = timeZone.Id;
+                recurringJob["TimeZoneId"] = timeZone.Id;
 
                 using (var transaction = connection.CreateWriteTransaction())
                 {
