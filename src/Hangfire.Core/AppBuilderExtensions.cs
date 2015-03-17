@@ -77,10 +77,12 @@ namespace Hangfire
             var context = new OwinContext(builder.Properties);
             var token = context.Get<CancellationToken>("host.OnAppDisposing");
 
-            if (token != CancellationToken.None)
+            if (token == default(CancellationToken))
             {
-                token.Register(server.Dispose);
+                throw new InvalidOperationException("Current OWIN environment does not contain an instance of the `CancellationToken` class under `host.OnAppDisposing` key.");
             }
+
+            token.Register(server.Dispose);
 
             return builder;
         }
