@@ -15,12 +15,14 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using NCrontab;
 
 namespace Hangfire.Server
 {
     internal interface IScheduleInstantFactory
     {
-        IScheduleInstant GetInstant(CrontabSchedule schedule, TimeZoneInfo timeZone);
+        [NotNull]
+        IScheduleInstant GetInstant([NotNull] CrontabSchedule schedule, [NotNull] TimeZoneInfo timeZone);
     }
 }

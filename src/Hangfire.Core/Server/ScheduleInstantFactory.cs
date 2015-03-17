@@ -23,6 +23,9 @@ namespace Hangfire.Server
     {
         public IScheduleInstant GetInstant(CrontabSchedule schedule, TimeZoneInfo timeZone)
         {
+            if (schedule == null) throw new ArgumentNullException("schedule");
+            if (timeZone == null) throw new ArgumentNullException("timeZone");
+
             return new ScheduleInstant(DateTime.UtcNow, timeZone, schedule);
         }
     }

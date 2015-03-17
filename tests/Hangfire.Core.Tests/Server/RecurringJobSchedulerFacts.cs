@@ -24,6 +24,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IScheduleInstantFactory> _instantFactory; 
         private readonly Mock<IThrottler> _throttler;
         private readonly Mock<IScheduleInstant> _instant;
+        private readonly TimeZoneInfo _timeZone;
 
         public RecurringJobSchedulerFacts()
         {
@@ -37,13 +38,16 @@ namespace Hangfire.Core.Tests.Server
             _instant = new Mock<IScheduleInstant>();
             _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.NowInstant });
 
-            _instantFactory.Setup(x => x.GetInstant(It.IsNotNull<CrontabSchedule>(), TimeZoneInfo.Utc))
+            _timeZone = TimeZoneInfo.Local;
+
+            _instantFactory.Setup(x => x.GetInstant(It.IsNotNull<CrontabSchedule>(), It.IsNotNull<TimeZoneInfo>()))
                 .Returns(() => _instant.Object);
 
             _recurringJob = new Dictionary<string, string>
             {
                 { "Cron", "* * * * *" },
-                { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) }
+                { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                { "TimeZone", _timeZone.Id }
             };
 
             _connection = new Mock<IStorageConnection>();
@@ -190,6 +194,44 @@ namespace Hangfire.Core.Tests.Server
 
             // Act & Assert
             Assert.DoesNotThrow(() => scheduler.Execute(_token));
+        }
+
+        [Fact]
+        public void Execute_GetsInstance_InAGivenTimeZone()
+        {
+            // Arrange
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time");
+            _recurringJob["TimeZone"] = timeZone.Id;
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_token);
+
+            // Assert
+            _instantFactory.Verify(x => x.GetInstant(It.IsAny<CrontabSchedule>(), timeZone));
+        }
+
+        [Fact]
+        public void Execute_GetInstance_UseUtcTimeZone_WhenItIsNotProvided()
+        {
+            _recurringJob.Remove("TimeZone");
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_token);
+
+            _instantFactory.Verify(x => x.GetInstant(It.IsAny<CrontabSchedule>(), TimeZoneInfo.Utc));
+        }
+
+        [Fact]
+        public void Execute_GetInstance_DoesNotCreateAJob_WhenGivenOneIsNotFound()
+        {
+            _recurringJob["TimeZone"] = "Some garbage";
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_token);
+
+            _client.Verify(x => x.Create(It.IsAny<Job>(), It.IsAny<IState>()), Times.Never);
         }
 
         private RecurringJobScheduler CreateScheduler()

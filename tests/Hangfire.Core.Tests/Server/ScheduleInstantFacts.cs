@@ -25,7 +25,7 @@ namespace Hangfire.Core.Tests.Server
             var exception = Assert.Throws<ArgumentException>(
                 () => new ScheduleInstant(new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Local), _timeZone, _schedule));
 
-            Assert.Equal("utcTime", exception.ParamName);
+            Assert.Equal("nowInstant", exception.ParamName);
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace Hangfire.Core.Tests.Server
             var exception = Assert.Throws<ArgumentException>(
                 () => new ScheduleInstant(new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Unspecified), _timeZone, _schedule));
 
-            Assert.Equal("utcTime", exception.ParamName);
+            Assert.Equal("nowInstant", exception.ParamName);
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new ScheduleInstant(_now, TimeZoneInfo.Utc, null));
+                () => new ScheduleInstant(_now, _timeZone, null));
 
             Assert.Equal("schedule", exception.ParamName);
         }
@@ -115,7 +115,7 @@ namespace Hangfire.Core.Tests.Server
 
         private ScheduleInstant CreateInstant(DateTime? localTime = null)
         {
-            return new ScheduleInstant(localTime ?? _now, TimeZoneInfo.Utc, _schedule);
+            return new ScheduleInstant(localTime ?? _now, _timeZone, _schedule);
         }
     }
 }
