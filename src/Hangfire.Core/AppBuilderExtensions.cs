@@ -123,16 +123,16 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException("options");
             if (storage == null) throw new ArgumentNullException("storage");
 
-            builder
-                .MapOwin(pathMatch)
-                .UseHangfireDashboard(options, storage, DashboardRoutes.Routes);
+            builder.Map(pathMatch, subApp => subApp
+                .UseOwin()
+                .UseHangfireDashboard(options, storage, DashboardRoutes.Routes));
 
             return builder;
         }
 
-        private static BuildFunc MapOwin(this IAppBuilder builder, string pathMatch)
+        private static BuildFunc UseOwin(this IAppBuilder builder)
         {
-            return middleware => builder.Map(pathMatch, subApp => subApp.Use(middleware(builder.Properties)));
+            return middleware => builder.Use(middleware(builder.Properties));
         }
     }
 }
