@@ -100,8 +100,8 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n      
             
             #line default
             #line hidden
-WriteLiteral("            <div class=\"alert alert-info\">\r\n                All is OK – you have " +
-"no retries.\r\n            </div>\r\n");
+WriteLiteral("            <div class=\"alert alert-success\">\r\n                All is OK – you ha" +
+"ve no retries.\r\n            </div>\r\n");
 
 
             
