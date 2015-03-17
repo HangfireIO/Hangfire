@@ -24,6 +24,7 @@ using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Owin;
 using Microsoft.Owin;
+using Microsoft.Owin.Infrastructure;
 
 namespace Hangfire
 {
@@ -122,6 +123,8 @@ namespace Hangfire
             if (pathMatch == null) throw new ArgumentNullException("pathMatch");
             if (options == null) throw new ArgumentNullException("options");
             if (storage == null) throw new ArgumentNullException("storage");
+
+            SignatureConversions.AddConversions(builder);
 
             builder.Map(pathMatch, subApp => subApp
                 .UseOwin()
