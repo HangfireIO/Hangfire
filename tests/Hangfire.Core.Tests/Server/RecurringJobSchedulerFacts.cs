@@ -200,7 +200,9 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_GetsInstance_InAGivenTimeZone()
         {
             // Arrange
-            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("Hawaiian Standard Time");
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(
+                Type.GetType("Mono.Runtime") != null ? "Pacific/Honolulu" : "Hawaiian Standard Time");
+
             _recurringJob["TimeZoneId"] = timeZone.Id;
 
             var scheduler = CreateScheduler();
