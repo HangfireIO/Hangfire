@@ -33,5 +33,18 @@ namespace Hangfire
             var storage = new SqlServerStorage(nameOrConnectionString);
             return configuration.UseStorage(storage);
         }
+
+        public static IGlobalConfiguration<SqlServerStorage> UseSqlServerStorage(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] string nameOrConnectionString, 
+            [NotNull] SqlServerStorageOptions options)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
+            if (options == null) throw new ArgumentNullException("options");
+
+            var storage = new SqlServerStorage(nameOrConnectionString, options);
+            return configuration.UseStorage(storage);
+        }
     }
 }

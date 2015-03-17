@@ -32,12 +32,14 @@ namespace Hangfire
         /// enables access for all users.
         /// </summary>
         /// <param name="filters">Authorization filters</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard(\"/hangfire\", new DashboardOptions { AuthorizationFilters = filters })` OWIN extension method instead. Will be removed in version 2.0.0.")]
         void UseAuthorizationFilters(params IAuthorizationFilter[] filters);
 
         /// <summary>
         /// Tells bootstrapper to register the given job filter globally.
         /// </summary>
         /// <param name="filter">Job filter instance</param>
+        [Obsolete("Please use `GlobalConfiguration.UseFilter` instead. Will be removed in version 2.0.0.")]
         void UseFilter(object filter);
 
         /// <summary>
@@ -45,12 +47,14 @@ namespace Hangfire
         /// given path in the OWIN pipeline. 
         /// </summary>
         /// <param name="path">Dashboard path, '/hangfire' by default</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard(string pathMatch)` OWIN extension method instead. Will be removed in version 2.0.0.")]
         void UseDashboardPath(string path);
 
         /// <summary>
         /// Tells bootstrapper to use the given path on Back To Site link in the dashboard.
         /// </summary>
         /// <param name="path">Back To Site path, '/' by default</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard(\"/hangfire\", new DashboardOptions { AppPath = path })` OWIN extension method instead. Will be removed in version 2.0.0.")]
         void UseAppPath(string path);
 
         /// <summary>
@@ -58,6 +62,7 @@ namespace Hangfire
         /// <see cref="JobStorage"/> class globally.
         /// </summary>
         /// <param name="storage">Job storage</param>
+        [Obsolete("Please use `GlobalConfiguration.UseStorage` instead. Will be removed in version 2.0.0.")]
         void UseStorage(JobStorage storage);
 
         /// <summary>
@@ -65,6 +70,7 @@ namespace Hangfire
         /// <see cref="JobActivator"/> class globally.
         /// </summary>
         /// <param name="activator">Job storage</param>
+        [Obsolete("Please use `GlobalConfiguration.UseActivator` instead. Will be removed in version 2.0.0.")]
         void UseActivator(JobActivator activator);
 
         /// <summary>
@@ -72,6 +78,7 @@ namespace Hangfire
         /// start, and stop it automatically on application shutdown request.
         /// </summary>
         /// <param name="server">Job server</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         void UseServer(Func<BackgroundJobServer> server);
     }
 }

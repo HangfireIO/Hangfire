@@ -38,6 +38,7 @@ namespace Hangfire.Dashboard
         /// and <see cref="JobStorage.Current"/> storage instance.
         /// </summary>
         /// <param name="app">The app builder</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void MapHangfireDashboard(this IAppBuilder app)
         {
             MapHangfireDashboard(app, DefaultDashboardPath, DefaultAppPath);
@@ -50,6 +51,7 @@ namespace Hangfire.Dashboard
         /// </summary>
         /// <param name="app">The app builder</param>
         /// <param name="dashboardPath">The path to map dashboard</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void MapHangfireDashboard(
             this IAppBuilder app,
             string dashboardPath)
@@ -65,6 +67,7 @@ namespace Hangfire.Dashboard
         /// <param name="app">The app builder</param>
         /// <param name="dashboardPath">The path to map dashboard</param>
         /// <param name="appPath">The application path on Back To Site link</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void MapHangfireDashboard(
             this IAppBuilder app,
             string dashboardPath,
@@ -82,6 +85,7 @@ namespace Hangfire.Dashboard
         /// <param name="dashboardPath">The path to map dashboard</param>
         /// <param name="appPath">The application path on Back To Site link</param>
         /// <param name="authorizationFilters">Array of authorization filters</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void MapHangfireDashboard(
             this IAppBuilder app, 
             string dashboardPath,
@@ -101,6 +105,7 @@ namespace Hangfire.Dashboard
         /// <param name="appPath">The application path on Back To Site link</param>
         /// <param name="authorizationFilters">Array of authorization filters</param>
         /// <param name="storage">The storage instance</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireDashboard` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void MapHangfireDashboard(
             [NotNull] this IAppBuilder app,
             string dashboardPath,

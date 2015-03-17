@@ -31,6 +31,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="app">The app builder</param>
         /// <param name="configurationAction">Configuration action</param>
+        [Obsolete("Please use `GlobalConfiguration` class for configuration, or `IAppBuilder.UseHangfireDashboard` and `IAppBuilder.UseHangfireServer` OWIN extension methods instead. Will be removed in version 2.0.0.")]
         public static void UseHangfire(
             [NotNull] this IAppBuilder app,
             [NotNull] Action<IBootstrapperConfiguration> configurationAction)

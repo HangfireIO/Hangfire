@@ -14,6 +14,7 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using Microsoft.Owin;
@@ -34,6 +35,7 @@ namespace Hangfire.Server
         /// </summary>
         /// <param name="app">The app builder</param>
         /// <param name="server">The background job server to start</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void RunHangfireServer(
             this IAppBuilder app,
             BackgroundJobServer server)

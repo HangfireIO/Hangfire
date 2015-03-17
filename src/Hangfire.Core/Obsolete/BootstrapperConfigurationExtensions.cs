@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace Hangfire
 {
     public static class BootstrapperConfigurationExtensions
@@ -24,6 +26,7 @@ namespace Hangfire
         /// shutdown request. Global job storage is being used.
         /// </summary>
         /// <param name="configuration">Configuration</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void UseServer(this IBootstrapperConfiguration configuration)
         {
             configuration.UseServer(() => new BackgroundJobServer());
@@ -36,6 +39,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="workerCount">Worker count</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void UseServer(
             this IBootstrapperConfiguration configuration,
             int workerCount)
@@ -55,6 +59,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="queues">Queues to listen</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void UseServer(
             this IBootstrapperConfiguration configuration,
             params string[] queues)
@@ -76,6 +81,7 @@ namespace Hangfire
         /// <param name="configuration">Configuration</param>
         /// <param name="workerCount">Worker count</param>
         /// <param name="queues">Queues to listen</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void UseServer(
             this IBootstrapperConfiguration configuration,
             int workerCount,
@@ -97,6 +103,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="options">Job server options</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void UseServer(
             this IBootstrapperConfiguration configuration,
             BackgroundJobServerOptions options)
@@ -111,6 +118,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="storage">Job storage to use</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void UseServer(
             this IBootstrapperConfiguration configuration,
             JobStorage storage)
@@ -129,6 +137,7 @@ namespace Hangfire
         /// <param name="configuration">Configuration</param>
         /// <param name="storage">Job storage to use</param>
         /// <param name="options">Job server options</param>
+        [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
         public static void UseServer(
             this IBootstrapperConfiguration configuration,
             JobStorage storage,
