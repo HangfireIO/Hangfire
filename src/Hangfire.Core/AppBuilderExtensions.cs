@@ -76,6 +76,11 @@ namespace Hangfire
 
             var context = new OwinContext(builder.Properties);
             var token = context.Get<CancellationToken>("host.OnAppDisposing");
+            if (token == default(CancellationToken))
+            {
+                // https://github.com/owin/owin/issues/27
+                token = context.Get<CancellationToken>("server.OnDispose");
+            }
 
             if (token == default(CancellationToken))
             {
