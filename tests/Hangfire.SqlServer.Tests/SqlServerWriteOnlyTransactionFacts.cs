@@ -670,7 +670,306 @@ select scope_identity() as Id";
             });
         }
 
-        private void UseConnection(Action<SqlConnection> action)
+        [Fact, CleanDatabase]
+        public void AddRangeToSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddRangeToSet(null, new List<string>())));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddRangeToSet_ThrowsAnException_WhenItemsValueIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.AddRangeToSet("my-set", null)));
+
+                Assert.Equal("items", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void AddRangeToSet_AddsAllItems_ToAGivenSet()
+        {
+            UseConnection(sql =>
+            {
+                var items = new List<string> { "1", "2", "3" };
+
+                Commit(sql, x => x.AddRangeToSet("my-set", items));
+
+                var records = sql.Query<string>(@"select [Value] from HangFire.[Set] where [Key] = N'my-set'");
+                Assert.Equal(items, records);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.RemoveSet(null)));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void RemoveSet_RemovesASet_WithAGivenKey()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], [Value], [Score]) values (@key, @value, 0.0)";
+
+            UseConnection(sql =>
+            {
+                sql.Execute(arrangeSql, new []
+                {
+                    new { key = "set-1", value = "1" },
+                    new { key = "set-2", value = "1" }
+                });
+
+                Commit(sql, x => x.RemoveSet("set-1"));
+
+                var record = sql.Query("select * from HangFire.[Set]").Single();
+                Assert.Equal("set-2", record.Key);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void ExpireHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.ExpireHash(null, TimeSpan.FromMinutes(5))));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void ExpireHash_SetsExpirationTimeOnAHash_WithGivenKey()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Hash ([Key], [Field])
+values (@key, @field)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "hash-1", field = "field" },
+                    new { key = "hash-2", field = "field" }
+                });
+
+                // Act
+                Commit(sql, x => x.ExpireHash("hash-1", TimeSpan.FromMinutes(60)));
+
+                // Assert
+                var records = sql.Query("select * from HangFire.Hash").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
+                Assert.True(DateTime.UtcNow.AddMinutes(59) < records["hash-1"]);
+                Assert.True(records["hash-1"] < DateTime.UtcNow.AddMinutes(61));
+                Assert.Null(records["hash-2"]);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void ExpireSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.ExpireSet(null, TimeSpan.FromSeconds(45))));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void ExpireSet_SetsExpirationTime_OnASet_WithGivenKey()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], [Value], [Score])
+values (@key, @value, 0.0)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "set-1", value = "1" },
+                    new { key = "set-2", value = "1" }
+                });
+
+                // Act
+                Commit(sql, x => x.ExpireSet("set-1", TimeSpan.FromMinutes(60)));
+
+                // Assert
+                var records = sql.Query("select * from HangFire.[Set]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
+                Assert.True(DateTime.UtcNow.AddMinutes(59) < records["set-1"]);
+                Assert.True(records["set-1"] < DateTime.UtcNow.AddMinutes(61));
+                Assert.Null(records["set-2"]);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void ExpireList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.ExpireList(null, TimeSpan.FromSeconds(45))));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void ExpireList_SetsExpirationTime_OnAList_WithGivenKey()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[List] ([Key]) values (@key)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "list-1", value = "1" },
+                    new { key = "list-2", value = "1" }
+                });
+
+                // Act
+                Commit(sql, x => x.ExpireList("list-1", TimeSpan.FromMinutes(60)));
+
+                // Assert
+                var records = sql.Query("select * from HangFire.[List]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
+                Assert.True(DateTime.UtcNow.AddMinutes(59) < records["list-1"]);
+                Assert.True(records["list-1"] < DateTime.UtcNow.AddMinutes(61));
+                Assert.Null(records["list-2"]);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void PersistHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.PersistHash(null)));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void PersistHash_ClearsExpirationTime_OnAGivenHash()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Hash ([Key], [Field], [ExpireAt])
+values (@key, @field, @expireAt)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "hash-1", field = "field", expireAt = DateTime.UtcNow.AddDays(1) },
+                    new { key = "hash-2", field = "field", expireAt = DateTime.UtcNow.AddDays(1) }
+                });
+
+                // Act
+                Commit(sql, x => x.PersistHash("hash-1"));
+
+                // Assert
+                var records = sql.Query("select * from HangFire.Hash").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
+                Assert.Null(records["hash-1"]);
+                Assert.NotNull(records["hash-2"]);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void PersistSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.PersistSet(null)));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void PersistSet_ClearsExpirationTime_OnAGivenHash()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], [Value], [ExpireAt], [Score])
+values (@key, @value, @expireAt, 0.0)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "set-1", value = "1", expireAt = DateTime.UtcNow.AddDays(1) },
+                    new { key = "set-2", value = "1", expireAt = DateTime.UtcNow.AddDays(1) }
+                });
+
+                // Act
+                Commit(sql, x => x.PersistSet("set-1"));
+
+                // Assert
+                var records = sql.Query("select * from HangFire.[Set]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
+                Assert.Null(records["set-1"]);
+                Assert.NotNull(records["set-2"]);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void PersistList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(sql =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => Commit(sql, x => x.PersistList(null)));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void PersistList_ClearsExpirationTime_OnAGivenHash()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[List] ([Key], [ExpireAt])
+values (@key, @expireAt)";
+
+            UseConnection(sql =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "list-1", expireAt = DateTime.UtcNow.AddDays(1) },
+                    new { key = "list-2", expireAt = DateTime.UtcNow.AddDays(1) }
+                });
+
+                // Act
+                Commit(sql, x => x.PersistList("list-1"));
+
+                // Assert
+                var records = sql.Query("select * from HangFire.[List]").ToDictionary(x => (string)x.Key, x => (DateTime?)x.ExpireAt);
+                Assert.Null(records["list-1"]);
+                Assert.NotNull(records["list-2"]);
+            });
+        }
+
+        private static void UseConnection(Action<SqlConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
             {

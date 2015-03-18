@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Transactions;
 using Dapper;
 using Hangfire.Common;
@@ -229,6 +230,88 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             QueueCommand(x => x.Execute(
                 "delete from HangFire.Hash where [Key] = @key",
                 new { key }));
+        }
+
+        public override void AddRangeToSet(string key, IList<string> items)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (items == null) throw new ArgumentNullException("items");
+
+            const string query = @"
+insert into HangFire.[Set] ([Key], Value, Score)
+values (@key, @value, 0.0)";
+
+            QueueCommand(x => x.Execute(query, items.Select(value => new { key = key, value = value }).ToList()));
+        }
+
+        public override void RemoveSet(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+delete from HangFire.[Set] where [Key] = @key";
+
+            QueueCommand(x => x.Execute(query, new { key = key }));
+        }
+
+        public override void ExpireHash(string key, TimeSpan expireIn)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+update HangFire.[Hash] set ExpireAt = @expireAt where [Key] = @key";
+
+            QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
+        }
+
+        public override void ExpireSet(string key, TimeSpan expireIn)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+update HangFire.[Set] set ExpireAt = @expireAt where [Key] = @key";
+
+            QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
+        }
+
+        public override void ExpireList(string key, TimeSpan expireIn)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+update HangFire.[List] set ExpireAt = @expireAt where [Key] = @key";
+
+            QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
+        }
+
+        public override void PersistHash(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+update HangFire.Hash set ExpireAt = null where [Key] = @key";
+
+            QueueCommand(x => x.Execute(query, new { key = key }));
+        }
+
+        public override void PersistSet(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+update HangFire.[Set] set ExpireAt = null where [Key] = @key";
+
+            QueueCommand(x => x.Execute(query, new { key = key }));
+        }
+
+        public override void PersistList(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+update HangFire.[List] set ExpireAt = null where [Key] = @key";
+
+            QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
         internal void QueueCommand(Action<SqlConnection> action)
