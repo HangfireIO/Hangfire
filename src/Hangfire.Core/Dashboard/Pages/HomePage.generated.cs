@@ -140,8 +140,28 @@ WriteLiteral("            </div>\r\n");
             
             #line default
             #line hidden
-WriteLiteral(@"        <h3>Realtime graph</h3>
-        <div id=""realtimeGraph""></div>
+WriteLiteral("        <h3>Realtime graph</h3>\r\n        <div id=\"realtimeGraph\" data-succeeded=\"" +
+"");
+
+
+            
+            #line 43 "..\..\Dashboard\Pages\HomePage.cshtml"
+                                           Write(Statistics.Succeeded);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" data-failed=\"");
+
+
+            
+            #line 43 "..\..\Dashboard\Pages\HomePage.cshtml"
+                                                                               Write(Statistics.Failed);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(@"""></div>
         <div style=""display: none;"">
             <span data-metric=""succeeded:count""></span>
             <span data-metric=""failed:count""></span>

@@ -37,9 +37,9 @@
     })();
 
     hangFire.RealtimeGraph = (function() {
-        function RealtimeGraph(element) {
-            this._succeeded = null;
-            this._failed = null;
+        function RealtimeGraph(element, succeeded, failed) {
+            this._succeeded = succeeded;
+            this._failed = failed;
             
             this._graph = new Rickshaw.Graph({
                 element: element,
@@ -227,8 +227,11 @@
 
         Page.prototype._createRealtimeGraph = function(elementId) {
             var realtimeElement = document.getElementById(elementId);
+            var succeeded = parseInt($(realtimeElement).data('succeeded'));
+            var failed = parseInt($(realtimeElement).data('failed'));
+
             if (realtimeElement) {
-                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement);
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
