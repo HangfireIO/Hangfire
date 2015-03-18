@@ -17,6 +17,7 @@
 using System;
 using System.Linq.Expressions;
 using Hangfire.Annotations;
+using Hangfire.Continuations;
 using Hangfire.States;
 
 namespace Hangfire
@@ -196,6 +197,18 @@ namespace Hangfire
         {
             var client = ClientFactory();
             return client.Requeue(jobId, fromState);
+        }
+
+        public static string ContinueWith(string parentId, [InstantHandle] Expression<Action> methodCall)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall);
+        }
+
+        public static string ContinueWith(string parentId, [InstantHandle] Expression<Action> methodCall, JobContinuationOptions options)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall, options);
         }
     }
 }
