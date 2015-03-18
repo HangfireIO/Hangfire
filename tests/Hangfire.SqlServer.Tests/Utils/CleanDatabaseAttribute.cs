@@ -17,7 +17,7 @@ namespace Hangfire.SqlServer.Tests
         private TransactionScope _transaction;
 
         public CleanDatabaseAttribute()
-            : this(IsolationLevel.Serializable)
+            : this(IsolationLevel.ReadCommitted)
         {
         }
 
