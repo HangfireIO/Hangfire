@@ -313,7 +313,7 @@ BEGIN
 
 		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_CounterAggregated_Key] ON [HangFire].[AggregatedCounter] (
 			[Key] ASC
-		);
+		) INCLUDE ([Value]);
 		PRINT 'Created index [UX_HangFire_CounterAggregated_Key]';
 
 		CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash] ([ExpireAt])
@@ -329,6 +329,18 @@ BEGIN
 		INCLUDE ([Id]);
 
 		PRINT 'Created indexes for [ExpireAt] columns';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_Key] ON [HangFire].[Hash] ([Key] ASC)
+		INCLUDE ([ExpireAt]);
+		PRINT 'Created index [IX_HangFire_Hash_Key]';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_List_Key] ON [HangFire].[List] ([Key] ASC)
+		INCLUDE ([ExpireAt], [Value]);
+		PRINT 'Created index [IX_HangFire_List_Key]';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Key] ON [HangFire].[Set] ([Key] ASC)
+		INCLUDE ([ExpireAt], [Value]);
+		PRINT 'Created index [IX_HangFire_Set_Key]';
 
 		SET @CURRENT_SCHEMA_VERSION = 4;
 	END
