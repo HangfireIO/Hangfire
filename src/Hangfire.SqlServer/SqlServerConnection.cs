@@ -360,7 +360,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             var query = @"
 select [Value] from (
-	select [Value], row_number() over (order by [Value] ASC) as row_num 
+	select [Value], row_number() over (order by [Id] ASC) as row_num 
 	from Hangfire.[Set]
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt";
@@ -368,6 +368,124 @@ select [Value] from (
             return _connection
                 .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 })
                 .ToList();
+        }
+
+        public override TimeSpan GetSetTtl(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select min([ExpireAt]) from HangFire.[Set]
+where [Key] = @key";
+
+            var result = _connection.Query<DateTime?>(query, new { key = key }).Single();
+            if (!result.HasValue) return TimeSpan.FromSeconds(-1);
+
+            return result.Value - DateTime.UtcNow;
+        }
+
+        public override long GetCounter(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select sum(s.[Value]) from (select sum([Value]) as [Value] from HangFire.Counter
+where [Key] = @key
+union all
+select [Value] from HangFire.AggregatedCounter
+where [Key] = @key) as s";
+
+            return _connection.Query<long?>(query, new { key = key }).Single() ?? 0;
+        }
+
+        public override long GetHashCount(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select count([Id]) from HangFire.Hash
+where [Key] = @key";
+
+            return _connection.Query<long>(query, new { key = key }).Single();
+        }
+
+        public override TimeSpan GetHashTtl(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select min([ExpireAt]) from HangFire.Hash
+where [Key] = @key";
+
+            var result = _connection.Query<DateTime?>(query, new { key = key }).Single();
+            if (!result.HasValue) return TimeSpan.FromSeconds(-1);
+
+            return result.Value - DateTime.UtcNow;
+        }
+
+        public override string GetValueFromHash(string key, string name)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+            if (name == null) throw new ArgumentNullException("name");
+
+            const string query = @"
+select [Value] from HangFire.Hash
+where [Key] = @key and [Field] = @field";
+
+            return _connection.Query<string>(query, new { key = key, field = name }).SingleOrDefault();
+        }
+
+        public override long GetListCount(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select count([Id]) from HangFire.List
+where [Key] = @key";
+
+            return _connection.Query<long>(query, new { key = key }).Single();
+        }
+
+        public override TimeSpan GetListTtl(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select min([ExpireAt]) from HangFire.List
+where [Key] = @key";
+
+            var result = _connection.Query<DateTime?>(query, new { key = key }).Single();
+            if (!result.HasValue) return TimeSpan.FromSeconds(-1);
+
+            return result.Value - DateTime.UtcNow;
+        }
+
+        public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select [Value] from (
+	select [Value], row_number() over (order by [Id] ASC) as row_num 
+	from Hangfire.List
+	where [Key] = @key 
+) as s where s.row_num between @startingFrom and @endingAt";
+
+            return _connection
+                .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 })
+                .ToList();
+        }
+
+        public override List<string> GetAllItemsFromList(string key)
+        {
+            if (key == null) throw new ArgumentNullException("key");
+
+            const string query = @"
+select [Value] from Hangfire.List
+where [Key] = @key
+order by [Id]";
+
+            return _connection.Query<string>(query, new { key = key }).ToList();
         }
     }
 }
