@@ -34,7 +34,7 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Static method call expression that will be marshalled to the Server.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue([NotNull] this IBackgroundJobClient client, Expression<Action> methodCall)
+        public static string Enqueue([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action> methodCall)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -52,7 +52,7 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue<T>([NotNull] this IBackgroundJobClient client, Expression<Action<T>> methodCall)
+        public static string Enqueue<T>([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action<T>> methodCall)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -67,7 +67,7 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule([NotNull] this IBackgroundJobClient client, Expression<Action> methodCall, TimeSpan delay)
+        public static string Schedule([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action> methodCall, TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -83,8 +83,8 @@ namespace Hangfire
         /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier or a created job.</returns>
         public static string Schedule(
-            [NotNull] this IBackgroundJobClient client, 
-            Expression<Action> methodCall,
+            [NotNull] this IBackgroundJobClient client,
+            [InstantHandle] Expression<Action> methodCall,
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException("client");
@@ -102,7 +102,7 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule<T>([NotNull] this IBackgroundJobClient client, Expression<Action<T>> methodCall, TimeSpan delay)
+        public static string Schedule<T>([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action<T>> methodCall, TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -119,8 +119,8 @@ namespace Hangfire
         /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
-            [NotNull] this IBackgroundJobClient client, 
-            Expression<Action<T>> methodCall,
+            [NotNull] this IBackgroundJobClient client,
+            [InstantHandle] Expression<Action<T>> methodCall,
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException("client");
@@ -138,7 +138,7 @@ namespace Hangfire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Create(
             [NotNull] this IBackgroundJobClient client,
-            Expression<Action> methodCall,
+            [InstantHandle] Expression<Action> methodCall,
             IState state)
         {
             if (client == null) throw new ArgumentNullException("client");
@@ -158,7 +158,7 @@ namespace Hangfire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Create<T>(
             [NotNull] this IBackgroundJobClient client,
-            Expression<Action<T>> methodCall,
+            [InstantHandle] Expression<Action<T>> methodCall,
             IState state)
         {
             if (client == null) throw new ArgumentNullException("client");

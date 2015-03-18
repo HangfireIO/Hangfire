@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
 using Hangfire.Server;
 
 namespace Hangfire.Common
@@ -146,7 +147,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
-        public static Job FromExpression(Expression<Action> methodCall)
+        public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
@@ -173,7 +174,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
-        public static Job FromExpression<T>(Expression<Action<T>> methodCall)
+        public static Job FromExpression<T>([InstantHandle] Expression<Action<T>> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
