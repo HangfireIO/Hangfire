@@ -49,7 +49,7 @@ namespace Hangfire.SqlServer
         {
             using (var transaction = new TransactionScope(
                 TransactionScopeOption.Required,
-                new TransactionOptions { IsolationLevel = IsolationLevel.Serializable }))
+                new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted }))
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
@@ -194,7 +194,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             const string trimSql = @"
 with cte as (
-select row_number() over (order by Id desc) as row_num, [Key] from HangFire.List)
+select row_number() over (order by Id desc) as row_num, [Key] from HangFire.List with (holdlock))
 delete from cte where row_num not between @start and @end and [Key] = @key";
 
             QueueCommand(x => x.Execute(
