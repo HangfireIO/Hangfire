@@ -287,7 +287,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException("key");
 
             var result = _connection.Query<SqlHash>(
-                "select Field, Value from HangFire.Hash where [Key] = @key",
+                "select Field, Value from HangFire.Hash with (forceseek) where [Key] = @key",
                 new { key })
                 .ToDictionary(x => x.Field, x => x.Value);
 
