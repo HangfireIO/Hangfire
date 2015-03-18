@@ -194,8 +194,10 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             const string trimSql = @"
 with cte as (
-select row_number() over (order by Id desc) as row_num, [Key] from HangFire.List with (holdlock))
-delete from cte where row_num not between @start and @end and [Key] = @key";
+    select row_number() over (order by Id desc) as row_num, [Key] 
+    from HangFire.List with (holdlock)
+    where [Key] = @key)
+delete from cte where row_num not between @start and @end";
 
             QueueCommand(x => x.Execute(
                 trimSql,
