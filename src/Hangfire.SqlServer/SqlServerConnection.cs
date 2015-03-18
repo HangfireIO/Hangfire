@@ -466,7 +466,7 @@ where [Key] = @key";
 
             const string query = @"
 select [Value] from (
-	select [Value], row_number() over (order by [Id] ASC) as row_num 
+	select [Value], row_number() over (order by [Id] desc) as row_num 
 	from Hangfire.List
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt";
@@ -483,7 +483,7 @@ select [Value] from (
             const string query = @"
 select [Value] from Hangfire.List
 where [Key] = @key
-order by [Id]";
+order by [Id] desc";
 
             return _connection.Query<string>(query, new { key = key }).ToList();
         }

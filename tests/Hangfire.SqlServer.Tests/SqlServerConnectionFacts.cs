@@ -1270,7 +1270,7 @@ values (@key, @value)";
                 var result = connection.GetRangeFromList("list-1", 1, 2);
                 
                 // Assert
-                Assert.Equal(new [] { "3", "4" }, result);
+                Assert.Equal(new [] { "4", "3" }, result);
             });
         }
 
@@ -1315,7 +1315,7 @@ values (@key, @value)";
                 var result = connection.GetAllItemsFromList("list-1");
 
                 // Assert
-                Assert.Equal(new [] { "1", "3" }, result);
+                Assert.Equal(new [] { "3", "1" }, result);
             });
         }
 
