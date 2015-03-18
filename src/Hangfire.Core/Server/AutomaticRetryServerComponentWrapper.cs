@@ -91,9 +91,11 @@ namespace Hangfire.Server
                     if (i >= _maxRetryAttempts - 1) throw;
 
                     var nextTry = _delayCallback(i);
+                    var logLevel = GetLogLevel(i);
 
-                    _logger.ErrorException(
-                        String.Format(
+                    _logger.Log(
+                        logLevel,
+                        () => String.Format(
                             "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
                             _innerComponent,
                             i + 1,
@@ -106,6 +108,21 @@ namespace Hangfire.Server
                     cancellationToken.ThrowIfCancellationRequested();
                 }
             }
+        }
+
+        private static LogLevel GetLogLevel(int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    return LogLevel.Debug;
+                case 1:
+                    return LogLevel.Info;
+                case 2:
+                    return LogLevel.Warn;
+            }
+
+            return LogLevel.Error;
         }
 
         public override string ToString()
