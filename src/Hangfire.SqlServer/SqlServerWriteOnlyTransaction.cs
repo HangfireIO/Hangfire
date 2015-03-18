@@ -158,7 +158,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         public override void AddToSet(string key, string value, double score)
         {
             const string addSql = @"
-merge HangFire.[Set] as Target
+merge HangFire.[Set] with (holdlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
@@ -208,7 +208,7 @@ delete from cte where row_num not between @start and @end and [Key] = @key";
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
             const string sql = @"
-merge HangFire.Hash as Target
+merge HangFire.Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
