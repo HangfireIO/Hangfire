@@ -157,12 +157,27 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
             }
 
-            // TODO: user can call this method with instance method expression. We need to check for it.
+            Type type;
+
+            if (callExpression.Object != null)
+            {
+                var objectValue = GetExpressionValue(callExpression.Object);
+                if (objectValue == null)
+                {
+                    throw new InvalidOperationException("Expression object should not be null.");
+                }
+
+                type = objectValue.GetType();
+            }
+            else
+            {
+                type = callExpression.Method.DeclaringType;
+            }
 
             // Static methods can not be overridden in the derived classes, 
             // so we can take the method's declaring type.
             return new Job(
-                callExpression.Method.DeclaringType, 
+                type, 
                 callExpression.Method, 
                 GetArguments(callExpression));
         }
@@ -363,7 +378,7 @@ namespace Hangfire.Common
         {
             Debug.Assert(callExpression != null);
 
-            var arguments = callExpression.Arguments.Select(GetArgumentValue).ToArray();
+            var arguments = callExpression.Arguments.Select(GetExpressionValue).ToArray();
 
             var serializedArguments = new List<string>(arguments.Length);
             foreach (var argument in arguments)
@@ -392,7 +407,7 @@ namespace Hangfire.Common
             return serializedArguments.ToArray();
         }
 
-        private static object GetArgumentValue(Expression expression)
+        private static object GetExpressionValue(Expression expression)
         {
             Debug.Assert(expression != null);
 

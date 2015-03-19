@@ -194,6 +194,24 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void FromNonGenericExpression_ShouldInferType_FromAGivenObject()
+        {
+            IDisposable instance = new Instance();
+            var job = Job.FromExpression(() => instance.Dispose());
+
+            Assert.Equal(typeof(Instance), job.Type);
+        }
+
+        [Fact]
+        public void FromNonGenericExpression_ShouldThrowAnException_IfGivenObjectIsNull()
+        {
+            IDisposable instance = null;
+
+            Assert.Throws<InvalidOperationException>(
+                () => Job.FromExpression(() => instance.Dispose()));
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenMethodContainsReferenceParameter()
         {
             string test = null;
