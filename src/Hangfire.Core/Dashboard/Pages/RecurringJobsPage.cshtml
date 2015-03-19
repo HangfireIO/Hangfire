@@ -89,7 +89,20 @@
                                 <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id"/>
                             </td>
                             <td class="min-width">@job.Id</td>
-                            <td class="min-width">@ExpressionDescriptor.GetDescription(job.Cron)</td>
+                            <td class="min-width">
+                                @* ReSharper disable once EmptyGeneralCatchClause *@
+                                @{
+                                    var cronDescription = job.Cron;
+                                    try
+                                    {
+                                        cronDescription = ExpressionDescriptor.GetDescription(job.Cron);
+                                    }
+                                    catch (FormatException)
+                                    {
+                                    }
+                                }
+                                @cronDescription
+                            </td>
                             <td class="min-width">
                                 @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
                                 {
