@@ -47,9 +47,7 @@ namespace Hangfire.SqlServer
 
         public override void Commit()
         {
-            using (var transaction = new TransactionScope(
-                TransactionScopeOption.Required,
-                new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted }))
+            using (var transaction = new TransactionScope())
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
