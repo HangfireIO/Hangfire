@@ -14,8 +14,9 @@
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
-1.3.3
-* Fixed – Enqueued job is not being processed with MSMQ or RabbitMQ.    
+1.4.0
+* Changed – Speed up `GetCount` method with native implementation.
+* Fixed – Incorrect order of fetching when multiple queues used.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />

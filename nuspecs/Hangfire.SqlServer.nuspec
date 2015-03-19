@@ -14,19 +14,12 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
-1.3.3
-* Fixed – Enqueued job is not being processed with MSMQ or RabbitMQ.  
-    
-1.3.2
-* Fixed – Sql Timeouts in ExpirationManager.
-* Fixed – KeyNotFoundException on /hangfire/succeeded page.
-    
-1.3.0
-* Added – Generation of NuGet symbol packages with `*.pdb` and source files.
-* Breaking – Use `LibLog` package instead of `Common.Logging` for logging.
-* Added – Generation of NuGet symbol packages with `*.pdb` and source files.
-* Changed – `Hangfire.SqlServer` is now merged with `Dapper` package.
-* Changed – `Dapper` package updated to 1.38.
+1.4.0
+* Added – Make the expiration check interval configurable (by @travisblakeney).
+* Changed – Use read committed or parent transaction isolation level instead of `serializable`.
+* Changed – Automatically aggregate records in `Hangfire.Counter` table.
+* Changed – Add indexes to prevent blocking rows by Expiration Manager.
+* Changed – Remove the `with tablock` hint from the expiration cleanup (by @travisblakeney).
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
