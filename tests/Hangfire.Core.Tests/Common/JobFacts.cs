@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
+using Hangfire.UnitOfWork;
 using Moq;
 using Xunit;
 
@@ -22,6 +23,7 @@ namespace Hangfire.Core.Tests.Common
         private readonly MethodInfo _method;
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
+        private readonly Mock<IUnitOfWorkManager> _unitOfWorkManager;
         private readonly Mock<IJobCancellationToken> _token;
         
         public JobFacts()
@@ -31,6 +33,8 @@ namespace Hangfire.Core.Tests.Common
             _arguments = new string[0];
 
             _activator = new Mock<JobActivator> { CallBase = true };
+            _unitOfWorkManager = new Mock<IUnitOfWorkManager>();
+            _unitOfWorkManager.Setup(x => x.Begin()).Returns(() => new object());
             _token = new Mock<IJobCancellationToken>();
         }
 
@@ -222,9 +226,20 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression(() => StaticMethod());
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => job.Perform(null, _token.Object));
+                () => job.Perform(null, _unitOfWorkManager.Object, _token.Object));
 
             Assert.Equal("activator", exception.ParamName);
+        }
+
+        [Fact]
+        public void Perform_ThrowsAnException_WhenUnitOfWorkManagerIsNull()
+        {
+            var job = Job.FromExpression(() => StaticMethod());
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => job.Perform(_activator.Object, null, _token.Object));
+
+            Assert.Equal("unitOfWorkManager", exception.ParamName);
         }
 
         [Fact]
@@ -233,9 +248,78 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression(() => StaticMethod());
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => job.Perform(_activator.Object, null));
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, null));
 
             Assert.Equal("cancellationToken", exception.ParamName);
+        }
+
+        [Fact]
+        public void Perform_UnitOfWorkManager_BeginWasCalledExactlyOnce()
+        {
+            var job = Job.FromExpression(() => StaticMethod());
+
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
+
+           _unitOfWorkManager.Verify(x => x.Begin(), Times.Once);
+        }
+
+        [Fact]
+        public void Perform_UnitOfWorkManager_EndWasCalledExactlyOnce()
+        {
+            var job = Job.FromExpression(() => StaticMethod());
+
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
+
+            _unitOfWorkManager.Verify(x => x.End(It.IsNotNull<object>(), It.IsAny<Exception>()), Times.Once);
+        }
+
+        [Fact]
+        public void Perform_UnitOfWorkManager_EndWasCalledExactlyOnceWithNullExceptionArgumentIfEverythingWasOK()
+        {
+            var job = Job.FromExpression(() => StaticMethod());
+
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
+
+            _unitOfWorkManager.Verify(x => x.End(It.IsNotNull<object>(), It.Is<Exception>(exception => exception == null)), Times.Once);
+        }
+
+        [Fact]
+        public void Perform_UnitOfWorkManager_EndWasCalledExactlyOnceWithNullContextArgumentAndNotNullExceptionArgumentIfExceptionWasThrownFromBeginMethod()
+        {
+            var exception = new InvalidOperationException();
+            _unitOfWorkManager.Setup(x => x.Begin()).Throws(exception);
+
+            var job = Job.FromExpression(() => StaticMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
+
+            _unitOfWorkManager.Verify(x => x.End(It.Is<object>(context => context == null), It.Is<Exception>(ex => exception == thrownException.InnerException)), Times.Once);
+        }
+
+        [Fact]
+        public void Perform_UnitOfWorkManager_EndWasCalledExactlyOnceWithNotNullNullExceptionArgumentIfExceptionWasThrownFromActivator()
+        {
+            var exception = new InvalidOperationException();
+            _activator.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws(exception);
+
+            var job = Job.FromExpression(() => InstanceMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
+
+            _unitOfWorkManager.Verify(x => x.End(It.IsNotNull<object>(), It.Is<Exception>(ex => exception == thrownException.InnerException)), Times.Once);
+        }
+
+        [Fact]
+        public void Perform_ThrowsInvalidOperationException_WhenUnitOfWorkBeginMethodReturnsNull()
+        {
+            _unitOfWorkManager.Setup(x => x.Begin()).Returns(null);
+
+            var job = Job.FromExpression(() => StaticMethod());
+
+            Assert.Throws<InvalidOperationException>(
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
         }
 
         [Fact, StaticLock]
@@ -244,7 +328,7 @@ namespace Hangfire.Core.Tests.Common
             _methodInvoked = false;
             var job = Job.FromExpression(() => StaticMethod());
 
-            job.Perform(_activator.Object, _token.Object);
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -255,7 +339,7 @@ namespace Hangfire.Core.Tests.Common
             _methodInvoked = false;
             var job = Job.FromExpression<Instance>(x => x.Method());
 
-            job.Perform(_activator.Object, _token.Object);
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -266,7 +350,7 @@ namespace Hangfire.Core.Tests.Common
             _disposed = false;
             var job = Job.FromExpression<Instance>(x => x.Method());
 
-            job.Perform(_activator.Object, _token.Object);
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             Assert.True(_disposed);
         }
@@ -279,7 +363,7 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithArguments("hello", 5));
 
             // Act
-            job.Perform(_activator.Object, _token.Object);
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             // Assert - see the `MethodWithArguments` method.
             Assert.True(_methodInvoked);
@@ -299,7 +383,7 @@ namespace Hangfire.Core.Tests.Common
             var job = new Job(type, method, new[] { convertedDate });
 
             // Act
-            job.Perform(_activator.Object, _token.Object);
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
@@ -318,7 +402,7 @@ namespace Hangfire.Core.Tests.Common
             var job = new Job(type, method, new[] { convertedDate });
 
             // Act
-            job.Perform(_activator.Object, _token.Object);
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
@@ -332,7 +416,7 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression(() => MethodWithDateTimeArgument(SomeDateTime));
 
             // Act
-            job.Perform(_activator.Object, _token.Object);
+            job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
@@ -346,7 +430,7 @@ namespace Hangfire.Core.Tests.Common
 			var job = Job.FromExpression(() => NullArgumentMethod(null));
 
 			// Act
-			job.Perform(_activator.Object, _token.Object);
+			job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
 			// Assert - see also `NullArgumentMethod` method.
 			Assert.True(_methodInvoked);
@@ -361,7 +445,7 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression(() => InstanceMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
 
             Assert.Same(exception, thrownException.InnerException);
         }
@@ -373,9 +457,37 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression(() => InstanceMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
 
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
+        }
+
+        [Fact]
+        public void Perform_ThrowsPerformanceException_WhenUnitOfWorkManagerBeginThrowsAnException()
+        {
+            var exception = new InvalidOperationException();
+            _unitOfWorkManager.Setup(x => x.Begin()).Throws(exception);
+
+            var job = Job.FromExpression(() => InstanceMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
+
+            Assert.Same(exception, thrownException.InnerException);
+        }
+
+        [Fact]
+        public void Perform_ThrowsPerformanceException_WhenUnitOfWorkManagerEndThrowsAnException()
+        {
+            var exception = new InvalidOperationException();
+            _unitOfWorkManager.Setup(x => x.End(It.IsNotNull<object>(), It.IsAny<Exception>())).Throws(exception);
+
+            var job = Job.FromExpression(() => InstanceMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
+
+            Assert.Same(exception, thrownException.InnerException);
         }
 
         [Fact]
@@ -386,7 +498,7 @@ namespace Hangfire.Core.Tests.Common
 			var job = new Job(type, method, new []{ "sdfa" });
 
             var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
 
             Assert.NotNull(exception.InnerException);
         }
@@ -399,7 +511,7 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression<BrokenDispose>(x => x.Method());
 
             var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
 
             Assert.True(_methodInvoked);
             Assert.NotNull(exception.InnerException);
@@ -411,7 +523,7 @@ namespace Hangfire.Core.Tests.Common
             var job = Job.FromExpression(() => ExceptionMethod());
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
 
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
             Assert.Equal("exception", thrownException.InnerException.Message);
@@ -426,7 +538,7 @@ namespace Hangfire.Core.Tests.Common
 
             // Act & Assert
             Assert.Throws<OperationCanceledException>(
-                () => job.Perform(_activator.Object, _token.Object));
+                () => job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object));
         }
 
 	    [Fact]
@@ -434,7 +546,7 @@ namespace Hangfire.Core.Tests.Common
         {
             var job = Job.FromExpression<Instance>(x => x.FunctionReturningValue());
 
-            var result = job.Perform(_activator.Object, _token.Object);
+            var result = job.Perform(_activator.Object, _unitOfWorkManager.Object, _token.Object);
 
             Assert.Equal("Return value", result);
         }

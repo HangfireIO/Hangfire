@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Dashboard;
+using Hangfire.UnitOfWork;
 
 namespace Hangfire
 {
@@ -35,6 +36,7 @@ namespace Hangfire
         public string DashboardPath { get; private set; }
         public JobStorage Storage { get; private set; }
         public JobActivator Activator { get; private set; }
+        public IUnitOfWorkManager UnitOfWorkManager { get; private set; }
         public List<Func<BackgroundJobServer>> Servers { get; private set; }
         public IAuthorizationFilter[] AuthorizationFilters { get; private set; }
         public List<object> Filters { get; private set; } 
@@ -62,6 +64,11 @@ namespace Hangfire
         public void UseActivator(JobActivator activator)
         {
             Activator = activator;
+        }
+
+        public void UseUnitOfWorkManager(IUnitOfWorkManager unitOfWorkManager)
+        {
+            UnitOfWorkManager = unitOfWorkManager;
         }
 
         public void UseServer(Func<BackgroundJobServer> server)

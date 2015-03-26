@@ -1,6 +1,7 @@
 ﻿using System;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.UnitOfWork;
 using Moq;
 
 namespace Hangfire.Core.Tests
@@ -16,6 +17,7 @@ namespace Hangfire.Core.Tests
             Storage = new Mock<JobStorage>();
             PerformanceProcess = new Mock<IJobPerformanceProcess>();
             Activator = new Mock<JobActivator>();
+            UnitOfWorkManager = new Mock<IUnitOfWorkManager>();
             StateMachineFactory = new Mock<IStateMachineFactory>();
 
             _context = new Lazy<SharedWorkerContext>(
@@ -25,6 +27,7 @@ namespace Hangfire.Core.Tests
                     Storage.Object,
                     PerformanceProcess.Object,
                     Activator.Object,
+                    UnitOfWorkManager.Object,
                     StateMachineFactory.Object));
         }
 
@@ -35,6 +38,7 @@ namespace Hangfire.Core.Tests
         public Mock<JobStorage> Storage { get; set; }
         public Mock<IJobPerformanceProcess> PerformanceProcess { get; set; } 
         public Mock<JobActivator> Activator { get; set; }
+        public Mock<IUnitOfWorkManager> UnitOfWorkManager { get; set; }
         public Mock<IStateMachineFactory> StateMachineFactory { get; set; } 
     }
 }

@@ -190,6 +190,7 @@
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
     <Compile Include="Dashboard\RequestExtensions.cs" />
     <Compile Include="IBootstrapperConfiguration.cs" />
+    <Compile Include="UnitOfWork\IUnitOfWorkManager.cs" />
     <Compile Include="OwinBootstrapper.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
@@ -331,6 +332,7 @@
     <Compile Include="Storage\RecurringJobDto.cs" />
     <Compile Include="Storage\StateData.cs" />
     <Compile Include="Storage\StorageConnectionExtensions.cs" />
+    <Compile Include="UnitOfWork\UnitOfWorkManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />

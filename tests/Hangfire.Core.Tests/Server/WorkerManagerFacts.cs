@@ -2,6 +2,7 @@
 using System.Threading;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.UnitOfWork;
 using Moq;
 using Xunit;
 
@@ -24,6 +25,7 @@ namespace Hangfire.Core.Tests.Server
                 new Mock<JobStorage>().Object,
                 new Mock<IJobPerformanceProcess>().Object,
                 new Mock<JobActivator>().Object,
+                new Mock<IUnitOfWorkManager>().Object, 
                 new Mock<IStateMachineFactory>().Object);
 
             _workerSupervisors = new[]

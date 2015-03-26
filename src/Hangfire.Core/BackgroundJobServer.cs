@@ -21,6 +21,7 @@ using System.Linq;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
+using Hangfire.UnitOfWork;
 
 namespace Hangfire
 {
@@ -146,6 +147,7 @@ namespace Hangfire
                 _storage,
                 new JobPerformanceProcess(),
                 JobActivator.Current,
+                UnitOfWorkManager.Current,
                 stateMachineFactory);
 
             yield return new WorkerManager(sharedWorkerContext, _options.WorkerCount);

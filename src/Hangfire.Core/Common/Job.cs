@@ -24,6 +24,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Server;
+using Hangfire.UnitOfWork;
 
 namespace Hangfire.Common
 {
@@ -92,16 +93,23 @@ namespace Hangfire.Common
         /// </summary>
         public string[] Arguments { get; private set; }
 
-        public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
+        public object Perform(JobActivator activator, IUnitOfWorkManager unitOfWorkManager, IJobCancellationToken cancellationToken)
         {
             if (activator == null) throw new ArgumentNullException("activator");
+            if (unitOfWorkManager == null) throw new ArgumentNullException("unitOfWorkManager");
             if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
 
             object instance = null;
 
             object result = null;
+            object context = null;
             try
             {
+                context = BeginUnitOfWork(unitOfWorkManager);
+                if (context == null)
+                {
+                    throw new InvalidOperationException("UnitOfWork context object should not be null.");
+                }
                 if (!Method.IsStatic)
                 {
                     instance = Activate(activator);
@@ -110,10 +118,17 @@ namespace Hangfire.Common
                 var deserializedArguments = DeserializeArguments(cancellationToken);
                 result = InvokeMethod(instance, deserializedArguments);
             }
+            catch (Exception exception)
+            {
+                EndUnitOfWork(context, unitOfWorkManager, exception);
+                throw;
+            }
             finally
             {
                 Dispose(instance);
             }
+
+            EndUnitOfWork(context, unitOfWorkManager);
 
             return result;
         }
@@ -259,6 +274,38 @@ namespace Hangfire.Common
             {
                 throw new JobPerformanceException(
                     "An exception occurred during job activation.",
+                    ex);
+            }
+        }
+
+        private object BeginUnitOfWork(IUnitOfWorkManager unitOfWorkManager)
+        {
+            if (unitOfWorkManager == null) throw new ArgumentNullException("unitOfWorkManager");
+
+            try
+            {
+                return unitOfWorkManager.Begin();
+            }
+            catch (Exception ex)
+            {
+                throw new JobPerformanceException(
+                    "An exception occurred during begin job unit of work context.",
+                    ex);
+            }
+        }
+
+        private void EndUnitOfWork(object context, IUnitOfWorkManager unitOfWorkManager, Exception exception = null)
+        {
+            if (unitOfWorkManager == null) throw new ArgumentNullException("unitOfWorkManager");
+
+            try
+            {
+                unitOfWorkManager.End(context, exception);
+            }
+            catch (Exception ex)
+            {
+                throw new JobPerformanceException(
+                    "An exception occurred during end job unit of work context.",
                     ex);
             }
         }

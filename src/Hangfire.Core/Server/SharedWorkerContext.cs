@@ -16,6 +16,7 @@
 
 using System;
 using Hangfire.States;
+using Hangfire.UnitOfWork;
 
 namespace Hangfire.Server
 {
@@ -27,6 +28,7 @@ namespace Hangfire.Server
             JobStorage storage,
             IJobPerformanceProcess performanceProcess,
             JobActivator activator,
+            IUnitOfWorkManager unitOfWorkManager,
             IStateMachineFactory stateMachineFactory)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");
@@ -34,6 +36,7 @@ namespace Hangfire.Server
             if (storage == null) throw new ArgumentNullException("storage");
             if (performanceProcess == null) throw new ArgumentNullException("performanceProcess");
             if (activator == null) throw new ArgumentNullException("activator");
+            if (unitOfWorkManager == null) throw new ArgumentNullException("unitOfWorkManager");
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
 
             ServerId = serverId;
@@ -41,11 +44,12 @@ namespace Hangfire.Server
             Storage = storage;
             PerformanceProcess = performanceProcess;
             Activator = activator;
+            UnitOfWorkManager = unitOfWorkManager;
             StateMachineFactory = stateMachineFactory;
         }
 
         internal SharedWorkerContext(SharedWorkerContext context)
-            : this(context.ServerId, context.Queues, context.Storage, context.PerformanceProcess, context.Activator, context.StateMachineFactory)
+            : this(context.ServerId, context.Queues, context.Storage, context.PerformanceProcess, context.Activator, context.UnitOfWorkManager, context.StateMachineFactory)
         {
         }
 
@@ -56,6 +60,7 @@ namespace Hangfire.Server
 
         internal IJobPerformanceProcess PerformanceProcess { get; private set; }
         internal JobActivator Activator { get; private set; }
+        internal IUnitOfWorkManager UnitOfWorkManager { get; private set; }
         internal IStateMachineFactory StateMachineFactory { get; private set; }
     }
 }
