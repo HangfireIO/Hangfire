@@ -19,7 +19,6 @@ SET @TARGET_SCHEMA_VERSION = 4;
 
 PRINT 'Installing Hangfire SQL objects...';
 
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 BEGIN TRANSACTION;
 
 -- Create the database schema if it doesn't exists
