@@ -29,6 +29,7 @@ namespace Hangfire.SqlServer
     internal static class SqlServerObjectsInstaller
     {
         private const int RequiredSchemaVersion = 4;
+        private const int RetryAttempts = 3;
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
@@ -49,7 +50,25 @@ namespace Hangfire.SqlServer
 
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 4;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
 
-            connection.Execute(script);
+            for (var i = 0; i < RetryAttempts; i++)
+            {
+                try
+                {
+                    connection.Execute(script);
+                    break;
+                }
+                catch (SqlException ex)
+                {
+                    if (ex.ErrorCode == 1205)
+                    {
+                        Log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
 
             Log.Info("Hangfire SQL objects installed.");
         }
