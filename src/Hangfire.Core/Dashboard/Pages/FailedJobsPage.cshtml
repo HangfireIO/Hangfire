@@ -31,6 +31,12 @@
         }
         else
         {
+            <div class="alert alert-warning">
+                <strong>Failed jobs do not become expired</strong> to allow you to re-queue them without any
+                time pressure. You should re-queue or delete them manually, or apply <code>AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete)</code>
+                attribute to delete them automatically.
+            </div>
+            
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
