@@ -177,21 +177,26 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         public override void InsertToList(string key, string value)
         {
             QueueCommand(x => x.Execute(
-                @"insert into HangFire.List ([Key], Value) values (@key, @value)",
-                new { key, value }));
+                @"
+exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'
+insert into HangFire.List ([Key], Value) values (@key, @value);",
+                new { key, value, resource = GetListLockResource(key) }));
         }
 
         public override void RemoveFromList(string key, string value)
         {
             QueueCommand(x => x.Execute(
-                @"delete from HangFire.List where [Key] = @key and Value = @value",
-                new { key, value }));
+                @"
+exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'
+delete from HangFire.List where [Key] = @key and Value = @value",
+                new { key, value, resource = GetListLockResource(key) }));
         }
 
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
             const string trimSql = @"
-with cte as (
+exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'
+;with cte as (
     select row_number() over (order by Id desc) as row_num, [Key] 
     from HangFire.List
     where [Key] = @key)
@@ -199,7 +204,7 @@ delete from cte where row_num not between @start and @end";
 
             QueueCommand(x => x.Execute(
                 trimSql,
-                new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
+                new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1, resource = GetListLockResource(key) }));
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -317,6 +322,11 @@ update HangFire.[List] set ExpireAt = null where [Key] = @key";
         internal void QueueCommand(Action<SqlConnection> action)
         {
             _commandQueue.Enqueue(action);
+        }
+
+        private static string GetListLockResource(string key)
+        {
+            return String.Format("Hangfire:List:Lock:{0}", key);
         }
     }
 }
