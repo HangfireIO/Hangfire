@@ -42,7 +42,7 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {
     $version = Get-BuildVersion
 
-    $tag = $env:APPVEYOR_REPO_TAG
+    $tag = $env:APPVEYOR_REPO_TAG_NAME
     if ($tag -And $tag.StartsWith("v$version-")) {
         "Using tag-based version for packages."
         $version = $tag.Substring(1)
