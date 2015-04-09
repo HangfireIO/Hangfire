@@ -23,44 +23,27 @@ namespace Hangfire.Server
 {
     internal class AutomaticRetryServerComponentWrapper : IServerComponent
     {
-        private const int DefaultMaxRetryAttempts = 10;
+        private static readonly TimeSpan DefaultMaxAttemptDelay = TimeSpan.FromMinutes(5);
+        private const int DefaultMaxRetryAttempts = int.MaxValue;
 
         private readonly IServerComponent _innerComponent;
-        private readonly int _maxRetryAttempts;
-        private readonly Func<int, TimeSpan> _delayCallback;
         private readonly ILog _logger;
 
         public AutomaticRetryServerComponentWrapper([NotNull] IServerComponent innerComponent)
-            : this(innerComponent, DefaultMaxRetryAttempts)
-        {
-        }
-
-        public AutomaticRetryServerComponentWrapper(
-            [NotNull] IServerComponent innerComponent,
-            int maxRetryAttempts)
-            : this(innerComponent, maxRetryAttempts, GetBackOffMultiplier)
-        {
-        }
-
-        public AutomaticRetryServerComponentWrapper(
-            [NotNull] IServerComponent innerComponent,
-            int maxRetryAttempts, 
-            [NotNull] Func<int, TimeSpan> delayCallback)
         {
             if (innerComponent == null) throw new ArgumentNullException("innerComponent");
-            if (delayCallback == null) throw new ArgumentNullException("delayCallback");
-            if (maxRetryAttempts < 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    "maxRetryAttempts",
-                    "MaxRetryAttempts property value must be greater or equal to 0.");
-            }
 
             _innerComponent = innerComponent;
-            _maxRetryAttempts = maxRetryAttempts;
-            _delayCallback = delayCallback;
             _logger = LogProvider.GetLogger(_innerComponent.GetType());
+            
+            MaxRetryAttempts = DefaultMaxRetryAttempts;
+            MaxAttemptDelay = DefaultMaxAttemptDelay;
+            DelayCallback = GetBackOffMultiplier;
         }
+
+        public int MaxRetryAttempts { get; set; }
+        public TimeSpan MaxAttemptDelay { get; set; }
+        public Func<int, TimeSpan> DelayCallback { get; set; } 
 
         public IServerComponent InnerComponent
         {
@@ -74,7 +57,7 @@ namespace Hangfire.Server
 
         private void ExecuteWithAutomaticRetry(CancellationToken cancellationToken)
         {
-            for (var i = 0; i <= _maxRetryAttempts; i++)
+            for (var i = 0; i <= MaxRetryAttempts; i++)
             {
                 try
                 {
@@ -88,9 +71,9 @@ namespace Hangfire.Server
                 catch (Exception ex)
                 {
                     // Break the loop after the retry attempts number exceeded.
-                    if (i >= _maxRetryAttempts - 1) throw;
+                    if (i >= MaxRetryAttempts - 1) throw;
 
-                    var nextTry = _delayCallback(i);
+                    var nextTry = DelayCallback(i);
                     var logLevel = GetLogLevel(i);
 
                     _logger.Log(
@@ -99,7 +82,7 @@ namespace Hangfire.Server
                             "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
                             _innerComponent,
                             i + 1,
-                            _maxRetryAttempts,
+                            MaxRetryAttempts,
                             nextTry),
                         ex);
 
@@ -130,14 +113,14 @@ namespace Hangfire.Server
             return _innerComponent.ToString();
         }
 
-        private static TimeSpan GetBackOffMultiplier(int retryAttemptNumber)
+        private TimeSpan GetBackOffMultiplier(int retryAttemptNumber)
         {
             //exponential/random retry back-off.
             var rand = new Random(Guid.NewGuid().GetHashCode());
             var nextTry = rand.Next(
                 (int)Math.Pow(retryAttemptNumber, 2), (int)Math.Pow(retryAttemptNumber + 1, 2) + 1);
 
-            return TimeSpan.FromSeconds(nextTry);
+            return TimeSpan.FromSeconds(Math.Min(nextTry, MaxAttemptDelay.TotalSeconds));
         }
     }
 }
