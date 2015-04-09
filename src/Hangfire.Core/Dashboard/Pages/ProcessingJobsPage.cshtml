@@ -1,4 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System
+@using System.Linq
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -13,6 +15,7 @@
     var monitor = Storage.GetMonitoringApi();
     var pager = new Pager(from, perPage, monitor.ProcessingCount());
     var processingJobs = monitor.ProcessingJobs(pager.FromRecord, pager.RecordsPerPage);
+    var servers = monitor.Servers();
 }
 
 <div class="row">
@@ -85,6 +88,11 @@
                                 @job.Value.ServerId.ToUpperInvariant()
                             </td>
                             <td>
+                                @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
+                                {
+                                    <span title="Looks like the job was aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
+                                }
+                                
                                 @Html.JobNameLink(job.Key, job.Value.Job)
                             </td>
                             <td class="align-right">

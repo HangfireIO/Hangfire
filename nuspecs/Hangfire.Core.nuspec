@@ -16,6 +16,7 @@
     
 1.4.0-rc1
 * Added – Add a notice about failed jobs expiration time.
+* Added – Show warnings in Dashboard for jobs processing by inactive servers.
 * Fixed – Hangfire stops processing when storage outage was too long.
     
 1.4.0-beta1

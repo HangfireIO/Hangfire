@@ -5,6 +5,7 @@
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.States
 @inherits RazorPage
 @{
     var monitor = Storage.GetMonitoringApi();
@@ -34,6 +35,31 @@
         }
         else
         {
+            var currentState = job.History.Count > 0 ? job.History[0] : null;
+            if (currentState != null && currentState.StateName == ProcessingState.StateName)
+            {
+                var server = monitor.Servers().FirstOrDefault(x => x.Name == currentState.Data["ServerId"]);
+                if (server == null)
+                {
+                    <div class="alert alert-danger">
+                        <strong>The job was aborted</strong> – it is processed by server
+                        <code>@currentState.Data["ServerId"]</code> which is not in the 
+                        <a href="@Url.To("/servers")">active servers</a> list for now.
+                        It will be retried automatically after invisibility timeout, but you can
+                        also re-queue or delete it manually.
+                    </div>
+                }
+                else if (server.Heartbeat.HasValue && server.Heartbeat < DateTime.UtcNow.AddMinutes(-1))
+                {
+                    <div class="alert alert-warning">
+                        <strong>Looks like the job was aborted</strong> – it is processed by server
+                        <code>@server.Name</code>, which reported its heartbeat more than 1 minute ago.
+                        It will be retried automatically after invisibility timeout, but you can
+                        also re-queue or delete it manually.
+                    </div>
+                }
+            }
+
             if (job.ExpireAt.HasValue)
             {
                 <div class="alert alert-info">
