@@ -14,7 +14,11 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
-1.4.0
+1.4.0-rc1
+* Added – Ability to pass isolation level to use in transactions, default is `serializable`.
+* Fixed – Retry on deadlocks during automatic migration on server restart.
+    
+1.4.0-beta1
 * Added – Make the expiration check interval configurable (by @travisblakeney).
 * Changed – Use read committed or parent transaction isolation level instead of `serializable`.
 * Changed – Automatically aggregate records in `Hangfire.Counter` table.

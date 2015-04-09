@@ -18,7 +18,17 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
-1.4.0
+1.4.0-rc1
+
+Hangfire.Core:
+* Added – Add a notice about failed jobs expiration time.
+* Fixed – Hangfire stops processing when storage outage was too long.
+
+Hangfire.SqlServer
+* Added – Ability to pass isolation level to use in transactions, default is `serializable`.
+* Fixed – Retry on deadlocks during automatic migration on server restart.
+    
+1.4.0-beta1
 
 Hangfire.Core:
 * Added – Job continuations, please see new `BackgroundJob.ContinueWith` methods.

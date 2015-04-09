@@ -14,7 +14,11 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
-1.4.0
+1.4.0-rc1
+* Added – Add a notice about failed jobs expiration time.
+* Fixed – Hangfire stops processing when storage outage was too long.
+    
+1.4.0-beta1
 * Added – Job continuations, please see new `BackgroundJob.ContinueWith` methods.
 * Added – Time zone support for recurring jobs using `TimeZoneInfo` class.
 * Added – Single place for global configuration, please see `GlobalConfiguration` class.
