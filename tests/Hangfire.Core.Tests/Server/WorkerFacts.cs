@@ -22,12 +22,14 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IFetchedJob> _fetchedJob;
         private readonly Mock<JobStorage> _storage;
         private readonly Mock<IJobPerformanceProcess> _process;
+        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
 
         public WorkerFacts()
         {
             _context = new WorkerContextMock();
-            _storage = _context.SharedContext.Storage;
-            _process = _context.SharedContext.PerformanceProcess;
+            _storage = new Mock<JobStorage>();
+            _process = new Mock<IJobPerformanceProcess>();
+            _stateMachineFactory = new Mock<IStateMachineFactory>();
 
             _connection = new Mock<IStorageConnection>();
 
@@ -37,7 +39,7 @@ namespace Hangfire.Core.Tests.Server
             _fetchedJob.Setup(x => x.JobId).Returns(JobId);
 
             _connection
-                .Setup(x => x.FetchNextJob(_context.SharedContext.Queues, It.IsNotNull<CancellationToken>()))
+                .Setup(x => x.FetchNextJob(_context.Queues, It.IsNotNull<CancellationToken>()))
                 .Returns(_fetchedJob.Object);
 
             _connection.Setup(x => x.GetJobData(JobId))
@@ -48,7 +50,7 @@ namespace Hangfire.Core.Tests.Server
 
             _stateMachine = new Mock<IStateMachine>();
 
-            _context.SharedContext.StateMachineFactory
+            _stateMachineFactory
                 .Setup(x => x.Create(_connection.Object))
                 .Returns(_stateMachine.Object);
 
@@ -65,9 +67,36 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(null));
+                () => new Worker(null, _storage.Object, _process.Object, _stateMachineFactory.Object));
 
             Assert.Equal("context", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new Worker(_context.Object, null, _process.Object, _stateMachineFactory.Object));
+
+            Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenProcessIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new Worker(_context.Object, _storage.Object, null, _stateMachineFactory.Object));
+
+            Assert.Equal("process", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStateMachineFactory_IsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new Worker(_context.Object, _storage.Object, _process.Object, null));
+
+            Assert.Equal("stateMachineFactory", exception.ParamName);
         }
 
         [Fact]
@@ -89,7 +118,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_token);
 
             _connection.Verify(
-                x => x.FetchNextJob(_context.SharedContext.Queues, _token),
+                x => x.FetchNextJob(_context.Queues, _token),
                 Times.Once);
 
             _fetchedJob.Verify(x => x.RemoveFromQueue());
@@ -318,7 +347,7 @@ namespace Hangfire.Core.Tests.Server
 
         private Worker CreateWorker()
         {
-            return new Worker(_context.Object);
+            return new Worker(_context.Object, _storage.Object, _process.Object, _stateMachineFactory.Object);
         }
 
         public static void Method() { }

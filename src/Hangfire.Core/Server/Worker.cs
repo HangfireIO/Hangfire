@@ -17,6 +17,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -26,23 +27,36 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
 
+        private readonly JobStorage _storage;
+        private readonly IJobPerformanceProcess _process;
+        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly WorkerContext _context;
 
-        public Worker(WorkerContext context)
+        public Worker(
+            [NotNull] WorkerContext context,
+            [NotNull] JobStorage storage, 
+            [NotNull] IJobPerformanceProcess process, 
+            [NotNull] IStateMachineFactory stateMachineFactory)
         {
             if (context == null) throw new ArgumentNullException("context");
-
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (process == null) throw new ArgumentNullException("process");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
+            
             _context = context;
+            _storage = storage;
+            _process = process;
+            _stateMachineFactory = stateMachineFactory;
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            using (var connection = _context.Storage.GetConnection())
+            using (var connection = _storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_context.Queues, cancellationToken))
             {
                 try
                 {
-                    var stateMachine = _context.StateMachineFactory.Create(connection);
+                    var stateMachine = _stateMachineFactory.Create(connection);
 
                     using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
@@ -132,7 +146,7 @@ namespace Hangfire.Server
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
-                var result = _context.PerformanceProcess.Run(performContext, jobData.Job);
+                var result = _process.Run(performContext, jobData.Job);
                 duration.Stop();
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);

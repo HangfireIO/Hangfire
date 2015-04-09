@@ -126,7 +126,7 @@ namespace Hangfire.Core.Tests
                 .Select(x => x.GetType())
                 .ToArray();
 
-            Assert.Contains(typeof(WorkerManager), componentTypes);
+            Assert.Contains(typeof(Worker), componentTypes);
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
             Assert.Contains(typeof(ServerWatchdog), componentTypes);
             Assert.Contains(typeof(SchedulePoller), componentTypes);

@@ -90,7 +90,6 @@
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
     <Compile Include="Mocks\ElectStateContextMock.cs" />
-    <Compile Include="Mocks\SharedWorkerContextMock.cs" />
     <Compile Include="Mocks\StateContextMock.cs" />
     <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
@@ -112,10 +111,8 @@
     <Compile Include="Server\AutomaticRetryServerComponentWrapperFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
-    <Compile Include="Server\SharedWorkerContextFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
-    <Compile Include="Server\WorkerManagerFacts.cs" />
     <Compile Include="States\DeletedStateFacts.cs" />
     <Compile Include="States\DeletedStateHandlerFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />

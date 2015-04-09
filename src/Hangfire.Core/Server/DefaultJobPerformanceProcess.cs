@@ -17,21 +17,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Common;
 
 namespace Hangfire.Server
 {
     internal class DefaultJobPerformanceProcess : IJobPerformanceProcess
     {
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
+        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
             = JobFilterProviders.Providers.GetFilters;
 
-        public DefaultJobPerformanceProcess()
+        private readonly JobActivator _activator;
+
+        public DefaultJobPerformanceProcess([NotNull] JobActivator activator)
         {
+            if (activator == null) throw new ArgumentNullException("activator");
+            _activator = activator;
         }
 
-        internal DefaultJobPerformanceProcess(IEnumerable<object> filters)
-            : this()
+        internal DefaultJobPerformanceProcess(JobActivator activator, IEnumerable<object> filters)
+            : this(activator)
         {
             if (filters != null)
             {
@@ -73,7 +78,7 @@ namespace Hangfire.Server
             return new JobFilterInfo(_getFiltersThunk(job));
         }
 
-        private static object PerformJobWithFilters(
+        private object PerformJobWithFilters(
             PerformContext context,
             IJobPerformer performer,
             IEnumerable<IServerFilter> filters)
@@ -83,7 +88,7 @@ namespace Hangfire.Server
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                result = performer.Perform(context.Activator, context.CancellationToken);
+                result = performer.Perform(_activator, context.CancellationToken);
                 return new PerformedContext(context, result, false, null);
             };
 

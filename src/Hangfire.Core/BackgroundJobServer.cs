@@ -85,7 +85,7 @@ namespace Hangfire
 
         public void Start()
         {
-            Logger.Info("Starting Hangfire Server...");
+            Logger.Info("Starting Hangfire Server");
             Logger.InfoFormat("Using job storage: '{0}'.", _storage);
             
             _storage.WriteOptionsToLog(Logger);
@@ -139,16 +139,15 @@ namespace Hangfire
 
         private IEnumerable<IServerComponent> GetCommonComponents()
         {
+            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
             var stateMachineFactory = new StateMachineFactory(_storage);
-            var sharedWorkerContext = new SharedWorkerContext(
-                _serverId,
-                _options.Queues,
-                _storage,
-                new DefaultJobPerformanceProcess(),
-                JobActivator.Current,
-                stateMachineFactory);
 
-            yield return new WorkerManager(sharedWorkerContext, _options.WorkerCount);
+            for (var i = 0; i < _options.WorkerCount; i++)
+            {
+                var context = new WorkerContext(_serverId, _options.Queues, i + 1);
+                yield return new Worker(context, _storage, performanceProcess, stateMachineFactory);
+            }
+
             yield return new ServerHeartbeat(_storage, _serverId);
             yield return new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval);
             yield return new ServerWatchdog(_storage, _options.ServerWatchdogOptions);

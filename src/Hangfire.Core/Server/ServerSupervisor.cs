@@ -126,11 +126,11 @@ namespace Hangfire.Server
 
                         _starting.Wait(_disposingCts.Token);
 
-                        LogComponentStarted();
+                        _logger.DebugFormat("Server component '{0}' started.", _component);
 
                         ExecuteComponent();
 
-                        LogComponentStopped();
+                        _logger.DebugFormat("Server component '{0}' stopped.", _component);
                     }
                 }
                 finally
@@ -187,32 +187,6 @@ namespace Hangfire.Server
                     _cts.Dispose();
                     _cts = new CancellationTokenSource();
                 }
-            }
-        }
-
-        private void LogComponentStopped()
-        {
-            const string message = "Server component '{0}' stopped.";
-            if (_options.LowerLogVerbosity)
-            {
-                _logger.DebugFormat(message, _component);
-            }
-            else
-            {
-                _logger.InfoFormat(message, _component);
-            }
-        }
-
-        private void LogComponentStarted()
-        {
-            const string message = "Server component '{0}' started.";
-            if (_options.LowerLogVerbosity)
-            {
-                _logger.DebugFormat(message, _component);
-            }
-            else
-            {
-                _logger.InfoFormat(message, _component);
             }
         }
     }

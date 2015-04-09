@@ -311,7 +311,6 @@
     <Compile Include="Server\ScheduleInstantFactory.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Obsolete\ServerOwinExtensions.cs" />
-    <Compile Include="Server\SharedWorkerContext.cs" />
     <Compile Include="Obsolete\StartupConfiguration.cs" />
     <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
     <Compile Include="States\DeletedState.cs" />
@@ -347,7 +346,6 @@
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\Worker.cs" />
-    <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="States\IStateMachine.cs" />
     <Compile Include="States\StateMachineFactory.cs" />
     <Compile Include="Storage\InvocationData.cs" />

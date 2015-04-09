@@ -13,7 +13,8 @@ namespace Hangfire.Core.Tests.Server
     {
         private readonly PerformContext _context;
         private readonly Mock<IJobPerformer> _performer;
-        private readonly IList<object> _filters; 
+        private readonly IList<object> _filters;
+        private readonly Mock<JobActivator> _activator;
 
         public DefaultJobPerformanceProcessFacts()
         {
@@ -26,8 +27,18 @@ namespace Hangfire.Core.Tests.Server
             _context = new PerformContext(
                 workerContext.Object, connection.Object, jobId, job, DateTime.UtcNow, new Mock<IJobCancellationToken>().Object);
             _performer = new Mock<IJobPerformer>();
+            _activator = new Mock<JobActivator>();
 
             _filters = new List<object>();
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenActivator_IsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new DefaultJobPerformanceProcess(null));
+
+            Assert.Equal("activator", exception.ParamName);
         }
 
         [Fact]
@@ -467,7 +478,7 @@ namespace Hangfire.Core.Tests.Server
 
         private DefaultJobPerformanceProcess CreateProcess()
         {
-            return new DefaultJobPerformanceProcess(_filters);
+            return new DefaultJobPerformanceProcess(_activator.Object, _filters);
         }
 
         private Mock<T> CreateFilter<T>()
