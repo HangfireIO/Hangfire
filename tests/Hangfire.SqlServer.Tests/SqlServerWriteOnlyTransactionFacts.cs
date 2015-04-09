@@ -7,6 +7,7 @@ using Dapper;
 using Hangfire.States;
 using Moq;
 using Xunit;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -27,7 +28,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, _queueProviders));
+                () => new SqlServerWriteOnlyTransaction(null, IsolationLevel.Serializable, _queueProviders));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -36,7 +37,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null));
+                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), IsolationLevel.Serializable, null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -981,7 +982,7 @@ values (@key, @expireAt)";
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection, _queueProviders))
+            using (var transaction = new SqlServerWriteOnlyTransaction(connection, IsolationLevel.Serializable, _queueProviders))
             {
                 action(transaction);
                 transaction.Commit();

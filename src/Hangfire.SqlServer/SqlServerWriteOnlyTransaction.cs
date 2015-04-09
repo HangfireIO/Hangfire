@@ -32,22 +32,27 @@ namespace Hangfire.SqlServer
             = new Queue<Action<SqlConnection>>();
 
         private readonly SqlConnection _connection;
+        private readonly IsolationLevel _isolationLevel;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerWriteOnlyTransaction( 
             SqlConnection connection,
+            IsolationLevel isolationLevel,
             PersistentJobQueueProviderCollection queueProviders)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             _connection = connection;
+            _isolationLevel = isolationLevel;
             _queueProviders = queueProviders;
         }
 
         public override void Commit()
         {
-            using (var transaction = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted }))
+            using (var transaction = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions { IsolationLevel = _isolationLevel }))
             {
                 _connection.EnlistTransaction(Transaction.Current);
 

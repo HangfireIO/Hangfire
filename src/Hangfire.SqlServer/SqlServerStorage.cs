@@ -111,7 +111,7 @@ namespace Hangfire.SqlServer
         public override IStorageConnection GetConnection()
         {
             var connection = _existingConnection ?? CreateAndOpenConnection();
-            return new SqlServerConnection(connection, QueueProviders, _existingConnection == null);
+            return new SqlServerConnection(connection, _options.TransactionIsolationLevel, QueueProviders, _existingConnection == null);
         }
 
         public override IEnumerable<IServerComponent> GetComponents()

@@ -10,6 +10,7 @@ using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -33,7 +34,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, _providers));
+                () => new SqlServerConnection(null, IsolationLevel.Serializable, _providers));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -42,7 +43,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), IsolationLevel.Serializable, null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -52,7 +53,7 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {
-                var connection = new SqlServerConnection(sqlConnection, _providers);
+                var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers);
 
                 connection.Dispose();
 
@@ -65,7 +66,7 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {
-                var connection = new SqlServerConnection(sqlConnection, _providers, ownsConnection: false);
+                var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers, ownsConnection: false);
 
                 connection.Dispose();
 
@@ -1366,7 +1367,7 @@ values (@key, @value, @expireAt, 0.0)";
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, _providers))
+            using (var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers))
             {
                 action(sqlConnection, connection);
             }
@@ -1376,6 +1377,7 @@ values (@key, @value, @expireAt, 0.0)";
         {
             using (var connection = new SqlServerConnection( 
                 ConnectionUtils.CreateConnection(),
+                IsolationLevel.Serializable,
                 _providers))
             {
                 action(connection);

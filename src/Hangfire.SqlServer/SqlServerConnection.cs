@@ -31,17 +31,20 @@ namespace Hangfire.SqlServer
     internal class SqlServerConnection : JobStorageConnection
     {
         private readonly SqlConnection _connection;
+        private readonly IsolationLevel _isolationLevel;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerConnection(
             SqlConnection connection,
+            IsolationLevel isolationLevel,
             PersistentJobQueueProviderCollection queueProviders)
-            : this(connection, queueProviders, true)
+            : this(connection, isolationLevel, queueProviders, true)
         {
         }
 
         public SqlServerConnection(
-            SqlConnection connection, 
+            SqlConnection connection,
+            IsolationLevel isolationLevel,
             PersistentJobQueueProviderCollection queueProviders,
             bool ownsConnection)
         {
@@ -49,7 +52,9 @@ namespace Hangfire.SqlServer
             if (queueProviders == null) throw new ArgumentNullException("queueProviders");
 
             _connection = connection;
+            _isolationLevel = isolationLevel;
             _queueProviders = queueProviders;
+
             OwnsConnection = ownsConnection;
         }
 
@@ -66,7 +71,7 @@ namespace Hangfire.SqlServer
 
         public override IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new SqlServerWriteOnlyTransaction(_connection, _queueProviders);
+            return new SqlServerWriteOnlyTransaction(_connection, _isolationLevel, _queueProviders);
         }
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
