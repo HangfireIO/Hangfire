@@ -71,8 +71,6 @@ namespace Hangfire
             if (storage == null) throw new ArgumentNullException("storage");
 
             var server = new BackgroundJobServer();
-            server.Start();
-
             Servers.Add(server);
 
             var context = new OwinContext(builder.Properties);

@@ -40,11 +40,6 @@ namespace ConsoleSample
                         break;
                     }
 
-                    if (command.Equals("start", StringComparison.OrdinalIgnoreCase))
-                    {
-                        server.Start();
-                    }
-
                     if (command.StartsWith("add", StringComparison.OrdinalIgnoreCase))
                     {
                         try

@@ -68,19 +68,10 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void Start_StartsTheBootstrapSupervisor()
+        public void Ctor_StartsTheBootstrapSupervisor()
         {
-            _serverMock.Object.Start();
-
+            var instance = _serverMock.Object;
             _supervisor.Verify(x => x.Start());
-        }
-
-        [Fact]
-        public void Stop_StopsTheBootstrapSupervisor()
-        {
-            _serverMock.Object.Stop();
-
-            _supervisor.Verify(x => x.Stop());
         }
 
         [Fact]
@@ -161,10 +152,7 @@ namespace Hangfire.Core.Tests
 
         private void StartServer(Func<BackgroundJobServer> createFunc)
         {
-            using (var server = createFunc())
-            {
-                server.Start();
-            }
+            using (createFunc()) { }
         }
     }
 }
