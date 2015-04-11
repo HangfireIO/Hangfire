@@ -56,10 +56,13 @@ namespace Hangfire.SqlServer
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
-                _connection.Execute(
-                    "set nocount on;" +
-                    "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
-                    _lockedResources.Select(x => new { resource = x }));
+                if (_isolationLevel == null || _isolationLevel == IsolationLevel.Serializable)
+                {
+                    _connection.Execute(
+                        "set nocount on;" +
+                        "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
+                        _lockedResources.Select(x => new { resource = x }));
+                }
 
                 foreach (var command in _commandQueue)
                 {
