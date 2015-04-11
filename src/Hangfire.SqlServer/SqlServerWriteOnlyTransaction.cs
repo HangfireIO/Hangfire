@@ -56,7 +56,7 @@ namespace Hangfire.SqlServer
             {
                 _connection.EnlistTransaction(Transaction.Current);
 
-                if (_isolationLevel == null || _isolationLevel == IsolationLevel.Serializable)
+                if (_lockedResources.Count > 0)
                 {
                     _connection.Execute(
                         "set nocount on;" +
@@ -212,7 +212,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
             const string trimSql = @"
 ;with cte as (
     select row_number() over (order by Id desc) as row_num, [Key] 
-    from HangFire.List with (xlock, rowlock)
+    from HangFire.List
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
 
