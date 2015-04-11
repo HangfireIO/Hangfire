@@ -31,6 +31,8 @@ namespace Hangfire.SqlServer
         private readonly Queue<Action<SqlConnection>> _commandQueue
             = new Queue<Action<SqlConnection>>();
 
+        private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
+
         private readonly SqlConnection _connection;
         private readonly IsolationLevel _isolationLevel;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
@@ -55,6 +57,11 @@ namespace Hangfire.SqlServer
                 new TransactionOptions { IsolationLevel = _isolationLevel }))
             {
                 _connection.EnlistTransaction(Transaction.Current);
+                
+                _connection.Execute(
+                    "set nocount on;" +
+                    "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
+                    _lockedResources.Select(x => new { resource = x }));
 
                 foreach (var command in _commandQueue)
                 {
@@ -161,12 +168,13 @@ values (@jobId, @name, @reason, @createdAt, @data)";
         public override void AddToSet(string key, string value, double score)
         {
             const string addSql = @"
-merge HangFire.[Set] with (holdlock) as Target
+;merge HangFire.[Set] with (holdlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
 when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
 
+            AcquireSetLock();
             QueueCommand(x => x.Execute(
                 addSql,
                 new { key, value, score }));
@@ -174,42 +182,43 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void RemoveFromSet(string key, string value)
         {
+            const string query = @"delete from HangFire.[Set] where [Key] = @key and Value = @value";
+
+            AcquireSetLock();
             QueueCommand(x => x.Execute(
-                @"delete from HangFire.[Set] where [Key] = @key and Value = @value",
+                query,
                 new { key, value }));
         }
 
         public override void InsertToList(string key, string value)
         {
+            AcquireListLock();
             QueueCommand(x => x.Execute(
-                @"
-exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'
-insert into HangFire.List ([Key], Value) values (@key, @value);",
-                new { key, value, resource = GetListLockResource(key) }));
+                @"insert into HangFire.List ([Key], Value) values (@key, @value);",
+                new { key, value }));
         }
 
         public override void RemoveFromList(string key, string value)
         {
+            AcquireListLock();
             QueueCommand(x => x.Execute(
-                @"
-exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'
-delete from HangFire.List where [Key] = @key and Value = @value",
-                new { key, value, resource = GetListLockResource(key) }));
+                @"delete from HangFire.List where [Key] = @key and Value = @value",
+                new { key, value }));
         }
 
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
             const string trimSql = @"
-exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'
 ;with cte as (
     select row_number() over (order by Id desc) as row_num, [Key] 
-    from HangFire.List
+    from HangFire.List with (xlock, rowlock)
     where [Key] = @key)
 delete from cte where row_num not between @start and @end";
 
+            AcquireListLock();
             QueueCommand(x => x.Execute(
                 trimSql,
-                new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1, resource = GetListLockResource(key) }));
+                new { key = key, start = keepStartingFrom + 1, end = keepEndingAt + 1 }));
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -218,28 +227,26 @@ delete from cte where row_num not between @start and @end";
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
             const string sql = @"
-merge HangFire.Hash with (holdlock) as Target
+;merge HangFire.Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
 when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
-            foreach (var keyValuePair in keyValuePairs)
-            {
-                var pair = keyValuePair;
-
-                QueueCommand(
-                    x => x.Execute(sql, new { key = key, field = pair.Key, value = pair.Value }));
-            }
+            AcquireHashLock();
+            QueueCommand(x => x.Execute(
+                sql,
+                keyValuePairs.Select(y => new { key = key, field = y.Key, value = y.Value })));
         }
 
         public override void RemoveHash(string key)
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            QueueCommand(x => x.Execute(
-                "delete from HangFire.Hash where [Key] = @key",
-                new { key }));
+            const string query = @"delete from HangFire.Hash where [Key] = @key";
+
+            AcquireHashLock();
+            QueueCommand(x => x.Execute(query, new { key }));
         }
 
         public override void AddRangeToSet(string key, IList<string> items)
@@ -251,6 +258,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 insert into HangFire.[Set] ([Key], Value, Score)
 values (@key, @value, 0.0)";
 
+            AcquireSetLock();
             QueueCommand(x => x.Execute(query, items.Select(value => new { key = key, value = value }).ToList()));
         }
 
@@ -258,9 +266,9 @@ values (@key, @value, 0.0)";
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-delete from HangFire.[Set] where [Key] = @key";
+            const string query = @"delete from HangFire.[Set] where [Key] = @key";
 
+            AcquireSetLock();
             QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
@@ -271,6 +279,7 @@ delete from HangFire.[Set] where [Key] = @key";
             const string query = @"
 update HangFire.[Hash] set ExpireAt = @expireAt where [Key] = @key";
 
+            AcquireHashLock();
             QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
         }
 
@@ -281,6 +290,7 @@ update HangFire.[Hash] set ExpireAt = @expireAt where [Key] = @key";
             const string query = @"
 update HangFire.[Set] set ExpireAt = @expireAt where [Key] = @key";
 
+            AcquireSetLock();
             QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
         }
 
@@ -291,6 +301,7 @@ update HangFire.[Set] set ExpireAt = @expireAt where [Key] = @key";
             const string query = @"
 update HangFire.[List] set ExpireAt = @expireAt where [Key] = @key";
 
+            AcquireListLock();
             QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
         }
 
@@ -301,6 +312,7 @@ update HangFire.[List] set ExpireAt = @expireAt where [Key] = @key";
             const string query = @"
 update HangFire.Hash set ExpireAt = null where [Key] = @key";
 
+            AcquireHashLock();
             QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
@@ -311,6 +323,7 @@ update HangFire.Hash set ExpireAt = null where [Key] = @key";
             const string query = @"
 update HangFire.[Set] set ExpireAt = null where [Key] = @key";
 
+            AcquireSetLock();
             QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
@@ -321,6 +334,7 @@ update HangFire.[Set] set ExpireAt = null where [Key] = @key";
             const string query = @"
 update HangFire.[List] set ExpireAt = null where [Key] = @key";
 
+            AcquireListLock();
             QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
@@ -329,9 +343,24 @@ update HangFire.[List] set ExpireAt = null where [Key] = @key";
             _commandQueue.Enqueue(action);
         }
 
-        private static string GetListLockResource(string key)
+        private void AcquireListLock()
         {
-            return String.Format("Hangfire:List:Lock:{0}", key);
+            AcquireLock(String.Format("Hangfire:List:Lock"));
+        }
+
+        private void AcquireSetLock()
+        {
+            AcquireLock(String.Format("Hangfire:Set:Lock"));
+        }
+
+        private void AcquireHashLock()
+        {
+            AcquireLock(String.Format("Hangfire:Hash:Lock"));
+        }
+
+        private void AcquireLock(string resource)
+        {
+            _lockedResources.Add(resource);
         }
     }
 }
