@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Hangfire.Common;
@@ -123,53 +122,31 @@ namespace Hangfire.States
                 }
 
                 var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt);
-                var stateChanged = ChangeState(context, toState, jobData.State);
+                ChangeState(context, toState, jobData.State);
 
-                return loadSucceeded && stateChanged;
+                return loadSucceeded;
             }
         }
 
-        private bool ChangeState(StateContext context, IState toState, string oldStateName)
+        private void ChangeState(StateContext context, IState toState, string oldStateName)
         {
-            try
-            {
-                var electStateContext = new ElectStateContext(context, _connection, this, toState, oldStateName);
-                _stateChangeProcess.ElectState(_connection, electStateContext);
+            var electStateContext = new ElectStateContext(context, _connection, this, toState, oldStateName);
+            _stateChangeProcess.ElectState(_connection, electStateContext);
 
-                var applyStateContext = new ApplyStateContext(
-                    context,
-                    electStateContext.CandidateState,
-                    oldStateName,
-                    electStateContext.TraversedStates);
+            var applyStateContext = new ApplyStateContext(
+                context,
+                electStateContext.CandidateState,
+                oldStateName,
+                electStateContext.TraversedStates);
 
-                ApplyState(applyStateContext, true);
-
-                // State transition has been succeeded.
-                return true;
-            }
-            catch (Exception ex)
-            {
-                var failedState = new FailedState(ex)
-                {
-                    Reason = "An exception occurred during the transition of job's state"
-                };
-
-                var applyStateContext = new ApplyStateContext(context, failedState, oldStateName, Enumerable.Empty<IState>());
-
-                // We should not use any state changed filters, because
-                // some of the could cause an exception.
-                ApplyState(applyStateContext, false);
-
-                // State transition has been failed due to exception.
-                return false;
-            }
+            ApplyState(applyStateContext);
         }
 
-        private void ApplyState(ApplyStateContext context, bool useFilters)
+        private void ApplyState(ApplyStateContext context)
         {
             using (var transaction = _connection.CreateWriteTransaction())
             {
-                _stateChangeProcess.ApplyState(transaction, context, useFilters);
+                _stateChangeProcess.ApplyState(transaction, context);
 
                 transaction.Commit();
 			}

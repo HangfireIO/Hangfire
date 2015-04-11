@@ -21,6 +21,6 @@ namespace Hangfire.States
     public interface IStateChangeProcess
     {
         void ElectState(IStorageConnection connection, ElectStateContext context);
-        void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context, bool useFilters);
+        void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context);
     }
 }

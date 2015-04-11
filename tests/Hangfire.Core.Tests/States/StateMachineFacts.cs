@@ -148,8 +148,7 @@ namespace Hangfire.Core.Tests.States
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
                 It.Is<ApplyStateContext>(sc => sc.JobId == JobId && sc.Job == _job
-                    && sc.NewState == _state.Object && sc.OldStateName == null),
-                true));
+                    && sc.NewState == _state.Object && sc.OldStateName == null)));
         }
 
         [Fact]
@@ -215,8 +214,7 @@ namespace Hangfire.Core.Tests.States
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
                 It.Is<ApplyStateContext>(sc => sc.JobId == JobId && sc.Job.Type.Name.Equals("Console")
-                    && sc.NewState == _state.Object && sc.OldStateName == OldStateName),
-                true));
+                    && sc.NewState == _state.Object && sc.OldStateName == OldStateName)));
 
             Assert.True(result);
         }
@@ -233,8 +231,7 @@ namespace Hangfire.Core.Tests.States
             // Assert
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
-                It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName),
-                true));
+                It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName)));
         }
 
         [Fact]
@@ -254,7 +251,7 @@ namespace Hangfire.Core.Tests.States
             _connection.Verify(x => x.GetJobData(JobId));
 
             _process.Verify(
-                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), It.IsAny<bool>()),
+                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
 
@@ -282,7 +279,7 @@ namespace Hangfire.Core.Tests.States
                 Times.Never);
 
             _process.Verify(
-                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), It.IsAny<bool>()),
+                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
 
@@ -322,26 +319,22 @@ namespace Hangfire.Core.Tests.States
             Assert.False(result);
 
             _process.Verify(
-                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), It.IsAny<bool>()),
+                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
 
         [Fact]
-        public void ChangeState_ReturnsFalse_WhenApplyStateThrowsException()
+        public void ChangeState_ThrowsAnException_WhenApplyStateThrowsException()
         {
             // Arrange
-            _process.Setup(x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), true))
-                .Throws(new Exception());
+            _process.Setup(x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()))
+                .Throws(new FieldAccessException());
 
             var stateMachine = CreateStateMachine();
 
-            // Act
-            var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState, _cts.Token);
-
-            // Assert
-            _process.Verify(x => x.ApplyState(_transaction.Object, It.IsNotNull<ApplyStateContext>(), false));
-
-            Assert.False(result);
+            // Act & Assert
+            Assert.Throws<FieldAccessException>(
+                () => stateMachine.ChangeState(JobId, _state.Object, FromOldState, _cts.Token));
         }
 
         [Fact]
@@ -364,8 +357,7 @@ namespace Hangfire.Core.Tests.States
             // Assert
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
-                It.Is<ApplyStateContext>(ctx => ctx.JobId == JobId && ctx.Job == null && ctx.NewState is FailedState),
-                true));
+                It.Is<ApplyStateContext>(ctx => ctx.JobId == JobId && ctx.Job == null && ctx.NewState is FailedState)));
 
             Assert.False(result);
         }
@@ -392,8 +384,7 @@ namespace Hangfire.Core.Tests.States
             // Assert
             _process.Verify(x => x.ApplyState(
                 _transaction.Object, 
-                It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object),
-                true));
+                It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object)));
 
             Assert.True(result);
         }
@@ -411,8 +402,7 @@ namespace Hangfire.Core.Tests.States
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName
-                    && ctx.Job == _job && ctx.JobId == JobId),
-                true));
+                    && ctx.Job == _job && ctx.JobId == JobId)));
 
             _transaction.Verify(x => x.Commit());
 
@@ -436,32 +426,7 @@ namespace Hangfire.Core.Tests.States
             // Assert - Sequence
             _process.Verify(x => x.ApplyState(
                 _transaction.Object, 
-                It.Is<ApplyStateContext>(ctx => ctx.NewState == anotherState.Object),
-                true));
-        }
-
-        [Fact]
-        public void ChangeState_AppliesFailedState_WhenThereIsAnException_AndReturnsFalse()
-        {
-            // Arrange
-            var exception = new NotSupportedException();
-
-            _process.Setup(
-                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>(), true))
-                .Throws(exception);
-
-            var machine = CreateStateMachine();
-
-            // Act
-            var result = machine.ChangeState(JobId, _state.Object, new[] { OldStateName }, _cts.Token);
-
-            // Assert
-            _process.Verify(x => x.ApplyState(
-                _transaction.Object,
-                It.Is<ApplyStateContext>(ctx => ctx.NewState is FailedState && ((FailedState)ctx.NewState).Exception == exception),
-                false));
-
-            Assert.False(result);
+                It.Is<ApplyStateContext>(ctx => ctx.NewState == anotherState.Object)));
         }
 
         private StateMachine CreateStateMachine()

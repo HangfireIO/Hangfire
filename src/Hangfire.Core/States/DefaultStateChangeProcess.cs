@@ -54,10 +54,10 @@ namespace Hangfire.States
             }
         }
 
-        public void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context, bool useFilters)
+        public void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context)
         {
             var filterInfo = GetFilters(context.Job);
-            var filters = useFilters ? filterInfo.ApplyStateFilters : Enumerable.Empty<IApplyStateFilter>();
+            var filters = filterInfo.ApplyStateFilters;
 
             foreach (var state in context.TraversedStates)
             {
