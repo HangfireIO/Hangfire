@@ -10,9 +10,13 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.4.0-rc2
+* Changed – Don't pass IsolationLevel to TransactionScope by default.
+* Changed – Coarse grained locks for Hash, List and Set tables to prevent deadlocks.
     
 1.4.0-rc1
 * Added – Ability to pass isolation level to use in transactions, default is `serializable`.

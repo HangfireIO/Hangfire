@@ -14,9 +14,20 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
-    <copyright>Copyright © Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.4.0-rc2
+
+Hangfire.Core
+* Changed – Retry a job when there was an exception during state transition instead of moving it to the Failed state.
+* Fixed – Don't leak foreground colors in ColouredConsoleLogger.
+* Obsolete – `BackgroundJobServer`'s `Start` and `Stop` methods are obsolete.
+
+Hangfire.SqlServer
+* Changed – Don't pass IsolationLevel to TransactionScope by default.
+* Changed – Coarse grained locks for Hash, List and Set tables to prevent deadlocks.
     
 1.4.0-rc1
 
