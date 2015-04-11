@@ -1421,6 +1421,7 @@ namespace Hangfire.Logging.LogProviders
 
         public class ColouredConsoleLogger : ILog
         {
+            private static readonly object Lock = new object();
             private readonly string _name;
 
             public ColouredConsoleLogger(string name)
@@ -1446,15 +1447,18 @@ namespace Hangfire.Logging.LogProviders
 
                 if (Colors.TryGetValue(logLevel, out color))
                 {
-                    var originalColor = Console.ForegroundColor;
-                    try
+                    lock (Lock)
                     {
-                        Console.ForegroundColor = color;
-                        Console.Out.WriteLine(formattedMessage);
-                    }
-                    finally
-                    {
-                        Console.ForegroundColor = originalColor;
+                        var originalColor = Console.ForegroundColor;
+                        try
+                        {
+                            Console.ForegroundColor = color;
+                            Console.Out.WriteLine(formattedMessage);
+                        }
+                        finally
+                        {
+                            Console.ForegroundColor = originalColor;
+                        }
                     }
                 }
                 else
