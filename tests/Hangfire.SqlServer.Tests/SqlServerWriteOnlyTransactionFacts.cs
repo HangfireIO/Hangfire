@@ -28,7 +28,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, IsolationLevel.Serializable, _queueProviders));
+                () => new SqlServerWriteOnlyTransaction(null, null, _queueProviders));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -37,7 +37,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), IsolationLevel.Serializable, null));
+                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null, null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -982,7 +982,7 @@ values (@key, @expireAt)";
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection, IsolationLevel.Serializable, _queueProviders))
+            using (var transaction = new SqlServerWriteOnlyTransaction(connection, null, _queueProviders))
             {
                 action(transaction);
                 transaction.Commit();

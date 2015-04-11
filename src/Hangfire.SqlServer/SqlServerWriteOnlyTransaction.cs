@@ -34,12 +34,12 @@ namespace Hangfire.SqlServer
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
 
         private readonly SqlConnection _connection;
-        private readonly IsolationLevel _isolationLevel;
+        private readonly IsolationLevel? _isolationLevel;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerWriteOnlyTransaction( 
             SqlConnection connection,
-            IsolationLevel isolationLevel,
+            IsolationLevel? isolationLevel,
             PersistentJobQueueProviderCollection queueProviders)
         {
             if (connection == null) throw new ArgumentNullException("connection");
@@ -52,12 +52,10 @@ namespace Hangfire.SqlServer
 
         public override void Commit()
         {
-            using (var transaction = new TransactionScope(
-                TransactionScopeOption.Required,
-                new TransactionOptions { IsolationLevel = _isolationLevel }))
+            using (var transaction = CreateTransaction(_isolationLevel))
             {
                 _connection.EnlistTransaction(Transaction.Current);
-                
+
                 _connection.Execute(
                     "set nocount on;" +
                     "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
@@ -361,6 +359,14 @@ update HangFire.[List] set ExpireAt = null where [Key] = @key";
         private void AcquireLock(string resource)
         {
             _lockedResources.Add(resource);
+        }
+
+        private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
+        {
+            return isolationLevel != null
+                ? new TransactionScope(TransactionScopeOption.Required,
+                    new TransactionOptions { IsolationLevel = isolationLevel.Value })
+                : new TransactionScope();
         }
     }
 }

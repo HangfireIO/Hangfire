@@ -31,12 +31,12 @@ namespace Hangfire.SqlServer
     internal class SqlServerConnection : JobStorageConnection
     {
         private readonly SqlConnection _connection;
-        private readonly IsolationLevel _isolationLevel;
+        private readonly IsolationLevel? _isolationLevel;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
 
         public SqlServerConnection(
             SqlConnection connection,
-            IsolationLevel isolationLevel,
+            IsolationLevel? isolationLevel,
             PersistentJobQueueProviderCollection queueProviders)
             : this(connection, isolationLevel, queueProviders, true)
         {
@@ -44,7 +44,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerConnection(
             SqlConnection connection,
-            IsolationLevel isolationLevel,
+            IsolationLevel? isolationLevel,
             PersistentJobQueueProviderCollection queueProviders,
             bool ownsConnection)
         {

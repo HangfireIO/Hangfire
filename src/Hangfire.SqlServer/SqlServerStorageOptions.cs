@@ -25,7 +25,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerStorageOptions()
         {
-            TransactionIsolationLevel = IsolationLevel.Serializable;
+            TransactionIsolationLevel = null;
             QueuePollInterval = TimeSpan.FromSeconds(15);
             InvisibilityTimeout = TimeSpan.FromMinutes(30);
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
@@ -33,7 +33,7 @@ namespace Hangfire.SqlServer
             PrepareSchemaIfNecessary = true;
         }
 
-        public IsolationLevel TransactionIsolationLevel { get; set; }
+        public IsolationLevel? TransactionIsolationLevel { get; set; }
 
         public TimeSpan QueuePollInterval
         {
