@@ -73,6 +73,17 @@ Recurring jobs were never been simpler, just call the following method to perfor
 RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
 ```
 
+**Continuations**
+
+Continuations allow you to define complex workflows by chaining multiple background jobs together.
+
+```csharp
+GlobalConfiguration.Configuration.UseContinuations();
+
+var id = BackgroundJob.Enqueue(() => Console.WriteLine("Hello, "));
+BackgroundJob.ContinueWith(id, () => Console.WriteLine("world!"));
+```
+
 **Process them inside a web application…**
 
 You can process background tasks in any OWIN compatible application frameworks, including [ASP.NET MVC](http://www.asp.net/mvc), [ASP.NET Web API](http://www.asp.net/web-api), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – Hangfire is reliable for web applications from scratch, even on shared hosting.
