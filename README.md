@@ -26,7 +26,7 @@ Hangfire is a .NET Framework alternative to [Resque](https://github.com/resque/r
 Installation
 -------------
 
-Hangfire is available as a NuGet package. So, install it using the NuGet Package Console window:
+Hangfire is available as a NuGet package. So, you can install it using the NuGet Package Console window:
 
 ```
 PM> Install-Package Hangfire
@@ -35,11 +35,13 @@ PM> Install-Package Hangfire
 After install, update your existing [OWIN Startup](http://www.asp.net/aspnet/overview/owin-and-katana/owin-startup-class-detection) file with the following lines of code. If you do not have this class in your project or don't know what is it, please read the [Quick start](http://docs.hangfire.io/en/latest/quickstart.html) guide to learn about how to install Hangfire.
 
 ```csharp
-app.UseHangfire(config =>
+public void Configuration(IAppBuilder app)
 {
-    config.UseSqlServerStorage("<connection string or its name>");
-    config.UseServer();
-});
+    GlobalConfiguration.Configuration.UseSqlServerStorage("<connection string or its name>");
+    
+    app.UseHangfireServer();
+    app.UseHangfireDashboard();
+}
 ```
 
 Usage
@@ -76,7 +78,7 @@ RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
 You can process background tasks in any OWIN compatible application frameworks, including [ASP.NET MVC](http://www.asp.net/mvc), [ASP.NET Web API](http://www.asp.net/web-api), [FubuMvc](http://fubu-project.org), [Nancy](http://nancyfx.org), etc. Forget about [AppDomain unloads, Web Garden & Web Farm issues](http://haacked.com/archive/2011/10/16/the-dangers-of-implementing-recurring-background-tasks-in-asp-net.aspx/) – Hangfire is reliable for web applications from scratch, even on shared hosting.
 
 ```csharp
-app.UseHangfire(config => config.UseServer());
+app.UseHangfireServer();
 ```
 
 **… or anywhere else**
@@ -84,8 +86,11 @@ app.UseHangfire(config => config.UseServer());
 In console application, Windows Service, Azure Worker Role, etc.
 
 ```csharp
-var server = new BackgroundJobServer();
-server.Start();
+using (new BackgroundJobServer())
+{
+    Console.WriteLine("Hangfire Server started. Press ENTER to exit...");
+    Console.ReadLine();
+}
 ```
 
 Questions? Problems?
