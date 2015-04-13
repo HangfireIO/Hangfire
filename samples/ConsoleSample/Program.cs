@@ -27,7 +27,7 @@ namespace ConsoleSample
                 Queues = new[] { "critical", "default" }
             };
 
-            using (var server = new BackgroundJobServer(options))
+            using (new BackgroundJobServer(options))
             {
                 var count = 1;
 
@@ -180,11 +180,28 @@ namespace ConsoleSample
                     {
                         BackgroundJob.Enqueue<GenericServices<string>>(x => x.Method("hello", 1));
                     }
+
+                    if (command.StartsWith("continuations", StringComparison.OrdinalIgnoreCase))
+                    {
+                        WriteString("Hello, Hangfire continuations!");
+                    }
                 }
             }
 
             Console.WriteLine("Press Enter to exit...");
             Console.ReadLine();
+        }
+
+        public static void WriteString(string value)
+        {
+            var lastId = BackgroundJob.Enqueue(() => Console.Write(value[0]));
+
+            for (var i = 1; i < value.Length; i++)
+            {
+                lastId = BackgroundJob.ContinueWith(lastId, () => Console.Write(value[i]));
+            }
+
+            BackgroundJob.ContinueWith(lastId, () => Console.WriteLine());
         }
     }
 }

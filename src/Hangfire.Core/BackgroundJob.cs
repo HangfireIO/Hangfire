@@ -17,7 +17,6 @@
 using System;
 using System.Linq.Expressions;
 using Hangfire.Annotations;
-using Hangfire.Continuations;
 using Hangfire.States;
 
 namespace Hangfire

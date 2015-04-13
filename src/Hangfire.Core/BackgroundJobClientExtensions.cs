@@ -270,5 +270,42 @@ namespace Hangfire
             var state = new EnqueuedState();
             return client.ChangeState(jobId, state, fromState);
         }
+
+        public static string ContinueWith(this IBackgroundJobClient client, string parentId,
+            [InstantHandle] Expression<Action> methodCall)
+        {
+            return ContinueWith(client, parentId, methodCall, new EnqueuedState());
+        }
+
+        public static string ContinueWith(
+            this IBackgroundJobClient client,
+            string parentId,
+            [InstantHandle] Expression<Action> methodCall,
+            IState nextState)
+        {
+            return ContinueWith(client, parentId, methodCall, nextState, JobContinuationOptions.OnlyOnSucceededState);
+        }
+
+        public static string ContinueWith(
+            [NotNull] this IBackgroundJobClient client,
+            string parentId,
+            [InstantHandle] Expression<Action> methodCall,
+            JobContinuationOptions options)
+        {
+            return ContinueWith(client, parentId, methodCall, new EnqueuedState(), options);
+        }
+
+        public static string ContinueWith(
+            [NotNull] this IBackgroundJobClient client,
+            string parentId,
+            [InstantHandle] Expression<Action> methodCall,
+            IState nextState,
+            JobContinuationOptions options)
+        {
+            if (client == null) throw new ArgumentNullException("client");
+
+            var state = new AwaitingState(parentId, nextState, options);
+            return client.Create(Job.FromExpression(methodCall), state);
+        }
     }
 }

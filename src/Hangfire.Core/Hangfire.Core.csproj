@@ -75,15 +75,14 @@
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\IJobCreator.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
-    <Compile Include="Continuations\AwaitingJobsPage.generated.cs">
+    <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AwaitingJobsPage.cshtml</DependentUpon>
     </Compile>
-    <Compile Include="Continuations\AwaitingState.cs" />
-    <Compile Include="Continuations\ContinuationExtensions.cs" />
-    <Compile Include="Continuations\ContinuationsSupportAttribute.cs" />
-    <Compile Include="Continuations\JobContinuationOptions.cs" />
+    <Compile Include="States\AwaitingState.cs" />
+    <Compile Include="ContinuationsSupportAttribute.cs" />
+    <Compile Include="JobContinuationOptions.cs" />
     <Compile Include="Cron.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
@@ -403,7 +402,7 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="Continuations\AwaitingJobsPage.cshtml">
+    <None Include="Dashboard\Pages\AwaitingJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>AwaitingJobsPage.generated.cs</LastGenOutput>
     </None>

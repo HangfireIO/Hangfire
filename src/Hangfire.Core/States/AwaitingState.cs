@@ -18,11 +18,10 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.States;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 
-namespace Hangfire.Continuations
+namespace Hangfire.States
 {
     public class AwaitingState : IState
     {

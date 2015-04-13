@@ -39,6 +39,7 @@ namespace Hangfire.Dashboard
             AddMetric(SucceededCount);
             AddMetric(FailedCount);
             AddMetric(DeletedCount);
+            AddMetric(AwaitingCount);
         }
 
         public static void AddMetric([NotNull] DashboardMetric metric)
@@ -167,5 +168,26 @@ namespace Hangfire.Dashboard
             "deleted:count",
             "Deleted Jobs",
             page => new Metric(page.Statistics.Deleted.ToString("N0")));
+
+        public static readonly DashboardMetric AwaitingCount = new DashboardMetric(
+            "awaiting:count",
+            page =>
+            {
+                long awaitingCount = -1;
+
+                using (var connection = page.Storage.GetConnection())
+                {
+                    var storageConnection = connection as JobStorageConnection;
+                    if (storageConnection != null)
+                    {
+                        awaitingCount = storageConnection.GetSetCount("awaiting");
+                    }
+                }
+
+                return new Metric(awaitingCount.ToString("N0"))
+                {
+                    Style = awaitingCount > 0 ? MetricStyle.Info : MetricStyle.Default
+                };
+            });
     }
 }

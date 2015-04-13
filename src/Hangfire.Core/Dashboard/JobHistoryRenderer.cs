@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Text;
 using Hangfire.Common;
 using Hangfire.States;
+using Newtonsoft.Json;
 
 namespace Hangfire.Dashboard
 {
@@ -41,6 +42,7 @@ namespace Hangfire.Dashboard
             Register(EnqueuedState.StateName, EnqueuedRenderer);
             Register(ScheduledState.StateName, ScheduledRenderer);
             Register(DeletedState.StateName, NullRenderer);
+            Register(AwaitingState.StateName, AwaitingRenderer);
 
             BackgroundStateColors.Add(EnqueuedState.StateName, "#F5F5F5");
             BackgroundStateColors.Add(SucceededState.StateName, "#EDF7ED");
@@ -48,6 +50,7 @@ namespace Hangfire.Dashboard
             BackgroundStateColors.Add(ProcessingState.StateName, "#FCEFDC");
             BackgroundStateColors.Add(ScheduledState.StateName, "#E0F3F8");
             BackgroundStateColors.Add(DeletedState.StateName, "#ddd");
+            BackgroundStateColors.Add(AwaitingState.StateName, "#F5F5F5");
 
             ForegroundStateColors.Add(EnqueuedState.StateName, "#999");
             ForegroundStateColors.Add(SucceededState.StateName, "#5cb85c");
@@ -55,6 +58,7 @@ namespace Hangfire.Dashboard
             ForegroundStateColors.Add(ProcessingState.StateName, "#f0ad4e");
             ForegroundStateColors.Add(ScheduledState.StateName, "#5bc0de");
             ForegroundStateColors.Add(DeletedState.StateName, "#777");
+            ForegroundStateColors.Add(AwaitingState.StateName, "#999");
         }
 
         public static void AddBackgroundStateColor(string stateName, string color)
@@ -215,6 +219,42 @@ namespace Hangfire.Dashboard
                 "<dl class=\"dl-horizontal\"><dt>Enqueue at:</dt><dd data-moment=\"{0}\">{1}</dd></dl>",
                 JobHelper.ToTimestamp(enqueueAt),
                 enqueueAt));
+        }
+
+        private static NonEscapedString AwaitingRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        {
+            var builder = new StringBuilder();
+
+            builder.Append("<dl class=\"dl-horizontal\">");
+
+            if (stateData.ContainsKey("ParentId"))
+            {
+                builder.AppendFormat(
+                    "<dt>Parent</dt><dd>{0}</dd>",
+                    helper.JobIdLink(stateData["ParentId"]));
+            }
+
+            if (stateData.ContainsKey("NextState"))
+            {
+                var nextState = JsonConvert.DeserializeObject<IState>(
+                    stateData["NextState"],
+                    new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All });
+
+                builder.AppendFormat(
+                    "<dt>Next State</dt><dd>{0}</dd>",
+                    helper.StateLabel(nextState.Name));
+            }
+
+            if (stateData.ContainsKey("Options"))
+            {
+                builder.AppendFormat(
+                    "<dt>Options</dt><dd><code>{0}</code></dd>",
+                    helper.HtmlEncode(stateData["Options"]));
+            }
+
+            builder.Append("</dl>");
+
+            return new NonEscapedString(builder.ToString());
         }
     }
 }

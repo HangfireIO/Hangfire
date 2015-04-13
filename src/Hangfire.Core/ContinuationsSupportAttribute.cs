@@ -23,7 +23,7 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 
-namespace Hangfire.Continuations
+namespace Hangfire
 {
     public class ContinuationsSupportAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
