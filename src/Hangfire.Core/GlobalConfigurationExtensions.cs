@@ -16,10 +16,12 @@
 
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
 using Hangfire.Logging;
+using Hangfire.Logging.LogProviders;
 
 namespace Hangfire
 {
@@ -57,6 +59,71 @@ namespace Hangfire
             if (provider == null) throw new ArgumentNullException("provider");
             
             return configuration.Use(provider, x => LogProvider.SetCurrentLogProvider(x));
+        }
+
+        public static IGlobalConfiguration<NLogLogProvider> UseNLogLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new NLogLogProvider());
+        }
+
+        public static IGlobalConfiguration<ColouredConsoleLogProvider> UseColouredConsoleLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new ColouredConsoleLogProvider());
+        }
+
+        public static IGlobalConfiguration<Log4NetLogProvider> UseLog4NetLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new Log4NetLogProvider());
+        }
+
+        public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new ElmahLogProvider());
+        }
+
+        public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
+            [NotNull] this IGlobalConfiguration configuration,
+            LogLevel minLevel)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new ElmahLogProvider(minLevel));
+        }
+
+        public static IGlobalConfiguration<EntLibLogProvider> UseEntLibLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new EntLibLogProvider());
+        }
+
+        public static IGlobalConfiguration<SerilogLogProvider> UseSerilogLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new SerilogLogProvider());
+        }
+
+        public static IGlobalConfiguration<LoupeLogProvider> UseLoupeLogProvider(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseLogProvider(new LoupeLogProvider());
         }
 
         public static IGlobalConfiguration<TFilter> UseFilter<TFilter>(
