@@ -78,8 +78,6 @@ RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
 Continuations allow you to define complex workflows by chaining multiple background jobs together.
 
 ```csharp
-GlobalConfiguration.Configuration.UseContinuations();
-
 var id = BackgroundJob.Enqueue(() => Console.WriteLine("Hello, "));
 BackgroundJob.ContinueWith(id, () => Console.WriteLine("world!"));
 ```
