@@ -18,9 +18,10 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.1
+* Fixed – 1.4.0 ignoring `BackgroundJobServerOptions` settings in `UseHangfireServer` method.
+    
 1.4.0
-
-Hangfire.Core
 * Added – Extension methods related to `LogProvider` implementation for `IGlobalConfiguration`.
 * Changed – Continuations do not require configuration now.
     
