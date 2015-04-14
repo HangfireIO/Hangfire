@@ -19,9 +19,9 @@ Hangfire provides unified programming model to handle background tasks in a **re
 - database maintenance;
 - *…and so on.*
 
-Hangfire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job).
+Hangfire is a .NET Framework alternative to [Resque](https://github.com/resque/resque), [Sidekiq](http://sidekiq.org), [delayed_job](https://github.com/collectiveidea/delayed_job), [Celery](http://www.celeryproject.org).
 
-![Hangfire Succeeded Job](http://hangfire.io/img/succeeded-job-sm.png)
+![Hangfire Dashboard](http://hangfire.io/img/new-dashboard.png)
 
 Installation
 -------------
