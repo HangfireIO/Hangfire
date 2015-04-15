@@ -131,9 +131,9 @@ WriteLiteral("            <div class=\"alert alert-info\">\r\n                Th
             
             #line default
             #line hidden
-WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div class=\"btn-toolbar b" +
-"tn-toolbar-top\">\r\n                    <button class=\"js-jobs-list-command btn bt" +
-"n-sm btn-default\"\r\n                            data-url=\"");
+WriteLiteral(string.Format("            <div class=\"js-jobs-list\">\r\n                <div class=\"btn-toolbar b" +
+"tn-toolbar-top\">\r\n                    {0}<button class=\"js-jobs-list-command btn bt" +
+"n-sm btn-default\"\r\n                            data-url=\"", ShowDeleteButtonBegin));
 
 
             
@@ -143,15 +143,15 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
             
             #line default
             #line hidden
-WriteLiteral(@"""
+WriteLiteral(string.Format(@"""
                             data-loading-text=""Deleting...""
                             data-confirm=""Do you really want to DELETE ALL selected jobs?""
                             disabled=""disabled"">
                         <span class=""glyphicon glyphicon-remove""></span>
                         Delete selected
-                    </button>
+                    </button>{0}
 
-                    ");
+                    ", ShowDeleteButtonEnd));
 
 
             

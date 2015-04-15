@@ -125,15 +125,15 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
             
             #line default
             #line hidden
-WriteLiteral(@"""
+WriteLiteral(string.Format(@"""
                             data-loading-text=""Enqueueing...""
                             disabled=""disabled"">
                         <span class=""glyphicon glyphicon-repeat""></span>
                         Enqueue jobs
                     </button>
 
-                    <button class=""js-jobs-list-command btn btn-sm btn-default""
-                            data-url=""");
+                    {0}<button class=""js-jobs-list-command btn btn-sm btn-default""
+                            data-url=""", ShowDeleteButtonBegin));
 
 
             
@@ -143,15 +143,15 @@ WriteLiteral(@"""
             
             #line default
             #line hidden
-WriteLiteral(@"""
+WriteLiteral(string.Format(@"""
                             data-loading-text=""Deleting...""
                             data-confirm=""Do you really want to DELETE ALL selected jobs?""
                             disabled=""disabled"">
                         <span class=""glyphicon glyphicon-remove""></span>
                         Delete selected
-                    </button>
+                    </button>{0}
 
-                    ");
+                    ", ShowDeleteButtonEnd));
 
 
             

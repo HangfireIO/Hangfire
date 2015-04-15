@@ -29,30 +29,34 @@ namespace Hangfire.Dashboard
         private readonly JobStorage _storage;
         private readonly RouteCollection _routes;
         private readonly IEnumerable<IAuthorizationFilter> _authorizationFilters;
+        private readonly bool _showDeleteButtons;
 
         public DashboardMiddleware(
-            OwinMiddleware next, 
+            OwinMiddleware next,
             [NotNull] string appPath,
             [NotNull] JobStorage storage,
-            [NotNull] RouteCollection routes, 
-            [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters)
+            [NotNull] RouteCollection routes,
+            [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters,
+            [NotNull] bool? showDeleteButtons)
             : base(next)
         {
             if (appPath == null) throw new ArgumentNullException("appPath");
             if (storage == null) throw new ArgumentNullException("storage");
             if (routes == null) throw new ArgumentNullException("routes");
             if (authorizationFilters == null) throw new ArgumentNullException("authorizationFilters");
+            if (showDeleteButtons == null) throw new ArgumentNullException("showDeleteButtons");
 
             _appPath = appPath;
             _storage = storage;
             _routes = routes;
             _authorizationFilters = authorizationFilters;
+            _showDeleteButtons = showDeleteButtons.Value;
         }
 
         public override Task Invoke(IOwinContext context)
         {
             var dispatcher = _routes.FindDispatcher(context.Request.Path.Value);
-            
+
             if (dispatcher == null)
             {
                 return Next.Invoke(context);
@@ -62,7 +66,7 @@ namespace Hangfire.Dashboard
             {
                 if (!filter.Authorize(context.Environment))
                 {
-                    context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     return Task.FromResult(false);
                 }
             }
@@ -71,7 +75,8 @@ namespace Hangfire.Dashboard
                 _appPath,
                 _storage,
                 context.Environment,
-                dispatcher.Item2);
+                dispatcher.Item2,
+                _showDeleteButtons);
 
             return dispatcher.Item1.Dispatch(dispatcherContext);
         }

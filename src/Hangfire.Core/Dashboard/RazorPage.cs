@@ -42,7 +42,13 @@ namespace Hangfire.Dashboard
 
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
+        public bool ShowDeleteButtons { get; set; }
         public Stopwatch GenerationTime { get; private set; }
+
+        #region ShowDeleteButtonProperties
+        public string ShowDeleteButtonBegin { get { return (ShowDeleteButtons) ? string.Empty : "<!--"; } }
+        public string ShowDeleteButtonEnd { get { return (ShowDeleteButtons) ? string.Empty : "-->"; } }
+        #endregion
 
         public StatisticsDto Statistics
         {
@@ -79,6 +85,7 @@ namespace Hangfire.Dashboard
             Response = parentPage.Response;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
+            ShowDeleteButtons = parentPage.ShowDeleteButtons;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
@@ -93,6 +100,7 @@ namespace Hangfire.Dashboard
             Response = owinContext.Response;
             Storage = context.JobStorage;
             AppPath = context.AppPath;
+            ShowDeleteButtons = context.ShowDeleteButtons;
             Url = new UrlHelper(context.OwinEnvironment);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>

@@ -26,23 +26,27 @@ namespace Hangfire.Dashboard
         public RequestDispatcherContext(
             [NotNull] string appPath,
             [NotNull] JobStorage jobStorage,
-            [NotNull] IDictionary<string, object> owinEnvironment, 
-            [NotNull] Match uriMatch)
+            [NotNull] IDictionary<string, object> owinEnvironment,
+            [NotNull] Match uriMatch,
+            [NotNull] bool? showDeleteButtons)
         {
             if (appPath == null) throw new ArgumentNullException("appPath");
             if (jobStorage == null) throw new ArgumentNullException("jobStorage");
             if (owinEnvironment == null) throw new ArgumentNullException("owinEnvironment");
             if (uriMatch == null) throw new ArgumentNullException("uriMatch");
+            if (showDeleteButtons == null) throw new ArgumentNullException("showDeleteButtons");
 
             AppPath = appPath;
             JobStorage = jobStorage;
             OwinEnvironment = owinEnvironment;
             UriMatch = uriMatch;
+            ShowDeleteButtons = showDeleteButtons.Value;
         }
 
         public string AppPath { get; private set; }
+        public bool ShowDeleteButtons { get; set; }
         public JobStorage JobStorage { get; private set; }
-        public IDictionary<string, object> OwinEnvironment { get; private set; } 
+        public IDictionary<string, object> OwinEnvironment { get; private set; }
         public Match UriMatch { get; private set; }
     }
 }

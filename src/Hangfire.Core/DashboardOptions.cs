@@ -25,9 +25,11 @@ namespace Hangfire
         {
             AppPath = "/";
             AuthorizationFilters = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            ShowDeleteButtons = true;
         }
 
         public string AppPath { get; set; }
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
+        public bool ShowDeleteButtons { get; set; }
     }
 }
