@@ -88,12 +88,13 @@ namespace Hangfire.Dashboard
             Routes.AddRazorPage(
                 "/jobs/enqueued/fetched/(?<Queue>.+)",
                 x => new FetchedJobsPage(x.Groups["Queue"].Value));
-            Routes.AddRazorPage(
-                "/jobs/enqueued/(?<Queue>.+)",
-                x => new EnqueuedJobsPage(x.Groups["Queue"].Value));
 
             Routes.AddClientBatchCommand("/jobs/enqueued/delete", (client, jobId) => client.Delete(jobId));
             Routes.AddClientBatchCommand("/jobs/enqueued/requeue", (client, jobId) => client.Requeue(jobId));
+
+            Routes.AddRazorPage(
+                "/jobs/enqueued/(?<Queue>.+)",
+                x => new EnqueuedJobsPage(x.Groups["Queue"].Value));
 
             Routes.AddRazorPage("/jobs/processing", x => new ProcessingJobsPage());
             Routes.AddClientBatchCommand(
