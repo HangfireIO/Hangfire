@@ -29,14 +29,16 @@
                     </div>
                     <div class="collapse navbar-collapse">
                         @Html.RenderPartial(new Navigation())
-                        <ul class="nav navbar-nav navbar-right">
-                            <li>
-                                <a href="@AppPath">
-                                    <span class="glyphicon glyphicon-log-out"></span>
-                                    Back to site
-                                </a>
-                            </li>
-                        </ul>
+                        @if(@AppPath != null) {
+                            <ul class="nav navbar-nav navbar-right">
+                                <li>
+                                    <a href="@AppPath">
+                                        <span class="glyphicon glyphicon-log-out"></span>
+                                        Back to site
+                                    </a>
+                                </li>
+                            </ul>
+                        }
                     </div>
                     <!--/.nav-collapse -->
                 </div>

@@ -31,14 +31,13 @@ namespace Hangfire.Dashboard
         private readonly IEnumerable<IAuthorizationFilter> _authorizationFilters;
 
         public DashboardMiddleware(
-            OwinMiddleware next, 
-            [NotNull] string appPath,
+            OwinMiddleware next,
+            string appPath,
             [NotNull] JobStorage storage,
             [NotNull] RouteCollection routes, 
             [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters)
             : base(next)
         {
-            if (appPath == null) throw new ArgumentNullException("appPath");
             if (storage == null) throw new ArgumentNullException("storage");
             if (routes == null) throw new ArgumentNullException("routes");
             if (authorizationFilters == null) throw new ArgumentNullException("authorizationFilters");
