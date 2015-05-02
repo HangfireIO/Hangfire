@@ -193,14 +193,14 @@ namespace ConsoleSample
 
         public static void WriteString(string value)
         {
-            var lastId = BackgroundJob.Enqueue(() => Console.Write(value[0]));
+            var lastId = BackgroundJob.Enqueue<Services>(x => x.Write(value[0]));
 
             for (var i = 1; i < value.Length; i++)
             {
-                lastId = BackgroundJob.ContinueWith(lastId, () => Console.Write(value[i]));
+                lastId = BackgroundJob.ContinueWith<Services>(lastId, x => x.Write(value[i]));
             }
 
-            BackgroundJob.ContinueWith(lastId, () => Console.WriteLine());
+            BackgroundJob.ContinueWith<Services>(lastId, x => x.WriteBlankLine());
         }
     }
 }

@@ -204,7 +204,19 @@ namespace Hangfire
             return client.ContinueWith(parentId, methodCall);
         }
 
+        public static string ContinueWith<T>(string parentId, [InstantHandle] Expression<Action<T>> methodCall)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall);
+        }
+
         public static string ContinueWith(string parentId, [InstantHandle] Expression<Action> methodCall, JobContinuationOptions options)
+        {
+            var client = ClientFactory();
+            return client.ContinueWith(parentId, methodCall, options);
+        }
+
+        public static string ContinueWith<T>(string parentId, [InstantHandle] Expression<Action<T>> methodCall, JobContinuationOptions options)
         {
             var client = ClientFactory();
             return client.ContinueWith(parentId, methodCall, options);
