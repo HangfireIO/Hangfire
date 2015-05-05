@@ -332,6 +332,18 @@ namespace Hangfire.Dashboard
                     };
                 }
 
+                if (type == typeof(TimeSpan) || type == typeof(DateTime))
+                {
+                    return new ArgumentRenderer
+                    {
+                        _enclosingString = String.Empty,
+                        _valueRenderer = value => String.Format(
+                            "{0}.Parse({1})",
+                            WrapType(type.Name),
+                            WrapString(string.Format("\"{0}\"", value)))
+                    };
+                }
+
                 return new ArgumentRenderer
                 {
                     _deserializationType = type,
