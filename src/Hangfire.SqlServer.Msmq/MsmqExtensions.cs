@@ -16,6 +16,7 @@
 
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
+using Hangfire.States;
 
 // ReSharper disable once CheckNamespace
 namespace Hangfire
@@ -26,6 +27,11 @@ namespace Hangfire
             this IGlobalConfiguration<SqlServerStorage> configuration,
             string pathPattern, params string[] queues)
         {
+            if (queues.Length == 0)
+            {
+                queues = new[] { EnqueuedState.DefaultQueue };
+            }
+
             var provider = new MsmqJobQueueProvider(pathPattern, queues);
             configuration.Entry.QueueProviders.Add(provider, queues);
 
