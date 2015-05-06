@@ -24,6 +24,7 @@
 * Fixed – Missing null-check in Retries page after casting connection to `JobStorageConnection`.
 * Fixed – Enqueued jobs cannot be deleted from the Dashboard.
 * Fixed – Error when building the project using `build.bat` on a machine with VS 2013 only (by @Cussa).
+* Fixed – Incompatibility issue with RabbitMQ.Client >= 3.4.0 (by @justmara).
     
 1.4.1
 * Fixed – 1.4.0 ignoring `BackgroundJobServerOptions` settings in `UseHangfireServer` method.
