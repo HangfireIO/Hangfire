@@ -73,313 +73,369 @@ WriteLiteral("\r\n");
     int.TryParse(Query("from"), out from);
     int.TryParse(Query("count"), out perPage);
 
-    Pager pager;
-    List<string> jobIds;
+    Pager pager = null;
+    List<string> jobIds = null;
 
     using (var connection = Storage.GetConnection())
     {
         var storageConnection = connection as JobStorageConnection;
-        
-        pager = new Pager(from, perPage, storageConnection.GetSetCount("retries"));
-        jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+
+        if (storageConnection != null)
+        {
+            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"));
+            jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+        }
     }
 
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-12\">\r\n        <h1 class=\"page-header\"" +
-">Retries</h1>\r\n");
+WriteLiteral("\r\n");
 
 
             
             #line 31 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-         if (jobIds.Count == 0)
-        {
+ if (pager == null)
+{
 
             
             #line default
             #line hidden
-WriteLiteral("            <div class=\"alert alert-success\">\r\n                All is OK – you ha" +
-"ve no retries.\r\n            </div>\r\n");
+WriteLiteral(@"    <div class=""alert alert-warning"">
+        <h4>Retries are working, but this page can't be displayed</h4>
+        <p>
+            Don't worry, retries are fully supported. Your current job storage does not fully support
+            some queries required to show this page. Please try to update your storage or wait until
+            the full command set is implemented.
+        </p>
+        <p>
+            Please go to the <a href=""");
 
 
             
-            #line 36 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-        }
-        else
-        {
+            #line 41 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                 Write(Url.To("/jobs/scheduled"));
 
             
             #line default
             #line hidden
-WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div class=\"btn-toolbar b" +
-"tn-toolbar-top\">\r\n                    <button class=\"js-jobs-list-command btn bt" +
-"n-sm btn-primary\"\r\n                            data-url=\"");
+WriteLiteral("\">Scheduled jobs</a> page to see all the\r\n            scheduled jobs including re" +
+"tries.\r\n        </p>\r\n    </div>\r\n");
 
 
             
-            #line 42 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                 Write(Url.To("/jobs/scheduled/enqueue"));
+            #line 45 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+}
+else
+{
+
+            
+            #line default
+            #line hidden
+WriteLiteral("    <div class=\"row\">\r\n        <div class=\"col-md-12\">\r\n            <h1 class=\"pa" +
+"ge-header\">Retries</h1>\r\n");
+
+
+            
+            #line 51 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+             if (jobIds.Count == 0)
+            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                <div class=\"alert alert-success\">\r\n                    All is OK " +
+"– you have no retries.\r\n                </div>\r\n");
+
+
+            
+            #line 56 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            }
+            else
+            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                <div class=\"js-jobs-list\">\r\n                    <div class=\"btn-t" +
+"oolbar btn-toolbar-top\">\r\n                        <button class=\"js-jobs-list-co" +
+"mmand btn btn-sm btn-primary\"\r\n                                data-url=\"");
+
+
+            
+            #line 62 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                     Write(Url.To("/jobs/scheduled/enqueue"));
 
             
             #line default
             #line hidden
 WriteLiteral(@"""
-                            data-loading-text=""Enqueueing...""
-                            disabled=""disabled"">
-                        <span class=""glyphicon glyphicon-repeat""></span>
-                        Enqueue jobs
-                    </button>
+                                data-loading-text=""Enqueueing...""
+                                disabled=""disabled"">
+                            <span class=""glyphicon glyphicon-repeat""></span>
+                            Enqueue jobs
+                        </button>
 
-                    <button class=""js-jobs-list-command btn btn-sm btn-default""
-                            data-url=""");
+                        <button class=""js-jobs-list-command btn btn-sm btn-default""
+                                data-url=""");
 
 
             
-            #line 50 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                 Write(Url.To("/jobs/scheduled/delete"));
+            #line 70 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                     Write(Url.To("/jobs/scheduled/delete"));
 
             
             #line default
             #line hidden
 WriteLiteral(@"""
-                            data-loading-text=""Deleting...""
-                            data-confirm=""Do you really want to DELETE ALL selected jobs?""
-                            disabled=""disabled"">
-                        <span class=""glyphicon glyphicon-remove""></span>
-                        Delete selected
-                    </button>
+                                data-loading-text=""Deleting...""
+                                data-confirm=""Do you really want to DELETE ALL selected jobs?""
+                                disabled=""disabled"">
+                            <span class=""glyphicon glyphicon-remove""></span>
+                            Delete selected
+                        </button>
 
-                    ");
+                        ");
 
 
             
-            #line 58 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-               Write(Html.PerPageSelector(pager));
+            #line 78 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                   Write(Html.PerPageSelector(pager));
 
             
             #line default
             #line hidden
 WriteLiteral(@"
-                </div>
+                    </div>
 
-                <table class=""table table-hover"">
-                    <thead>
-                    <tr>
-                        <th class=""min-width"">
-                            <input type=""checkbox"" class=""js-jobs-list-select-all""/>
-                        </th>
-                        <th class=""min-width"">Id</th>
-                        <th class=""min-width"">State</th>
-                        <th>Job</th>
-                        <th>Reason</th>
-                        <th class=""align-right"">Retry</th>
-                        <th class=""align-right"">Created</th>
-                    </tr>
-                    </thead>
-                    <tbody>
+                    <table class=""table table-hover"">
+                        <thead>
+                            <tr>
+                                <th class=""min-width"">
+                                    <input type=""checkbox"" class=""js-jobs-list-select-all"" />
+                                </th>
+                                <th class=""min-width"">Id</th>
+                                <th class=""min-width"">State</th>
+                                <th>Job</th>
+                                <th>Reason</th>
+                                <th class=""align-right"">Retry</th>
+                                <th class=""align-right"">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 ");
 
 
             
-            #line 76 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                     foreach (var jobId in jobIds)
-                    {
-                        JobData jobData;
-                        StateData stateData;
-
-                        using (var connection = Storage.GetConnection())
-                        {
-                            jobData = connection.GetJobData(jobId);
-                            stateData = connection.GetStateData(jobId);
-                        }
-
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                        <tr class=\"js-jobs-list-row ");
-
-
-            
-            #line 87 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                Write(jobData != null ? "hover" : null);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\">\r\n                            <td>\r\n                                <input type" +
-"=\"checkbox\" class=\"js-jobs-list-checkbox\" name=\"jobs[]\" value=\"");
-
-
-            
-            #line 89 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                                                                     Write(jobId);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\"/>\r\n                            </td>\r\n                            <td class=\"mi" +
-"n-width\">\r\n                                ");
-
-
-            
-            #line 92 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                           Write(Html.JobIdLink(jobId));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </td>\r\n");
-
-
-            
-            #line 94 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                             if (jobData == null)
+            #line 96 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                             foreach (var jobId in jobIds)
                             {
+                                JobData jobData;
+                                StateData stateData;
+
+                                using (var connection = Storage.GetConnection())
+                                {
+                                    jobData = connection.GetJobData(jobId);
+                                    stateData = connection.GetStateData(jobId);
+                                }
+
 
             
             #line default
             #line hidden
-WriteLiteral("                                <td colspan=\"5\"><em>Job expired.</em></td>\r\n");
-
-
-            
-            #line 97 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                            }
-                            else
-                            {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                <td class=\"min-width\">\r\n                         " +
-"           ");
-
-
-            
-            #line 101 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                               Write(Html.StateLabel(jobData.State));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                </td>\r\n");
-
-
-
-WriteLiteral("                                <td>\r\n                                    ");
-
-
-            
-            #line 104 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                               Write(Html.JobNameLink(jobId, jobData.Job));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                </td>\r\n");
-
-
-
-WriteLiteral("                                <td>\r\n                                    ");
+WriteLiteral("                                <tr class=\"js-jobs-list-row ");
 
 
             
             #line 107 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                Write(stateData != null ? stateData.Reason : null);
+                                                        Write(jobData != null ? "hover" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                                </td>\r\n");
-
-
-
-WriteLiteral("                                <td class=\"align-right\">\r\n");
+WriteLiteral("\">\r\n                                    <td>\r\n                                   " +
+"     <input type=\"checkbox\" class=\"js-jobs-list-checkbox\" name=\"jobs[]\" value=\"");
 
 
             
-            #line 110 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                     if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
+            #line 109 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                                                                                             Write(jobId);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" />\r\n                                    </td>\r\n                                " +
+"    <td class=\"min-width\">\r\n                                        ");
+
+
+            
+            #line 112 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                   Write(Html.JobIdLink(jobId));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                    </td>\r\n");
+
+
+            
+            #line 114 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                     if (jobData == null)
                                     {
-                                        
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <td colspan=\"5\"><em>Job expired.</em></td" +
+">\r\n");
+
+
+            
+            #line 117 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                    }
+                                    else
+                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <td class=\"min-width\">\r\n                 " +
+"                           ");
+
+
+            
+            #line 121 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                       Write(Html.StateLabel(jobData.State));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                        </td>\r\n");
+
+
+
+WriteLiteral("                                        <td>\r\n                                   " +
+"         ");
+
+
+            
+            #line 124 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                       Write(Html.JobNameLink(jobId, jobData.Job));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                        </td>\r\n");
+
+
+
+WriteLiteral("                                        <td>\r\n                                   " +
+"         ");
+
+
+            
+            #line 127 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                        Write(stateData != null ? stateData.Reason : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                        </td>\r\n");
+
+
+
+WriteLiteral("                                        <td class=\"align-right\">\r\n");
+
+
+            
+            #line 130 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                             if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
+                                            {
+                                                
             
             #line default
             #line hidden
             
-            #line 112 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                   Write(Html.RelativeTime(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"])));
+            #line 132 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                           Write(Html.RelativeTime(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"])));
 
             
             #line default
             #line hidden
             
-            #line 112 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                                                                                                      
+            #line 132 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                                                                                                              
+                                            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        </td>\r\n");
+
+
+
+WriteLiteral("                                        <td class=\"align-right\">\r\n               " +
+"                             ");
+
+
+            
+            #line 136 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+                                       Write(Html.RelativeTime(jobData.CreatedAt));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                        </td>\r\n");
+
+
+            
+            #line 138 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                                     }
 
             
             #line default
             #line hidden
-WriteLiteral("                                </td>\r\n");
-
-
-
-WriteLiteral("                                <td class=\"align-right\">\r\n                       " +
-"             ");
+WriteLiteral("                                </tr>\r\n");
 
 
             
-            #line 116 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                               Write(Html.RelativeTime(jobData.CreatedAt));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                                </td>\r\n");
-
-
-            
-            #line 118 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            #line 140 "..\..\Dashboard\Pages\RetriesPage.cshtml"
                             }
 
             
             #line default
             #line hidden
-WriteLiteral("                        </tr>\r\n");
+WriteLiteral("                        </tbody>\r\n                    </table>\r\n\r\n               " +
+"     ");
 
 
             
-            #line 120 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                    }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                    </tbody>\r\n                </table>\r\n\r\n                ");
-
-
-            
-            #line 124 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-           Write(Html.Paginator(pager));
+            #line 144 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+               Write(Html.Paginator(pager));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n            </div>\r\n");
+WriteLiteral("\r\n                </div>\r\n");
 
 
             
-            #line 126 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-        }
+            #line 146 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+            }
 
             
             #line default
             #line hidden
-WriteLiteral("    </div>\r\n</div>");
+WriteLiteral("        </div>\r\n    </div>\r\n");
 
+
+            
+            #line 149 "..\..\Dashboard\Pages\RetriesPage.cshtml"
+}
+            
+            #line default
+            #line hidden
 
         }
     }
