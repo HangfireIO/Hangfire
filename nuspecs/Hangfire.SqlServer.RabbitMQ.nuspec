@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer RabbitMQ</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.2
+* Fixed – Incompatibility issue with RabbitMQ.Client >= 3.4.0 (by @justmara).
+    
 1.4.0
 * Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
     </releaseNotes>

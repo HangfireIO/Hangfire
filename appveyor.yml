@@ -18,7 +18,7 @@ environment:
   BuildEnvironment: appveyor
   Hangfire_SqlServer_ConnectionStringTemplate: Server=.\SQL2008R2SP2;Database={0};User Id=sa;Password=Password12!
   COVERALLS_REPO_TOKEN: 
-    secure: NRdqGgGKdP4f54VXUqadksMpzbLGRtvuE3JdWskqah/BRBUwkYF0tuzp5BKVRP10
+    secure: oE4uB475V9hPzKmm+ZRP+1BacnMFOE98a/2tVeFieYJi5BbYG6X3VM+p6vKIQZdd
 
 # enable service required for tests
 services:
@@ -43,7 +43,7 @@ cache:
 build_script: build.bat pack
 
 after_build:
-  - packages\coveralls.io.1.2.2\tools\coveralls.net --opencover coverage.xml
+  - packages\coveralls.io.1.3.4\tools\coveralls.net --opencover coverage.xml
 
 #---------------------------------#
 #       tests configuration       #
