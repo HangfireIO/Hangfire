@@ -18,6 +18,13 @@
     <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.2
+* Added – Missing generic methods for continuations (by @yngndrw).
+* Fixed – MSMQ extension does not work without explicit queue names in `UseMsmqQueues`.
+* Fixed – Missing null-check in Retries page after casting connection to `JobStorageConnection`.
+* Fixed – Enqueued jobs cannot be deleted from the Dashboard.
+* Fixed – Error when building the project using `build.bat` on a machine with VS 2013 only (by @Cussa).
+    
 1.4.1
 * Fixed – 1.4.0 ignoring `BackgroundJobServerOptions` settings in `UseHangfireServer` method.
     
