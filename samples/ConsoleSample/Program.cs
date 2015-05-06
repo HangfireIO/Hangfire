@@ -12,7 +12,7 @@ namespace ConsoleSample
             GlobalConfiguration.Configuration
                 .UseColouredConsoleLogProvider()
                 .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
-                .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
+                .UseMsmqQueues(@".\Private$\hangfire{0}");
 
             RecurringJob.AddOrUpdate(() => Console.WriteLine("Hello, world!"), Cron.Minutely);
             RecurringJob.AddOrUpdate("hourly", () => Console.WriteLine("Hello"), "25 15 * * *");
@@ -23,7 +23,6 @@ namespace ConsoleSample
 
             var options = new BackgroundJobServerOptions
             {
-                Queues = new[] { "critical", "default" }
             };
 
             using (new BackgroundJobServer(options))
