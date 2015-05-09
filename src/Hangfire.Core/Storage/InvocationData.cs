@@ -70,7 +70,7 @@ namespace Hangfire.Storage
             return new InvocationData(
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
-                JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType)),
+                JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
                 JobHelper.ToJson(job.Arguments));
         }
 
