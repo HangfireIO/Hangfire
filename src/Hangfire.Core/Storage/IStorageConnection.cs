@@ -56,7 +56,7 @@ namespace Hangfire.Storage
         HashSet<string> GetAllItemsFromSet([NotNull] string key);
 
         [NotNull]
-        HashSet<string> GetAllItemsFromSet([NotNull] string key, [NotNull] string valueFragment);
+        HashSet<string> GetAllItemsFromSet([NotNull] string key, [NotNull] SearchCriteria criteria);
 
         string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
 

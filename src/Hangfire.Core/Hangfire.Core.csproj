@@ -394,6 +394,7 @@
     <Compile Include="Storage\IWriteOnlyTransaction.cs" />
     <Compile Include="Storage\IStorageConnection.cs" />
     <Compile Include="Storage\JobData.cs" />
+    <Compile Include="Storage\SearchCriteria.cs" />
     <Compile Include="Storage\RecurringJobDto.cs" />
     <Compile Include="Storage\StateData.cs" />
     <Compile Include="Storage\StorageConnectionExtensions.cs" />
