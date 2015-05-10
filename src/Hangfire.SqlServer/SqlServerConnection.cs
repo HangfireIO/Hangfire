@@ -253,6 +253,18 @@ where j.Id = @jobId";
             return new HashSet<string>(result);
         }
 
+		public override HashSet<string> GetAllItemsFromSet(string key, string valueFragment)
+		{
+			if (key == null) throw new ArgumentNullException("key");
+
+			string valueContains = string.Format("%{0}%", valueFragment);
+			var result = _connection.Query<string>(
+				@"select Value from HangFire.[Set] where [Key] = @key and Value like @valueContains",
+				new { key, valueContains });
+
+			return new HashSet<string>(result);
+		}
+
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
             if (key == null) throw new ArgumentNullException("key");
