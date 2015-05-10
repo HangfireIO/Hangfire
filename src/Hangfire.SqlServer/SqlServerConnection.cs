@@ -255,7 +255,7 @@ where j.Id = @jobId";
 
         public override HashSet<string> GetAllItemsFromSet(string key, SearchCriteria criteria)
         {
-	        if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException("key");
             if (criteria == null) throw new ArgumentNullException("criteria");
 
             string valuePattern = null;
@@ -274,11 +274,11 @@ where j.Id = @jobId";
                     throw new ArgumentNullException(string.Format("Unsupported search mode: {0}.", criteria.SearchMode));
             }
 
-	        var result = _connection.Query<string>(
+            var result = _connection.Query<string>(
                 @"select Value from HangFire.[Set] where [Key] = @key and Value like @valuePattern",
                 new { key, valuePattern });
 
-	        return new HashSet<string>(result);
+            return new HashSet<string>(result);
         }
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
