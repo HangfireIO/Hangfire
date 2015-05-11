@@ -25,6 +25,7 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.SqlServer.Entities;
 using Hangfire.Storage;
+using System.ComponentModel;
 
 namespace Hangfire.SqlServer
 {
@@ -270,8 +271,8 @@ where j.Id = @jobId";
                 case SearchMode.EndsWith:
                     valuePattern = string.Format("%{0}", criteria.Text);
                     break;
-                default: 
-                    throw new ArgumentNullException(string.Format("Unsupported search mode: {0}.", criteria.SearchMode));
+                default:
+                    throw new InvalidEnumArgumentException(string.Format("Unsupported search mode: {0}.", criteria.SearchMode));
             }
 
             var result = _connection.Query<string>(
