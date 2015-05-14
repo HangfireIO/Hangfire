@@ -132,7 +132,9 @@ namespace Hangfire
         {
             try
             {
-                var schedule = CrontabSchedule.Parse(cronExpression);
+                var parts = cronExpression.Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+                var schedule = CrontabSchedule.Parse(cronExpression, new CrontabSchedule.ParseOptions { IncludingSeconds = (parts.Length >= 6) });
                 schedule.GetNextOccurrence(DateTime.UtcNow);
             }
             catch (Exception ex)
