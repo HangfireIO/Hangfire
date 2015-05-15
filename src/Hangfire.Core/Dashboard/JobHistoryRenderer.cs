@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Hangfire.Common;
 using Hangfire.States;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Hangfire.Dashboard
 {
@@ -129,7 +129,11 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("Latency"))
             {
-                var latency = TimeSpan.FromMilliseconds(int.Parse(stateData["Latency"]));
+                var parsedLatency = long.Parse(stateData["Latency"]);
+                if (parsedLatency > TimeSpan.MaxValue.TotalMilliseconds)
+                    parsedLatency = (long)TimeSpan.MaxValue.TotalMilliseconds;
+
+                var latency = TimeSpan.FromMilliseconds(parsedLatency);
                 builder.AppendFormat("<dt>Latency:</dt><dd>{0}</dd>", html.ToHumanDuration(latency, false));
 
                 itemsAdded = true;
@@ -179,7 +183,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("ServerId"))
             {
                 serverId = stateData["ServerId"];
-            } 
+            }
             else if (stateData.ContainsKey("ServerName"))
             {
                 serverId = stateData["ServerName"];
