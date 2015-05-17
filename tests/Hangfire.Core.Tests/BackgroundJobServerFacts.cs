@@ -44,6 +44,15 @@ namespace Hangfire.Core.Tests
             Assert.Equal("storage", exception.ParamName);
         }
 
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenJobFilterProviderCollectionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new BackgroundJobServer(_options, _storage.Object, null));
+
+            Assert.Equal("jobFilterProviderCollection", exception.ParamName);
+        }
+
         [Fact, GlobalLock(Reason = "Uses JobStorage.Current instance")]
         public void Ctor_HasDefaultValue_ForStorage()
         {
