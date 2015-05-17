@@ -24,15 +24,23 @@ namespace Hangfire.Server
 {
     internal class DefaultJobPerformanceProcess : IJobPerformanceProcess
     {
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
-            = JobFilterProviders.Providers.GetFilters;
+        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk;
 
         private readonly JobActivator _activator;
 
         public DefaultJobPerformanceProcess([NotNull] JobActivator activator)
+            : this(activator, JobFilterProviders.Providers)
+        {
+        }
+
+        public DefaultJobPerformanceProcess(JobActivator activator, JobFilterProviderCollection jobFilterProviderCollection)
         {
             if (activator == null) throw new ArgumentNullException("activator");
+            if (jobFilterProviderCollection == null) throw new ArgumentNullException("jobFilterProviderCollection");
+
             _activator = activator;
+
+            _getFiltersThunk = jobFilterProviderCollection.GetFilters;
         }
 
         internal DefaultJobPerformanceProcess(JobActivator activator, IEnumerable<object> filters)
