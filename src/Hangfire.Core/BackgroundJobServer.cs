@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
@@ -141,8 +142,8 @@ namespace Hangfire
 
         private IEnumerable<IServerComponent> GetCommonComponents()
         {
-            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
-            var stateMachineFactory = new StateMachineFactory(_storage);
+            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current, JobFilterProviders.Providers);
+            var stateMachineFactory = new StateMachineFactory(_storage, JobFilterProviders.Providers);
 
             for (var i = 0; i < _options.WorkerCount; i++)
             {
