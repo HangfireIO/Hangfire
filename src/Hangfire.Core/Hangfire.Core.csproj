@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFrameworkProfile />
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -249,6 +250,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Dashboard\RazorPageDispatcher.cs" />
+    <Compile Include="IServerComponentFactory.cs" />
     <Compile Include="Dashboard\Metric.cs" />
     <Compile Include="Dashboard\UrlHelper.cs" />
     <Compile Include="GlobalConfiguration.cs" />
@@ -260,6 +262,7 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
+    <Compile Include="ServerComponentFactory.cs" />
     <Compile Include="Server\AutomaticRetryServerComponentWrapper.cs" />
     <Compile Include="Server\EveryMinuteThrottler.cs" />
     <Compile Include="Server\IScheduleInstant.cs" />

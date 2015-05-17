@@ -20,7 +20,6 @@ using System.Diagnostics;
 using System.Linq;
 using Hangfire.Logging;
 using Hangfire.Server;
-using Hangfire.States;
 
 namespace Hangfire
 {
@@ -33,6 +32,7 @@ namespace Hangfire
 
         private readonly string _serverId;
         private readonly IServerSupervisor _bootstrapSupervisor;
+        private readonly IServerComponentFactory _serverComponentFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -70,12 +70,26 @@ namespace Hangfire
         /// <param name="options">Server options</param>
         /// <param name="storage">The storage</param>
         public BackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage)
+            : this(options, storage, new ServerComponentFactory())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with the specified options and the given storage and the given serverComponentFactory.
+        /// </summary>
+        /// <param name="options">Server options</param>
+        /// <param name="storage">The storage</param>
+        /// <param name="serverComponentFactory">ServerComponent Factory</param>
+        public BackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage, IServerComponentFactory serverComponentFactory)
         {
             if (options == null) throw new ArgumentNullException("options");
             if (storage == null) throw new ArgumentNullException("storage");
+            if (serverComponentFactory == null) throw new ArgumentNullException("serverComponentFactory");
 
             _options = options;
             _storage = storage;
+            _serverComponentFactory = serverComponentFactory;
 
             _serverId = String.Format("{0}:{1}", _options.ServerName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
@@ -141,24 +155,7 @@ namespace Hangfire
 
         private IEnumerable<IServerComponent> GetCommonComponents()
         {
-            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
-            var stateMachineFactory = new StateMachineFactory(_storage);
-
-            for (var i = 0; i < _options.WorkerCount; i++)
-            {
-                var context = new WorkerContext(_serverId, _options.Queues, i + 1);
-                yield return new Worker(context, _storage, performanceProcess, stateMachineFactory);
-            }
-
-            yield return new ServerHeartbeat(_storage, _serverId);
-            yield return new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval);
-            yield return new ServerWatchdog(_storage, _options.ServerWatchdogOptions);
-
-            yield return new RecurringJobScheduler(
-                _storage, 
-                new BackgroundJobClient(_storage, stateMachineFactory),
-                new ScheduleInstantFactory(),
-                new EveryMinuteThrottler());
+            return _serverComponentFactory.Create(_storage, _serverId, _options);
         }
 
         private static ServerSupervisor CreateSupervisor(IServerComponent component)
