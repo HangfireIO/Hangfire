@@ -22,6 +22,12 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenJobFilterProviderCollectionIsNull()
+        {
+            Assert.Throws<ArgumentNullException>(() => new StateMachineFactory(_storage.Object, null));
+        }
+
+        [Fact]
         public void Create_ThrowsAnException_WhenConnectionIsNull()
         {
             var factory = CreateFactory();
