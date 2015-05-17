@@ -73,7 +73,7 @@
     <Compile Include="Client\CreateContextFacts.cs" />
     <Compile Include="Client\CreatedContextFacts.cs" />
     <Compile Include="Client\CreatingContextFacts.cs" />
-    <Compile Include="Client\JobCreationProcessFacts.cs" />
+    <Compile Include="Client\DefaultJobCreationProcessFacts.cs" />
     <Compile Include="Common\GlobalJobFilterCollectionFacts.cs" />
     <Compile Include="Common\JobArgumentFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
@@ -90,7 +90,6 @@
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
     <Compile Include="Mocks\ElectStateContextMock.cs" />
-    <Compile Include="Mocks\SharedWorkerContextMock.cs" />
     <Compile Include="Mocks\StateContextMock.cs" />
     <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
@@ -99,7 +98,7 @@
     <Compile Include="RecurringJobManagerFacts.cs" />
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
-    <Compile Include="Server\JobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\DefaultJobPerformanceProcessFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\ScheduleInstantFactoryFacts.cs" />
     <Compile Include="Server\ScheduleInstantFacts.cs" />
@@ -112,10 +111,8 @@
     <Compile Include="Server\AutomaticRetryServerComponentWrapperFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
-    <Compile Include="Server\SharedWorkerContextFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
-    <Compile Include="Server\WorkerManagerFacts.cs" />
     <Compile Include="States\DeletedStateFacts.cs" />
     <Compile Include="States\DeletedStateHandlerFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />
@@ -126,7 +123,7 @@
     <Compile Include="States\ScheduledStateFacts.cs" />
     <Compile Include="States\ApplyStateContextFacts.cs" />
     <Compile Include="States\ElectStateContextFacts.cs" />
-    <Compile Include="States\StateChangeProcessFacts.cs" />
+    <Compile Include="States\DefaultStateChangeProcessFacts.cs" />
     <Compile Include="States\StateContextFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
     <Compile Include="States\StateMachineFactoryFacts.cs" />

@@ -24,10 +24,13 @@ namespace Hangfire.SqlServer
 {
     internal class ExpirationManager : IServerComponent
     {
+        private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
+        private const int NumberOfRecordsInSinglePass = 1000;
+
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private static readonly string[] ProcessedTables =
         {
-            "Counter",
+            "AggregatedCounter",
             "Job",
             "List",
             "Set",
@@ -52,18 +55,32 @@ namespace Hangfire.SqlServer
 
         public void Execute(CancellationToken cancellationToken)
         {
-            using (var storageConnection = (SqlServerConnection)_storage.GetConnection())
+            foreach (var table in ProcessedTables)
             {
-                foreach (var table in ProcessedTables)
-                {
-                    Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
+                Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
 
-                    storageConnection.Connection.Execute(
-                        String.Format(@"
+                int removedCount;
+
+                do
+                {
+                    using (var storageConnection = (SqlServerConnection)_storage.GetConnection())
+                    {
+                        removedCount = storageConnection.Connection.Execute(
+                            String.Format(@"
 set transaction isolation level read committed;
-delete from HangFire.[{0}] with (tablock) where ExpireAt < @now;", table),
-                        new { now = DateTime.UtcNow });
-                }
+delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;", table),
+                            new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
+                    }
+
+                    if (removedCount > 0)
+                    {
+                        Logger.Trace(String.Format("Removed {0} outdated record(s) from '{1}' table.", removedCount,
+                            table));
+
+                        cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                } while (removedCount != 0);
             }
 
             cancellationToken.WaitHandle.WaitOne(_checkInterval);

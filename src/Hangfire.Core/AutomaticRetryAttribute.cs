@@ -2,6 +2,7 @@ using System;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
+using Hangfire.Storage;
 
 namespace Hangfire
 {
@@ -11,7 +12,7 @@ namespace Hangfire
         Delete
     }
 
-    public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter
+    public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private const int DefaultRetryAttempts = 10;
@@ -82,15 +83,24 @@ namespace Hangfire
         /// <param name="failedState">Object which contains details about the current failed state.</param>
         private void ScheduleAgainLater(ElectStateContext context, int retryAttempt, FailedState failedState)
         {
+            context.SetJobParameter("RetryCount", retryAttempt);
+
             var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
 
-            context.SetJobParameter("RetryCount", retryAttempt);
+            const int maxMessageLength = 50;
+            var exceptionMessage = failedState.Exception.Message;
 
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
             context.CandidateState = new ScheduledState(delay)
             {
-                Reason = String.Format("Retry attempt {0} of {1}", retryAttempt, Attempts)
+                Reason = String.Format(
+                    "Retry attempt {0} of {1}: {2}", 
+                    retryAttempt, 
+                    Attempts,
+                    exceptionMessage.Length > maxMessageLength
+                    ? exceptionMessage.Substring(0, maxMessageLength - 1) + "…"
+                    : exceptionMessage)
             };
 
             if (LogEvents)
@@ -135,6 +145,24 @@ namespace Hangfire
             var random = new Random();
             return (int)Math.Round(
                 Math.Pow(retryCount - 1, 4) + 15 + (random.Next(30) * (retryCount)));
+        }
+
+        public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            if (context.NewState is ScheduledState && 
+                context.NewState.Reason != null && 
+                context.NewState.Reason.StartsWith("Retry attempt"))
+            {
+                transaction.AddToSet("retries", context.JobId);
+            }
+        }
+
+        public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            if (context.OldStateName == ScheduledState.StateName)
+            {
+                transaction.RemoveFromSet("retries", context.JobId);
+            }
         }
     }
 }

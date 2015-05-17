@@ -20,7 +20,9 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using Dapper;
 using Hangfire.Annotations;
+using Hangfire.Dashboard;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -109,12 +111,13 @@ namespace Hangfire.SqlServer
         public override IStorageConnection GetConnection()
         {
             var connection = _existingConnection ?? CreateAndOpenConnection();
-            return new SqlServerConnection(connection, QueueProviders, _existingConnection == null);
+            return new SqlServerConnection(connection, _options.TransactionIsolationLevel, QueueProviders, _existingConnection == null);
         }
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new ExpirationManager(this);
+            yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
+            yield return new CountersAggregator(this, _options.CountersAggregateInterval);
         }
 
         public override void WriteOptionsToLog(ILog logger)
@@ -192,5 +195,49 @@ namespace Hangfire.SqlServer
 
             return connectionStringSetting != null;
         }
+
+        public static readonly DashboardMetric ActiveConnections = new DashboardMetric(
+            "connections:active",
+            "Active Connections",
+            page =>
+            {
+                using (var connection = page.Storage.GetConnection())
+                {
+                    var sqlConnection = connection as SqlServerConnection;
+                    if (sqlConnection == null) return new Metric("???");
+
+                    var sqlQuery = @"
+select count(*) from sys.sysprocesses
+where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
+
+                    var value = sqlConnection.Connection
+                        .Query<int>(sqlQuery, new { name = sqlConnection.Connection.Database })
+                        .Single();
+
+                    return new Metric(value.ToString("N0"));
+                }
+            });
+
+        public static readonly DashboardMetric TotalConnections = new DashboardMetric(
+            "connections:total",
+            "Total Connections",
+            page =>
+            {
+                using (var connection = page.Storage.GetConnection())
+                {
+                    var sqlConnection = connection as SqlServerConnection;
+                    if (sqlConnection == null) return new Metric("???");
+
+                    var sqlQuery = @"
+select count(*) from sys.sysprocesses
+where dbid = db_id(@name) and status != 'background'";
+
+                    var value = sqlConnection.Connection
+                        .Query<int>(sqlQuery, new { name = sqlConnection.Connection.Database })
+                        .Single();
+
+                    return new Metric(value.ToString("N0"));
+                }
+            });
     }
 }

@@ -1,0 +1,67 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System
+@using System.Collections.Generic
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Newtonsoft.Json
+@inherits RazorPage
+@{
+    Layout = new LayoutPage("Dashboard");
+    IDictionary<DateTime, long> succeeded = null;
+    IDictionary<DateTime, long> failed = null;
+
+    var period = Query("period") ?? "day";
+
+    var monitor = Storage.GetMonitoringApi();
+    if ("week".Equals(period, StringComparison.OrdinalIgnoreCase))
+    {
+        succeeded = monitor.SucceededByDatesCount();
+        failed = monitor.FailedByDatesCount();
+    }
+    else if ("day".Equals(period, StringComparison.OrdinalIgnoreCase))
+    {
+        succeeded = monitor.HourlySucceededJobs();
+        failed = monitor.HourlyFailedJobs();
+    }
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="page-header">Dashboard</h1>
+        @if (Metrics.Count > 0)
+        {
+            <div class="row">
+                @foreach (var metric in Metrics)
+                {
+                    <div class="col-md-2">
+                        @Html.BlockMetric(metric)
+                    </div>
+                }
+            </div>
+        }
+        <h3>Realtime graph</h3>
+        <div id="realtimeGraph" data-succeeded="@Statistics.Succeeded" data-failed="@Statistics.Failed"></div>
+        <div style="display: none;">
+            <span data-metric="succeeded:count"></span>
+            <span data-metric="failed:count"></span>
+        </div>
+
+        <h3>
+            <div class="btn-group pull-right" style="margin-top: 2px;">
+                <a href="?period=day" class="btn btn-sm btn-default @("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">
+                    Day
+                </a>
+                <a href="?period=week" class="btn btn-sm btn-default @("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null)">Week</a>
+            </div>
+            History graph
+        </h3>
+
+        @if (succeeded != null && failed != null)
+        {
+            <div id="historyGraph"
+                 data-succeeded="@JsonConvert.SerializeObject(succeeded)"
+                 data-failed="@JsonConvert.SerializeObject(failed)">
+            </div>
+        }
+    </div>
+</div>

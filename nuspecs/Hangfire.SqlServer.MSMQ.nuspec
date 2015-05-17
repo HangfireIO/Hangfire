@@ -10,9 +10,14 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2014 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2014-2015 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
+    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.4.0
+* Changed – Speed up `GetCount` method with native implementation.
+* Fixed – Incorrect order of fetching when multiple queues used.
+    </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
       <dependency id="Hangfire.SqlServer" version="1.2.2" />

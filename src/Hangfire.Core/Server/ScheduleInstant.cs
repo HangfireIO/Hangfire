@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Annotations;
 using NCrontab;
 
@@ -23,37 +24,45 @@ namespace Hangfire.Server
 {
     internal class ScheduleInstant : IScheduleInstant
     {
+        private readonly TimeZoneInfo _timeZone;
         private readonly CrontabSchedule _schedule;
 
-        public ScheduleInstant(DateTime utcTime, [NotNull] CrontabSchedule schedule)
+        public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CrontabSchedule schedule)
         {
-            if (utcTime.Kind != DateTimeKind.Utc)
+            if (schedule == null) throw new ArgumentNullException("schedule");
+            if (nowInstant.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "utcTime");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", "nowInstant");
             }
 
-            if (schedule == null) throw new ArgumentNullException("schedule");
-
+            _timeZone = timeZone;
             _schedule = schedule;
 
-            UtcTime = utcTime;
-            NextOccurrence = _schedule.GetNextOccurrence(UtcTime);
+            NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
+            NextInstant = TimeZoneInfo.ConvertTimeToUtc(
+                _schedule.GetNextOccurrence(TimeZoneInfo.ConvertTimeFromUtc(NowInstant, _timeZone)),
+                _timeZone);
         }
 
-        public DateTime UtcTime { get; private set; }
-        public DateTime NextOccurrence { get; private set; }
+        public DateTime NowInstant { get; private set; }
+        public DateTime NextInstant { get; private set; }
 
-        public IEnumerable<DateTime> GetMatches(DateTime? lastMachingTime)
+        public IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant)
         {
-            if (lastMachingTime.HasValue && lastMachingTime.Value.Kind != DateTimeKind.Utc)
+            if (lastInstant.HasValue && lastInstant.Value.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastMachingTime");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastInstant");
             }
-            
-            var baseTime = lastMachingTime ?? UtcTime.AddSeconds(-1);
-            var endTime = UtcTime.AddSeconds(1);
 
-            return _schedule.GetNextOccurrences(baseTime, endTime);
+            var baseTime = lastInstant ?? NowInstant.AddSeconds(-1);
+            var endTime = NowInstant.AddSeconds(1);
+
+            return _schedule
+                .GetNextOccurrences(
+                    TimeZoneInfo.ConvertTimeFromUtc(baseTime, _timeZone),
+                    TimeZoneInfo.ConvertTimeFromUtc(endTime, _timeZone))
+                .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
+                .ToList();
         }
     }
 }

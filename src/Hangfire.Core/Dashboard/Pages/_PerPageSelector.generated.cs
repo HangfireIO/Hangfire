@@ -17,7 +17,7 @@ namespace Hangfire.Dashboard.Pages
     using System.Text;
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("RazorGenerator", "2.0.0.0")]
-    internal partial class PerPageSelector : RazorPage
+    internal partial class PerPageSelector : Hangfire.Dashboard.RazorPage
     {
 #line hidden
 
@@ -33,7 +33,7 @@ WriteLiteral("\r\n    <div class=\"btn-group pull-right paginator\">\r\n");
 
             
             #line 5 "..\..\Dashboard\Pages\_PerPageSelector.cshtml"
-         foreach (var count in new[] { 10, 20, 50, 100 })
+         foreach (var count in new[] { 10, 20, 50, 100, 500 })
         {
 
             
@@ -80,8 +80,8 @@ WriteLiteral("</a>    \r\n");
             #line default
             #line hidden
 WriteLiteral("    </div>\r\n    <div class=\"btn-toolbar-spacer pull-right\"></div>\r\n    <div class" +
-"=\"btn-toolbar-label btn-toolbar-label-sm pull-right\">\r\n        Jobs per page:\r\n " +
-"   </div>\r\n");
+"=\"btn-toolbar-label btn-toolbar-label-sm pull-right\">\r\n        Items per page:\r\n" +
+"    </div>\r\n");
 
 
         }

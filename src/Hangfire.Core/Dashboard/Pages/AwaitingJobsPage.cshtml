@@ -1,0 +1,152 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: true *@
+@using System
+@using System.Collections.Generic
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.States
+@using Hangfire.Storage
+@inherits RazorPage
+@{
+    Layout = new LayoutPage("Awaiting Jobs");
+
+    int from, perPage;
+
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
+
+    List<string> jobIds;
+    Pager pager;
+
+    using (var connection = Storage.GetConnection())
+    {
+        var storageConnection = connection as JobStorageConnection;
+
+        if (storageConnection == null)
+        {
+            throw new NotSupportedException("Continuations are not supported for your current job storage implementation.");
+        }
+
+        pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
+        jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+    }
+}
+
+<div class="row">
+    <div class="col-md-3">
+        @Html.JobsSidebar()
+    </div>
+    <div class="col-md-9">
+        <h1 class="page-header">Awaiting Jobs</h1>
+
+        @if (jobIds.Count > 0)
+        {
+            <div class="js-jobs-list">
+                <div class="btn-toolbar btn-toolbar-top">
+                    <button class="js-jobs-list-command btn btn-sm btn-primary"
+                            data-url="@Url.To("/jobs/awaiting/enqueue")"
+                            data-loading-text="Enqueueing...">
+                        <span class="glyphicon glyphicon-repeat"></span>
+                        Enqueue jobs
+                    </button>
+
+                    <button class="js-jobs-list-command btn btn-sm btn-default"
+                            data-url="@Url.To("/jobs/awaiting/delete")"
+                            data-loading-text="Deleting..."
+                            data-confirm="Do you really want to DELETE ALL selected jobs?">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Delete selected
+                    </button>
+
+                    @Html.PerPageSelector(pager)
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th class="min-width">
+                                <input type="checkbox" class="js-jobs-list-select-all" />
+                            </th>
+                            <th class="min-width">Id</th>
+                            <th>Job</th>
+                            <th class="min-width">Options</th>
+                            <th class="min-width">Parent</th>
+                            <th class="align-right">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var jobId in jobIds)
+                        {
+                            JobData jobData;
+                            StateData stateData;
+                            StateData parentStateData = null;
+
+                            using (var connection = Storage.GetConnection())
+                            {
+                                jobData = connection.GetJobData(jobId);
+                                stateData = connection.GetStateData(jobId);
+
+                                if (stateData != null && stateData.Name == AwaitingState.StateName)
+                                {
+                                    parentStateData = connection.GetStateData(stateData.Data["ParentId"]);
+                                }
+                            }
+
+                            <tr class="js-jobs-list-row @(jobData != null ? "hover" : null)">
+                                <td>
+                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId" />
+                                </td>
+                                <td class="min-width">
+                                    @Html.JobIdLink(jobId)
+                                </td>
+                                @if (jobData == null)
+                                {
+                                    <td colspan="2"><em>Job expired.</em></td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        @Html.JobNameLink(jobId, jobData.Job)
+                                    </td>
+                                    <td class="min-width">
+                                        @if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))
+                                        {
+                                            <code>@stateData.Data["Options"]</code>
+                                        }
+                                        else
+                                        {
+                                            <em>N/A</em>
+                                        }
+                                    </td>
+                                    <td class="min-width">
+                                        @if (parentStateData != null)
+                                        {
+                                            <a href="@Url.JobDetails(stateData.Data["ParentId"])">
+                                                <span class="label label-default label-hover" style="@(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)))">
+                                                    @parentStateData.Name
+                                                </span>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <em>N/A</em>
+                                        }
+                                    </td>
+                                    <td class="min-width align-right">
+                                        @Html.RelativeTime(jobData.CreatedAt)
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @Html.Paginator(pager)
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                No jobs found in awaiting state.
+            </div>
+        }
+    </div>
+</div>

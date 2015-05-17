@@ -28,6 +28,7 @@ namespace Hangfire
             Handlers.Add(new ScheduledState.Handler());
             Handlers.Add(new EnqueuedState.Handler());
             Handlers.Add(new DeletedState.Handler());
+            Handlers.Add(new AwaitingState.Handler());
         }
 
         public static ICollection<IStateHandler> Handlers { get; private set; }

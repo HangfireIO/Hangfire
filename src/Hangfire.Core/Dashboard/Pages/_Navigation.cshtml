@@ -1,0 +1,25 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+@using Hangfire.Dashboard
+@inherits RazorPage
+@if (NavigationMenu.Items.Count > 0)
+{
+    <ul class="nav navbar-nav">
+        @foreach (var item in NavigationMenu.Items)
+        {
+            var itemValue = item(this);
+
+            if (itemValue == null) { continue; }
+
+            <li class="@(itemValue.Active ? "active" : null)">
+                <a href="@itemValue.Url">
+                    @itemValue.Text
+
+                    @foreach (var metric in itemValue.GetAllMetrics())
+                    {
+                        @Html.InlineMetric(metric)
+                    }
+                </a>
+            </li>
+        }
+    </ul>
+}

@@ -24,10 +24,8 @@ namespace Hangfire.Server
         public ServerSupervisorOptions()
         {
             ShutdownTimeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
-            LowerLogVerbosity = false;
         }
 
         public TimeSpan ShutdownTimeout { get; set; }
-        public bool LowerLogVerbosity { get; set; }
     }
 }

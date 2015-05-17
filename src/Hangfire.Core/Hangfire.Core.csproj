@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>..\Hangfire.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>ExtendedDesignGuidelineRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Debug\Hangfire.Core.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
     <NoWarn>1591</NoWarn>
@@ -68,20 +68,81 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AppBuilderExtensions.cs" />
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
     <Compile Include="AutomaticRetryAttribute.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
+    <Compile Include="Client\IJobCreator.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
+    <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AwaitingJobsPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="States\AwaitingState.cs" />
+    <Compile Include="ContinuationsSupportAttribute.cs" />
+    <Compile Include="JobContinuationOptions.cs" />
     <Compile Include="Cron.cs" />
     <Compile Include="Dashboard\BatchCommandDispatcher.cs" />
     <Compile Include="Dashboard\CombinedResourceDispatcher.cs" />
     <Compile Include="Dashboard\CommandDispatcher.cs" />
-    <Compile Include="Dashboard\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\DashboardMetric.cs" />
+    <Compile Include="Dashboard\DashboardMetrics.cs" />
+    <Compile Include="DashboardOptions.cs" />
+    <Compile Include="Obsolete\DashboardMiddleware.cs" />
+    <Compile Include="Dashboard\JobsSidebarMenu.cs" />
+    <Compile Include="Dashboard\MenuItem.cs" />
+    <Compile Include="Dashboard\NavigationMenu.cs" />
+    <Compile Include="Dashboard\Pages\Breadcrumbs.cs">
+      <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\BlockMetric.cs">
+      <DependentUpon>_BlockMetric.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\HomePage.cs">
+      <DependentUpon>HomePage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\InlineMetric.cs">
+      <DependentUpon>_InlineMetric.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\RetriesPage.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RetriesPage.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\SidebarMenu.cs">
+      <DependentUpon>_SidebarMenu.cshtml</DependentUpon>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_BlockMetric.generated.cs">
+      <DependentUpon>_BlockMetric.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_InlineMetric.generated.cs">
+      <DependentUpon>_InlineMetric.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Breadcrumbs.generated.cs">
+      <DependentUpon>_Breadcrumbs.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_SidebarMenu.generated.cs">
+      <DependentUpon>_SidebarMenu.cshtml</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Dashboard\Pages\_Navigation.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>_Navigation.cshtml</DependentUpon>
+    </Compile>
     <Compile Include="Dashboard\RequestDispatcherContext.cs" />
     <Compile Include="Dashboard\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
-    <Compile Include="Dashboard\DashboardOwinExtensions.cs" />
+    <Compile Include="Obsolete\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
@@ -93,8 +154,8 @@
     <Compile Include="Dashboard\NonEscapedString.cs" />
     <Compile Include="Dashboard\IRequestDispatcher.cs" />
     <Compile Include="Dashboard\Pager.cs" />
-    <Compile Include="Dashboard\Pages\DashboardPage.generated.cs">
-      <DependentUpon>DashboardPage.cshtml</DependentUpon>
+    <Compile Include="Dashboard\Pages\HomePage.generated.cs">
+      <DependentUpon>HomePage.cshtml</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -192,6 +253,14 @@
     <Compile Include="IBootstrapperConfiguration.cs" />
     <Compile Include="IServerComponentFactory.cs" />
     <Compile Include="OwinBootstrapper.cs" />
+    <Compile Include="Dashboard\Metric.cs" />
+    <Compile Include="Dashboard\UrlHelper.cs" />
+    <Compile Include="GlobalConfiguration.cs" />
+    <Compile Include="GlobalConfigurationExtensions.cs" />
+    <Compile Include="Obsolete\IBootstrapperConfiguration.cs" />
+    <Compile Include="IGlobalConfiguration.cs" />
+    <Compile Include="Obsolete\OwinBootstrapper.cs" />
+    <Compile Include="Dashboard\MiddlewareExtensions.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
@@ -210,7 +279,7 @@
     <Compile Include="IJobCancellationToken.cs" />
     <Compile Include="DisableConcurrentExecutionAttribute.cs" />
     <Compile Include="IBackgroundJobClient.cs" />
-    <Compile Include="Client\JobCreationProcess.cs" />
+    <Compile Include="Client\DefaultJobCreationProcess.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Common\Job.cs" />
     <Compile Include="Common\JobLoadException.cs" />
@@ -245,10 +314,9 @@
     <Compile Include="Server\ScheduleInstant.cs" />
     <Compile Include="Server\ScheduleInstantFactory.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
-    <Compile Include="Server\ServerOwinExtensions.cs" />
-    <Compile Include="Server\SharedWorkerContext.cs" />
-    <Compile Include="StartupConfiguration.cs" />
-    <Compile Include="BootstrapperConfigurationExtensions.cs" />
+    <Compile Include="Obsolete\ServerOwinExtensions.cs" />
+    <Compile Include="Obsolete\StartupConfiguration.cs" />
+    <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
@@ -256,7 +324,7 @@
     <Compile Include="Common\JobFilterInfo.cs" />
     <Compile Include="States\IStateChangeProcess.cs" />
     <Compile Include="States\IStateMachineFactory.cs" />
-    <Compile Include="States\StateChangeProcess.cs" />
+    <Compile Include="States\DefaultStateChangeProcess.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />
@@ -282,12 +350,13 @@
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\Worker.cs" />
-    <Compile Include="Server\WorkerManager.cs" />
     <Compile Include="States\IStateMachine.cs" />
     <Compile Include="States\StateMachineFactory.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IMonitoringApi.cs" />
     <Compile Include="Storage\IFetchedJob.cs" />
+    <Compile Include="Storage\JobStorageConnection.cs" />
+    <Compile Include="Storage\JobStorageTransaction.cs" />
     <Compile Include="Storage\Monitoring\DeletedJobDto.cs" />
     <Compile Include="Storage\Monitoring\FetchedJobDto.cs" />
     <Compile Include="Storage\Monitoring\EnqueuedJobDto.cs" />
@@ -313,7 +382,7 @@
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />
-    <Compile Include="Server\JobPerformanceProcess.cs" />
+    <Compile Include="Server\DefaultJobPerformanceProcess.cs" />
     <Compile Include="BackgroundJobClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />
@@ -338,9 +407,13 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
-    <None Include="Dashboard\Pages\DashboardPage.cshtml">
+    <None Include="Dashboard\Pages\AwaitingJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
-      <LastGenOutput>DashboardPage.generated.cs</LastGenOutput>
+      <LastGenOutput>AwaitingJobsPage.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\HomePage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>HomePage.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\DeletedJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
@@ -378,6 +451,10 @@
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>RecurringJobsPage.generated.cs</LastGenOutput>
     </None>
+    <None Include="Dashboard\Pages\RetriesPage.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>RetriesPage.generated.cs</LastGenOutput>
+    </None>
     <None Include="Dashboard\Pages\ScheduledJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>ScheduledJobsPage.generated.cs</LastGenOutput>
@@ -389,6 +466,26 @@
     <None Include="Dashboard\Pages\SucceededJobs.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>SucceededJobs1.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_BlockMetric.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_BlockMetric.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_InlineMetric.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_InlineMetric.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_Breadcrumbs.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Breadcrumbs.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_SidebarMenu.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_SidebarMenu.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Dashboard\Pages\_Navigation.cshtml">
+      <Generator>RazorGenerator</Generator>
+      <LastGenOutput>_Navigation.generated.cs</LastGenOutput>
     </None>
     <None Include="Dashboard\Pages\_Paginator.cshtml">
       <Generator>RazorGenerator</Generator>

@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using Hangfire.Common;
 using Hangfire.Storage;
+using Newtonsoft.Json;
 
 namespace Hangfire.States
 {
@@ -30,6 +31,7 @@ namespace Hangfire.States
         {
         }
         
+        [JsonConstructor]
         public ScheduledState(DateTime enqueueAt)
         {
             EnqueueAt = enqueueAt;
@@ -37,7 +39,7 @@ namespace Hangfire.States
         }
 
         public DateTime EnqueueAt { get; set; }
-        public DateTime ScheduledAt { get; set; }
+        public DateTime ScheduledAt { get; private set; }
 
         public string Name { get { return StateName; } }
         public string Reason { get; set; }

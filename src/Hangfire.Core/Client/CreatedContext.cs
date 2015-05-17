@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 
 namespace Hangfire.Client
 {
@@ -25,18 +26,24 @@ namespace Hangfire.Client
     public class CreatedContext : CreateContext
     {
         internal CreatedContext(
-            CreateContext context, 
+            [NotNull] CreateContext context, 
+            [CanBeNull] string jobId,
             bool canceled, 
-            Exception exception)
+            [CanBeNull] Exception exception)
             : base(context)
         {
+            JobId = jobId;
             Canceled = canceled;
             Exception = exception;
         }
 
+        [CanBeNull]
+        public string JobId { get; private set; }
+
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.
         /// </summary>
+        [CanBeNull]
         public Exception Exception { get; private set; }
 
         /// <summary>
@@ -50,5 +57,12 @@ namespace Hangfire.Client
         /// object handles an exception occurred during the creation of the job.
         /// </summary>
         public bool ExceptionHandled { get; set; }
+
+        public void SetJobParameter(string name, object value)
+        {
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+
+            throw new InvalidOperationException("Could not set parameter for a created job.");
+        }
     }
 }

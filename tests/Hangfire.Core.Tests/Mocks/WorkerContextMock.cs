@@ -9,16 +9,18 @@ namespace Hangfire.Core.Tests
 
         public WorkerContextMock()
         {
-            SharedContext = new SharedWorkerContextMock();
+            ServerId = "server";
+            Queues = new[] { "default" };
             WorkerNumber = 1;
 
             _context = new Lazy<WorkerContext>(
-                () => new WorkerContext(SharedContext.Object, WorkerNumber));
+                () => new WorkerContext(ServerId, Queues, WorkerNumber));
         }
 
         public WorkerContext Object {get { return _context.Value; }}
 
-        public SharedWorkerContextMock SharedContext { get; set; }
+        public string ServerId { get; set; }
+        public string[] Queues { get; set; }
         public int WorkerNumber { get; set; }
     }
 }

@@ -95,11 +95,8 @@ namespace Hangfire
 
             // ReSharper disable once DoNotCallOverridableMethodsInConstructor
             _bootstrapSupervisor = GetBootstrapSupervisor();
-        }
 
-        public void Start()
-        {
-            Logger.Info("Starting Hangfire Server...");
+            Logger.Info("Starting Hangfire Server");
             Logger.InfoFormat("Using job storage: '{0}'.", _storage);
             
             _storage.WriteOptionsToLog(Logger);
@@ -108,9 +105,14 @@ namespace Hangfire
             _bootstrapSupervisor.Start();
         }
 
+        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
+        public void Start()
+        { 
+        }
+
+        [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
         public void Stop()
         {
-            _bootstrapSupervisor.Stop();
         }
 
         public virtual void Dispose()
@@ -133,7 +135,7 @@ namespace Hangfire
                 _storage, 
                 new Lazy<IServerSupervisor>(GetSupervisors));
 
-            return new ServerSupervisor(
+            return CreateSupervisor(
                 bootstrapper, 
                 new ServerSupervisorOptions
                 {
@@ -158,7 +160,12 @@ namespace Hangfire
 
         private static ServerSupervisor CreateSupervisor(IServerComponent component)
         {
-            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component));
+            return CreateSupervisor(component, new ServerSupervisorOptions());
+        }
+
+        private static ServerSupervisor CreateSupervisor(IServerComponent component, ServerSupervisorOptions options)
+        {
+            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component), options);
         }
     }
 }

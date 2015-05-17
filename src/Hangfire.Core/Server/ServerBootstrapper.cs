@@ -75,12 +75,12 @@ namespace Hangfire.Server
                 {
                     using (_supervisorFactory.Value)
                     {
-                        Logger.Info("Starting server components...");
+                        Logger.Info("Starting server components");
                         _supervisorFactory.Value.Start();
 
                         cancellationToken.WaitHandle.WaitOne();
 
-                        Logger.Info("Stopping server components...");
+                        Logger.Info("Stopping server components");
                     }
                 }
                 finally
@@ -102,7 +102,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Server Core";
+            return "Server Bootstrapper";
         }
 
         public void Dispose()

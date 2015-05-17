@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Hangfire.Annotations;
 using Hangfire.Server;
 
 namespace Hangfire.Common
@@ -146,7 +147,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
-        public static Job FromExpression(Expression<Action> methodCall)
+        public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
@@ -156,12 +157,27 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
             }
 
-            // TODO: user can call this method with instance method expression. We need to check for it.
+            Type type;
+
+            if (callExpression.Object != null)
+            {
+                var objectValue = GetExpressionValue(callExpression.Object);
+                if (objectValue == null)
+                {
+                    throw new InvalidOperationException("Expression object should not be null.");
+                }
+
+                type = objectValue.GetType();
+            }
+            else
+            {
+                type = callExpression.Method.DeclaringType;
+            }
 
             // Static methods can not be overridden in the derived classes, 
             // so we can take the method's declaring type.
             return new Job(
-                callExpression.Method.DeclaringType, 
+                type, 
                 callExpression.Method, 
                 GetArguments(callExpression));
         }
@@ -173,7 +189,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
-        public static Job FromExpression<T>(Expression<Action<T>> methodCall)
+        public static Job FromExpression<T>([InstantHandle] Expression<Action<T>> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
@@ -362,7 +378,7 @@ namespace Hangfire.Common
         {
             Debug.Assert(callExpression != null);
 
-            var arguments = callExpression.Arguments.Select(GetArgumentValue).ToArray();
+            var arguments = callExpression.Arguments.Select(GetExpressionValue).ToArray();
 
             var serializedArguments = new List<string>(arguments.Length);
             foreach (var argument in arguments)
@@ -391,7 +407,7 @@ namespace Hangfire.Common
             return serializedArguments.ToArray();
         }
 
-        private static object GetArgumentValue(Expression expression)
+        private static object GetExpressionValue(Expression expression)
         {
             Debug.Assert(expression != null);
 

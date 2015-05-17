@@ -68,19 +68,10 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void Start_StartsTheBootstrapSupervisor()
+        public void Ctor_StartsTheBootstrapSupervisor()
         {
-            _serverMock.Object.Start();
-
+            var instance = _serverMock.Object;
             _supervisor.Verify(x => x.Start());
-        }
-
-        [Fact]
-        public void Stop_StopsTheBootstrapSupervisor()
-        {
-            _serverMock.Object.Stop();
-
-            _supervisor.Verify(x => x.Stop());
         }
 
         [Fact]
@@ -92,14 +83,21 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void GetBootstrapSupervisor_ReturnsNonNullResult()
+        public void GetBootstrapSupervisor_ReturnsBootstrapper_WrappedWithAutomaticRetry()
         {
+            // Arrange
             var server = CreateServer();
 
+            // Act
             var supervisor = server.GetBootstrapSupervisor();
 
+            // Assert
             Assert.NotNull(supervisor);
-            Assert.IsType<ServerBootstrapper>(((ServerSupervisor) supervisor).Component);
+
+            var wrapper = ((ServerSupervisor) supervisor).Component;
+
+            Assert.IsType<AutomaticRetryServerComponentWrapper>(wrapper);
+            Assert.IsType<ServerBootstrapper>(((AutomaticRetryServerComponentWrapper)wrapper).InnerComponent);
         }
 
         [Fact]
@@ -119,7 +117,7 @@ namespace Hangfire.Core.Tests
                 .Select(x => x.GetType())
                 .ToArray();
 
-            Assert.Contains(typeof(WorkerManager), componentTypes);
+            Assert.Contains(typeof(Worker), componentTypes);
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
             Assert.Contains(typeof(ServerWatchdog), componentTypes);
             Assert.Contains(typeof(SchedulePoller), componentTypes);
@@ -154,10 +152,7 @@ namespace Hangfire.Core.Tests
 
         private void StartServer(Func<BackgroundJobServer> createFunc)
         {
-            using (var server = createFunc())
-            {
-                server.Start();
-            }
+            using (createFunc()) { }
         }
     }
 }

@@ -27,16 +27,8 @@ html, body {
 /* Custom page CSS
 -------------------------------------------------- */
 
-#wrap > .container {
-  padding: 0 0px 20px;
-}
 .container .credit {
   margin: 20px 0;
-}
-
-#footer > .container {
-  padding-left: 15px;
-  padding-right: 15px;
 }
 
 .page-header {
@@ -174,10 +166,6 @@ a:hover .label-hover {
     border-color: #e7e7e7;
 }
 
-#stats .stats-indent {
-    padding-left: 36px;
-}
-
 .table td.failed-job-details {
     padding-top: 0;
     padding-bottom: 0;
@@ -246,6 +234,10 @@ a:hover .label-hover {
 
 /* Job Snippet styles */
 
+.job-snippet {
+    margin-bottom: 20px;
+}
+
 .job-snippet-header {
     margin-bottom: -1px;
     height: 29px;
@@ -276,7 +268,7 @@ a:hover .label-hover {
     text-shadow: 0 1px white;
 }
 
-.job-snippet {
+.job-snippet-body {
     display: table;
     width: 100%;
     border: solid 1px #eee;
@@ -286,12 +278,12 @@ a:hover .label-hover {
     border-top-left-radius: 0;
 }
 
-.job-snippet > * {
+.job-snippet-body > * {
     display: table-cell;
     vertical-align: top;
 }
 
-.job-snippet pre {
+.job-snippet-body pre {
     border: none;
     margin: 0;
     background: inherit;
@@ -300,7 +292,7 @@ a:hover .label-hover {
     border-radius: 0;
 }
 
-.job-snippet pre code {
+.job-snippet-body pre code {
     display: block; 
     color: black;
 }
@@ -319,28 +311,28 @@ a:hover .label-hover {
     color: #777;
 }
 
-.job-snippet pre .comment {
+.job-snippet-body pre .comment {
     color: rgb(0, 128, 0);
 }
 
-.job-snippet pre .keyword {
+.job-snippet-body pre .keyword {
     color: rgb(0, 0, 255);
 }
 
-.job-snippet pre .string {
+.job-snippet-body pre .string {
     color: rgb(163, 21, 21);
 }
 
-.job-snippet pre .type {
+.job-snippet-body pre .type {
     color: rgb(43, 145, 175);
 }
 
-.job-snippet pre .xmldoc {
+.job-snippet-body pre .xmldoc {
     color: rgb(128, 128, 128);
 }
 
 .job-snippet-properties {
-    max-width: 300px;
+    max-width: 140px;
     background-color: #f5f5f5;
     padding: 14px 10px;
     -ms-border-top-right-radius: 4px;
@@ -430,4 +422,110 @@ a:hover .label-hover {
 
 a.job-method {
     color: inherit;    
+}
+
+.list-group .glyphicon {
+    top: 2px;
+}
+
+span.metric {
+    display: inline-block;
+    min-width: 10px;
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: transparent;
+    border-radius: 10px;
+    border: solid 1px;
+    -webkit-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -moz-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -ms-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -o-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+}
+
+span.metric.highlighted {
+    font-weight: bold;
+    color: #fff!important;
+}
+
+span.metric-default {
+    color: #777;
+    border-color: #777;
+}
+
+span.metric-default.highlighted {
+    background-color: #777;
+}
+
+div.metric {
+    border: solid 1px transparent;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    box-shadow: 0 1px 1px rgba(0,0,0,.05);
+    margin-bottom: 20px;
+    transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+}
+
+div.metric .metric-body {
+    padding: 15px 15px 0;
+    font-size: 26px;
+    text-align: center;
+}
+
+div.metric .metric-description {
+    padding: 0 15px 15px;
+    text-align: center;
+}
+
+div.metric.metric-default {
+    border-color: #ddd;
+}
+
+div.metric-info,
+span.metric-info {
+    color: #5bc0de;
+    border-color: #5bc0de;
+}
+
+span.metric-info.highlighted {
+    background-color: #5bc0de;
+}
+
+div.metric-warning,
+span.metric-warning {
+    color: #f0ad4e;
+    border-color: #f0ad4e;
+}
+
+span.metric-warning.highlighted {
+    background-color: #f0ad4e;
+}
+
+div.metric-success,
+span.metric-success {
+    color: #5cb85c;
+    border-color: #5cb85c;
+}
+
+span.metric-success.highlighted {
+    background-color: #5cb85c;
+}
+
+div.metric-danger,
+span.metric-danger {
+    color: #d9534f;
+    border-color: #d9534f;
+}
+
+span.metric-danger.highlighted {
+    background-color: #d9534f;
+}
+
+span.metric-null,
+div.metric-null {
+    display: none;
 }

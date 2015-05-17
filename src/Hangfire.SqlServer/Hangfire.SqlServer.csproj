@@ -56,6 +56,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="CountersAggregator.cs" />
     <Compile Include="EnqueuedAndFetchedCountDto.cs" />
     <Compile Include="Entities\SqlHash.cs" />
     <Compile Include="ExpirationManager.cs" />
@@ -79,13 +80,13 @@
     <Compile Include="SqlServerObjectsInstaller.cs" />
     <Compile Include="SqlServerJobQueueMonitoringApi.cs" />
     <Compile Include="SqlServerStorage.cs" />
+    <Compile Include="SqlServerStorageExtensions.cs" />
     <Compile Include="SqlServerStorageOptions.cs" />
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />
     <Compile Include="SqlServerBootstrapperConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
