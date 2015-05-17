@@ -27,14 +27,21 @@ namespace Hangfire.States
     {
         private readonly StateHandlerCollection _handlers;
 
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
-            = JobFilterProviders.Providers.GetFilters;
+        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk;
 
         public DefaultStateChangeProcess([NotNull] StateHandlerCollection handlers)
+            : this(handlers, JobFilterProviders.Providers)
+        {
+        }
+
+        public DefaultStateChangeProcess([NotNull] StateHandlerCollection handlers, [NotNull] JobFilterProviderCollection jobFilterProviderCollection)
         {
             if (handlers == null) throw new ArgumentNullException("handlers");
+            if (jobFilterProviderCollection == null) throw new ArgumentNullException("jobFilterProviderCollection");
 
             _handlers = handlers;
+
+            _getFiltersThunk = jobFilterProviderCollection.GetFilters;
         }
 
         internal DefaultStateChangeProcess(StateHandlerCollection handlers, IEnumerable<object> filters)

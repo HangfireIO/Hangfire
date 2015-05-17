@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -57,10 +58,19 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenJobFilterProviderCollectionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new DefaultStateChangeProcess(_handlers, (JobFilterProviderCollection)null));
+
+            Assert.Equal("jobFilterProviderCollection", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenFiltersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultStateChangeProcess(_handlers, null));
+                () => new DefaultStateChangeProcess(_handlers, (IEnumerable<object>)null));
 
             Assert.Equal("filters", exception.ParamName);
         }
