@@ -133,7 +133,7 @@ BEGIN
         CREATE TABLE [HangFire].[JobQueue](
             [Id] [int] IDENTITY(1,1) NOT NULL,
             [JobId] [int] NOT NULL,
-            [Queue] [nvarchar](20) NOT NULL,
+            [Queue] [nvarchar](50) NOT NULL,
             [FetchedAt] [datetime] NULL,
             
             CONSTRAINT [PK_HangFire_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
@@ -155,7 +155,7 @@ BEGIN
         -- Servers table
         
         CREATE TABLE [HangFire].[Server](
-            [Id] [nvarchar](50) NOT NULL,
+            [Id] [nvarchar](100) NOT NULL,
             [Data] [nvarchar](max) NULL,
             [LastHeartbeat] [datetime] NULL,
             
