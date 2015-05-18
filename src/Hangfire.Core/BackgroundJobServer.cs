@@ -158,7 +158,7 @@ namespace Hangfire
                 _storage, 
                 new BackgroundJobClient(_storage, stateMachineFactory),
                 new ScheduleInstantFactory(),
-                new EveryMinuteThrottler());
+                SchedulerResolution.Current.CreateThrottler());
         }
 
         private static ServerSupervisor CreateSupervisor(IServerComponent component)
