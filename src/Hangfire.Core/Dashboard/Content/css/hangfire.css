@@ -6,6 +6,11 @@ html, body {
   /* The html and body elements cannot have any padding or margin. */
 }
 
+body {
+    /* 60px to make the container go all the way to the bottom of the topbar */
+    padding-top: 60px;
+}
+
 /* Wrapper for page content to push down footer */
 #wrap {
   min-height: 100%;
@@ -528,4 +533,11 @@ span.metric-danger.highlighted {
 span.metric-null,
 div.metric-null {
     display: none;
+}
+
+@media (min-width: 992px) {
+    #stats {
+        position: fixed;
+        width: 220px
+    }
 }
