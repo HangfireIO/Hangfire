@@ -344,13 +344,26 @@ BEGIN
 		SET @CURRENT_SCHEMA_VERSION = 4;
 	END
 
-	/*IF @CURRENT_SCHEMA_VERSION = 4
+	IF @CURRENT_SCHEMA_VERSION = 4
 	BEGIN
 		PRINT 'Installing schema version 5';
 
+		ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [Queue] NVARCHAR (50) NOT NULL;
+		PRINT 'Modified Queue length to 50';
+		
+		ALTER TABLE [HangFire].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
+		PRINT 'Modified Server Id length to 100';
+		
+		SET @CURRENT_SCHEMA_VERSION = 5;
+	END
+	
+	/*IF @CURRENT_SCHEMA_VERSION = 5
+	BEGIN
+		PRINT 'Installing schema version 6';
+
 		-- Insert migration here
 
-		SET @CURRENT_SCHEMA_VERSION = 5;
+		SET @CURRENT_SCHEMA_VERSION = 6;
 	END*/
 
 	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
