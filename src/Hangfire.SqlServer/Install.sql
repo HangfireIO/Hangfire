@@ -349,10 +349,10 @@ BEGIN
 		PRINT 'Installing schema version 5';
 
 		ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [Queue] NVARCHAR (50) NOT NULL;
-		PRINT 'Modified Queue length to 50';
+		PRINT 'Modified [HangFire].[JobQueue].[Queue] length to 50';
 		
 		ALTER TABLE [HangFire].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
-		PRINT 'Modified Server Id length to 100';
+		PRINT 'Modified [HangFire].[Server].[Id] length to 100';
 		
 		SET @CURRENT_SCHEMA_VERSION = 5;
 	END
