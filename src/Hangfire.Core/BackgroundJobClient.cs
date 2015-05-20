@@ -95,7 +95,7 @@ namespace Hangfire
             }
             catch (Exception ex)
             {
-                throw new CreateJobFailedException("Job creation process has bee failed. See inner exception for details", ex);
+                throw new CreateJobFailedException("Job creation process has failed. See inner exception for details", ex);
             }
         }
 
