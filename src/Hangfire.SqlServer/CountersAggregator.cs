@@ -83,12 +83,12 @@ DECLARE @RecordsToAggregate TABLE
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
-DELETE TOP (@count) [Hangfire].[Counter] with (readpast)
+DELETE TOP (@count) [HangFire].[Counter] with (readpast)
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
 
 SET NOCOUNT ON
 
-MERGE [Hangfire].[AggregatedCounter] AS [Target]
+MERGE [HangFire].[AggregatedCounter] AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])

@@ -180,7 +180,7 @@ select scope_identity() as Id";
         private static dynamic GetTestJob(IDbConnection connection, string jobId)
         {
             return connection
-                .Query("select * from HangFire.Job where id = @id", new { id = jobId })
+                .Query("select * from HangFire.Job where Id = @id", new { id = jobId })
                 .Single();
         }
 

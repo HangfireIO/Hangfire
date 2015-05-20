@@ -868,16 +868,16 @@ values (@key, @field, @value)";
         public void GetSetCount_ReturnsNumberOfElements_InASet()
         {
             const string arrangeSql = @"
-insert into Hangfire.[Set] ([Key], [Value], [Score])
+insert into HangFire.[Set] ([Key], [Value], [Score])
 values (@key, @value, 0.0)";
 
             UseConnections((sql, connection) =>
             {
                 sql.Execute(arrangeSql, new List<dynamic>
                 {
-                    new { Key = "set-1", Value = "value-1" },
-                    new { Key = "set-2", Value = "value-1" },
-                    new { Key = "set-1", Value = "value-2" }
+                    new { key = "set-1", value = "value-1" },
+                    new { key = "set-2", value = "value-1" },
+                    new { key = "set-1", value = "value-2" }
                 });
 
                 var result = connection.GetSetCount("set-1");
@@ -899,8 +899,8 @@ values (@key, @value, 0.0)";
         public void GetRangeFromSet_ReturnsPagedElements()
         {
             const string arrangeSql = @"
-insert into Hangfire.[Set] ([Key], [Value], [Score])
-values (@key, @value, 0.0)";
+insert into HangFire.[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
 
             UseConnections((sql, connection) =>
             {
@@ -963,6 +963,33 @@ values (@key, @value)";
                 // Assert
                 Assert.Equal(2, result);
             });
+        }
+
+        [Fact, CleanDatabase]
+        public void CountersAggregatorExecutesProperly()
+        {
+            // Arrange
+            const string createSql = @"
+insert into HangFire.Counter ([Key], [Value], ExpireAt) 
+values ('key', 1, @expireAt)";
+
+            var connection = ConnectionUtils.CreateConnection();
+
+            using (connection)
+            {
+                //Prepare data
+                connection.Execute(createSql, new {expireAt = DateTime.UtcNow.AddHours(1)});
+                var storage = new SqlServerStorage(connection);
+                var countersAggregator = new CountersAggregator(storage, TimeSpan.FromMinutes(5));
+                var cts = new CancellationTokenSource();
+                var token = cts.Token;
+
+                // Act
+                countersAggregator.Execute(token);
+
+                // Assert
+                Assert.Equal(1, connection.Query<int>(@"select count(*) from HangFire.AggregatedCounter").Single());
+            }
         }
 
         [Fact, CleanDatabase]
@@ -1101,7 +1128,7 @@ values (@key, @field, @expireAt)";
         public void GetListCount_ReturnsTheNumberOfListElements()
         {
             const string arrangeSql = @"
-insert into Hangfire.List ([Key])
+insert into HangFire.List ([Key])
 values (@key)";
 
             UseConnections((sql, connection) =>
