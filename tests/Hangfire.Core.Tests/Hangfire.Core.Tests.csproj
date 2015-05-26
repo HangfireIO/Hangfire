@@ -83,6 +83,7 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="DeleteOnLatencyAttributeFacts.cs" />
     <Compile Include="CronFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
