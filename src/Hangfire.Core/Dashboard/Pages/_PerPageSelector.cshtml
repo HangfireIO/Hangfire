@@ -1,8 +1,8 @@
-﻿@* Generator: Template TypeVisibility: Internal *@
-@inherits RazorPage
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+@inherits Hangfire.Dashboard.RazorPage
 
     <div class="btn-group pull-right paginator">
-        @foreach (var count in new[] { 10, 20, 50, 100 })
+        @foreach (var count in new[] { 10, 20, 50, 100, 500 })
         {
             <a class="btn btn-sm btn-default @(count == _pager.RecordsPerPage ? "active" : null)" 
                    href="@_pager.RecordsPerPageUrl(count)">@count</a>    
@@ -10,5 +10,5 @@
     </div>
     <div class="btn-toolbar-spacer pull-right"></div>
     <div class="btn-toolbar-label btn-toolbar-label-sm pull-right">
-        Jobs per page:
+        Items per page:
     </div>

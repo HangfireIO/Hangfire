@@ -49,7 +49,7 @@ namespace Hangfire.SqlServer
 
             const string fetchJobSqlTemplate = @"
 set transaction isolation level read committed
-update top (1) HangFire.JobQueue set FetchedAt = GETUTCDATE()
+update top (1) HangFire.JobQueue with (readpast) set FetchedAt = GETUTCDATE()
 output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
 where FetchedAt {0}
 and Queue in @queues";

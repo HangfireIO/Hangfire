@@ -14,10 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System.Threading;
+
 namespace Hangfire
 {
     public interface IJobCancellationToken
     {
+        CancellationToken ShutdownToken { get; }
+
         void ThrowIfCancellationRequested();
     }
 }

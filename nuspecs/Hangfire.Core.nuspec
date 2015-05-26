@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Hangfire.Core</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>0.0.0</version>
     <title>Hangfire Core Components</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
@@ -10,17 +10,62 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>Core components for Hangfire (background job system for ASP.NET applications).</description>
-    <copyright>Copyright © 2013-2014 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases</releaseNotes>
+    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.4.2
+* Added – Missing generic methods for continuations (by @yngndrw).
+* Fixed – MSMQ extension does not work without explicit queue names in `UseMsmqQueues`.
+* Fixed – Missing null-check in Retries page after casting connection to `JobStorageConnection`.
+* Fixed – Enqueued jobs cannot be deleted from the Dashboard.
+* Fixed – Error when building the project using `build.bat` on a machine with VS 2013 only (by @Cussa).
+    
+1.4.1
+* Fixed – 1.4.0 ignoring `BackgroundJobServerOptions` settings in `UseHangfireServer` method.
+    
+1.4.0
+* Added – Extension methods related to `LogProvider` implementation for `IGlobalConfiguration`.
+* Changed – Continuations do not require configuration now.
+    
+1.4.0-rc2
+* Changed – Retry a job when there was an exception during state transition instead of moving it to the Failed state.
+* Fixed – Don't leak foreground colors in ColouredConsoleLogger.
+* Obsolete – `BackgroundJobServer`'s `Start` and `Stop` methods are obsolete.
+    
+1.4.0-rc1
+* Added – Add a notice about failed jobs expiration time.
+* Added – Show warnings in Dashboard for jobs processing by inactive servers.
+* Fixed – Hangfire stops processing when storage outage was too long.
+    
+1.4.0-beta1
+* Added – Job continuations, please see new `BackgroundJob.ContinueWith` methods.
+* Added – Time zone support for recurring jobs using `TimeZoneInfo` class.
+* Added – Single place for global configuration, please see `GlobalConfiguration` class.
+* Added – Made configurable the 'Back to Site' path in the dashboard (by @ysasaki1985).
+* Added – Ability to plug in custom dashboard pages and modify navigation.
+* Added – Ability to add custom metrics to the Home page in Dashboard.
+* Added – Test coverage badge from Coveralls application.
+* Added – Dedicated page for retrying jobs to distinguish them from other scheduled jobs.
+* Added – Show expiration time on Job Details page.
+* Added – More methods for build-in storage through `JobStorageConnection` and `JobStorageTransaction` classes.
+* Added – Paging support for Recurring Jobs page.
+* Added – New OWIN's `IAppBuilder` extension methods: `UseHangfireDashboard` and `UseHangfireServer`.
+* Changed – New look and feel for Dashboard. New navigation, less colors, more accents.
+* Changed – Determine job type of a current object when `MethodCallExpression` has `Object` property set.
+* Changed – Making Product Version and File Version on the dll match the Assembly Version (by @fire-eagle).
+* Changed – Use different log level for exceptions occured within automatic retry wrapper.
+* Fixed – Recurring Page throws exception from CronExpressionDescriptor library.
+    </releaseNotes>
     <dependencies>
       <dependency id="Owin" version="1.0" />
-      <dependency id="Common.Logging" version="2.2.0" />
       <dependency id="Newtonsoft.Json" version="5.0.0" />
     </dependencies>
   </metadata>
   <files>
     <file src="Net45\Hangfire.Core.dll" target="lib\net45" />
     <file src="Net45\Hangfire.Core.xml" target="lib\net45" />
+    <file src="Net45\Hangfire.Core.pdb" target="lib\net45" />
+    <file src="..\src\Hangfire.Core\**\*.cs;..\src\Hangfire.Core\**\*.cshtml" target="src" />
   </files>
 </package>

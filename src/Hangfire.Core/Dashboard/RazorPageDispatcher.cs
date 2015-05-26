@@ -33,15 +33,12 @@ namespace Hangfire.Dashboard
         public Task Dispatch(RequestDispatcherContext context)
         {
             var owinContext = new OwinContext(context.OwinEnvironment);
-
             owinContext.Response.ContentType = "text/html";
 
             var page = _pageFunc(context.UriMatch);
-            page.Request = owinContext.Request;
-            page.Response = owinContext.Response;
-            page.Storage = context.JobStorage;
+            page.Assign(context);
 
-            return owinContext.Response.WriteAsync(page.TransformText());
+            return owinContext.Response.WriteAsync(page.ToString());
         }
     }
 }

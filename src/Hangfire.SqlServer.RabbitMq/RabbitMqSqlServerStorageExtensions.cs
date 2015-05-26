@@ -15,11 +15,21 @@ namespace Hangfire.SqlServer.RabbitMQ
             configureAction(conf);
 
             ConnectionFactory cf = new ConnectionFactory();
-            cf.HostName = conf.HostName;
-            cf.Port = conf.Port;
-            cf.UserName = conf.Username;
-            cf.Password = conf.Password;
-            
+
+            // Use configuration from URI, otherwise use properties
+            if (conf.Uri != null)
+            {
+                cf.uri = conf.Uri;
+            }
+            else
+            {
+                cf.HostName = conf.HostName;
+                cf.Port = conf.Port;
+                cf.UserName = conf.Username;
+                cf.Password = conf.Password;
+                cf.VirtualHost = conf.VirtualHost;
+            }
+
             var provider = new RabbitMqJobQueueProvider(queues, cf);
 
             storage.QueueProviders.Add(provider, queues);

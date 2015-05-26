@@ -6,19 +6,27 @@ namespace Hangfire.Core.Tests.Server
 {
     public class WorkerContextFacts
     {
-        private readonly SharedWorkerContextMock _sharedContext;
+        private static readonly string[] Queues = { "critical", "default" };
+
+        private const string ServerId = "server";
         private const int WorkerNumber = 1;
 
-        public WorkerContextFacts()
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenServerIdIsNull()
         {
-            _sharedContext = new SharedWorkerContextMock();
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new WorkerContext(null, Queues, WorkerNumber));
+
+            Assert.Equal("serverId", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenSharedContextNull()
+        public void Ctor_ThrowsAnException_WhenQueuesArrayIsNull()
         {
-            Assert.Throws<NullReferenceException>(
-                () => new WorkerContext(null, WorkerNumber));
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new WorkerContext(ServerId, null, WorkerNumber));
+
+            Assert.Equal("queues", exception.ParamName);
         }
 
         [Fact]
@@ -26,6 +34,8 @@ namespace Hangfire.Core.Tests.Server
         {
             var context = CreateContext();
 
+            Assert.Equal(ServerId, context.ServerId);
+            Assert.Equal(Queues, context.Queues);
             Assert.Equal(WorkerNumber, context.WorkerNumber);
         }
         
@@ -42,12 +52,14 @@ namespace Hangfire.Core.Tests.Server
             var context = CreateContext();
             var contextCopy = new WorkerContext(context);
 
+            Assert.Equal(ServerId, context.ServerId);
+            Assert.Equal(Queues, context.Queues);
             Assert.Equal(context.WorkerNumber, contextCopy.WorkerNumber);
         }
 
         private WorkerContext CreateContext()
         {
-            return new WorkerContext(_sharedContext.Object, WorkerNumber);
+            return new WorkerContext(ServerId, Queues, WorkerNumber);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var options = CreateOptions();
 
-            Assert.Equal(Environment.ProcessorCount * 5, options.WorkerCount);
+            Assert.Equal(Math.Min(Environment.ProcessorCount * 5, 40), options.WorkerCount);
             Assert.Equal(Environment.MachineName, options.ServerName);
             Assert.Equal(EnqueuedState.DefaultQueue, options.Queues[0]);
             Assert.True(options.ShutdownTimeout > TimeSpan.Zero);
@@ -61,6 +61,14 @@ namespace Hangfire.Core.Tests.Server
 
             Assert.Throws<ArgumentException>(
                 () => options.Queues = new string[0]);
+        }
+
+        [Fact]
+        public void ServerWatchDogOptions_IsNonNullByDefault()
+        {
+            var options = CreateOptions();
+
+            Assert.NotNull(options.ServerWatchdogOptions);
         }
 
         private BackgroundJobServerOptions CreateOptions()

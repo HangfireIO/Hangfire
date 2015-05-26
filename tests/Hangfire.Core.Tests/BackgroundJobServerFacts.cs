@@ -48,30 +48,30 @@ namespace Hangfire.Core.Tests
         public void Ctor_HasDefaultValue_ForStorage()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
-            Assert.DoesNotThrow(() => new BackgroundJobServer(_options));
+            Assert.DoesNotThrow(() => StartServer(
+                () => new BackgroundJobServer(_options)));
+        }
+
+        [Fact]
+        public void Ctor_HasDefaultValue_ForOptions()
+        {
+            Assert.DoesNotThrow(() => StartServer(
+                () => new BackgroundJobServer(_storage.Object)));
         }
 
         [Fact, GlobalLock(Reason = "Uses JobStorage.Current instance")]
-        public void Ctor_HasDefaultValue_ForOptions()
+        public void Ctor_HasDefaultValues_ForAllParameters()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
-            Assert.DoesNotThrow(() => new BackgroundJobServer());
+            Assert.DoesNotThrow(() => StartServer(
+                () => new BackgroundJobServer()));
         }
 
         [Fact]
-        public void Start_StartsTheBootstrapSupervisor()
+        public void Ctor_StartsTheBootstrapSupervisor()
         {
-            _serverMock.Object.Start();
-
+            var instance = _serverMock.Object;
             _supervisor.Verify(x => x.Start());
-        }
-
-        [Fact]
-        public void Stop_StopsTheBootstrapSupervisor()
-        {
-            _serverMock.Object.Stop();
-
-            _supervisor.Verify(x => x.Stop());
         }
 
         [Fact]
@@ -83,14 +83,21 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
-        public void GetBootstrapSupervisor_ReturnsNonNullResult()
+        public void GetBootstrapSupervisor_ReturnsBootstrapper_WrappedWithAutomaticRetry()
         {
+            // Arrange
             var server = CreateServer();
 
+            // Act
             var supervisor = server.GetBootstrapSupervisor();
 
+            // Assert
             Assert.NotNull(supervisor);
-            Assert.IsType<ServerBootstrapper>(((ServerSupervisor) supervisor).Component);
+
+            var wrapper = ((ServerSupervisor) supervisor).Component;
+
+            Assert.IsType<AutomaticRetryServerComponentWrapper>(wrapper);
+            Assert.IsType<ServerBootstrapper>(((AutomaticRetryServerComponentWrapper)wrapper).InnerComponent);
         }
 
         [Fact]
@@ -110,7 +117,7 @@ namespace Hangfire.Core.Tests
                 .Select(x => x.GetType())
                 .ToArray();
 
-            Assert.Contains(typeof(WorkerManager), componentTypes);
+            Assert.Contains(typeof(Worker), componentTypes);
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
             Assert.Contains(typeof(ServerWatchdog), componentTypes);
             Assert.Contains(typeof(SchedulePoller), componentTypes);
@@ -141,6 +148,11 @@ namespace Hangfire.Core.Tests
         private BackgroundJobServer CreateServer()
         {
             return new BackgroundJobServer(_options, _storage.Object);
+        }
+
+        private void StartServer(Func<BackgroundJobServer> createFunc)
+        {
+            using (createFunc()) { }
         }
     }
 }

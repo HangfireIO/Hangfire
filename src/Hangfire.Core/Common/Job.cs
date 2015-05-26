@@ -22,6 +22,8 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
+using Hangfire.Annotations;
 using Hangfire.Server;
 
 namespace Hangfire.Common
@@ -33,22 +35,48 @@ namespace Hangfire.Common
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with
+        /// a given method data and an empty arguments array.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// Each argument should be serialized into a string using the 
+        /// <see cref="JobHelper.ToJson(object)"/> method of the <see cref="JobHelper"/> 
+        /// class.
+        /// </remarks>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
+        /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
+        public Job(Type type, MethodInfo method) 
+            : this(type, method, new string[0])
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Job"/> class with
         /// a given method data and arguments.
         /// </summary>
         /// 
         /// <remarks>
         /// Each argument should be serialized into a string using the 
-        /// <see cref="TypeConverter.ConvertToInvariantString(object)"/> method of
-        /// a corresponding <see cref="TypeConverter"/> instance.
+        /// <see cref="JobHelper.ToJson(object)"/> method of the <see cref="JobHelper"/> 
+        /// class.
         /// </remarks>
         /// 
+        /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
-        internal Job(Type type, MethodInfo method, string[] arguments)
+        /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
+        public Job(Type type, MethodInfo method, string[] arguments)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
             if (arguments == null) throw new ArgumentNullException("arguments");
+
+            if (method.ContainsGenericParameters)
+            {
+                throw new ArgumentException("Job method can not contain unassigned generic type parameters.", "method");
+            }
 
             Type = type;
             Method = method;
@@ -119,7 +147,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
-        public static Job FromExpression(Expression<Action> methodCall)
+        public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
@@ -129,12 +157,27 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
             }
 
-            // TODO: user can call this method with instance method expression. We need to check for it.
+            Type type;
+
+            if (callExpression.Object != null)
+            {
+                var objectValue = GetExpressionValue(callExpression.Object);
+                if (objectValue == null)
+                {
+                    throw new InvalidOperationException("Expression object should not be null.");
+                }
+
+                type = objectValue.GetType();
+            }
+            else
+            {
+                type = callExpression.Method.DeclaringType;
+            }
 
             // Static methods can not be overridden in the derived classes, 
             // so we can take the method's declaring type.
             return new Job(
-                callExpression.Method.DeclaringType, 
+                type, 
                 callExpression.Method, 
                 GetArguments(callExpression));
         }
@@ -146,7 +189,7 @@ namespace Hangfire.Common
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
         /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
-        public static Job FromExpression<T>(Expression<Action<T>> methodCall)
+        public static Job FromExpression<T>([InstantHandle] Expression<Action<T>> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
@@ -180,6 +223,11 @@ namespace Hangfire.Common
             if (!Method.IsPublic)
             {
                 throw new NotSupportedException("Only public methods can be invoked in the background.");
+            }
+
+            if (typeof (Task).IsAssignableFrom(Method.ReturnType))
+            {
+                throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
             }
 
             var parameters = Method.GetParameters();
@@ -330,7 +378,7 @@ namespace Hangfire.Common
         {
             Debug.Assert(callExpression != null);
 
-            var arguments = callExpression.Arguments.Select(GetArgumentValue).ToArray();
+            var arguments = callExpression.Arguments.Select(GetExpressionValue).ToArray();
 
             var serializedArguments = new List<string>(arguments.Length);
             foreach (var argument in arguments)
@@ -359,7 +407,7 @@ namespace Hangfire.Common
             return serializedArguments.ToArray();
         }
 
-        private static object GetArgumentValue(Expression expression)
+        private static object GetExpressionValue(Expression expression)
         {
             Debug.Assert(expression != null);
 
@@ -371,6 +419,11 @@ namespace Hangfire.Common
             }
 
             return CachedExpressionCompiler.Evaluate(expression);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
         }
     }
 }

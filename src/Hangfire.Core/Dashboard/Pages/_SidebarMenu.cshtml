@@ -1,0 +1,21 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+@using Hangfire.Dashboard
+@inherits RazorPage
+@if (Items.Any())
+{
+    <div id="stats" class="list-group">
+        @foreach (var item in Items)
+        {
+            var itemValue = item(this);
+            <a href="@itemValue.Url" class="list-group-item @(itemValue.Active ? "active" : null)">
+                @itemValue.Text
+                <span class="pull-right">
+                    @foreach (var metric in itemValue.GetAllMetrics())
+                    {
+                        @Html.InlineMetric(metric)
+                    }
+                </span>
+            </a>
+        }
+    </div>
+}

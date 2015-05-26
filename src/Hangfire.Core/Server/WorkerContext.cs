@@ -18,19 +18,25 @@ using System;
 
 namespace Hangfire.Server
 {
-    public class WorkerContext : SharedWorkerContext
+    public class WorkerContext
     {
         internal WorkerContext(WorkerContext workerContext)
-            : this (workerContext, workerContext.WorkerNumber)
+            : this (workerContext.ServerId, workerContext.Queues, workerContext.WorkerNumber)
         {
         }
 
-        internal WorkerContext(SharedWorkerContext sharedContext, int workerNumber)
-            : base(sharedContext)
+        internal WorkerContext(string serverId, string[] queues, int workerNumber)
         {
+            if (serverId == null) throw new ArgumentNullException("serverId");
+            if (queues == null) throw new ArgumentNullException("queues");
+
+            ServerId = serverId;
+            Queues = queues;
             WorkerNumber = workerNumber;
         }
 
+        public string ServerId { get; private set; }
+        public string[] Queues { get; private set; }
         public int WorkerNumber { get; private set; }
     }
 }

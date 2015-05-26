@@ -41,7 +41,7 @@ namespace Hangfire.Dashboard
 
             if (!job.Method.IsStatic)
             {
-                var serviceName = job.Type.Name;
+                var serviceName = GetNameWithoutGenericArity(job.Type);
 
                 if (job.Type.IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
                 {
@@ -50,11 +50,11 @@ namespace Hangfire.Dashboard
 
                 serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
 
-                builder.Append(WrapType(job.Type.Name));
+                builder.Append(WrapType(job.Type.ToGenericTypeString()));
                 builder.AppendFormat(
-                    " {0} = Activate<{1}>();",
+                    " {0} = Activate&lt;{1}&gt;();",
                     Encode(serviceName),
-                    WrapType(Encode(job.Type.Name)));
+                    WrapType(Encode(job.Type.ToGenericTypeString())));
 
                 builder.AppendLine();
 
@@ -62,11 +62,21 @@ namespace Hangfire.Dashboard
             }
             else
             {
-                builder.Append(WrapType(Encode(job.Type.Name)));
+                builder.Append(WrapType(Encode(job.Type.ToGenericTypeString())));
             }
 
             builder.Append(".");
             builder.Append(Encode(job.Method.Name));
+
+            if (job.Method.IsGenericMethod)
+            {
+                var genericArgumentTypes = job.Method.GetGenericArguments()
+                    .Select(x => WrapType(x.Name))
+                    .ToArray();
+
+                builder.AppendFormat("&lt;{0}&gt;", String.Join(", ", genericArgumentTypes));
+            }
+
             builder.Append("(");
 
             var parameters = job.Method.GetParameters();
@@ -220,6 +230,13 @@ namespace Hangfire.Dashboard
                             && x.GetGenericTypeDefinition() == typeof (IEnumerable<>))
                 .Select(x => x.GetGenericArguments()[0])
                 .FirstOrDefault();
+        }
+
+        public static string GetNameWithoutGenericArity(Type t)
+        {
+            string name = t.Name;
+            int index = name.IndexOf('`');
+            return index == -1 ? name : name.Substring(0, index);
         }
 
         private class ArgumentRenderer

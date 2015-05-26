@@ -33,7 +33,7 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.GetStateData(JobId)).Returns(_stateData);
 
             _workerContextMock = new WorkerContextMock { WorkerNumber = 1 };
-            _workerContextMock.SharedContext.ServerId = "Server";
+            _workerContextMock.ServerId = "Server";
 
             _shutdownToken = new CancellationToken(false);
         }
@@ -66,6 +66,13 @@ namespace Hangfire.Core.Tests.Server
                     JobId, _connection.Object, null, new CancellationToken()));
 
             Assert.Equal("workerContext", exception.ParamName);
+        }
+
+        [Fact]
+        public void ShutdownTokenProperty_PointsToShutdownTokenValue()
+        {
+            var token = CreateToken();
+            Assert.Equal(_shutdownToken, token.ShutdownToken);
         }
 
         [Fact]

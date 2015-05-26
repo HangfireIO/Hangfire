@@ -53,15 +53,25 @@ namespace Hangfire
         }
 
         public void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression)
+        {
+            AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
+        }
+
+        public void AddOrUpdate(
             [NotNull] string recurringJobId, 
             [NotNull] Job job, 
-            [NotNull] string cronExpression)
+            [NotNull] string cronExpression, 
+            [NotNull] TimeZoneInfo timeZone)
         {
             if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
             if (job == null) throw new ArgumentNullException("job");
             if (cronExpression == null) throw new ArgumentNullException("cronExpression");
+            if (timeZone == null) throw new ArgumentNullException("timeZone");
 
-            CrontabSchedule.Parse(cronExpression);
+            ValidateCronExpression(cronExpression);
 
             using (var connection = _storage.GetConnection())
             {
@@ -70,6 +80,7 @@ namespace Hangfire
                 
                 recurringJob["Job"] = JobHelper.ToJson(invocationData);
                 recurringJob["Cron"] = cronExpression;
+                recurringJob["TimeZoneId"] = timeZone.Id;
 
                 using (var transaction = connection.CreateWriteTransaction())
                 {
@@ -114,6 +125,19 @@ namespace Hangfire
                 transaction.RemoveFromSet("recurring-jobs", recurringJobId);
 
                 transaction.Commit();
+            }
+        }
+
+        private static void ValidateCronExpression(string cronExpression)
+        {
+            try
+            {
+                var schedule = CrontabSchedule.Parse(cronExpression);
+                schedule.GetNextOccurrence(DateTime.UtcNow);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException("CRON expression is invalid. Please see the inner exception for details.", "cronExpression", ex);
             }
         }
     }

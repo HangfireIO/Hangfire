@@ -20,7 +20,10 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using Common.Logging;
+using Dapper;
+using Hangfire.Annotations;
+using Hangfire.Dashboard;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
 
@@ -28,6 +31,7 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
+        private readonly SqlConnection _existingConnection;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
@@ -78,8 +82,23 @@ namespace Hangfire.SqlServer
                 }
             }
 
-            var defaultQueueProvider = new SqlServerJobQueueProvider(options);
-            QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
+            InitializeQueueProviders();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
+        /// explicit instance of the <see cref="SqlConnection"/> class that will be used
+        /// to query the data.
+        /// </summary>
+        /// <param name="existingConnection">Existing connection</param>
+        public SqlServerStorage([NotNull] SqlConnection existingConnection)
+        {
+            if (existingConnection == null) throw new ArgumentNullException("existingConnection");
+
+            _existingConnection = existingConnection;
+            _options = new SqlServerStorageOptions();
+
+            InitializeQueueProviders();
         }
 
         public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
@@ -91,14 +110,14 @@ namespace Hangfire.SqlServer
 
         public override IStorageConnection GetConnection()
         {
-            var connection = CreateAndOpenConnection();
-
-            return new SqlServerConnection(connection, QueueProviders);
+            var connection = _existingConnection ?? CreateAndOpenConnection();
+            return new SqlServerConnection(connection, _options.TransactionIsolationLevel, QueueProviders, _existingConnection == null);
         }
 
         public override IEnumerable<IServerComponent> GetComponents()
         {
-            yield return new ExpirationManager(this);
+            yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
+            yield return new CountersAggregator(this, _options.CountersAggregateInterval);
         }
 
         public override void WriteOptionsToLog(ILog logger)
@@ -117,7 +136,7 @@ namespace Hangfire.SqlServer
                 var parts = _connectionString.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries))
                     .Select(x => new { Key = x[0].Trim(), Value = x[1].Trim() })
-                    .ToDictionary(x => x.Key, x => x.Value);
+                    .ToDictionary(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
 
                 var builder = new StringBuilder();
 
@@ -125,7 +144,7 @@ namespace Hangfire.SqlServer
                 {
                     if (parts.ContainsKey(alias))
                     {
-                        builder.AppendFormat("{1}", alias, parts[alias]);
+                        builder.Append(parts[alias]);
                         break;
                     }
                 }
@@ -136,7 +155,7 @@ namespace Hangfire.SqlServer
                 {
                     if (parts.ContainsKey(alias))
                     {
-                        builder.AppendFormat("{1}", alias, parts[alias]);
+                        builder.Append(parts[alias]);
                         break;
                     }
                 }
@@ -159,6 +178,12 @@ namespace Hangfire.SqlServer
             return connection;
         }
 
+        private void InitializeQueueProviders()
+        {
+            var defaultQueueProvider = new SqlServerJobQueueProvider(_options);
+            QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
+        }
+
         private bool IsConnectionString(string nameOrConnectionString)
         {
             return nameOrConnectionString.Contains(";");
@@ -170,5 +195,49 @@ namespace Hangfire.SqlServer
 
             return connectionStringSetting != null;
         }
+
+        public static readonly DashboardMetric ActiveConnections = new DashboardMetric(
+            "connections:active",
+            "Active Connections",
+            page =>
+            {
+                using (var connection = page.Storage.GetConnection())
+                {
+                    var sqlConnection = connection as SqlServerConnection;
+                    if (sqlConnection == null) return new Metric("???");
+
+                    var sqlQuery = @"
+select count(*) from sys.sysprocesses
+where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
+
+                    var value = sqlConnection.Connection
+                        .Query<int>(sqlQuery, new { name = sqlConnection.Connection.Database })
+                        .Single();
+
+                    return new Metric(value.ToString("N0"));
+                }
+            });
+
+        public static readonly DashboardMetric TotalConnections = new DashboardMetric(
+            "connections:total",
+            "Total Connections",
+            page =>
+            {
+                using (var connection = page.Storage.GetConnection())
+                {
+                    var sqlConnection = connection as SqlServerConnection;
+                    if (sqlConnection == null) return new Metric("???");
+
+                    var sqlQuery = @"
+select count(*) from sys.sysprocesses
+where dbid = db_id(@name) and status != 'background'";
+
+                    var value = sqlConnection.Connection
+                        .Query<int>(sqlQuery, new { name = sqlConnection.Connection.Database })
+                        .Single();
+
+                    return new Metric(value.ToString("N0"));
+                }
+            });
     }
 }

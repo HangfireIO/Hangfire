@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 
 namespace Hangfire
 {
@@ -25,13 +26,16 @@ namespace Hangfire
         public JobCancellationToken(bool canceled)
         {
             _canceled = canceled;
+            ShutdownToken = new CancellationToken(canceled);
         }
+
+        public CancellationToken ShutdownToken { get; private set; }
+
+        public static IJobCancellationToken Null { get { return null; } }
 
         public void ThrowIfCancellationRequested()
         {
             if (_canceled) throw new OperationCanceledException();
         }
-
-        public static IJobCancellationToken Null { get { return null; } }
     }
 }

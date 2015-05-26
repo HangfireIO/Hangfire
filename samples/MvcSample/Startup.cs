@@ -1,12 +1,11 @@
 ﻿using Hangfire;
 using Hangfire.Dashboard;
-using Hangfire.Redis;
 using Hangfire.SqlServer;
-using Hangfire.SqlServer.Msmq;
 using Microsoft.Owin;
+using MvcSample;
 using Owin;
 
-[assembly: OwinStartup(typeof(MvcSample.Startup))]
+[assembly: OwinStartup(typeof(Startup))]
 
 namespace MvcSample
 {
@@ -14,19 +13,14 @@ namespace MvcSample
     {
         public void Configuration(IAppBuilder app)
         {
-            app.UseHangfire(config =>
-            {
-                config.UseAuthorizationFilters();
-
-                config
-                    .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
-                    .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical");
-            });
-
-            app.MapHangfireDashboard(
-                "/hangfire-redis", 
-                new IAuthorizationFilter[0],
-                new RedisStorage("localhost:6379", 3));
+            GlobalConfiguration.Configuration
+                .UseSqlServerStorage(@"Server=.\sqlexpress;Database=Hangfire.Sample;Trusted_Connection=True;")
+                .UseMsmqQueues(@".\Private$\hangfire{0}", "default", "critical")
+                .UseDashboardMetric(SqlServerStorage.ActiveConnections)
+                .UseDashboardMetric(SqlServerStorage.TotalConnections)
+                .UseDashboardMetric(DashboardMetrics.FailedCount);
+            
+            app.UseHangfireDashboard();
         }
     }
 }

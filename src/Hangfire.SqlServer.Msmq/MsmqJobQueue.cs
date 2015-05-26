@@ -48,9 +48,7 @@ namespace Hangfire.SqlServer.Msmq
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                queueIndex = (queueIndex + 1) % queues.Length;
                 var queueName = queues[queueIndex];
-
                 transaction = new MessageQueueTransaction();
 
                 using (var messageQueue = GetMessageQueue(queueName))
@@ -59,7 +57,7 @@ namespace Hangfire.SqlServer.Msmq
                     {
                         transaction.Begin();
 
-                        var message = queueIndex == 0
+                        var message = queueIndex == queues.Length - 1
                             ? messageQueue.Receive(SyncReceiveTimeout, transaction)
                             : messageQueue.Receive(new TimeSpan(1), transaction);
 
@@ -79,6 +77,8 @@ namespace Hangfire.SqlServer.Msmq
                         }
                     }
                 }
+
+                queueIndex = (queueIndex + 1) % queues.Length;
             } while (jobId == null);
 
             return new MsmqFetchedJob(transaction, jobId);

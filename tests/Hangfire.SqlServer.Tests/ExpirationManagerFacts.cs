@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
@@ -9,13 +10,12 @@ namespace Hangfire.SqlServer.Tests
 {
     public class ExpirationManagerFacts
     {
-        private readonly SqlServerStorage _storage;
         private readonly CancellationToken _token;
 
         public ExpirationManagerFacts()
         {
-            _storage = new SqlServerStorage(ConnectionUtils.GetConnectionString());
-            _token = new CancellationToken(true);
+            var cts = new CancellationTokenSource();
+            _token = cts.Token;
         }
 
         [Fact]
@@ -27,10 +27,10 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void Execute_RemovesOutdatedRecords()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 var entryId = CreateExpirationEntry(connection, DateTime.UtcNow.AddMonths(-1));
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 manager.Execute(_token);
 
@@ -41,10 +41,10 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void Execute_DoesNotRemoveEntries_WithNoExpirationTimeSet()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 var entryId = CreateExpirationEntry(connection, null);
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 manager.Execute(_token);
 
@@ -55,10 +55,10 @@ namespace Hangfire.SqlServer.Tests
         [Fact, CleanDatabase]
         public void Execute_DoesNotRemoveEntries_WithFreshExpirationTime()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 var entryId = CreateExpirationEntry(connection, DateTime.Now.AddMonths(1));
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 manager.Execute(_token);
 
@@ -67,17 +67,17 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void Execute_Processes_CounterTable()
+        public void Execute_Processes_AggregatedCounterTable()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.Counter ([Key], [Value], ExpireAt) 
+insert into HangFire.AggregatedCounter ([Key], [Value], ExpireAt) 
 values ('key', 1, @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 // Act
                 manager.Execute(_token);
@@ -90,7 +90,7 @@ values ('key', 1, @expireAt)";
         [Fact, CleanDatabase]
         public void Execute_Processes_JobTable()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 // Arrange
                 const string createSql = @"
@@ -98,7 +98,7 @@ insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 values ('', '', getutcdate(), @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 // Act
                 manager.Execute(_token);
@@ -111,7 +111,7 @@ values ('', '', getutcdate(), @expireAt)";
         [Fact, CleanDatabase]
         public void Execute_Processes_ListTable()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 // Arrange
                 const string createSql = @"
@@ -119,7 +119,7 @@ insert into HangFire.List ([Key], ExpireAt)
 values ('key', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 // Act
                 manager.Execute(_token);
@@ -132,7 +132,7 @@ values ('key', @expireAt)";
         [Fact, CleanDatabase]
         public void Execute_Processes_SetTable()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 // Arrange
                 const string createSql = @"
@@ -140,7 +140,7 @@ insert into HangFire.[Set] ([Key], [Score], [Value], ExpireAt)
 values ('key', 0, '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 // Act
                 manager.Execute(_token);
@@ -153,7 +153,7 @@ values ('key', 0, '', @expireAt)";
         [Fact, CleanDatabase]
         public void Execute_Processes_HashTable()
         {
-            using (var connection = ConnectionUtils.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 // Arrange
                 const string createSql = @"
@@ -161,7 +161,7 @@ insert into HangFire.Hash ([Key], [Field], [Value], ExpireAt)
 values ('key', 'field', '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
-                var manager = CreateManager();
+                var manager = CreateManager(connection);
 
                 // Act
                 manager.Execute(_token);
@@ -171,10 +171,10 @@ values ('key', 'field', '', @expireAt)";
             }
         }
 
-        private static int CreateExpirationEntry(IDbConnection connection, DateTime? expireAt)
+        private static int CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
         {
             const string insertSql = @"
-insert into HangFire.Counter ([Key], [Value], [ExpireAt])
+insert into HangFire.AggregatedCounter ([Key], [Value], [ExpireAt])
 values ('key', 1, @expireAt)
 select scope_identity() as Id";
 
@@ -183,16 +183,22 @@ select scope_identity() as Id";
             return recordId;
         }
 
-        private static bool IsEntryExpired(IDbConnection connection, int entryId)
+        private static bool IsEntryExpired(SqlConnection connection, int entryId)
         {
             var count = connection.Query<int>(
-                    "select count(*) from HangFire.Counter where Id = @id", new { id = entryId }).Single();
+                    "select count(*) from HangFire.AggregatedCounter where Id = @id", new { id = entryId }).Single();
             return count == 0;
         }
 
-        private ExpirationManager CreateManager()
+        private SqlConnection CreateConnection()
         {
-            return new ExpirationManager(_storage);
+            return ConnectionUtils.CreateConnection();
+        }
+
+        private ExpirationManager CreateManager(SqlConnection connection)
+        {
+            var storage = new SqlServerStorage(connection);
+            return new ExpirationManager(storage, TimeSpan.Zero);
         }
     }
 }

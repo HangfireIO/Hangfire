@@ -24,33 +24,93 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Hangfire.Common;
 using System.ComponentModel;
+using Hangfire.Annotations;
+using Hangfire.Dashboard.Pages;
 
 namespace Hangfire.Dashboard
 {
-    internal static class HtmlHelper
+    public class HtmlHelper
     {
-        public static NonEscapedString DisplayMethod(Job job)
-        {
-            if (job == null)
-            {
-                return new NonEscapedString("<em>Can not find the target method.</em>");
-            }
+        private readonly RazorPage _page;
 
-            return new NonEscapedString(DisplayJob(job));
+        public HtmlHelper([NotNull] RazorPage page)
+        {
+            if (page == null) throw new ArgumentNullException("page");
+            _page = page;
         }
 
-        public static string DisplayJob(Job job)
+        public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
+        {
+            if (items == null) throw new ArgumentNullException("items");
+            return RenderPartial(new Breadcrumbs(title, items));
+        }
+
+        public NonEscapedString JobsSidebar()
+        {
+            return RenderPartial(new SidebarMenu(JobsSidebarMenu.Items));
+        }
+
+        public NonEscapedString SidebarMenu([NotNull] IEnumerable<Func<RazorPage, MenuItem>> items)
+        {
+            if (items == null) throw new ArgumentNullException("items");
+            return RenderPartial(new SidebarMenu(items));
+        }
+
+        public NonEscapedString BlockMetric([NotNull] DashboardMetric metric)
+        {
+            if (metric == null) throw new ArgumentNullException("metric");
+            return RenderPartial(new BlockMetric(metric));
+        }
+
+        public NonEscapedString InlineMetric([NotNull] DashboardMetric metric)
+        {
+            if (metric == null) throw new ArgumentNullException("metric");
+            return RenderPartial(new InlineMetric(metric));
+        }
+
+        public NonEscapedString Paginator([NotNull] Pager pager)
+        {
+            if (pager == null) throw new ArgumentNullException("pager");
+            return RenderPartial(new Paginator(pager));
+        }
+
+        public NonEscapedString PerPageSelector([NotNull] Pager pager)
+        {
+            if (pager == null) throw new ArgumentNullException("pager");
+            return RenderPartial(new PerPageSelector(pager));
+        }
+
+        public NonEscapedString RenderPartial(RazorPage partialPage)
+        {
+            partialPage.Assign(_page);
+            return new NonEscapedString(partialPage.ToString());
+        }
+
+        public NonEscapedString Raw(string value)
+        {
+            return new NonEscapedString(value);
+        }
+
+        public NonEscapedString JobId(string jobId, bool shorten = true)
+        {
+            Guid guid;
+            return new NonEscapedString(Guid.TryParse(jobId, out guid)
+                ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
+                : "#" + jobId);
+        }
+
+        public string JobName(Job job)
         {
             if (job == null)
             {
-                throw new ArgumentNullException("job");
+                return "Can not find the target method.";
             }
 
             var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
 
             if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
             {
-                return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
+                return job.ToString();
             }
 
             try
@@ -64,20 +124,43 @@ namespace Hangfire.Dashboard
             }
         }
 
-        public static NonEscapedString Raw(string value)
+        public NonEscapedString StateLabel(string stateName)
         {
-            return new NonEscapedString(value);
+            if (String.IsNullOrWhiteSpace(stateName))
+            {
+                return Raw("<em>No state</em>");
+            }
+
+            return Raw(String.Format(
+                "<span class=\"label label-default\" style=\"background-color: {0};\">{1}</span>",
+                JobHistoryRenderer.GetForegroundStateColor(stateName),
+                stateName));
         }
 
-        public static NonEscapedString JobId(string jobId, bool shorten = true)
+        public NonEscapedString JobIdLink(string jobId)
         {
-            Guid guid;
-            return new NonEscapedString(Guid.TryParse(jobId, out guid)
-                ? (shorten ? jobId.Substring(0, 8) : jobId)
-                : "#" + jobId);
+            return Raw(String.Format("<a href=\"{0}\">{1}</a>", 
+                _page.Url.JobDetails(jobId), 
+                JobId(jobId)));
         }
 
-        public static string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
+        public NonEscapedString JobNameLink(string jobId, Job job)
+        {
+            return Raw(String.Format(
+                "<a class=\"job-method\" href=\"{0}\">{1}</a>",
+                _page.Url.JobDetails(jobId),
+                 HtmlEncode(JobName(job))));
+        }
+
+        public NonEscapedString RelativeTime(DateTime value)
+        {
+            return Raw(String.Format(
+                "<span data-moment=\"{0}\">{1}</span>",
+                JobHelper.ToTimestamp(value),
+                value));
+        }
+
+        public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
         {
             if (duration == null) return null;
 
@@ -135,12 +218,12 @@ namespace Hangfire.Dashboard
             return builder.ToString();
         }
 
-        public static string FormatProperties(IDictionary<string, string> properties)
+        public string FormatProperties(IDictionary<string, string> properties)
         {
             return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
         }
 
-        public static NonEscapedString QueueLabel(string queue)
+        public NonEscapedString QueueLabel(string queue)
         {
             string label;
             if (queue != null)
@@ -155,7 +238,7 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(label);
         }
 
-        public static NonEscapedString MarkupStackTrace(string stackTrace)
+        public NonEscapedString StackTrace(string stackTrace)
         {
             using (var writer = new StringWriter())
             {
@@ -304,6 +387,11 @@ namespace Hangfire.Dashboard
         {
             Debug.Assert(writer != null);
             WebUtility.HtmlEncode(text, writer);
+        }
+
+        public string HtmlEncode(string text)
+        {
+            return WebUtility.HtmlEncode(text);
         }
     }
 }

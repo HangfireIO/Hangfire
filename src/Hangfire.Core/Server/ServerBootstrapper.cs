@@ -16,14 +16,14 @@
 
 using System;
 using System.Threading;
-using Common.Logging;
+using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
     public class ServerBootstrapper : IServerComponent, IDisposable
     {
         private const string BootstrapperId = "{4deecd4f-19f6-426b-aa87-6cd1a03eaa48}";
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(ServerBootstrapper));
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly string _serverId;
@@ -48,21 +48,21 @@ namespace Hangfire.Server
             _context = context;
             _supervisorFactory = supervisorFactory;
 
-			if (!RunningWithMono()) 
-			{
-				_globalMutex = new Mutex (false, String.Format (@"Global\{0}_{1}", BootstrapperId, _serverId));
-			}
+            if (!RunningWithMono()) 
+            {
+                _globalMutex = new Mutex (false, String.Format (@"Global\{0}_{1}", BootstrapperId, _serverId));
+            }
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-			if (!RunningWithMono()) 
-			{
-				// Do not allow to run multiple servers with the same ServerId on same
-				// machine, fixes https://github.com/odinserj/Hangfire/issues/112.
-				WaitHandle.WaitAny (new[] { _globalMutex, cancellationToken.WaitHandle });
-				cancellationToken.ThrowIfCancellationRequested ();
-			}
+            if (!RunningWithMono()) 
+            {
+                // Do not allow to run multiple servers with the same ServerId on same
+                // machine, fixes https://github.com/odinserj/Hangfire/issues/112.
+                WaitHandle.WaitAny (new[] { _globalMutex, cancellationToken.WaitHandle });
+                cancellationToken.ThrowIfCancellationRequested ();
+            }
             
             try
             {
@@ -75,12 +75,12 @@ namespace Hangfire.Server
                 {
                     using (_supervisorFactory.Value)
                     {
-                        Logger.Info("Starting server components...");
+                        Logger.Info("Starting server components");
                         _supervisorFactory.Value.Start();
 
                         cancellationToken.WaitHandle.WaitOne();
 
-                        Logger.Info("Stopping server components...");
+                        Logger.Info("Stopping server components");
                     }
                 }
                 finally
@@ -93,29 +93,29 @@ namespace Hangfire.Server
             }
             finally
             {
-				if (!RunningWithMono()) 
-				{
-					_globalMutex.ReleaseMutex ();
-				}
+                if (!RunningWithMono()) 
+                {
+                    _globalMutex.ReleaseMutex ();
+                }
             }
         }
 
         public override string ToString()
         {
-            return "Server Core";
+            return "Server Bootstrapper";
         }
 
         public void Dispose()
         {
-			if (_globalMutex != null) 
-			{
-				_globalMutex.Dispose ();
-			}
+            if (_globalMutex != null) 
+            {
+                _globalMutex.Dispose ();
+            }
         }
 
-		private static bool RunningWithMono()
-		{
-			return Type.GetType("Mono.Runtime") != null;
-		}
+        private static bool RunningWithMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
+        }
     }
 }

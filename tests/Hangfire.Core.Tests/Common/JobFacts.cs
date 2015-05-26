@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
@@ -72,12 +73,40 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void Ctor_ShouldHave_DefaultValueForArguments()
+        {
+            var job = new Job(_type, _method);
+
+            Assert.Empty(job.Arguments);
+        }
+
+        [Fact]
         public void Ctor_ShouldThrowAnException_WhenArgumentCountIsNotEqualToParameterCount()
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => new Job(_type, _method, new[] { "hello!" }));
 
             Assert.Contains("count", exception.Message);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodContains_UnassignedGenericTypeParameters()
+        {
+            var method = _type.GetMethod("GenericMethod");
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => new Job(_type, method, new[] { "hello!" }));
+
+            Assert.Equal("method", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodReturns_Task()
+        {
+            var method = _type.GetMethod("AsyncMethod");
+
+            Assert.Throws<NotSupportedException>(
+                () => new Job(_type, method, new string[0]));
         }
 
         [Fact]
@@ -162,6 +191,24 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Equal(typeof(Instance), job.Type);
             Assert.Equal("Method", job.Method.Name);
+        }
+
+        [Fact]
+        public void FromNonGenericExpression_ShouldInferType_FromAGivenObject()
+        {
+            IDisposable instance = new Instance();
+            var job = Job.FromExpression(() => instance.Dispose());
+
+            Assert.Equal(typeof(Instance), job.Type);
+        }
+
+        [Fact]
+        public void FromNonGenericExpression_ShouldThrowAnException_IfGivenObjectIsNull()
+        {
+            IDisposable instance = null;
+
+            Assert.Throws<InvalidOperationException>(
+                () => Job.FromExpression(() => instance.Dispose()));
         }
 
         [Fact]
@@ -437,6 +484,17 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(cachedAttributes[0] is TestMethodAttribute);
         }
 
+        [Fact]
+        public void Jobs_With_Generics_Have_Different_Ids()
+        {
+            var job1 = Job.FromExpression<JobClassWrapper<Instance>>(x => x.Dispose());
+            var job2 = Job.FromExpression<JobClassWrapper<BrokenDispose>>(x => x.Dispose());
+            var id1 = job1.ToString();
+            var id2 = job2.ToString();
+
+            Assert.NotEqual(id1, id2);
+        }
+
         private static void PrivateMethod()
         {
         }
@@ -502,6 +560,16 @@ namespace Hangfire.Core.Tests.Common
             throw new InvalidOperationException("exception");
         }
 
+        public void GenericMethod<T>(T arg)
+        {
+        }
+
+        public Task AsyncMethod()
+        {
+            var source = new TaskCompletionSource<bool>();
+            return source.Task;
+        }
+
         [TestType]
         public class Instance : IDisposable
         {
@@ -532,6 +600,13 @@ namespace Hangfire.Core.Tests.Common
             public void Dispose()
             {
                 throw new InvalidOperationException();
+            }
+        }
+
+        public class JobClassWrapper<T> : IDisposable where T : IDisposable
+        {
+            public void Dispose()
+            {
             }
         }
 

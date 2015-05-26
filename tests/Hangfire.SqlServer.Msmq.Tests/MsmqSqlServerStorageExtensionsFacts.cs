@@ -22,7 +22,7 @@ namespace Hangfire.Msmq.Tests
         public void UseMsmqQueues_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => MsmqSqlServerStorageExtensions.UseMsmqQueues(null, CleanMsmqQueueAttribute.PathPattern));
+                () => MsmqSqlServerStorageExtensions.UseMsmqQueues((SqlServerStorage)null, CleanMsmqQueueAttribute.PathPattern));
             
             Assert.Equal("storage", exception.ParamName);
         }

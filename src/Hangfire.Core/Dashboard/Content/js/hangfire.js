@@ -1,8 +1,45 @@
-﻿(function(hangFire) {
+﻿(function (hangFire) {
+    hangFire.Metrics = (function() {
+        function Metrics() {
+            this._metrics = {};
+        }
+
+        Metrics.prototype.addElement = function(name, element) {
+            if (!(name in this._metrics)) {
+                this._metrics[name] = [];
+            }
+
+            this._metrics[name].push(element);
+        };
+
+        Metrics.prototype.getElements = function(name) {
+            if (!(name in this._metrics)) {
+                return [];
+            }
+
+            return this._metrics[name];
+        };
+
+        Metrics.prototype.getNames = function() {
+            var result = [];
+            var metrics = this._metrics;
+
+            for (var name in metrics) {
+                if (metrics.hasOwnProperty(name)) {
+                    result.push(name);
+                }
+            }
+
+            return result;
+        };
+
+        return Metrics;
+    })();
+
     hangFire.RealtimeGraph = (function() {
-        function RealtimeGraph(element) {
-            this._succeeded = null;
-            this._failed = null;
+        function RealtimeGraph(element, succeeded, failed) {
+            this._succeeded = succeeded;
+            this._failed = failed;
             
             this._graph = new Rickshaw.Graph({
                 element: element,
@@ -36,16 +73,19 @@
         }
 
         RealtimeGraph.prototype.appendHistory = function (statistics) {
+            var newSucceeded = parseInt(statistics["succeeded:count"].intValue);
+            var newFailed = parseInt(statistics["failed:count"].intValue);
+
             if (this._succeeded !== null && this._failed !== null) {
-                var succeeded = statistics.succeeded - this._succeeded;
-                var failed = statistics.failed - this._failed;
+                var succeeded = newSucceeded - this._succeeded;
+                var failed = newFailed - this._failed;
 
                 this._graph.series.addData({ failed: failed, succeeded: succeeded });
                 this._graph.render();
             }
             
-            this._succeeded = statistics.succeeded;
-            this._failed = statistics.failed;
+            this._succeeded = newSucceeded;
+            this._failed = newFailed;
         };
 
         RealtimeGraph.prototype.update = function() {
@@ -100,7 +140,8 @@
     })();
 
     hangFire.StatisticsPoller = (function() {
-        function StatisticsPoller(statisticsUrl, pollInterval) {
+        function StatisticsPoller(metricsCallback, statisticsUrl, pollInterval) {
+            this._metricsCallback = metricsCallback;
             this._listeners = [];
             this._statisticsUrl = statisticsUrl;
             this._pollInterval = pollInterval;
@@ -109,17 +150,18 @@
 
         StatisticsPoller.prototype.start = function () {
             var self = this;
-            
-            this._intervalId = setInterval(function () {
+
+            var intervalFunc = function() {
                 try {
-                    $.getJSON(self._statisticsUrl, null, function (data) {
+                    $.post(self._statisticsUrl, { metrics: self._metricsCallback() }, function(data) {
                         self._notifyListeners(data);
                     });
                 } catch (e) {
                     console.log(e);
                 }
+            };
 
-            }, this._pollInterval);
+            this._intervalId = setInterval(intervalFunc, this._pollInterval);
         };
 
         StatisticsPoller.prototype.stop = function() {
@@ -147,15 +189,17 @@
 
     hangFire.Page = (function() {
         function Page(config) {
+            this._metrics = new Hangfire.Metrics();
+
+            var self = this;
             this._poller = new Hangfire.StatisticsPoller(
-                config.pollUrl, config.pollInterval);
-
-            this._createGraphs();
-            this._registerStatisticsUpdater();
-
-            this._poller.start();
+                function () { return self._metrics.getNames(); },
+                config.pollUrl,
+                config.pollInterval);
 
             this._initialize();
+            this._createGraphs();
+            this._poller.start();
         }
 
         Page.prototype._createGraphs = function() {
@@ -183,8 +227,11 @@
 
         Page.prototype._createRealtimeGraph = function(elementId) {
             var realtimeElement = document.getElementById(elementId);
+            var succeeded = parseInt($(realtimeElement).data('succeeded'));
+            var failed = parseInt($(realtimeElement).data('failed'));
+
             if (realtimeElement) {
-                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement);
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
@@ -220,16 +267,6 @@
             return null;
         };
 
-        Page.prototype._registerStatisticsUpdater = function() {
-            this._poller.addListener(function (data) {
-                for (var property in data) {
-                    if (data.hasOwnProperty(property)) {
-                        $('#stats-' + property).text(data[property]);
-                    }
-                }
-            });
-        };
-
         Page.prototype._initialize = function() {
             var updateRelativeDates = function () {
                 $('*[data-moment]').each(function () {
@@ -260,6 +297,30 @@
             setInterval(updateRelativeDates, 30 * 1000);
 
             $('*[title]').tooltip();
+
+            var self = this;
+            $('*[data-metric]').each(function () {
+                var name = $(this).data('metric');
+                self._metrics.addElement(name, this);
+            });
+
+            this._poller.addListener(function (metrics) {
+                for (var name in metrics) {
+                    var elements = self._metrics.getElements(name);
+                    for (var i = 0; i < elements.length; i++) {
+                        var metric = metrics[name];
+                        var metricClass = metric ? "metric-" + metric.style : "metric-null";
+                        var highlighted = metric && metric.highlighted ? "highlighted" : null;
+                        var value = metric ? metric.value : null;
+
+                        $(elements[i])
+                            .text(value)
+                            .closest('.metric')
+                            .removeClass()
+                            .addClass(["metric", metricClass, highlighted].join(' '));
+                    }
+                }
+            });
 
             $(document).on('click', '*[data-ajax]', function (e) {
                 var $this = $(this);
@@ -343,11 +404,9 @@
                     e.stopPropagation();
                 });
 
-                $(this).on('click', 'a', function(e) {
-                    e.stopPropagation();
-                });
+                $(this).on('click', '.js-jobs-list-row', function (e) {
+                    if ($(e.target).is('a')) return;
 
-                $(this).on('click', '.js-jobs-list-row', function () {
                     toggleRowSelection(this);
                     updateListState();
                 });

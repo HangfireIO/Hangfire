@@ -15,28 +15,38 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using Hangfire.Storage;
+using System.Collections.Generic;
+using Hangfire.Annotations;
 
 namespace Hangfire.States
 {
     public class ApplyStateContext : StateContext
     {
-        public ApplyStateContext(StateContext context, IState newState, string oldStateName)
+        public ApplyStateContext(
+            [NotNull] StateContext context, 
+            [NotNull] IState newState, 
+            [CanBeNull] string oldStateName, 
+            [NotNull] IEnumerable<IState> traversedStates)
             : base(context)
         {
             if (newState == null) throw new ArgumentNullException("newState");
+            if (traversedStates == null) throw new ArgumentNullException("traversedStates");
 
             OldStateName = oldStateName;
             NewState = newState;
+            TraversedStates = traversedStates;
             JobExpirationTimeout = TimeSpan.FromDays(1);
         }
-        
-        // Hiding the connection from filters, because their methods are being 
-        // executed inside a transaction. This property can break them.
-        private new IStorageConnection Connection { get { return base.Connection; } }
 
+        [CanBeNull]
         public string OldStateName { get; private set; }
+
+        [NotNull]
         public IState NewState { get; private set; }
+        
+        [NotNull]
+        public IEnumerable<IState> TraversedStates { get; private set; } 
+        
         public TimeSpan JobExpirationTimeout { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Server;
 using Moq;
 using Xunit;
@@ -27,25 +28,6 @@ namespace Hangfire.Core.Tests.Server
                 () => new AutomaticRetryServerComponentWrapper(null));
 
             Assert.Equal("innerComponent", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenMaxRetryAttempts_LesserThanZero()
-        {
-            var exception = Assert.Throws<ArgumentOutOfRangeException>(
-                () => new AutomaticRetryServerComponentWrapper(_component.Object, -1));
-
-            Assert.Equal("maxRetryAttempts", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenDelayCallbackIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-// ReSharper disable once AssignNullToNotNullAttribute
-                () => new AutomaticRetryServerComponentWrapper(_component.Object, 1, null));
-
-            Assert.Equal("delayCallback", exception.ParamName);
         }
 
         [Fact]
@@ -118,16 +100,18 @@ namespace Hangfire.Core.Tests.Server
 
         private AutomaticRetryServerComponentWrapper CreateWrapper()
         {
-            return new AutomaticRetryServerComponentWrapper(_component.Object, _maxRetryAttempts, x => TimeSpan.Zero);
+            return new AutomaticRetryServerComponentWrapper(_component.Object)
+            {
+                MaxRetryAttempts = _maxRetryAttempts,
+                DelayCallback = x => TimeSpan.Zero
+            };
         }
 
+        [UsedImplicitly]
         private class WaitingComponent : IServerComponent
         {
-            public int CalledTimes = 0;
-
             public void Execute(CancellationToken token)
             {
-                CalledTimes++;
                 token.WaitHandle.WaitOne(Timeout.Infinite);
                 token.ThrowIfCancellationRequested();
             }

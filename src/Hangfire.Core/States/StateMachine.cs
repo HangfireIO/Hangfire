@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Hangfire.Common;
 using Hangfire.Storage;
 
@@ -25,6 +26,7 @@ namespace Hangfire.States
     internal class StateMachine : IStateMachine
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
+        
 
         private readonly IStorageConnection _connection;
         private readonly IStateChangeProcess _stateChangeProcess;
@@ -38,7 +40,9 @@ namespace Hangfire.States
             _stateChangeProcess = stateChangeProcess;
         }
 
-        public string CreateInState(
+        public IStateChangeProcess Process { get { return _stateChangeProcess; } }
+
+        public string CreateJob(
             Job job,
             IDictionary<string, string> parameters,
             IState state)
@@ -54,14 +58,13 @@ namespace Hangfire.States
                 createdAt,
                 TimeSpan.FromHours(1));
 
-            var context = new StateContext(jobId, job, createdAt, _connection);
-            _stateChangeProcess.ChangeState(context, state, null);
+            var context = new StateContext(jobId, job, createdAt);
+            ChangeState(context, state, null);
 
             return jobId;
         }
 
-        public bool TryToChangeState(
-            string jobId, IState toState, string[] fromStates)
+        public bool ChangeState(string jobId, IState toState, string[] fromStates, CancellationToken cancellationToken)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (toState == null) throw new ArgumentNullException("toState");
@@ -76,11 +79,9 @@ namespace Hangfire.States
             // execution of this method. To guarantee this behavior, we are
             // using distributed application locks and rely on fact, that
             // any state transitions will be made only within a such lock.
-            using (_connection.AcquireDistributedLock(
-                String.Format("job:{0}:state-lock", jobId),
-                JobLockTimeout))
+            using (_connection.AcquireDistributedJobLock(jobId, JobLockTimeout))
             {
-                var jobData = _connection.GetJobData(jobId);
+                var jobData = GetJobData(jobId, cancellationToken);
 
                 if (jobData == null)
                 {
@@ -120,10 +121,61 @@ namespace Hangfire.States
                     }
                 }
 
-                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt, _connection);
-                var stateChanged = _stateChangeProcess.ChangeState(context, toState, jobData.State);
+                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt);
+                ChangeState(context, toState, jobData.State);
 
-                return loadSucceeded && stateChanged;
+                return loadSucceeded;
+            }
+        }
+
+        private void ChangeState(StateContext context, IState toState, string oldStateName)
+        {
+            var electStateContext = new ElectStateContext(context, _connection, this, toState, oldStateName);
+            _stateChangeProcess.ElectState(_connection, electStateContext);
+
+            var applyStateContext = new ApplyStateContext(
+                context,
+                electStateContext.CandidateState,
+                oldStateName,
+                electStateContext.TraversedStates);
+
+            ApplyState(applyStateContext);
+        }
+
+        private void ApplyState(ApplyStateContext context)
+        {
+            using (var transaction = _connection.CreateWriteTransaction())
+            {
+                _stateChangeProcess.ApplyState(transaction, context);
+
+                transaction.Commit();
+			}
+        }
+
+        private JobData GetJobData(string jobId, CancellationToken cancellationToken)
+        {
+            var firstAttempt = true;
+
+            while (true)
+            {
+                var jobData = _connection.GetJobData(jobId);
+                if (jobData == null)
+                {
+                    return null;
+                }
+
+                if (!String.IsNullOrEmpty(jobData.State))
+                {
+                    return jobData;
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+
+                Thread.Sleep(firstAttempt ? 0 : 100);
+                firstAttempt = false;
             }
         }
     }

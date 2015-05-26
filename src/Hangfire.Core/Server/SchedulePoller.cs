@@ -16,15 +16,15 @@
 
 using System;
 using System.Threading;
-using Common.Logging;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.States;
 
 namespace Hangfire.Server
 {
     public class SchedulePoller : IServerComponent
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(SchedulePoller));
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly IStateMachineFactory _stateMachineFactory;
@@ -90,7 +90,7 @@ namespace Hangfire.Server
                     Reason = "Enqueued as a scheduled job"
                 };
 
-                stateMachine.TryToChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName });
+                stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName });
 
                 return true;
             }

@@ -96,5 +96,15 @@ namespace ConsoleSample
             public int Id { get; set; }
             public CustomObject[] Children { get; set; }
         }
+
+        public void Write(char character)
+        {
+            Console.Write(character);
+        }
+
+        public void WriteBlankLine()
+        {
+            Console.WriteLine();
+        }
     }
 }

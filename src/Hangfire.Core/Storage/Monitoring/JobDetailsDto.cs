@@ -26,5 +26,6 @@ namespace Hangfire.Storage.Monitoring
         public DateTime? CreatedAt { get; set; }
         public IDictionary<string, string> Properties { get; set; }
         public IList<StateHistoryDto> History { get; set; }
+        public DateTime? ExpireAt { get; set; }
     }
 }

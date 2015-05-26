@@ -85,6 +85,82 @@ namespace Hangfire
             AddOrUpdate(methodCall, cronExpression());
         }
 
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Action> methodCall,
+            Func<string> cronExpression,
+            TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone);
+        }
+
+        public static void AddOrUpdate(
+            string recurringJobId,
+            Expression<Action> methodCall,
+            string cronExpression,
+            TimeZoneInfo timeZone)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Action<T>> methodCall,
+            Func<string> cronExpression,
+            TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone);
+        }
+
+        public static void AddOrUpdate<T>(
+            string recurringJobId,
+            Expression<Action<T>> methodCall,
+            string cronExpression,
+            TimeZoneInfo timeZone)
+        {
+            var job = Job.FromExpression(methodCall);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone);
+        }
+
+        public static void AddOrUpdate(
+            Expression<Action> methodCall,
+            Func<string> cronExpression,
+            TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(methodCall, cronExpression(), timeZone);
+        }
+
+        public static void AddOrUpdate(
+            Expression<Action> methodCall,
+            string cronExpression,
+            TimeZoneInfo timeZone)
+        {
+            var job = Job.FromExpression(methodCall);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone);
+        }
+
+        public static void AddOrUpdate<T>(
+            Expression<Action<T>> methodCall, 
+            Func<string> cronExpression, 
+            TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(methodCall, cronExpression(), timeZone);
+        }
+
+        public static void AddOrUpdate<T>(
+            Expression<Action<T>> methodCall,
+            string cronExpression,
+            TimeZoneInfo timeZone)
+        {
+            var job = Job.FromExpression(methodCall);
+            var id = GetRecurringJobId(job);
+
+            Instance.Value.AddOrUpdate(id, job, cronExpression, timeZone);
+        }
+
         public static void RemoveIfExists(string recurringJobId)
         {
             Instance.Value.RemoveIfExists(recurringJobId);
@@ -97,7 +173,7 @@ namespace Hangfire
 
         private static string GetRecurringJobId(Job job)
         {
-            return String.Format("{0}.{1}", job.Type.Name, job.Method.Name);
+            return job.ToString();
         }
     }
 }

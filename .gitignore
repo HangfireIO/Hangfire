@@ -45,6 +45,7 @@ packages/
 
 # Build results
 
+[Bb]uild/
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -54,6 +55,8 @@ x64/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+
+coverage.xml
 
 *_i.c
 *_p.c
