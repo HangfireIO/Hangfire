@@ -25,7 +25,6 @@ namespace Hangfire.Core.Tests
 
             _context = new ElectStateContextMock();
             _context.StateContextValue.JobIdValue = JobId;
-            _context.StateContextValue.ConnectionValue = _connection;
             _context.CandidateStateValue = _state;
             _context.StateContextValue.CreatedAtValue = DateTime.UtcNow.AddSeconds(-1);
 

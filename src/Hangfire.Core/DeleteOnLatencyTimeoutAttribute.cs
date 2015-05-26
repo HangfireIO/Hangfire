@@ -1,6 +1,6 @@
 ﻿using System;
-using Common.Logging;
 using Hangfire.Common;
+using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -8,7 +8,7 @@ namespace Hangfire
 {
     public class DeleteOnLatencyTimeoutAttribute : JobFilterAttribute, IElectStateFilter
     {
-        private static readonly ILog Logger = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private int _timeoutInSeconds;
         private const int DefaultTimeoutInSeconds = 300;
 
