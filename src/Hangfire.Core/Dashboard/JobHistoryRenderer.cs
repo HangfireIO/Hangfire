@@ -130,6 +130,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("Latency"))
             {
                 var latency = TimeSpan.FromMilliseconds(long.Parse(stateData["Latency"]));
+
                 builder.AppendFormat("<dt>Latency:</dt><dd>{0}</dd>", html.ToHumanDuration(latency, false));
 
                 itemsAdded = true;
