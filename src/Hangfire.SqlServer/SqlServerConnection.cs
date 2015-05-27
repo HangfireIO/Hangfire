@@ -363,10 +363,10 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            var query = @"
+            const string query = @"
 select [Value] from (
 	select [Value], row_number() over (order by [Id] ASC) as row_num 
-	from Hangfire.[Set]
+	from HangFire.[Set]
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt";
 
@@ -472,7 +472,7 @@ where [Key] = @key";
             const string query = @"
 select [Value] from (
 	select [Value], row_number() over (order by [Id] desc) as row_num 
-	from Hangfire.List
+	from HangFire.List
 	where [Key] = @key 
 ) as s where s.row_num between @startingFrom and @endingAt";
 
@@ -486,7 +486,7 @@ select [Value] from (
             if (key == null) throw new ArgumentNullException("key");
 
             const string query = @"
-select [Value] from Hangfire.List
+select [Value] from HangFire.List
 where [Key] = @key
 order by [Id] desc";
 
