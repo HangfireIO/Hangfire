@@ -18,6 +18,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -26,6 +27,7 @@ namespace Hangfire.Server
     internal class Worker : IServerComponent
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly IJobPerformanceProcess _process;
@@ -111,8 +113,10 @@ namespace Hangfire.Server
                 {
                     fetchedJob.RemoveFromQueue();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+
                     fetchedJob.Requeue();
                     throw;
                 }
