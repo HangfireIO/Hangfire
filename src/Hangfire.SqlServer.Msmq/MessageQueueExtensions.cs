@@ -31,7 +31,7 @@ namespace Rsft.Lib.Msmq.MessageCounter
     /// <summary>
     ///     The message queue extensions.
     /// </summary>
-    public static class MessageQueueExtensions
+    internal static class MessageQueueExtensions
     {
         #region Constants
 
