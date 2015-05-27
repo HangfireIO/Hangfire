@@ -129,7 +129,7 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("Latency"))
             {
-                var latency = TimeSpan.FromMilliseconds(int.Parse(stateData["Latency"]));
+                var latency = TimeSpan.FromMilliseconds(long.Parse(stateData["Latency"]));
                 builder.AppendFormat("<dt>Latency:</dt><dd>{0}</dd>", html.ToHumanDuration(latency, false));
 
                 itemsAdded = true;
@@ -179,7 +179,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("ServerId"))
             {
                 serverId = stateData["ServerId"];
-            } 
+            }
             else if (stateData.ContainsKey("ServerName"))
             {
                 serverId = stateData["ServerName"];
