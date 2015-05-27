@@ -14,20 +14,20 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
-1.4.0-rc2
-* Changed – Don't pass IsolationLevel to TransactionScope by default.
-* Changed – Coarse grained locks for Hash, List and Set tables to prevent deadlocks.
-    
-1.4.0-rc1
+1.4.3
+* Fixed – SQL Server storage does not work with case-sensitive and binary collations (by @ilessa).
+* Fixed – "Incorrect syntax near 'MERGE'" error in `CountersAggregator` component.
+
+1.4.0
 * Added – Ability to pass isolation level to use in transactions, default is `serializable`.
-* Fixed – Retry on deadlocks during automatic migration on server restart.
-    
-1.4.0-beta1
 * Added – Make the expiration check interval configurable (by @travisblakeney).
 * Changed – Use read committed or parent transaction isolation level instead of `serializable`.
 * Changed – Automatically aggregate records in `Hangfire.Counter` table.
 * Changed – Add indexes to prevent blocking rows by Expiration Manager.
 * Changed – Remove the `with tablock` hint from the expiration cleanup (by @travisblakeney).
+* Changed – Don't pass IsolationLevel to TransactionScope by default.
+* Changed – Coarse grained locks for Hash, List and Set tables to prevent deadlocks.
+* Fixed – Retry on deadlocks during automatic migration on server restart.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
