@@ -868,16 +868,16 @@ values (@key, @field, @value)";
         public void GetSetCount_ReturnsNumberOfElements_InASet()
         {
             const string arrangeSql = @"
-insert into Hangfire.[Set] ([Key], [Value], [Score])
+insert into HangFire.[Set] ([Key], [Value], [Score])
 values (@key, @value, 0.0)";
 
             UseConnections((sql, connection) =>
             {
                 sql.Execute(arrangeSql, new List<dynamic>
                 {
-                    new { Key = "set-1", Value = "value-1" },
-                    new { Key = "set-2", Value = "value-1" },
-                    new { Key = "set-1", Value = "value-2" }
+                    new { key = "set-1", value = "value-1" },
+                    new { key = "set-2", value = "value-1" },
+                    new { key = "set-1", value = "value-2" }
                 });
 
                 var result = connection.GetSetCount("set-1");
@@ -899,8 +899,8 @@ values (@key, @value, 0.0)";
         public void GetRangeFromSet_ReturnsPagedElements()
         {
             const string arrangeSql = @"
-insert into Hangfire.[Set] ([Key], [Value], [Score])
-values (@key, @value, 0.0)";
+insert into HangFire.[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
 
             UseConnections((sql, connection) =>
             {
@@ -1101,7 +1101,7 @@ values (@key, @field, @expireAt)";
         public void GetListCount_ReturnsTheNumberOfListElements()
         {
             const string arrangeSql = @"
-insert into Hangfire.List ([Key])
+insert into HangFire.List ([Key])
 values (@key)";
 
             UseConnections((sql, connection) =>

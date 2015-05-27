@@ -57,7 +57,7 @@ namespace Hangfire.SqlServer.Tests
         private static void RecreateDatabaseAndInstallObjects()
         {
             var recreateDatabaseSql = String.Format(
-                @"if db_id('{0}') is null create database [{0}]",
+                @"if db_id('{0}') is null create database [{0}] COLLATE SQL_Latin1_General_CP1_CS_AS",
                 ConnectionUtils.GetDatabaseName());
 
             using (var connection = new SqlConnection(
