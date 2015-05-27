@@ -28,6 +28,34 @@ namespace Hangfire
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class GlobalConfigurationExtensions
     {
+        public static IGlobalConfiguration<SchedulerResolution> UseMinuteResolution(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseSchedulerResolution(new MinuteSchedulerResolution());
+        }
+
+        public static IGlobalConfiguration<SchedulerResolution> UseSecondResolution(
+            [NotNull] this IGlobalConfiguration configuration)
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+
+            return configuration.UseSchedulerResolution(new SecondSchedulerResolution());
+        }
+        
+        public static IGlobalConfiguration<TResolution> UseSchedulerResolution<TResolution>(
+            [NotNull] this IGlobalConfiguration configuration,
+            [NotNull] TResolution resolution)
+            where TResolution : SchedulerResolution
+        {
+            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (resolution == null) throw new ArgumentNullException("resolution");
+
+            return configuration.Use(resolution, x => SchedulerResolution.Current = x);
+        }
+
+
         public static IGlobalConfiguration<TStorage> UseStorage<TStorage>(
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] TStorage storage)

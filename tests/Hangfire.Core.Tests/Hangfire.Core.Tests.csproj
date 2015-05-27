@@ -31,11 +31,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CronExpressionDescriptor, Version=1.13.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CronExpressionDescriptor.1.13.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Moq">
       <HintPath>..\..\packages\Moq.4.2.1402.2112\lib\net40\Moq.dll</HintPath>
     </Reference>
     <Reference Include="Moq.Sequences">
       <HintPath>..\..\packages\Moq.Sequences.1.0.1.0\lib\net40\Moq.Sequences.dll</HintPath>
+    </Reference>
+    <Reference Include="NCrontab">
+      <HintPath>..\..\packages\ncrontab.2.0.0\lib\net20\NCrontab.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -60,9 +67,6 @@
     <Reference Include="xunit">
       <HintPath>..\..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
-    <Reference Include="NCrontab, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BackgroundJobClientExtensionsFacts.cs" />
@@ -83,6 +87,7 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
+    <Compile Include="CronExpressionDescriptorFacts.cs" />
     <Compile Include="CronFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />

@@ -10,6 +10,14 @@ namespace Hangfire.Core.Tests
     public class CronFacts
     {
         [Fact]
+        public void Secondly_ReturnsFormattedString()
+        {
+            string expected = "* * * * * *";
+            string actual = Cron.Secondly();
+            Assert.Equal(expected, actual);
+        }
+        
+        [Fact]
         public void Minutely_ReturnsFormattedString()
         {
             string expected = "* * * * *";

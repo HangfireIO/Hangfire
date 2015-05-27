@@ -101,7 +101,10 @@ namespace Hangfire.Server
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
-            var cronSchedule = CrontabSchedule.Parse(cron);
+
+            var parts = cron.Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+            var cronSchedule = CrontabSchedule.Parse(cron, new CrontabSchedule.ParseOptions { IncludingSeconds = (parts.Length >= 6) });
 
             try
             {

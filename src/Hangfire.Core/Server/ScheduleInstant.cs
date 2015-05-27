@@ -38,7 +38,8 @@ namespace Hangfire.Server
             _timeZone = timeZone;
             _schedule = schedule;
 
-            NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
+            NowInstant = SchedulerResolution.Current.CalculateNowInstant(nowInstant, timeZone, _schedule.GetNextOccurrence);
+
             NextInstant = TimeZoneInfo.ConvertTimeToUtc(
                 _schedule.GetNextOccurrence(TimeZoneInfo.ConvertTimeFromUtc(NowInstant, _timeZone)),
                 _timeZone);

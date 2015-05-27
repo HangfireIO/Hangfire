@@ -25,6 +25,14 @@ namespace Hangfire
     public class Cron
     {
         /// <summary>
+        /// Returns cron expression that fires every second.
+        /// </summary>
+        public static string Secondly()
+        {
+            return "* * * * * *";
+        }
+
+        /// <summary>
         /// Returns cron expression that fires every minute.
         /// </summary>
         public static string Minutely()

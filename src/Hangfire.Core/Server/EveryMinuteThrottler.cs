@@ -19,9 +19,9 @@ using System.Threading;
 
 namespace Hangfire.Server
 {
-    internal class EveryMinuteThrottler : IThrottler
+    internal class EveryMinuteThrottler : Throttler
     {
-        public void Throttle(CancellationToken token)
+        public override void Throttle(CancellationToken token)
         {
             while (DateTime.Now.Second != 0)
             {
@@ -29,15 +29,9 @@ namespace Hangfire.Server
             }
         }
 
-        public void Delay(CancellationToken token)
+        public override void Delay(CancellationToken token)
         {
             WaitASecondOrThrowIfCanceled(token);
-        }
-
-        private static void WaitASecondOrThrowIfCanceled(CancellationToken token)
-        {
-            token.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
-            token.ThrowIfCancellationRequested();
         }
     }
 }

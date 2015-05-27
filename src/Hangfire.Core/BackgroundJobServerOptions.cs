@@ -37,7 +37,7 @@ namespace Hangfire
             ServerName = Environment.MachineName;
             Queues = new[] { EnqueuedState.DefaultQueue };
             ShutdownTimeout = TimeSpan.FromSeconds(15);
-            SchedulePollingInterval = TimeSpan.FromSeconds(15);
+            SchedulePollingInterval = SchedulerResolution.Current.GetSchedulePollingInterval();
 
             ServerWatchdogOptions = new ServerWatchdogOptions();
         }
