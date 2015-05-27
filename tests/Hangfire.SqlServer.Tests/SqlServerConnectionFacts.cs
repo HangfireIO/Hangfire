@@ -966,33 +966,6 @@ values (@key, @value)";
         }
 
         [Fact, CleanDatabase]
-        public void CountersAggregatorExecutesProperly()
-        {
-            // Arrange
-            const string createSql = @"
-insert into HangFire.Counter ([Key], [Value], ExpireAt) 
-values ('key', 1, @expireAt)";
-
-            var connection = ConnectionUtils.CreateConnection();
-
-            using (connection)
-            {
-                //Prepare data
-                connection.Execute(createSql, new {expireAt = DateTime.UtcNow.AddHours(1)});
-                var storage = new SqlServerStorage(connection);
-                var countersAggregator = new CountersAggregator(storage, TimeSpan.FromMinutes(5));
-                var cts = new CancellationTokenSource();
-                var token = cts.Token;
-
-                // Act
-                countersAggregator.Execute(token);
-
-                // Assert
-                Assert.Equal(1, connection.Query<int>(@"select count(*) from HangFire.AggregatedCounter").Single());
-            }
-        }
-
-        [Fact, CleanDatabase]
         public void GetCounter_IncludesValues_FromCounterAggregateTable()
         {
             const string arrangeSql = @"

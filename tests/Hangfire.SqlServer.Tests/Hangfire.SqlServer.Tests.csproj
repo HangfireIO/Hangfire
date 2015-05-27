@@ -53,6 +53,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CountersAggregatorFacts.cs" />
     <Compile Include="PersistentJobQueueProviderCollectionFacts.cs" />
     <Compile Include="SqlServerConnectionFacts.cs" />
     <Compile Include="ExpirationManagerFacts.cs" />
