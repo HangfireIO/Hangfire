@@ -88,7 +88,7 @@ OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggrega
 
 SET NOCOUNT ON
 
-MERGE [HangFire].[AggregatedCounter] AS [Target]
+;MERGE [HangFire].[AggregatedCounter] AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])

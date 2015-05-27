@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Runtime.Serialization.Formatters;
 using Hangfire.Common;
+using Hangfire.Storage;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -166,6 +168,34 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void ForDeserializeCanUseCustomConfigurationOfJsonNetWithInvocationData()
+        {
+            try
+            {
+                JobHelper.SetSerializerSettings(new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.All,
+                    TypeNameAssemblyFormat = FormatterAssemblyStyle.Simple
+                });
+
+                var method = typeof (BackgroundJob).GetMethod("DoWork");
+                var args = new[] {"123", "Test"};
+                var job = new Job(typeof(BackgroundJob), method, args);
+
+                var invocationData = InvocationData.Serialize(job);
+                var deserializedJob = invocationData.Deserialize();
+
+                Assert.Equal(typeof(BackgroundJob), deserializedJob.Type);
+                Assert.Equal(method, deserializedJob.Method);
+                Assert.Equal(args, deserializedJob.Arguments);
+            }
+            finally
+            {
+                JobHelper.SetSerializerSettings(null);
+            }
+        }
+
+        [Fact]
         public void ForDeserializeWithGenericMethodCanUseCustomConfigurationOfJsonNet()
         {
             try
@@ -196,6 +226,13 @@ namespace Hangfire.Core.Tests.Common
             }
 
             public string PropertyA { get; private set; }
+        }
+
+        private class BackgroundJob
+        {
+            public void DoWork(string workId, string message)
+            {
+            }
         }
     }
 }

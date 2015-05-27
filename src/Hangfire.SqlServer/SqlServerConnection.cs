@@ -223,7 +223,7 @@ where j.Id = @jobId";
             if (name == null) throw new ArgumentNullException("name");
 
             _connection.Execute(
-                @"merge HangFire.JobParameter with (holdlock) as Target "
+                @";merge HangFire.JobParameter with (holdlock) as Target "
                 + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
                 + @"on Target.JobId = Source.JobId AND Target.Name = Source.Name "
                 + @"when matched then update set Value = Source.Value "
@@ -270,7 +270,7 @@ where j.Id = @jobId";
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
             const string sql = @"
-merge HangFire.Hash with (holdlock) as Target
+;merge HangFire.Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
@@ -312,7 +312,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             };
 
             _connection.Execute(
-                @"merge HangFire.Server with (holdlock) as Target "
+                @";merge HangFire.Server with (holdlock) as Target "
                 + @"using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat) "
                 + @"on Target.Id = Source.Id "
                 + @"when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat "
