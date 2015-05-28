@@ -44,6 +44,10 @@
       <HintPath>..\..\packages\CronExpressionDescriptor.1.13.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NCrontab">
       <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
     </Reference>
@@ -59,9 +63,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.Owin">
-      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
-    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
