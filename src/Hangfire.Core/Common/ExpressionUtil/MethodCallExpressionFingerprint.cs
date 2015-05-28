@@ -13,7 +13,9 @@ namespace Hangfire.Common.ExpressionUtil
     // Expression of form xxx.Foo(...), xxx[...] (get_Item()), etc.
 
     [SuppressMessage("Microsoft.Usage", "CA2218:OverrideGetHashCodeOnOverridingEquals", Justification = "Overrides AddToHashCodeCombiner() instead.")]
+#if !DNXCORE50
     [ExcludeFromCodeCoverage]
+#endif
     internal sealed class MethodCallExpressionFingerprint : ExpressionFingerprint
     {
         public MethodCallExpressionFingerprint(ExpressionType nodeType, Type type, MethodInfo method)

@@ -86,7 +86,6 @@
     <Compile Include="SqlServerStorageOptions.cs" />
     <Compile Include="SqlServerConnection.cs" />
     <Compile Include="SqlServerWriteOnlyTransaction.cs" />
-    <Compile Include="SqlServerBootstrapperConfigurationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj">

@@ -8,8 +8,9 @@ namespace Hangfire.Common.ExpressionUtil
 {
     // This is a visitor which produces a fingerprint of an expression. It doesn't
     // rewrite the expression in a form which can be compiled and cached.
-
+#if !DNXCORE50
     [ExcludeFromCodeCoverage]
+#endif
     internal sealed class FingerprintingExpressionVisitor : ExpressionVisitor
     {
         private readonly List<object> _seenConstants = new List<object>();
@@ -118,10 +119,12 @@ namespace Hangfire.Common.ExpressionUtil
             return base.VisitDefault(node);
         }
 
+#if !DNXCORE50
         protected override Expression VisitDynamic(DynamicExpression node)
         {
             return GiveUp(node);
         }
+#endif
 
         protected override ElementInit VisitElementInit(ElementInit node)
         {

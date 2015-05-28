@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Reflection;
 
 namespace Hangfire.Common
 {
@@ -51,7 +52,7 @@ namespace Hangfire.Common
         {
             return MultiuseAttributeCache.GetOrAdd(
                 attributeType,
-                type => type.GetCustomAttributes(typeof(AttributeUsageAttribute), true)
+                type => type.GetTypeInfo().GetCustomAttributes(typeof(AttributeUsageAttribute), true)
                             .Cast<AttributeUsageAttribute>()
                             .First()
                             .AllowMultiple);

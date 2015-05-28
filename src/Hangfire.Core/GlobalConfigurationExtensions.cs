@@ -85,6 +85,7 @@ namespace Hangfire
             return configuration.UseLogProvider(new Log4NetLogProvider());
         }
 
+#if !DNXCORE50
         public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
@@ -101,6 +102,7 @@ namespace Hangfire
 
             return configuration.UseLogProvider(new ElmahLogProvider(minLevel));
         }
+#endif
 
         public static IGlobalConfiguration<EntLibLogProvider> UseEntLibLogProvider(
             [NotNull] this IGlobalConfiguration configuration)

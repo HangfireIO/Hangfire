@@ -44,13 +44,6 @@
       <HintPath>..\..\packages\CronExpressionDescriptor.1.13.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NCrontab">
-      <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -73,6 +66,15 @@
     </Compile>
     <Compile Include="AppBuilderExtensions.cs" />
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
+    <Compile Include="App_Packages\LibOwin.1.0\LibOwin.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabException.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabField.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabFieldImpl.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabFieldKind.cs" />
+    <Compile Include="App_Packages\NCrontab\CrontabSchedule.cs" />
+    <Compile Include="App_Packages\NCrontab\ErrorHandling.cs" />
+    <Compile Include="App_Packages\NCrontab\ICrontabField.cs" />
+    <Compile Include="App_Packages\NCrontab\StringSeparatorStock.cs" />
     <Compile Include="AutomaticRetryAttribute.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
@@ -93,7 +95,6 @@
     <Compile Include="Dashboard\DashboardMetric.cs" />
     <Compile Include="Dashboard\DashboardMetrics.cs" />
     <Compile Include="DashboardOptions.cs" />
-    <Compile Include="Obsolete\DashboardMiddleware.cs" />
     <Compile Include="Dashboard\JobsSidebarMenu.cs" />
     <Compile Include="Dashboard\MenuItem.cs" />
     <Compile Include="Dashboard\NavigationMenu.cs" />
@@ -145,7 +146,6 @@
     <Compile Include="Dashboard\RequestDispatcherContext.cs" />
     <Compile Include="Dashboard\IAuthorizationFilter.cs" />
     <Compile Include="Dashboard\LocalRequestsOnlyAuthorizationFilter.cs" />
-    <Compile Include="Obsolete\DashboardOwinExtensions.cs" />
     <Compile Include="Dashboard\RouteCollection.cs" />
     <Compile Include="Dashboard\RouteCollectionExtensions.cs" />
     <Compile Include="Dashboard\EmbeddedResourceDispatcher.cs" />
@@ -256,9 +256,7 @@
     <Compile Include="Dashboard\UrlHelper.cs" />
     <Compile Include="GlobalConfiguration.cs" />
     <Compile Include="GlobalConfigurationExtensions.cs" />
-    <Compile Include="Obsolete\IBootstrapperConfiguration.cs" />
     <Compile Include="IGlobalConfiguration.cs" />
-    <Compile Include="Obsolete\OwinBootstrapper.cs" />
     <Compile Include="Dashboard\MiddlewareExtensions.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
@@ -312,9 +310,6 @@
     <Compile Include="Server\ScheduleInstant.cs" />
     <Compile Include="Server\ScheduleInstantFactory.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
-    <Compile Include="Obsolete\ServerOwinExtensions.cs" />
-    <Compile Include="Obsolete\StartupConfiguration.cs" />
-    <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />

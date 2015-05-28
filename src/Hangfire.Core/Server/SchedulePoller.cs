@@ -24,7 +24,7 @@ namespace Hangfire.Server
 {
     public class SchedulePoller : IServerComponent
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof (SchedulePoller));
 
         private readonly JobStorage _storage;
         private readonly IStateMachineFactory _stateMachineFactory;

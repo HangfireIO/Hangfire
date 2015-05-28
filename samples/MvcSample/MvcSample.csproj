@@ -23,7 +23,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <MvcProjectUpgradeChecked>true</MvcProjectUpgradeChecked>
     <FileUpgradeFlags>40</FileUpgradeFlags>
-    <UpgradeBackupLocation>C:\Users\odinserj\Documents\GitHub\Hangfire\Backup6\</UpgradeBackupLocation>
+    <UpgradeBackupLocation>C:\Users\odinserj\Documents\GitHub\Hangfire\Backup5\</UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>

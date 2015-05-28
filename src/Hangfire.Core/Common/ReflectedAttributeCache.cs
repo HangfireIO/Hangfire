@@ -25,15 +25,15 @@ namespace Hangfire.Common
 {
     internal static class ReflectedAttributeCache
     {
-        private static readonly ConcurrentDictionary<Type, ReadOnlyCollection<JobFilterAttribute>> TypeFilterAttributeCache 
-            = new ConcurrentDictionary<Type, ReadOnlyCollection<JobFilterAttribute>>();
+        private static readonly ConcurrentDictionary<TypeInfo, ReadOnlyCollection<JobFilterAttribute>> TypeFilterAttributeCache 
+            = new ConcurrentDictionary<TypeInfo, ReadOnlyCollection<JobFilterAttribute>>();
 
         private static readonly ConcurrentDictionary<MethodInfo, ReadOnlyCollection<JobFilterAttribute>> MethodFilterAttributeCache
             = new ConcurrentDictionary<MethodInfo, ReadOnlyCollection<JobFilterAttribute>>();
 
-        public static ICollection<JobFilterAttribute> GetTypeFilterAttributes(Type type)
+        public static ICollection<JobFilterAttribute> GetTypeFilterAttributes(TypeInfo typeInfo)
         {
-            return GetAttributes(TypeFilterAttributeCache, type);
+            return GetAttributes(TypeFilterAttributeCache, typeInfo);
         }
 
         public static ICollection<JobFilterAttribute> GetMethodFilterAttributes(MethodInfo methodInfo)
@@ -49,7 +49,7 @@ namespace Hangfire.Common
         {
             Debug.Assert(memberInfo != null);
             Debug.Assert(lookup != null);
-
+            
             return lookup.GetOrAdd(memberInfo, mi => new ReadOnlyCollection<TAttribute>((TAttribute[])memberInfo.GetCustomAttributes(typeof(TAttribute), inherit: true)));
         }
     }

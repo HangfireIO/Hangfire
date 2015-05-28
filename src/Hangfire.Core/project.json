@@ -1,0 +1,47 @@
+﻿{
+    "version": "1.0.0-*",
+    "description": "An easy way",
+    "authors": [ "Sergey Odinokov" ],
+    "tags": [ "" ],
+    "projectUrl": "",
+    "licenseUrl": "",
+
+    "dependencies": {
+    },
+
+    "frameworks": {
+        "net45": {
+            "dependencies": {
+                "CronExpressionDescriptor": "1.13.0",
+                "Newtonsoft.Json": "6.0.8",
+                "Owin": "1.0.0"
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Diagnostics.Debug": "4.0.0-beta-*",
+                "System.Diagnostics.Process": "4.0.0-beta-*",
+                "System.Diagnostics.Tools": "4.0.0-beta-*",
+                "System.Diagnostics.TraceSource": "4.0.0-beta-*",
+                "System.Collections": "4.0.10-beta-*",
+                "System.Collections.Concurrent": "4.0.10-beta-*",
+                "System.ComponentModel.TypeConverter": "4.0.0-beta-*",
+                "System.Console": "4.0.0-beta-*",
+                "System.Globalization": "4.0.0-beta-*",
+                "System.Globalization.Extensions": "4.0.0-beta-*",
+                "System.Linq": "4.0.0-beta-*",
+                "System.Net.Http": "4.0.0-beta-*",
+                "System.Reflection.Extensions": "4.0.0-beta-*",
+                "System.Runtime.Extensions": "4.0.0-beta-*",
+                "System.Runtime.InteropServices": "4.0.0-beta-*",
+                "System.Security.Claims": "4.0.0-beta-*",
+                "System.Security.Principal": "4.0.0-beta-*",
+                "System.Text.RegularExpressions": "4.0.0-beta-*",
+                "System.Threading": "4.0.10-beta-*",
+                "System.Threading.Thread": "4.0.0-beta-*",
+                "Newtonsoft.Json": "7.0.1-*",
+                "Microsoft.CSharp": "4.0.0-beta-*"
+            }
+        }
+    },
+}

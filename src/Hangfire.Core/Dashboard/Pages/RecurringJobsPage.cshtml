@@ -95,6 +95,8 @@
                                 @* ReSharper disable once EmptyGeneralCatchClause *@
                                 @{
                                     var cronDescription = job.Cron;
+
+#if !DNXCORE50
                                     try
                                     {
                                         cronDescription = ExpressionDescriptor.GetDescription(job.Cron);
@@ -102,6 +104,7 @@
                                     catch (FormatException)
                                     {
                                     }
+#endif
                                 }
                                 @cronDescription
                             </td>

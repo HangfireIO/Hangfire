@@ -18,8 +18,8 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
+using Hangfire.LibOwin;
 using Hangfire.Storage.Monitoring;
-using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {

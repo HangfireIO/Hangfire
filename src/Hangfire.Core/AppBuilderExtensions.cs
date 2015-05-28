@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+#if !DNXCORE50
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,9 +24,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
+using Hangfire.LibOwin;
 using Owin;
-using Microsoft.Owin;
-using Microsoft.Owin.Infrastructure;
 
 namespace Hangfire
 {
@@ -122,11 +123,9 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException("options");
             if (storage == null) throw new ArgumentNullException("storage");
 
-            SignatureConversions.AddConversions(builder);
-
-            builder.Map(pathMatch, subApp => subApp
+            /*(builder.Map(pathMatch, subApp => subApp
                 .UseOwin()
-                .UseHangfireDashboard(options, storage, DashboardRoutes.Routes));
+                .UseHangfireDashboard(options, storage, DashboardRoutes.Routes));*/
 
             return builder;
         }
@@ -137,3 +136,5 @@ namespace Hangfire
         }
     }
 }
+
+#endif

@@ -122,8 +122,8 @@ namespace Hangfire.Common
         internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
         {
             return useCache
-                ? ReflectedAttributeCache.GetTypeFilterAttributes(Type)
-                : GetFilterAttributes(Type);
+                ? ReflectedAttributeCache.GetTypeFilterAttributes(Type.GetTypeInfo())
+                : GetFilterAttributes(Type.GetTypeInfo());
         }
 
         internal IEnumerable<JobFilterAttribute> GetMethodFilterAttributes(bool useCache)
@@ -212,7 +212,7 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Global methods are not supported. Use class methods instead.");
             }
 
-            if (!Method.DeclaringType.IsAssignableFrom(Type))
+            if (!Method.DeclaringType.GetTypeInfo().IsAssignableFrom(Type.GetTypeInfo()))
             {
                 throw new ArgumentException(String.Format(
                     "The type `{0}` must be derived from the `{1}` type.",
@@ -225,7 +225,7 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Only public methods can be invoked in the background.");
             }
 
-            if (typeof (Task).IsAssignableFrom(Method.ReturnType))
+            if (typeof (Task).GetTypeInfo().IsAssignableFrom(Method.ReturnType.GetTypeInfo()))
             {
                 throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
             }
@@ -293,7 +293,7 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof (IJobCancellationToken).GetTypeInfo().IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                     {
                         value = cancellationToken;
                     }

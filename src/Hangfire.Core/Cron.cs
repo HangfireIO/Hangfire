@@ -14,8 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using CronExpressionDescriptor;
 using System;
+
+#if !DNXCORE50
+using CronExpressionDescriptor;
+#endif
 
 namespace Hangfire
 {
@@ -220,6 +223,7 @@ namespace Hangfire
         /// </summary>
         /// <param name="cronExpression">A Cron expression string.</param>
         /// <returns>English description.</returns>
+#if !DNXCORE50
         [Obsolete("Please install `CronExpressionDescriptor` package manually and use it.")]
         public static string GetDescription(string cronExpression)
         {
@@ -241,5 +245,6 @@ namespace Hangfire
             
             return ExpressionDescriptor.GetDescription(cronExpression);
         }
+#endif
     }
 }

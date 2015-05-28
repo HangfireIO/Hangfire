@@ -1,5 +1,6 @@
 ﻿@* Generator: Template TypeVisibility: Public GeneratePrettyNames: True *@
 @using System
+@using System.Reflection
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -56,7 +57,7 @@
                     <li>
                         <a href="http://hangfire.io/" target="_blank">Hangfire
                             @{
-                                var version = GetType().Assembly.GetName().Version;
+                                var version = GetType().GetTypeInfo().Assembly.GetName().Version;
                             }
                             @String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build)
                         </a>

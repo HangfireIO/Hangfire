@@ -13,7 +13,9 @@ namespace Hangfire.Common
     ///
     /// The unit tests for the ExpressionUtil.* types are in the System.Web.Mvc.Test project.
     /// </summary>
+#if !DNXCORE50
     [ExcludeFromCodeCoverage]
+#endif
     public static class CachedExpressionCompiler
     {
         private static readonly ParameterExpression UnusedParameterExpr = Expression.Parameter(typeof(object), "_unused");

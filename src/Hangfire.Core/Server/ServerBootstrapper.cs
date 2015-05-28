@@ -23,7 +23,7 @@ namespace Hangfire.Server
     public class ServerBootstrapper : IServerComponent, IDisposable
     {
         private const string BootstrapperId = "{4deecd4f-19f6-426b-aa87-6cd1a03eaa48}";
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof (ServerBootstrapper));
 
         private readonly JobStorage _storage;
         private readonly string _serverId;

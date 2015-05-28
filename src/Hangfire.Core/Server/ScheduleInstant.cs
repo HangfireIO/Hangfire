@@ -60,9 +60,9 @@ namespace Hangfire.Server
 
             return _schedule
                 .GetNextOccurrences(
-                    TimeZoneInfo.ConvertTimeFromUtc(baseTime, _timeZone),
-                    TimeZoneInfo.ConvertTimeFromUtc(endTime, _timeZone))
-                .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
+                    TimeZoneInfo.ConvertTime(baseTime, TimeZoneInfo.Utc, _timeZone),
+                    TimeZoneInfo.ConvertTime(endTime, TimeZoneInfo.Utc, _timeZone))
+                .Select(x => TimeZoneInfo.ConvertTime(x, _timeZone, TimeZoneInfo.Utc))
                 .ToList();
         }
     }

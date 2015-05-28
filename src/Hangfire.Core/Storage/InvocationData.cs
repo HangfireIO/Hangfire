@@ -76,15 +76,10 @@ namespace Hangfire.Storage
 
         private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)
         {
-            var methodCandidates = type.GetMethods();
+            var methodCandidates = type.GetTypeInfo().GetDeclaredMethods(name);
 
             foreach (var methodCandidate in methodCandidates)
             {
-                if (!methodCandidate.Name.Equals(name, StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
                 var parameters = methodCandidate.GetParameters();
                 if (parameters.Length != parameterTypes.Length)
                 {
@@ -110,7 +105,7 @@ namespace Hangfire.Storage
                     }
 
                     // Skipping non-generic parameters of assignable types.
-                    if (parameterType.IsAssignableFrom(actualType)) continue;
+                    if (parameterType.GetTypeInfo().IsAssignableFrom(actualType.GetTypeInfo())) continue;
 
                     parameterTypesMatched = false;
                     break;

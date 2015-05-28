@@ -93,10 +93,13 @@ namespace Hangfire.Server
             _logger.TraceFormat("Sending shutdown request for server component '{0}'...", _component);
 
             _disposingCts.Cancel();
+
+#if !DNXCORE50
             if (!_thread.Join(_options.ShutdownTimeout))
             {
                 _thread.Abort();
             }
+#endif
 
             _disposingCts.Dispose();
             _starting.Dispose();
@@ -147,12 +150,14 @@ namespace Hangfire.Server
             {
                 _logger.DebugFormat("Server component '{0}' finished successfully.", _component);
             }
+#if !DNXCORE50
             catch (ThreadAbortException)
             {
                 _logger.WarnFormat(
                     "Server component '{0}' caught `ThreadAbortException` due to shutdown timeout.",
                     _component);
             }
+#endif
             catch (Exception ex)
             {
                 _logger.FatalException(

@@ -6,7 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 namespace Hangfire.Common.ExpressionUtil
 {
     // based on System.Web.Util.HashCodeCombiner
+#if !DNXCORE50
     [ExcludeFromCodeCoverage]
+#endif
     internal class HashCodeCombiner
     {
         private long _combinedHash64 = 0x1505L;

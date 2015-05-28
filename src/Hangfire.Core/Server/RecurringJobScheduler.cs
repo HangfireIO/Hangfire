@@ -30,7 +30,7 @@ namespace Hangfire.Server
     internal class RecurringJobScheduler : IServerComponent
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof (RecurringJobScheduler));
 
         private readonly JobStorage _storage;
         private readonly IBackgroundJobClient _client;
@@ -105,10 +105,19 @@ namespace Hangfire.Server
 
             try
             {
-                var timeZone = recurringJob.ContainsKey("TimeZoneId")
-                ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
-                : TimeZoneInfo.Utc;
+                TimeZoneInfo timeZone = null;
 
+                try
+                {
+                    timeZone = recurringJob.ContainsKey("TimeZoneId")
+                        ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
+                        : TimeZoneInfo.Utc;
+                }
+                catch (Exception ex)
+                {
+                    throw new TimeZoneException(ex.Message);
+                }
+                
                 var instant = _instantFactory.GetInstant(cronSchedule, timeZone);
 
                 var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
@@ -140,11 +149,19 @@ namespace Hangfire.Server
                     String.Format("recurring-job:{0}", recurringJobId),
                     changedFields);
             }
-            catch (TimeZoneNotFoundException ex)
+            catch (TimeZoneException ex)
             {
                 Logger.ErrorException(
                     String.Format("Recurring job '{0}' was not triggered: {1}.", recurringJobId, ex.Message),
                     ex);
+            }
+        }
+
+        private class TimeZoneException : Exception
+        {
+            public TimeZoneException(string message)
+                : base(message)
+            {
             }
         }
     }

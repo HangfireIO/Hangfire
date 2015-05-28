@@ -17,12 +17,13 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.Owin;
+using Hangfire.LibOwin;
 
 namespace Hangfire.Dashboard
 {
     internal class CommandDispatcher : IRequestDispatcher
     {
+        private const string HttpPost = "POST";
         private readonly Func<RequestDispatcherContext, bool> _command;
 
         public CommandDispatcher(Func<RequestDispatcherContext, bool> command)
@@ -34,7 +35,7 @@ namespace Hangfire.Dashboard
         {
             var owinContext = new OwinContext(context.OwinEnvironment);
 
-            if (owinContext.Request.Method != WebRequestMethods.Http.Post)
+            if (!HttpPost.Equals(owinContext.Request.Method, StringComparison.OrdinalIgnoreCase))
             {
                 owinContext.Response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
                 return Task.FromResult(false);

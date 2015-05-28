@@ -24,6 +24,7 @@
 // SOFTWARE.
 //===============================================================================
 
+using System.Linq;
 using System.Reflection;
 using Hangfire.Logging.LogProviders;
 
@@ -336,6 +337,7 @@ namespace Hangfire.Logging
             return GetLogger(typeof(T));
         }
 
+#if !DNXCORE50
         /// <summary>
         /// Gets a logger for the current class.
         /// </summary>
@@ -345,6 +347,7 @@ namespace Hangfire.Logging
             var stackFrame = new StackFrame(1, false);
             return GetLogger(stackFrame.GetMethod().DeclaringType);
         }
+#endif
 
         /// <summary>
         /// Gets a logger for the specified type.
@@ -388,7 +391,9 @@ namespace Hangfire.Logging
             new Tuple<IsLoggerAvailable, CreateLogProvider>(Log4NetLogProvider.IsLoggerAvailable, () => new Log4NetLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(EntLibLogProvider.IsLoggerAvailable, () => new EntLibLogProvider()),
             new Tuple<IsLoggerAvailable, CreateLogProvider>(LoupeLogProvider.IsLoggerAvailable, () => new LoupeLogProvider()),
-            new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider()),
+#if !DNXCORE50
+                new Tuple<IsLoggerAvailable, CreateLogProvider>(ElmahLogProvider.IsLoggerAvailable, () => new ElmahLogProvider()),
+#endif
         };
 
         private static ILogProvider ResolveLogProvider()
@@ -510,7 +515,7 @@ namespace Hangfire.Logging.LogProviders
         private static Func<string, object> GetGetLoggerMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetMethod("GetLogger", new[] { typeof(string) });
+            MethodInfo method = logManagerType.GetMethodPortable("GetLogger", new[] { typeof(string) });
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
@@ -692,7 +697,7 @@ namespace Hangfire.Logging.LogProviders
         private static Func<string, object> GetGetLoggerMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetMethod("GetLogger", new[] { typeof(string) });
+            MethodInfo method = logManagerType.GetMethodPortable("GetLogger", new[] { typeof(string) });
             ParameterExpression nameParam = Expression.Parameter(typeof(string), "name");
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { nameParam });
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
@@ -877,7 +882,7 @@ namespace Hangfire.Logging.LogProviders
             MemberInitExpression memberInit = GetWriteLogExpression(messageParameter, severityParameter, logNameParameter);
 
             //Logger.Write(new LogEntry(....));
-            MethodInfo writeLogEntryMethod = LoggerType.GetMethod("Write", new[] { LogEntryType });
+            MethodInfo writeLogEntryMethod = LoggerType.GetMethodPortable("Write", new[] { LogEntryType });
             var writeLogEntryExpression = Expression.Call(writeLogEntryMethod, memberInit);
 
             return Expression.Lambda<Action<string, string, TraceEventType>>(
@@ -896,7 +901,7 @@ namespace Hangfire.Logging.LogProviders
             MemberInitExpression memberInit = GetWriteLogExpression(Expression.Constant("***dummy***"), severityParameter, logNameParameter);
 
             //Logger.Write(new LogEntry(....));
-            MethodInfo writeLogEntryMethod = LoggerType.GetMethod("ShouldLog", new[] { LogEntryType });
+            MethodInfo writeLogEntryMethod = LoggerType.GetMethodPortable("ShouldLog", new[] { LogEntryType });
             var writeLogEntryExpression = Expression.Call(writeLogEntryMethod, memberInit);
 
             return Expression.Lambda<Func<string, TraceEventType, bool>>(
@@ -911,14 +916,14 @@ namespace Hangfire.Logging.LogProviders
             var entryType = LogEntryType;
             MemberInitExpression memberInit = Expression.MemberInit(Expression.New(entryType), new MemberBinding[]
             {
-                Expression.Bind(entryType.GetProperty("Message"), message),
-                Expression.Bind(entryType.GetProperty("Severity"), severityParameter),
-                Expression.Bind(entryType.GetProperty("TimeStamp"),
-                    Expression.Property(null, typeof (DateTime).GetProperty("UtcNow"))),
-                Expression.Bind(entryType.GetProperty("Categories"),
+                Expression.Bind(entryType.GetPropertyPortable("Message"), message),
+                Expression.Bind(entryType.GetPropertyPortable("Severity"), severityParameter),
+                Expression.Bind(entryType.GetPropertyPortable("TimeStamp"),
+                    Expression.Property(null, typeof (DateTime).GetPropertyPortable("UtcNow"))),
+                Expression.Bind(entryType.GetPropertyPortable("Categories"),
                     Expression.ListInit(
                         Expression.New(typeof (List<string>)),
-                        typeof (List<string>).GetMethod("Add", new[] {typeof (string)}),
+                        typeof (List<string>).GetMethodPortable("Add", new[] {typeof (string)}),
                         logNameParameter))
             });
             return memberInit;
@@ -1017,7 +1022,7 @@ namespace Hangfire.Logging.LogProviders
         private static Func<string, object> GetForContextMethodCall()
         {
             Type logManagerType = GetLogManagerType();
-            MethodInfo method = logManagerType.GetMethod("ForContext", new[] { typeof(string), typeof(object), typeof(bool) });
+            MethodInfo method = logManagerType.GetMethodPortable("ForContext", new[] { typeof(string), typeof(object), typeof(bool) });
             ParameterExpression propertyNameParam = Expression.Parameter(typeof(string), "propertyName");
             ParameterExpression valueParam = Expression.Parameter(typeof(object), "value");
             ParameterExpression destructureObjectsParam = Expression.Parameter(typeof(bool), "destructureObjects");
@@ -1061,7 +1066,7 @@ namespace Hangfire.Logging.LogProviders
 
                 // Func<object, object, bool> isEnabled = (logger, level) => { return ((SeriLog.ILogger)logger).IsEnabled(level); }
                 var loggerType = Type.GetType("Serilog.ILogger, Serilog");
-                MethodInfo isEnabledMethodInfo = loggerType.GetMethod("IsEnabled");
+                MethodInfo isEnabledMethodInfo = loggerType.GetMethodPortable("IsEnabled");
                 ParameterExpression instanceParam = Expression.Parameter(typeof(object));
                 UnaryExpression instanceCast = Expression.Convert(instanceParam, loggerType);
                 ParameterExpression levelParam = Expression.Parameter(typeof(object));
@@ -1075,7 +1080,7 @@ namespace Hangfire.Logging.LogProviders
 
                 // Action<object, object, string> Write =
                 // (logger, level, message) => { ((SeriLog.ILoggerILogger)logger).Write(level, message, new object[]); }
-                MethodInfo writeMethodInfo = loggerType.GetMethod("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) });
+                MethodInfo writeMethodInfo = loggerType.GetMethodPortable("Write", new[] { logEventTypeType, typeof(string), typeof(object[]) });
                 ParameterExpression messageParam = Expression.Parameter(typeof(string));
                 ConstantExpression propertyValuesParam = Expression.Constant(new object[0]);
                 MethodCallExpression writeMethodExp = Expression.Call(instanceCast, writeMethodInfo, levelCast, messageParam, propertyValuesParam);
@@ -1088,7 +1093,7 @@ namespace Hangfire.Logging.LogProviders
 
                 // Action<object, object, string, Exception> WriteException =
                 // (logger, level, exception, message) => { ((ILogger)logger).Write(level, exception, message, new object[]); }
-                MethodInfo writeExceptionMethodInfo = loggerType.GetMethod("Write", new[]
+                MethodInfo writeExceptionMethodInfo = loggerType.GetMethodPortable("Write", new[]
                 {
                     logEventTypeType,
                     typeof(Exception), 
@@ -1276,7 +1281,7 @@ namespace Hangfire.Logging.LogProviders
             Type logMessageSeverityType = Type.GetType("Gibraltar.Agent.LogMessageSeverity, Gibraltar.Agent");
             Type logWriteModeType = Type.GetType("Gibraltar.Agent.LogWriteMode, Gibraltar.Agent");
 
-            MethodInfo method = logManagerType.GetMethod("Write", new[]
+            MethodInfo method = logManagerType.GetMethodPortable("Write", new[]
                                                                   {
                                                                       logMessageSeverityType, typeof(string), typeof(int), typeof(Exception), typeof(bool), 
                                                                       logWriteModeType, typeof(string), typeof(string), typeof(string), typeof(string), typeof(object[])
@@ -1469,6 +1474,8 @@ namespace Hangfire.Logging.LogProviders
         }
     }
 
+#if !DNXCORE50
+
     public class ElmahLogProvider : ILogProvider
     {
         private static bool _providerIsAvailableOverride = true;
@@ -1534,7 +1541,7 @@ namespace Hangfire.Logging.LogProviders
         {
             Type logManagerType = GetLogManagerType();
             Type httpContextType = GetHttpContextType();
-            MethodInfo method = logManagerType.GetMethod("GetDefault", new[] { httpContextType });
+            MethodInfo method = logManagerType.GetMethodPortable("GetDefault", new[] { httpContextType });
             ConstantExpression contextValue = Expression.Constant(null, httpContextType);
             MethodCallExpression methodCall = Expression.Call(null, method, new Expression[] { contextValue });
             return Expression.Lambda<Func<object>>(methodCall).Compile();
@@ -1573,11 +1580,90 @@ namespace Hangfire.Logging.LogProviders
                 }
                 catch (Exception ex)
                 {
-                    Debug.Print("Error: {0}\n{1}", ex.Message, ex.StackTrace);
+                    Debug.WriteLine(String.Format("Error: {0}\n{1}", ex.Message, ex.StackTrace));
                 }
 
                 return true;
             }
+        }
+    }
+#endif
+
+    internal static class TypeExtensions
+    {
+        internal static MethodInfo GetMethodPortable(this Type type, string name)
+        {
+#if DNXCORE50
+            return type.GetTypeInfo().GetDeclaredMethods(name).SingleOrDefault(x => x.GetParameters().Length == 0);
+#else
+            return type.GetMethod(name);
+#endif
+        }
+
+        internal static MethodInfo GetMethodPortable(this Type type, string name, params Type[] types)
+        {
+#if DNXCORE50
+            return type.GetTypeInfo()
+                .GetDeclaredMethods(name)
+                .SingleOrDefault(x => x.GetParameters().Select(y => y.ParameterType).SequenceEqual(types));
+#else
+            return type.GetMethod(name, types);
+#endif
+        }
+
+        internal static PropertyInfo GetPropertyPortable(this Type type, string name)
+        {
+#if DNXCORE50
+            return type.GetTypeInfo().GetDeclaredProperty(name);
+#else
+            return type.GetProperty(name);
+#endif
+        }
+
+        internal static IEnumerable<FieldInfo> GetFieldsPortable(this Type type)
+        {
+#if DNXCORE50
+            return type.GetTypeInfo().DeclaredFields;
+#else
+            return type.GetFields();
+#endif
+        }
+
+        internal static Type GetBaseTypePortable(this Type type)
+        {
+#if DNXCORE50
+            return type.GetTypeInfo().BaseType;
+#else
+            return type.BaseType;
+#endif
+        }
+
+#if DNXCORE50
+        internal static MethodInfo GetGetMethod(this PropertyInfo propertyInfo)
+        {
+            return propertyInfo.GetMethod;
+        }
+
+        internal static MethodInfo GetSetMethod(this PropertyInfo propertyInfo)
+        {
+            return propertyInfo.SetMethod;
+        }
+#endif
+
+#if !DNXCORE50
+        internal static object CreateDelegate(this MethodInfo methodInfo, Type delegateType)
+        {
+            return Delegate.CreateDelegate(delegateType, methodInfo);
+        }
+#endif
+
+        internal static Assembly GetAssemblyPortable(this Type type)
+        {
+#if DNXCORE50
+            return type.GetTypeInfo().Assembly;
+#else
+            return type.Assembly;
+#endif
         }
     }
 }

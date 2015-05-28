@@ -26,7 +26,7 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IServerSupervisor
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof (BackgroundJobServer));
 
         private readonly JobStorage _storage;
         private readonly BackgroundJobServerOptions _options;

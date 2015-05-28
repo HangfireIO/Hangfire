@@ -27,7 +27,7 @@ namespace Hangfire.Server
     internal class Worker : IServerComponent
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof (Worker));
 
         private readonly JobStorage _storage;
         private readonly IJobPerformanceProcess _process;

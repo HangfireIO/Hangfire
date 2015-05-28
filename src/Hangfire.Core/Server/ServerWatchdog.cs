@@ -22,7 +22,7 @@ namespace Hangfire.Server
 {
     public class ServerWatchdog : IServerComponent
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof (ServerWatchdog));
 
         private readonly JobStorage _storage;
         private readonly ServerWatchdogOptions _options;

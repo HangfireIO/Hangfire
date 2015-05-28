@@ -18,7 +18,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using Microsoft.Owin;
+using Hangfire.LibOwin;
 
 namespace Hangfire.Dashboard
 {

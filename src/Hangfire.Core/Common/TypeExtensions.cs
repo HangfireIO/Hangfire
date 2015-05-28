@@ -16,7 +16,7 @@ namespace Hangfire.Common
             var genericTypeName = t.GetGenericTypeDefinition().Name;
             genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
 
-            var genericArgs = string.Join(",", t.GetGenericArguments().Select(ToGenericTypeString).ToArray());
+            var genericArgs = string.Join(",", t.GenericTypeArguments.Select(ToGenericTypeString).ToArray());
 
             return genericTypeName + "<" + genericArgs + ">";
         }

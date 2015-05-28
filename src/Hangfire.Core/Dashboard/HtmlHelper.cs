@@ -24,6 +24,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Hangfire.Common;
 using System.ComponentModel;
+using System.Reflection;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
 
@@ -106,7 +107,11 @@ namespace Hangfire.Dashboard
                 return "Can not find the target method.";
             }
 
-            var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
+#if DNXCORE50
+            return job.ToString();
+#else
+
+            var displayNameAttribute = job.Method.GetCustomAttribute(typeof (DisplayNameAttribute), true) as DisplayNameAttribute;
 
             if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
             {
@@ -122,6 +127,7 @@ namespace Hangfire.Dashboard
             {
                 return displayNameAttribute.DisplayName;
             }
+#endif
         }
 
         public NonEscapedString StateLabel(string stateName)
@@ -386,7 +392,7 @@ namespace Hangfire.Dashboard
         private static void HtmlEncode(string text, TextWriter writer)
         {
             Debug.Assert(writer != null);
-            WebUtility.HtmlEncode(text, writer);
+            writer.Write(WebUtility.HtmlEncode(text));
         }
 
         public string HtmlEncode(string text)
