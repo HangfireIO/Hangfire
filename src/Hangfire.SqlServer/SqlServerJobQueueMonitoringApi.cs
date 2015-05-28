@@ -20,6 +20,10 @@ using System.Data;
 using System.Linq;
 using Dapper;
 
+#if DNXCORE50
+using IDbConnection = System.Data.Common.DbConnection;
+#endif
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi

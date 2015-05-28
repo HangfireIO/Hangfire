@@ -23,6 +23,10 @@ using Dapper;
 using Hangfire.SqlServer.Annotations;
 using Hangfire.Storage;
 
+#if DNXCORE50
+using IDbConnection = System.Data.Common.DbConnection;
+#endif
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueue : IPersistentJobQueue

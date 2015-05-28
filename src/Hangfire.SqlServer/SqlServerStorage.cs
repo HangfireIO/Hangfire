@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+#if !DNXCORE50
 using System.Configuration;
+#endif
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -63,10 +65,12 @@ namespace Hangfire.SqlServer
             {
                 _connectionString = nameOrConnectionString;
             }
+#if !DNXCORE50
             else if (IsConnectionStringInConfiguration(nameOrConnectionString))
             {
                 _connectionString = ConfigurationManager.ConnectionStrings[nameOrConnectionString].ConnectionString;
             }
+#endif
             else
             {
                 throw new ArgumentException(
@@ -189,12 +193,14 @@ namespace Hangfire.SqlServer
             return nameOrConnectionString.Contains(";");
         }
 
+#if !DNXCORE50
         private bool IsConnectionStringInConfiguration(string connectionStringName)
         {
             var connectionStringSetting = ConfigurationManager.ConnectionStrings[connectionStringName];
 
             return connectionStringSetting != null;
         }
+#endif
 
         public static readonly DashboardMetric ActiveConnections = new DashboardMetric(
             "connections:active",

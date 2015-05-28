@@ -1,0 +1,26 @@
+﻿{
+    "version": "1.0.0-*",
+    "description": "",
+    "authors": [ "" ],
+    "tags": [ "" ],
+    "projectUrl": "",
+    "licenseUrl": "",
+
+    "dependencies": {
+        "Hangfire.Core": "1.5.0-alpha1"
+    },
+
+  "frameworks" : {
+    "dnxcore50" : {
+      "dependencies": {
+        "System.Collections": "4.0.10-beta-22816",
+        "System.Linq": "4.0.0-beta-22816",
+        "System.Threading": "4.0.10-beta-22816",
+        "Microsoft.CSharp": "4.0.0-beta-22816",
+        "Dapper": "1.41.0-beta5",
+        "System.Data.Common": "4.0.0-beta-*",
+        "System.Data.SqlClient": "4.0.0-beta-*"
+      }
+    }
+  }
+}

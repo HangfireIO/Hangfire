@@ -19,6 +19,10 @@ using System.Collections.Generic;
 using System.Data;
 using Dapper;
 
+#if DNXCORE50
+using IDbConnection = System.Data.Common.DbConnection;
+#endif
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerDistributedLock : IDisposable

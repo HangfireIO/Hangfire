@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+#if !DNXCORE50
 using System.Transactions;
+#endif
 using Dapper;
 using Hangfire.Common;
 using Hangfire.SqlServer.Entities;
@@ -439,14 +441,23 @@ where [Key] in @keys";
 
         private T UseConnection<T>(Func<SqlConnection, T> action)
         {
+#if !DNXCORE50
             using (var transaction = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted }))
+#endif
             using (var connection = new SqlConnection(_connectionString))
+#if DNXCORE50
+            using (var transaction = connection.BeginTransaction(System.Data.IsolationLevel.ReadUncommitted))
+#endif
             {
                 connection.Open();
 
                 var result = action(connection);
 
+#if DNXCORE50
+                transaction.Commit();
+#else
                 transaction.Complete();
+#endif
 
                 return result;
             }

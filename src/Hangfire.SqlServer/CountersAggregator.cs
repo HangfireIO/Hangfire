@@ -24,7 +24,7 @@ namespace Hangfire.SqlServer
 {
     internal class CountersAggregator : IServerComponent
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly ILog Logger = LogProvider.GetLogger(typeof (CountersAggregator));
 
         private const int NumberOfRecordsInSinglePass = 1000;
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromMilliseconds(500);

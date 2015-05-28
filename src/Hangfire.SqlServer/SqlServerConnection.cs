@@ -19,12 +19,20 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
+#if !DNXCORE50
 using System.Transactions;
+#endif
 using Dapper;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.SqlServer.Entities;
 using Hangfire.Storage;
+
+#if DNXCORE50
+using IsolationLevel = System.Data.IsolationLevel;
+#else
+using IsolationLevel = System.Transactions.IsolationLevel;
+#endif
 
 namespace Hangfire.SqlServer
 {
@@ -276,14 +284,22 @@ on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
 when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
+#if DNXCORE50
+            using (var transaction = _connection.BeginTransaction())
+#else
             using (var transaction = new TransactionScope())
+#endif
             {
                 foreach (var keyValuePair in keyValuePairs)
                 {
                     _connection.Execute(sql, new { key = key, field = keyValuePair.Key, value = keyValuePair.Value });
                 }
 
+#if DNXCORE50
+                transaction.Commit();
+#else
                 transaction.Complete();
+#endif
             }
         }
 

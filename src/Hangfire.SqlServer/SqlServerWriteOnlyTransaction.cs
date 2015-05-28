@@ -18,11 +18,19 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+#if !DNXCORE50
 using System.Transactions;
+#endif
 using Dapper;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
+
+#if DNXCORE50
+using IsolationLevel = System.Data.IsolationLevel;
+#else
+using IsolationLevel = System.Transactions.IsolationLevel;
+#endif
 
 namespace Hangfire.SqlServer
 {
@@ -54,7 +62,9 @@ namespace Hangfire.SqlServer
         {
             using (var transaction = CreateTransaction(_isolationLevel))
             {
+#if !DNXCORE50
                 _connection.EnlistTransaction(Transaction.Current);
+#endif
 
                 if (_lockedResources.Count > 0)
                 {
@@ -69,7 +79,11 @@ namespace Hangfire.SqlServer
                     command(_connection);
                 }
 
+#if DNXCORE50
+                transaction.Commit();
+#else
                 transaction.Complete();
+#endif
             }
         }
 
@@ -364,6 +378,14 @@ update HangFire.[List] set ExpireAt = null where [Key] = @key";
             _lockedResources.Add(resource);
         }
 
+#if DNXCORE50
+        private SqlTransaction CreateTransaction(IsolationLevel? isolationLevel)
+        {
+            return isolationLevel.HasValue
+                ? _connection.BeginTransaction(isolationLevel.Value)
+                : _connection.BeginTransaction(IsolationLevel.ReadCommitted);
+        }
+#else
         private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
         {
             return isolationLevel != null
@@ -371,5 +393,6 @@ update HangFire.[List] set ExpireAt = null where [Key] = @key";
                     new TransactionOptions { IsolationLevel = isolationLevel.Value })
                 : new TransactionScope();
         }
+#endif
     }
 }

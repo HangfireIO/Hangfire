@@ -25,7 +25,9 @@ using Hangfire.Logging;
 
 namespace Hangfire.SqlServer
 {
+#if !DNXCORE50
     [ExcludeFromCodeCoverage]
+#endif
     internal static class SqlServerObjectsInstaller
     {
         private const int RequiredSchemaVersion = 5;
@@ -45,7 +47,7 @@ namespace Hangfire.SqlServer
             }
 
             var script = GetStringResource(
-                typeof(SqlServerObjectsInstaller).Assembly, 
+                typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly, 
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 5;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
@@ -59,7 +61,11 @@ namespace Hangfire.SqlServer
                 }
                 catch (SqlException ex)
                 {
+#if DNXCORE50
+                    if (ex.Number == 1205) // TODO: Check this!
+#else
                     if (ex.ErrorCode == 1205)
+#endif
                     {
                         Log.WarnException("Deadlock occurred during automatic migration execution. Retrying...", ex);
                     }
