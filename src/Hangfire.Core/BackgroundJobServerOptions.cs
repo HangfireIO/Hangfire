@@ -34,7 +34,7 @@ namespace Hangfire
         public BackgroundJobServerOptions()
         {
             WorkerCount = Math.Min(Environment.ProcessorCount * 5, MaxDefaultWorkerCount);
-            ServerName = Environment.MachineName;
+            ServerName = Environment.GetEnvironmentVariable("COMPUTERNAME");
             Queues = new[] { EnqueuedState.DefaultQueue };
             ShutdownTimeout = TimeSpan.FromSeconds(15);
             SchedulePollingInterval = TimeSpan.FromSeconds(15);

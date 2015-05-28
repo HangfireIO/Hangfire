@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 
 namespace Hangfire.Common
 {
@@ -7,7 +8,7 @@ namespace Hangfire.Common
     {
         public static string ToGenericTypeString(this Type t)
         {
-            if (!t.IsGenericType)
+            if (!t.GetTypeInfo().IsGenericType)
             {
                 return t.Name;
             }

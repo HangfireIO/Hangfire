@@ -71,7 +71,16 @@ namespace Hangfire.Core.Tests.Server
             Assert.NotNull(options.ServerWatchdogOptions);
         }
 
-        private BackgroundJobServerOptions CreateOptions()
+        [Fact]
+        public void ServerName_EqualsToMachineName_ByDefault()
+        {
+            var options = CreateOptions();
+
+            Assert.NotEmpty(options.ServerName);
+            Assert.Equal(Environment.MachineName, options.ServerName);
+        }
+
+        private static BackgroundJobServerOptions CreateOptions()
         {
             return new BackgroundJobServerOptions();
         }

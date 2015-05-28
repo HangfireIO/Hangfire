@@ -24,6 +24,7 @@
 // SOFTWARE.
 //===============================================================================
 
+using System.Reflection;
 using Hangfire.Logging.LogProviders;
 
 namespace Hangfire.Logging
@@ -406,7 +407,7 @@ namespace Hangfire.Logging
             {
                 Console.WriteLine(
                     "Exception occured resolving a log provider. Logging for this assembly {0} is disabled. {1}",
-                    typeof(LogProvider).Assembly.FullName,
+                    typeof(LogProvider).GetTypeInfo().Assembly.FullName,
                     ex);
             }
             return null;
@@ -1281,8 +1282,7 @@ namespace Hangfire.Logging.LogProviders
                                                                       logWriteModeType, typeof(string), typeof(string), typeof(string), typeof(string), typeof(object[])
                                                                   });
 
-            var callDelegate = (WriteDelegate)Delegate.CreateDelegate(typeof(WriteDelegate), method);
-            return callDelegate;
+            return (WriteDelegate) method.CreateDelegate(typeof (WriteDelegate));
         }
 
         public class LoupeLogger : ILog

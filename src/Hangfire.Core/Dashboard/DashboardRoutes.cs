@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Reflection;
 using Hangfire.Dashboard.Pages;
 using Hangfire.States;
 
@@ -49,35 +50,35 @@ namespace Hangfire.Dashboard
             #region Embedded static content
 
             Routes.Add("/js", new CombinedResourceDispatcher(
-                "application/javascript", 
-                typeof(DashboardRoutes).Assembly,
+                "application/javascript",
+                GetExecutingAssembly(),
                 GetContentFolderNamespace("js"),
                 Javascripts));
 
             Routes.Add("/css", new CombinedResourceDispatcher(
                 "text/css",
-                typeof(DashboardRoutes).Assembly,
+                GetExecutingAssembly(),
                 GetContentFolderNamespace("css"),
                 Stylesheets));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/eot", new EmbeddedResourceDispatcher(
                 "application/vnd.ms-fontobject",
-                typeof(DashboardRoutes).Assembly,
+                GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.eot")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/svg", new EmbeddedResourceDispatcher(
                 "image/svg+xml",
-                typeof(DashboardRoutes).Assembly,
+                GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.svg")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/ttf", new EmbeddedResourceDispatcher(
                 "application/octet-stream",
-                typeof(DashboardRoutes).Assembly,
+                GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.ttf")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/woff", new EmbeddedResourceDispatcher(
                 "application/font-woff",
-                typeof(DashboardRoutes).Assembly,
+                GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.woff")));
 
             #endregion
@@ -185,6 +186,11 @@ namespace Hangfire.Dashboard
         internal static string GetContentResourceName(string contentFolder, string resourceName)
         {
             return String.Format("{0}.{1}", GetContentFolderNamespace(contentFolder), resourceName);
+        }
+
+        private static Assembly GetExecutingAssembly()
+        {
+            return typeof (DashboardRoutes).GetTypeInfo().Assembly;
         }
     }
 }

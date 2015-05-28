@@ -22,7 +22,6 @@ namespace Hangfire.Client
     /// The exception that is thrown when a <see cref="BackgroundJobClient"/> class instance
     /// could not create a job due to another exception was thrown.
     /// </summary>
-    [Serializable]
     public class CreateJobFailedException : Exception
     {
         /// <summary>
