@@ -21,24 +21,5 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal("1", exception.Message);
             Assert.Same(innerException, exception.InnerException);
         }
-
-        [Fact]
-        public void Instance_CanBeSerializedAndDeserialized()
-        {
-            var exception = new JobLoadException("1", new Exception());
-            JobLoadException deserializedException;
-
-            using (var stream = new MemoryStream())
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Serialize(stream, exception);
-
-                stream.Position = 0;
-
-                deserializedException = (JobLoadException) formatter.Deserialize(stream);
-            }
-
-            Assert.Equal("1", deserializedException.Message);
-        }
     }
 }
