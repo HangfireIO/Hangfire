@@ -36,12 +36,14 @@ namespace Hangfire.Server
         private readonly IBackgroundJobClient _client;
         private readonly IScheduleInstantFactory _instantFactory;
         private readonly IThrottler _throttler;
+	    private string[] _queues;
 
-        public RecurringJobScheduler(
+	    public RecurringJobScheduler(
             [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobClient client,
             [NotNull] IScheduleInstantFactory instantFactory,
-            [NotNull] IThrottler throttler)
+            [NotNull] IThrottler throttler,
+			string[] queues)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (client == null) throw new ArgumentNullException("client");
@@ -52,6 +54,7 @@ namespace Hangfire.Server
             _client = client;
             _instantFactory = instantFactory;
             _throttler = throttler;
+	        _queues = queues;
         }
 
         public void Execute(CancellationToken cancellationToken)
@@ -72,6 +75,11 @@ namespace Hangfire.Server
                     {
                         continue;
                     }
+
+	                if (!_queues.Contains(recurringJob["Queue"]))
+	                {
+		                continue;
+	                }
 
                     try
                     {
@@ -98,6 +106,7 @@ namespace Hangfire.Server
 
         private void TryScheduleJob(IStorageConnection connection, string recurringJobId, Dictionary<string, string> recurringJob)
         {
+
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];

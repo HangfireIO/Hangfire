@@ -25,29 +25,33 @@ namespace Hangfire
         private static readonly Lazy<RecurringJobManager> Instance = new Lazy<RecurringJobManager>(
             () => new RecurringJobManager());
 
-        public static void AddOrUpdate(
+	    private const string DefaultQueue = "default";
+
+	    public static void AddOrUpdate(
             string recurringJobId,
             Expression<Action> methodCall,
-            string cronExpression)
+			string cronExpression,
+			string queue = DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression);
+			Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, queue);
         }
 
-        public static void AddOrUpdate(Expression<Action> methodCall, string cronExpression)
+		public static void AddOrUpdate(Expression<Action> methodCall, string cronExpression, string queue = DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression);
+            Instance.Value.AddOrUpdate(id, job, cronExpression, queue);
         }
 
         public static void AddOrUpdate(
             string recurringJobId,
             Expression<Action> methodCall,
-            Func<string> cronExpression)
+			Func<string> cronExpression,
+			string queue = DefaultQueue)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression());
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), queue);
         }
 
         public static void AddOrUpdate(Expression<Action> methodCall, Func<string> cronExpression)
@@ -58,26 +62,28 @@ namespace Hangfire
         public static void AddOrUpdate<T>(
             string recurringJobId,
             Expression<Action<T>> methodCall,
-            string cronExpression)
+            string cronExpression,
+			string queue = DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression);
         }
 
-        public static void AddOrUpdate<T>(Expression<Action<T>> methodCall, string cronExpression)
+		public static void AddOrUpdate<T>(Expression<Action<T>> methodCall, string cronExpression, string queue = DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
             var id = GetRecurringJobId(job);
 
-            Instance.Value.AddOrUpdate(id, job, cronExpression);
+            Instance.Value.AddOrUpdate(id, job, cronExpression, queue);
         }
 
         public static void AddOrUpdate<T>(
             string recurringJobId,
             Expression<Action<T>> methodCall,
-            Func<string> cronExpression)
+            Func<string> cronExpression,
+			string queue = DefaultQueue)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression());
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), queue);
         }
 
         public static void AddOrUpdate<T>(Expression<Action<T>> methodCall, Func<string> cronExpression)
@@ -89,19 +95,21 @@ namespace Hangfire
             string recurringJobId,
             Expression<Action> methodCall,
             Func<string> cronExpression,
-            TimeZoneInfo timeZone)
+            TimeZoneInfo timeZone,
+			string queue = DefaultQueue)
         {
-            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone);
+            AddOrUpdate(recurringJobId, methodCall, cronExpression(), timeZone, queue);
         }
 
         public static void AddOrUpdate(
             string recurringJobId,
             Expression<Action> methodCall,
             string cronExpression,
-            TimeZoneInfo timeZone)
+            TimeZoneInfo timeZone,
+			string queue = DefaultQueue)
         {
             var job = Job.FromExpression(methodCall);
-            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone);
+            Instance.Value.AddOrUpdate(recurringJobId, job, cronExpression, timeZone, queue);
         }
 
         public static void AddOrUpdate<T>(

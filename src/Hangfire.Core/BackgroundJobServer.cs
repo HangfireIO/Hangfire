@@ -155,10 +155,11 @@ namespace Hangfire
             yield return new ServerWatchdog(_storage, _options.ServerWatchdogOptions);
 
             yield return new RecurringJobScheduler(
-                _storage, 
-                new BackgroundJobClient(_storage, stateMachineFactory),
+                _storage,
+				new BackgroundJobClient(_storage, stateMachineFactory),
                 new ScheduleInstantFactory(),
-                new EveryMinuteThrottler());
+                new EveryMinuteThrottler(),
+				_options.Queues);
         }
 
         private static ServerSupervisor CreateSupervisor(IServerComponent component)
