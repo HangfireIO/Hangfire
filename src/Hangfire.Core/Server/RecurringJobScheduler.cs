@@ -43,12 +43,13 @@ namespace Hangfire.Server
             [NotNull] IBackgroundJobClient client,
             [NotNull] IScheduleInstantFactory instantFactory,
             [NotNull] IThrottler throttler,
-			string[] queues)
+			string[] queues = null)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (client == null) throw new ArgumentNullException("client");
             if (instantFactory == null) throw new ArgumentNullException("instantFactory");
             if (throttler == null) throw new ArgumentNullException("throttler");
+			if (queues == null) queues = new []{ "default" };
 
             _storage = storage;
             _client = client;
@@ -76,7 +77,7 @@ namespace Hangfire.Server
                         continue;
                     }
 
-	                if (!_queues.Contains(recurringJob["Queue"]))
+	                if (recurringJob.ContainsKey("Queue") && !_queues.Contains(recurringJob["Queue"]))
 	                {
 		                continue;
 	                }
