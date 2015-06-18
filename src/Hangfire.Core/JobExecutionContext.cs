@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Hangfire
 {
-    public class JobCallback : JobCancellationToken
+    public class JobExecutionContext : JobCancellationToken
     {
-        public JobCallback(bool canceled) : base(canceled) { }
+        public JobExecutionContext(bool canceled) : base(canceled) { }
 
         public void UpdateProgress(int percentComplete, string currentStatus)
         {
@@ -20,6 +20,6 @@ namespace Hangfire
             // TODO: I have no idea what needs to go here.
         }
 
-        public static new IJobCallback Null { get { return null; } }
+        public static new IJobExecutionContext Null { get { return null; } }
     }
 }

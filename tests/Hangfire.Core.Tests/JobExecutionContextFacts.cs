@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests
 {
-    public class JobCallbackFacts
+    public class JobExecutionContextFacts
     {
         [Fact]
         public void Log_ActuallyLogs()
@@ -18,7 +18,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void Null_ReturnsNullValue()
         {
-            Assert.Null(JobCallback.Null);
+            Assert.Null(JobExecutionContext.Null);
         }
     }
 }

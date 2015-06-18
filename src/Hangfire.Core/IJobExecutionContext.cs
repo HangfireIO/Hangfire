@@ -16,7 +16,7 @@
 
 namespace Hangfire
 {
-    public interface IJobCallback : IJobCancellationToken
+    public interface IJobExecutionContext : IJobCancellationToken
     {
         /// <summary>
         /// Report the current status of a job, potentially to an end-user, along with an

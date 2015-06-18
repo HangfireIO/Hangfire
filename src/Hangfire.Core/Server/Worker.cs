@@ -88,7 +88,7 @@ namespace Hangfire.Server
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
-                    var context = new ServerJobCallback(
+                    var context = new ServerJobExecutionContext(
                         fetchedJob.JobId, connection, _context, cancellationToken);
 
                     var state = PerformJob(fetchedJob.JobId, connection, context);
@@ -128,7 +128,7 @@ namespace Hangfire.Server
             return "Worker #" + _context.WorkerNumber;
         }
 
-        private IState PerformJob(string jobId, IStorageConnection connection, IJobCallback jobCallback)
+        private IState PerformJob(string jobId, IStorageConnection connection, IJobExecutionContext jobExecutionContext)
         {
             try
             {
@@ -145,7 +145,7 @@ namespace Hangfire.Server
                 jobData.EnsureLoaded();
 
                 var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, jobCallback);
+                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, jobExecutionContext);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();

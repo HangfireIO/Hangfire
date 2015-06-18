@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Server
 {
-    internal class ServerJobCallback : IJobCallback
+    internal class ServerJobExecutionContext : IJobExecutionContext
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private readonly string _jobId;
@@ -20,7 +20,7 @@ namespace Hangfire.Server
         private readonly IStorageConnection _connection;
         private readonly WorkerContext _workerContext;
 
-        public ServerJobCallback(
+        public ServerJobExecutionContext(
             [NotNull] string jobId,
             [NotNull] IStorageConnection connection,
             [NotNull] WorkerContext workerContext,

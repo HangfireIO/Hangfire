@@ -259,8 +259,8 @@
     <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="Obsolete\OwinBootstrapper.cs" />
     <Compile Include="Dashboard\MiddlewareExtensions.cs" />
-    <Compile Include="IJobCallback.cs" />
-    <Compile Include="JobCallback.cs" />
+    <Compile Include="IJobExecutionContext.cs" />
+    <Compile Include="JobExecutionContext.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
@@ -315,7 +315,7 @@
     <Compile Include="Obsolete\ServerOwinExtensions.cs" />
     <Compile Include="Obsolete\StartupConfiguration.cs" />
     <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
-    <Compile Include="Server\ServerJobCallback.cs" />
+    <Compile Include="Server\ServerJobExecutionContext.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />

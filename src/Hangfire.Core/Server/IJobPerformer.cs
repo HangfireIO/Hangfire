@@ -18,6 +18,6 @@ namespace Hangfire.Server
 {
     public interface IJobPerformer
     {
-        object Perform(JobActivator activator, IJobCallback callback);
+        object Perform(JobActivator activator, IJobExecutionContext callback);
     }
 }

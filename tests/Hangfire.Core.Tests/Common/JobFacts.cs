@@ -22,7 +22,7 @@ namespace Hangfire.Core.Tests.Common
         private readonly MethodInfo _method;
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
-        private readonly Mock<IJobCallback> _token;
+        private readonly Mock<IJobExecutionContext> _token;
         
         public JobFacts()
         {
@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests.Common
             _arguments = new string[0];
 
             _activator = new Mock<JobActivator> { CallBase = true };
-            _token = new Mock<IJobCallback>();
+            _token = new Mock<IJobExecutionContext>();
         }
 
         [Fact]
@@ -246,14 +246,14 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_ThrowsAnException_WhenJobCallback()
+        public void Perform_ThrowsAnException_WhenJobExecutionCallbackIsNull()
         {
             var job = Job.FromExpression(() => StaticMethod());
 
             var exception = Assert.Throws<ArgumentNullException>(
                 () => job.Perform(_activator.Object, null));
 
-            Assert.Equal("jobCallback", exception.ParamName);
+            Assert.Equal("jobExecutionContext", exception.ParamName);
         }
 
         [Fact, StaticLock]
@@ -448,10 +448,10 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_PassesJobCallback_IfThereIsIJobCallbackParameter()
+        public void Perform_PassesJobExecutionContext_IfThereIsIJobExecutionContextParameter()
         {
             // Arrange
-            var job = Job.FromExpression(() => CallbackJob(JobCallback.Null));
+            var job = Job.FromExpression(() => ExecutionContextJob(JobExecutionContext.Null));
             _token.Setup(x => x.UpdateProgress(5, "hi")).Verifiable();
 
             // Act & Assert
@@ -535,7 +535,7 @@ namespace Hangfire.Core.Tests.Common
             token.ThrowIfCancellationRequested();
         }
 
-        public static void CallbackJob(IJobCallback token)
+        public static void ExecutionContextJob(IJobExecutionContext token)
         {
             token.UpdateProgress(5, "hi");
         }
