@@ -88,6 +88,7 @@
     <Compile Include="CronFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
+    <Compile Include="JobCallbackFacts.cs" />
     <Compile Include="JobCancellationTokenFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="Mocks\ApplyStateContextMock.cs" />

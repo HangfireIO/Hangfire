@@ -22,7 +22,7 @@ namespace Hangfire.Core.Tests.Common
         private readonly MethodInfo _method;
         private readonly string[] _arguments;
         private readonly Mock<JobActivator> _activator;
-        private readonly Mock<IJobCancellationToken> _token;
+        private readonly Mock<IJobCallback> _token;
         
         public JobFacts()
         {
@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests.Common
             _arguments = new string[0];
 
             _activator = new Mock<JobActivator> { CallBase = true };
-            _token = new Mock<IJobCancellationToken>();
+            _token = new Mock<IJobCallback>();
         }
 
         [Fact]
@@ -246,14 +246,14 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_ThrowsAnException_WhenCancellationTokenIsNull()
+        public void Perform_ThrowsAnException_WhenJobCallback()
         {
             var job = Job.FromExpression(() => StaticMethod());
 
             var exception = Assert.Throws<ArgumentNullException>(
                 () => job.Perform(_activator.Object, null));
 
-            Assert.Equal("cancellationToken", exception.ParamName);
+            Assert.Equal("jobCallback", exception.ParamName);
         }
 
         [Fact, StaticLock]
@@ -447,6 +447,18 @@ namespace Hangfire.Core.Tests.Common
                 () => job.Perform(_activator.Object, _token.Object));
         }
 
+        [Fact]
+        public void Perform_PassesJobCallback_IfThereIsIJobCallbackParameter()
+        {
+            // Arrange
+            var job = Job.FromExpression(() => CallbackJob(JobCallback.Null));
+            _token.Setup(x => x.UpdateProgress(5, "hi")).Verifiable();
+
+            // Act & Assert
+            job.Perform(_activator.Object, _token.Object);
+            _token.Verify();
+        }
+
 	    [Fact]
         public void Perform_ReturnsValue_WhenCallingFunctionReturningValue()
         {
@@ -521,6 +533,11 @@ namespace Hangfire.Core.Tests.Common
         public static void CancelableJob(IJobCancellationToken token)
         {
             token.ThrowIfCancellationRequested();
+        }
+
+        public static void CallbackJob(IJobCallback token)
+        {
+            token.UpdateProgress(5, "hi");
         }
 
 	    public static void NullArgumentMethod(string[] argument)

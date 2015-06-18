@@ -42,7 +42,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIsIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(
+                () => new ServerJobCallback(
                     null, _connection.Object, _workerContextMock.Object, new CancellationToken()));
 
             Assert.Equal("jobId", exception.ParamName);
@@ -52,7 +52,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(
+                () => new ServerJobCallback(
                     JobId, null, _workerContextMock.Object, new CancellationToken()));
 
             Assert.Equal("connection", exception.ParamName);
@@ -62,7 +62,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenWorkerContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(
+                () => new ServerJobCallback(
                     JobId, _connection.Object, null, new CancellationToken()));
 
             Assert.Equal("workerContext", exception.ParamName);
@@ -134,7 +134,7 @@ namespace Hangfire.Core.Tests.Server
 
         private IJobCancellationToken CreateToken()
         {
-            return new ServerJobCancellationToken(
+            return new ServerJobCallback(
                 JobId, _connection.Object, _workerContextMock.Object, _shutdownToken);
         }
     }
