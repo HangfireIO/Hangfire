@@ -101,6 +101,7 @@
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
     <Compile Include="Server\DefaultJobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\ScheduleInstantFactoryFacts.cs" />
     <Compile Include="Server\ScheduleInstantFacts.cs" />
