@@ -20,17 +20,16 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    public class ServerBootstrapper : IServerComponent, IDisposable
+    public class ServerBootstrapper : IServerComponent
     {
         private const string BootstrapperId = "{4deecd4f-19f6-426b-aa87-6cd1a03eaa48}";
+        private static readonly TimeSpan MutexWaitTimeout = TimeSpan.FromSeconds(10);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly string _serverId;
         private readonly ServerContext _context;
         private readonly Lazy<IServerSupervisor> _supervisorFactory;
-
-        private readonly Mutex _globalMutex;
 
         public ServerBootstrapper(
             string serverId,
@@ -47,25 +46,23 @@ namespace Hangfire.Server
             _serverId = serverId;
             _context = context;
             _supervisorFactory = supervisorFactory;
-
-            if (!RunningWithMono()) 
-            {
-                _globalMutex = new Mutex (false, String.Format (@"Global\{0}_{1}", BootstrapperId, _serverId));
-            }
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            if (!RunningWithMono()) 
+            using (var mutex = new MutexWrapper(_serverId))
             {
                 // Do not allow to run multiple servers with the same ServerId on same
                 // machine, fixes https://github.com/odinserj/Hangfire/issues/112.
-                WaitHandle.WaitAny (new[] { _globalMutex, cancellationToken.WaitHandle });
-                cancellationToken.ThrowIfCancellationRequested ();
-            }
-            
-            try
-            {
+                if (!mutex.WaitOne(MutexWaitTimeout, cancellationToken))
+                {
+                    throw new InvalidOperationException(String.Format(
+                        "Global mutex for Server Id '{0}' could not be acquired. Please ensure there are no any other instances with the same Server Id.",
+                        _serverId));
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
                 using (var connection = _storage.GetConnection())
                 {
                     connection.AnnounceServer(_serverId, _context);
@@ -91,13 +88,6 @@ namespace Hangfire.Server
                     }
                 }
             }
-            finally
-            {
-                if (!RunningWithMono()) 
-                {
-                    _globalMutex.ReleaseMutex ();
-                }
-            }
         }
 
         public override string ToString()
@@ -105,17 +95,45 @@ namespace Hangfire.Server
             return "Server Bootstrapper";
         }
 
-        public void Dispose()
+        private class MutexWrapper : IDisposable
         {
-            if (_globalMutex != null) 
-            {
-                _globalMutex.Dispose ();
-            }
-        }
+            private readonly Mutex _mutex;
+            private bool _acquired;
 
-        private static bool RunningWithMono()
-        {
-            return Type.GetType("Mono.Runtime") != null;
+            public MutexWrapper(string serverId)
+            {
+                if (!RunningWithMono())
+                {
+                    _mutex = new Mutex(false, String.Format(@"Global\{0}_{1}", BootstrapperId, serverId));
+                }
+            }
+
+            public bool WaitOne(TimeSpan timeout, CancellationToken cancellationToken)
+            {
+                if (_mutex == null) return true;
+
+                var waitResult = WaitHandle.WaitAny(new[] { _mutex, cancellationToken.WaitHandle }, timeout);
+                _acquired = waitResult == 0;
+
+                return waitResult != WaitHandle.WaitTimeout;
+            }
+
+            public void Dispose()
+            {
+                if (_mutex == null) return;
+
+                if (_acquired)
+                {
+                    _mutex.ReleaseMutex();
+                }
+
+                _mutex.Dispose();
+            }
+
+            private static bool RunningWithMono()
+            {
+                return Type.GetType("Mono.Runtime") != null;
+            }
         }
     }
 }
