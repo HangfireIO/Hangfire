@@ -56,6 +56,8 @@ namespace Hangfire.Server
             using (var connection = _storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_context.Queues, cancellationToken))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
                     var stateMachine = _stateMachineFactory.Create(connection);
