@@ -22,7 +22,7 @@
     <IISExpressUseClassicPipelineMode />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <MvcProjectUpgradeChecked>true</MvcProjectUpgradeChecked>
-    <FileUpgradeFlags>40</FileUpgradeFlags>
+    <FileUpgradeFlags></FileUpgradeFlags>
     <UpgradeBackupLocation>C:\Users\odinserj\Documents\GitHub\Hangfire\Backup6\</UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <UseGlobalApplicationHostFile />
