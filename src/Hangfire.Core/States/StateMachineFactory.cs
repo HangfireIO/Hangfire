@@ -21,6 +21,8 @@ namespace Hangfire.States
 {
     public class StateMachineFactory : IStateMachineFactory
     {
+        public static Func<JobStorage, StateMachineFactory> Default = storage => new StateMachineFactory(storage); 
+
         private readonly StateHandlerCollection _handlers;
 
         public StateMachineFactory(JobStorage storage)

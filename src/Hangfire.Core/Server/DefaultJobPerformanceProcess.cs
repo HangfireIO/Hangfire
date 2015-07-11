@@ -29,6 +29,11 @@ namespace Hangfire.Server
 
         private readonly JobActivator _activator;
 
+        public DefaultJobPerformanceProcess()
+            : this(JobActivator.Current)
+        {
+        }
+
         public DefaultJobPerformanceProcess([NotNull] JobActivator activator)
         {
             if (activator == null) throw new ArgumentNullException("activator");

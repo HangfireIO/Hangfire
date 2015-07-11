@@ -30,13 +30,23 @@ namespace Hangfire.Server
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly IJobPerformanceProcess _process;
-        private readonly IStateMachineFactory _stateMachineFactory;
+        private readonly Func<JobStorage, IStateMachineFactory> _stateMachineFactory;
         private readonly WorkerContext _context;
+
+        public Worker([NotNull] WorkerContext context)
+            : this(context, new DefaultJobPerformanceProcess())
+        {
+        }
+
+        public Worker([NotNull] WorkerContext context, [NotNull] IJobPerformanceProcess process)
+            : this(context, process, StateMachineFactory.Default)
+        {
+        }
 
         public Worker(
             [NotNull] WorkerContext context,
             [NotNull] IJobPerformanceProcess process, 
-            [NotNull] IStateMachineFactory stateMachineFactory)
+            [NotNull] Func<JobStorage, IStateMachineFactory> stateMachineFactory)
         {
             if (context == null) throw new ArgumentNullException("context");
             if (process == null) throw new ArgumentNullException("process");
@@ -56,7 +66,7 @@ namespace Hangfire.Server
 
                 try
                 {
-                    var stateMachine = _stateMachineFactory.Create(connection);
+                    var stateMachine = _stateMachineFactory(context.Storage).Create(connection);
 
                     using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(

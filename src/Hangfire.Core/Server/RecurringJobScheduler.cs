@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
+using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -31,20 +32,29 @@ namespace Hangfire.Server
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly IBackgroundJobClient _client;
+        private readonly Func<JobStorage, IStateMachineFactory> _stateMachineFactory;
+        private readonly IJobCreationProcess _creationProcess;
         private readonly IScheduleInstantFactory _instantFactory;
         private readonly IThrottler _throttler;
 
+        public RecurringJobScheduler()
+            : this(StateMachineFactory.Default, new DefaultJobCreationProcess(), new ScheduleInstantFactory(), new EveryMinuteThrottler())
+        {
+        }
+
         public RecurringJobScheduler(
-            [NotNull] IBackgroundJobClient client,
+            [NotNull] Func<JobStorage, IStateMachineFactory> stateMachineFactory,
+            [NotNull] IJobCreationProcess creationProcess,
             [NotNull] IScheduleInstantFactory instantFactory,
             [NotNull] IThrottler throttler)
         {
-            if (client == null) throw new ArgumentNullException("client");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
+            if (creationProcess == null) throw new ArgumentNullException("creationProcess");
             if (instantFactory == null) throw new ArgumentNullException("instantFactory");
             if (throttler == null) throw new ArgumentNullException("throttler");
 
-            _client = client;
+            _stateMachineFactory = stateMachineFactory;
+            _creationProcess = creationProcess;
             _instantFactory = instantFactory;
             _throttler = throttler;
         }
@@ -57,6 +67,7 @@ namespace Hangfire.Server
             using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
             {
                 var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
+                var stateMachineFactory = _stateMachineFactory(context.Storage);
 
                 foreach (var recurringJobId in recurringJobIds)
                 {
@@ -70,7 +81,7 @@ namespace Hangfire.Server
 
                     try
                     {
-                        TryScheduleJob(connection, recurringJobId, recurringJob);
+                        TryScheduleJob(connection, recurringJobId, recurringJob, stateMachineFactory);
                     }
                     catch (JobLoadException ex)
                     {
@@ -91,7 +102,11 @@ namespace Hangfire.Server
             return "Recurring Job Scheduler";
         }
 
-        private void TryScheduleJob(IStorageConnection connection, string recurringJobId, Dictionary<string, string> recurringJob)
+        private void TryScheduleJob(
+            IStorageConnection connection, 
+            string recurringJobId, 
+            Dictionary<string, string> recurringJob,
+            IStateMachineFactory stateMachineFactory)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
@@ -115,7 +130,7 @@ namespace Hangfire.Server
                 if (instant.GetNextInstants(lastExecutionTime).Any())
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
-                    var jobId = _client.Create(job, state);
+                    var jobId = CreateBackgroundJob(connection, job, state, stateMachineFactory);
 
                     if (String.IsNullOrEmpty(jobId))
                     {
@@ -141,6 +156,14 @@ namespace Hangfire.Server
                     String.Format("Recurring job '{0}' was not triggered: {1}.", recurringJobId, ex.Message),
                     ex);
             }
+        }
+
+        private string CreateBackgroundJob(IStorageConnection connection, Job job, IState state, IStateMachineFactory stateMachineFactory)
+        {
+            var context = new CreateContext(connection, job, state);
+            var stateMachine = stateMachineFactory.Create(connection);
+
+            return _creationProcess.Run(context, stateMachine);
         }
     }
 }

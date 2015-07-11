@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire.Client;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
@@ -137,23 +138,16 @@ namespace Hangfire
 
         private IEnumerable<IBackgroundProcess> GetCommonProcesses()
         {
-            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
-            var stateMachineFactory = new StateMachineFactory(_storage);
-
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                var context = new WorkerContext(_options.Queues, i + 1);
-                yield return new Worker(context, performanceProcess, stateMachineFactory);
+                yield return new Worker(new WorkerContext(_options.Queues, i + 1));
             }
 
             yield return new ServerHeartbeat();
-            yield return new SchedulePoller(stateMachineFactory, _options.SchedulePollingInterval);
+            yield return new SchedulePoller(_options.SchedulePollingInterval);
             yield return new ServerWatchdog(_options.ServerWatchdogOptions);
 
-            yield return new RecurringJobScheduler(
-                new BackgroundJobClient(_storage, stateMachineFactory),
-                new ScheduleInstantFactory(),
-                new EveryMinuteThrottler());
+            yield return new RecurringJobScheduler();
         }
 
         private static ILongRunningProcess WrapProcess(ILongRunningProcess process)

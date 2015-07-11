@@ -25,12 +25,17 @@ namespace Hangfire.Server
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly IStateMachineFactory _stateMachineFactory;
+        private readonly Func<JobStorage, IStateMachineFactory> _stateMachineFactory;
         private readonly TimeSpan _pollInterval;
 
         private int _enqueuedCount;
 
-        public SchedulePoller(IStateMachineFactory stateMachineFactory, TimeSpan pollInterval)
+        public SchedulePoller(TimeSpan pollInterval)
+            : this(pollInterval, StateMachineFactory.Default)
+        {
+        }
+
+        public SchedulePoller(TimeSpan pollInterval, Func<JobStorage, IStateMachineFactory> stateMachineFactory)
         {
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
 
@@ -77,7 +82,7 @@ namespace Hangfire.Server
                     return false;
                 }
 
-                var stateMachine = _stateMachineFactory.Create(connection);
+                var stateMachine = _stateMachineFactory(context.Storage).Create(connection);
                 var enqueuedState = new EnqueuedState
                 {
                     Reason = "Enqueued as a scheduled job"
