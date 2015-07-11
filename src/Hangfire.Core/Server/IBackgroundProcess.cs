@@ -14,27 +14,14 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 namespace Hangfire.Server
 {
-    internal class ServerHeartbeat : IBackgroundProcess
+    public interface ILongRunningProcess
     {
-        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
+    }
 
-        public void Execute(BackgroundProcessContext context)
-        {
-            using (var connection = context.Storage.GetConnection())
-            {
-                connection.Heartbeat(context.ServerId);
-            }
-
-            context.CancellationToken.WaitHandle.WaitOne(HeartbeatInterval);
-        }
-
-        public override string ToString()
-        {
-            return "Server Heartbeat";
-        }
+    public interface IBackgroundProcess : ILongRunningProcess
+    {
+        void Execute(BackgroundProcessContext context);
     }
 }

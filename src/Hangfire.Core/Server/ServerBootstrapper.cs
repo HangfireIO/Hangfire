@@ -22,66 +22,65 @@ using System.Threading.Tasks;
 
 namespace Hangfire.Server
 {
-    public class ServerBootstrapper : IServerComponent
+    internal class ServerBootstrapper : IBackgroundProcess
     {
         private const string BootstrapperId = "{4deecd4f-19f6-426b-aa87-6cd1a03eaa48}";
         private static readonly TimeSpan MutexWaitTimeout = TimeSpan.FromSeconds(10);
 
-        private readonly JobStorage _storage;
-        private readonly string _serverId;
-        private readonly ServerContext _context;
-        private readonly IEnumerable<IServerComponent> _components;
+        private readonly IEnumerable<ILongRunningProcess> _processes;
 
-        public ServerBootstrapper(
-            string serverId,
-            ServerContext context,
-            JobStorage storage,
-            IEnumerable<IServerComponent> components)
+        public ServerBootstrapper(IEnumerable<ILongRunningProcess> processes)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (serverId == null) throw new ArgumentNullException("serverId");
-            if (context == null) throw new ArgumentNullException("context");
-            if (components == null) throw new ArgumentNullException("components");
-
-            _storage = storage;
-            _serverId = serverId;
-            _context = context;
-            _components = components;
+            if (processes == null) throw new ArgumentNullException("processes");
+            _processes = processes;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public void Execute(BackgroundProcessContext context)
         {
-            using (var mutex = new MutexWrapper(_serverId))
+            using (var mutex = new MutexWrapper(context.ServerId))
             {
                 // Do not allow to run multiple servers with the same ServerId on same
                 // machine, fixes https://github.com/odinserj/Hangfire/issues/112.
-                if (!mutex.WaitOne(MutexWaitTimeout, cancellationToken))
+                if (!mutex.WaitOne(MutexWaitTimeout, context.CancellationToken))
                 {
                     throw new InvalidOperationException(String.Format(
                         "Global mutex for Server Id '{0}' could not be acquired. Please ensure there are no any other instances with the same Server Id.",
-                        _serverId));
+                        context.ServerId));
                 }
 
-                cancellationToken.ThrowIfCancellationRequested();
+                context.CancellationToken.ThrowIfCancellationRequested();
 
-                using (var connection = _storage.GetConnection())
+                using (var connection = context.Storage.GetConnection())
                 {
-                    connection.AnnounceServer(_serverId, _context);
+                    var serverContext = new ServerContext();
+
+                    if (context.ServerData.ContainsKey("Queues"))
+                    {
+                        var array = context.ServerData["Queues"] as string[];
+                        if (array != null) { serverContext.Queues = array; }
+                    }
+
+                    if (context.ServerData.ContainsKey("WorkerCount"))
+                    {
+                        serverContext.WorkerCount = (int)context.ServerData["WorkerCount"];
+                    }
+                    
+                    connection.AnnounceServer(context.ServerId, serverContext);
                 }
 
                 try
                 {
-                    var tasks = _components
-                        .Select(component => component.CreateTask(cancellationToken))
+                    var tasks = _processes
+                        .Select(process => process.CreateTask(context))
                         .ToArray();
 
                     Task.WaitAll(tasks);
                 }
                 finally
                 {
-                    using (var connection = _storage.GetConnection())
+                    using (var connection = context.Storage.GetConnection())
                     {
-                        connection.RemoveServer(_serverId);
+                        connection.RemoveServer(context.ServerId);
                     }
                 }
             }

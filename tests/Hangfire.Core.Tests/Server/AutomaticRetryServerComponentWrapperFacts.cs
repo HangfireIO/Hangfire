@@ -25,7 +25,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new AutomaticRetryServerComponentWrapper(null));
+                () => new AutomaticRetryProcess(null));
 
             Assert.Equal("innerComponent", exception.ParamName);
         }
@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var wrapper = CreateWrapper();
 
-            Assert.Same(_component.Object, wrapper.InnerComponent);
+            Assert.Same(_component.Object, wrapper.InnerProcess);
         }
 
         [Fact]
@@ -98,9 +98,9 @@ namespace Hangfire.Core.Tests.Server
             _component.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        private AutomaticRetryServerComponentWrapper CreateWrapper()
+        private AutomaticRetryProcess CreateWrapper()
         {
-            return new AutomaticRetryServerComponentWrapper(_component.Object)
+            return new AutomaticRetryProcess(_component.Object)
             {
                 MaxRetryAttempts = _maxRetryAttempts,
                 DelayCallback = x => TimeSpan.Zero

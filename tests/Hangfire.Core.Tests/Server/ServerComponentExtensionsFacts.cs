@@ -22,7 +22,7 @@ namespace Hangfire.Core.Tests.Server
         public void CreateTask_ThrowsAnException_WhenComponentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => ServerComponentExtensions.CreateTask(null, _cts.Token));
+                () => BackgroundProcessExtensions.CreateTask(null, _cts.Token));
 
             Assert.Equal("component", exception.ParamName);
         }

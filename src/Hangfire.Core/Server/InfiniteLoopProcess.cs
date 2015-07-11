@@ -20,28 +20,33 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Server
 {
-    internal class InfiniteLoopComponent : IServerComponent
+    internal class InfiniteLoopProcess : IBackgroundProcess
     {
-        public InfiniteLoopComponent([NotNull] IServerComponent innerComponent)
+        public InfiniteLoopProcess([NotNull] ILongRunningProcess innerProcess)
         {
-            if (innerComponent == null) throw new ArgumentNullException("innerComponent");
-            InnerComponent = innerComponent;
+            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
+            InnerProcess = innerProcess;
         }
 
-        public IServerComponent InnerComponent { get; private set; }
+        public ILongRunningProcess InnerProcess { get; private set; }
 
         public void Execute(CancellationToken cancellationToken)
         {
+            
+        }
+
+        public void Execute(BackgroundProcessContext context)
+        {
             while (true)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                InnerComponent.Execute(cancellationToken);
+                context.CancellationToken.ThrowIfCancellationRequested();
+                InnerProcess.Execute(context);
             }
         }
 
         public override string ToString()
         {
-            return InnerComponent.ToString();
+            return InnerProcess.ToString();
         }
     }
 }

@@ -1,5 +1,5 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,26 +15,25 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal class AutomaticRetryServerComponentWrapper : IServerComponent
+    internal class AutomaticRetryProcess : IBackgroundProcess
     {
         private static readonly TimeSpan DefaultMaxAttemptDelay = TimeSpan.FromMinutes(5);
         private const int DefaultMaxRetryAttempts = int.MaxValue;
 
-        private readonly IServerComponent _innerComponent;
+        private readonly ILongRunningProcess _innerProcess;
         private readonly ILog _logger;
 
-        public AutomaticRetryServerComponentWrapper([NotNull] IServerComponent innerComponent)
+        public AutomaticRetryProcess([NotNull] ILongRunningProcess innerProcess)
         {
-            if (innerComponent == null) throw new ArgumentNullException("innerComponent");
+            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
 
-            _innerComponent = innerComponent;
-            _logger = LogProvider.GetLogger(_innerComponent.GetType());
+            _innerProcess = innerProcess;
+            _logger = LogProvider.GetLogger(_innerProcess.GetType());
             
             MaxRetryAttempts = DefaultMaxRetryAttempts;
             MaxAttemptDelay = DefaultMaxAttemptDelay;
@@ -43,25 +42,20 @@ namespace Hangfire.Server
 
         public int MaxRetryAttempts { get; set; }
         public TimeSpan MaxAttemptDelay { get; set; }
-        public Func<int, TimeSpan> DelayCallback { get; set; } 
+        public Func<int, TimeSpan> DelayCallback { get; set; }
 
-        public IServerComponent InnerComponent
+        public ILongRunningProcess InnerProcess
         {
-            get { return _innerComponent; }
+            get { return _innerProcess; }
         }
 
-        public void Execute(CancellationToken cancellationToken)
-        {
-            ExecuteWithAutomaticRetry(cancellationToken);
-        }
-
-        private void ExecuteWithAutomaticRetry(CancellationToken cancellationToken)
+        public void Execute(BackgroundProcessContext context)
         {
             for (var i = 0; i <= MaxRetryAttempts; i++)
             {
                 try
                 {
-                    _innerComponent.Execute(cancellationToken);
+                    _innerProcess.Execute(context);
                     return;
                 }
                 catch (OperationCanceledException)
@@ -80,15 +74,15 @@ namespace Hangfire.Server
                         logLevel,
                         () => String.Format(
                             "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
-                            _innerComponent,
+                            _innerProcess,
                             i + 1,
                             MaxRetryAttempts,
                             nextTry),
                         ex);
 
                     // Break the loop when the wait handle was signaled.
-                    cancellationToken.WaitHandle.WaitOne(nextTry);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    context.CancellationToken.WaitHandle.WaitOne(nextTry);
+                    context.CancellationToken.ThrowIfCancellationRequested();
                 }
             }
         }
@@ -110,7 +104,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return _innerComponent.ToString();
+            return _innerProcess.ToString();
         }
 
         private TimeSpan GetBackOffMultiplier(int retryAttemptNumber)

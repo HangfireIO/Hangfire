@@ -22,32 +22,58 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal static class ServerComponentExtensions
+    internal static class BackgroundProcessExtensions
     {
-        public static Task CreateTask([NotNull] this IServerComponent component, CancellationToken cancellationToken)
+        public static void Execute(this ILongRunningProcess process, BackgroundProcessContext context)
         {
-            if (component == null) throw new ArgumentNullException("component");
+            if (!(process is IServerComponent || process is IBackgroundProcess))
+            {
+                throw new ArgumentOutOfRangeException("process", "Long-running process must be of type IServerComponent or IBackgroundProcess.");
+            }
+
+            var backgroundProcess = process as IBackgroundProcess;
+            if (backgroundProcess != null)
+            {
+                backgroundProcess.Execute(context);
+            }
+            else
+            {
+                var component = process as IServerComponent;
+                if (component != null)
+                {
+                    component.Execute(context.CancellationToken);
+                }
+            }
+        }
+
+        public static Task CreateTask([NotNull] this ILongRunningProcess process, BackgroundProcessContext context)
+        {
+            if (process == null) throw new ArgumentNullException("process");
+            if (!(process is IServerComponent || process is IBackgroundProcess))
+            {
+                throw new ArgumentOutOfRangeException("process", "Long-running process must be of type IServerComponent or IBackgroundProcess.");
+            }
 
             return Task.Factory.StartNew(
-                () => RunComponent(component, cancellationToken),
+                () => RunProcess(process, context),
                 TaskCreationOptions.LongRunning);
         }
 
-        private static void RunComponent(IServerComponent component, CancellationToken cancellationToken)
+        private static void RunProcess(ILongRunningProcess process, BackgroundProcessContext context)
         {
             // Long-running tasks are based on custom threads (not threadpool ones) as in 
             // .NET Framework 4.5, so we can try to set custom thread name to simplify the
             // debugging experience.
-            TrySetThreadName(component.ToString());
+            TrySetThreadName(process.ToString());
 
             // LogProvider.GetLogger does not throw any exception, that is why we are not
             // using the `try` statement here. It does not return `null` value as well.
-            var logger = LogProvider.GetLogger(component.ToString());
-            logger.DebugFormat("Server component '{0}' started.", component);
+            var logger = LogProvider.GetLogger(process.ToString());
+            logger.DebugFormat("Server component '{0}' started.", process);
 
             try
             {
-                component.Execute(cancellationToken);
+                process.Execute(context);
             }
             catch (OperationCanceledException)
             {
@@ -57,11 +83,11 @@ namespace Hangfire.Server
                 logger.FatalException(
                     String.Format(
                         "Fatal error occurred during execution of '{0}' component. It will be stopped. See the exception for details.",
-                        component),
+                        process),
                     ex);
             }
 
-            logger.DebugFormat("Server component '{0}' stopped.", component);
+            logger.DebugFormat("Server component '{0}' stopped.", process);
         }
 
         private static void TrySetThreadName(string name)

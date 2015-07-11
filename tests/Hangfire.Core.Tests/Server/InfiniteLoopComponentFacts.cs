@@ -20,14 +20,14 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Ctor_ThrowsAnException_WhenInnerComponentIsNull()
         {
-            Assert.Throws<ArgumentNullException>(() => new InfiniteLoopComponent(null));
+            Assert.Throws<ArgumentNullException>(() => new InfiniteLoopProcess(null));
         }
 
         [Fact]
         public void InnerComponent_ReturnsTheInnerComponent()
         {
             var component = CreateComponent();
-            var result = component.InnerComponent;
+            var result = component.InnerProcess;
             Assert.Same(_inner.Object, result);
         }
 
@@ -76,9 +76,9 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal(_inner.Object.ToString(), result);
         }
 
-        private InfiniteLoopComponent CreateComponent()
+        private InfiniteLoopProcess CreateComponent()
         {
-            return new InfiniteLoopComponent(_inner.Object);
+            return new InfiniteLoopProcess(_inner.Object);
         }
     }
 }

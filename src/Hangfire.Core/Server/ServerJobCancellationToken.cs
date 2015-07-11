@@ -26,34 +26,35 @@ namespace Hangfire.Server
     internal class ServerJobCancellationToken : IJobCancellationToken
     {
         private readonly string _jobId;
-        private readonly CancellationToken _shutdownToken;
         private readonly IStorageConnection _connection;
         private readonly WorkerContext _workerContext;
+        private readonly BackgroundProcessContext _backgroundProcessContext;
 
         public ServerJobCancellationToken(
             [NotNull] string jobId, 
             [NotNull] IStorageConnection connection, 
-            [NotNull] WorkerContext workerContext,
-            CancellationToken shutdownToken)
+            [NotNull] WorkerContext workerContext, 
+            [NotNull] BackgroundProcessContext backgroundProcessContext)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (connection == null) throw new ArgumentNullException("connection");
             if (workerContext == null) throw new ArgumentNullException("workerContext");
+            if (backgroundProcessContext == null) throw new ArgumentNullException("backgroundProcessContext");
 
             _jobId = jobId;
-            _shutdownToken = shutdownToken;
             _connection = connection;
             _workerContext = workerContext;
+            _backgroundProcessContext = backgroundProcessContext;
         }
 
         public CancellationToken ShutdownToken
         {
-            get { return _shutdownToken; }
+            get { return _backgroundProcessContext.CancellationToken; }
         }
 
         public void ThrowIfCancellationRequested()
         {
-            _shutdownToken.ThrowIfCancellationRequested();
+            _backgroundProcessContext.CancellationToken.ThrowIfCancellationRequested();
 
             if (IsJobAborted())
             {
@@ -75,7 +76,7 @@ namespace Hangfire.Server
                 return true;
             }
 
-            if (!state.Data["ServerId"].Equals(_workerContext.ServerId))
+            if (!state.Data["ServerId"].Equals(_backgroundProcessContext.ServerId))
             {
                 return true;
             }

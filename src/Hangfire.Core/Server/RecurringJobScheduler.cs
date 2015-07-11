@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -27,38 +26,34 @@ using NCrontab;
 
 namespace Hangfire.Server
 {
-    internal class RecurringJobScheduler : IServerComponent
+    internal class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly JobStorage _storage;
         private readonly IBackgroundJobClient _client;
         private readonly IScheduleInstantFactory _instantFactory;
         private readonly IThrottler _throttler;
 
         public RecurringJobScheduler(
-            [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobClient client,
             [NotNull] IScheduleInstantFactory instantFactory,
             [NotNull] IThrottler throttler)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
             if (client == null) throw new ArgumentNullException("client");
             if (instantFactory == null) throw new ArgumentNullException("instantFactory");
             if (throttler == null) throw new ArgumentNullException("throttler");
 
-            _storage = storage;
             _client = client;
             _instantFactory = instantFactory;
             _throttler = throttler;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public void Execute(BackgroundProcessContext context)
         {
-            _throttler.Throttle(cancellationToken);
+            _throttler.Throttle(context.CancellationToken);
 
-            using (var connection = _storage.GetConnection())
+            using (var connection = context.Storage.GetConnection())
             using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
             {
                 var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
@@ -87,7 +82,7 @@ namespace Hangfire.Server
                     }
                 }
 
-                _throttler.Delay(cancellationToken);
+                _throttler.Delay(context.CancellationToken);
             }
         }
 

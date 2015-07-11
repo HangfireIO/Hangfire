@@ -15,35 +15,25 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    public class ServerWatchdog : IServerComponent
+    internal class ServerWatchdog : IBackgroundProcess
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly JobStorage _storage;
         private readonly ServerWatchdogOptions _options;
 
-        public ServerWatchdog(JobStorage storage)
-            : this(storage, new ServerWatchdogOptions())
+        public ServerWatchdog(ServerWatchdogOptions options)
         {
-        }
-
-        public ServerWatchdog(JobStorage storage, ServerWatchdogOptions options)
-        {
-            if (storage == null) throw new ArgumentNullException("storage");
             if (options == null) throw new ArgumentNullException("options");
-
-            _storage = storage;
             _options = options;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public void Execute(BackgroundProcessContext context)
         {
-            using (var connection = _storage.GetConnection())
+            using (var connection = context.Storage.GetConnection())
             {
                 var serversRemoved = connection.RemoveTimedOutServers(_options.ServerTimeout);
                 if (serversRemoved != 0)
@@ -54,7 +44,7 @@ namespace Hangfire.Server
                 }
             }
 
-            cancellationToken.WaitHandle.WaitOne(_options.CheckInterval);
+            context.CancellationToken.WaitHandle.WaitOne(_options.CheckInterval);
         }
 
         public override string ToString()

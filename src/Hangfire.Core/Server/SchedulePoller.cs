@@ -15,39 +15,32 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 
 namespace Hangfire.Server
 {
-    public class SchedulePoller : IServerComponent
+    internal class SchedulePoller : IBackgroundProcess
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly JobStorage _storage;
         private readonly IStateMachineFactory _stateMachineFactory;
         private readonly TimeSpan _pollInterval;
 
         private int _enqueuedCount;
 
-        public SchedulePoller(
-            JobStorage storage, 
-            IStateMachineFactory stateMachineFactory, 
-            TimeSpan pollInterval)
+        public SchedulePoller(IStateMachineFactory stateMachineFactory, TimeSpan pollInterval)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
 
-            _storage = storage;
             _stateMachineFactory = stateMachineFactory;
             _pollInterval = pollInterval;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public void Execute(BackgroundProcessContext context)
         {
-            if (!EnqueueNextScheduledJob())
+            if (!EnqueueNextScheduledJob(context))
             {
                 if (_enqueuedCount != 0)
                 {
@@ -55,7 +48,7 @@ namespace Hangfire.Server
                     _enqueuedCount = 0;
                 }
 
-                cancellationToken.WaitHandle.WaitOne(_pollInterval);
+                context.CancellationToken.WaitHandle.WaitOne(_pollInterval);
             }
             else
             {
@@ -69,9 +62,9 @@ namespace Hangfire.Server
             return "Schedule Poller";
         }
 
-        private bool EnqueueNextScheduledJob()
+        private bool EnqueueNextScheduledJob(BackgroundProcessContext context)
         {
-            using (var connection = _storage.GetConnection())
+            using (var connection = context.Storage.GetConnection())
             {
                 var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 

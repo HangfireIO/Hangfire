@@ -24,39 +24,35 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
-    internal class Worker : IServerComponent
+    internal class Worker : IBackgroundProcess
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly JobStorage _storage;
         private readonly IJobPerformanceProcess _process;
         private readonly IStateMachineFactory _stateMachineFactory;
         private readonly WorkerContext _context;
 
         public Worker(
             [NotNull] WorkerContext context,
-            [NotNull] JobStorage storage, 
             [NotNull] IJobPerformanceProcess process, 
             [NotNull] IStateMachineFactory stateMachineFactory)
         {
             if (context == null) throw new ArgumentNullException("context");
-            if (storage == null) throw new ArgumentNullException("storage");
             if (process == null) throw new ArgumentNullException("process");
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
             
             _context = context;
-            _storage = storage;
             _process = process;
             _stateMachineFactory = stateMachineFactory;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public void Execute(BackgroundProcessContext context)
         {
-            using (var connection = _storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_context.Queues, cancellationToken))
+            using (var connection = context.Storage.GetConnection())
+            using (var fetchedJob = connection.FetchNextJob(_context.Queues, context.CancellationToken))
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                context.CancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
@@ -64,10 +60,10 @@ namespace Hangfire.Server
 
                     using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-                        cancellationToken,
+                        context.CancellationToken,
                         timeoutCts.Token))
                     {
-                        var processingState = new ProcessingState(_context.ServerId, _context.WorkerNumber);
+                        var processingState = new ProcessingState(context.ServerId, _context.WorkerNumber);
 
                         if (!stateMachine.ChangeState(
                             fetchedJob.JobId,
@@ -77,7 +73,7 @@ namespace Hangfire.Server
                         {
                             // We should re-queue a job identifier only when graceful shutdown
                             // initiated.
-                            cancellationToken.ThrowIfCancellationRequested();
+                            context.CancellationToken.ThrowIfCancellationRequested();
 
                             // We should forget a job in a wrong state, or when timeout exceeded.
                             fetchedJob.RemoveFromQueue();
@@ -91,7 +87,7 @@ namespace Hangfire.Server
                     // It will be re-queued after the JobTimeout was expired.
 
                     var jobCancellationToken = new ServerJobCancellationToken(
-                        fetchedJob.JobId, connection, _context, cancellationToken);
+                        fetchedJob.JobId, connection, _context, context);
 
                     var state = PerformJob(fetchedJob.JobId, connection, jobCancellationToken);
 

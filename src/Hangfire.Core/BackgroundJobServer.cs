@@ -116,56 +116,49 @@ namespace Hangfire
 
         internal virtual Task GetBootstrapTask()
         {
-            var context = new ServerContext
-            {
-                Queues = _options.Queues,
-                WorkerCount = _options.WorkerCount
-            };
+            var bootstrapper = new ServerBootstrapper(GetProcesses());
 
-            var bootstrapper = new ServerBootstrapper(
-                _serverId, 
-                context, 
-                _storage, 
-                GetComponents());
+            var context = new BackgroundProcessContext(_serverId, _storage, _cts.Token);
+            context.ServerData["Queues"] = _options.Queues;
+            context.ServerData["WorkerCount"] = _options.WorkerCount;
 
-            return WrapComponent(bootstrapper).CreateTask(_cts.Token);
+            return WrapProcess(bootstrapper).CreateTask(context);
         }
 
-        internal IEnumerable<IServerComponent> GetComponents()
+        internal IEnumerable<ILongRunningProcess> GetProcesses()
         {
-            var components = new List<IServerComponent>();
+            var processes = new List<ILongRunningProcess>();
 
-            components.AddRange(GetCommonComponents().Select(WrapComponent));
-            components.AddRange(_storage.GetComponents().Select(WrapComponent));
+            processes.AddRange(GetCommonProcesses().Select(WrapProcess));
+            processes.AddRange(_storage.GetComponents().Select(WrapProcess));
 
-            return components;
+            return processes;
         }
 
-        private IEnumerable<IServerComponent> GetCommonComponents()
+        private IEnumerable<IBackgroundProcess> GetCommonProcesses()
         {
             var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
             var stateMachineFactory = new StateMachineFactory(_storage);
 
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                var context = new WorkerContext(_serverId, _options.Queues, i + 1);
-                yield return new Worker(context, _storage, performanceProcess, stateMachineFactory);
+                var context = new WorkerContext(_options.Queues, i + 1);
+                yield return new Worker(context, performanceProcess, stateMachineFactory);
             }
 
-            yield return new ServerHeartbeat(_storage, _serverId);
-            yield return new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval);
-            yield return new ServerWatchdog(_storage, _options.ServerWatchdogOptions);
+            yield return new ServerHeartbeat();
+            yield return new SchedulePoller(stateMachineFactory, _options.SchedulePollingInterval);
+            yield return new ServerWatchdog(_options.ServerWatchdogOptions);
 
             yield return new RecurringJobScheduler(
-                _storage, 
                 new BackgroundJobClient(_storage, stateMachineFactory),
                 new ScheduleInstantFactory(),
                 new EveryMinuteThrottler());
         }
 
-        private static IServerComponent WrapComponent(IServerComponent component)
+        private static ILongRunningProcess WrapProcess(ILongRunningProcess process)
         {
-            return new InfiniteLoopComponent(new AutomaticRetryServerComponentWrapper(component));
+            return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
         }
     }
 }
