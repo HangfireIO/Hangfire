@@ -333,7 +333,6 @@
     <Compile Include="Client\CreatedContext.cs" />
     <Compile Include="Client\CreatingContext.cs" />
     <Compile Include="Server\IServerComponent.cs" />
-    <Compile Include="Server\IServerSupervisor.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
     <Compile Include="Server\ServerBootstrapper.cs" />
     <Compile Include="Server\IJobPerformanceProcess.cs" />
@@ -344,9 +343,6 @@
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="States\IApplyStateFilter.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
-    <Compile Include="Server\ServerSupervisor.cs" />
-    <Compile Include="Server\ServerSupervisorCollection.cs" />
-    <Compile Include="Server\ServerSupervisorOptions.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\Worker.cs" />

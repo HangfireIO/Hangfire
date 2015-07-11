@@ -30,9 +30,7 @@ namespace Hangfire.Server
 
             return Task.Factory.StartNew(
                 () => RunComponent(component, cancellationToken),
-                cancellationToken,
-                TaskCreationOptions.AttachedToParent | TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                TaskCreationOptions.LongRunning);
         }
 
         private static void RunComponent(IServerComponent component, CancellationToken cancellationToken)

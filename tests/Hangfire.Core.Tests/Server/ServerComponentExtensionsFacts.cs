@@ -28,12 +28,11 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void CreateTask_ReturnsALongRunning_AttachedToParent_Task()
+        public void CreateTask_ReturnsALongRunningTask()
         {
             var task = _component.Object.CreateTask(_cts.Token);
 
             Assert.True(task.CreationOptions.HasFlag(TaskCreationOptions.LongRunning));
-            Assert.True(task.CreationOptions.HasFlag(TaskCreationOptions.AttachedToParent));
         }
 
         [Fact]

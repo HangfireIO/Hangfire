@@ -18,13 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 
 namespace Hangfire
 {
-    public class BackgroundJobServer : IServerSupervisor
+    public class BackgroundJobServer : IDisposable
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
@@ -32,7 +34,8 @@ namespace Hangfire
         private readonly BackgroundJobServerOptions _options;
 
         private readonly string _serverId;
-        private readonly IServerSupervisor _bootstrapSupervisor;
+        private readonly Task _bootstrapTask;
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -79,16 +82,14 @@ namespace Hangfire
 
             _serverId = String.Format("{0}:{1}", _options.ServerName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
-            // ReSharper disable once DoNotCallOverridableMethodsInConstructor
-            _bootstrapSupervisor = GetBootstrapSupervisor();
-
             Logger.Info("Starting Hangfire Server");
             Logger.InfoFormat("Using job storage: '{0}'.", _storage);
             
             _storage.WriteOptionsToLog(Logger);
             _options.WriteToLog(Logger);
 
-            _bootstrapSupervisor.Start();
+            // ReSharper disable once DoNotCallOverridableMethodsInConstructor
+            _bootstrapTask = GetBootstrapTask();
         }
 
         [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
@@ -103,11 +104,17 @@ namespace Hangfire
 
         public virtual void Dispose()
         {
-            _bootstrapSupervisor.Dispose();
+            _cts.Cancel();
+
+            if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
+            {
+                Logger.WarnFormat("");
+            }
+            
             Logger.Info("Hangfire Server stopped.");
         }
 
-        internal virtual IServerSupervisor GetBootstrapSupervisor()
+        internal virtual Task GetBootstrapTask()
         {
             var context = new ServerContext
             {
@@ -119,24 +126,19 @@ namespace Hangfire
                 _serverId, 
                 context, 
                 _storage, 
-                new Lazy<IServerSupervisor>(GetSupervisors));
+                GetComponents());
 
-            return CreateSupervisor(
-                bootstrapper, 
-                new ServerSupervisorOptions
-                {
-                    ShutdownTimeout = _options.ShutdownTimeout
-                });
+            return WrapComponent(bootstrapper).CreateTask(_cts.Token);
         }
 
-        internal ServerSupervisorCollection GetSupervisors()
+        internal IEnumerable<IServerComponent> GetComponents()
         {
-            var supervisors = new List<IServerSupervisor>();
+            var components = new List<IServerComponent>();
 
-            supervisors.AddRange(GetCommonComponents().Select(CreateSupervisor));
-            supervisors.AddRange(_storage.GetComponents().Select(CreateSupervisor));
+            components.AddRange(GetCommonComponents().Select(WrapComponent));
+            components.AddRange(_storage.GetComponents().Select(WrapComponent));
 
-            return new ServerSupervisorCollection(supervisors);
+            return components;
         }
 
         private IEnumerable<IServerComponent> GetCommonComponents()
@@ -161,14 +163,9 @@ namespace Hangfire
                 new EveryMinuteThrottler());
         }
 
-        private static ServerSupervisor CreateSupervisor(IServerComponent component)
+        private static IServerComponent WrapComponent(IServerComponent component)
         {
-            return CreateSupervisor(component, new ServerSupervisorOptions());
-        }
-
-        private static ServerSupervisor CreateSupervisor(IServerComponent component, ServerSupervisorOptions options)
-        {
-            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component), options);
+            return new InfiniteLoopComponent(new AutomaticRetryServerComponentWrapper(component));
         }
     }
 }

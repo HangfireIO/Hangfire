@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -13,19 +14,17 @@ namespace Hangfire.Core.Tests.Server
 
         private readonly ServerContext _context;
         private readonly Mock<JobStorage> _storage;
-        private readonly Lazy<IServerSupervisor> _supervisorFactory;
         private readonly Mock<IStorageConnection> _connection;
         private readonly CancellationTokenSource _cts;
-        private readonly Mock<IServerSupervisor> _supervisor;
+        private readonly List<IServerComponent> _components; 
 
         public ServerBootstrapperFacts()
         {
             _context = new ServerContext();
             _storage = new Mock<JobStorage>();
-            _supervisor = new Mock<IServerSupervisor>();
-            _supervisorFactory = new Lazy<IServerSupervisor>(() => _supervisor.Object);
             _connection = new Mock<IStorageConnection>();
-            _cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+            _cts = new CancellationTokenSource();
+            _components = new List<IServerComponent>();
 
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
@@ -34,7 +33,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenServerIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerBootstrapper(null, _context, _storage.Object, _supervisorFactory));
+                () => new ServerBootstrapper(null, _context, _storage.Object, _components));
 
             Assert.Equal("serverId", exception.ParamName);
         }
@@ -43,7 +42,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerBootstrapper(ServerId, null, _storage.Object, _supervisorFactory));
+                () => new ServerBootstrapper(ServerId, null, _storage.Object, _components));
 
             Assert.Equal("context", exception.ParamName);
         }
@@ -52,18 +51,18 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerBootstrapper(ServerId, _context, null, _supervisorFactory));
+                () => new ServerBootstrapper(ServerId, _context, null, _components));
 
             Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenSupervisorFactoryIsNull()
+        public void Ctor_ThrowsAnException_WhenComponentsCollection_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ServerBootstrapper(ServerId, _context, _storage.Object, null));
 
-            Assert.Equal("supervisorFactory", exception.ParamName);
+            Assert.Equal("components", exception.ParamName);
         }
 
         [Fact]
@@ -88,22 +87,21 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_StartsTheSupervisor()
+        public void Execute_StartsAllTheComponents_AndWaitsForThem()
         {
-            var server = CreateServer();
-            server.Execute(_cts.Token);
+            // Arrange
+            var component1 = CreateComponentMock();
+            component1.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Callback(() => Thread.Sleep(100));
 
-            _supervisor.Verify(x => x.Start());
-        }
-
-        [Fact]
-        public void Execute_DisposesTheSupervisor()
-        {
+            var component2 = CreateComponentMock();
             var server = CreateServer();
 
+            // Act
             server.Execute(_cts.Token);
 
-            _supervisor.Verify(x => x.Dispose());
+            // Assert
+            component1.Verify(x => x.Execute(_cts.Token));
+            component2.Verify(x => x.Execute(_cts.Token));
         }
 
         [Fact]
@@ -116,20 +114,17 @@ namespace Hangfire.Core.Tests.Server
             _connection.Verify(x => x.RemoveServer(ServerId));
         }
 
-        [Fact]
-        public void Execute_RemovesServer_EvenWhenSupervisorThrowsAnException()
-        {
-            _supervisor.Setup(x => x.Dispose()).Throws<InvalidOperationException>();
-            var server = CreateServer();
-
-            Assert.Throws<InvalidOperationException>(() => server.Execute(_cts.Token));
-
-            _connection.Verify(x => x.RemoveServer(It.IsAny<string>()));
-        }
-
         private ServerBootstrapper CreateServer()
         {
-            return new ServerBootstrapper(ServerId, _context, _storage.Object, _supervisorFactory);
+            return new ServerBootstrapper(ServerId, _context, _storage.Object, _components);
+        }
+
+        private Mock<IServerComponent> CreateComponentMock()
+        {
+            var mock = new Mock<IServerComponent>();
+            _components.Add(mock.Object);
+
+            return mock;
         }
     }
 }
