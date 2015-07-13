@@ -100,7 +100,7 @@ namespace Hangfire
             };
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             _server.Dispose();
             Logger.Info("Hangfire Server stopped.");
