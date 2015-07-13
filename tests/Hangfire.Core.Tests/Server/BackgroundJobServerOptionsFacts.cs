@@ -12,19 +12,9 @@ namespace Hangfire.Core.Tests.Server
             var options = CreateOptions();
 
             Assert.Equal(Math.Min(Environment.ProcessorCount * 5, 40), options.WorkerCount);
-            Assert.Equal(Environment.MachineName, options.ServerName);
             Assert.Equal(EnqueuedState.DefaultQueue, options.Queues[0]);
             Assert.True(options.ShutdownTimeout > TimeSpan.Zero);
             Assert.True(options.SchedulePollingInterval > TimeSpan.Zero);
-        }
-
-        [Fact]
-        public void ServerName_ThrowsAnException_WhenValueIsNull()
-        {
-            var options = CreateOptions();
-
-            Assert.Throws<ArgumentNullException>(
-                () => options.ServerName = null);
         }
 
         [Fact]
@@ -69,15 +59,6 @@ namespace Hangfire.Core.Tests.Server
             var options = CreateOptions();
 
             Assert.NotNull(options.ServerWatchdogOptions);
-        }
-
-        [Fact]
-        public void ServerName_EqualsToMachineName_ByDefault()
-        {
-            var options = CreateOptions();
-
-            Assert.NotEmpty(options.ServerName);
-            Assert.Equal(Environment.MachineName, options.ServerName);
         }
 
         private static BackgroundJobServerOptions CreateOptions()
