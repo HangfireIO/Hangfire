@@ -22,6 +22,7 @@ using Owin;
 
 namespace Hangfire.Dashboard
 {
+    [Obsolete("Please use `IAppBuilder.UseHangfireDashboard` OWIN extension method instead. Will be removed in version 2.0.0.")]
     public static class DashboardOwinExtensions
     {
         internal static readonly IAuthorizationFilter[] DefaultAuthorizationFilters =

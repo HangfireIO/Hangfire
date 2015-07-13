@@ -23,6 +23,7 @@ namespace Hangfire
     /// Represents a configuration class for Hangfire components that
     /// is being used by the <see cref="OwinBootstrapper"/> class.
     /// </summary>
+    [Obsolete("Please use `GlobalConfiguration` class instead. Will be removed in version 2.0.0.")]
     public interface IBootstrapperConfiguration
     {
         /// <summary>

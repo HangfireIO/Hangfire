@@ -22,6 +22,7 @@ using Owin;
 
 namespace Hangfire.Server
 {
+    [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
     public static class ServerOwinExtensions
     {
         // Prevent GC to collect background servers in hosts that do not
