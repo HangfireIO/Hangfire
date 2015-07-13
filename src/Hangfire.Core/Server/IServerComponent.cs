@@ -18,7 +18,7 @@ using System.Threading;
 
 namespace Hangfire.Server
 {
-    public interface IServerComponent : ILongRunningProcess
+    public interface IServerComponent : IServerProcess
     {
         void Execute(CancellationToken cancellationToken);
     }

@@ -16,11 +16,11 @@
 
 namespace Hangfire.Server
 {
-    public interface ILongRunningProcess
+    public interface IServerProcess
     {
     }
 
-    public interface IBackgroundProcess : ILongRunningProcess
+    public interface IBackgroundProcess : IServerProcess
     {
         void Execute(BackgroundProcessContext context);
     }

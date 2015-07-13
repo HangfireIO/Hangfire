@@ -89,7 +89,7 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal(_innerComponent.Object.ToString(), result);
         }
 
-        private InfiniteLoopProcess CreateProcess(ILongRunningProcess process)
+        private InfiniteLoopProcess CreateProcess(IServerProcess process)
         {
             return new InfiniteLoopProcess(process);
         }

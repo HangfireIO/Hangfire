@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -82,34 +81,38 @@ namespace Hangfire
             _innerServer = StartNew(storage, options);
         }
 
+        public BackgroundJobServer([NotNull] IEnumerable<IServerProcess> processes)
+            : this(JobStorage.Current, processes)
+        {
+        }
+
+        public BackgroundJobServer(
+            [NotNull] IEnumerable<IServerProcess> processes,
+            [NotNull] IDictionary<string, object> properties)
+            : this(JobStorage.Current, processes, properties)
+        {
+        }
+
         public BackgroundJobServer(
             [NotNull] JobStorage storage,
-            [NotNull] IEnumerable<IBackgroundProcess> processes)
+            [NotNull] IEnumerable<IServerProcess> processes)
             : this(storage, processes, new Dictionary<string, object>())
         {
         }
 
         public BackgroundJobServer(
-            [NotNull] JobStorage storage,
-            [NotNull] IEnumerable<IBackgroundProcess> processes,
-            [NotNull] IDictionary<string, object> serverData)
-            : this(storage, processes.Cast<ILongRunningProcess>(), serverData)
-        {
-        }
-
-        internal BackgroundJobServer(
             [NotNull] JobStorage storage, 
-            [NotNull] IEnumerable<ILongRunningProcess> processes,
-            [NotNull] IDictionary<string, object> serverData)
+            [NotNull] IEnumerable<IServerProcess> processes,
+            [NotNull] IDictionary<string, object> properties)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (processes == null) throw new ArgumentNullException("processes");
-            if (serverData == null) throw new ArgumentNullException("serverData");
+            if (properties == null) throw new ArgumentNullException("properties");
 
             var context = new BackgroundProcessContext(GetGloballyUniqueServerId(), storage, _cts.Token);
-            foreach (var item in serverData)
+            foreach (var item in properties)
             {
-                context.ServerData.Add(item.Key, item.Value);
+                context.Properties.Add(item.Key, item.Value);
             }
 
             Logger.Info("Starting Hangfire Server");
@@ -179,12 +182,12 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException("options");
             if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
 
-            var processes = new List<ILongRunningProcess>();
+            var processes = new List<IServerProcess>();
             processes.AddRange(GetDefaultProcesses(options));
             processes.AddRange(storage.GetComponents());
             processes.AddRange(additionalProcesses);
 
-            var serverData = new Dictionary<string, object>
+            var properties = new Dictionary<string, object>
             {
                 { "Queues", options.Queues },
                 { "WorkerCount", options.WorkerCount }
@@ -195,22 +198,22 @@ namespace Hangfire
             storage.WriteOptionsToLog(Logger);
             options.WriteToLog(Logger);
 
-            return new BackgroundJobServer(storage, processes, serverData)
+            return new BackgroundJobServer(storage, processes, properties)
             {
                 ShutdownTimeout = options.ShutdownTimeout
             };
         }
 
-        public static IEnumerable<ILongRunningProcess> GetDefaultProcesses()
+        public static IEnumerable<IServerProcess> GetDefaultProcesses()
         {
             return GetDefaultProcesses(new BackgroundJobServerOptions());
         }
         
-        public static IEnumerable<ILongRunningProcess> GetDefaultProcesses([NotNull] BackgroundJobServerOptions options)
+        public static IEnumerable<IServerProcess> GetDefaultProcesses([NotNull] BackgroundJobServerOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");
 
-            var processes = new List<ILongRunningProcess>();
+            var processes = new List<IServerProcess>();
 
             for (var i = 0; i < options.WorkerCount; i++)
             {
@@ -225,7 +228,7 @@ namespace Hangfire
             return processes;
         }
 
-        private static ILongRunningProcess WrapProcess(ILongRunningProcess process)
+        private static IServerProcess WrapProcess(IServerProcess process)
         {
             return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
         }

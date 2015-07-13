@@ -22,13 +22,13 @@ namespace Hangfire.Server
 {
     internal class InfiniteLoopProcess : IBackgroundProcess
     {
-        public InfiniteLoopProcess([NotNull] ILongRunningProcess innerProcess)
+        public InfiniteLoopProcess([NotNull] IServerProcess innerProcess)
         {
             if (innerProcess == null) throw new ArgumentNullException("innerProcess");
             InnerProcess = innerProcess;
         }
 
-        public ILongRunningProcess InnerProcess { get; private set; }
+        public IServerProcess InnerProcess { get; private set; }
 
         public void Execute(BackgroundProcessContext context)
         {

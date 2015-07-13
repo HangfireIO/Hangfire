@@ -13,15 +13,15 @@ namespace Hangfire.Core.Tests.Server
         private readonly string[] _queues = { "queue" };
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly List<ILongRunningProcess> _processes;
+        private readonly List<IServerProcess> _processes;
 
         public ServerBootstrapperFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _context.Object.ServerData.Add("Queues", _queues);
+            _context.Object.Properties.Add("Queues", _queues);
 
             _connection = new Mock<IStorageConnection>();
-            _processes = new List<ILongRunningProcess>();
+            _processes = new List<IServerProcess>();
 
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
@@ -92,7 +92,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         private Mock<T> CreateProcessMock<T>()
-            where T : class, ILongRunningProcess
+            where T : class, IServerProcess
         {
             var mock = new Mock<T>();
             _processes.Add(mock.Object);

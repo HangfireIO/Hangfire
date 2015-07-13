@@ -42,7 +42,7 @@ namespace Hangfire.Core.Tests.Server
             var context = new BackgroundProcessContext(_serverId, _storage.Object, _cts.Token);
 
             Assert.Equal(_serverId, context.ServerId);
-            Assert.NotNull(context.ServerData);
+            Assert.NotNull(context.Properties);
             Assert.Same(_storage.Object, context.Storage);
             Assert.Equal(_cts.Token, context.CancellationToken);
         }

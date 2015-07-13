@@ -25,10 +25,10 @@ namespace Hangfire.Server
         private static readonly TimeSpan DefaultMaxAttemptDelay = TimeSpan.FromMinutes(5);
         private const int DefaultMaxRetryAttempts = int.MaxValue;
 
-        private readonly ILongRunningProcess _innerProcess;
+        private readonly IServerProcess _innerProcess;
         private readonly ILog _logger;
 
-        public AutomaticRetryProcess([NotNull] ILongRunningProcess innerProcess)
+        public AutomaticRetryProcess([NotNull] IServerProcess innerProcess)
         {
             if (innerProcess == null) throw new ArgumentNullException("innerProcess");
 
@@ -44,7 +44,7 @@ namespace Hangfire.Server
         public TimeSpan MaxAttemptDelay { get; set; }
         public Func<int, TimeSpan> DelayCallback { get; set; }
 
-        public ILongRunningProcess InnerProcess
+        public IServerProcess InnerProcess
         {
             get { return _innerProcess; }
         }

@@ -24,7 +24,7 @@ namespace Hangfire.Server
 {
     internal static class BackgroundProcessExtensions
     {
-        public static void Execute(this ILongRunningProcess process, BackgroundProcessContext context)
+        public static void Execute(this IServerProcess process, BackgroundProcessContext context)
         {
             if (!(process is IServerComponent || process is IBackgroundProcess))
             {
@@ -46,7 +46,7 @@ namespace Hangfire.Server
             }
         }
 
-        public static Task CreateTask([NotNull] this ILongRunningProcess process, BackgroundProcessContext context)
+        public static Task CreateTask([NotNull] this IServerProcess process, BackgroundProcessContext context)
         {
             if (process == null) throw new ArgumentNullException("process");
 
@@ -60,7 +60,7 @@ namespace Hangfire.Server
                 TaskCreationOptions.LongRunning);
         }
 
-        private static void RunProcess(ILongRunningProcess process, BackgroundProcessContext context)
+        private static void RunProcess(IServerProcess process, BackgroundProcessContext context)
         {
             // Long-running tasks are based on custom threads (not threadpool ones) as in 
             // .NET Framework 4.5, so we can try to set custom thread name to simplify the

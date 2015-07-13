@@ -23,9 +23,9 @@ namespace Hangfire.Server
 {
     internal class ServerBootstrapper : IBackgroundProcess
     {
-        private readonly IEnumerable<ILongRunningProcess> _processes;
+        private readonly IEnumerable<IServerProcess> _processes;
 
-        public ServerBootstrapper(IEnumerable<ILongRunningProcess> processes)
+        public ServerBootstrapper(IEnumerable<IServerProcess> processes)
         {
             if (processes == null) throw new ArgumentNullException("processes");
             _processes = processes;
@@ -37,15 +37,15 @@ namespace Hangfire.Server
             {
                 var serverContext = new ServerContext();
 
-                if (context.ServerData.ContainsKey("Queues"))
+                if (context.Properties.ContainsKey("Queues"))
                 {
-                    var array = context.ServerData["Queues"] as string[];
+                    var array = context.Properties["Queues"] as string[];
                     if (array != null) { serverContext.Queues = array; }
                 }
 
-                if (context.ServerData.ContainsKey("WorkerCount"))
+                if (context.Properties.ContainsKey("WorkerCount"))
                 {
-                    serverContext.WorkerCount = (int)context.ServerData["WorkerCount"];
+                    serverContext.WorkerCount = (int)context.Properties["WorkerCount"];
                 }
 
                 connection.AnnounceServer(context.ServerId, serverContext);

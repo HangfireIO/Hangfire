@@ -31,7 +31,7 @@ namespace Hangfire.Server
             if (serverId == null) throw new ArgumentNullException("serverId");
             if (storage == null) throw new ArgumentNullException("storage");
 
-            ServerData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             ServerId = serverId;
             Storage = storage;
@@ -39,7 +39,7 @@ namespace Hangfire.Server
         }
 
         public string ServerId { get; private set; }
-        public IDictionary<string, object> ServerData { get; private set; }
+        public IDictionary<string, object> Properties { get; private set; }
 
         public JobStorage Storage { get; private set; }
         public CancellationToken CancellationToken { get; private set; }

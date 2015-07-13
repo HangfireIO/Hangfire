@@ -28,7 +28,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void CreateTask_ThrowsAnException_WhenProcessIsOfCustomType()
         {
-            var process = CreateProcess<ILongRunningProcess>();
+            var process = CreateProcess<IServerProcess>();
             var exception = Assert.Throws<ArgumentOutOfRangeException>(
                 () => BackgroundProcessExtensions.CreateTask(process.Object, _context.Object));
 
@@ -76,7 +76,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         private Mock<T> CreateProcess<T>()
-            where T : class, ILongRunningProcess
+            where T : class, IServerProcess
         {
             return new Mock<T>();
         }
