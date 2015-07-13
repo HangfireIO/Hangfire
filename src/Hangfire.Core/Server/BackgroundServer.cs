@@ -9,7 +9,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    public sealed class BackgroundProcessServer : IBackgroundProcess, IDisposable
+    public sealed class BackgroundServer : IBackgroundProcess, IDisposable
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
@@ -17,26 +17,26 @@ namespace Hangfire.Server
         private readonly IEnumerable<IServerProcess> _processes;
         private readonly Task _bootstrapTask;
 
-        public BackgroundProcessServer([NotNull] IEnumerable<IServerProcess> processes)
+        public BackgroundServer([NotNull] IEnumerable<IServerProcess> processes)
             : this(JobStorage.Current, processes)
         {
         }
 
-        public BackgroundProcessServer(
+        public BackgroundServer(
             [NotNull] IEnumerable<IServerProcess> processes,
             [NotNull] IDictionary<string, object> properties)
             : this(JobStorage.Current, processes, properties)
         {
         }
 
-        public BackgroundProcessServer(
+        public BackgroundServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IServerProcess> processes)
             : this(storage, processes, new Dictionary<string, object>())
         {
         }
 
-        public BackgroundProcessServer(
+        public BackgroundServer(
             [NotNull] JobStorage storage, 
             [NotNull] IEnumerable<IServerProcess> processes,
             [NotNull] IDictionary<string, object> properties)

@@ -94,7 +94,7 @@ namespace Hangfire
             storage.WriteOptionsToLog(Logger);
             options.WriteToLog(Logger);
 
-            _server = new BackgroundProcessServer(storage, processes, properties)
+            _server = new BackgroundServer(storage, processes, properties)
             {
                 ShutdownTimeout = options.ShutdownTimeout
             };
