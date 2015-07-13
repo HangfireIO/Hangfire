@@ -10,59 +10,29 @@ namespace Hangfire.Core.Tests.Server
 {
     public class ServerBootstrapperFacts
     {
-        private const string ServerId = "server";
-
-        private readonly ServerContext _context;
-        private readonly Mock<JobStorage> _storage;
+        private readonly string[] _queues = { "queue" };
+        private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly CancellationTokenSource _cts;
-        private readonly List<IServerComponent> _components; 
+        private readonly List<ILongRunningProcess> _processes;
 
         public ServerBootstrapperFacts()
         {
-            _context = new ServerContext();
-            _storage = new Mock<JobStorage>();
+            _context = new BackgroundProcessContextMock();
+            _context.Object.ServerData.Add("Queues", _queues);
+
             _connection = new Mock<IStorageConnection>();
-            _cts = new CancellationTokenSource();
-            _components = new List<IServerComponent>();
+            _processes = new List<ILongRunningProcess>();
 
-            _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
+            _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenServerIdIsNull()
+        public void Ctor_ThrowsAnException_WhenProcessesCollection_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerBootstrapper(null, _context, _storage.Object, _components));
+                () => new ServerBootstrapper(null));
 
-            Assert.Equal("serverId", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenContextIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerBootstrapper(ServerId, null, _storage.Object, _components));
-
-            Assert.Equal("context", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerBootstrapper(ServerId, _context, null, _components));
-
-            Assert.Equal("storage", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenComponentsCollection_IsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerBootstrapper(ServerId, _context, _storage.Object, null));
-
-            Assert.Equal("components", exception.ParamName);
+            Assert.Equal("processes", exception.ParamName);
         }
 
         [Fact]
@@ -70,9 +40,11 @@ namespace Hangfire.Core.Tests.Server
         {
             var server = CreateServer();
 
-            server.Execute(_cts.Token);
+            server.Execute(_context.Object);
 
-            _connection.Verify(x => x.AnnounceServer(ServerId, _context));
+            _connection.Verify(x => x.AnnounceServer(
+                _context.ServerId, 
+                It.Is<ServerContext>(y => y.Queues == _queues)));
         }
 
         [Fact]
@@ -80,9 +52,9 @@ namespace Hangfire.Core.Tests.Server
         {
             var server = CreateServer();
             
-            server.Execute(_cts.Token);
+            server.Execute(_context.Object);
 
-            _storage.Verify(x => x.GetConnection(), Times.Exactly(2));
+            _context.Storage.Verify(x => x.GetConnection(), Times.Exactly(2));
             _connection.Verify(x => x.Dispose(), Times.Exactly(2));
         }
 
@@ -90,18 +62,18 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_StartsAllTheComponents_AndWaitsForThem()
         {
             // Arrange
-            var component1 = CreateComponentMock();
+            var component1 = CreateProcessMock<IServerComponent>();
             component1.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Callback(() => Thread.Sleep(100));
 
-            var component2 = CreateComponentMock();
+            var component2 = CreateProcessMock<IBackgroundProcess>();
             var server = CreateServer();
 
             // Act
-            server.Execute(_cts.Token);
+            server.Execute(_context.Object);
 
             // Assert
-            component1.Verify(x => x.Execute(_cts.Token));
-            component2.Verify(x => x.Execute(_cts.Token));
+            component1.Verify(x => x.Execute(_context.CancellationTokenSource.Token));
+            component2.Verify(x => x.Execute(_context.Object));
         }
 
         [Fact]
@@ -109,20 +81,21 @@ namespace Hangfire.Core.Tests.Server
         {
             var server = CreateServer();
             
-            server.Execute(_cts.Token);
+            server.Execute(_context.Object);
 
-            _connection.Verify(x => x.RemoveServer(ServerId));
+            _connection.Verify(x => x.RemoveServer(_context.ServerId));
         }
 
         private ServerBootstrapper CreateServer()
         {
-            return new ServerBootstrapper(ServerId, _context, _storage.Object, _components);
+            return new ServerBootstrapper(_processes);
         }
 
-        private Mock<IServerComponent> CreateComponentMock()
+        private Mock<T> CreateProcessMock<T>()
+            where T : class, ILongRunningProcess
         {
-            var mock = new Mock<IServerComponent>();
-            _components.Add(mock.Object);
+            var mock = new Mock<T>();
+            _processes.Add(mock.Object);
 
             return mock;
         }

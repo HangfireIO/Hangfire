@@ -49,6 +49,7 @@ namespace Hangfire.Server
         public static Task CreateTask([NotNull] this ILongRunningProcess process, BackgroundProcessContext context)
         {
             if (process == null) throw new ArgumentNullException("process");
+
             if (!(process is IServerComponent || process is IBackgroundProcess))
             {
                 throw new ArgumentOutOfRangeException("process", "Long-running process must be of type IServerComponent or IBackgroundProcess.");

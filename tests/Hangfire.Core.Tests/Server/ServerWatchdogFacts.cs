@@ -9,63 +9,42 @@ namespace Hangfire.Core.Tests.Server
 {
     public class ServerWatchdogFacts
     {
-        private readonly Mock<JobStorage> _storage;
         private readonly Mock<IStorageConnection> _connection;
         private readonly ServerWatchdogOptions _options;
-		private readonly CancellationTokenSource _cts;
+        private readonly BackgroundProcessContextMock _context;
 
         public ServerWatchdogFacts()
         {
-            _storage = new Mock<JobStorage>();
-            _connection = new Mock<IStorageConnection>();
+            
             _options = new ServerWatchdogOptions
             {
                 CheckInterval = Timeout.InfiniteTimeSpan // To check that it exits by cancellation token
             };
-			_cts = new CancellationTokenSource();
-			_cts.Cancel();
 
-            _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
+            _context = new BackgroundProcessContextMock();
+            _context.CancellationTokenSource.Cancel();
+
+            _connection = new Mock<IStorageConnection>();
+            _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(() => new ServerWatchdog(null));
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
+        public void Ctor_ThrowsAnException_WhenOptionsArgumentIsNull()
         {
             Assert.Throws<ArgumentNullException>(
-                () => new ServerWatchdog(_storage.Object, null));
-        }
-
-        [PossibleHangingFact]
-        public void Execute_GetsConnectionAndReleasesIt()
-        {
-            var watchdog = CreateWatchdog();
-
-			watchdog.Execute(_cts.Token);
-
-            _storage.Verify(x => x.GetConnection(), Times.Once);
-            _connection.Verify(x => x.Dispose(), Times.Once);
+                () => new ServerWatchdog(null));
         }
 
         [PossibleHangingFact]
         public void Execute_DelegatesRemovalToStorageConnection()
         {
             _connection.Setup(x => x.RemoveTimedOutServers(It.IsAny<TimeSpan>())).Returns(1);
-            var watchdog = CreateWatchdog();
+            var watchdog = new ServerWatchdog(_options);
 
-			watchdog.Execute(_cts.Token);
+			watchdog.Execute(_context.Object);
 
             _connection.Verify(x => x.RemoveTimedOutServers(_options.ServerTimeout));
-        }
-
-        private ServerWatchdog CreateWatchdog()
-        {
-            return new ServerWatchdog(_storage.Object, _options);
+            _connection.Verify(x => x.Dispose(), Times.Once);
         }
     }
 }

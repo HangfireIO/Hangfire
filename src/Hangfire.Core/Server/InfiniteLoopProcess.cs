@@ -30,11 +30,6 @@ namespace Hangfire.Server
 
         public ILongRunningProcess InnerProcess { get; private set; }
 
-        public void Execute(CancellationToken cancellationToken)
-        {
-            
-        }
-
         public void Execute(BackgroundProcessContext context)
         {
             while (true)

@@ -76,7 +76,7 @@ namespace Hangfire.Server
                 return true;
             }
 
-            if (!state.Data["ServerId"].Equals(_backgroundProcessContext.ServerId))
+            if (!state.Data["ServerId"].Equals(_backgroundProcessContext.ServerId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

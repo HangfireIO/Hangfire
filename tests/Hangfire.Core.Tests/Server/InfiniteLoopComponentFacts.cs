@@ -8,13 +8,15 @@ namespace Hangfire.Core.Tests.Server
 {
     public class InfiniteLoopComponentFacts
     {
-        private readonly Mock<IServerComponent> _inner;
-        private readonly CancellationTokenSource _cts;
+        private readonly Mock<IServerComponent> _innerComponent;
+        private readonly Mock<IBackgroundProcess> _innerProcess;
+        private readonly BackgroundProcessContextMock _context;
 
         public InfiniteLoopComponentFacts()
         {
-            _inner = new Mock<IServerComponent>();
-            _cts = new CancellationTokenSource();
+            _innerComponent = new Mock<IServerComponent>();
+            _innerProcess = new Mock<IBackgroundProcess>();
+            _context = new BackgroundProcessContextMock();
         }
 
         [Fact]
@@ -24,61 +26,72 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void InnerComponent_ReturnsTheInnerComponent()
+        public void InnerComponent_ReturnsTheInnerProcess()
         {
-            var component = CreateComponent();
-            var result = component.InnerProcess;
-            Assert.Same(_inner.Object, result);
+            var process = CreateProcess(_innerComponent.Object);
+            var result = process.InnerProcess;
+            Assert.Same(_innerComponent.Object, result);
         }
 
         [Fact]
-        public void Execute_CallsTheExecuteMethod_UntilCancellationToken_IsCanceled()
+        public void Execute_CallsTheExecuteMethod_OfAComponent_UntilCancellationToken_IsCanceled()
         {
             // Arrange
-            _inner.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
+            _innerComponent.Setup(x => x.Execute(It.IsAny<CancellationToken>()))
                   .Callback(() => { Thread.Sleep(5); });
 
-            var component = CreateComponent();
-            _cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+            var process = CreateProcess(_innerComponent.Object);
+            _context.CancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(100));
 
             // Act
-            Assert.Throws<OperationCanceledException>(() => component.Execute(_cts.Token));
+            Assert.Throws<OperationCanceledException>(() => process.Execute(_context.Object));
 
             // Assert
-            _inner.Verify(x => x.Execute(_cts.Token), Times.AtLeast(5));
+            _innerComponent.Verify(x => x.Execute(_context.CancellationTokenSource.Token), Times.AtLeast(5));
+        }
+
+        [Fact]
+        public void Execute_CallsTheExecuteMethod_OfAProcess_UntilCancellationToken_IsCanceled()
+        {
+            // Arrange
+            _innerProcess.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>()))
+                  .Callback(() => { Thread.Sleep(5); });
+
+            var process = CreateProcess(_innerProcess.Object);
+            _context.CancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(100));
+
+            // Act
+            Assert.Throws<OperationCanceledException>(() => process.Execute(_context.Object));
+
+            // Assert
+            _innerProcess.Verify(x => x.Execute(_context.Object), Times.AtLeast(5));
         }
 
         [Fact]
         public void Execute_DoesNotCallTheExecuteMethod_WhenCancellationToken_IsAlreadyCanceled()
         {
             // Arrange
-            var component = CreateComponent();
-            _cts.Cancel();
+            var process = CreateProcess(_innerComponent.Object);
+            _context.CancellationTokenSource.Cancel();
 
             // Act
-            Assert.Throws<OperationCanceledException>(() => component.Execute(_cts.Token));
+            Assert.Throws<OperationCanceledException>(() => process.Execute(_context.Object));
 
             // Assert
-            _inner.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Never);
-        }
-
-        [Fact]
-        public void Execute_DoesNotCallExecuteMethod_WhenCancellationToken_IsCanceled()
-        {
-            _cts.Cancel();
+            _innerComponent.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
         public void ToString_ReturnsTheName_OfInnerComponent()
         {
-            var component = CreateComponent();
-            var result = component.ToString();
-            Assert.Equal(_inner.Object.ToString(), result);
+            var process = CreateProcess(_innerComponent.Object);
+            var result = process.ToString();
+            Assert.Equal(_innerComponent.Object.ToString(), result);
         }
 
-        private InfiniteLoopProcess CreateComponent()
+        private InfiniteLoopProcess CreateProcess(ILongRunningProcess process)
         {
-            return new InfiniteLoopProcess(_inner.Object);
+            return new InfiniteLoopProcess(process);
         }
     }
 }

@@ -13,9 +13,9 @@ namespace Hangfire.Core.Tests.Server
     {
         private const string JobId = "my-job";
         private readonly Mock<IStorageConnection> _connection;
-        private CancellationToken _shutdownToken;
-        private readonly WorkerContextMock _workerContextMock;
         private readonly StateData _stateData;
+        private readonly BackgroundProcessContextMock _context;
+        private readonly WorkerContextMock _workerContext;
 
         public ServerJobCancellationTokenFacts()
         {
@@ -32,10 +32,10 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<IStorageConnection>();
             _connection.Setup(x => x.GetStateData(JobId)).Returns(_stateData);
 
-            _workerContextMock = new WorkerContextMock { WorkerNumber = 1 };
-            _workerContextMock.ServerId = "Server";
+            _context = new BackgroundProcessContextMock();
+            _context.ServerId = "Server";
 
-            _shutdownToken = new CancellationToken(false);
+            _workerContext = new WorkerContextMock { WorkerNumber = 1 };
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ServerJobCancellationToken(
-                    null, _connection.Object, _workerContextMock.Object, new CancellationToken()));
+                    null, _connection.Object, _workerContext.Object, _context.Object));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -53,7 +53,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ServerJobCancellationToken(
-                    JobId, null, _workerContextMock.Object, new CancellationToken()));
+                    JobId, null, _workerContext.Object, _context.Object));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -63,16 +63,26 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ServerJobCancellationToken(
-                    JobId, _connection.Object, null, new CancellationToken()));
+                    JobId, _connection.Object, null, _context.Object));
 
             Assert.Equal("workerContext", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenProcessContextIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ServerJobCancellationToken(
+                    JobId, _connection.Object, _workerContext.Object, null));
+
+            Assert.Equal("backgroundProcessContext", exception.ParamName);
         }
 
         [Fact]
         public void ShutdownTokenProperty_PointsToShutdownTokenValue()
         {
             var token = CreateToken();
-            Assert.Equal(_shutdownToken, token.ShutdownToken);
+            Assert.Equal(_context.CancellationTokenSource.Token, token.ShutdownToken);
         }
 
         [Fact]
@@ -86,7 +96,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void ThrowIfCancellationRequested_ThrowsOperationCanceled_OnShutdownRequest()
         {
-            _shutdownToken = new CancellationToken(true);
+            _context.CancellationTokenSource.Cancel();
             var token = CreateToken();
 
             Assert.Throws<OperationCanceledException>(
@@ -135,7 +145,7 @@ namespace Hangfire.Core.Tests.Server
         private IJobCancellationToken CreateToken()
         {
             return new ServerJobCancellationToken(
-                JobId, _connection.Object, _workerContextMock.Object, _shutdownToken);
+                JobId, _connection.Object, _workerContext.Object, _context.Object);
         }
     }
 }
