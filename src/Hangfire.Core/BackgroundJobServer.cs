@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,6 +34,8 @@ namespace Hangfire
         private readonly Task _bootstrapTask;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
+        // This field is only for compatibility reasons – we can't remove old ctors.
+        // Should be removed in 2.0.0.
         private readonly BackgroundJobServer _innerServer;
 
         /// <summary>
@@ -103,9 +106,7 @@ namespace Hangfire
             if (processes == null) throw new ArgumentNullException("processes");
             if (serverData == null) throw new ArgumentNullException("serverData");
 
-            var serverId = String.Format("{0}:{1}", Environment.MachineName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
-            var context = new BackgroundProcessContext(serverId, storage, _cts.Token);
-
+            var context = new BackgroundProcessContext(GetGloballyUniqueServerId(), storage, _cts.Token);
             foreach (var item in serverData)
             {
                 context.ServerData.Add(item.Key, item.Value);
@@ -227,6 +228,15 @@ namespace Hangfire
         private static ILongRunningProcess WrapProcess(ILongRunningProcess process)
         {
             return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
+        }
+
+        private static string GetGloballyUniqueServerId()
+        {
+            return String.Format(
+                "{0}:{1}:{2}",
+                Environment.MachineName.ToLowerInvariant(),
+                Process.GetCurrentProcess().Id,
+                Guid.NewGuid());
         }
     }
 }
