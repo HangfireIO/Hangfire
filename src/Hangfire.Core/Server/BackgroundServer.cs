@@ -9,7 +9,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    public class BackgroundProcessServer : IBackgroundProcess, IDisposable
+    public sealed class BackgroundProcessServer : IBackgroundProcess, IDisposable
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
@@ -58,7 +58,7 @@ namespace Hangfire.Server
 
         public TimeSpan ShutdownTimeout { get; set; }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
             _cts.Cancel();
 

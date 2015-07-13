@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Hangfire.Server;
+using Hangfire.Storage;
 using Moq;
 using Xunit;
 
@@ -8,15 +10,20 @@ namespace Hangfire.Core.Tests.Server
 {
     public class BackgroundProcessServerFacts
     {
+        private readonly string[] _queues = { "queue" };
         private readonly Mock<JobStorage> _storage;
         private readonly List<IServerProcess> _processes;
         private readonly Dictionary<string, object> _properties;
+        private readonly Mock<IStorageConnection> _connection;
 
         public BackgroundProcessServerFacts()
         {
             _storage = new Mock<JobStorage>();
             _processes = new List<IServerProcess>();
-            _properties = new Dictionary<string, object>();
+            _properties = new Dictionary<string, object> { { "Queues", _queues } };
+
+            _connection = new Mock<IStorageConnection>();
+            _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
 
         [Fact]
@@ -44,6 +51,49 @@ namespace Hangfire.Core.Tests.Server
                 () => new BackgroundProcessServer(_storage.Object, _processes, null));
             
             Assert.Equal("properties", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_AnnouncesTheServer_AndRemovesIt()
+        {
+            using (CreateServer()) { Thread.Sleep(50); }
+
+            _connection.Verify(x => x.AnnounceServer(
+                It.IsNotNull<string>(),
+                It.Is<ServerContext>(y => y.Queues == _queues)));
+
+            _connection.Verify(x => x.RemoveServer(It.IsNotNull<string>()));
+        }
+
+        [Fact]
+        public void Execute_StartsAllTheComponents_InLoop_AndWaitsForThem()
+        {
+            // Arrange
+            var component1 = CreateProcessMock<IServerComponent>();
+            component1.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Callback(() => Thread.Sleep(10));
+            var component2 = CreateProcessMock<IBackgroundProcess>();
+            component2.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => Thread.Sleep(10));
+
+            // Act
+            using (CreateServer()) { Thread.Sleep(100); }
+
+            // Assert
+            component1.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.AtLeast(5));
+            component2.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.AtLeast(5));
+        }
+
+        private BackgroundProcessServer CreateServer()
+        {
+            return new BackgroundProcessServer(_storage.Object, _processes, _properties);
+        }
+
+        private Mock<T> CreateProcessMock<T>()
+            where T : class, IServerProcess
+        {
+            var mock = new Mock<T>();
+            _processes.Add(mock.Object);
+
+            return mock;
         }
     }
 }

@@ -107,7 +107,6 @@
     <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\ScheduleInstantFacts.cs" />
-    <Compile Include="Server\ServerBootstrapperFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\SchedulePollerFacts.cs" />
     <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
