@@ -541,3 +541,9 @@ div.metric-null {
         width: 220px
     }
 }
+
+@media (min-width: 1200px) {
+    #stats {
+        width: 262.5px;
+    }
+}
