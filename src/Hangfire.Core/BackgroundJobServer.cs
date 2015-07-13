@@ -16,10 +16,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 using Hangfire.Server;
@@ -29,19 +26,12 @@ namespace Hangfire
     public class BackgroundJobServer : IDisposable
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
-        
-        private readonly Task _bootstrapTask;
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-
-        // This field is only for compatibility reasons – we can't remove old ctors.
-        // Should be removed in 2.0.0.
-        private readonly BackgroundJobServer _innerServer;
+        private readonly BackgroundProcessServer _server;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
         /// with default options and <see cref="JobStorage.Current"/> storage.
         /// </summary>
-        [Obsolete("Please use the `BackgroundJobServer.StartNew` method instead. Will be removed in version 2.0.0.")]
         public BackgroundJobServer()
             : this(new BackgroundJobServerOptions())
         {
@@ -52,7 +42,6 @@ namespace Hangfire
         /// with default options and the given storage.
         /// </summary>
         /// <param name="storage">The storage</param>
-        [Obsolete("Please use the `BackgroundJobServer.StartNew` method instead. Will be removed in version 2.0.0.")]
         public BackgroundJobServer([NotNull] JobStorage storage)
             : this(new BackgroundJobServerOptions(), storage)
         {
@@ -63,7 +52,6 @@ namespace Hangfire
         /// with the given options and <see cref="JobStorage.Current"/> storage.
         /// </summary>
         /// <param name="options">Server options</param>
-        [Obsolete("Please use the `BackgroundJobServer.StartNew` method instead. Will be removed in version 2.0.0.")]
         public BackgroundJobServer([NotNull] BackgroundJobServerOptions options)
             : this(options, JobStorage.Current)
         {
@@ -75,107 +63,14 @@ namespace Hangfire
         /// </summary>
         /// <param name="options">Server options</param>
         /// <param name="storage">The storage</param>
-        [Obsolete("Please use the `BackgroundJobServer.StartNew` method instead. Will be removed in version 2.0.0.")]
         public BackgroundJobServer([NotNull] BackgroundJobServerOptions options, [NotNull] JobStorage storage)
-        {
-            _innerServer = StartNew(storage, options);
-        }
-
-        public BackgroundJobServer([NotNull] IEnumerable<IServerProcess> processes)
-            : this(JobStorage.Current, processes)
+            : this(options, storage, Enumerable.Empty<IBackgroundProcess>())
         {
         }
 
         public BackgroundJobServer(
-            [NotNull] IEnumerable<IServerProcess> processes,
-            [NotNull] IDictionary<string, object> properties)
-            : this(JobStorage.Current, processes, properties)
-        {
-        }
-
-        public BackgroundJobServer(
+            [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage,
-            [NotNull] IEnumerable<IServerProcess> processes)
-            : this(storage, processes, new Dictionary<string, object>())
-        {
-        }
-
-        public BackgroundJobServer(
-            [NotNull] JobStorage storage, 
-            [NotNull] IEnumerable<IServerProcess> processes,
-            [NotNull] IDictionary<string, object> properties)
-        {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (processes == null) throw new ArgumentNullException("processes");
-            if (properties == null) throw new ArgumentNullException("properties");
-
-            var context = new BackgroundProcessContext(GetGloballyUniqueServerId(), storage, _cts.Token);
-            foreach (var item in properties)
-            {
-                context.Properties.Add(item.Key, item.Value);
-            }
-
-            Logger.Info("Starting Hangfire Server");
-
-            _bootstrapTask = WrapProcess(new ServerBootstrapper(processes.Select(WrapProcess)))
-                .CreateTask(context);
-        }
-
-        public TimeSpan ShutdownTimeout { get; set; }
-
-        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
-        public void Start()
-        { 
-        }
-
-        [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
-        public void Stop()
-        {
-        }
-
-        public virtual void Dispose()
-        {
-            if (_innerServer != null)
-            {
-                _innerServer.Dispose();
-                return;
-            }
-
-            _cts.Cancel();
-
-            if (!_bootstrapTask.Wait(ShutdownTimeout))
-            {
-                Logger.WarnFormat("Hangfire Server takes too long to shutdown. Performing ungraceful shutdown.");
-            }
-            
-            Logger.Info("Hangfire Server stopped.");
-        }
-
-        public static BackgroundJobServer StartNew()
-        {
-            return StartNew(JobStorage.Current);
-        }
-
-        public static BackgroundJobServer StartNew([NotNull] JobStorage storage)
-        {
-            return StartNew(storage, new BackgroundJobServerOptions());
-        }
-
-        public static BackgroundJobServer StartNew([NotNull] BackgroundJobServerOptions options)
-        {
-            return StartNew(JobStorage.Current, options);
-        }
-
-        public static BackgroundJobServer StartNew(
-            [NotNull] JobStorage storage,
-            [NotNull] BackgroundJobServerOptions options)
-        {
-            return StartNew(storage, options, Enumerable.Empty<IBackgroundProcess>());
-        }
-
-        public static BackgroundJobServer StartNew(
-            [NotNull] JobStorage storage,
-            [NotNull] BackgroundJobServerOptions options, 
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
         {
             if (storage == null) throw new ArgumentNullException("storage");
@@ -183,7 +78,7 @@ namespace Hangfire
             if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
 
             var processes = new List<IServerProcess>();
-            processes.AddRange(GetDefaultProcesses(options));
+            processes.AddRange(GetProcesses(options));
             processes.AddRange(storage.GetComponents());
             processes.AddRange(additionalProcesses);
 
@@ -193,23 +88,25 @@ namespace Hangfire
                 { "WorkerCount", options.WorkerCount }
             };
 
+            Logger.Info("Starting Hangfire Server");
             Logger.InfoFormat("Using job storage: '{0}'.", storage);
 
             storage.WriteOptionsToLog(Logger);
             options.WriteToLog(Logger);
 
-            return new BackgroundJobServer(storage, processes, properties)
+            _server = new BackgroundProcessServer(storage, processes, properties)
             {
                 ShutdownTimeout = options.ShutdownTimeout
             };
         }
 
-        public static IEnumerable<IServerProcess> GetDefaultProcesses()
+        public virtual void Dispose()
         {
-            return GetDefaultProcesses(new BackgroundJobServerOptions());
+            _server.Dispose();
+            Logger.Info("Hangfire Server stopped.");
         }
-        
-        public static IEnumerable<IServerProcess> GetDefaultProcesses([NotNull] BackgroundJobServerOptions options)
+
+        private static IEnumerable<IServerProcess> GetProcesses([NotNull] BackgroundJobServerOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");
 
@@ -228,18 +125,14 @@ namespace Hangfire
             return processes;
         }
 
-        private static IServerProcess WrapProcess(IServerProcess process)
+        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
+        public void Start()
         {
-            return new InfiniteLoopProcess(new AutomaticRetryProcess(process));
         }
 
-        private static string GetGloballyUniqueServerId()
+        [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
+        public void Stop()
         {
-            return String.Format(
-                "{0}:{1}:{2}",
-                Environment.MachineName.ToLowerInvariant(),
-                Process.GetCurrentProcess().Id,
-                Guid.NewGuid());
         }
     }
 }

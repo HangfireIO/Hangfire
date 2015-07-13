@@ -25,8 +25,8 @@ namespace ConsoleSample
             {
                 Queues = new[] { "critical", "default" }
             };
-
-            using (BackgroundJobServer.StartNew(options))
+            
+            using (new BackgroundJobServer(options))
             {
                 var count = 1;
 

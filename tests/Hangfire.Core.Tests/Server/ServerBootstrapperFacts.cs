@@ -10,7 +10,7 @@ namespace Hangfire.Core.Tests.Server
 {
     public class ServerBootstrapperFacts
     {
-        private readonly string[] _queues = { "queue" };
+        /*private readonly string[] _queues = { "queue" };
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IStorageConnection> _connection;
         private readonly List<IServerProcess> _processes;
@@ -98,6 +98,6 @@ namespace Hangfire.Core.Tests.Server
             _processes.Add(mock.Object);
 
             return mock;
-        }
+        }*/
     }
 }
