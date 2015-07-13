@@ -270,7 +270,6 @@
     <Compile Include="Server\AutomaticRetryProcess.cs" />
     <Compile Include="Server\EveryMinuteThrottler.cs" />
     <Compile Include="Server\IScheduleInstant.cs" />
-    <Compile Include="Server\IScheduleInstantFactory.cs" />
     <Compile Include="Server\IThrottler.cs" />
     <Compile Include="Server\JobAbortedException.cs" />
     <Compile Include="JobCancellationToken.cs" />
@@ -314,7 +313,6 @@
     <Compile Include="Common\IJobFilterProvider.cs" />
     <Compile Include="Server\RecurringJobScheduler.cs" />
     <Compile Include="Server\ScheduleInstant.cs" />
-    <Compile Include="Server\ScheduleInstantFactory.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Obsolete\ServerOwinExtensions.cs" />
     <Compile Include="Obsolete\StartupConfiguration.cs" />

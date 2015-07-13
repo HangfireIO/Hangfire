@@ -34,18 +34,18 @@ namespace Hangfire.Server
 
         private readonly Func<JobStorage, IStateMachineFactory> _stateMachineFactory;
         private readonly IJobCreationProcess _creationProcess;
-        private readonly IScheduleInstantFactory _instantFactory;
+        private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
 
         public RecurringJobScheduler()
-            : this(StateMachineFactory.Default, new DefaultJobCreationProcess(), new ScheduleInstantFactory(), new EveryMinuteThrottler())
+            : this(StateMachineFactory.Default, new DefaultJobCreationProcess(), ScheduleInstant.Factory, new EveryMinuteThrottler())
         {
         }
 
         public RecurringJobScheduler(
             [NotNull] Func<JobStorage, IStateMachineFactory> stateMachineFactory,
             [NotNull] IJobCreationProcess creationProcess,
-            [NotNull] IScheduleInstantFactory instantFactory,
+            [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
             [NotNull] IThrottler throttler)
         {
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
@@ -119,7 +119,7 @@ namespace Hangfire.Server
                 ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                 : TimeZoneInfo.Utc;
 
-                var instant = _instantFactory.GetInstant(cronSchedule, timeZone);
+                var instant = _instantFactory(cronSchedule, timeZone);
 
                 var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
                     ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
