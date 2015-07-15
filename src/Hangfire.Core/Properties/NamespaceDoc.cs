@@ -58,7 +58,7 @@ namespace Hangfire.Dashboard.Pages
 {
     /// <summary>
     /// The <see cref="Hangfire.Dashboard.Pages"/> namespace contains the <see cref="LayoutPage"/>
-    /// class, base class for all the Dashboard UI pages.
+    /// class, layout for all the Dashboard UI pages.
     /// </summary>
     [CompilerGenerated]
     class NamespaceDoc
