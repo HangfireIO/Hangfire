@@ -376,11 +376,11 @@ namespace Hangfire.Logging
             _currentLogProvider = logProvider;
         }
 
-        public delegate bool IsLoggerAvailable();
+        internal delegate bool IsLoggerAvailable();
 
-        public delegate ILogProvider CreateLogProvider();
+        internal delegate ILogProvider CreateLogProvider();
 
-        public static readonly List<Tuple<IsLoggerAvailable, CreateLogProvider>> LogProviderResolvers =
+        internal static readonly List<Tuple<IsLoggerAvailable, CreateLogProvider>> LogProviderResolvers =
             new List<Tuple<IsLoggerAvailable, CreateLogProvider>>
         {
             new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, () => new SerilogLogProvider()),
@@ -413,7 +413,7 @@ namespace Hangfire.Logging
             return null;
         }
 
-        public class NoOpLogger : ILog
+        internal class NoOpLogger : ILog
         {
             public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
@@ -422,7 +422,7 @@ namespace Hangfire.Logging
         }
     }
 
-    public class LoggerExecutionWrapper : ILog
+    internal class LoggerExecutionWrapper : ILog
     {
         private readonly ILog _logger;
         public const string FailedToGenerateLogMessage = "Failed to generate log message";
