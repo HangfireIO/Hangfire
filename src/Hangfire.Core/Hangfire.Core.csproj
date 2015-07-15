@@ -83,6 +83,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AwaitingJobsPage.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="Properties\NamespaceDoc.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />
     <Compile Include="Server\InfiniteLoopProcess.cs" />
