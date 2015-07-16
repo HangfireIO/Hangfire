@@ -22,11 +22,9 @@ using Hangfire.Common;
 
 namespace Hangfire.Server
 {
-    internal class DefaultJobPerformanceProcess : IJobPerformanceProcess
+    public class DefaultJobPerformanceProcess : IJobPerformanceProcess
     {
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
-            = JobFilterProviders.Providers.GetFilters;
-
+        private readonly IJobFilterProvider _filterProvider;
         private readonly JobActivator _activator;
 
         public DefaultJobPerformanceProcess()
@@ -35,18 +33,19 @@ namespace Hangfire.Server
         }
 
         public DefaultJobPerformanceProcess([NotNull] JobActivator activator)
+            : this(activator, JobFilterProviders.Providers)
         {
-            if (activator == null) throw new ArgumentNullException("activator");
-            _activator = activator;
         }
 
-        internal DefaultJobPerformanceProcess(JobActivator activator, IEnumerable<object> filters)
-            : this(activator)
+        public DefaultJobPerformanceProcess(
+            [NotNull] JobActivator activator,
+            [NotNull] IJobFilterProvider filterProvider)
         {
-            if (filters != null)
-            {
-                _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
-            }
+            if (activator == null) throw new ArgumentNullException("activator");
+            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+
+            _activator = activator;
+            _filterProvider = filterProvider;
         }
 
         public object Run(PerformContext context, IJobPerformer performer)
@@ -80,7 +79,7 @@ namespace Hangfire.Server
 
         private JobFilterInfo GetFilters(Job job)
         {
-            return new JobFilterInfo(_getFiltersThunk(job));
+            return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
 
         private object PerformJobWithFilters(

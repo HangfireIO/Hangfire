@@ -27,7 +27,7 @@ using NCrontab;
 
 namespace Hangfire.Server
 {
-    internal class RecurringJobScheduler : IBackgroundProcess
+    public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();

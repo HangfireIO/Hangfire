@@ -24,7 +24,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
-    internal class Worker : IBackgroundProcess
+    public class Worker : IBackgroundProcess
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
@@ -43,7 +43,7 @@ namespace Hangfire.Server
         {
         }
 
-        public Worker(
+        internal Worker(
             [NotNull] WorkerContext context,
             [NotNull] IJobPerformanceProcess process, 
             [NotNull] Func<JobStorage, IStateMachineFactory> stateMachineFactory)

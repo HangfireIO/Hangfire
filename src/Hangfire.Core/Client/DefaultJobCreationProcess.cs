@@ -17,30 +17,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hangfire.Annotations;
 using Hangfire.Common;
 
 namespace Hangfire.Client
 {
     public class DefaultJobCreationProcess : IJobCreationProcess
     {
-        public static DefaultJobCreationProcess Instance { get; private set; }
-
-        static DefaultJobCreationProcess()
-        {
-            Instance = new DefaultJobCreationProcess();
-        }
-
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
-            = JobFilterProviders.Providers.GetFilters;
+        private readonly IJobFilterProvider _filterProvider;
 
         public DefaultJobCreationProcess()
+            : this(JobFilterProviders.Providers)
         {
         }
 
-        internal DefaultJobCreationProcess(IEnumerable<object> filters)
-            : this()
+        public DefaultJobCreationProcess([NotNull] IJobFilterProvider filterProvider)
         {
-            _getFiltersThunk = jd => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
+            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+            _filterProvider = filterProvider;
         }
 
         public string Run(CreateContext context, IJobCreator creator)
@@ -71,7 +65,7 @@ namespace Hangfire.Client
 
         private JobFilterInfo GetFilters(Job job)
         {
-            return new JobFilterInfo(_getFiltersThunk(job));
+            return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
 
         private static CreatedContext CreateWithFilters(

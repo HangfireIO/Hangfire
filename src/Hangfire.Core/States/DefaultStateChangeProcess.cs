@@ -15,8 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
@@ -26,23 +24,22 @@ namespace Hangfire.States
     internal class DefaultStateChangeProcess : IStateChangeProcess
     {
         private readonly StateHandlerCollection _handlers;
-
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk
-            = JobFilterProviders.Providers.GetFilters;
+        private readonly IJobFilterProvider _filterProvider;
 
         public DefaultStateChangeProcess([NotNull] StateHandlerCollection handlers)
+            : this(handlers, JobFilterProviders.Providers)
         {
-            if (handlers == null) throw new ArgumentNullException("handlers");
-
-            _handlers = handlers;
         }
 
-        internal DefaultStateChangeProcess(StateHandlerCollection handlers, IEnumerable<object> filters)
-            : this(handlers)
+        public DefaultStateChangeProcess(
+            [NotNull] StateHandlerCollection handlers,
+            [NotNull] IJobFilterProvider filterProvider)
         {
-            if (filters == null) throw new ArgumentNullException("filters");
+            if (handlers == null) throw new ArgumentNullException("handlers");
+            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
 
-            _getFiltersThunk = md => filters.Select(f => new JobFilter(f, JobFilterScope.Type, null));
+            _handlers = handlers;
+            _filterProvider = filterProvider;
         }
 
         public void ElectState(IStorageConnection connection, ElectStateContext context)
@@ -98,7 +95,7 @@ namespace Hangfire.States
 
         private JobFilterInfo GetFilters(Job job)
         {
-            return new JobFilterInfo(_getFiltersThunk(job));
+            return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
     }
 }

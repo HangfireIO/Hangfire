@@ -52,7 +52,7 @@ namespace Hangfire
         }
 
         public BackgroundJobClient(JobStorage storage, IStateMachineFactory stateMachineFactory)
-            : this(storage, stateMachineFactory, DefaultJobCreationProcess.Instance)
+            : this(storage, stateMachineFactory, new DefaultJobCreationProcess())
         {
         }
 

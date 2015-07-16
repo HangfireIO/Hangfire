@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -15,6 +16,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IJobPerformer> _performer;
         private readonly IList<object> _filters;
         private readonly Mock<JobActivator> _activator;
+        private readonly Mock<IJobFilterProvider> _filterProvider;
 
         public DefaultJobPerformanceProcessFacts()
         {
@@ -30,6 +32,9 @@ namespace Hangfire.Core.Tests.Server
             _activator = new Mock<JobActivator>();
 
             _filters = new List<object>();
+            _filterProvider = new Mock<IJobFilterProvider>();
+            _filterProvider.Setup(x => x.GetFilters(It.IsNotNull<Job>())).Returns(
+                _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
         }
 
         [Fact]
@@ -478,7 +483,7 @@ namespace Hangfire.Core.Tests.Server
 
         private DefaultJobPerformanceProcess CreateProcess()
         {
-            return new DefaultJobPerformanceProcess(_activator.Object, _filters);
+            return new DefaultJobPerformanceProcess(_activator.Object, _filterProvider.Object);
         }
 
         private Mock<T> CreateFilter<T>()

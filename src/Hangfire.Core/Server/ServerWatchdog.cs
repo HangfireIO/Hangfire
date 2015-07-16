@@ -19,7 +19,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal class ServerWatchdog : IBackgroundProcess
+    public class ServerWatchdog : IBackgroundProcess
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 

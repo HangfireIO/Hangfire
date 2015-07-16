@@ -21,7 +21,7 @@ using Hangfire.States;
 
 namespace Hangfire.Server
 {
-    internal class SchedulePoller : IBackgroundProcess
+    public class SchedulePoller : IBackgroundProcess
     {
         public static readonly TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(15);
 
@@ -42,7 +42,7 @@ namespace Hangfire.Server
         {
         }
 
-        public SchedulePoller(TimeSpan pollingInterval, Func<JobStorage, IStateMachineFactory> stateMachineFactory)
+        internal SchedulePoller(TimeSpan pollingInterval, Func<JobStorage, IStateMachineFactory> stateMachineFactory)
         {
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
 

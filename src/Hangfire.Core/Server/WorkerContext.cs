@@ -20,17 +20,17 @@ namespace Hangfire.Server
 {
     public class WorkerContext
     {
-        internal WorkerContext(WorkerContext workerContext)
-            : this (workerContext.Queues, workerContext.WorkerNumber)
-        {
-        }
-
-        internal WorkerContext(string[] queues, int workerNumber)
+        public WorkerContext(string[] queues, int workerNumber)
         {
             if (queues == null) throw new ArgumentNullException("queues");
 
             Queues = queues;
             WorkerNumber = workerNumber;
+        }
+
+        internal WorkerContext(WorkerContext workerContext)
+            : this (workerContext.Queues, workerContext.WorkerNumber)
+        {
         }
 
         public string[] Queues { get; private set; }

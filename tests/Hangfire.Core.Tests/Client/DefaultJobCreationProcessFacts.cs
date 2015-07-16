@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -16,6 +17,7 @@ namespace Hangfire.Core.Tests.Client
         private readonly Mock<CreateContext> _context;
         private readonly IList<object> _filters;
         private readonly Mock<IJobCreator> _creator;
+        private readonly Mock<IJobFilterProvider> _filterProvider;
 
         public DefaultJobCreationProcessFacts()
         {
@@ -23,7 +25,6 @@ namespace Hangfire.Core.Tests.Client
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
 
-            _filters = new List<object>();
             _context = new Mock<CreateContext>(connection.Object, job, state.Object);
 
             _creator = new Mock<IJobCreator>();
@@ -31,6 +32,11 @@ namespace Hangfire.Core.Tests.Client
                 job,
                 It.IsNotNull<IDictionary<string, string>>(),
                 state.Object)).Returns(JobId);
+
+            _filters = new List<object>();
+            _filterProvider = new Mock<IJobFilterProvider>();
+            _filterProvider.Setup(x => x.GetFilters(It.IsNotNull<Job>())).Returns(
+                _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
         }
 
         [Fact]
@@ -364,7 +370,7 @@ namespace Hangfire.Core.Tests.Client
 
         private DefaultJobCreationProcess CreateProcess()
         {
-            return new DefaultJobCreationProcess(_filters);
+            return new DefaultJobCreationProcess(_filterProvider.Object);
         }
 
         private void SetupStateMachineThrowsException(Exception exception)

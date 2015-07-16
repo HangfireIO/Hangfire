@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -22,6 +24,7 @@ namespace Hangfire.Core.Tests.States
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly ElectStateContextMock _electStateContext;
         private readonly ApplyStateContextMock _applyStateContext;
+        private readonly Mock<IJobFilterProvider> _filterProvider;
 
         public DefaultStateChangeProcessFacts()
         {
@@ -45,13 +48,17 @@ namespace Hangfire.Core.Tests.States
                 NewStateValue = _state.Object,
                 OldStateValue = OldStateName
             };
+
+            _filterProvider = new Mock<IJobFilterProvider>();
+            _filterProvider.Setup(x => x.GetFilters(It.IsNotNull<Job>())).Returns(
+                _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenHandlersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultStateChangeProcess(null, _filters));
+                () => new DefaultStateChangeProcess(null, _filterProvider.Object));
 
             Assert.Equal("handlers", exception.ParamName);
         }
@@ -249,7 +256,7 @@ namespace Hangfire.Core.Tests.States
 
         private DefaultStateChangeProcess CreateProcess()
         {
-            return new DefaultStateChangeProcess(_handlers, _filters);
+            return new DefaultStateChangeProcess(_handlers, _filterProvider.Object);
         }
 
         private Mock<IStateHandler> CreateStateHandler(string stateName)
