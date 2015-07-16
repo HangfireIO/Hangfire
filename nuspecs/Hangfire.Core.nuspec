@@ -19,7 +19,8 @@
 * Added – `BackgroundServer` class for creating a completely custom server instance.
 * Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain.
 * Added – Option to hide the "Back to site" link (by @dradovic).
-* Changed – ServerIds are now generated without ServerName, the latter is deprecated.
+* Changed – Server components and background processes now use `Task` with `TaskCreationOptions.LongRunning`.
+* Changed – Server Ids are now generated without ServerName, the latter is deprecated.
 * Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
 * Changed – Minor improvements for Dashboard navigation (by @pwelter34).
 * Fixed – Prevent worker from fetching and processing a job on shutdown.
