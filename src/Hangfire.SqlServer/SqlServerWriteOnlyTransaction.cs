@@ -20,6 +20,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 using Dapper;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -32,33 +33,24 @@ namespace Hangfire.SqlServer
             = new Queue<Action<SqlConnection>>();
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
+        private readonly SqlServerStorage _storage;
 
-        private readonly SqlConnection _connection;
-        private readonly IsolationLevel? _isolationLevel;
-        private readonly PersistentJobQueueProviderCollection _queueProviders;
-
-        public SqlServerWriteOnlyTransaction( 
-            SqlConnection connection,
-            IsolationLevel? isolationLevel,
-            PersistentJobQueueProviderCollection queueProviders)
+        public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (queueProviders == null) throw new ArgumentNullException("queueProviders");
+            if (storage == null) throw new ArgumentNullException("storage");
 
-            _connection = connection;
-            _isolationLevel = isolationLevel;
-            _queueProviders = queueProviders;
+            _storage = storage;
         }
 
         public override void Commit()
         {
-            using (var transaction = CreateTransaction(_isolationLevel))
+            _storage.UseTransaction(connection =>
             {
-                _connection.EnlistTransaction(Transaction.Current);
+                connection.EnlistTransaction(Transaction.Current);
 
                 if (_lockedResources.Count > 0)
                 {
-                    _connection.Execute(
+                    connection.Execute(
                         "set nocount on;" +
                         "exec sp_getapplock @Resource=@resource, @LockMode=N'Exclusive'",
                         _lockedResources.Select(x => new { resource = x }));
@@ -66,11 +58,9 @@ namespace Hangfire.SqlServer
 
                 foreach (var command in _commandQueue)
                 {
-                    command(_connection);
+                    command(connection);
                 }
-
-                transaction.Complete();
-            }
+            });
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
@@ -127,8 +117,8 @@ values (@jobId, @name, @reason, @createdAt, @data)";
 
         public override void AddToQueue(string queue, string jobId)
         {
-            var provider = _queueProviders.GetProvider(queue);
-            var persistentQueue = provider.GetJobQueue(_connection);
+            var provider = _storage.QueueProviders.GetProvider(queue);
+            var persistentQueue = provider.GetJobQueue();
 
             QueueCommand(_ => persistentQueue.Enqueue(queue, jobId));
         }
@@ -362,14 +352,6 @@ update HangFire.[List] set ExpireAt = null where [Key] = @key";
         private void AcquireLock(string resource)
         {
             _lockedResources.Add(resource);
-        }
-
-        private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
-        {
-            return isolationLevel != null
-                ? new TransactionScope(TransactionScopeOption.Required,
-                    new TransactionOptions { IsolationLevel = isolationLevel.Value })
-                : new TransactionScope();
         }
     }
 }

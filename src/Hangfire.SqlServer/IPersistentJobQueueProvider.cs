@@ -14,13 +14,11 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System.Data;
-
 namespace Hangfire.SqlServer
 {
     public interface IPersistentJobQueueProvider
     {
-        IPersistentJobQueue GetJobQueue(IDbConnection connection);
-        IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection);
+        IPersistentJobQueue GetJobQueue();
+        IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi();
     }
 }

@@ -20,6 +20,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 using Dapper;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.SqlServer.Entities;
 using Hangfire.States;
@@ -30,15 +31,13 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerMonitoringApi : IMonitoringApi
     {
-        private readonly string _connectionString;
-        private readonly PersistentJobQueueProviderCollection _queueProviders;
+        private readonly SqlServerStorage _storage;
 
-        public SqlServerMonitoringApi(
-            string connectionString,
-            PersistentJobQueueProviderCollection queueProviders)
+        public SqlServerMonitoringApi([NotNull] SqlServerStorage storage)
         {
-            _connectionString = connectionString;
-            _queueProviders = queueProviders;
+            if (storage == null) throw new ArgumentNullException("storage");
+
+            _storage = storage;
         }
 
         public long ScheduledCount()
@@ -49,24 +48,18 @@ namespace Hangfire.SqlServer
 
         public long EnqueuedCount(string queue)
         {
-            return UseConnection(connection =>
-            {
-                var queueApi = GetQueueApi(connection, queue);
-                var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
+            var queueApi = GetQueueApi(queue);
+            var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
 
-                return counters.EnqueuedCount ?? 0;
-            });
+            return counters.EnqueuedCount ?? 0;
         }
 
         public long FetchedCount(string queue)
         {
-            return UseConnection(connection =>
-            {
-                var queueApi = GetQueueApi(connection, queue);
-                var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
+            var queueApi = GetQueueApi(queue);
+            var counters = queueApi.GetEnqueuedAndFetchedCount(queue);
 
-                return counters.FetchedCount ?? 0;
-            });
+            return counters.FetchedCount ?? 0;
         }
 
         public long FailedCount()
@@ -202,8 +195,8 @@ namespace Hangfire.SqlServer
         {
             return UseConnection<IList<QueueWithTopEnqueuedJobsDto>>(connection =>
             {
-                var tuples = _queueProviders
-                    .Select(x => x.GetJobQueueMonitoringApi(connection))
+                var tuples = _storage.QueueProviders
+                    .Select(x => x.GetJobQueueMonitoringApi())
                     .SelectMany(x => x.GetQueues(), (monitoring, queue) => new { Monitoring = monitoring, Queue = queue })
                     .OrderBy(x => x.Queue)
                     .ToArray();
@@ -230,24 +223,18 @@ namespace Hangfire.SqlServer
 
         public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int @from, int perPage)
         {
-            return UseConnection(connection =>
-            {
-                var queueApi = GetQueueApi(connection, queue);
-                var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
+            var queueApi = GetQueueApi(queue);
+            var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
 
-                return EnqueuedJobs(connection, enqueuedJobIds);
-            });
+            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds));
         }
 
         public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
         {
-            return UseConnection(connection =>
-            {
-                var queueApi = GetQueueApi(connection, queue);
-                var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
+            var queueApi = GetQueueApi(queue);
+            var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
 
-                return FetchedJobs(connection, fetchedJobIds);
-            });
+            return UseConnection(connection => FetchedJobs(connection, fetchedJobIds));
         }
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
@@ -358,8 +345,8 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
                     stats.Recurring = multi.Read<int>().Single();
                 }
 
-                stats.Queues = _queueProviders
-                    .SelectMany(x => x.GetJobQueueMonitoringApi(connection).GetQueues())
+                stats.Queues = _storage.QueueProviders
+                    .SelectMany(x => x.GetJobQueueMonitoringApi().GetQueues())
                     .Count();
 
                 return stats;
@@ -427,29 +414,17 @@ where [Key] in @keys";
             return result;
         }
 
-        private IPersistentJobQueueMonitoringApi GetQueueApi(
-            SqlConnection connection,
-            string queueName)
+        private IPersistentJobQueueMonitoringApi GetQueueApi(string queueName)
         {
-            var provider = _queueProviders.GetProvider(queueName);
-            var monitoringApi = provider.GetJobQueueMonitoringApi(connection);
+            var provider = _storage.QueueProviders.GetProvider(queueName);
+            var monitoringApi = provider.GetJobQueueMonitoringApi();
 
             return monitoringApi;
         }
 
         private T UseConnection<T>(Func<SqlConnection, T> action)
         {
-            using (var transaction = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions { IsolationLevel = IsolationLevel.ReadUncommitted }))
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                connection.Open();
-
-                var result = action(connection);
-
-                transaction.Complete();
-
-                return result;
-            }
+            return _storage.UseTransaction(action, IsolationLevel.ReadUncommitted);
         }
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(

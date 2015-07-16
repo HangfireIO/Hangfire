@@ -59,18 +59,18 @@ namespace Hangfire.SqlServer
             {
                 Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
 
-                int removedCount;
+                int removedCount = 0;
 
                 do
                 {
-                    using (var storageConnection = (SqlServerConnection)_storage.GetConnection())
+                    _storage.UseConnection(connection =>
                     {
-                        removedCount = storageConnection.Connection.Execute(
+                        removedCount = connection.Execute(
                             String.Format(@"
 set transaction isolation level read committed;
 delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;", table),
                             new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
-                    }
+                    });
 
                     if (removedCount > 0)
                     {

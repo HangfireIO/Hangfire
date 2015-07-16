@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Dapper;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
@@ -36,17 +37,22 @@ namespace Hangfire.SqlServer
             };
 
         private readonly IDbConnection _connection;
+        private readonly SqlServerStorage _storage;
         private readonly string _resource;
 
         private bool _completed;
 
-        public SqlServerDistributedLock(string resource, TimeSpan timeout, IDbConnection connection)
+        public SqlServerDistributedLock(
+            [NotNull] SqlServerStorage storage,
+            [NotNull] string resource, 
+            TimeSpan timeout)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
-            if (connection == null) throw new ArgumentNullException("connection");
 
+            _storage = storage;
             _resource = resource;
-            _connection = connection;
+            _connection = storage.CreateAndOpenConnection();
 
             var parameters = new DynamicParameters();
             parameters.Add("@Resource", _resource);
@@ -56,7 +62,7 @@ namespace Hangfire.SqlServer
             parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
-            connection.Execute(
+            _connection.Execute(
                 @"sp_getapplock", 
                 parameters, 
                 commandType: CommandType.StoredProcedure);
@@ -81,25 +87,32 @@ namespace Hangfire.SqlServer
 
             _completed = true;
 
-            var parameters = new DynamicParameters();
-            parameters.Add("@Resource", _resource);
-            parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-
-            _connection.Execute(
-                @"sp_releaseapplock",
-                parameters,
-                commandType: CommandType.StoredProcedure);
-
-            var releaseResult = parameters.Get<int>("@Result");
-
-            if (releaseResult < 0)
+            try
             {
-                throw new SqlServerDistributedLockException(
-                    String.Format(
-                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.", 
-                        _resource,
-                        releaseResult));
+                var parameters = new DynamicParameters();
+                parameters.Add("@Resource", _resource);
+                parameters.Add("@LockOwner", LockOwner);
+                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+                _connection.Execute(
+                    @"sp_releaseapplock",
+                    parameters,
+                    commandType: CommandType.StoredProcedure);
+
+                var releaseResult = parameters.Get<int>("@Result");
+
+                if (releaseResult < 0)
+                {
+                    throw new SqlServerDistributedLockException(
+                        String.Format(
+                            "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
+                            _resource,
+                            releaseResult));
+                }
+            }
+            finally
+            {
+                _storage.ReleaseConnection(_connection);
             }
         }
     }

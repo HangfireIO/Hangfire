@@ -16,30 +16,34 @@
 
 using System;
 using System.Data;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueueProvider : IPersistentJobQueueProvider
     {
+        private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
 
-        public SqlServerJobQueueProvider(SqlServerStorageOptions options)
+        public SqlServerJobQueueProvider([NotNull] SqlServerStorage storage, [NotNull] SqlServerStorageOptions options)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (options == null) throw new ArgumentNullException("options");
 
+            _storage = storage;
             _options = options;
         }
 
         public SqlServerStorageOptions Options { get { return _options; } }
 
-        public IPersistentJobQueue GetJobQueue(IDbConnection connection)
+        public IPersistentJobQueue GetJobQueue()
         {
-            return new SqlServerJobQueue(connection, _options);
+            return new SqlServerJobQueue(_storage, _options);
         }
 
-        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
+        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi()
         {
-            return new SqlServerJobQueueMonitoringApi(connection);
+            return new SqlServerJobQueueMonitoringApi(_storage);
         }
     }
 }

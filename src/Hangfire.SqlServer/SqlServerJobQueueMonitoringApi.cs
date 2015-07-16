@@ -16,27 +16,32 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
+using System.Transactions;
 using Dapper;
+using Hangfire.Annotations;
 
 namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
     {
-        private readonly IDbConnection _connection;
+        private readonly SqlServerStorage _storage;
 
-        public SqlServerJobQueueMonitoringApi(IDbConnection connection)
+        public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-
-            _connection = connection;
+            if (storage == null) throw new ArgumentNullException("storage");
+            _storage = storage;
         }
 
         public IEnumerable<string> GetQueues()
         {
             const string sqlQuery = @"select distinct(Queue) from HangFire.JobQueue";
-            return _connection.Query(sqlQuery).Select(x => (string)x.Queue).ToList();
+
+            return UseTransaction(connection =>
+            {
+                return connection.Query(sqlQuery).Select(x => (string) x.Queue).ToList();
+            });
         }
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
@@ -51,12 +56,15 @@ select r.Id from (
 ) as r
 where r.row_num between @start and @end";
 
-            return _connection.Query<JobIdDto>(
-                sqlQuery,
-                new { queue = queue, start = from + 1, end = @from + perPage })
-                .ToList()
-                .Select(x => x.Id)
-                .ToList();
+            return UseTransaction(connection =>
+            {
+                return connection.Query<JobIdDto>(
+                    sqlQuery,
+                    new { queue = queue, start = from + 1, end = @from + perPage })
+                    .ToList()
+                    .Select(x => x.Id)
+                    .ToList();
+            });
         }
 
         public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
@@ -70,12 +78,15 @@ select r.Id from (
 ) as r
 where r.row_num between @start and @end";
 
-            return _connection.Query<JobIdDto>(
-                fetchedJobsSql,
-                new { queue = queue, start = from + 1, end = @from + perPage })
-                .ToList()
-                .Select(x => x.Id)
-                .ToList();
+            return UseTransaction(connection =>
+            {
+                return connection.Query<JobIdDto>(
+                    fetchedJobsSql,
+                    new { queue = queue, start = from + 1, end = @from + perPage })
+                    .ToList()
+                    .Select(x => x.Id)
+                    .ToList();
+            });
         }
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
@@ -90,13 +101,21 @@ from (
     where Queue = @queue
 ) q";
 
-            var result = _connection.Query(sqlQuery, new { queue = queue }).Single();
-
-            return new EnqueuedAndFetchedCountDto
+            return UseTransaction(connection =>
             {
-                EnqueuedCount = result.EnqueuedCount,
-                FetchedCount = result.FetchedCount
-            };
+                var result = connection.Query(sqlQuery, new { queue = queue }).Single();
+
+                return new EnqueuedAndFetchedCountDto
+                {
+                    EnqueuedCount = result.EnqueuedCount,
+                    FetchedCount = result.FetchedCount
+                };
+            });
+        }
+
+        private T UseTransaction<T>(Func<SqlConnection, T> func)
+        {
+            return _storage.UseTransaction(func, IsolationLevel.ReadUncommitted);
         }
 
 // ReSharper disable once ClassNeverInstantiated.Local

@@ -15,31 +15,31 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Data;
 using Dapper;
+using Hangfire.Annotations;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
     internal class SqlServerFetchedJob : IFetchedJob
     {
-        private readonly IDbConnection _connection;
+        private readonly SqlServerStorage _storage;
 
         private bool _disposed;
         private bool _removedFromQueue;
         private bool _requeued;
 
         public SqlServerFetchedJob(
-            IDbConnection connection, 
+            [NotNull] SqlServerStorage storage, 
             int id, 
             string jobId, 
             string queue)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (storage == null) throw new ArgumentNullException("storage");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
 
-            _connection = connection;
+            _storage = storage;
 
             Id = id;
             JobId = jobId;
@@ -52,18 +52,24 @@ namespace Hangfire.SqlServer
 
         public void RemoveFromQueue()
         {
-            _connection.Execute(
-                "delete from HangFire.JobQueue where Id = @id",
-                new { id = Id });
+            _storage.UseConnection(connection =>
+            {
+                connection.Execute(
+                    "delete from HangFire.JobQueue where Id = @id",
+                    new { id = Id });
+            });
 
             _removedFromQueue = true;
         }
 
         public void Requeue()
         {
-            _connection.Execute(
-                "update HangFire.JobQueue set FetchedAt = null where Id = @id",
-                new { id = Id });
+            _storage.UseConnection(connection =>
+            {
+                connection.Execute(
+                    "update HangFire.JobQueue set FetchedAt = null where Id = @id",
+                    new { id = Id });
+            });
 
             _requeued = true;
         }

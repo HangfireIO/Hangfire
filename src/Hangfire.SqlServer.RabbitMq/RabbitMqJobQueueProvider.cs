@@ -20,12 +20,12 @@ namespace Hangfire.SqlServer.RabbitMQ
             _monitoringApi = new RabbitMqMonitoringApi(configureAction, queues.ToArray());
         }
 
-        public IPersistentJobQueue GetJobQueue(IDbConnection connection)
+        public IPersistentJobQueue GetJobQueue()
         {
             return _jobQueue;
         }
 
-        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi(IDbConnection connection)
+        public IPersistentJobQueueMonitoringApi GetJobQueueMonitoringApi()
         {
             return _monitoringApi;
         }
