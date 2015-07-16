@@ -23,24 +23,31 @@ namespace Hangfire.Server
 {
     internal class SchedulePoller : IBackgroundProcess
     {
+        public static readonly TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(15);
+
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly Func<JobStorage, IStateMachineFactory> _stateMachineFactory;
-        private readonly TimeSpan _pollInterval;
+        private readonly TimeSpan _pollingInterval;
 
         private int _enqueuedCount;
 
-        public SchedulePoller(TimeSpan pollInterval)
-            : this(pollInterval, StateMachineFactory.Default)
+        public SchedulePoller() 
+            : this(DefaultPollingInterval)
         {
         }
 
-        public SchedulePoller(TimeSpan pollInterval, Func<JobStorage, IStateMachineFactory> stateMachineFactory)
+        public SchedulePoller(TimeSpan pollingInterval)
+            : this(pollingInterval, StateMachineFactory.Default)
+        {
+        }
+
+        public SchedulePoller(TimeSpan pollingInterval, Func<JobStorage, IStateMachineFactory> stateMachineFactory)
         {
             if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
 
             _stateMachineFactory = stateMachineFactory;
-            _pollInterval = pollInterval;
+            _pollingInterval = pollingInterval;
         }
 
         public void Execute(BackgroundProcessContext context)
@@ -53,7 +60,7 @@ namespace Hangfire.Server
                     _enqueuedCount = 0;
                 }
 
-                context.CancellationToken.WaitHandle.WaitOne(_pollInterval);
+                context.CancellationToken.WaitHandle.WaitOne(_pollingInterval);
             }
             else
             {

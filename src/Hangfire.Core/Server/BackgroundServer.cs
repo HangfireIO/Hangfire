@@ -11,6 +11,8 @@ namespace Hangfire.Server
 {
     public sealed class BackgroundServer : IBackgroundProcess, IDisposable
     {
+        public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
+
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
@@ -54,6 +56,8 @@ namespace Hangfire.Server
             }
 
             _bootstrapTask = WrapProcess(this).CreateTask(context);
+
+            ShutdownTimeout = DefaultShutdownTimeout;
         }
 
         public TimeSpan ShutdownTimeout { get; set; }

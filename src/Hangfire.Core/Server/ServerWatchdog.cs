@@ -25,6 +25,11 @@ namespace Hangfire.Server
 
         private readonly ServerWatchdogOptions _options;
 
+        public ServerWatchdog()
+            : this(new ServerWatchdogOptions())
+        {
+        }
+
         public ServerWatchdog(ServerWatchdogOptions options)
         {
             if (options == null) throw new ArgumentNullException("options");

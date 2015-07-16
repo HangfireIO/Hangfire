@@ -38,13 +38,18 @@ namespace Hangfire.Server
         private readonly IThrottler _throttler;
 
         public RecurringJobScheduler()
-            : this(StateMachineFactory.Default, new DefaultJobCreationProcess(), ScheduleInstant.Factory, new EveryMinuteThrottler())
+            : this(new DefaultJobCreationProcess())
         {
         }
 
-        public RecurringJobScheduler(
-            [NotNull] Func<JobStorage, IStateMachineFactory> stateMachineFactory,
+        public RecurringJobScheduler(IJobCreationProcess creationProcess)
+            : this(creationProcess, StateMachineFactory.Default, ScheduleInstant.Factory, new EveryMinuteThrottler())
+        {
+        }
+
+        internal RecurringJobScheduler(
             [NotNull] IJobCreationProcess creationProcess,
+            [NotNull] Func<JobStorage, IStateMachineFactory> stateMachineFactory,
             [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
             [NotNull] IThrottler throttler)
         {

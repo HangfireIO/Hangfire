@@ -20,7 +20,19 @@ namespace Hangfire.Server
 {
     internal class ServerHeartbeat : IBackgroundProcess
     {
-        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(5);
+        public static readonly TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(5);
+
+        private readonly TimeSpan _heartbeatInterval;
+
+        public ServerHeartbeat()
+            : this(DefaultHeartbeatInterval)
+        {
+        }
+
+        public ServerHeartbeat(TimeSpan heartbeatInterval)
+        {
+            _heartbeatInterval = heartbeatInterval;
+        }
 
         public void Execute(BackgroundProcessContext context)
         {
@@ -29,7 +41,7 @@ namespace Hangfire.Server
                 connection.Heartbeat(context.ServerId);
             }
 
-            context.CancellationToken.WaitHandle.WaitOne(HeartbeatInterval);
+            context.CancellationToken.WaitHandle.WaitOne(_heartbeatInterval);
         }
 
         public override string ToString()
