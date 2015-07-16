@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Messaging;
 using System.Threading;
-using Hangfire.SqlServer.Msmq;
+using Hangfire.Msmq.Tests;
 using Xunit;
 
-namespace Hangfire.Msmq.Tests
+namespace Hangfire.SqlServer.Msmq.Tests
 {
     public class MsmqJobQueueFacts
     {
@@ -19,7 +19,7 @@ namespace Hangfire.Msmq.Tests
         public void Ctor_ThrowsAnException_WhenPathPatternIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new MsmqJobQueue(null));
+                () => new MsmqJobQueue(null, MsmqTransactionType.Internal));
 
             Assert.Equal("pathPattern", exception.ParamName);
         }
@@ -28,7 +28,7 @@ namespace Hangfire.Msmq.Tests
         public void Enqueue_SendsTheJobId()
         {
             // Arrange
-            var queue = CreateQueue();
+            var queue = CreateQueue(MsmqTransactionType.Internal);
 
             // Act
             queue.Enqueue("my-queue", "job-id");
@@ -53,7 +53,7 @@ namespace Hangfire.Msmq.Tests
         public void Dequeue_ReturnsFetchedJob_WithJobId()
         {
             MsmqUtils.EnqueueJobId("my-queue", "job-id");
-            var queue = CreateQueue();
+            var queue = CreateQueue(MsmqTransactionType.Internal);
 
             var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
 
@@ -63,7 +63,7 @@ namespace Hangfire.Msmq.Tests
         [Fact, CleanMsmqQueue("my-queue")]
         public void Dequeue_ThrowsCanceledException_WhenTokenHasBeenCancelled()
         {
-            var queue = CreateQueue();
+            var queue = CreateQueue(MsmqTransactionType.Internal);
             var token = new CancellationToken(true);
 
             Assert.Throws<OperationCanceledException>(
@@ -74,7 +74,7 @@ namespace Hangfire.Msmq.Tests
         public void Dequeue_ReturnsFetchedJob_FromOtherQueues_IfFirstAreEmpty()
         {
             MsmqUtils.EnqueueJobId("queue-2", "job-id");
-            var queue = CreateQueue();
+            var queue = CreateQueue(MsmqTransactionType.Internal);
 
             var fetchedJob = queue.Dequeue(new[] { "queue-1", "queue-2" }, _token);
 
@@ -86,7 +86,7 @@ namespace Hangfire.Msmq.Tests
         {
             // Arrange
             MsmqUtils.EnqueueJobId("my-queue", "job-id");
-            var queue = CreateQueue();
+            var queue = CreateQueue(MsmqTransactionType.Internal);
 
             // Act
             var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
@@ -105,7 +105,7 @@ namespace Hangfire.Msmq.Tests
         {
             // Arrange
             MsmqUtils.EnqueueJobId("my-queue", "job-id");
-            var queue = CreateQueue();
+            var queue = CreateQueue(MsmqTransactionType.Internal);
 
             // Act
             using (var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token))
@@ -125,7 +125,7 @@ namespace Hangfire.Msmq.Tests
         {
             // Arrange
             MsmqUtils.EnqueueJobId("my-queue", "job-id");
-            var queue = CreateQueue();
+            var queue = CreateQueue(MsmqTransactionType.Internal);
 
             // Act
             var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
@@ -136,9 +136,9 @@ namespace Hangfire.Msmq.Tests
             Assert.Equal("job-id", jobId);
         }
 
-        private static MsmqJobQueue CreateQueue()
+        private static MsmqJobQueue CreateQueue(MsmqTransactionType transactionType)
         {
-            return new MsmqJobQueue(CleanMsmqQueueAttribute.PathPattern);
+            return new MsmqJobQueue(CleanMsmqQueueAttribute.PathPattern, transactionType);
         }
     }
 }

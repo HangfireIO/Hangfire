@@ -1,223 +1,164 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="MessageQueueExtensions.cs" company="Rolosoft Ltd">
-//   © Rolosoft Ltd
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
+﻿// The MIT License (MIT)
+// 
+// Copyright (c) 2014 Philip Hoppe
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-#region License
 
-// Copyright 2013 Rolosoft Ltd
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// http://www.apache.org/licenses/LICENSE-2.0
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-#endregion
+using System;
+using System.ComponentModel;
+using System.Messaging;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
-namespace Rsft.Lib.Msmq.MessageCounter
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
+// ReSharper disable FieldCanBeMadeReadOnly.Local
+// ReSharper disable MemberCanBePrivate.Local
+// ReSharper disable RedundantCast
+// ReSharper disable CheckNamespace
+
+namespace MQTools
 {
-    #region Usings
-
-    using System.Messaging;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-
-    #endregion
-
-    /// <summary>
-    ///     The message queue extensions.
-    /// </summary>
     internal static class MessageQueueExtensions
     {
-        #region Constants
+        #region P/Invoke stuff
 
-        /// <summary>
-        ///     The propi d_ mgm t_ queu e_ messag e_ count.
-        /// </summary>
+        [DllImport("mqrt.dll")]
+        private static extern int MQMgmtGetInfo(
+            [MarshalAs(UnmanagedType.BStr)]string computerName,
+            [MarshalAs(UnmanagedType.BStr)]string objectName,
+            ref MQMGMTPROPS mgmtProps);
+
+        private const byte VT_NULL = 1;
+        private const byte VT_UI4 = 19;
         private const int PROPID_MGMT_QUEUE_MESSAGE_COUNT = 7;
 
-        /// <summary>
-        ///     The v t_ null.
-        /// </summary>
-        private const byte VT_NULL = 1;
-
-        /// <summary>
-        ///     The v t_ u i 4.
-        /// </summary>
-        private const byte VT_UI4 = 19;
-
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// The lock object
-        /// </summary>
-        private static readonly object LockObject = new object();
-
-        #endregion
-
-        #region Public Methods and Operators
-
-        /// <summary>
-        /// The get count.
-        /// </summary>
-        /// <param name="queue">
-        /// The queue.
-        /// </param>
-        /// <returns>
-        /// The <see cref="uint"/>.
-        /// </returns>
-        public static uint GetCount(this MessageQueue queue)
-        {
-            return GetCount(queue.Path);
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        /// The get count.
-        /// </summary>
-        /// <param name="path">
-        /// The path.
-        /// </param>
-        /// <returns>
-        /// The <see cref="uint"/>.
-        /// </returns>
-        private static unsafe uint GetCount(string path)
-        {
-            if (!MessageQueue.Exists(path))
-            {
-                return 0;
-            }
-
-            var props = new MQMGMTPROPS();
-            props.cProp = 1;
-
-            var aPropId = PROPID_MGMT_QUEUE_MESSAGE_COUNT;
-            props.aPropID = &aPropId;
-
-            var aPropVar = new MQPROPVariant();
-            aPropVar.vt = VT_NULL;
-            props.aPropVar = &aPropVar;
-
-            var status = 0;
-            props.status = &status;
-
-            var objectName = Marshal.StringToBSTR("queue=Direct=OS:" + path);
-            try
-            {
-                uint rtn;
-
-                lock (LockObject)
-                {
-                    var result = MQMgmtGetInfo(null, (char*) objectName, &props);
-                    if (result != 0 || *props.status != 0 || props.aPropVar->vt != VT_UI4)
-                    {
-                        rtn = 0;
-                    }
-                    else
-                    {
-                        rtn = props.aPropVar->ulVal;
-                    }
-                }
-
-                return rtn;
-            }
-            finally
-            {
-                Marshal.FreeBSTR(objectName);
-            }
-        }
-
-        /// <summary>
-        /// The mq mgmt get info.
-        /// </summary>
-        /// <param name="computerName">
-        /// The computer name.
-        /// </param>
-        /// <param name="objectName">
-        /// The object name.
-        /// </param>
-        /// <param name="mgmtProps">
-        /// The mgmt props.
-        /// </param>
-        /// <returns>
-        /// The <see cref="int"/>.
-        /// </returns>
-        [DllImport("mqrt.dll")]
-        private static extern unsafe int MQMgmtGetInfo(char* computerName, char* objectName, MQMGMTPROPS* mgmtProps);
-
-        #endregion
-
-        /// <summary>
-        ///     The mqmgmtprops.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct MQMGMTPROPS
-        {
-            /// <summary>
-            ///     The c prop.
-            /// </summary>
-            public uint cProp;
-
-            /// <summary>
-            ///     The a prop id.
-            /// </summary>
-            public int* aPropID;
-
-            /// <summary>
-            ///     The a prop var.
-            /// </summary>
-            public MQPROPVariant* aPropVar;
-
-            /// <summary>
-            ///     The status.
-            /// </summary>
-            public int* status;
-        }
-
-        /// <summary>
-        ///     The mqprop variant.
-        /// </summary>
+        //size must be 16
         [StructLayout(LayoutKind.Sequential)]
         private struct MQPROPVariant
         {
-            /// <summary>
-            ///     The vt.
-            /// </summary>
-            public byte vt; // 0
+            public byte vt;       //0
+            public byte spacer;   //1
+            public short spacer2; //2
+            public int spacer3;   //4
+            public uint ulVal;    //8
+            public int spacer4;   //12
+        }
 
-            /// <summary>
-            ///     The spacer.
-            /// </summary>
-            public readonly byte spacer; // 1
+        //size must be 16 in x86 and 28 in x64
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MQMGMTPROPS
+        {
+            public uint cProp;
+            public IntPtr aPropID;
+            public IntPtr aPropVar;
+            public IntPtr status;
+        }
 
-            /// <summary>
-            ///     The spacer 2.
-            /// </summary>
-            public readonly short spacer2; // 2
+        #endregion
 
-            /// <summary>
-            ///     The spacer 3.
-            /// </summary>
-            public readonly int spacer3; // 4
+        private const int MQ_ERROR = unchecked((int)0xC00E0001); // A non-specific Message Queuing error was generated. For example, information about a queue that is currently not the active queue was requested.
+        private const int MQ_ERROR_ACCESS_DENIED = unchecked((int)0xC00E0025); // The access rights for retrieving information about the applicable msmq (MSMQ-Configuration) or queue object are not allowed for the calling process.
+        private const int MQ_ERROR_ILLEGAL_FORMATNAME = unchecked((int)0xC00E001E); // The specified format name in pObjectName is illegal.
+        private const int MQ_ERROR_ILLEGAL_PROPERTY_VT = unchecked((int)0xC00E0019); // An invalid type indicator was supplied for one of the properties specified in pMgmtProps.
+        private const int MQ_ERROR_QUEUE_NOT_ACTIVE = unchecked((int)0xC00E0004); // The queue is not open or may not exist.
+        private const int MQ_ERROR_SERVICE_NOT_AVAILABLE = unchecked((int)0xC00E000B); // The Message Queuing service is not available.
+        private const int MQ_INFORMATION_UNSUPPORTED_PROPERTY = unchecked((int)0x400E0004); // An unsupported property identifier was specified in pMgmtProps
 
-            /// <summary>
-            ///     The ul val.
-            /// </summary>
-            public readonly uint ulVal; // 8
+        const string QueueRegex = @"^.*\:(?<computerName>.*)\\(?<queueType>.*)\\(?<queue>.*)$";
+        private static readonly Regex regex = new Regex(QueueRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-            /// <summary>
-            ///     The spacer 4.
-            /// </summary>
-            public readonly int spacer4; // 12
+        public static long GetCount(this MessageQueue messageQueue)
+        {
+            var matches = regex.Matches(messageQueue.FormatName);
+
+            if (matches.Count != 1)
+                throw new ApplicationException("Unable to parse " + messageQueue.FormatName);
+
+            var computerName = matches[0].Groups["computerName"].Value;
+            var queueType = matches[0].Groups["queueType"].Value;
+            var queue = matches[0].Groups["queue"].Value;
+
+            return GetQueueCount(computerName, queueType, queue);
+        }
+
+        private static long GetPrivateQueueCount(string queue)
+        {
+            return GetQueueCount(null, "private$", queue);
+        }
+
+        private static long GetPrivateQueueCount(string computerName, string queue)
+        {
+            return GetQueueCount(computerName, "private$", queue);
+        }
+
+        private static long GetQueueCount(string computerName, string queueType, string queue)
+        {
+            if (string.IsNullOrEmpty(computerName)) computerName = null;
+            string queuePath = string.Format("queue=Direct=OS:{0}\\{1}\\{2}", computerName ?? ".", queueType, queue);
+            return GetCount(computerName, queuePath);
+        }
+
+        private static long GetCount(string computerName, string queuePath)
+        {
+            var props = new MQMGMTPROPS
+            {
+                cProp = 1,
+                aPropID = Marshal.AllocHGlobal(sizeof(int)),
+                aPropVar = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MQPROPVariant))),
+                status = Marshal.AllocHGlobal(sizeof(int))
+            };
+
+            Marshal.WriteInt32(props.aPropID, PROPID_MGMT_QUEUE_MESSAGE_COUNT);
+            Marshal.StructureToPtr(new MQPROPVariant { vt = VT_NULL }, props.aPropVar, false);
+            Marshal.WriteInt32(props.status, 0);
+
+            try
+            {
+                int result = MQMgmtGetInfo(computerName, queuePath, ref props);
+                //Console.WriteLine("{0} {1} Result:{2:X}", computerName, queuePath, result);
+                switch (result)
+                {
+                    case 0:
+                        break;
+                    case MQ_ERROR_QUEUE_NOT_ACTIVE:
+                        return 0;
+                    default:
+                        throw new Win32Exception(result);
+                }
+
+                if (Marshal.ReadInt32(props.status) != 0)
+                    return -1;
+
+                var variant = (MQPROPVariant)Marshal.PtrToStructure(props.aPropVar, typeof(MQPROPVariant));
+                if (variant.vt != VT_UI4)
+                    return -2;
+
+                return variant.ulVal;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(props.aPropID);
+                Marshal.FreeHGlobal(props.aPropVar);
+                Marshal.FreeHGlobal(props.status);
+            }
         }
     }
 }

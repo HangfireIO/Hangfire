@@ -16,40 +16,46 @@
 
 using System;
 using System.Messaging;
-using Hangfire.Annotations;
-using Hangfire.Storage;
+using System.Transactions;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqFetchedJob : IFetchedJob
+    internal class MsmqDtcTransaction : IMsmqTransaction
     {
-        private readonly IMsmqTransaction _transaction;
+        private readonly TransactionScope _scope;
+        private TransactionScope _suppressedScope;
 
-        public MsmqFetchedJob([NotNull] IMsmqTransaction transaction, [NotNull] string jobId)
+        public MsmqDtcTransaction()
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (jobId == null) throw new ArgumentNullException("jobId");
-
-            _transaction = transaction;
-
-            JobId = jobId;
-        }
-
-        public string JobId { get; private set; }
-
-        public void RemoveFromQueue()
-        {
-            _transaction.Commit();
-        }
-
-        public void Requeue()
-        {
-            _transaction.Abort();
+            _scope = new TransactionScope();
         }
 
         public void Dispose()
         {
-            _transaction.Dispose();
+            if (_suppressedScope != null)
+            {
+                _suppressedScope.Complete();
+                _suppressedScope.Dispose();
+            }
+
+            _scope.Dispose();
+        }
+
+        public Message Receive(MessageQueue queue, TimeSpan timeout)
+        {
+            var message = queue.Receive(timeout, MessageQueueTransactionType.Automatic);
+            _suppressedScope = new TransactionScope(TransactionScopeOption.Suppress);
+
+            return message;
+        }
+
+        public void Commit()
+        {
+            _scope.Complete();
+        }
+
+        public void Abort()
+        {
         }
     }
 }

@@ -1,5 +1,5 @@
 // This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// Copyright © 2015 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,40 +16,37 @@
 
 using System;
 using System.Messaging;
-using Hangfire.Annotations;
-using Hangfire.Storage;
 
 namespace Hangfire.SqlServer.Msmq
 {
-    internal class MsmqFetchedJob : IFetchedJob
+    internal class MsmqInternalTransaction : IMsmqTransaction
     {
-        private readonly IMsmqTransaction _transaction;
+        private readonly MessageQueueTransaction _transaction;
 
-        public MsmqFetchedJob([NotNull] IMsmqTransaction transaction, [NotNull] string jobId)
+        public MsmqInternalTransaction()
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (jobId == null) throw new ArgumentNullException("jobId");
-
-            _transaction = transaction;
-
-            JobId = jobId;
-        }
-
-        public string JobId { get; private set; }
-
-        public void RemoveFromQueue()
-        {
-            _transaction.Commit();
-        }
-
-        public void Requeue()
-        {
-            _transaction.Abort();
+            _transaction = new MessageQueueTransaction();
         }
 
         public void Dispose()
         {
             _transaction.Dispose();
+        }
+
+        public Message Receive(MessageQueue queue, TimeSpan timeout)
+        {
+            _transaction.Begin();
+            return queue.Receive(timeout, _transaction);
+        }
+
+        public void Commit()
+        {
+            _transaction.Commit();
+        }
+
+        public void Abort()
+        {
+            _transaction.Abort();
         }
     }
 }

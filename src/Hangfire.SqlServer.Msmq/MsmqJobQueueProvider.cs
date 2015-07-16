@@ -24,9 +24,9 @@ namespace Hangfire.SqlServer.Msmq
         private readonly MsmqJobQueue _jobQueue;
         private readonly MsmqJobQueueMonitoringApi _monitoringApi;
 
-        public MsmqJobQueueProvider(string pathPattern, IEnumerable<string> queues)
+        public MsmqJobQueueProvider(string pathPattern, IEnumerable<string> queues, MsmqTransactionType transactionType)
         {
-            _jobQueue = new MsmqJobQueue(pathPattern);
+            _jobQueue = new MsmqJobQueue(pathPattern, transactionType);
             _monitoringApi = new MsmqJobQueueMonitoringApi(pathPattern, queues);
         }
 

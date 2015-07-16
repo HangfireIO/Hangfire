@@ -1,7 +1,7 @@
-﻿using Hangfire.SqlServer.Msmq;
+﻿using Hangfire.Msmq.Tests;
 using Xunit;
 
-namespace Hangfire.Msmq.Tests
+namespace Hangfire.SqlServer.Msmq.Tests
 {
     public class MsmqJobQueueProviderFacts
     {
@@ -31,7 +31,8 @@ namespace Hangfire.Msmq.Tests
         {
             return new MsmqJobQueueProvider(
                 CleanMsmqQueueAttribute.PathPattern,
-                Queues);
+                Queues,
+                MsmqTransactionType.Internal);
         }
     }
 }
