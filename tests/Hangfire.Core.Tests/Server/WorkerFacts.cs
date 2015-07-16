@@ -6,6 +6,7 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Moq.Sequences;
+using NUnit.Mocks;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
@@ -21,7 +22,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IFetchedJob> _fetchedJob;
         private readonly Mock<IJobPerformanceProcess> _process;
         private readonly Mock<IStateMachineFactory> _stateMachineFactory;
-        private readonly Func<JobStorage, IStateMachineFactory> _stateMachineFactoryFactory; 
+        private readonly Mock<IStateMachineFactoryFactory> _stateMachineFactoryFactory; 
         private readonly BackgroundProcessContextMock _context;
 
         public WorkerFacts()
@@ -59,14 +60,17 @@ namespace Hangfire.Core.Tests.Server
                 It.IsAny<string[]>(),
                 It.IsAny<CancellationToken>())).Returns(true);
 
-            _stateMachineFactoryFactory = storage => _stateMachineFactory.Object;
+            _stateMachineFactoryFactory = new Mock<IStateMachineFactoryFactory>();
+            _stateMachineFactoryFactory
+                .Setup(x => x.CreateFactory(It.IsNotNull<JobStorage>()))
+                .Returns(_stateMachineFactory.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(null, _process.Object, _stateMachineFactoryFactory));
+                () => new Worker(null, _process.Object, _stateMachineFactoryFactory.Object));
 
             Assert.Equal("context", exception.ParamName);
         }
@@ -75,7 +79,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_workerContext.Object, null, _stateMachineFactoryFactory));
+                () => new Worker(_workerContext.Object, null, _stateMachineFactoryFactory.Object));
 
             Assert.Equal("process", exception.ParamName);
         }
@@ -86,7 +90,7 @@ namespace Hangfire.Core.Tests.Server
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new Worker(_workerContext.Object, _process.Object, null));
 
-            Assert.Equal("stateMachineFactory", exception.ParamName);
+            Assert.Equal("stateMachineFactoryFactory", exception.ParamName);
         }
 
         [Fact]
@@ -337,7 +341,7 @@ namespace Hangfire.Core.Tests.Server
 
         private Worker CreateWorker()
         {
-            return new Worker(_workerContext.Object, _process.Object, _stateMachineFactoryFactory);
+            return new Worker(_workerContext.Object, _process.Object, _stateMachineFactoryFactory.Object);
         }
 
         public static void Method() { }

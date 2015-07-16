@@ -69,7 +69,7 @@ namespace Hangfire.Core.Tests.States
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new DefaultStateChangeProcess(_handlers, null));
 
-            Assert.Equal("filters", exception.ParamName);
+            Assert.Equal("filterProvider", exception.ParamName);
         }
 
         [Fact, Sequence]

@@ -17,40 +17,27 @@
 using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.Storage;
 
 namespace Hangfire.States
 {
-    public class StateMachineFactory : IStateMachineFactory
+    public class StateMachineFactoryFactory : IStateMachineFactoryFactory
     {
-        public static Func<JobStorage, StateMachineFactory> Default = storage => new StateMachineFactory(storage); 
-
-        private readonly StateHandlerCollection _handlers;
         private readonly IJobFilterProvider _filterProvider;
 
-        public StateMachineFactory(JobStorage storage)
-            : this(storage, JobFilterProviders.Providers)
+        public StateMachineFactoryFactory()
+            : this(JobFilterProviders.Providers)
         {
         }
 
-        public StateMachineFactory(JobStorage storage, [NotNull] IJobFilterProvider filterProvider)
+        public StateMachineFactoryFactory([NotNull] IJobFilterProvider filterProvider)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-
-            _handlers = new StateHandlerCollection();
-            _handlers.AddRange(GlobalStateHandlers.Handlers);
-            _handlers.AddRange(storage.GetStateHandlers());
-
             _filterProvider = filterProvider;
         }
 
-        public IStateMachine Create(IStorageConnection connection)
+        public IStateMachineFactory CreateFactory(JobStorage storage)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-
-            var process = new DefaultStateChangeProcess(_handlers, _filterProvider);
-            return new StateMachine(connection, process);
+            return new StateMachineFactory(storage, _filterProvider);
         }
     }
 }

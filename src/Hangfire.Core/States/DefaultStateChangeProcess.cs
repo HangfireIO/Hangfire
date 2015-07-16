@@ -21,7 +21,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
-    internal class DefaultStateChangeProcess : IStateChangeProcess
+    public class DefaultStateChangeProcess : IStateChangeProcess
     {
         private readonly StateHandlerCollection _handlers;
         private readonly IJobFilterProvider _filterProvider;

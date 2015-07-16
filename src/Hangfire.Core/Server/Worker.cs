@@ -30,7 +30,7 @@ namespace Hangfire.Server
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly IJobPerformanceProcess _process;
-        private readonly Func<JobStorage, IStateMachineFactory> _stateMachineFactory;
+        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
         private readonly WorkerContext _context;
 
         public Worker([NotNull] WorkerContext context)
@@ -39,26 +39,28 @@ namespace Hangfire.Server
         }
 
         public Worker([NotNull] WorkerContext context, [NotNull] IJobPerformanceProcess process)
-            : this(context, process, StateMachineFactory.Default)
+            : this(context, process, new StateMachineFactoryFactory())
         {
         }
 
-        internal Worker(
+        public Worker(
             [NotNull] WorkerContext context,
             [NotNull] IJobPerformanceProcess process, 
-            [NotNull] Func<JobStorage, IStateMachineFactory> stateMachineFactory)
+            [NotNull] IStateMachineFactoryFactory stateMachineFactoryFactory)
         {
             if (context == null) throw new ArgumentNullException("context");
             if (process == null) throw new ArgumentNullException("process");
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
+            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
             
             _context = context;
             _process = process;
-            _stateMachineFactory = stateMachineFactory;
+            _stateMachineFactoryFactory = stateMachineFactoryFactory;
         }
 
         public void Execute(BackgroundProcessContext context)
         {
+            var stateMachineFactory = _stateMachineFactoryFactory.CreateFactory(context.Storage);
+
             using (var connection = context.Storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_context.Queues, context.CancellationToken))
             {
@@ -66,7 +68,7 @@ namespace Hangfire.Server
 
                 try
                 {
-                    var stateMachine = _stateMachineFactory(context.Storage).Create(connection);
+                    var stateMachine = stateMachineFactory.Create(connection);
 
                     using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
