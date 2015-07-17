@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Data;
 using System.Messaging;
 using System.Threading;
 using Hangfire.Msmq.Tests;
+using Moq;
 using Xunit;
 
 namespace Hangfire.SqlServer.Msmq.Tests
@@ -9,10 +11,12 @@ namespace Hangfire.SqlServer.Msmq.Tests
     public class MsmqJobQueueFacts
     {
         private readonly CancellationToken _token;
+        private readonly Mock<IDbConnection> _connection;
 
         public MsmqJobQueueFacts()
         {
             _token = new CancellationToken();
+            _connection = new Mock<IDbConnection>();
         }
 
         [Fact]
@@ -31,7 +35,7 @@ namespace Hangfire.SqlServer.Msmq.Tests
             var queue = CreateQueue(MsmqTransactionType.Internal);
 
             // Act
-            queue.Enqueue("my-queue", "job-id");
+            queue.Enqueue(_connection.Object, "my-queue", "job-id");
 
             // Assert
             using (var messageQueue = CleanMsmqQueueAttribute.GetMessageQueue("my-queue"))

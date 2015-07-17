@@ -6,13 +6,13 @@ namespace Hangfire.SqlServer.Msmq.Tests
     public class MsmqJobQueueProviderFacts
     {
         private static readonly string[] Queues = { "default" };
-
+            
         [Fact]
         public void GetJobQueue_ReturnsNonNullInstance()
         {
             var provider = CreateProvider();
 
-            var jobQueue = provider.GetJobQueue(null);
+            var jobQueue = provider.GetJobQueue();
 
             Assert.NotNull(jobQueue);
         }
@@ -22,7 +22,7 @@ namespace Hangfire.SqlServer.Msmq.Tests
         {
             var provider = CreateProvider();
 
-            var monitoring = provider.GetJobQueueMonitoringApi(null);
+            var monitoring = provider.GetJobQueueMonitoringApi();
 
             Assert.NotNull(monitoring);
         }

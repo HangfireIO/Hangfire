@@ -7,7 +7,6 @@ using Dapper;
 using Hangfire.States;
 using Moq;
 using Xunit;
-using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -18,28 +17,19 @@ namespace Hangfire.SqlServer.Tests
         public SqlServerWriteOnlyTransactionFacts()
         {
             var defaultProvider = new Mock<IPersistentJobQueueProvider>();
-            defaultProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+            defaultProvider.Setup(x => x.GetJobQueue())
                 .Returns(new Mock<IPersistentJobQueue>().Object);
 
             _queueProviders = new PersistentJobQueueProviderCollection(defaultProvider.Object);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_IfConnectionIsNull()
+        public void Ctor_ThrowsAnException_IfStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(null, null, _queueProviders));
+                () => new SqlServerWriteOnlyTransaction(null));
 
-            Assert.Equal("connection", exception.ParamName);
-        }
-
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null, null));
-
-            Assert.Equal("queueProviders", exception.ParamName);
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -162,18 +152,18 @@ select scope_identity() as Id";
         [Fact, CleanDatabase]
         public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
         {
+            var correctJobQueue = new Mock<IPersistentJobQueue>();
+            var correctProvider = new Mock<IPersistentJobQueueProvider>();
+            correctProvider.Setup(x => x.GetJobQueue())
+                .Returns(correctJobQueue.Object);
+
+            _queueProviders.Add(correctProvider.Object, new[] { "default" });
+
             UseConnection(sql =>
             {
-                var correctJobQueue = new Mock<IPersistentJobQueue>();
-                var correctProvider = new Mock<IPersistentJobQueueProvider>();
-                correctProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
-                    .Returns(correctJobQueue.Object);
-
-                _queueProviders.Add(correctProvider.Object, new [] { "default" });
-
                 Commit(sql, x => x.AddToQueue("default", "1"));
 
-                correctJobQueue.Verify(x => x.Enqueue("default", "1"));
+                correctJobQueue.Verify(x => x.Enqueue(It.IsNotNull<IDbConnection>(), "default", "1"));
             });
         }
 
@@ -982,7 +972,10 @@ values (@key, @expireAt)";
             SqlConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
-            using (var transaction = new SqlServerWriteOnlyTransaction(connection, null, _queueProviders))
+            var storage = new Mock<SqlServerStorage>(connection);
+            storage.Setup(x => x.QueueProviders).Returns(_queueProviders);
+
+            using (var transaction = new SqlServerWriteOnlyTransaction(storage.Object))
             {
                 action(transaction);
                 transaction.Commit();

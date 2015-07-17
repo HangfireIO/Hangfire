@@ -15,8 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Data.SqlClient;
-using Dapper;
+using System.Data;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -24,28 +23,31 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerFetchedJob : IFetchedJob
     {
-        private readonly SqlConnection _connection;
-        private readonly SqlTransaction _transaction;
+        private readonly SqlServerStorage _storage;
+        private readonly IDbConnection _connection;
+        private readonly IDbTransaction _transaction;
 
-        public SqlServerFetchedJob([NotNull] SqlConnection connection, [NotNull] SqlTransaction transaction,
-            int id, 
+        public SqlServerFetchedJob(
+            [NotNull] SqlServerStorage storage,
+            [NotNull] IDbConnection connection, 
+            [NotNull] IDbTransaction transaction, 
             string jobId, 
             string queue)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (connection == null) throw new ArgumentNullException("connection");
             if (transaction == null) throw new ArgumentNullException("transaction");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
 
+            _storage = storage;
             _connection = connection;
             _transaction = transaction;
 
-            Id = id;
             JobId = jobId;
             Queue = queue;
         }
 
-        public int Id { get; private set; }
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
@@ -62,7 +64,7 @@ namespace Hangfire.SqlServer
         public void Dispose()
         {
             _transaction.Dispose();
-            _connection.Dispose();
+            _storage.ReleaseConnection(_connection);
         }
     }
 }

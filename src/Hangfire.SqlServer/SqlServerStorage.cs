@@ -104,7 +104,7 @@ namespace Hangfire.SqlServer
             InitializeQueueProviders();
         }
 
-        public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
+        public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
         public override IMonitoringApi GetMonitoringApi()
         {

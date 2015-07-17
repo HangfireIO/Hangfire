@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
 using Moq;
@@ -13,26 +14,48 @@ namespace Hangfire.SqlServer.Tests
         private const string Queue = "queue";
 
         private readonly Mock<IDbConnection> _connection;
+        private readonly Mock<IDbTransaction> _transaction;
+        private readonly Mock<SqlServerStorage> _storage;
 
         public SqlServerFetchedJobFacts()
         {
             _connection = new Mock<IDbConnection>();
+            _transaction = new Mock<IDbTransaction>();
+            _storage = new Mock<SqlServerStorage>(ConnectionUtils.GetConnectionString());
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerFetchedJob(null, _connection.Object, _transaction.Object, JobId, Queue));
+
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(null, 1, JobId, Queue));
+                () => new SqlServerFetchedJob(_storage.Object, null, _transaction.Object, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenTransactionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerFetchedJob(_storage.Object, _connection.Object, null, JobId, Queue));
+
+            Assert.Equal("transaction", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_connection.Object, 1, null, Queue));
+                () => new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -41,7 +64,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerFetchedJob(_connection.Object, 1, JobId, null));
+                () => new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -49,104 +72,54 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var fetchedJob = new SqlServerFetchedJob(_connection.Object, 1, JobId, Queue);
+            var fetchedJob = new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, JobId, Queue);
 
-            Assert.Equal(1, fetchedJob.Id);
             Assert.Equal(JobId, fetchedJob.JobId);
             Assert.Equal(Queue, fetchedJob.Queue);
         }
 
         [Fact, CleanDatabase]
-        public void RemoveFromQueue_ReallyDeletesTheJobFromTheQueue()
+        public void RemoveFromQueue_CommitsTheTransaction()
         {
-            UseConnection(sql =>
-            {
-                // Arrange
-                var id = CreateJobQueueRecord(sql, "1", "default");
-                var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
+            // Arrange
+            var processingJob = CreateFetchedJob("1", "default");
 
-                // Act
-                processingJob.RemoveFromQueue();
+            // Act
+            processingJob.RemoveFromQueue();
 
-                // Assert
-                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
-                Assert.Equal(0, count);
-            });
+            // Assert
+            _transaction.Verify(x => x.Commit());
         }
 
         [Fact, CleanDatabase]
-        public void RemoveFromQueue_DoesNotDelete_UnrelatedJobs()
+        public void Requeue_RollsbackTheTransaction()
         {
-            UseConnection(sql =>
-            {
-                // Arrange
-                CreateJobQueueRecord(sql, "1", "default");
-                CreateJobQueueRecord(sql, "1", "critical");
-                CreateJobQueueRecord(sql, "2", "default");
+            // Arrange
+            var processingJob = CreateFetchedJob("1", "default");
 
-                var fetchedJob = new SqlServerFetchedJob(sql, 999, "1", "default");
+            // Act
+            processingJob.Requeue();
 
-                // Act
-                fetchedJob.RemoveFromQueue();
-
-                // Assert
-                var count = sql.Query<int>("select count(*) from HangFire.JobQueue").Single();
-                Assert.Equal(3, count);
-            });
+            // Assert
+            _transaction.Verify(x => x.Rollback());
         }
 
         [Fact, CleanDatabase]
-        public void Requeue_SetsFetchedAtValueToNull()
+        public void Dispose_DisposesTheTransactionAndConnection()
         {
-            UseConnection(sql =>
-            {
-                // Arrange
-                var id = CreateJobQueueRecord(sql, "1", "default");
-                var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
+            var processingJob = CreateFetchedJob("1", "queue");
 
-                // Act
-                processingJob.Requeue();
+            // Act
+            processingJob.Dispose();
 
-                // Assert
-                var record = sql.Query("select * from HangFire.JobQueue").Single();
-                Assert.Null(record.FetchedAt);
-            });
+            // Assert
+            _transaction.Verify(x => x.Dispose());
+            _connection.Verify(x => x.Dispose());
         }
 
-        [Fact, CleanDatabase]
-        public void Dispose_SetsFetchedAtValueToNull_IfThereWereNoCallsToComplete()
+        private SqlServerFetchedJob CreateFetchedJob(string jobId, string queue)
         {
-            UseConnection(sql =>
-            {
-                // Arrange
-                var id = CreateJobQueueRecord(sql, "1", "default");
-                var processingJob = new SqlServerFetchedJob(sql, id, "1", "default");
-
-                // Act
-                processingJob.Dispose();
-
-                // Assert
-                var record = sql.Query("select * from HangFire.JobQueue").Single();
-                Assert.Null(record.FetchedAt);
-            });
-        }
-
-        private static int CreateJobQueueRecord(IDbConnection connection, string jobId, string queue)
-        {
-            const string arrangeSql = @"
-insert into HangFire.JobQueue (JobId, Queue, FetchedAt)
-values (@id, @queue, getutcdate());
-select scope_identity() as Id";
-
-            return (int)connection.Query(arrangeSql, new { id = jobId, queue = queue }).Single().Id;
-        }
-
-        private static void UseConnection(Action<IDbConnection> action)
-        {
-            using (var connection = ConnectionUtils.CreateConnection())
-            {
-                action(connection);
-            }
+            return new SqlServerFetchedJob(_storage.Object, _connection.Object, _transaction.Object, jobId, queue);
         }
     }
 }

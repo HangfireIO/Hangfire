@@ -41,30 +41,6 @@ namespace Hangfire.SqlServer.Tests
             Assert.NotNull(storage);
         }
 
-        [Fact, CleanDatabase]
-        public void Ctor_InitializesDefaultJobQueueProvider_AndPassesCorrectOptions()
-        {
-            var storage = CreateStorage();
-            var providers = storage.QueueProviders;
-
-            var provider = (SqlServerJobQueueProvider)providers.GetProvider("default");
-
-            Assert.Same(_options, provider.Options);
-        }
-
-        [Fact, CleanDatabase]
-        public void GetConnection_ReturnsExistingConnection_WhenStorageUsesIt()
-        {
-            var connection = ConnectionUtils.CreateConnection();
-            var storage = new SqlServerStorage(connection);
-
-            using (var storageConnection = (SqlServerConnection) storage.GetConnection())
-            {
-                Assert.Same(connection, storageConnection.Connection);
-                Assert.False(storageConnection.OwnsConnection);
-            }
-        }
-
         [Fact, CleanDatabase(IsolationLevel.ReadUncommitted)]
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
@@ -80,7 +56,6 @@ namespace Hangfire.SqlServer.Tests
             using (var connection = (SqlServerConnection)storage.GetConnection())
             {
                 Assert.NotNull(connection);
-                Assert.True(connection.OwnsConnection);
             }
         }
 

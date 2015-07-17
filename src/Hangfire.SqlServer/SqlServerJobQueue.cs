@@ -74,7 +74,7 @@ and Queue in @queues";
                 catch (SqlException)
                 {
                     transaction.Dispose();
-                    connection.Dispose();
+                    _storage.ReleaseConnection(connection);
                     throw;
                 }
                 
@@ -82,7 +82,7 @@ and Queue in @queues";
                 {
                     transaction.Rollback();
                     transaction.Dispose();
-                    connection.Dispose();
+                    _storage.ReleaseConnection(connection);
 
                     cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
@@ -90,9 +90,9 @@ and Queue in @queues";
             } while (fetchedJob == null);
 
             return new SqlServerFetchedJob(
+                _storage,
                 connection,
                 transaction,
-                fetchedJob.Id,
                 fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
                 fetchedJob.Queue);
         }

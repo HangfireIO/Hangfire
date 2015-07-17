@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
-using Moq;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -14,21 +12,26 @@ namespace Hangfire.SqlServer.Tests
         private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenResourceIsNullOrEmpty()
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerDistributedLock("", _timeout, new Mock<IDbConnection>().Object));
+                () => new SqlServerDistributedLock(null, "hello", _timeout));
 
-            Assert.Equal("resource", exception.ParamName);
+            Assert.Equal("storage", exception.ParamName);
         }
 
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        [Fact, CleanDatabase]
+        public void Ctor_ThrowsAnException_WhenResourceIsNullOrEmpty()
         {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerDistributedLock("hello", _timeout, null));
+            UseConnection(connection =>
+            {
+                var storage = CreateStorage(connection);
 
-            Assert.Equal("connection", exception.ParamName);
+                var exception = Assert.Throws<ArgumentNullException>(
+                () => new SqlServerDistributedLock(storage, "", _timeout));
+
+                Assert.Equal("resource", exception.ParamName);
+            });
         }
 
         [Fact, CleanDatabase]
@@ -37,16 +40,16 @@ namespace Hangfire.SqlServer.Tests
             UseConnection(sql =>
             {
                 // ReSharper disable once UnusedVariable
-                var distributedLock = new SqlServerDistributedLock("hello", _timeout, sql);
+                var storage = CreateStorage(sql);
+                using (new SqlServerDistributedLock(storage, "hello", _timeout))
+                {
+                    var lockMode = sql.Query<string>(
+                        "select applock_mode('public', 'hello', 'session')").Single();
 
-                var lockMode = sql.Query<string>(
-                    "select applock_mode('public', 'hello', 'session')").Single();
-
-                Assert.Equal("Exclusive", lockMode);
+                    Assert.Equal("Exclusive", lockMode);
+                }
             });
         }
-
-
 
         [Fact, CleanDatabase]
         public void Ctor_ThrowsAnException_IfLockCanNotBeGranted()
@@ -57,7 +60,8 @@ namespace Hangfire.SqlServer.Tests
             var thread = new Thread(
                 () => UseConnection(connection1 =>
                 {
-                    using (new SqlServerDistributedLock("exclusive", _timeout, connection1))
+                    var storage = CreateStorage(connection1);
+                    using (new SqlServerDistributedLock(storage, "exclusive", _timeout))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -67,9 +71,17 @@ namespace Hangfire.SqlServer.Tests
 
             lockAcquired.Wait();
 
-            UseConnection(connection2 => 
+            UseConnection(connection2 =>
+            {
+                var storage = CreateStorage(connection2);
                 Assert.Throws<SqlServerDistributedLockException>(
-                    () => new SqlServerDistributedLock("exclusive", _timeout, connection2)));
+                    () =>
+                    {
+                        using (new SqlServerDistributedLock(storage, "exclusive", _timeout))
+                        {
+                        }
+                    });
+            });
 
             releaseLock.Set();
             thread.Join();
@@ -80,7 +92,8 @@ namespace Hangfire.SqlServer.Tests
         {
             UseConnection(sql =>
             {
-                var distributedLock = new SqlServerDistributedLock("hello", _timeout, sql);
+                var storage = CreateStorage(sql);
+                var distributedLock = new SqlServerDistributedLock(storage, "hello", _timeout);
                 distributedLock.Dispose();
 
                 var lockMode = sql.Query<string>(
@@ -88,6 +101,11 @@ namespace Hangfire.SqlServer.Tests
 
                 Assert.Equal("NoLock", lockMode);
             });
+        }
+
+        private SqlServerStorage CreateStorage(SqlConnection connection)
+        {
+            return new SqlServerStorage(connection);
         }
 
         private void UseConnection(Action<SqlConnection> action)
