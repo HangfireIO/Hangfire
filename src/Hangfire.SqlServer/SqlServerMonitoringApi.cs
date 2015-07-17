@@ -32,12 +32,14 @@ namespace Hangfire.SqlServer
     internal class SqlServerMonitoringApi : IMonitoringApi
     {
         private readonly SqlServerStorage _storage;
+        private readonly int? _jobListLimit;
 
-        public SqlServerMonitoringApi([NotNull] SqlServerStorage storage)
+        public SqlServerMonitoringApi([NotNull] SqlServerStorage storage, int? jobListLimit)
         {
             if (storage == null) throw new ArgumentNullException("storage");
 
             _storage = storage;
+            _jobListLimit = jobListLimit;
         }
 
         public long ScheduledCount()
@@ -459,12 +461,13 @@ where j.Id in @jobIds";
 
         private long GetNumberOfJobsByStateName(SqlConnection connection, string stateName)
         {
-            const string sqlQuery = @"
-select count(Id) from HangFire.Job where StateName = @state";
+            var sqlQuery = _jobListLimit.HasValue
+                ? @"select count(j.Id) from (select top (@limit) Id from HangFire.Job where StateName = @state) as j"
+                : @"select count(Id) from HangFire.Job where StateName = @state";
 
             var count = connection.Query<int>(
                  sqlQuery,
-                 new { state = stateName })
+                 new { state = stateName, limit = _jobListLimit })
                  .Single();
 
             return count;

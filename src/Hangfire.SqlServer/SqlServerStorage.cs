@@ -108,7 +108,7 @@ namespace Hangfire.SqlServer
 
         public override IMonitoringApi GetMonitoringApi()
         {
-            return new SqlServerMonitoringApi(this);
+            return new SqlServerMonitoringApi(this, _options.DashboardJobListLimit);
         }
 
         public override IStorageConnection GetConnection()

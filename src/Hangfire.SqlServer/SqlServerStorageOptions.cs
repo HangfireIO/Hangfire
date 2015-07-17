@@ -31,6 +31,7 @@ namespace Hangfire.SqlServer
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
+            DashboardJobListLimit = 50000;
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -64,5 +65,7 @@ namespace Hangfire.SqlServer
 
         public TimeSpan JobExpirationCheckInterval { get; set; }
         public TimeSpan CountersAggregateInterval { get; set; }
+
+        public int? DashboardJobListLimit { get; set; }
     }
 }
