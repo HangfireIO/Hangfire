@@ -126,7 +126,6 @@ namespace Hangfire.SqlServer
         {
             logger.Info("Using the following options for SQL Server job storage:");
             logger.InfoFormat("    Queue poll interval: {0}.", _options.QueuePollInterval);
-            logger.InfoFormat("    Invisibility timeout: {0}.", _options.InvisibilityTimeout);
         }
 
         public override string ToString()

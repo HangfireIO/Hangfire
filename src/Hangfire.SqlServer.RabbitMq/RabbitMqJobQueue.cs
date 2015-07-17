@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using System.Threading;
 using Hangfire.Storage;
@@ -73,7 +74,7 @@ namespace Hangfire.SqlServer.RabbitMQ
             return new RabbitMqFetchedJob(message, ref _channel);
         }
 
-        public void Enqueue(string queue, string jobId)
+        public void Enqueue(IDbConnection connection, string queue, string jobId)
         {
             var body = Encoding.UTF8.GetBytes(jobId);
             var properties = _channel.CreateBasicProperties();

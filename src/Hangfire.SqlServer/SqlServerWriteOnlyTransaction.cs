@@ -120,7 +120,7 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             var provider = _storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
 
-            QueueCommand(_ => persistentQueue.Enqueue(queue, jobId));
+            QueueCommand(x => persistentQueue.Enqueue(x, queue, jobId));
         }
 
         public override void IncrementCounter(string key)

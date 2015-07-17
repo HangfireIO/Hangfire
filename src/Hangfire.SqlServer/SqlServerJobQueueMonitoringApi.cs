@@ -84,46 +84,21 @@ where r.row_num between @start and @end";
 
         public IEnumerable<int> GetFetchedJobIds(string queue, int @from, int perPage)
         {
-            const string fetchedJobsSql = @"
-select r.Id from (
-  select j.Id, jq.FetchedAt, row_number() over (order by j.Id) as row_num 
-  from HangFire.JobQueue jq
-  left join HangFire.Job j on jq.JobId = j.Id
-  where jq.Queue = @queue and jq.FetchedAt is not null
-) as r
-where r.row_num between @start and @end";
-
-            return UseTransaction(connection =>
-            {
-                return connection.Query<JobIdDto>(
-                    fetchedJobsSql,
-                    new { queue = queue, start = from + 1, end = @from + perPage })
-                    .ToList()
-                    .Select(x => x.Id)
-                    .ToList();
-            });
+            return Enumerable.Empty<int>();
         }
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
             const string sqlQuery = @"
-select sum(Enqueued) as EnqueuedCount, sum(Fetched) as FetchedCount 
-from (
-    select 
-	    case when FetchedAt is null then 1 else 0 end as Enqueued,
-	    case when FetchedAt is not null then 1 else 0 end as Fetched
-    from HangFire.JobQueue
-    where Queue = @queue
-) q";
+select count(Id) from HangFire.JobQueue";
 
             return UseTransaction(connection =>
             {
-                var result = connection.Query(sqlQuery, new { queue = queue }).Single();
+                var result = connection.Query<int>(sqlQuery, new { queue = queue }).Single();
 
                 return new EnqueuedAndFetchedCountDto
                 {
-                    EnqueuedCount = result.EnqueuedCount,
-                    FetchedCount = result.FetchedCount
+                    EnqueuedCount = result,
                 };
             });
         }

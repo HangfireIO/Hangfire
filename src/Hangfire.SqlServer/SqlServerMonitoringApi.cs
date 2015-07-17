@@ -438,8 +438,7 @@ select s.[Key], sum(s.[Value]) as [Count] from (
 select j.*, s.Reason as StateReason, s.Data as StateData 
 from HangFire.Job j
 left join HangFire.State s on s.Id = j.StateId
-left join HangFire.JobQueue jq on jq.JobId = j.Id
-where j.Id in @jobIds and jq.FetchedAt is null";
+where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
                 enqueuedJobsSql,
@@ -537,11 +536,10 @@ select * from (
             IEnumerable<int> jobIds)
         {
             const string fetchedJobsSql = @"
-select j.*, jq.FetchedAt, s.Reason as StateReason, s.Data as StateData 
+select j.*, s.Reason as StateReason, s.Data as StateData 
 from HangFire.Job j
 left join HangFire.State s on s.Id = j.StateId
-left join HangFire.JobQueue jq on jq.JobId = j.Id
-where j.Id in @jobIds and jq.FetchedAt is not null";
+where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
                 fetchedJobsSql,
@@ -558,7 +556,6 @@ where j.Id in @jobIds and jq.FetchedAt is not null";
                     {
                         Job = DeserializeJob(job.InvocationData, job.Arguments),
                         State = job.StateName,
-                        FetchedAt = job.FetchedAt
                     }));
             }
 

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data.SqlClient;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Storage;
@@ -23,23 +24,21 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerFetchedJob : IFetchedJob
     {
-        private readonly SqlServerStorage _storage;
+        private readonly SqlConnection _connection;
+        private readonly SqlTransaction _transaction;
 
-        private bool _disposed;
-        private bool _removedFromQueue;
-        private bool _requeued;
-
-        public SqlServerFetchedJob(
-            [NotNull] SqlServerStorage storage, 
+        public SqlServerFetchedJob([NotNull] SqlConnection connection, [NotNull] SqlTransaction transaction,
             int id, 
             string jobId, 
             string queue)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (connection == null) throw new ArgumentNullException("connection");
+            if (transaction == null) throw new ArgumentNullException("transaction");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
 
-            _storage = storage;
+            _connection = connection;
+            _transaction = transaction;
 
             Id = id;
             JobId = jobId;
@@ -52,38 +51,18 @@ namespace Hangfire.SqlServer
 
         public void RemoveFromQueue()
         {
-            _storage.UseConnection(connection =>
-            {
-                connection.Execute(
-                    "delete from HangFire.JobQueue where Id = @id",
-                    new { id = Id });
-            });
-
-            _removedFromQueue = true;
+            _transaction.Commit();
         }
 
         public void Requeue()
         {
-            _storage.UseConnection(connection =>
-            {
-                connection.Execute(
-                    "update HangFire.JobQueue set FetchedAt = null where Id = @id",
-                    new { id = Id });
-            });
-
-            _requeued = true;
+            _transaction.Rollback();
         }
 
         public void Dispose()
         {
-            if (_disposed) return;
-
-            if (!_removedFromQueue && !_requeued)
-            {
-                Requeue();
-            }
-
-            _disposed = true;
+            _transaction.Dispose();
+            _connection.Dispose();
         }
     }
 }

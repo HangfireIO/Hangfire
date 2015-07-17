@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Messaging;
 using System.Threading;
 using Hangfire.Storage;
@@ -69,7 +70,6 @@ namespace Hangfire.SqlServer.Msmq
                     }
                     catch (MessageQueueException ex)
                     {
-                        transaction.Abort();
                         transaction.Dispose();
 
                         if (ex.MessageQueueErrorCode != MessageQueueErrorCode.IOTimeout)
@@ -85,7 +85,7 @@ namespace Hangfire.SqlServer.Msmq
             return new MsmqFetchedJob(transaction, jobId);
         }
 
-        public void Enqueue(string queue, string jobId)
+        public void Enqueue(IDbConnection connection, string queue, string jobId)
         {
             using (var messageQueue = GetMessageQueue(queue))
             using (var message = new Message { Body = jobId, Label = jobId, Formatter = _formatter.Value })

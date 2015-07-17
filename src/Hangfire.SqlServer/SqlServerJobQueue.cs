@@ -16,6 +16,7 @@
 
 using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -46,59 +47,62 @@ namespace Hangfire.SqlServer
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
 
             FetchedJob fetchedJob = null;
+            SqlConnection connection = null;
+            SqlTransaction transaction = null;
 
             const string fetchJobSqlTemplate = @"
-set transaction isolation level read committed
-update top (1) HangFire.JobQueue with (readpast) set FetchedAt = GETUTCDATE()
-output INSERTED.Id, INSERTED.JobId, INSERTED.Queue
-where FetchedAt {0}
+delete top (1) from HangFire.JobQueue with (readpast, updlock)
+output DELETED.Id, DELETED.JobId, DELETED.Queue
+where (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
 and Queue in @queues";
-
-            // Sql query is splitted to force SQL Server to use 
-            // INDEX SEEK instead of INDEX SCAN operator.
-            var fetchConditions = new[] { "is null", "< DATEADD(second, @timeout, GETUTCDATE())" };
-            var currentQueryIndex = 0;
 
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                _storage.UseConnection(connection =>
+                connection = _storage.CreateAndOpenConnection();
+                transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+
+                try
                 {
                     fetchedJob = connection.Query<FetchedJob>(
-                        String.Format(fetchJobSqlTemplate, fetchConditions[currentQueryIndex]),
-                        new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds })
-                        .SingleOrDefault();
-                });
-
+                               fetchJobSqlTemplate,
+                               new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+                               transaction)
+                               .SingleOrDefault();
+                }
+                catch (SqlException)
+                {
+                    transaction.Dispose();
+                    connection.Dispose();
+                    throw;
+                }
+                
                 if (fetchedJob == null)
                 {
-                    if (currentQueryIndex == fetchConditions.Length - 1)
-                    {
-                        cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                }
+                    transaction.Rollback();
+                    transaction.Dispose();
+                    connection.Dispose();
 
-                currentQueryIndex = (currentQueryIndex + 1) % fetchConditions.Length;
+                    cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
             } while (fetchedJob == null);
 
             return new SqlServerFetchedJob(
-                _storage,
+                connection,
+                transaction,
                 fetchedJob.Id,
                 fetchedJob.JobId.ToString(CultureInfo.InvariantCulture),
                 fetchedJob.Queue);
         }
 
-        public void Enqueue(string queue, string jobId)
+        public void Enqueue(IDbConnection connection, string queue, string jobId)
         {
             const string enqueueJobSql = @"
 insert into HangFire.JobQueue (JobId, Queue) values (@jobId, @queue)";
 
-            _storage.UseConnection(connection =>
-            {
-                connection.Execute(enqueueJobSql, new { jobId = jobId, queue = queue });
-            });
+            connection.Execute(enqueueJobSql, new { jobId = jobId, queue = queue });
         }
 
         [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
