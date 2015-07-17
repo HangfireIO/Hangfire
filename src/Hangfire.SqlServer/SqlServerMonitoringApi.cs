@@ -391,8 +391,14 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
             IDictionary<string, DateTime> keyMaps)
         {
             const string sqlQuery = @"
-select [Key], [Value] as Count from [HangFire].[AggregatedCounter]
-where [Key] in @keys";
+select s.[Key], sum(s.[Value]) as [Count] from (
+    select [Key], sum([Value]) as [Value] from HangFire.Counter 
+	group by [Key]
+	having [Key] in @keys
+    union all
+    select [Key], [Value] from HangFire.AggregatedCounter 
+	where [Key] in @keys
+) as s group by [Key];";
 
             var valuesMap = connection.Query(
                 sqlQuery,
