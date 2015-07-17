@@ -305,9 +305,10 @@ select * from HangFire.State where JobId = @id order by Id desc";
         public StatisticsDto GetStatistics()
         {
             const string sql = @"
-select StateName as [State], count(Id) as [Count] From HangFire.Job 
-group by StateName
-having StateName is not null;
+select count(Id) from HangFire.Job where StateName = N'Enqueued';
+select count(Id) from HangFire.Job where StateName = N'Failed';
+select count(Id) from HangFire.Job where StateName = N'Processing';
+select count(Id) from HangFire.Job where StateName = N'Scheduled';
 select count(Id) from HangFire.Server;
 select sum(s.[Value]) from (
     select sum([Value]) as [Value] from HangFire.Counter where [Key] = N'stats:succeeded'
@@ -327,14 +328,10 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
                 var stats = new StatisticsDto();
                 using (var multi = connection.QueryMultiple(sql))
                 {
-                    var countByStates = multi.Read().ToDictionary(x => x.State, x => x.Count);
-
-                    Func<string, int> getCountIfExists = name => countByStates.ContainsKey(name) ? countByStates[name] : 0;
-
-                    stats.Enqueued = getCountIfExists(EnqueuedState.StateName);
-                    stats.Failed = getCountIfExists(FailedState.StateName);
-                    stats.Processing = getCountIfExists(ProcessingState.StateName);
-                    stats.Scheduled = getCountIfExists(ScheduledState.StateName);
+                    stats.Enqueued = multi.Read<int>().Single();
+                    stats.Failed = multi.Read<int>().Single();
+                    stats.Processing = multi.Read<int>().Single();
+                    stats.Scheduled = multi.Read<int>().Single();
 
                     stats.Servers = multi.Read<int>().Single();
 
