@@ -26,7 +26,13 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi
     {
+        private static readonly TimeSpan QueuesCacheTimeout = TimeSpan.FromSeconds(5);
+
         private readonly SqlServerStorage _storage;
+        private readonly object _cacheLock = new object();
+
+        private List<string> _queuesCache = new List<string>();
+        private DateTime _cacheUpdated;
 
         public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
@@ -38,10 +44,21 @@ namespace Hangfire.SqlServer
         {
             const string sqlQuery = @"select distinct(Queue) from HangFire.JobQueue";
 
-            return UseTransaction(connection =>
+            lock (_cacheLock)
             {
-                return connection.Query(sqlQuery).Select(x => (string) x.Queue).ToList();
-            });
+                if (_queuesCache.Count == 0 || _cacheUpdated.Add(QueuesCacheTimeout) < DateTime.UtcNow)
+                {
+                    var result = UseTransaction(connection =>
+                    {
+                        return connection.Query(sqlQuery).Select(x => (string) x.Queue).ToList();
+                    });
+
+                    _queuesCache = result;
+                    _cacheUpdated = DateTime.UtcNow;
+                }
+
+                return _queuesCache.ToList();
+            }  
         }
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
