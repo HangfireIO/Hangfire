@@ -495,7 +495,7 @@ select count(Id) from HangFire.Job where StateName = @state";
             const string jobsSql = @"
 select * from (
   select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
-  from HangFire.Job j
+  from HangFire.Job j with (forceseek)
   left join HangFire.State s on j.StateId = s.Id
   where j.StateName = @stateName
 ) as j where j.row_num between @start and @end
