@@ -193,32 +193,31 @@ namespace Hangfire.SqlServer
 
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            return UseConnection<IList<QueueWithTopEnqueuedJobsDto>>(connection =>
+            var tuples = _storage.QueueProviders
+                .Select(x => x.GetJobQueueMonitoringApi())
+                .SelectMany(x => x.GetQueues(), (monitoring, queue) => new { Monitoring = monitoring, Queue = queue })
+                .OrderBy(x => x.Queue)
+                .ToArray();
+
+            var result = new List<QueueWithTopEnqueuedJobsDto>(tuples.Length);
+
+            foreach (var tuple in tuples)
             {
-                var tuples = _storage.QueueProviders
-                    .Select(x => x.GetJobQueueMonitoringApi())
-                    .SelectMany(x => x.GetQueues(), (monitoring, queue) => new { Monitoring = monitoring, Queue = queue })
-                    .OrderBy(x => x.Queue)
-                    .ToArray();
+                var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
+                var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
 
-                var result = new List<QueueWithTopEnqueuedJobsDto>(tuples.Length);
+                var firstJobs = UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds));
 
-                foreach (var tuple in tuples)
+                result.Add(new QueueWithTopEnqueuedJobsDto
                 {
-                    var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
-                    var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
+                    Name = tuple.Queue,
+                    Length = counters.EnqueuedCount ?? 0,
+                    Fetched = counters.FetchedCount,
+                    FirstJobs = firstJobs
+                });
+            }
 
-                    result.Add(new QueueWithTopEnqueuedJobsDto
-                    {
-                        Name = tuple.Queue,
-                        Length = counters.EnqueuedCount ?? 0,
-                        Fetched = counters.FetchedCount,
-                        FirstJobs = EnqueuedJobs(connection, enqueuedJobIds)
-                    });
-                }
-
-                return result;
-            });
+            return result;
         }
 
         public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int @from, int perPage)
@@ -305,9 +304,7 @@ select * from HangFire.State where JobId = @id order by Id desc";
 
         public StatisticsDto GetStatistics()
         {
-            return UseConnection(connection =>
-            {
-                const string sql = @"
+            const string sql = @"
 select StateName as [State], count(Id) as [Count] From HangFire.Job 
 group by StateName
 having StateName is not null;
@@ -325,6 +322,8 @@ select sum(s.[Value]) from (
 select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
 ";
 
+            var statistics = UseConnection(connection =>
+            {
                 var stats = new StatisticsDto();
                 using (var multi = connection.QueryMultiple(sql))
                 {
@@ -344,13 +343,14 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
 
                     stats.Recurring = multi.Read<int>().Single();
                 }
-
-                stats.Queues = _storage.QueueProviders
-                    .SelectMany(x => x.GetJobQueueMonitoringApi().GetQueues())
-                    .Count();
-
                 return stats;
             });
+
+            statistics.Queues = _storage.QueueProviders
+                .SelectMany(x => x.GetJobQueueMonitoringApi().GetQueues())
+                .Count();
+
+            return statistics;
         }
 
         private Dictionary<DateTime, long> GetHourlyTimelineStats(
