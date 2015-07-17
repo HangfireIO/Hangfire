@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Data;
 using System.Threading;
 using Hangfire.SqlServer.RabbitMQ;
+using Moq;
 using Xunit;
 
 namespace Hangfire.SqlServer.RabbitMq.Tests
@@ -39,7 +41,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             using (var queue = CleanRabbitMqQueueAttribute.GetMessageQueue("my-queue"))
             {
                 // Act
-                queue.Enqueue("my-queue", "job-id");
+                queue.Enqueue(new Mock<IDbConnection>().Object, "my-queue", "job-id");
 
                 // Assert
                 var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
