@@ -90,7 +90,7 @@ where r.row_num between @start and @end";
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
             const string sqlQuery = @"
-select count(Id) from HangFire.JobQueue";
+select count(Id) from HangFire.JobQueue where [Queue] = @queue";
 
             return UseTransaction(connection =>
             {
