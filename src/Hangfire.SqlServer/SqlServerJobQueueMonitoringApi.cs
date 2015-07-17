@@ -65,11 +65,9 @@ namespace Hangfire.SqlServer
         {
             const string sqlQuery = @"
 select r.Id from (
-  select j.Id, row_number() over (order by j.Id) as row_num 
+  select jq.Id, row_number() over (order by jq.Id) as row_num 
   from HangFire.JobQueue jq
-  left join HangFire.Job j on jq.JobId = j.Id
-  left join HangFire.State s on s.Id = j.StateId
-  where jq.Queue = @queue and jq.FetchedAt is null
+  where jq.Queue = @queue
 ) as r
 where r.row_num between @start and @end";
 
