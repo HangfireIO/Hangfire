@@ -32,6 +32,7 @@ namespace Hangfire.SqlServer
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
             DashboardJobListLimit = 50000;
+            TransactionTimeout = TimeSpan.FromMinutes(1);
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -67,5 +68,6 @@ namespace Hangfire.SqlServer
         public TimeSpan CountersAggregateInterval { get; set; }
 
         public int? DashboardJobListLimit { get; set; }
+        public TimeSpan TransactionTimeout { get; set; }
     }
 }

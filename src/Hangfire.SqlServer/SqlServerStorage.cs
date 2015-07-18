@@ -240,7 +240,7 @@ namespace Hangfire.SqlServer
         {
             return isolationLevel != null
                 ? new TransactionScope(TransactionScopeOption.Required,
-                    new TransactionOptions { IsolationLevel = isolationLevel.Value })
+                    new TransactionOptions { IsolationLevel = isolationLevel.Value, Timeout = _options.TransactionTimeout })
                 : new TransactionScope();
         }
 
