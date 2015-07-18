@@ -30,6 +30,12 @@ Hangfire.Core
 * Changed – Minor improvements for Dashboard navigation (by @pwelter34).
 * Fixed – Prevent worker from fetching and processing a job on shutdown.
 
+Hangfire.SqlServer
+* Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
+* Added – `DashboardJobListLimit` option to prevent full job table scans in Dashboard.
+* Changed – Dramatically improved page load times in Dashboard.
+* Changed – Instant re-queue for background jobs even after ungraceful shutdown.
+
 Hangfire.SqlServer.Msmq
 * Added – Support for remote MSMQ queues through DTC transactions.
     </releaseNotes>
