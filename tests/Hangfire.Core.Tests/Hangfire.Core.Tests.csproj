@@ -93,6 +93,7 @@
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
     <Compile Include="Mocks\BackgroundProcessContextMock.cs" />
     <Compile Include="Mocks\ElectStateContextMock.cs" />
+    <Compile Include="Mocks\PerformContextMock.cs" />
     <Compile Include="Mocks\StateContextMock.cs" />
     <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Server\BackgroundServerFacts.cs" />
     <Compile Include="Server\DefaultJobPerformanceProcessFacts.cs" />
     <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
+    <Compile Include="Server\MethodInvokePerformanceProcessFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />

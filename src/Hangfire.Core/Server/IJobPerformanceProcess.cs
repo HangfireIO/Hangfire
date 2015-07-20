@@ -18,6 +18,6 @@ namespace Hangfire.Server
 {
     public interface IJobPerformanceProcess
     {
-        object Run(PerformContext context, IJobPerformer performer);
+        object Run(PerformContext context);
     }
 }

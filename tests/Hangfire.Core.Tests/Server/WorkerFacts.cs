@@ -6,7 +6,6 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Moq.Sequences;
-using NUnit.Mocks;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
@@ -14,14 +13,12 @@ namespace Hangfire.Core.Tests.Server
     public class WorkerFacts
     {
         private const string JobId = "my-job";
-        private const string Queue = "my-queue";
 
         private readonly WorkerContextMock _workerContext;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly Mock<IFetchedJob> _fetchedJob;
         private readonly Mock<IJobPerformanceProcess> _process;
-        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
         private readonly Mock<IStateMachineFactoryFactory> _stateMachineFactoryFactory; 
         private readonly BackgroundProcessContextMock _context;
 
@@ -30,7 +27,7 @@ namespace Hangfire.Core.Tests.Server
             _context = new BackgroundProcessContextMock();
             _workerContext = new WorkerContextMock();
             _process = new Mock<IJobPerformanceProcess>();
-            _stateMachineFactory = new Mock<IStateMachineFactory>();
+            var stateMachineFactory = new Mock<IStateMachineFactory>();
 
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
@@ -50,7 +47,7 @@ namespace Hangfire.Core.Tests.Server
 
             _stateMachine = new Mock<IStateMachine>();
 
-            _stateMachineFactory
+            stateMachineFactory
                 .Setup(x => x.Create(_connection.Object))
                 .Returns(_stateMachine.Object);
 
@@ -63,7 +60,7 @@ namespace Hangfire.Core.Tests.Server
             _stateMachineFactoryFactory = new Mock<IStateMachineFactoryFactory>();
             _stateMachineFactoryFactory
                 .Setup(x => x.CreateFactory(It.IsNotNull<JobStorage>()))
-                .Returns(_stateMachineFactory.Object);
+                .Returns(stateMachineFactory.Object);
         }
 
         [Fact]
@@ -144,7 +141,7 @@ namespace Hangfire.Core.Tests.Server
                 .InSequence()
                 .Returns(true);
 
-            _process.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+            _process.Setup(x => x.Run(It.IsAny<PerformContext>()))
                 .InSequence();
 
             _stateMachine
@@ -209,9 +206,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _process.Verify(
-                x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()),
-                Times.Never);
+            _process.Verify(x => x.Run(It.IsAny<PerformContext>()), Times.Never);
         }
 
         [Fact]
@@ -221,16 +216,14 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _process.Verify(x => x.Run(
-                It.IsNotNull<PerformContext>(),
-                It.IsNotNull<IJobPerformer>()));
+            _process.Verify(x => x.Run(It.IsNotNull<PerformContext>()));
         }
 
         [Fact]
         public void Execute_DoesNotMoveAJob_ToTheFailedState_ButRequeuesIt_WhenProcessThrowsOperationCanceled()
         {
             // Arrange
-            _process.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+            _process.Setup(x => x.Run(It.IsAny<PerformContext>()))
                 .Throws<OperationCanceledException>();
 
             var worker = CreateWorker();
@@ -249,7 +242,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_RemovesJobFromQueue_WhenProcessThrowsJobAbortedException()
         {
             // Arrange
-            _process.Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+            _process.Setup(x => x.Run(It.IsAny<PerformContext>()))
                 .Throws<JobAbortedException>();
 
             var worker = CreateWorker();
@@ -281,7 +274,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             var exception = new InvalidOperationException();
             _process
-                .Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+                .Setup(x => x.Run(It.IsAny<PerformContext>()))
                 .Throws(exception);
 
             var worker = CreateWorker();
@@ -303,7 +296,7 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             var exception = new InvalidOperationException();
             _process
-                .Setup(x => x.Run(It.IsAny<PerformContext>(), It.IsAny<IJobPerformer>()))
+                .Setup(x => x.Run(It.IsAny<PerformContext>()))
                 .Throws(new JobPerformanceException("hello", exception));
 
             var worker = CreateWorker();

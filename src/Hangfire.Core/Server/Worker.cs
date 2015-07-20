@@ -160,7 +160,7 @@ namespace Hangfire.Server
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
-                var result = _process.Run(performContext, jobData.Job);
+                var result = _process.Run(performContext);
                 duration.Stop();
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);

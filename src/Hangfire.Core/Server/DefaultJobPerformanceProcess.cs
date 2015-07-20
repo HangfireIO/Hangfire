@@ -25,39 +25,38 @@ namespace Hangfire.Server
     public class DefaultJobPerformanceProcess : IJobPerformanceProcess
     {
         private readonly IJobFilterProvider _filterProvider;
-        private readonly JobActivator _activator;
+        private readonly IJobPerformanceProcess _innerProcess;
 
         public DefaultJobPerformanceProcess()
-            : this(JobActivator.Current)
+            : this(JobFilterProviders.Providers)
         {
         }
 
-        public DefaultJobPerformanceProcess([NotNull] JobActivator activator)
-            : this(activator, JobFilterProviders.Providers)
+        public DefaultJobPerformanceProcess([NotNull] IJobFilterProvider filterProvider)
+            : this(filterProvider, new MethodInvokePerformanceProcess())
         {
         }
 
         public DefaultJobPerformanceProcess(
-            [NotNull] JobActivator activator,
-            [NotNull] IJobFilterProvider filterProvider)
+            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] IJobPerformanceProcess innerProcess)
         {
-            if (activator == null) throw new ArgumentNullException("activator");
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
 
-            _activator = activator;
             _filterProvider = filterProvider;
+            _innerProcess = innerProcess;
         }
 
-        public object Run(PerformContext context, IJobPerformer performer)
+        public object Run(PerformContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
-            if (performer == null) throw new ArgumentNullException("performer");
 
             var filterInfo = GetFilters(context.Job);
 
             try
             {
-                return PerformJobWithFilters(context, performer, filterInfo.ServerFilters);
+                return PerformJobWithFilters(context, filterInfo.ServerFilters);
             }
             catch (OperationCanceledException)
             {
@@ -82,17 +81,14 @@ namespace Hangfire.Server
             return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
 
-        private object PerformJobWithFilters(
-            PerformContext context,
-            IJobPerformer performer,
-            IEnumerable<IServerFilter> filters)
+        private object PerformJobWithFilters(PerformContext context, IEnumerable<IServerFilter> filters)
         {
             object result = null;
 
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                result = performer.Perform(_activator, context.CancellationToken);
+                result = _innerProcess.Run(context);
                 return new PerformedContext(context, result, false, null);
             };
 

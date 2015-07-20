@@ -31,7 +31,7 @@ namespace Hangfire.Common
     /// <summary>
     /// Represents the information about background invocation of a method.
     /// </summary>
-    public class Job : IJobPerformer
+    public class Job
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with
@@ -93,6 +93,7 @@ namespace Hangfire.Common
         /// </summary>
         public string[] Arguments { get; private set; }
 
+        [Obsolete("This method is deprecated. Please use `MethodInvokePerformanceProcess` or `DefaultJobPerformanceProcess` classes instead. Will be removed in 2.0.0.")]
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
             if (activator == null) throw new ArgumentNullException("activator");
@@ -100,7 +101,7 @@ namespace Hangfire.Common
 
             object instance = null;
 
-            object result = null;
+            object result;
             try
             {
                 if (!Method.IsStatic)
