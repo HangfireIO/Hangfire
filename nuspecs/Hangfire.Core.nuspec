@@ -19,6 +19,7 @@
 * Added – `BackgroundServer` class for creating a completely custom server instance.
 * Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain.
 * Added – Option to hide the "Back to site" link (by @dradovic).
+* Added – `JobActivatorScope` abstractions to support custom IoC scopes/lifetimes.
 * Changed – Server components and background processes now use `Task` with `TaskCreationOptions.LongRunning`.
 * Changed – Server Ids are now generated without ServerName, the latter is deprecated.
 * Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
