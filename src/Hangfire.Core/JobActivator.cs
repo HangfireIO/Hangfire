@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using Hangfire.Annotations;
 
 namespace Hangfire
 {
@@ -43,6 +45,44 @@ namespace Hangfire
         public virtual object ActivateJob(Type jobType)
         {
             return Activator.CreateInstance(jobType);
+        }
+
+        public virtual JobActivatorScope BeginScope()
+        {
+            return new SimpleJobActivatorScope(this);
+        }
+
+        class SimpleJobActivatorScope : JobActivatorScope
+        {
+            private readonly JobActivator _activator;
+            private readonly List<IDisposable> _disposables = new List<IDisposable>();
+
+            public SimpleJobActivatorScope([NotNull] JobActivator activator)
+            {
+                if (activator == null) throw new ArgumentNullException("activator");
+                _activator = activator;
+            }
+
+            public override object Resolve(Type type)
+            {
+                var instance = _activator.ActivateJob(type);
+                var disposable = instance as IDisposable;
+
+                if (disposable != null)
+                {
+                    _disposables.Add(disposable);
+                }
+
+                return instance;
+            }
+
+            public override void DisposeScope()
+            {
+                foreach (var disposable in _disposables)
+                {
+                    disposable.Dispose();
+                }
+            }
         }
     }
 }

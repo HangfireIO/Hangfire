@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class MethodInvokeRunanceProcessFacts : IDisposable
+    public class MethodInvokePerformanceProcessFacts : IDisposable
     {
         private readonly Mock<JobActivator> _activator;
         private readonly PerformContextMock _context;
@@ -17,7 +17,7 @@ namespace Hangfire.Core.Tests.Server
         private static bool _methodInvoked;
         private static bool _disposed;
 
-        public MethodInvokeRunanceProcessFacts()
+        public MethodInvokePerformanceProcessFacts()
         {
             _activator = new Mock<JobActivator>() { CallBase = true };
             _context = new PerformContextMock();
@@ -49,7 +49,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_CanInvokeInstanceMethods()
         {
             _methodInvoked = false;
-            _context.Job = Job.FromExpression<MethodInvokeRunanceProcessFacts>(x => x.InstanceMethod());
+            _context.Job = Job.FromExpression<MethodInvokePerformanceProcessFacts>(x => x.InstanceMethod());
             var process = CreateProcess();
 
             process.Run(_context.Object);
@@ -92,7 +92,7 @@ namespace Hangfire.Core.Tests.Server
             var typeConverter = TypeDescriptor.GetConverter(typeof(DateTime));
             var convertedDate = typeConverter.ConvertToInvariantString(SomeDateTime);
 
-            var type = typeof(MethodInvokeRunanceProcessFacts);
+            var type = typeof(MethodInvokePerformanceProcessFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
             _context.Job = new Job(type, method, new[] { convertedDate });
@@ -112,7 +112,7 @@ namespace Hangfire.Core.Tests.Server
             _methodInvoked = false;
             var convertedDate = SomeDateTime.ToString("MM/dd/yyyy HH:mm:ss.ffff");
 
-            var type = typeof(MethodInvokeRunanceProcessFacts);
+            var type = typeof(MethodInvokePerformanceProcessFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
             _context.Job = new Job(type, method, new[] { convertedDate });
@@ -156,7 +156,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsRunanceException_WhenActivatorThrowsAnException()
+        public void Run_ThrowsException_WhenActivatorThrowsAnException()
         {
             // Arrange
             var exception = new InvalidOperationException();
@@ -166,28 +166,23 @@ namespace Hangfire.Core.Tests.Server
             var process = CreateProcess();
 
             // Act
-            var thrownException = Assert.Throws<JobPerformanceException>(
+            Assert.Throws<InvalidOperationException>(
                 () => process.Run(_context.Object));
-
-            // Assert
-            Assert.Same(exception, thrownException.InnerException);
         }
 
         [Fact]
-        public void Run_ThrowsRunanceException_WhenActivatorReturnsNull()
+        public void Run_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
             _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
             _context.Job = Job.FromExpression(() => InstanceMethod());
             var process = CreateProcess();
 
-            var thrownException = Assert.Throws<JobPerformanceException>(
+            Assert.Throws<InvalidOperationException>(
                 () => process.Run(_context.Object));
-
-            Assert.IsType<InvalidOperationException>(thrownException.InnerException);
         }
 
         [Fact]
-        public void Run_ThrowsRunanceException_OnArgumentsDeserializationFailure()
+        public void Run_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
         {
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
@@ -201,21 +196,20 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_ThrowsRunanceException_OnDisposalFailure()
+        public void Run_ThrowsPerformanceException_OnDisposalFailure()
         {
             _methodInvoked = false;
             _context.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
             var process = CreateProcess();
             
-            var exception = Assert.Throws<JobPerformanceException>(
+            var exception = Assert.Throws<InvalidOperationException>(
                 () => process.Run(_context.Object));
 
             Assert.True(_methodInvoked);
-            Assert.NotNull(exception.InnerException);
         }
 
         [Fact]
-        public void Run_ThrowsRunanceException_WithUnwrappedInnerException()
+        public void Run_ThrowsPerformanceException_WithUnwrappedInnerException()
         {
             _context.Job = Job.FromExpression(() => ExceptionMethod());
             var process = CreateProcess();

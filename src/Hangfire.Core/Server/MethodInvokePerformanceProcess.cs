@@ -40,46 +40,25 @@ namespace Hangfire.Server
 
         public object Run(PerformContext context)
         {
-            object instance = null;
-
-            object result;
-            try
+            using (var scope = _activator.BeginScope())
             {
+                object instance = null;
+
                 if (!context.Job.Method.IsStatic)
                 {
-                    instance = Activate(context.Job.Type);
+                    instance = scope.Resolve(context.Job.Type);
+
+                    if (instance == null)
+                    {
+                        throw new InvalidOperationException(
+                            String.Format("JobActivator returned NULL instance of the '{0}' type.", context.Job.Type));
+                    }
                 }
 
                 var deserializedArguments = DeserializeArguments(context);
-                result = InvokeMethod(context.Job.Method, instance, deserializedArguments);
-            }
-            finally
-            {
-                Dispose(instance);
-            }
+                var result = InvokeMethod(context.Job.Method, instance, deserializedArguments);
 
-            return result;
-        }
-
-        private object Activate(Type type)
-        {
-            try
-            {
-                var instance = _activator.ActivateJob(type);
-
-                if (instance == null)
-                {
-                    throw new InvalidOperationException(
-                        String.Format("JobActivator returned NULL instance of the '{0}' type.", type));
-                }
-
-                return instance;
-            }
-            catch (Exception ex)
-            {
-                throw new JobPerformanceException(
-                    "An exception occurred during job activation.",
-                    ex);
+                return result;
             }
         }
 
@@ -156,24 +135,6 @@ namespace Hangfire.Server
             {
                 throw new JobPerformanceException(
                     "An exception occurred during arguments deserialization.",
-                    ex);
-            }
-        }
-
-        private static void Dispose(object instance)
-        {
-            try
-            {
-                var disposable = instance as IDisposable;
-                if (disposable != null)
-                {
-                    disposable.Dispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new JobPerformanceException(
-                    "Job has been performed, but an exception occurred during disposal.",
                     ex);
             }
         }
