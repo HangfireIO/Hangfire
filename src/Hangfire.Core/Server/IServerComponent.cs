@@ -14,10 +14,12 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading;
 
 namespace Hangfire.Server
 {
+    [Obsolete("Please use the `IBackgroundProcess` interface where you can. Will be removed in 2.0.0.")]
     public interface IServerComponent : IServerProcess
     {
         void Execute(CancellationToken cancellationToken);
