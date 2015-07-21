@@ -16,8 +16,8 @@ namespace Hangfire.Core.Tests
         private readonly Mock<IJobCreationProcess> _process;
         private readonly Mock<IState> _state;
         private readonly Job _job;
-        private readonly Mock<IStateMachineFactory> _stateMachineFactory;
         private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<IStateMachineFactoryFactory> _stateMachineFactoryFactory;
 
         public BackgroundJobClientFacts()
         {
@@ -27,8 +27,12 @@ namespace Hangfire.Core.Tests
 
             _stateMachine = new Mock<IStateMachine>();
 
-            _stateMachineFactory = new Mock<IStateMachineFactory>();
-            _stateMachineFactory.Setup(x => x.Create(_connection.Object)).Returns(_stateMachine.Object);
+            var stateMachineFactory = new Mock<IStateMachineFactory>();
+            stateMachineFactory.Setup(x => x.Create(_connection.Object)).Returns(_stateMachine.Object);
+
+            _stateMachineFactoryFactory = new Mock<IStateMachineFactoryFactory>();
+            _stateMachineFactoryFactory.Setup(x => x.CreateFactory(_storage.Object))
+                .Returns(stateMachineFactory.Object);
 
             _process = new Mock<IJobCreationProcess>();
             _state = new Mock<IState>();
@@ -39,7 +43,7 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(null, _stateMachineFactory.Object, _process.Object));
+                () => new BackgroundJobClient(null, _stateMachineFactoryFactory.Object, _process.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -50,14 +54,14 @@ namespace Hangfire.Core.Tests
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new BackgroundJobClient(_storage.Object, null, _process.Object));
 
-            Assert.Equal("stateMachineFactory", exception.ParamName);
+            Assert.Equal("stateMachineFactoryFactory", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenCreationProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(_storage.Object, _stateMachineFactory.Object, null));
+                () => new BackgroundJobClient(_storage.Object, _stateMachineFactoryFactory.Object, null));
 
             Assert.Equal("process", exception.ParamName);
         }
@@ -66,12 +70,14 @@ namespace Hangfire.Core.Tests
         public void Ctor_UsesCurrent_JobStorageInstance_ByDefault()
         {
             JobStorage.Current = new Mock<JobStorage>().Object;
+            // ReSharper disable once ObjectCreationAsStatement
             Assert.DoesNotThrow(() => new BackgroundJobClient());
         }
 
         [Fact]
         public void Ctor_HasDefaultValue_ForStateMachineFactory()
         {
+            // ReSharper disable once ObjectCreationAsStatement
             Assert.DoesNotThrow(() => new BackgroundJobClient(_storage.Object));
         }
 
@@ -79,7 +85,8 @@ namespace Hangfire.Core.Tests
         public void Ctor_HasDefaultValue_ForCreationProcess()
         {
             Assert.DoesNotThrow(
-                () => new BackgroundJobClient(_storage.Object, _stateMachineFactory.Object));
+                // ReSharper disable once ObjectCreationAsStatement
+                () => new BackgroundJobClient(_storage.Object, _stateMachineFactoryFactory.Object));
         }
 
         [Fact]
@@ -207,7 +214,7 @@ namespace Hangfire.Core.Tests
 
         private BackgroundJobClient CreateClient()
         {
-            return new BackgroundJobClient(_storage.Object, _stateMachineFactory.Object, _process.Object);
+            return new BackgroundJobClient(_storage.Object, _stateMachineFactoryFactory.Object, _process.Object);
         }
     }
 }

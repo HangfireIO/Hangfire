@@ -29,7 +29,7 @@ namespace Hangfire
     {
         private readonly JobStorage _storage;
         private readonly IJobCreationProcess _process;
-        private readonly IStateMachineFactory _stateMachineFactory;
+        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
@@ -47,12 +47,12 @@ namespace Hangfire
         /// <see cref="DefaultJobCreationProcess"/> instance.
         /// </summary>
         public BackgroundJobClient(JobStorage storage)
-            : this(storage, new StateMachineFactory(storage))
+            : this(storage, new StateMachineFactoryFactory())
         {
         }
 
-        public BackgroundJobClient(JobStorage storage, IStateMachineFactory stateMachineFactory)
-            : this(storage, stateMachineFactory, new DefaultJobCreationProcess())
+        public BackgroundJobClient(JobStorage storage, IStateMachineFactoryFactory stateMachineFactoryFactory)
+            : this(storage, stateMachineFactoryFactory, new DefaultJobCreationProcess())
         {
         }
 
@@ -64,16 +64,16 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="process"/> argument is null.</exception>
         public BackgroundJobClient(
-            JobStorage storage, 
-            IStateMachineFactory stateMachineFactory, 
+            JobStorage storage,
+            IStateMachineFactoryFactory stateMachineFactoryFactory, 
             IJobCreationProcess process)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
+            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
             if (process == null) throw new ArgumentNullException("process");
             
             _storage = storage;
-            _stateMachineFactory = stateMachineFactory;
+            _stateMachineFactoryFactory = stateMachineFactoryFactory;
             _process = process;
         }
 
@@ -88,7 +88,8 @@ namespace Hangfire
                 using (var connection = _storage.GetConnection())
                 {
                     var context = new CreateContext(connection, job, state);
-                    var stateMachine = _stateMachineFactory.Create(connection);
+                    var factory = _stateMachineFactoryFactory.CreateFactory(_storage);
+                    var stateMachine = factory.Create(connection);
 
                     return _process.Run(context, stateMachine);
                 }
@@ -107,7 +108,8 @@ namespace Hangfire
 
             using (var connection = _storage.GetConnection())
             {
-                var stateMachine = _stateMachineFactory.Create(connection);
+                var factory = _stateMachineFactoryFactory.CreateFactory(_storage);
+                var stateMachine = factory.Create(connection);
                 return stateMachine.ChangeState(jobId, state, fromState != null ? new[] { fromState } : null);
             }
         }
