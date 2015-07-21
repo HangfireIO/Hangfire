@@ -19,6 +19,7 @@
 * Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
 * Changed – Dramatically improved page load times in Dashboard.
 * Changed – Instant re-queue for background jobs even after ungraceful shutdown.
+* Changed – `JobQueue.Queue` and `Server.Id` column length increased to 50 and 100 respectively (by @maleet).
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
