@@ -20,20 +20,20 @@
     
 1.5.0
 Hangfire.Core
-* Added – `IBackgroundProcess` interface for custom continuously-running processes.
-* Added – `BackgroundServer` class for creating a completely custom server instance.
-* Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain.
+* Added – `IBackgroundProcess` interface that allows to implement custom background processes.
+* Added – `BackgroundServer` class for creating a server instance with completely custom background processes.
+* Added – `JobActivatorScope` class to support custom IoC scopes/lifetimes.
+* Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain without explicit server names.
 * Added – Option to hide the "Back to site" link (by @dradovic).
-* Added – `JobActivatorScope` abstractions to support custom IoC scopes/lifetimes.
 * Changed – Server components and background processes now use `Task` with `TaskCreationOptions.LongRunning`.
-* Changed – ServerIds are now generated without ServerName, the latter is deprecated.
+* Changed – ServerIds are now generated without ServerName, server names are deprecated.
 * Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
 * Changed – Minor improvements for Dashboard navigation (by @pwelter34).
 * Fixed – Prevent worker from fetching and processing a job on shutdown.
 
 Hangfire.SqlServer
 * Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
-* Added – `DashboardJobListLimit` option to prevent full job table scans in Dashboard.
+* Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
 * Changed – Dramatically improved page load times in Dashboard.
 * Changed – Instant re-queue for background jobs even after ungraceful shutdown.
 

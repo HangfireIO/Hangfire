@@ -16,7 +16,7 @@
     
 1.5.0
 * Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
-* Added – `DashboardJobListLimit` option to prevent full job table scans in Dashboard.
+* Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
 * Changed – Dramatically improved page load times in Dashboard.
 * Changed – Instant re-queue for background jobs even after ungraceful shutdown.
     </releaseNotes>
