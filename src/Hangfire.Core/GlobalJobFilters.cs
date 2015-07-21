@@ -25,7 +25,7 @@ namespace Hangfire
     {
         static GlobalJobFilters()
         {
-            Filters = new GlobalJobFilterCollection();
+            Filters = new JobFilterCollection();
             Filters.Add(new CaptureCultureAttribute());
             Filters.Add(new AutomaticRetryAttribute());
             Filters.Add(new StatisticsHistoryAttribute());
@@ -35,6 +35,6 @@ namespace Hangfire
         /// <summary>
         /// Gets the global filter collection.
         /// </summary>
-        public static GlobalJobFilterCollection Filters { get; private set; }
+        public static JobFilterCollection Filters { get; private set; }
     }
 }

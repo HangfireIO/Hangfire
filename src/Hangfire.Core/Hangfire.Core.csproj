@@ -312,7 +312,7 @@
     <Compile Include="Common\JobFilterScope.cs" />
     <Compile Include="Common\ReflectedAttributeCache.cs" />
     <Compile Include="Client\ClientExceptionContext.cs" />
-    <Compile Include="Common\GlobalJobFilterCollection.cs" />
+    <Compile Include="Common\JobFilterCollection.cs" />
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\IJobFilterProvider.cs" />
     <Compile Include="Server\RecurringJobScheduler.cs" />

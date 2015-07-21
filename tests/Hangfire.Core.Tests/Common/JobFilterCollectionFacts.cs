@@ -10,9 +10,9 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Common
 {
-    public class GlobalJobFilterCollectionFacts
+    public class JobFilterCollectionFacts
     {
-        private readonly GlobalJobFilterCollection _collection = new GlobalJobFilterCollection();
+        private readonly JobFilterCollection _collection = new JobFilterCollection();
         private readonly object _filterInstance = GetFilterInstance<IClientFilter>();
 
         public static IEnumerable<object[]> AddRejectsNonFilterInstancesData
@@ -23,7 +23,7 @@ namespace Hangfire.Core.Tests.Common
                 {
                     new object[] { "string" },
                     new object[] { 42 },
-                    new object[] { new GlobalJobFilterCollectionFacts() },
+                    new object[] { new JobFilterCollectionFacts() },
                 };
             }
         }

@@ -1,5 +1,5 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -25,17 +25,17 @@ using Hangfire.States;
 namespace Hangfire.Common
 {
     /// <summary>
-    /// Represents a class that contains all the global job filters.
+    /// Represents a class that contains the job filters.
     /// </summary>
     /// <remarks>
-    /// Global filters run for every create, perform and state change
-    /// of every job. All the instances in the global filters collection
-    /// must be thread-safe.
+    /// Job filters run for every create, perform and state change
+    /// of every job. All the instances in the filters collection
+    /// should be thread-safe.
     /// 
-    /// You can register a global filter using the 
+    /// You can register a filter using the 
     /// <see cref="GlobalJobFilters.Filters"/> registration endpoint.
     /// </remarks>
-    public class GlobalJobFilterCollection : IJobFilterProvider, IEnumerable<JobFilter>
+    public class JobFilterCollection : IJobFilterProvider, IEnumerable<JobFilter>
     {
         private readonly List<JobFilter> _filters = new List<JobFilter>();
 
