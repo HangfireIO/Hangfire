@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Data;
 using Dapper;
 using Hangfire.Annotations;
+using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
@@ -71,6 +72,11 @@ namespace Hangfire.SqlServer
 
             if (lockResult < 0)
             {
+                if (lockResult == -1)
+                {
+                    throw new DistributedLockTimeoutException(_resource);
+                }
+
                 throw new SqlServerDistributedLockException(
                     String.Format(
                     "Could not place a lock on the resource '{0}': {1}.",
