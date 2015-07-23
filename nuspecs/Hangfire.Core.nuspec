@@ -14,6 +14,10 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.4
+* Fixed – `InvalidCastException` in Dashboard when using Microsoft.Owin 3.0.1 package.
+* Fixed – Non-working buttons and counter updates in Dashboard when a body stream isn't at the start position.
+    
 1.4.3
 * Fixed – `OverflowException` on Job Details page when latency is too high (by @schulz3000).
 * Fixed – Job serialization fix when using `TypeNameHandling.All` option (by @tystol).

@@ -18,6 +18,10 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.4
+* Fixed – `InvalidCastException` in Dashboard when using Microsoft.Owin 3.0.1 package.
+* Fixed – Non-working buttons and counter updates in Dashboard when a body stream isn't at the start position.
+    
 1.4.3
 * Fixed – SQL Server storage does not work with case-sensitive and binary collations (by @ilessa).
 * Fixed – "Incorrect syntax near 'MERGE'" error in `CountersAggregator` component.
