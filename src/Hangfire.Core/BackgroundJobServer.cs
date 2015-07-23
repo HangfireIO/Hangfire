@@ -29,6 +29,7 @@ namespace Hangfire
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
+        private readonly JobActivator _jobActivator;
         private readonly BackgroundJobServerOptions _options;
 
         private readonly string _serverId;
@@ -65,17 +66,31 @@ namespace Hangfire
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
-        /// with the specified options and the given storage.
+        /// with the specified options, the given storage and <see cref="JobActivator.Current"/> job activator.
         /// </summary>
         /// <param name="options">Server options</param>
         /// <param name="storage">The storage</param>
         public BackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage)
+            : this(options, storage, JobActivator.Current)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with the specified options, the given storage and the given job activator.
+        /// </summary>
+        /// <param name="options">Server options</param>
+        /// <param name="storage">The storage</param>
+        /// <param name="jobActivator">The job activator</param>
+        public BackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage, JobActivator jobActivator)
         {
             if (options == null) throw new ArgumentNullException("options");
             if (storage == null) throw new ArgumentNullException("storage");
+            if (jobActivator == null) throw new ArgumentNullException("jobActivator");
 
             _options = options;
             _storage = storage;
+            _jobActivator = jobActivator;
 
             _serverId = String.Format("{0}:{1}", _options.ServerName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
 
@@ -84,7 +99,7 @@ namespace Hangfire
 
             Logger.Info("Starting Hangfire Server");
             Logger.InfoFormat("Using job storage: '{0}'.", _storage);
-            
+
             _storage.WriteOptionsToLog(Logger);
             _options.WriteToLog(Logger);
 
@@ -141,7 +156,7 @@ namespace Hangfire
 
         private IEnumerable<IServerComponent> GetCommonComponents()
         {
-            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
+            var performanceProcess = new DefaultJobPerformanceProcess(_jobActivator);
             var stateMachineFactory = new StateMachineFactory(_storage);
 
             for (var i = 0; i < _options.WorkerCount; i++)
