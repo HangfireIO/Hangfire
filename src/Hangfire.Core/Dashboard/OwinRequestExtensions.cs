@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 
@@ -6,6 +7,8 @@ namespace Hangfire.Dashboard
 {
     internal static class OwinRequestExtensions
     {
+        private const string FormCollectionKey = "Microsoft.Owin.Form#collection";
+
         /// <summary>
         /// Hack to prevent "Unable to cast object of type 'Microsoft.Owin.FormCollection' 
         /// to type 'Microsoft.Owin.IFormCollection'" exception, when internalized version
@@ -13,15 +16,44 @@ namespace Hangfire.Dashboard
         /// </summary>
         public static async Task<IFormCollection> ReadFormSafeAsync(this IOwinContext context)
         {
-            // hack to clear a possible cached type from Katana in environment
-            context.Environment.Remove("Microsoft.Owin.Form#collection");
+            // We are using internalized version of Microsoft.Owin library.
+            // When project that uses Hangfire has another version of this
+            // library, we could end with an InvalidCastException. So we
+            // can't simply use the `ReadFormAsync` method.
 
-            var form = await context.Request.ReadFormAsync();
+            // As a hack, we're simply removing the corresponding form
+            // from an environment, trying to rewind the body stream
+            // to the beginning and re-read the form.
 
-            // hack to prevent caching of an internalized type from Katana in environment
-            context.Environment.Remove("Microsoft.Owin.Form#collection");
+            object previousForm = null;
 
-            return form;
+            if (context.Environment.ContainsKey(FormCollectionKey))
+            {
+                previousForm = context.Environment[FormCollectionKey];
+                context.Environment.Remove(FormCollectionKey);
+            }
+
+            try
+            {
+                if (!context.Request.Body.CanSeek && context.Request.Body.Position != 0)
+                {
+                    throw new InvalidOperationException("Can't read the request body: stream is not at the beginning position and is not seekable.");
+                }
+                
+                if (context.Request.Body.CanSeek)
+                {
+                    context.Request.Body.Seek(0L, SeekOrigin.Begin);
+                }
+
+                return await context.Request.ReadFormAsync();
+            }
+            finally
+            {
+                if (previousForm != null)
+                {
+                    context.Environment[FormCollectionKey] = previousForm;
+                }
+            }
         } 
     }
 }
