@@ -34,7 +34,7 @@ namespace Hangfire.Dashboard
         {
             var owinContext = new OwinContext(context.OwinEnvironment);
 
-            var form = await owinContext.Request.ReadFormAsync();
+            var form = await owinContext.ReadFormSafeAsync();
             var jobIds = form.GetValues("jobs[]");
 
             if (jobIds == null)
