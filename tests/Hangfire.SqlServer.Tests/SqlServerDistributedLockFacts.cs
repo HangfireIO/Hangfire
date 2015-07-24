@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
+using Hangfire.Storage;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -74,7 +75,7 @@ namespace Hangfire.SqlServer.Tests
             UseConnection(connection2 =>
             {
                 var storage = CreateStorage(connection2);
-                Assert.Throws<SqlServerDistributedLockException>(
+                Assert.Throws<DistributedLockTimeoutException>(
                     () =>
                     {
                         using (new SqlServerDistributedLock(storage, "exclusive", _timeout))
