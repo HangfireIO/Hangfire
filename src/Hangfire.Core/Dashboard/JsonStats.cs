@@ -29,7 +29,7 @@ namespace Hangfire.Dashboard
         public async Task Dispatch(RequestDispatcherContext context)
         {
             var owinContext = new OwinContext(context.OwinEnvironment);
-            var form = await owinContext.Request.ReadFormAsync();
+            var form = await owinContext.ReadFormSafeAsync();
             var requestedMetrics = new HashSet<string>(form.GetValues("metrics[]") ?? new string[0]);
 
             var page = new StubPage();
