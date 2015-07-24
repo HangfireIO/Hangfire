@@ -30,11 +30,18 @@ namespace Hangfire.Client
             Instance = new DefaultJobCreationProcess();
         }
 
-        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk 
-            = JobFilterProviders.Providers.GetFilters;
+        private readonly Func<Job, IEnumerable<JobFilter>> _getFiltersThunk;
 
         public DefaultJobCreationProcess()
+            : this(JobFilterProviders.Providers)
         {
+        }
+
+        public DefaultJobCreationProcess(JobFilterProviderCollection jobFilterProviderCollection)
+        {
+            if (jobFilterProviderCollection == null) throw new ArgumentNullException("jobFilterProviderCollection");
+
+            _getFiltersThunk = jobFilterProviderCollection.GetFilters;
         }
 
         internal DefaultJobCreationProcess(IEnumerable<object> filters)

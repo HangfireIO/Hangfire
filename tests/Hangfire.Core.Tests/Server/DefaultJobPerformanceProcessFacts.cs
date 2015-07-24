@@ -42,6 +42,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenjobFilterProviderCollection_IsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new DefaultJobPerformanceProcess(_activator.Object, null));
+
+            Assert.Equal("jobFilterProviderCollection", exception.ParamName);
+        }
+
+        [Fact]
         public void Run_ThrowsAnException_WhenContextIsNull()
         {
             var process = CreateProcess();

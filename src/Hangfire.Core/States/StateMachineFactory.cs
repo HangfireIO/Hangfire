@@ -15,17 +15,27 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Common;
 using Hangfire.Storage;
 
 namespace Hangfire.States
 {
     public class StateMachineFactory : IStateMachineFactory
     {
+        private readonly JobFilterProviderCollection _jobFilterProviderCollection;
         private readonly StateHandlerCollection _handlers;
 
         public StateMachineFactory(JobStorage storage)
+            : this(storage, JobFilterProviders.Providers)
+        {
+        }
+
+        public StateMachineFactory(JobStorage storage, JobFilterProviderCollection jobFilterProviderCollection)
         {
             if (storage == null) throw new ArgumentNullException("storage");
+            if (jobFilterProviderCollection == null) throw new ArgumentNullException("jobFilterProviderCollection");
+
+            _jobFilterProviderCollection = jobFilterProviderCollection;
 
             _handlers = new StateHandlerCollection();
             _handlers.AddRange(GlobalStateHandlers.Handlers);
@@ -36,7 +46,7 @@ namespace Hangfire.States
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var process = new DefaultStateChangeProcess(_handlers);
+            var process = new DefaultStateChangeProcess(_handlers, _jobFilterProviderCollection);
             return new StateMachine(connection, process);
         }
     }
