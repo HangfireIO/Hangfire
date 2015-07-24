@@ -17,7 +17,7 @@
     <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
-    
+
 1.5.0
 Hangfire.Core
 * Added – `IBackgroundProcess` interface that allows to implement custom background processes.
@@ -30,16 +30,6 @@ Hangfire.Core
 * Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
 * Changed – Minor improvements for Dashboard navigation (by @pwelter34).
 * Fixed – Prevent worker from fetching and processing a job on shutdown.
-
-Hangfire.SqlServer
-* Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
-* Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
-* Changed – Dramatically improved page load times in Dashboard.
-* Changed – Instant re-queue for background jobs even after ungraceful shutdown.
-* Changed – `JobQueue.Queue` and `Server.Id` column length increased to 50 and 100 respectively (by @maleet).
-
-Hangfire.SqlServer.Msmq
-* Added – Support for remote MSMQ queues through DTC transactions.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />

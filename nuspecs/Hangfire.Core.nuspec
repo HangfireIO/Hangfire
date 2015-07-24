@@ -13,7 +13,7 @@
     <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
-    
+
 1.5.0
 * Added – `IBackgroundProcess` interface that allows to implement custom background processes.
 * Added – `BackgroundServer` class for creating a server instance with completely custom background processes.
