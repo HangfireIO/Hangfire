@@ -18,6 +18,9 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.5
+* Fixed – "This stream does not support seek operations." exception in Dashboard buttons and stats.
+    
 1.4.4
 * Fixed – `InvalidCastException` in Dashboard when using Microsoft.Owin 3.0.1 package.
 * Fixed – Non-working buttons and counter updates in Dashboard when a body stream isn't at the start position.

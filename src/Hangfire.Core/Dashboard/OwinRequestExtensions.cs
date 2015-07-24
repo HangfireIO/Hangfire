@@ -35,11 +35,6 @@ namespace Hangfire.Dashboard
 
             try
             {
-                if (!context.Request.Body.CanSeek && context.Request.Body.Position != 0)
-                {
-                    throw new InvalidOperationException("Can't read the request body: stream is not at the beginning position and is not seekable.");
-                }
-                
                 if (context.Request.Body.CanSeek)
                 {
                     context.Request.Body.Seek(0L, SeekOrigin.Begin);
