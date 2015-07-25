@@ -342,7 +342,17 @@
             });
 
             $(document).on('click', '.expander', function (e) {
-                $(this).closest('tr').next().find('.expandable').slideToggle(150);
+                var $expander = $(this),
+					$expandable = $expander.closest('tr').next().find('.expandable')
+				$expandable.slideToggle(
+					150, 
+					function() {
+						if ($expandable.is(':visible')) {
+							$expander.text('Less details...');
+						} else {
+							$expander.text('More details...');
+						}
+					});
                 e.preventDefault();
             });
 
