@@ -39,7 +39,7 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage)
-            : this (storage, new BackgroundJobClient(storage))
+            : this(storage, new BackgroundJobClient(storage))
         {
         }
 
@@ -55,18 +55,26 @@ namespace Hangfire
         public void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] Job job,
-            [NotNull] string cronExpression,
-			[NotNull] string queue = "default")
+            [NotNull] string cronExpression)
         {
-            AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc, queue);
+            AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
         }
 
         public void AddOrUpdate(
-            [NotNull] string recurringJobId, 
-            [NotNull] Job job, 
-            [NotNull] string cronExpression, 
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
+            [NotNull] TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
+        }
+
+        public void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
             [NotNull] TimeZoneInfo timeZone,
-			[NotNull] string queue = "default")
+            [NotNull] string queue)
         {
             if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
             if (job == null) throw new ArgumentNullException("job");
@@ -79,16 +87,16 @@ namespace Hangfire
             {
                 var recurringJob = new Dictionary<string, string>();
                 var invocationData = InvocationData.Serialize(job);
-                
+
                 recurringJob["Job"] = JobHelper.ToJson(invocationData);
                 recurringJob["Cron"] = cronExpression;
                 recurringJob["TimeZoneId"] = timeZone.Id;
-				recurringJob["Queue"] = queue;
+                recurringJob["Queue"] = queue;
 
                 using (var transaction = connection.CreateWriteTransaction())
                 {
                     transaction.SetRangeInHash(
-                        String.Format("recurring-job:{0}", recurringJobId), 
+                        String.Format("recurring-job:{0}", recurringJobId),
                         recurringJob);
 
                     transaction.AddToSet("recurring-jobs", recurringJobId);
