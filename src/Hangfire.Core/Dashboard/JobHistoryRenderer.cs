@@ -138,7 +138,7 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("PerformanceDuration"))
             {
-                var duration = TimeSpan.FromMilliseconds(int.Parse(stateData["PerformanceDuration"]));
+                var duration = TimeSpan.FromMilliseconds(long.Parse(stateData["PerformanceDuration"]));
                 builder.AppendFormat("<dt>Duration:</dt><dd>{0}</dd>", html.ToHumanDuration(duration, false));
 
                 itemsAdded = true;
