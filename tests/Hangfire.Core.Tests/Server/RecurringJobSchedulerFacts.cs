@@ -120,6 +120,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Execute_EnqueuesAJobToAGivenQueue_WhenItIsTimeToRunIt()
+        {
+            _recurringJob["Queue"] = "critical";
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _process.Verify(x => x.Run(
+                It.Is<CreateContext>(cc => ((EnqueuedState)cc.InitialState).Queue == "critical"),
+                It.IsNotNull<IJobCreator>()));
+        }
+
+        [Fact]
         public void Execute_UpdatesRecurringJobParameters_OnCompletion()
         {
             // Arrange

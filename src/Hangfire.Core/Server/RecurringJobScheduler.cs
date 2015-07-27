@@ -128,8 +128,8 @@ namespace Hangfire.Server
             try
             {
                 var timeZone = recurringJob.ContainsKey("TimeZoneId")
-                ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
-                : TimeZoneInfo.Utc;
+                    ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
+                    : TimeZoneInfo.Utc;
 
                 var instant = _instantFactory(cronSchedule, timeZone);
 
@@ -142,6 +142,11 @@ namespace Hangfire.Server
                 if (instant.GetNextInstants(lastExecutionTime).Any())
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
+                    if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
+                    {
+                        state.Queue = recurringJob["Queue"];
+                    }
+
                     var jobId = CreateBackgroundJob(connection, job, state, stateMachineFactory);
 
                     if (String.IsNullOrEmpty(jobId))
