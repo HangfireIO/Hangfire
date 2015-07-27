@@ -55,16 +55,18 @@ namespace Hangfire
         public void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] Job job,
-            [NotNull] string cronExpression)
+            [NotNull] string cronExpression,
+			[NotNull] string queue = "default")
         {
-            AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
+            AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc, queue);
         }
 
         public void AddOrUpdate(
             [NotNull] string recurringJobId, 
             [NotNull] Job job, 
             [NotNull] string cronExpression, 
-            [NotNull] TimeZoneInfo timeZone)
+            [NotNull] TimeZoneInfo timeZone,
+			[NotNull] string queue = "default")
         {
             if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
             if (job == null) throw new ArgumentNullException("job");
@@ -81,6 +83,7 @@ namespace Hangfire
                 recurringJob["Job"] = JobHelper.ToJson(invocationData);
                 recurringJob["Cron"] = cronExpression;
                 recurringJob["TimeZoneId"] = timeZone.Id;
+				recurringJob["Queue"] = queue;
 
                 using (var transaction = connection.CreateWriteTransaction())
                 {
