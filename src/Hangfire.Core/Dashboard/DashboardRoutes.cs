@@ -77,9 +77,14 @@ namespace Hangfire.Dashboard
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.ttf")));
 
             Routes.Add("/fonts/glyphicons-halflings-regular/woff", new EmbeddedResourceDispatcher(
-                "application/font-woff",
+                "font/woff",
                 GetExecutingAssembly(),
                 GetContentResourceName("fonts", "glyphicons-halflings-regular.woff")));
+
+            Routes.Add("/fonts/glyphicons-halflings-regular/woff2", new EmbeddedResourceDispatcher(
+                "font/woff2",
+                GetExecutingAssembly(),
+                GetContentResourceName("fonts", "glyphicons-halflings-regular.woff2")));
 
             #endregion
 

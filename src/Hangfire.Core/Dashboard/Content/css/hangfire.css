@@ -40,14 +40,6 @@ body {
     margin-top: 0;
 }
 
-.glyphicon {
-    top: 0px;
-}
-
-.btn .glyphicon {
-    top: 1px;
-}
-
 .btn-death {
     background-color: #777;
     border-color: #666;
