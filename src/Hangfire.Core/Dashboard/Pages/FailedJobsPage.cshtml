@@ -117,7 +117,7 @@
 
                                         @if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
                                         {
-                                            <pre class="stack-trace">@Html.StackTrace(job.Value.ExceptionDetails)</pre>
+                                            <pre class="stack-trace"><code>@Html.StackTrace(job.Value.ExceptionDetails)</code></pre>
                                         }
                                     </div>
                                 </td>

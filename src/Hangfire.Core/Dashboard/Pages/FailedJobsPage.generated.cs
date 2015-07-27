@@ -438,17 +438,17 @@ WriteLiteral("\r\n                                        </p>\r\n\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                            <pre class=\"stack-trace\">");
+WriteLiteral("                                            <pre class=\"stack-trace\"><code>");
 
 
             
             #line 120 "..\..\Dashboard\Pages\FailedJobsPage.cshtml"
-                                                                Write(Html.StackTrace(job.Value.ExceptionDetails));
+                                                                      Write(Html.StackTrace(job.Value.ExceptionDetails));
 
             
             #line default
             #line hidden
-WriteLiteral("</pre>\r\n");
+WriteLiteral("</code></pre>\r\n");
 
 
             
