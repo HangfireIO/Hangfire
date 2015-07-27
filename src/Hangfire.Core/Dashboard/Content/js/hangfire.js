@@ -343,15 +343,18 @@
 
             $(document).on('click', '.expander', function (e) {
                 var $expander = $(this),
-					$expandable = $expander.closest('tr').next().find('.expandable')
+                    $expandable = $expander.closest('tr').next().find('.expandable');
+
+                if (!$expandable.is(':visible')) {
+                    $expander.text('Less details...');
+                }
+
 				$expandable.slideToggle(
 					150, 
 					function() {
-						if ($expandable.is(':visible')) {
-							$expander.text('Less details...');
-						} else {
-							$expander.text('More details...');
-						}
+					    if (!$expandable.is(':visible')) {
+					        $expander.text('More details...');
+					    }
 					});
                 e.preventDefault();
             });
