@@ -73,6 +73,7 @@
     </Compile>
     <Compile Include="AppBuilderExtensions.cs" />
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
+    <Compile Include="AttemptsExceededAction.cs" />
     <Compile Include="AutomaticRetryAttribute.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />

@@ -110,7 +110,7 @@ namespace Hangfire
 
                     context.CandidateState = startImmediately
                         ? awaitingState.NextState
-                        : new DeletedState { Reason = "Missed continuation" };
+                        : new DeletedState { Reason = "Continuation condition was not met" };
                 }
             }
         }
@@ -141,7 +141,7 @@ namespace Hangfire
                 if (continuation.Options.HasFlag(JobContinuationOptions.OnlyOnSucceededState) &&
                     context.CandidateState.Name != SucceededState.StateName)
                 {
-                    nextStates.Add(continuation.JobId, new DeletedState { Reason = "Missed continuation" });
+                    nextStates.Add(continuation.JobId, new DeletedState { Reason = "Continuation condition was not met" });
                     continue;
                 }
 
@@ -157,7 +157,7 @@ namespace Hangfire
                 {
                     nextState = new FailedState(ex)
                     {
-                        Reason = "Can not start the continuation due to de-serialization error."
+                        Reason = "An error occurred while deserializing the continuation"
                     };
                 }
 

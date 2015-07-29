@@ -9,6 +9,7 @@
 // ReSharper disable MemberCanBeProtected.Global
 // ReSharper disable InconsistentNaming
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Annotations
 {
   /// <summary>
@@ -16,10 +17,13 @@ namespace Hangfire.Annotations
   /// so the check for <c>null</c> is necessary before its usage
   /// </summary>
   /// <example><code>
-  /// [CanBeNull] public object Test() { return null; }
-  /// public void UseTest() {
-  ///   var p = Test();
-  ///   var s = p.ToString(); // Warning: Possible 'System.NullReferenceException'
+  /// [CanBeNull] 
+  /// public object Test() { return null; }
+  /// 
+  /// public void UseTest() 
+  /// {
+  ///     var p = Test();
+  ///     var s = p.ToString(); // Warning: Possible 'System.NullReferenceException'
   /// }
   /// </code></example>
   [AttributeUsage(
@@ -32,8 +36,10 @@ namespace Hangfire.Annotations
   /// Indicates that the value of the marked element could never be <c>null</c>
   /// </summary>
   /// <example><code>
-  /// [NotNull] public object Foo() {
-  ///   return null; // Warning: Possible 'null' assignment
+  /// [NotNull] 
+  /// public object Foo() 
+  /// {
+  ///     return null; // Warning: Possible 'null' assignment
   /// }
   /// </code></example>
   [AttributeUsage(
@@ -50,8 +56,10 @@ namespace Hangfire.Annotations
   /// <example><code>
   /// [StringFormatMethod("message")]
   /// public void ShowError(string message, params object[] args) { /* do something */ }
-  /// public void Foo() {
-  ///   ShowError("Failed: {0}"); // Warning: Non-existing argument in format string
+  /// 
+  /// public void Foo() 
+  /// {
+  ///     ShowError("Failed: {0}"); // Warning: Non-existing argument in format string
   /// }
   /// </code></example>
   [AttributeUsage(
@@ -76,9 +84,10 @@ namespace Hangfire.Annotations
   /// the parameter of <see cref="System.ArgumentNullException"/>
   /// </summary>
   /// <example><code>
-  /// public void Foo(string param) {
-  ///   if (param == null)
-  ///     throw new ArgumentNullException("par"); // Warning: Cannot resolve symbol
+  /// public void Foo(string param) 
+  /// {
+  ///     if (param == null)
+  ///         throw new ArgumentNullException("par"); // Warning: Cannot resolve symbol
   /// }
   /// </code></example>
   [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
@@ -100,16 +109,17 @@ namespace Hangfire.Annotations
   /// </list>
   /// </remarks>
   /// <example><code>
-  /// public class Foo : INotifyPropertyChanged {
-  ///   public event PropertyChangedEventHandler PropertyChanged;
-  ///   [NotifyPropertyChangedInvocator]
-  ///   protected virtual void NotifyChanged(string propertyName) { ... }
+  /// public class Foo : INotifyPropertyChanged 
+  /// {
+  ///     public event PropertyChangedEventHandler PropertyChanged;
+  ///     [NotifyPropertyChangedInvocator]
+  ///     protected virtual void NotifyChanged(string propertyName) { ... }
   ///
-  ///   private string _name;
-  ///   public string Name {
-  ///     get { return _name; }
-  ///     set { _name = value; NotifyChanged("LastName"); /* Warning */ }
-  ///   }
+  ///     private string _name;
+  ///     public string Name {
+  ///         get { return _name; }
+  ///         set { _name = value; NotifyChanged("LastName"); /* Warning */ }
+  ///     }
   /// }
   /// </code>
   /// Examples of generated notifications:
@@ -195,8 +205,9 @@ namespace Hangfire.Annotations
   /// </summary>
   /// <example><code>
   /// [LocalizationRequiredAttribute(true)]
-  /// public class Foo {
-  ///   private string str = "my string"; // Warning: Localizable string
+  /// public class Foo 
+  /// {
+  ///     private string str = "my string"; // Warning: Localizable string
   /// }
   /// </code></example>
   [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
@@ -220,14 +231,17 @@ namespace Hangfire.Annotations
   /// <example><code>
   /// [CannotApplyEqualityOperator]
   /// class NoEquality { }
-  /// class UsesNoEquality {
-  ///   public void Test() {
-  ///     var ca1 = new NoEquality();
-  ///     var ca2 = new NoEquality();
-  ///     if (ca1 != null) { // OK
-  ///       bool condition = ca1 == ca2; // Warning
+  /// class UsesNoEquality 
+  /// {
+  ///     public void Test() 
+  ///     {
+  ///         var ca1 = new NoEquality();
+  ///         var ca2 = new NoEquality();
+  ///         if (ca1 != null) // OK
+  ///         { 
+  ///             bool condition = ca1 == ca2; // Warning
+  ///         }
   ///     }
-  ///   }
   /// }
   /// </code></example>
   [AttributeUsage(
