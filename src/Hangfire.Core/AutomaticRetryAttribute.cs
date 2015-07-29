@@ -1,3 +1,19 @@
+﻿// This file is part of Hangfire.
+// Copyright © 2014 Sergey Odinokov.
+// 
+// Hangfire is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as 
+// published by the Free Software Foundation, either version 3 
+// of the License, or any later version.
+// 
+// Hangfire is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public 
+// License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
+
 using System;
 using Hangfire.Common;
 using Hangfire.Logging;
@@ -6,12 +22,6 @@ using Hangfire.Storage;
 
 namespace Hangfire
 {
-    public enum AttemptsExceededAction
-    {
-        Fail = 0,
-        Delete
-    }
-
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
@@ -99,7 +109,7 @@ namespace Hangfire
                     retryAttempt, 
                     Attempts,
                     exceptionMessage.Length > maxMessageLength
-                    ? exceptionMessage.Substring(0, maxMessageLength - 1) + "�"
+                    ? exceptionMessage.Substring(0, maxMessageLength - 1) + "…"
                     : exceptionMessage)
             };
 
@@ -125,7 +135,7 @@ namespace Hangfire
         {
             context.CandidateState = new DeletedState
             {
-                Reason = String.Format("Automatic deletion after retry count exceeded {0}", Attempts)
+                Reason = String.Format("Exceeded the maximum number of retry attempts.")
             };
 
             if (LogEvents)
