@@ -16,6 +16,7 @@
 
 using System;
 using System.Linq;
+using Hangfire.Client;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
@@ -36,7 +37,13 @@ namespace Hangfire
             Queues = new[] { EnqueuedState.DefaultQueue };
             ShutdownTimeout = BackgroundServer.DefaultShutdownTimeout;
             SchedulePollingInterval = SchedulePoller.DefaultPollingInterval;
+            HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
+
             ServerWatchdogOptions = new ServerWatchdogOptions();
+
+            CreationProcess = new DefaultJobCreationProcess();
+            PerformanceProcess = new DefaultJobPerformanceProcess();
+            StateMachineFactoryFactory = new StateMachineFactoryFactory();
         }
 
         public string ServerName { get; set; }
@@ -66,7 +73,13 @@ namespace Hangfire
 
         public TimeSpan ShutdownTimeout { get; set; }
         public TimeSpan SchedulePollingInterval { get; set; }
+        public TimeSpan HeartbeatInterval { get; set; }
+
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
+
+        public IJobCreationProcess CreationProcess { get; set; }
+        public IJobPerformanceProcess PerformanceProcess { get; set; }
+        public IStateMachineFactoryFactory StateMachineFactoryFactory { get; set; }
 
         public void WriteToLog(ILog logger)
         {

@@ -26,6 +26,8 @@ namespace Hangfire
     public class BackgroundJobServer : IDisposable
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+
+        private readonly BackgroundJobServerOptions _options;
         private readonly IDisposable _server;
 
         /// <summary>
@@ -77,8 +79,10 @@ namespace Hangfire
             if (options == null) throw new ArgumentNullException("options");
             if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
 
+            _options = options;
+
             var processes = new List<IServerProcess>();
-            processes.AddRange(GetProcesses(options));
+            processes.AddRange(GetProcesses());
             processes.AddRange(storage.GetComponents());
             processes.AddRange(additionalProcesses);
 
@@ -106,21 +110,19 @@ namespace Hangfire
             Logger.Info("Hangfire Server stopped.");
         }
 
-        private static IEnumerable<IServerProcess> GetProcesses([NotNull] BackgroundJobServerOptions options)
+        private IEnumerable<IServerProcess> GetProcesses()
         {
-            if (options == null) throw new ArgumentNullException("options");
-
             var processes = new List<IServerProcess>();
 
-            for (var i = 0; i < options.WorkerCount; i++)
+            for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(new WorkerContext(options.Queues, i + 1)));
+                processes.Add(new Worker(new WorkerContext(_options.Queues, i + 1), _options.PerformanceProcess, _options.StateMachineFactoryFactory));
             }
 
-            processes.Add(new ServerHeartbeat());
-            processes.Add(new SchedulePoller(options.SchedulePollingInterval));
-            processes.Add(new ServerWatchdog(options.ServerWatchdogOptions));
-            processes.Add(new RecurringJobScheduler());
+            processes.Add(new ServerHeartbeat(_options.HeartbeatInterval));
+            processes.Add(new ServerWatchdog(_options.ServerWatchdogOptions));
+            processes.Add(new SchedulePoller(_options.SchedulePollingInterval, _options.StateMachineFactoryFactory));
+            processes.Add(new RecurringJobScheduler(_options.CreationProcess, _options.StateMachineFactoryFactory));
 
             return processes;
         }
