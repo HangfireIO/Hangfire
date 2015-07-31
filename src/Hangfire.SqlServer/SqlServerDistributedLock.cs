@@ -23,7 +23,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
-    internal class SqlServerDistributedLock : IDisposable
+    public class SqlServerDistributedLock : IDisposable
     {
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
@@ -43,10 +43,7 @@ namespace Hangfire.SqlServer
 
         private bool _completed;
 
-        public SqlServerDistributedLock(
-            [NotNull] SqlServerStorage storage,
-            [NotNull] string resource, 
-            TimeSpan timeout)
+        public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
