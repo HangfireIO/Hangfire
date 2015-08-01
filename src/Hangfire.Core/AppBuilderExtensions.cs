@@ -95,7 +95,7 @@ namespace Hangfire
             if (builder == null) throw new ArgumentNullException("builder");
             if (storage == null) throw new ArgumentNullException("storage");
             if (options == null) throw new ArgumentNullException("options");
-            if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
+            if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
 
             var server = new BackgroundJobServer(options, storage, additionalProcesses);
             Servers.Add(server);
