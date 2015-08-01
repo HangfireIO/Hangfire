@@ -13,8 +13,15 @@
     <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    
+1.5.0-beta2
+* Added – Allow to specify a custom queue for recurring jobs (by @maleet).
+* Added – Allow to pass custom creation/performance processes to `BackgroundJobServer` via options.
+* Changed – Updated Dashboard CSS to Twitter Bootstrap 3.3.5.
+* Fixed – `OverflowException` in Dashboard when job duration exceeds int.MaxValue (by @mavenius).
+* Fixed – "More details" button in Dashboard changes to "Less details" when collapsed (by @pascalberger).
 
-1.5.0
+1.5.0-beta1
 * Added – `IBackgroundProcess` interface that allows to implement custom background processes.
 * Added – `BackgroundServer` class for creating a server instance with completely custom background processes.
 * Added – `JobActivatorScope` class to support custom IoC scopes/lifetimes.
