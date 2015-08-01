@@ -22,6 +22,7 @@
 Hangfire.Core
 * Added – Allow to specify a custom queue for recurring jobs (by @maleet).
 * Added – Allow to pass custom creation/performance processes to `BackgroundJobServer` via options.
+* Added – Missing `UseHangfireServer` overloads with additional background processes.
 * Changed – Updated Dashboard CSS to Twitter Bootstrap 3.3.5.
 * Fixed – `OverflowException` in Dashboard when job duration exceeds int.MaxValue (by @mavenius).
 * Fixed – "More details" button in Dashboard changes to "Less details" when collapsed (by @pascalberger).

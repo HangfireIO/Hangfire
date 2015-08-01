@@ -18,10 +18,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
+using Hangfire.Server;
 using Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Infrastructure;
@@ -55,6 +57,13 @@ namespace Hangfire
         }
 
         public static IAppBuilder UseHangfireServer(
+            [NotNull] this IAppBuilder builder, 
+            [NotNull] params IBackgroundProcess[] additionalProcesses)
+        {
+            return builder.UseHangfireServer(JobStorage.Current, new BackgroundJobServerOptions(), additionalProcesses);
+        }
+
+        public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options)
         {
@@ -64,13 +73,31 @@ namespace Hangfire
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options,
+            [NotNull] params IBackgroundProcess[] additionalProcesses)
+        {
+            return builder.UseHangfireServer(JobStorage.Current, options, additionalProcesses);
+        }
+
+        public static IAppBuilder UseHangfireServer(
+            [NotNull] this IAppBuilder builder,
+            [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage)
         {
-            if (builder == null) throw new ArgumentNullException("builder");
-            if (options == null) throw new ArgumentNullException("options");
-            if (storage == null) throw new ArgumentNullException("storage");
+            return builder.UseHangfireServer(storage, options, new IBackgroundProcess[0]);
+        }
 
-            var server = new BackgroundJobServer(options, storage);
+        public static IAppBuilder UseHangfireServer(
+            [NotNull] this IAppBuilder builder,
+            [NotNull] JobStorage storage,
+            [NotNull] BackgroundJobServerOptions options, 
+            [NotNull] params IBackgroundProcess[] additionalProcesses)
+        {
+            if (builder == null) throw new ArgumentNullException("builder");
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (options == null) throw new ArgumentNullException("options");
+            if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
+
+            var server = new BackgroundJobServer(options, storage, additionalProcesses);
             Servers.Add(server);
 
             var context = new OwinContext(builder.Properties);
