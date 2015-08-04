@@ -87,7 +87,7 @@
                         {
                             <div class="pull-right job-creation-date">
                                 Created
-                                <span data-moment="@JobHelper.ToTimestamp(job.CreatedAt.Value)"></span>
+                                @Html.RelativeTime(job.CreatedAt.Value)
                             </div>
                         }
                         @if (job != null)

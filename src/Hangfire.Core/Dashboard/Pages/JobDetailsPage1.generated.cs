@@ -309,18 +309,17 @@ WriteLiteral(@""" data-loading-text=""Deleting..."" data-confirm=""Do you really
             #line default
             #line hidden
 WriteLiteral("                            <div class=\"pull-right job-creation-date\">\r\n         " +
-"                       Created\r\n                                <span data-momen" +
-"t=\"");
+"                       Created\r\n                                ");
 
 
             
             #line 90 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                              Write(JobHelper.ToTimestamp(job.CreatedAt.Value));
+                           Write(Html.RelativeTime(job.CreatedAt.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("\"></span>\r\n                            </div>\r\n");
+WriteLiteral("\r\n                            </div>\r\n");
 
 
             

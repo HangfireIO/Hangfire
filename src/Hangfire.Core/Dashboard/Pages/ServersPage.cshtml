@@ -45,9 +45,7 @@
                         <td>
                             @if (server.Heartbeat.HasValue)
                             {
-                                <span data-moment="@JobHelper.ToTimestamp(server.Heartbeat.Value)">
-                                        @server.Heartbeat
-                                    </span>
+                                @Html.RelativeTime(server.Heartbeat.Value)
                             }
                         </td>
                     </tr>
