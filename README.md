@@ -126,7 +126,8 @@ Related Projects
 * [Hangfire.CompositeC1](https://bitbucket.org/burningice/hangfire.compositec1) by [@burningice](https://bitbucket.org/burningice)
 * [Hangfire.PostgreSql](https://github.com/frankhommers/Hangfire.PostgreSql) by [@frankhommers](https://github.com/frankhommers)
 * [Hangfire.Firebird](https://github.com/rsegerink/Hangfire.Firebird) by [@rsegerink](https://github.com/rsegerink)
-* [Hangfire.SQLite](https://github.com/vip32/Hangfire.SQLite) by [@vip32](https://github.com/vip32/Hangfire.SQLite)
+* [Hangfire.SQLite](https://github.com/vip32/Hangfire.SQLite) by [@vip32](https://github.com/vip32)
+* [Hangfire.MemoryStorage](https://github.com/perrich/Hangfire.MemoryStorage) by [@perrich](https://github.com/perrich)
 
 Building the sources
 ---------------------
