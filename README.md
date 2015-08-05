@@ -1,7 +1,7 @@
 Hangfire 
 =========
 
-[![Official Site](https://img.shields.io/badge/site-hangfire.io-lightgrey.svg)](http://hangfire.io) [![Latest version](https://img.shields.io/nuget/v/Hangfire.svg)](https://www.nuget.org/packages?q=hangfire) [![Build status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) [![Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg)](https://travis-ci.org/HangfireIO/Hangfire)  [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](http://www.gnu.org/licenses/lgpl-3.0.html)
+[![Official Site](https://img.shields.io/badge/site-hangfire.io-blue.svg)](http://hangfire.io) [![Latest version](https://img.shields.io/nuget/v/Hangfire.svg)](https://www.nuget.org/packages?q=hangfire) [![Build status](https://ci.appveyor.com/api/projects/status/70m632jkycqpnsp9?svg=true)](https://ci.appveyor.com/project/odinserj/hangfire-525) [![Build Status](https://travis-ci.org/HangfireIO/Hangfire.svg)](https://travis-ci.org/HangfireIO/Hangfire)  [![License LGPLv3](https://img.shields.io/badge/license-LGPLv3-green.svg)](http://www.gnu.org/licenses/lgpl-3.0.html)
 
 Incredibly easy way to perform **fire-and-forget**, **delayed** and **recurring jobs** inside **ASP.NET applications**. CPU and I/O intensive, long-running and short-running jobs are supported. No Windows Service / Task Scheduler required. Backed by Redis, SQL Server, SQL Azure or MSMQ.
 
@@ -126,7 +126,8 @@ Related Projects
 * [Hangfire.CompositeC1](https://bitbucket.org/burningice/hangfire.compositec1) by [@burningice](https://bitbucket.org/burningice)
 * [Hangfire.PostgreSql](https://github.com/frankhommers/Hangfire.PostgreSql) by [@frankhommers](https://github.com/frankhommers)
 * [Hangfire.Firebird](https://github.com/rsegerink/Hangfire.Firebird) by [@rsegerink](https://github.com/rsegerink)
-* [Hangfire.SQLite](https://github.com/vip32/Hangfire.SQLite) by [@vip32](https://github.com/vip32/Hangfire.SQLite)
+* [Hangfire.SQLite](https://github.com/vip32/Hangfire.SQLite) by [@vip32](https://github.com/vip32)
+* [Hangfire.MemoryStorage](https://github.com/perrich/Hangfire.MemoryStorage) by [@perrich](https://github.com/perrich)
 
 Building the sources
 ---------------------
