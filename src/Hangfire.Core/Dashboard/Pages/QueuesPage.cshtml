@@ -1,4 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System.Linq
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @inherits RazorPage
@@ -72,7 +73,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    @foreach (var job in queue.FirstJobs)
+                                    @foreach (var job in queue.FirstJobs.Where(j => j.Value != null))
                                     {
                                         <tr class="@(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
                                             <td class="min-width">
