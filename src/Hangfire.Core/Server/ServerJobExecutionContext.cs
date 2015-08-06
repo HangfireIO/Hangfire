@@ -84,10 +84,9 @@ namespace Hangfire.Server
         {
             using (var transaction = _connection.CreateWriteTransaction())
             {
-                var state = new ProcessingSubState();
                 var message = string.Format("{0}%: {1}", percentComplete, currentStatus);
                 Logger.InfoFormat("[UpdateProgress] {0}", message);
-                state.Reason = message;
+                var state = new ProcessingSubState(message);
                 transaction.SetJobState(_jobId, state);
                 transaction.Commit();
             }

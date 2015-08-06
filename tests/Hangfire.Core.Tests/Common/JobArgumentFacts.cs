@@ -13,7 +13,7 @@ namespace Hangfire.Core.Tests.Common
 	public class JobArgumentFacts
 	{
 		private readonly Mock<JobActivator> _activator;
-        private readonly Mock<IJobExecutionContext> _jobExecutionContext;
+		private readonly Mock<IJobExecutionContext> _jobExecutionContext;
 
 		public JobArgumentFacts()
 		{
@@ -21,8 +21,8 @@ namespace Hangfire.Core.Tests.Common
 			_activator.Setup(x => x.ActivateJob(It.IsAny<Type>()))
 				      .Returns(() => new JobArgumentFacts());
 
-            _jobExecutionContext = new Mock<IJobExecutionContext>();
-        }
+			_jobExecutionContext = new Mock<IJobExecutionContext>();
+		}
 
 		private const Boolean BooleanValue = true;
 		public void Method(Boolean value) { Assert.Equal(BooleanValue, value); }

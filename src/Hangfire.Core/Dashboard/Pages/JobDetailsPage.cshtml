@@ -127,9 +127,7 @@
                 foreach (IGrouping<string, Hangfire.Storage.Monitoring.StateHistoryDto> stateGroup in stateGroups)
                 {
                     var entry = stateGroup.Last();
-                    var mostRecentEntry = stateGroup.First();
-                    
-                    var stateEnteredAt = entry.CreatedAt; 
+
                     var background = index == 0
                         ? JobHistoryRenderer.GetForegroundStateColor(entry.StateName)
                         : JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
