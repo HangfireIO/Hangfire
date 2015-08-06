@@ -145,19 +145,23 @@ namespace Hangfire.Server
                 jobData.EnsureLoaded();
 
                 JobExecutionContext.Current = jobExecutionContext;
+                try
+                {
+                    var performContext = new PerformContext(
+                        _context, connection, jobId, jobData.Job, jobData.CreatedAt, jobExecutionContext);
 
-                var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, jobExecutionContext);
+                    var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
+                    var duration = Stopwatch.StartNew();
 
-                var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
-                var duration = Stopwatch.StartNew();
+                    var result = _process.Run(performContext, jobData.Job);
+                    duration.Stop();
 
-                var result = _process.Run(performContext, jobData.Job);
-                duration.Stop();
-				
-                JobExecutionContext.Current = null;
-
-                return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                    return new SucceededState(result, (long)latency, duration.ElapsedMilliseconds);
+                }
+                finally
+                {
+                    JobExecutionContext.Current = null;
+                }
             }
             catch (OperationCanceledException)
             {
