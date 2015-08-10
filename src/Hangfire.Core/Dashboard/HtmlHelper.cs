@@ -103,6 +103,11 @@ namespace Hangfire.Dashboard
                 return "Can not find the target method.";
             }
 
+            if (!string.IsNullOrEmpty(job.DisplayName))
+            {
+                return job.DisplayName;
+            }
+
             var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
 
             if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)

@@ -175,7 +175,14 @@ namespace Hangfire.Common
         /// </summary>
         [NotNull]
         public IReadOnlyList<object> Args { get; private set; }
-        
+
+        /// <summary>
+        /// Gets or sets the DisplayName for this job, which allows overriding the default
+        /// on the dashboard (this takes precendence over any DisplayNameAttribute on the
+        /// method this job represents).
+        /// </summary>
+        public string DisplayName { get; set; }
+
         public override string ToString()
         {
             return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
