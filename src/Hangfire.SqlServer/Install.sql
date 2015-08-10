@@ -348,8 +348,17 @@ BEGIN
 	BEGIN
 		PRINT 'Installing schema version 5';
 
+		DROP INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [HangFire].[JobQueue];
+		PRINT 'Dropped index [IX_HangFire_JobQueue_QueueAndFetchedAt] to modify the [HangFire].[JobQueue].[Queue] column';
+
 		ALTER TABLE [HangFire].[JobQueue] ALTER COLUMN [Queue] NVARCHAR (50) NOT NULL;
 		PRINT 'Modified [HangFire].[JobQueue].[Queue] length to 50';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_JobQueue_QueueAndFetchedAt] ON [HangFire].[JobQueue] (
+            [Queue] ASC,
+            [FetchedAt] ASC
+        );
+        PRINT 'Re-created index [IX_HangFire_JobQueue_QueueAndFetchedAt]';
 		
 		ALTER TABLE [HangFire].[Server] ALTER COLUMN [Id] NVARCHAR (100) NOT NULL;
 		PRINT 'Modified [HangFire].[Server].[Id] length to 100';
