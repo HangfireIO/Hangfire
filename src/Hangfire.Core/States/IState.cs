@@ -20,10 +20,21 @@ using Hangfire.Annotations;
 namespace Hangfire.States
 {
     /// <summary>
-    /// Предоставляет базовые члены для описания состояния фоновой 
-    /// задачию.
+    /// Provides the essential members for describing a background job state.
     /// </summary>
     /// <remarks>
+    /// <para>Background processing in Hangfire is all about moving a background job
+    /// from one state to another. States are used to clearly decide what to do
+    /// with a background job. For example, <see cref="EnqueuedState"/> tells
+    /// Hangfire that a job should be processed by a <see cref="Hangfire.Server.Worker"/>,
+    /// and <see cref="FailedState"/> tells Hangfire that a job should be investigated 
+    /// by a developer.</para>
+    /// 
+    /// <para>Each state have some essential properties like <see cref="Name"/>,
+    /// <see cref="IsFinal"/> and a custom ones that are exposed through
+    /// the <see cref="SerializeData"/> method.</para>
+    /// 
+    /// 
     /// Описывает, в каком состоянии находилась или находится фоновая задача,
     /// реализатор может содержать любые пользовательские данные и сохранять
     /// их через соответствующий метод. 
@@ -41,10 +52,29 @@ namespace Hangfire.States
     public interface IState
     {
         /// <summary>
-        /// Получает строковый идентификатор состояния. Должен быть уникальным,
-        /// регистро-независимым. Определяет текущее состояние.
+        /// Gets the unique name of the state.
         /// </summary>
-        string Name { get; }
+        /// <remarks>
+        /// <para>Since states determine the current processing pipeline of a 
+        /// background job, we should be able to distinguish one state
+        /// from another.</para>
+        /// 
+        /// <para>In Hangfire we are distinguishing one state from another using 
+        /// the state name.</para>
+        /// 
+        /// <note type="implement">
+        /// The returning value should be hard-coded, no modifications of
+        /// this property should be allowed to a user. Implementors should
+        /// not add a public setter on this property.
+        /// </note> 
+        /// 
+        /// Since states are used to determine the processing pipeline,
+        /// State names are used to distinguish one state from each other,
+        /// not
+        /// State names are used to distinguish the state between each other.
+        /// Implementors are 
+        /// </remarks>
+        [NotNull] string Name { get; }
 
         /// <summary>
         /// Gets the human-readable reason of a state transition.
@@ -56,23 +86,25 @@ namespace Hangfire.States
         /// to the corresponding state. Here are some examples:</para>
         /// <list type="bullet">
         ///     <item>
-        ///         <i>Can not change the state of a job to 'Enqueued': target 
+        ///         <i>Can not change the state to 'Enqueued': target 
         ///         method was not found</i>
         ///     </item>
         ///     <item><i>Exceeded the maximum number of retry attempts</i></item>
         /// </list>
-        /// Reason value is usually not hard-coded in a state implementation,
+        /// The reason value is usually not hard-coded in a state implementation,
         /// allowing users to change it when creating an instance of a state.
         /// </remarks>
-        [CanBeNull]
-        string Reason { get; }
+        [CanBeNull] string Reason { get; }
 
         /// <summary>
-        /// Determines 
-        /// Объявляет состояние конечным. Задача в конечном состоянии помечается
-        /// на удаление через определенный интервал времени, который настраивается
-        /// в фильтрах.
+        /// Gets if the current state is a final one.
         /// </summary>
+        /// <remarks>
+        /// When a background job is moved to a final state, state machine sets
+        /// it expiration time to a non-zero value. Final states are considered
+        /// as a termination states, in which the background job lifecycle is 
+        /// finished.
+        /// </remarks>
         bool IsFinal { get; }
 
         /// <summary>
@@ -80,6 +112,12 @@ namespace Hangfire.States
         /// перевести задачу в данное состояние, если тип или метод
         /// задачи не найден.
         /// </summary>
+        /// <remarks>
+        /// During a state transition, state machine fetches and de-serializes the
+        /// job information, such as type, method info and so on. Some times, due
+        /// to different reasons, for example, absent assembly, this process throws
+        /// an exception, leading to the inability of deserialize a job.
+        /// </remarks>
         bool IgnoreJobLoadException { get; }
 
         /// <summary>
@@ -89,6 +127,6 @@ namespace Hangfire.States
         /// работы токенов отмены. Записанные данные доступны через метод GetStateData.
         /// </summary>
         /// <returns></returns>
-        Dictionary<string, string> SerializeData();
+        [NotNull] Dictionary<string, string> SerializeData();
     }
 }

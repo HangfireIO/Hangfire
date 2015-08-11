@@ -21,6 +21,10 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Defines the <i>final</i> state of a background job when nobody
+    /// is interested whether it was performed or not.
+    /// </summary>
     public class DeletedState : IState
     {
         public static readonly string StateName = "Deleted";

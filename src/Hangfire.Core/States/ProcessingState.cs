@@ -21,11 +21,15 @@ using Hangfire.Common;
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Defines the <i>intermediate</i> state of a background job when a 
+    /// <see cref="Hangfire.Server.Worker"/> has started to process it.
+    /// </summary>
     public class ProcessingState : IState
     {
         public static readonly string StateName = "Processing";
 
-        public ProcessingState(string serverId, int workerNumber)
+        internal ProcessingState(string serverId, int workerNumber)
         {
             if (String.IsNullOrWhiteSpace(serverId)) throw new ArgumentNullException("serverId");
 

@@ -22,11 +22,15 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Defines the <i>final</i> state of a background job when a <see cref="Hangfire.Server.Worker"/>
+    /// performed it without any exception thrown by a job method.
+    /// </summary>
     public class SucceededState : IState
     {
         public static readonly string StateName = "Succeeded";
 
-        public SucceededState(object result, long latency, long performanceDuration)
+        internal SucceededState(object result, long latency, long performanceDuration)
         {
             Result = result;
             Latency = latency;

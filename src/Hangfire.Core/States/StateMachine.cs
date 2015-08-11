@@ -27,7 +27,6 @@ namespace Hangfire.States
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
         
-
         private readonly IStorageConnection _connection;
         private readonly IStateChangeProcess _stateChangeProcess;
 
@@ -113,7 +112,7 @@ namespace Hangfire.States
                         toState = new FailedState(ex.InnerException)
                         {
                             Reason = String.Format(
-                                "Can not change the state of a job to '{0}': target method was not found.",
+                                "Can not change the state to '{0}': target method was not found.",
                                 toState.Name)
                         };
 

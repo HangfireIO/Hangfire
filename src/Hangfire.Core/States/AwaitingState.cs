@@ -23,6 +23,12 @@ using Newtonsoft.Json;
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Defines the <i>intermediate</i> state of a background job when it is waiting
+    /// for a parent background job to be finished before it is moved to the
+    /// <see cref="EnqueuedState"/> by the <see cref="ContinuationsSupportAttribute"/>
+    /// filter.
+    /// </summary>
     public class AwaitingState : IState
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);

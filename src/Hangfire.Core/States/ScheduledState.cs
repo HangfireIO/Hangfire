@@ -22,6 +22,11 @@ using Newtonsoft.Json;
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Defines the <i>intermediate</i> state of a background job when it is placed 
+    /// on a schedule to be moved to the <see cref="EnqueuedState"/> later by 
+    /// <see cref="Hangfire.Server.SchedulePoller"/> background process.
+    /// </summary>
     public class ScheduledState : IState
     {
         public static readonly string StateName = "Scheduled";

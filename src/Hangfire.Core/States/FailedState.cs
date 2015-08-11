@@ -20,6 +20,11 @@ using Hangfire.Common;
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Defines the <i>intermediate</i> state of a background job when its processing 
+    /// was interrupted by an exception and it is a developer's responsibility
+    /// to decide what to do with it next.
+    /// </summary>
     public class FailedState : IState
     {
         public static readonly string StateName = "Failed";
