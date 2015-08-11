@@ -81,8 +81,7 @@ namespace Hangfire.Server
                         ex);
 
                     // Break the loop when the wait handle was signaled.
-                    context.CancellationToken.WaitHandle.WaitOne(nextTry);
-                    context.CancellationToken.ThrowIfCancellationRequested();
+                    context.SleepOrThrow(nextTry);
                 }
             }
         }

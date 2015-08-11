@@ -49,7 +49,7 @@ namespace Hangfire.Server
                 }
             }
 
-            context.CancellationToken.WaitHandle.WaitOne(_options.CheckInterval);
+            context.Sleep(_options.CheckInterval);
         }
 
         public override string ToString()

@@ -60,7 +60,7 @@ namespace Hangfire.Server
                     _enqueuedCount = 0;
                 }
 
-                context.CancellationToken.WaitHandle.WaitOne(_pollingInterval);
+                context.Sleep(_pollingInterval);
             }
             else
             {
