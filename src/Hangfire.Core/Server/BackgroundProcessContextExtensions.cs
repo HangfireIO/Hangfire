@@ -23,13 +23,13 @@ namespace Hangfire.Server
     {
         public static bool Sleep([NotNull] this BackgroundProcessContext context, TimeSpan timeout)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context == null) throw new ArgumentNullException("context");
             return context.CancellationToken.WaitHandle.WaitOne(timeout);
         }
 
         public static void SleepOrThrow([NotNull] this BackgroundProcessContext context, TimeSpan timeout)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (context == null) throw new ArgumentNullException("context");
             context.CancellationToken.WaitHandle.WaitOne(timeout);
             context.CancellationToken.ThrowIfCancellationRequested();
         }
