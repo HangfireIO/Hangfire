@@ -26,7 +26,7 @@ namespace Hangfire.States
     /// <summary>
     /// Defines the <i>intermediate</i> state of a background job when it is placed 
     /// on a message queue to be processed by the <see cref="Server.Worker"/> 
-    /// background process <b>as soon as possible</b>.
+    /// background process <i>as soon as possible</i>.
     /// </summary>
     /// <remarks>
     /// Background job identifier is placed on a queue with the given name. When
@@ -42,10 +42,12 @@ namespace Hangfire.States
     /// method overloads for simpler API.
     /// 
     /// <code lang="cs" source="..\Samples\States.cs" region="EnqueuedState #1" />
+    /// <code lang="vb" source="..\VBSamples\States.vb" region="EnqueuedState #1" />
     /// 
     /// The code below implements the retry action for a failed background job.
     /// 
     /// <code lang="cs" source="..\Samples\States.cs" region="EnqueuedState #2" />
+    /// <code lang="vb" source="..\VBSamples\States.vb" region="EnqueuedState #2" />
     ///  
     /// </example>
     /// 
@@ -54,7 +56,7 @@ namespace Hangfire.States
     /// <seealso cref="O:Hangfire.BackgroundJobClientExtensions.Create">BackgroundJobClientExtensions.Create Overload</seealso>
     /// <seealso cref="Server.Worker"/>
     /// 
-    /// <threadsafety static="false" instance="false" />
+    /// <threadsafety static="true" instance="false" />
     public class EnqueuedState : IState
     {
         /// <summary>
@@ -143,12 +145,12 @@ namespace Hangfire.States
         }
 
         /// <summary>
-        /// Gets date/time when the current state instance was created.
+        /// Gets a date/time when the current state instance was created.
         /// </summary>
         public DateTime EnqueuedAt { get; private set; }
 
         /// <summary>
-        /// Gets the name of this state. Equals to <see cref="StateName"/>.
+        /// Gets a name of the state. Equals to <see cref="StateName"/>.
         /// </summary>
         public string Name { get { return StateName; } }
 
@@ -170,7 +172,26 @@ namespace Hangfire.States
         /// Returns the serialized representation of the current state.
         /// </summary>
         /// <remarks>
-        /// Rewrtdsgasoiug oisg uoias 
+        /// <list type="table">
+        ///     <listheader>
+        ///         <term>Key</term>
+        ///         <term>Type</term>
+        ///         <term>Deserialize Method</term>
+        ///         <description>Notes</description>
+        ///     </listheader>
+        ///     <item>
+        ///         <term><c>EnqueuedAt</c></term>
+        ///         <term><see cref="DateTime"/></term>
+        ///         <term><see cref="JobHelper.DeserializeDateTime"/></term>
+        ///         <description>Please see the <see cref="EnqueuedAt"/> property.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term><c>Queue</c></term>
+        ///         <term><see cref="string"/></term>
+        ///         <term><i>Not required</i></term>
+        ///         <description>Please see the <see cref="Queue"/> property.</description>
+        ///     </item>
+        /// </list>
         /// </remarks>
         /// <returns></returns>
         public Dictionary<string, string> SerializeData()

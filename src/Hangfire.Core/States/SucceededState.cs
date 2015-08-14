@@ -23,32 +23,122 @@ using Hangfire.Storage;
 namespace Hangfire.States
 {
     /// <summary>
-    /// Defines the <i>final</i> state of a background job when a <see cref="Hangfire.Server.Worker"/>
-    /// performed it without any exception thrown by a job method.
+    /// Defines the <i>final</i> state of a background job when a <see cref="Server.Worker"/>
+    /// performed an <i>enqueued</i> job without any exception thrown during the performance.
     /// </summary>
+    /// <remarks>
+    /// <para>All the transitions to the <i>Succeeded</i> state are internal for the <see cref="Server.Worker"/>
+    /// background process. You can't create background jobs using this state, and can't change state
+    /// to <i>Succeeded</i>.</para>
+    /// <para>This state is used in a user code primarily in state change filters (TODO: add a link)
+    /// to add custom logic during state transitions.</para> 
+    /// </remarks> 
+    /// 
+    /// <seealso cref="EnqueuedState"/>
+    /// <seealso cref="Server.Worker"/>
+    /// 
+    /// <threadsafety static="true" instance="false" />
     public class SucceededState : IState
     {
+        /// <summary>
+        /// Represents the name of the <i>Succeeded</i> state. This field is read-only.
+        /// </summary>
+        /// <remarks>
+        /// The value of this field is <c>"Succeeded"</c>.
+        /// </remarks>
         public static readonly string StateName = "Succeeded";
 
         internal SucceededState(object result, long latency, long performanceDuration)
         {
+            SucceededAt = DateTime.UtcNow;
             Result = result;
             Latency = latency;
             PerformanceDuration = performanceDuration;
-            SucceededAt = DateTime.UtcNow;
+            
         }
 
-        public object Result { get; private set; }
+        /// <summary>
+        /// Gets a date/time when the current state instance was created.
+        /// </summary>
         public DateTime SucceededAt { get; private set; }
+
+        /// <summary>
+        /// Gets the value returned by a job method.
+        /// </summary>
+        public object Result { get; private set; }
+        
+        /// <summary>
+        /// Gets the total number of milliseconds passed from a job
+        /// creation time till the start of the performance.
+        /// </summary>
         public long Latency { get; private set; }
+
+        /// <summary>
+        /// Gets the total milliseconds elapsed from a processing start.
+        /// </summary>
         public long PerformanceDuration { get; private set; }
 
+        /// <summary>
+        /// Gets a name of the state. Equals to <see cref="StateName"/>.
+        /// </summary>
         public string Name { get { return StateName; } }
+
+        /// <inheritdoc />
         public string Reason { get; set; }
 
         public bool IsFinal { get { return true; } }
         public bool IgnoreJobLoadException { get { return false; } }
 
+        /// <summary>
+        /// Gets the serialized state data for the current instance.
+        /// </summary>
+        /// <remarks>
+        /// <list type="table">
+        ///     <listheader>
+        ///         <term>Key</term>
+        ///         <term>Type</term>
+        ///         <term>Deserialize Method</term>
+        ///         <description>Notes</description>
+        ///     </listheader>
+        ///     <item>
+        ///         <term><c>SucceededAt</c></term>
+        ///         <term><see cref="DateTime"/></term>
+        ///         <term><see cref="JobHelper.DeserializeDateTime"/></term>
+        ///         <description>Please see the <see cref="SucceededAt"/> property.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term><c>PerformanceDuration</c></term>
+        ///         <term><see cref="long"/></term>
+        ///         <term>
+        ///             <see cref="Int64.Parse(string, IFormatProvider)"/> with 
+        ///             <see cref="CultureInfo.InvariantCulture"/>
+        ///         </term>
+        ///         <description>Please see the <see cref="PerformanceDuration"/> property.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term><c>Latency</c></term>
+        ///         <term><see cref="long"/></term>
+        ///         <term>
+        ///             <see cref="Int64.Parse(string, IFormatProvider)"/> with 
+        ///             <see cref="CultureInfo.InvariantCulture"/>
+        ///         </term>
+        ///         <description>Please see the <see cref="Latency"/> property.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term><c>Result</c></term>
+        ///         <term><see cref="object"/></term>
+        ///         <term><see cref="JobHelper.FromJson"/></term>
+        ///         <description>
+        ///             <para>Please see the <see cref="Result"/> property.</para>
+        ///             <para>This key may be missing from the dictionary, when the return 
+        ///             value was <see langword="null" />. Always check for its existence 
+        ///             before using it.</para>
+        ///         </description>
+        ///     </item>
+        /// </list>
+        /// </remarks> 
+        /// 
+        /// <returns>A dictionary with serialized properties.</returns>
         public Dictionary<string, string> SerializeData()
         {
             var data = new Dictionary<string, string>
