@@ -36,7 +36,7 @@
         else
         {
             var currentState = job.History.Count > 0 ? job.History[0] : null;
-            if (currentState != null && currentState.StateName == ProcessingState.StateName)
+            if (currentState != null && currentState.StateName == ProcessingState.StateName && currentState.Data.ContainsKey("ServerId"))
             {
                 var server = monitor.Servers().FirstOrDefault(x => x.Name == currentState.Data["ServerId"]);
                 if (server == null)
