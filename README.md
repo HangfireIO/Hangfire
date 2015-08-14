@@ -128,6 +128,7 @@ Related Projects
 * [Hangfire.Firebird](https://github.com/rsegerink/Hangfire.Firebird) by [@rsegerink](https://github.com/rsegerink)
 * [Hangfire.SQLite](https://github.com/vip32/Hangfire.SQLite) by [@vip32](https://github.com/vip32)
 * [Hangfire.MemoryStorage](https://github.com/perrich/Hangfire.MemoryStorage) by [@perrich](https://github.com/perrich)
+* [Hangfire.Funq](https://github.com/apilavakis/Hangfire.Funq) by [@apilavakis](https://github.com/apilavakis)
 
 Building the sources
 ---------------------
