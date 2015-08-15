@@ -25,34 +25,89 @@ namespace Hangfire.States
     /// Defines the <i>final</i> state of a background job when nobody
     /// is interested whether it was performed or not.
     /// </summary>
+    /// <remarks>
+    /// TODO: add a remarks section
+    /// </remarks>
     public class DeletedState : IState
     {
+        /// <summary>
+        /// Represents the name of the <i>Deleted</i> state. This field is read-only.
+        /// </summary>
+        /// <remarks>
+        /// The value of this field is <c>"Deleted"</c>.
+        /// </remarks>
         public static readonly string StateName = "Deleted";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeletedState"/> class.
+        /// </summary>
         public DeletedState()
         {
             DeletedAt = DateTime.UtcNow;
         }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always equals to <see cref="StateName"/> for the <see cref="DeletedState"/>.
+        /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
+        /// article for the details.
+        /// </remarks>
         public string Name
         {
             get { return StateName; }
         }
 
+        /// <inheritdoc />
         public string Reason { get; set; }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="true"/> for the <see cref="DeletedState"/>.
+        /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
+        /// for the details.
+        /// </remarks>
         public bool IsFinal
         {
             get { return true; }
         }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="true" /> for the <see cref="DeletedState"/>.
+        /// Please see the description of this property in the
+        /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
+        /// article.
+        /// </remarks>
         public bool IgnoreJobLoadException
         {
             get { return true; }
         }
 
+        /// <summary>
+        /// Gets a date/time when the current state instance was created.
+        /// </summary>
         public DateTime DeletedAt { get; private set; }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// <para>Returning dictionary contains the following keys. You can obtain 
+        /// the state data by using the <see cref="IStorageConnection.GetStateData"/>
+        /// method.</para>
+        /// <list type="table">
+        ///     <listheader>
+        ///         <term>Key</term>
+        ///         <term>Type</term>
+        ///         <term>Deserialize Method</term>
+        ///         <description>Notes</description>
+        ///     </listheader>
+        ///     <item>
+        ///         <term><c>DeletedAt</c></term>
+        ///         <term><see cref="DateTime"/></term>
+        ///         <term><see cref="JobHelper.DeserializeDateTime"/></term>
+        ///         <description>Please see the <see cref="DeletedAt"/> property.</description>
+        ///     </item>
+        /// </list>
+        /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
