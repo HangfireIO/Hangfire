@@ -149,29 +149,39 @@ namespace Hangfire.States
         /// </summary>
         public DateTime EnqueuedAt { get; private set; }
 
-        /// <summary>
-        /// Gets a name of the state. Equals to <see cref="StateName"/>.
-        /// </summary>
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always equals to <see cref="StateName"/> for the <see cref="EnqueuedState"/>.
+        /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
+        /// article for the details.
+        /// </remarks>
         public string Name { get { return StateName; } }
 
         /// <inheritdoc />
         public string Reason { get; set; }
 
-        /// <summary>
-        /// Gets whether this state is a final one. Always returns <see langword="false"/>.
-        /// </summary>
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="false" /> for the <see cref="EnqueuedState"/>.
+        /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
+        /// for the details.
+        /// </remarks>
         public bool IsFinal { get { return false; } }
 
-        /// <summary>
-        /// Gets whether transition to this state should ignore de-serialization exceptions.
-        /// Always returns <see langword="false"/>.
-        /// </summary>
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="false"/> for the <see cref="EnqueuedState"/>.
+        /// Please see the description of this property in the
+        /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
+        /// article.
+        /// </remarks>
         public bool IgnoreJobLoadException { get { return false; } }
 
-        /// <summary>
-        /// Returns the serialized representation of the current state.
-        /// </summary>
+        /// <inheritdoc />
         /// <remarks>
+        /// <para>Returning dictionary contains the following keys. You can obtain 
+        /// the state data by using the <see cref="IStorageConnection.GetStateData"/>
+        /// method.</para>
         /// <list type="table">
         ///     <listheader>
         ///         <term>Key</term>
@@ -193,7 +203,6 @@ namespace Hangfire.States
         ///     </item>
         /// </list>
         /// </remarks>
-        /// <returns></returns>
         public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>

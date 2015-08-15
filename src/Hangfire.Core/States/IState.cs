@@ -23,7 +23,7 @@ namespace Hangfire.States
     /// Provides the essential members for describing a background job state.
     /// </summary>
     /// <remarks>
-    /// <para>Background processing in Hangfire is all about moving a background job
+    /// <para>Background job processing in Hangfire is all about moving a background job
     /// from one state to another. States are used to clearly decide what to do
     /// with a background job. For example, <see cref="EnqueuedState"/> tells
     /// Hangfire that a job should be processed by a <see cref="Hangfire.Server.Worker"/>,
@@ -32,53 +32,78 @@ namespace Hangfire.States
     /// 
     /// <para>Each state have some essential properties like <see cref="Name"/>,
     /// <see cref="IsFinal"/> and a custom ones that are exposed through
-    /// the <see cref="SerializeData"/> method.</para>
+    /// the <see cref="SerializeData"/> method. Serialized data may be used during
+    /// the processing stage.</para>
     /// 
-    /// 
-    /// Описывает, в каком состоянии находилась или находится фоновая задача,
-    /// реализатор может содержать любые пользовательские данные и сохранять
-    /// их через соответствующий метод. 
-    /// 
-    /// Состояния позволяют отследить весь жизненный цикл задачи.
-    /// 
-    /// Фильтры состояний позволяют добавлять дополнительную логику при
-    /// смене состояний, например, записывать или удалять то или иное значение
-    /// в хранилище в пределах транзакции.
-    /// 
-    /// Состояние определяет процесс дальнейшей обработки фоновой задачи. Так,
-    /// при смене состояния на EnqueuedState, текущая задача записывается в 
-    /// соответствующую очередь, которая прослушивается воркером.
+    /// <para>Hangfire allows you to define custom states to extend the processing
+    /// pipeline. <see cref="IStateHandler"/> interface implementation can be used
+    /// to define additional work for a state transition, and 
+    /// <see cref="Server.IBackgroundProcess"/> interface implementation can be
+    /// used to process background jobs in a new state. For example, delayed jobs
+    /// and their <see cref="ScheduledState"/>, continuations and their 
+    /// <see cref="AwaitingState"/> can be simply moved to an extension package.</para>
     /// </remarks>
+    /// 
+    /// <example>
+    /// <para>Let's create a new state. Consider you haves background jobs that
+    /// throw a transient exception from time to time, and you want to simply
+    /// ignore those exceptions. By default, Hangfire will move a job that throwed
+    /// an exception to the <see cref="FailedState"/>, however a job in the <i>failed</i>
+    /// state will live in a Failed jobs page forever, unless we use <see cref="AutomaticRetryAttribute"/>,
+    /// delete or retry it manually, because the <see cref="FailedState"/> is not
+    /// a <i>final</i> state.</para>
+    /// 
+    /// <para>Our new state will look like a <see cref="FailedState"/>, but we
+    /// define the state as a <i>final</i> one, letting Hangfire to expire faulted
+    /// jobs. Please refer to the <see cref="IState"/> interface properties to learn
+    /// about their details.</para>
+    /// 
+    /// <para>In articles related to <see cref="IStateHandler"/> and <see cref="IElectStateFilter"/>
+    /// interfaces we'll discuss how to use this new state.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\States.cs" region="FaultedState" />
+    /// </example>
+    /// 
+    /// <seealso cref="IStateMachine" />
+    /// <seealso cref="IStateHandler" />
+    /// <seealso cref="IElectStateFilter" />
+    /// <seealso cref="IApplyStateFilter" />
     public interface IState
     {
         /// <summary>
         /// Gets the unique name of the state.
         /// </summary>
-        /// <remarks>
-        /// <para>Since states determine the current processing pipeline of a 
-        /// background job, we should be able to distinguish one state
-        /// from another.</para>
         /// 
-        /// <para>In Hangfire we are distinguishing one state from another using 
-        /// the state name.</para>
+        /// <value>Unique among other states string, that is ready for 
+        /// ordinal comparisons.</value>
+        /// 
+        /// <remarks>
+        /// <para>The state name is used to differentiate one state from another
+        /// during the state change process. So all the implemented states
+        /// should have a <b>unique</b> state name. Please use one-word names 
+        /// that start with a capital letter, in a past tense in English for 
+        /// your state names, for example:</para>
+        /// <list type="bullet">
+        ///     <item><c>Succeeded</c></item>
+        ///     <item><c>Enqueued</c></item>
+        ///     <item><c>Deleted</c></item>
+        ///     <item><c>Failed</c></item>
+        /// </list>
         /// 
         /// <note type="implement">
         /// The returning value should be hard-coded, no modifications of
         /// this property should be allowed to a user. Implementors should
         /// not add a public setter on this property.
-        /// </note> 
-        /// 
-        /// Since states are used to determine the processing pipeline,
-        /// State names are used to distinguish one state from each other,
-        /// not
-        /// State names are used to distinguish the state between each other.
-        /// Implementors are 
+        /// </note>
         /// </remarks>
         [NotNull] string Name { get; }
 
         /// <summary>
         /// Gets the human-readable reason of a state transition.
         /// </summary>
+        /// 
+        /// <value>Any string with a reasonable length to fit dashboard elements.</value>
+        /// 
         /// <remarks>
         /// <para>The reason is usually displayed in the Dashboard UI to simplify 
         /// the understanding of a background job lifecycle by providing a 
@@ -97,36 +122,81 @@ namespace Hangfire.States
         [CanBeNull] string Reason { get; }
 
         /// <summary>
-        /// Gets if the current state is a final one.
+        /// Gets if the current state is a <i>final</i> one.
         /// </summary>
+        /// 
+        /// <value><see langword="false" /> for <i>intermediate states</i>,
+        /// and <see langword="true" /> for the <i>final</i> ones.</value>
+        /// 
         /// <remarks>
-        /// When a background job is moved to a final state, state machine sets
-        /// it expiration time to a non-zero value. Final states are considered
-        /// as a termination states, in which the background job lifecycle is 
-        /// finished.
+        /// <para>Final states define a termination stage of a background job 
+        /// processing pipeline. Background jobs in a final state is considered 
+        /// as finished with no further processing required.</para>
+        /// 
+        /// <para>The <see cref="IStateMachine">state machine</see> marks
+        /// finished background jobs to be expired within an interval that
+        /// is defined in the <see cref="ApplyStateContext.JobExpirationTimeout"/>
+        /// property that is available from a state changing filter that 
+        /// implements the <see cref="IApplyStateFilter"/> interface.</para>
+        /// 
+        /// <note type="implement">
+        /// When implementing this property, always hard-code this property to
+        /// <see langword="true"/> or <see langword="false" />. Hangfire does
+        /// not work with states that can be both <i>intermediate</i> and
+        /// <i>final</i> yet. Don't define a public setter for this property.
+        /// </note>
         /// </remarks>
+        /// 
+        /// <seealso cref="SucceededState" />
+        /// <seealso cref="FailedState" />
+        /// <seealso cref="DeletedState" />
         bool IsFinal { get; }
 
         /// <summary>
-        /// Объявляет, будет ли выбрасываться исключение при попытке
-        /// перевести задачу в данное состояние, если тип или метод
-        /// задачи не найден.
+        /// Gets whether transition to this state should ignore job de-serialization 
+        /// exceptions.
         /// </summary>
+        /// 
+        /// <value><see langword="false"/> to move to the <see cref="FailedState"/> on 
+        /// deserialization exceptions, <see langword="true" /> to ignore them.</value>
+        /// 
         /// <remarks>
-        /// During a state transition, state machine fetches and de-serializes the
-        /// job information, such as type, method info and so on. Some times, due
-        /// to different reasons, for example, absent assembly, this process throws
-        /// an exception, leading to the inability of deserialize a job.
+        /// <para>During a state transition, an instance of the <see cref="Common.Job"/> class
+        /// is deserialized to get state changing filters, and to allow <see cref="IStateHandler">
+        /// state handlers</see> to perform additional work related to the state.</para>
+        /// 
+        /// <para>However we cannot always deserialize a job, for example, when job method was
+        /// removed from the code base or its assembly reference is missing. Since background
+        /// processing is impossible anyway, the <see cref="IStateMachine">state machine</see>
+        /// moves such a background job to the <see cref="FailedState"/> in this case to
+        /// highlight a problem to the developers (because deserialization exception may
+        /// occur due to bad refactorings or other programming mistakes).</para>
+        /// 
+        /// <para>However, in some exceptional cases we can ignore deserialization exceptions,
+        /// and allow a state transition for some states that does not require a <see cref="Common.Job"/>
+        /// instance. <see cref="FailedState"/> itself and <see cref="DeletedState"/> are
+        /// examples of such a behavior.</para>
+        /// 
+        /// <note type="implement">
+        /// In general, implementers should return <see langword="false"/> when implementing 
+        /// this property.
+        /// </note>
         /// </remarks>
+        /// 
+        /// <seealso cref="FailedState"/>
+        /// <seealso cref="DeletedState"/>
         bool IgnoreJobLoadException { get; }
 
         /// <summary>
-        /// Получает словарь с сериализованными значениями свойств свойствами состояния.
-        /// состояния. Полученные данные используются в мониторинге для предоставления
-        /// отладочной информации, а также в некоторых других случаях, например, для
-        /// работы токенов отмены. Записанные данные доступны через метод GetStateData.
+        /// Gets a serialized representation of the current state. 
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// Returning dictionary contains the serialized properties of a state. You can obtain 
+        /// the state data by using the <see cref="Storage.IStorageConnection.GetStateData"/>
+        /// method. Please refer to documentation for this method in implementors to learn
+        /// which key/value pairs are available.
+        /// </remarks>
+        /// <returns>A dictionary with serialized properties of the current state.</returns>
         [NotNull] Dictionary<string, string> SerializeData();
     }
 }

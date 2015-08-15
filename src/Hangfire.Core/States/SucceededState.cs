@@ -36,6 +36,7 @@ namespace Hangfire.States
     /// 
     /// <seealso cref="EnqueuedState"/>
     /// <seealso cref="Server.Worker"/>
+    /// <seealso cref="IState"/>
     /// 
     /// <threadsafety static="true" instance="false" />
     public class SucceededState : IState
@@ -78,21 +79,39 @@ namespace Hangfire.States
         /// </summary>
         public long PerformanceDuration { get; private set; }
 
-        /// <summary>
-        /// Gets a name of the state. Equals to <see cref="StateName"/>.
-        /// </summary>
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always equals to <see cref="StateName"/> for the <see cref="SucceededState"/>.
+        /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
+        /// article for the details.
+        /// </remarks>
         public string Name { get { return StateName; } }
 
         /// <inheritdoc />
         public string Reason { get; set; }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="true"/> for the <see cref="SucceededState"/>.
+        /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
+        /// for the details.
+        /// </remarks>
         public bool IsFinal { get { return true; } }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="false" /> for the <see cref="SucceededState"/>.
+        /// Please see the description of this property in the
+        /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
+        /// article.
+        /// </remarks>
         public bool IgnoreJobLoadException { get { return false; } }
 
-        /// <summary>
-        /// Gets the serialized state data for the current instance.
-        /// </summary>
+        /// <inheritdoc />
         /// <remarks>
+        /// <para>Returning dictionary contains the following keys. You can obtain 
+        /// the state data by using the <see cref="IStorageConnection.GetStateData"/>
+        /// method.</para>
         /// <list type="table">
         ///     <listheader>
         ///         <term>Key</term>
@@ -136,9 +155,7 @@ namespace Hangfire.States
         ///         </description>
         ///     </item>
         /// </list>
-        /// </remarks> 
-        /// 
-        /// <returns>A dictionary with serialized properties.</returns>
+        /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
             var data = new Dictionary<string, string>
