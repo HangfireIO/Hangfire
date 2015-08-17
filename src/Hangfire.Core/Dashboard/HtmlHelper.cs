@@ -240,7 +240,7 @@ namespace Hangfire.Dashboard
             BeforeFrame         = "<span class='st-frame'>"                            , AfterFrame         = "</span>",
             BeforeType          = "<span class='st-type'>"                             , AfterType          = "</span>",
             BeforeMethod        = "<span class='st-method'>"                           , AfterMethod        = "</span>",
-            BeforeParameters    = "<span class='st-param'>"                            , AfterParameters    = "</span>",
+            BeforeParameters    = "<span class='st-params'>"                           , AfterParameters    = "</span>",
             BeforeParameterType = "<span class='st-param'><span class='st-param-type'>", AfterParameterType = "</span>",
             BeforeParameterName = "<span class='st-param-name'>"                       , AfterParameterName = "</span></span>",
             BeforeFile          = "<span class='st-file'>"                             , AfterFile          = "</span>",
