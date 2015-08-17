@@ -39,7 +39,7 @@ namespace Hangfire.Dashboard
         Danger,
     }
 
-    public static class MetricStyleExtensions
+    internal static class MetricStyleExtensions
     {
         public static string ToClassName(this MetricStyle style)
         {
