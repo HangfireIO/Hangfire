@@ -13,7 +13,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
 
         public RabbitMqJobQueueFacts()
         {
-            _token = new CancellationToken();
+            _token = new CancellationTokenSource().Token;
         }
 
         [Fact]
