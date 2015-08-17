@@ -26,8 +26,30 @@ namespace Hangfire.States
     /// is interested whether it was performed or not.
     /// </summary>
     /// <remarks>
-    /// TODO: add a remarks section
+    /// <para>Deleted state is used when you are not interested in a processing
+    /// of a background job. This state isn't backed by any background process,
+    /// so when you change a state of the job to the <i>Deleted</i>, only
+    /// expiration time will be set on a job without any additional processing.</para>
     /// </remarks>
+    /// 
+    /// <example>
+    /// <para>The following example demonstrates how to cancel an <i>enqueued</i> background
+    /// job. Please note that this job may be processed before you change its state.</para>
+    /// <para>This example shows how to create an instance of the <see cref="DeletedState"/>
+    /// class and use the <see cref="IBackgroundJobClient.ChangeState"/> method. Please see
+    /// <see cref="O:Hangfire.BackgroundJob.Delete">BackgroundJob.Delete</see>
+    /// and <see cref="O:Hangfire.BackgroundJobClientExtensions.Delete">BackgroundJobClientExtensions.Delete</see>
+    /// method overloads for simpler API.</para> 
+    /// 
+    /// <code lang="cs" source="..\Samples\States.cs" region="DeletedState" />
+    /// 
+    /// </example>
+    /// 
+    /// <seealso cref="O:Hangfire.BackgroundJob.Delete">BackgroundJob.Delete Overload</seealso>
+    /// <seealso cref="O:Hangfire.BackgroundJobClientExtensions.Delete">BackgroundJobClientExtensions.Delete Overload</seealso>
+    /// <seealso cref="IBackgroundJobClient.ChangeState" />
+    /// 
+    /// <threadsafety static="true" instance="true" />
     public class DeletedState : IState
     {
         /// <summary>
