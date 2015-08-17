@@ -116,8 +116,11 @@ namespace Hangfire.States
         ///     </item>
         ///     <item><i>Exceeded the maximum number of retry attempts</i></item>
         /// </list>
+        /// <note type="implement">
         /// The reason value is usually not hard-coded in a state implementation,
-        /// allowing users to change it when creating an instance of a state.
+        /// allowing users to change it when creating an instance of a state 
+        /// through the public setter.
+        /// </note>
         /// </remarks>
         [CanBeNull] string Reason { get; }
 
