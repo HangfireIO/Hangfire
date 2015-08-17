@@ -45,6 +45,44 @@ namespace Hangfire.States
         public bool IsFinal { get { return false; } }
         public bool IgnoreJobLoadException { get { return false; } }
 
+        /// <inheritdoc />
+        /// <remarks>
+        /// <para>Returning dictionary contains the following keys. You can obtain 
+        /// the state data by using the <see cref="Storage.IStorageConnection.GetStateData"/>
+        /// method.</para>
+        /// <list type="table">
+        ///     <listheader>
+        ///         <term>Key</term>
+        ///         <term>Type</term>
+        ///         <term>Deserialize Method</term>
+        ///         <description>Notes</description>
+        ///     </listheader>
+        ///     <item>
+        ///         <term><c>FailedAt</c></term>
+        ///         <term><see cref="DateTime"/></term>
+        ///         <term><see cref="JobHelper.DeserializeDateTime"/></term>
+        ///         <description>Please see the <see cref="FailedAt"/> property.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term><c>ExceptionType</c></term>
+        ///         <term><see cref="string"/></term>
+        ///         <term><i>Not required</i></term>
+        ///         <description>The full name of the current exception type.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term><c>ExceptionMessage</c></term>
+        ///         <term><see cref="string"/></term>
+        ///         <term><i>Not required</i></term>
+        ///         <description>Message that describes the current exception.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term><c>ExceptionDetails</c></term>
+        ///         <term><see cref="string"/></term>
+        ///         <term><i>Not required</i></term>
+        ///         <description>String representation of the current exception.</description>
+        ///     </item>
+        /// </list>
+        /// </remarks>
         public Dictionary<string, string> SerializeData()
         {
             return new Dictionary<string, string>
