@@ -516,7 +516,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        public class NLogLogger : ILog
+        internal class NLogLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -698,7 +698,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        public class Log4NetLogger : ILog
+        internal class Log4NetLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -924,7 +924,7 @@ namespace Hangfire.Logging.LogProviders
             return memberInit;
         }
 
-        public class EntLibLogger : ILog
+        internal class EntLibLogger : ILog
         {
             private readonly string _loggerName;
             private readonly Action<string, string, TraceEventType> _writeLog;
@@ -1036,7 +1036,7 @@ namespace Hangfire.Logging.LogProviders
             return name => func("Name", name, false);
         }
 
-        public class SerilogLogger : ILog
+        internal class SerilogLogger : ILog
         {
             private readonly object _logger;
             private static readonly object DebugLevel;
@@ -1285,7 +1285,7 @@ namespace Hangfire.Logging.LogProviders
             return (WriteDelegate) method.CreateDelegate(typeof (WriteDelegate));
         }
 
-        public class LoupeLogger : ILog
+        internal class LoupeLogger : ILog
         {
             private const string LogSystem = "LibLog";
 
@@ -1419,7 +1419,7 @@ namespace Hangfire.Logging.LogProviders
             return stringBuilder.ToString();
         }
 
-        public class ColouredConsoleLogger : ILog
+        internal class ColouredConsoleLogger : ILog
         {
             private static readonly object Lock = new object();
             private readonly string _name;
@@ -1540,7 +1540,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<object>>(methodCall).Compile();
         }
 
-        public class ElmahLog : ILog
+        internal class ElmahLog : ILog
         {
             private readonly LogLevel _minLevel;
             private readonly Type _errorType;
