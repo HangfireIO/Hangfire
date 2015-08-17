@@ -21,6 +21,7 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+    /// <exclude />
     public class StateMachineFactory : IStateMachineFactory
     {
         public static Func<JobStorage, StateMachineFactory> Default = storage => new StateMachineFactory(storage); 
