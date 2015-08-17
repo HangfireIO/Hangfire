@@ -35,6 +35,8 @@ namespace Hangfire.SqlServer.RabbitMQ
         public void Requeue()
         {
             if (_completed) throw new InvalidOperationException("Job already completed");
+            Console.WriteLine("Sending Nack...");
+
             _channel.BasicNack(_message.DeliveryTag, false, true);
             _channel.Close(global::RabbitMQ.Client.Framing.Constants.ReplySuccess, "Requeue");
 
