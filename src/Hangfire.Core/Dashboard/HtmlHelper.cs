@@ -247,6 +247,9 @@ namespace Hangfire.Dashboard
             }
         }
 
+        // This stack trace highlighting code was derived from the project ELMAH (Error 
+        // Logging Modules and Handlers for ASP.NET, https://code.google.com/p/elmah/).
+        // Copyright (c) 2004-9 Atif Aziz (http://www.raboof.com). All rights reserved.
         private static readonly Regex ReStackTrace = new Regex(@"
                 ^
                 \s*
