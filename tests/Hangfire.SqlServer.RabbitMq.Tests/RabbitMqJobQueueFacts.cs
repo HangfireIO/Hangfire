@@ -160,16 +160,12 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             using (var queue = CleanRabbitMqQueueAttribute.GetMessageQueue("my-queue"))
             {
                 // Act
-                Console.WriteLine("Dequeue #1");
                 var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
-                Console.WriteLine("Dispose job");
                 fetchedJob.Dispose();
 
                 // Assert
-                Console.WriteLine("Dequeue #2");
                 var newFetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
 
-                Console.WriteLine("Checking result");
                 Assert.Equal("job-id", newFetchedJob.JobId);
             }
         }
