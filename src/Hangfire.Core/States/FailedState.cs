@@ -25,10 +25,54 @@ namespace Hangfire.States
     /// was interrupted by an exception and it is a developer's responsibility
     /// to decide what to do with it next.
     /// </summary>
+    /// <remarks>
+    /// <para>Failed state is used in Hangfire when something went wrong and an exception
+    /// occurred during the background job processing. The primary reason for this state
+    /// is to notify the developers that something went wrong. By default background job 
+    /// is moved to the <i>Failed</i> state only after some automatic retries, because the 
+    /// <see cref="AutomaticRetryAttribute"/> filter is enabled by default.</para>
+    /// <note type="important">
+    /// Failed jobs are <b>not expiring</b> and will stay in your current job storage 
+    /// forever, increasing its size until you retry or delete them manually. If you 
+    /// expect some exceptions, please use the following rules.
+    /// <list type="bullet">
+    ///     <item>Ignore, move to <i>Succeeded</i> state – use the <c>catch</c>
+    ///     statement in your code without re-throwing the exception.</item>
+    ///     <item>Ignore, move to <i>Deleted</i> state – use the <see cref="AutomaticRetryAttribute"/>
+    ///     with <see cref="AttemptsExceededAction.Delete"/> option.</item>
+    ///     <item>Re-queue a job – use the <see cref="AutomaticRetryAttribute"/> with
+    ///     <see cref="AttemptsExceededAction.Fail"/> option.</item>
+    /// </list>
+    /// </note>
+    /// <para>It is not supposed to use the <see cref="FailedState"/> class in a user
+    /// code unless you are writing state changing filters or new background processing
+    /// rules.</para>
+    /// </remarks>
+    /// 
+    /// <seealso cref="AutomaticRetryAttribute"/>
+    /// <seealso cref="IStateMachine"/>
+    /// <seealso cref="Server.Worker"/>
+    /// 
+    /// <threadsafety static="true" instance="false" />
     public class FailedState : IState
     {
+        /// <summary>
+        /// Represents the name of the <i>Failed</i> state. This field is read-only.
+        /// </summary>
+        /// <remarks>
+        /// The value of this field is <c>"Failed"</c>.
+        /// </remarks>
         public static readonly string StateName = "Failed";
 
+        /// <summary>
+        /// Initializes a new instace of the <see cref="FailedState"/> class
+        /// with the given exception.
+        /// </summary>
+        /// <param name="exception">Exception that occurred during the background 
+        /// job processing.</param>
+        /// 
+        /// <exception cref="ArgumentNullException">The <paramref name="exception"/> 
+        /// argument is <see langword="null" /></exception>
         public FailedState(Exception exception)
         {
             if (exception == null) throw new ArgumentNullException("exception");
@@ -37,12 +81,42 @@ namespace Hangfire.States
             Exception = exception;
         }
 
-        public DateTime FailedAt { get; set; }
-        public Exception Exception { get; set; }
+        /// <summary>
+        /// Gets a date/time when the current state instance was created.
+        /// </summary>
+        public DateTime FailedAt { get; private set; }
 
+        /// <summary>
+        /// Gets the exception that occurred during the background job processing.
+        /// </summary>
+        public Exception Exception { get; private set; }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always equals to <see cref="StateName"/> for the <see cref="FailedState"/>.
+        /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
+        /// article for the details.
+        /// </remarks>
         public string Name { get { return StateName; } }
+
+        /// <inheritdoc />
         public string Reason { get; set; }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="false" /> for the <see cref="FailedState"/>.
+        /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
+        /// for the details.
+        /// </remarks>
         public bool IsFinal { get { return false; } }
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// Always returns <see langword="false"/> for the <see cref="FailedState"/>.
+        /// Please see the description of this property in the
+        /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
+        /// article.
+        /// </remarks>
         public bool IgnoreJobLoadException { get { return false; } }
 
         /// <inheritdoc />
