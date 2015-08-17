@@ -54,6 +54,8 @@ namespace Hangfire.States
     /// <seealso cref="O:Hangfire.BackgroundJob.Enqueue">BackgroundJob.Enqueue Overload</seealso>
     /// <seealso cref="O:Hangfire.BackgroundJobClientExtensions.Enqueue">BackgroundJobClientExtensions.Enqueue Overload</seealso>
     /// <seealso cref="O:Hangfire.BackgroundJobClientExtensions.Create">BackgroundJobClientExtensions.Create Overload</seealso>
+    /// <seealso cref="IBackgroundJobClient.Create" />
+    /// <seealso cref="IBackgroundJobClient.ChangeState" />
     /// <seealso cref="Server.Worker"/>
     /// 
     /// <threadsafety static="true" instance="false" />
