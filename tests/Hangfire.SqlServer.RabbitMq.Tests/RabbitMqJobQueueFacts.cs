@@ -34,7 +34,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             Assert.Equal("factory", exception.ParamName);
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Enqueue_SendsTheJobId()
         {
             // Arrange
@@ -53,7 +53,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Dequeue_ReturnsFetchedJob_WithJobId()
         {
             RabbitMqUtils.EnqueueJobId("my-queue", "job-id");
@@ -67,7 +67,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Dequeue_ThrowsCanceledException_WhenTokenHasBeenCancelled()
         {
             using (var queue = CleanRabbitMqQueueAttribute.GetMessageQueue("my-queue"))
@@ -79,7 +79,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("queue-1", "queue-2")]
+        [FactWithTimeout, CleanRabbitMqQueue("queue-1", "queue-2")]
         public void Dequeue_ReturnsFetchedJob_FromOtherQueues_IfFirstAreEmpty()
         {
             RabbitMqUtils.EnqueueJobId("queue-2", "job-id");
@@ -91,7 +91,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Dequeue_MakesJobInvisibleForOtherFetchers()
         {
             // Arrange
@@ -112,7 +112,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void RemoveFromQueue_OnFetchedJob_RemovesTheJobCompletely()
         {
             // Arrange
@@ -133,7 +133,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void DisposeWithoutRemoval_OnFetchedJob_ReturnsTheJobToTheQueue()
         {
             // Arrange
@@ -151,7 +151,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void DisposeWithoutRemoval_OnFetchedJob_CanBeDequeuedAgain()
         {
             // Arrange
