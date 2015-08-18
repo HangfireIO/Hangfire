@@ -200,7 +200,7 @@ namespace Hangfire.Core.Tests
         public void ChangeState_ReturnsTheResult_OfStateMachineInvocation()
         {
             _stateMachine.Setup(x => x.ChangeState("job-id", _state.Object, null, It.IsAny<CancellationToken>()))
-                .Returns(true);
+                .Returns(_state.Object);
             var client = CreateClient();
 
             var result = client.ChangeState("job-id", _state.Object, null);

@@ -63,7 +63,16 @@ namespace Hangfire.States
             return jobId;
         }
 
-        public bool ChangeState(string jobId, IState toState, string[] fromStates, CancellationToken cancellationToken)
+        /// <summary>
+        /// Attempts to change the state of a job, respecting any applicable job filters and state handlers
+        /// <remarks>Also ensures that the job data can be loaded for this job</remarks>
+        /// </summary>
+        /// <param name="jobId">The ID of the job to be changed</param>
+        /// <param name="toState">The new state to change to</param>
+        /// <param name="fromStates">Constraints for the initial job state to change from, optional</param>
+        /// <param name="cancellationToken">A cancellation token used while loading job data</param>
+        /// <returns><c>Null</c> if a constraint has failed or if the job data could not be loaded, otherwise the final applied state</returns>
+        public IState ChangeState(string jobId, IState toState, string[] fromStates, CancellationToken cancellationToken)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (toState == null) throw new ArgumentNullException("toState");
@@ -85,13 +94,13 @@ namespace Hangfire.States
                 if (jobData == null)
                 {
                     // The job does not exist. This may happen, because not
-                    // all storage backends support foreign keys. 
-                    return false;
+                    // all storage backends support foreign keys.
+                    return null;
                 }
 
                 if (fromStates != null && !fromStates.Contains(jobData.State, StringComparer.OrdinalIgnoreCase))
                 {
-                    return false;
+                    return null;
                 }
 
                 bool loadSucceeded = true;
@@ -121,13 +130,16 @@ namespace Hangfire.States
                 }
 
                 var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt);
-                ChangeState(context, toState, jobData.State);
+                IState appliedState = ChangeState(context, toState, jobData.State);
 
-                return loadSucceeded;
+                // Only return the applied state if everything loaded correctly
+                return loadSucceeded
+                    ? appliedState
+                    : null;
             }
         }
 
-        private void ChangeState(StateContext context, IState toState, string oldStateName)
+        private IState ChangeState(StateContext context, IState toState, string oldStateName)
         {
             var electStateContext = new ElectStateContext(context, _connection, this, toState, oldStateName);
             _stateChangeProcess.ElectState(_connection, electStateContext);
@@ -139,6 +151,8 @@ namespace Hangfire.States
                 electStateContext.TraversedStates);
 
             ApplyState(applyStateContext);
+
+            return applyStateContext.NewState;
         }
 
         private void ApplyState(ApplyStateContext context)
