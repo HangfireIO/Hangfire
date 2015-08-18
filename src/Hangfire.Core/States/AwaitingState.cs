@@ -29,8 +29,6 @@ namespace Hangfire.States
     /// <see cref="EnqueuedState"/> by the <see cref="ContinuationsSupportAttribute"/>
     /// filter.
     /// </summary>
-    /// 
-    /// <remarks>TODO</remarks>
     public class AwaitingState : IState
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);
@@ -48,7 +46,7 @@ namespace Hangfire.States
         /// the specified parent background job id and with an instance of the 
         /// <see cref="EnqueuedState"/> class as a next state.
         /// </summary>
-        /// <param name="parentId"></param>
+        /// <param name="parentId">The identifier of a background job to wait for.</param>
         public AwaitingState(string parentId)
             : this(parentId, new EnqueuedState())
         {
@@ -58,8 +56,8 @@ namespace Hangfire.States
         /// Initializes a new instance of the <see cref="AwaitingState"/> class with
         /// the specified parent job id and next state.
         /// </summary>
-        /// <param name="parentId"></param>
-        /// <param name="nextState"></param>
+        /// <param name="parentId">The identifier of a background job to wait for.</param>
+        /// <param name="nextState">The next state for the continuation.</param>
         public AwaitingState(string parentId, IState nextState)
             : this(parentId, nextState, JobContinuationOptions.OnAnyFinishedState)
         {
@@ -69,9 +67,9 @@ namespace Hangfire.States
         /// Initializes a new instance of the <see cref="AwaitingState"/> class with
         /// the given <i>options</i> along with other parameters.
         /// </summary>
-        /// <param name="parentId"></param>
-        /// <param name="nextState"></param>
-        /// <param name="options"></param>
+        /// <param name="parentId">The identifier of a background job to wait for.</param>
+        /// <param name="nextState">The next state for the continuation.</param>
+        /// <param name="options">Options to configure a continuation.</param>
         public AwaitingState(string parentId, IState nextState, JobContinuationOptions options)
             : this(parentId, nextState, options, DefaultExpiration)
         {
@@ -81,10 +79,10 @@ namespace Hangfire.States
         /// Initializes a new instance of the <see cref="AwaitingState"/> class with
         /// the specified <i>expiration time</i> along with other parameters.
         /// </summary>
-        /// <param name="parentId"></param>
-        /// <param name="nextState"></param>
-        /// <param name="options"></param>
-        /// <param name="expiration"></param>
+        /// <param name="parentId">The identifier of a background job to wait for.</param>
+        /// <param name="nextState">The next state for the continuation.</param>
+        /// <param name="options">Options to configure the continuation.</param>
+        /// <param name="expiration">The expiration time for the continuation.</param>
         [JsonConstructor]
         public AwaitingState(
             [NotNull] string parentId,
