@@ -100,7 +100,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Background Process Server";
+            return "Background Server";
         }
 
         private static IServerProcess WrapProcess(IServerProcess process)
