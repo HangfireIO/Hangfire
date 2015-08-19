@@ -62,38 +62,6 @@ namespace Hangfire.Dashboard
                 : 500;
 
             await owinContext.Response.WriteAsync(results);
-
-            /*DateTime now = DateTime.UtcNow;
-
-            StubPage page = new StubPage();
-            page.Assign(context);
-
-            IMonitoringApi monitoringAPI = page.Storage.GetMonitoringApi();
-            List<ServerDto> servers = monitoringAPI
-                .Servers()
-                .Where(s => s.Heartbeat.HasValue && s.Heartbeat.Value >= now.Subtract(ServerTimeout))
-                .ToList();
-
-            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Converters = new JsonConverter[]
-                {
-                    new StringEnumConverter
-                    {
-                        CamelCaseText = true
-                    }
-                }
-            };
-            string serialized = JsonConvert.SerializeObject(servers, jsonSerializerSettings);
-
-            OwinContext owinContext = new OwinContext(context.OwinEnvironment);
-            owinContext.Response.ContentType = "application/json";
-            owinContext.Response.StatusCode = servers.Any()
-                ? 200
-                : 500;
-
-            await owinContext.Response.WriteAsync(serialized);*/
         }
 
         private string GetSerialisedStatusResponse(RequestDispatcherContext context, DateTime now)
