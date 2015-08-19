@@ -36,6 +36,7 @@ namespace Hangfire.Core.Tests
 
             _process = new Mock<IJobCreationProcess>();
             _state = new Mock<IState>();
+            _state.Setup(x => x.Name).Returns("Mock");
             _job = Job.FromExpression(() => Method());
         }
 
