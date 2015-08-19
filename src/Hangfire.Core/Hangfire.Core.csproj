@@ -82,6 +82,7 @@
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\IJobCreator.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
+    <Compile Include="Dashboard\JsonStatus.cs" />
     <Compile Include="Dashboard\OwinRequestExtensions.cs" />
     <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
       <AutoGen>True</AutoGen>

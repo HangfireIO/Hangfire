@@ -46,7 +46,8 @@ namespace Hangfire.Dashboard
             Routes = new RouteCollection();
             Routes.AddRazorPage("/", x => new HomePage());
             Routes.Add("/stats", new JsonStats());
-            
+            Routes.Add("/status", new JsonStatus());
+
             #region Embedded static content
 
             Routes.Add("/js", new CombinedResourceDispatcher(
