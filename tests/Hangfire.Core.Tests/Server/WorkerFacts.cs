@@ -55,7 +55,8 @@ namespace Hangfire.Core.Tests.Server
                 It.IsAny<string>(),
                 It.IsAny<IState>(),
                 It.IsAny<string[]>(),
-                It.IsAny<CancellationToken>())).Returns(true);
+                It.IsAny<CancellationToken>()
+            )).Returns<string, IState, string[], CancellationToken>((j, t, f, c) => t);
 
             _stateMachineFactoryFactory = new Mock<IStateMachineFactoryFactory>();
             _stateMachineFactoryFactory
@@ -139,7 +140,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(
                     JobId, It.IsAny<ProcessingState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
                 .InSequence()
-                .Returns(true);
+                .Returns<string, IState, string[], CancellationToken>((j, t, f, c) => t);
 
             _process.Setup(x => x.Run(It.IsAny<PerformContext>()))
                 .InSequence();
@@ -148,7 +149,7 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.ChangeState(
                     JobId, It.IsAny<SucceededState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
                 .InSequence()
-                .Returns(true);
+                .Returns<string, IState, string[], CancellationToken>((j, t, f, c) => t);
 
             var worker = CreateWorker();
 
@@ -198,7 +199,7 @@ namespace Hangfire.Core.Tests.Server
                     It.IsAny<ProcessingState>(),
                     It.IsAny<string[]>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(false);
+                .Returns<IState>(null);
 
             var worker = CreateWorker();
 

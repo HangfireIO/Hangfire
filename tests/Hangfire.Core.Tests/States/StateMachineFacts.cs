@@ -216,7 +216,8 @@ namespace Hangfire.Core.Tests.States
                 It.Is<ApplyStateContext>(sc => sc.JobId == JobId && sc.Job.Type.Name.Equals("Console")
                     && sc.NewState == _state.Object && sc.OldStateName == OldStateName)));
 
-            Assert.True(result);
+            Assert.NotNull(result);
+            Assert.Equal(_state.Object.Name, result.Name);
         }
 
         [Fact]
@@ -235,7 +236,7 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void ChangeState_ReturnsFalse_WhenJobIsNotFound()
+        public void ChangeState_ReturnsNull_WhenJobIsNotFound()
         {
             // Arrange
             _connection.Setup(x => x.GetJobData(It.IsAny<string>()))
@@ -247,7 +248,7 @@ namespace Hangfire.Core.Tests.States
             var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState, _cts.Token);
 
             // Assert
-            Assert.False(result);
+            Assert.Null(result);
             _connection.Verify(x => x.GetJobData(JobId));
 
             _process.Verify(
@@ -272,7 +273,7 @@ namespace Hangfire.Core.Tests.States
             var result = stateMachine.ChangeState(JobId, _state.Object, FromOldState, _cts.Token);
 
             // Assert
-            Assert.False(result);
+            Assert.Null(result);
 
             _process.Verify(
                 x => x.ElectState(It.IsAny<IStorageConnection>(), It.IsAny<ElectStateContext>()),
@@ -302,11 +303,12 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             Assert.Equal(0, results.Count);
-            Assert.True(result);
+            Assert.NotNull(result);
+            Assert.Equal(_state.Object.Name, result.Name);
         }
 
         [Fact]
-        public void ChangeState_ReturnsFalse_WhenFromStatesArgumentDoesNotContainCurrentState()
+        public void ChangeState_ReturnsNull_WhenFromStatesArgumentDoesNotContainCurrentState()
         {
             // Arrange
             var stateMachine = CreateStateMachine();
@@ -316,7 +318,7 @@ namespace Hangfire.Core.Tests.States
                 JobId, _state.Object, new[] { "AnotherState" }, _cts.Token);
 
             // Assert
-            Assert.False(result);
+            Assert.Null(result);
 
             _process.Verify(
                 x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()),
@@ -359,7 +361,7 @@ namespace Hangfire.Core.Tests.States
                 _transaction.Object,
                 It.Is<ApplyStateContext>(ctx => ctx.JobId == JobId && ctx.Job == null && ctx.NewState is FailedState)));
 
-            Assert.False(result);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -386,11 +388,12 @@ namespace Hangfire.Core.Tests.States
                 _transaction.Object, 
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object)));
 
-            Assert.True(result);
+            Assert.NotNull(result);
+            Assert.Equal(_state.Object.Name, result.Name);
         }
 
         [Fact]
-        public void ChangeState_CommitsTheNewState_AndReturnsTrue()
+        public void ChangeState_CommitsTheNewState_AndReturnsAppliedState()
         {
             // Arrange
             var machine = CreateStateMachine();
@@ -406,7 +409,8 @@ namespace Hangfire.Core.Tests.States
 
             _transaction.Verify(x => x.Commit());
 
-            Assert.True(result);
+            Assert.NotNull(result);
+            Assert.Equal(_state.Object.Name, result.Name);
         }
 
         [Fact]

@@ -77,11 +77,16 @@ namespace Hangfire.Server
                     {
                         var processingState = new ProcessingState(context.ServerId, _context.WorkerNumber);
 
-                        if (!stateMachine.ChangeState(
+                        IState appliedState = stateMachine.ChangeState(
                             fetchedJob.JobId,
                             processingState,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
-                            linkedCts.Token))
+                            linkedCts.Token
+                        );
+
+                        // Cancel job processing if the job could not be loaded, was not in the initial state expected
+                        // or if a job filter changed the state to something other than processing state
+                        if (appliedState == null || !appliedState.Name.Equals(ProcessingState.StateName, StringComparison.OrdinalIgnoreCase))
                         {
                             // We should re-queue a job identifier only when graceful shutdown
                             // initiated.

@@ -51,7 +51,7 @@ namespace Hangfire
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="state">New state for a job.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
-        /// <returns>True, if state change succeeded, otherwise false.</returns>
+        /// <returns>True, if state change succeeded and a job filter did not request another state, otherwise false.</returns>
         bool ChangeState(string jobId, IState state, string fromState);
     }
 }
