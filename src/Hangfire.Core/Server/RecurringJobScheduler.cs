@@ -80,6 +80,7 @@ namespace Hangfire.Server
             {
                 var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
                 var stateMachineFactory = _stateMachineFactoryFactory.CreateFactory(context.Storage);
+                var stateMachine = stateMachineFactory.Create(connection);
 
                 foreach (var recurringJobId in recurringJobIds)
                 {
@@ -93,7 +94,7 @@ namespace Hangfire.Server
 
                     try
                     {
-                        TryScheduleJob(connection, recurringJobId, recurringJob, stateMachineFactory);
+                        TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob, stateMachine);
                     }
                     catch (JobLoadException ex)
                     {
@@ -115,10 +116,11 @@ namespace Hangfire.Server
         }
 
         private void TryScheduleJob(
+            JobStorage storage,
             IStorageConnection connection, 
             string recurringJobId, 
             Dictionary<string, string> recurringJob,
-            IStateMachineFactory stateMachineFactory)
+            IStateMachine stateMachine)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
@@ -147,7 +149,8 @@ namespace Hangfire.Server
                         state.Queue = recurringJob["Queue"];
                     }
 
-                    var jobId = CreateBackgroundJob(connection, job, state, stateMachineFactory);
+                    var context = new CreateContext(storage, connection, job, state);
+                    var jobId = _creationProcess.Run(context, stateMachine);
 
                     if (String.IsNullOrEmpty(jobId))
                     {
@@ -173,14 +176,6 @@ namespace Hangfire.Server
                     String.Format("Recurring job '{0}' was not triggered: {1}.", recurringJobId, ex.Message),
                     ex);
             }
-        }
-
-        private string CreateBackgroundJob(IStorageConnection connection, Job job, IState state, IStateMachineFactory stateMachineFactory)
-        {
-            var context = new CreateContext(connection, job, state);
-            var stateMachine = stateMachineFactory.Create(connection);
-
-            return _creationProcess.Run(context, stateMachine);
         }
     }
 }

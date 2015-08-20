@@ -22,11 +22,13 @@ namespace Hangfire.Core.Tests
         public PreserveCultureAttributeFacts()
         {
             _connection = new Mock<IStorageConnection>();
+
+            var storage = new Mock<JobStorage>();
             var job = Job.FromExpression(() => Sample());
             var state = new Mock<IState>();
 
             var createContext = new CreateContext(
-                _connection.Object, job, state.Object);
+                storage.Object, _connection.Object, job, state.Object);
             _creatingContext = new CreatingContext(createContext);
 
             var workerContext = new WorkerContextMock();

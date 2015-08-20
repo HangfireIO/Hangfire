@@ -21,11 +21,12 @@ namespace Hangfire.Core.Tests.Client
 
         public DefaultJobCreationProcessFacts()
         {
+            var storage = new Mock<JobStorage>();
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
 
-            _context = new Mock<CreateContext>(connection.Object, job, state.Object);
+            _context = new Mock<CreateContext>(storage.Object, connection.Object, job, state.Object);
 
             _creator = new Mock<IJobCreator>();
             _creator.Setup(x => x.CreateJob(
