@@ -150,26 +150,16 @@ namespace Hangfire.States
         {
             var electStateContext = new ElectStateContext(context, _connection, toState, oldStateName);
             _stateChangeProcess.ElectState(_connection, electStateContext);
-
-            var applyStateContext = new ApplyStateContext(
-                context,
-                electStateContext.CandidateState,
-                oldStateName,
-                electStateContext.TraversedStates);
-
-            ApplyState(applyStateContext);
-
-            return applyStateContext.NewState;
-        }
-
-        private void ApplyState(ApplyStateContext context)
-        {
+            
             using (var transaction = _connection.CreateWriteTransaction())
             {
-                _stateChangeProcess.ApplyState(transaction, context);
+                var applyStateContext = electStateContext.ToApplyContext();
+                _stateChangeProcess.ApplyState(transaction, applyStateContext);
 
                 transaction.Commit();
-			}
+
+                return applyStateContext.NewState;
+            }
         }
 
         private JobData GetJobData(string jobId, CancellationToken cancellationToken)

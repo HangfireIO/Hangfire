@@ -82,5 +82,10 @@ namespace Hangfire.States
             return JobHelper.FromJson<T>(Connection.GetJobParameter(
                 JobId, name));
         }
+
+        public ApplyStateContext ToApplyContext()
+        {
+            return new ApplyStateContext(this, CandidateState, CurrentState, TraversedStates);
+        }
     }
 }
