@@ -95,7 +95,6 @@
     <Compile Include="Mocks\BackgroundProcessContextMock.cs" />
     <Compile Include="Mocks\ElectStateContextMock.cs" />
     <Compile Include="Mocks\PerformContextMock.cs" />
-    <Compile Include="Mocks\StateContextMock.cs" />
     <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -130,7 +129,6 @@
     <Compile Include="States\ApplyStateContextFacts.cs" />
     <Compile Include="States\ElectStateContextFacts.cs" />
     <Compile Include="States\DefaultStateChangeProcessFacts.cs" />
-    <Compile Include="States\StateContextFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
     <Compile Include="States\StateMachineFactoryFacts.cs" />
     <Compile Include="States\StateMachineFacts.cs" />

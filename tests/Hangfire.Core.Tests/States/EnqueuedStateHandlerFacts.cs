@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.States
 
             handler.Apply(_context.Object, _transaction.Object);
 
-            _transaction.Verify(x => x.AddToQueue(Queue, _context.StateContextValue.BackgroundJob.Id));
+            _transaction.Verify(x => x.AddToQueue(Queue, _context.BackgroundJob.Id));
         }
 
         [Fact]

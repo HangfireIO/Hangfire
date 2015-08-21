@@ -22,21 +22,34 @@ namespace Hangfire.States
 {
     public class ApplyStateContext : StateContext
     {
+        private readonly BackgroundJob _backgroundJob;
+
         public ApplyStateContext(
-            [NotNull] StateContext context, 
+            [NotNull] JobStorage storage, 
+            [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
             [CanBeNull] string oldStateName, 
             [NotNull] IEnumerable<IState> traversedStates)
-            : base(context)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
             if (newState == null) throw new ArgumentNullException("newState");
             if (traversedStates == null) throw new ArgumentNullException("traversedStates");
+            
+            _backgroundJob = backgroundJob;
 
+            Storage = storage;
             OldStateName = oldStateName;
             NewState = newState;
             TraversedStates = traversedStates;
             JobExpirationTimeout = TimeSpan.FromDays(1);
         }
+
+        [NotNull]
+        public JobStorage Storage { get; private set; }
+
+        [NotNull]
+        public override BackgroundJob BackgroundJob { get { return _backgroundJob; } }
 
         [CanBeNull]
         public string OldStateName { get; private set; }

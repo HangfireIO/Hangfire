@@ -31,8 +31,12 @@ namespace Hangfire
             CreatedAt = createdAt;
         }
         
+        [NotNull]
         public string Id { get; private set; }
+
+        [CanBeNull]
         public Job Job { get; private set; }
+        
         public DateTime CreatedAt { get; private set; }
     }
 }

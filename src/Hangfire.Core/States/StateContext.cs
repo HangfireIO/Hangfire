@@ -20,27 +20,11 @@ using Hangfire.Common;
 
 namespace Hangfire.States
 {
-    public class StateContext
+    [Obsolete("This class is here for compatibility reasons. Will be removed in 2.0.0.")]
+    public abstract class StateContext
     {
-        public StateContext([NotNull] JobStorage storage, [NotNull] BackgroundJob backgroundJob)
-        {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
-
-            Storage = storage;
-            BackgroundJob = backgroundJob;
-        }
-
-        internal StateContext(StateContext context)
-            : this(context.Storage, context.BackgroundJob)
-        {
-        }
-
         [NotNull]
-        public JobStorage Storage { get; private set; }
-
-        [NotNull]
-        public BackgroundJob BackgroundJob { get; private set; }
+        public abstract BackgroundJob BackgroundJob { get; }
 
         [NotNull]
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]

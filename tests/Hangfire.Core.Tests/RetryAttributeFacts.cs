@@ -20,7 +20,7 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
 
             _context = new ElectStateContextMock();
-            _context.StateContextValue.BackgroundJob.Id = JobId;
+            _context.BackgroundJob.Id = JobId;
             _context.ConnectionValue = _connection;
             _context.CandidateStateValue = _failedState;
         }

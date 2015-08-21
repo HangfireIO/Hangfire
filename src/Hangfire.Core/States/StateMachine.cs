@@ -65,8 +65,7 @@ namespace Hangfire.States
                 TimeSpan.FromHours(1));
 
             var backgroundJob = new BackgroundJob(jobId, job, createdAt);
-            var context = new StateContext(_storage, backgroundJob);
-            ChangeState(context, state, null);
+            ChangeState(backgroundJob, state, null);
 
             return backgroundJob.Id;
         }
@@ -138,17 +137,18 @@ namespace Hangfire.States
                 }
 
                 var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
-                var context = new StateContext(_storage, backgroundJob);
-                var appliedState = ChangeState(context, toState, jobData.State);
+                var appliedState = ChangeState(backgroundJob, toState, jobData.State);
 
                 // Only return the applied state if everything loaded correctly
                 return loadSucceeded ? appliedState : null;
             }
         }
 
-        private IState ChangeState(StateContext context, IState toState, string oldStateName)
+        private IState ChangeState(BackgroundJob backgroundJob, IState toState, string oldStateName)
         {
-            var electStateContext = new ElectStateContext(context, _connection, toState, oldStateName);
+            var electStateContext = new ElectStateContext(
+                _storage, _connection, backgroundJob, toState, oldStateName);
+
             _stateChangeProcess.ElectState(_connection, electStateContext);
             
             using (var transaction = _connection.CreateWriteTransaction())

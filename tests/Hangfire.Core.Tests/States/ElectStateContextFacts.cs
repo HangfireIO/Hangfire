@@ -9,16 +9,27 @@ namespace Hangfire.Core.Tests.States
 {
     public class ElectStateContextFacts
     {
-        private readonly StateContextMock _stateContext;
         private readonly Mock<IState> _candidateState;
         private readonly Mock<IStorageConnection> _connection;
+        private readonly Mock<JobStorage> _storage;
+        private readonly BackgroundJobMock _backgroundJob;
 
         public ElectStateContextFacts()
         {
+            _storage = new Mock<JobStorage>();
+            _backgroundJob = new BackgroundJobMock();
             _connection = new Mock<IStorageConnection>();
-            _stateContext = new StateContextMock();
-
             _candidateState = new Mock<IState>();
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () =>
+                    new ElectStateContext(null, _connection.Object, _backgroundJob.Object, _candidateState.Object, null));
+
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
@@ -26,8 +37,9 @@ namespace Hangfire.Core.Tests.States
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ElectStateContext(
-                    _stateContext.Object,
+                    _storage.Object,
                     null,
+                    _backgroundJob.Object,
                     _candidateState.Object,
                     null));
 
@@ -35,12 +47,22 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenBackgroundJobIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ElectStateContext(_storage.Object, _connection.Object, null, _candidateState.Object, null));
+
+            Assert.Equal("backgroundJob", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenCandidateStateIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ElectStateContext(
-                    _stateContext.Object,
+                    _storage.Object,
                     _connection.Object,
+                    _backgroundJob.Object,
                     null,
                     null));
 
@@ -52,8 +74,8 @@ namespace Hangfire.Core.Tests.States
         {
             var context = CreateContext();
 
-            Assert.Equal(_stateContext.BackgroundJob.Id, context.BackgroundJob.Id);
-            Assert.Equal(_stateContext.BackgroundJob.Job, context.BackgroundJob.Job);
+            Assert.Equal(_backgroundJob.Id, context.BackgroundJob.Id);
+            Assert.Equal(_backgroundJob.Job, context.BackgroundJob.Job);
 
             Assert.Same(_connection.Object, context.Connection);
             Assert.Same(_candidateState.Object, context.CandidateState);
@@ -99,7 +121,7 @@ namespace Hangfire.Core.Tests.States
             context.SetJobParameter("Name", "Value");
 
             _connection.Verify(x => x.SetJobParameter(
-                _stateContext.BackgroundJob.Id, "Name", JobHelper.ToJson("Value")));
+                _backgroundJob.Id, "Name", JobHelper.ToJson("Value")));
         }
 
         [Fact]
@@ -110,14 +132,14 @@ namespace Hangfire.Core.Tests.States
             context.SetJobParameter("Name", (string)null);
 
             _connection.Verify(x => x.SetJobParameter(
-                _stateContext.BackgroundJob.Id, "Name", JobHelper.ToJson(null)));
+                _backgroundJob.Id, "Name", JobHelper.ToJson(null)));
         }
 
         [Fact]
         public void GetJobParameter_CallsTheCorrespondingMethod_WithJsonDecodedValue()
         {
             var context = CreateContext();
-            _connection.Setup(x => x.GetJobParameter(_stateContext.BackgroundJob.Id, "Name"))
+            _connection.Setup(x => x.GetJobParameter(_backgroundJob.Id, "Name"))
                 .Returns(JobHelper.ToJson("Value"));
 
             var value = context.GetJobParameter<string>("Name");
@@ -140,8 +162,9 @@ namespace Hangfire.Core.Tests.States
         private ElectStateContext CreateContext()
         {
             return new ElectStateContext(
-                _stateContext.Object,
+                _storage.Object,
                 _connection.Object,
+                _backgroundJob.Object,
                 _candidateState.Object,
                 "State");
         }

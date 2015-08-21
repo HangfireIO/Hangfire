@@ -26,23 +26,37 @@ namespace Hangfire.States
     public class ElectStateContext : StateContext
     {
         private readonly IList<IState> _traversedStates = new List<IState>();
+        private readonly BackgroundJob _backgroundJob;
         private IState _candidateState;
 
         public ElectStateContext(
-            [NotNull] StateContext context, 
-            [NotNull] IStorageConnection connection,
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection, 
+            [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState candidateState, 
             [CanBeNull] string currentState)
-            : base(context)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (connection == null) throw new ArgumentNullException("connection");
+            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
             if (candidateState == null) throw new ArgumentNullException("candidateState");
 
+            _backgroundJob = backgroundJob;
             _candidateState = candidateState;
 
+            Storage = storage;
             Connection = connection;
             CurrentState = currentState;
         }
+
+        [NotNull]
+        public override BackgroundJob BackgroundJob
+        {
+            get { return _backgroundJob; }
+        }
+
+        [NotNull]
+        public JobStorage Storage { get; private set; }
 
         [NotNull]
         public IStorageConnection Connection { get; private set; }
@@ -85,7 +99,7 @@ namespace Hangfire.States
 
         public ApplyStateContext ToApplyContext()
         {
-            return new ApplyStateContext(this, CandidateState, CurrentState, TraversedStates);
+            return new ApplyStateContext(Storage, BackgroundJob, CandidateState, CurrentState, TraversedStates);
         }
     }
 }
