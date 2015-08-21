@@ -417,6 +417,7 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff2" />
+    <Compile Include="BackgroundJob.Instance.cs" />
     <None Include="Dashboard\Pages\AwaitingJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>AwaitingJobsPage.generated.cs</LastGenOutput>

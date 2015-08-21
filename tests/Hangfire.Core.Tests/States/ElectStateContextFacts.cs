@@ -9,7 +9,6 @@ namespace Hangfire.Core.Tests.States
 {
     public class ElectStateContextFacts
     {
-        private const string JobId = "1";
         private readonly StateContextMock _stateContext;
         private readonly Mock<IState> _candidateState;
         private readonly Mock<IStorageConnection> _connection;
@@ -18,7 +17,6 @@ namespace Hangfire.Core.Tests.States
         {
             _connection = new Mock<IStorageConnection>();
             _stateContext = new StateContextMock();
-            _stateContext.JobIdValue = JobId;
 
             _candidateState = new Mock<IState>();
         }
@@ -54,8 +52,8 @@ namespace Hangfire.Core.Tests.States
         {
             var context = CreateContext();
 
-            Assert.Equal(_stateContext.Object.JobId, context.JobId);
-            Assert.Equal(_stateContext.Object.Job, context.Job);
+            Assert.Equal(_stateContext.BackgroundJob.Id, context.BackgroundJob.Id);
+            Assert.Equal(_stateContext.BackgroundJob.Job, context.BackgroundJob.Job);
 
             Assert.Same(_connection.Object, context.Connection);
             Assert.Same(_candidateState.Object, context.CandidateState);
@@ -101,7 +99,7 @@ namespace Hangfire.Core.Tests.States
             context.SetJobParameter("Name", "Value");
 
             _connection.Verify(x => x.SetJobParameter(
-                JobId, "Name", JobHelper.ToJson("Value")));
+                _stateContext.BackgroundJob.Id, "Name", JobHelper.ToJson("Value")));
         }
 
         [Fact]
@@ -112,14 +110,14 @@ namespace Hangfire.Core.Tests.States
             context.SetJobParameter("Name", (string)null);
 
             _connection.Verify(x => x.SetJobParameter(
-                JobId, "Name", JobHelper.ToJson(null)));
+                _stateContext.BackgroundJob.Id, "Name", JobHelper.ToJson(null)));
         }
 
         [Fact]
         public void GetJobParameter_CallsTheCorrespondingMethod_WithJsonDecodedValue()
         {
             var context = CreateContext();
-            _connection.Setup(x => x.GetJobParameter("1", "Name"))
+            _connection.Setup(x => x.GetJobParameter(_stateContext.BackgroundJob.Id, "Name"))
                 .Returns(JobHelper.ToJson("Value"));
 
             var value = context.GetJobParameter<string>("Name");

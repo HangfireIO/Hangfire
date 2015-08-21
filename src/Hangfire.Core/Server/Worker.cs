@@ -159,8 +159,8 @@ namespace Hangfire.Server
 
                 jobData.EnsureLoaded();
 
-                var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, token);
+                var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
+                var performContext = new PerformContext(_context, connection, backgroundJob, token);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();

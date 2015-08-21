@@ -91,6 +91,7 @@
     <Compile Include="JobCancellationTokenFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
+    <Compile Include="Mocks\BackgroundJobMock.cs" />
     <Compile Include="Mocks\BackgroundProcessContextMock.cs" />
     <Compile Include="Mocks\ElectStateContextMock.cs" />
     <Compile Include="Mocks\PerformContextMock.cs" />

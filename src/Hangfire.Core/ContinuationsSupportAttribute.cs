@@ -97,7 +97,7 @@ namespace Hangfire
             using (connection.AcquireDistributedJobLock(parentId, AddJobLockTimeout))
             {
                 var continuations = GetContinuations(connection, parentId);
-                continuations.Add(new Continuation { JobId = context.JobId, Options = awaitingState.Options });
+                continuations.Add(new Continuation { JobId = context.BackgroundJob.Id, Options = awaitingState.Options });
 
                 var jobData = connection.GetJobData(parentId);
                 if (jobData == null)
@@ -132,7 +132,7 @@ namespace Hangfire
         {
             // The following lines are being executed inside a distributed job lock,
             // so it is safe to get continuation list here.
-            var continuations = GetContinuations(context.Connection, context.JobId);
+            var continuations = GetContinuations(context.Connection, context.BackgroundJob.Id);
             var nextStates = new Dictionary<string, IState>();
 
             // Getting continuation data for all continuations – state they are waiting 
@@ -201,7 +201,7 @@ namespace Hangfire
                     Logger.Warn(String.Format(
                         "Can not start continuation '{0}' for background job '{1}': continuation does not exist.",
                         continuationJobId,
-                        context.JobId));
+                        context.BackgroundJob.Id));
 
                     break;
                 }
@@ -217,7 +217,7 @@ namespace Hangfire
                     throw new TimeoutException(String.Format(
                         "Can not start continuation '{0}' for background job '{1}': timeout expired while trying to fetch continuation state.",
                         continuationJobId,
-                        context.JobId));
+                        context.BackgroundJob.Id));
                 }
 
                 Thread.Sleep(firstAttempt ? 0 : 1);

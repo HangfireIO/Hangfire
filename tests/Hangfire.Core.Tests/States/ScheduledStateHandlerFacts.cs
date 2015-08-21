@@ -18,7 +18,7 @@ namespace Hangfire.Core.Tests.States
         public ScheduledStateHandlerFacts()
         {
             _context = new ApplyStateContextMock();
-            _context.StateContextValue.JobIdValue = JobId;
+            _context.StateContextValue.BackgroundJob.Id = JobId;
             _context.NewStateValue = new ScheduledState(_enqueueAt);
 
             _transaction = new Mock<IWriteOnlyTransaction>();

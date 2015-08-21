@@ -74,13 +74,13 @@ namespace Hangfire.States
 
         public void SetJobParameter<T>(string name, T value)
         {
-            Connection.SetJobParameter(JobId, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
             return JobHelper.FromJson<T>(Connection.GetJobParameter(
-                JobId, name));
+                BackgroundJob.Id, name));
         }
 
         public ApplyStateContext ToApplyContext()

@@ -79,7 +79,7 @@ namespace Hangfire
                     Logger.ErrorException(
                         String.Format(
                             "Failed to process the job '{0}': an exception occurred.",
-                            context.JobId),
+                            context.BackgroundJob.Id),
                         failedState.Exception);
                 }
             }
@@ -118,7 +118,7 @@ namespace Hangfire
                 Logger.WarnException(
                     String.Format(
                         "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
-                        context.JobId,
+                        context.BackgroundJob.Id,
                         retryAttempt,
                         Attempts,
                         delay),
@@ -143,7 +143,7 @@ namespace Hangfire
                 Logger.WarnException(
                     String.Format(
                         "Failed to process the job '{0}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {1}.",
-                        context.JobId,
+                        context.BackgroundJob.Id,
                         Attempts),
                     failedState.Exception);
             }
@@ -163,7 +163,7 @@ namespace Hangfire
                 context.NewState.Reason != null && 
                 context.NewState.Reason.StartsWith("Retry attempt"))
             {
-                transaction.AddToSet("retries", context.JobId);
+                transaction.AddToSet("retries", context.BackgroundJob.Id);
             }
         }
 
@@ -171,7 +171,7 @@ namespace Hangfire
         {
             if (context.OldStateName == ScheduledState.StateName)
             {
-                transaction.RemoveFromSet("retries", context.JobId);
+                transaction.RemoveFromSet("retries", context.BackgroundJob.Id);
             }
         }
     }

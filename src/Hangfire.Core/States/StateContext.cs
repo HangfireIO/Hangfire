@@ -22,23 +22,17 @@ namespace Hangfire.States
 {
     public class StateContext
     {
-        public StateContext(
-            [NotNull] JobStorage storage,
-            [NotNull] string jobId, 
-            [CanBeNull] Job job, 
-            DateTime createdAt)
+        public StateContext([NotNull] JobStorage storage, [NotNull] BackgroundJob backgroundJob)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
+            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
 
             Storage = storage;
-            JobId = jobId;
-            Job = job;
-            CreatedAt = createdAt;
+            BackgroundJob = backgroundJob;
         }
 
         internal StateContext(StateContext context)
-            : this(context.Storage, context.JobId, context.Job, context.CreatedAt)
+            : this(context.Storage, context.BackgroundJob)
         {
         }
 
@@ -46,11 +40,17 @@ namespace Hangfire.States
         public JobStorage Storage { get; private set; }
 
         [NotNull]
-        public string JobId { get; private set; }
+        public BackgroundJob BackgroundJob { get; private set; }
+
+        [NotNull]
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public string JobId { get { return BackgroundJob.Id; } }
 
         [CanBeNull]
-        public Job Job { get; private set; }
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public Job Job { get { return BackgroundJob.Job; } }
 
-        public DateTime CreatedAt { get; private set; }
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public DateTime CreatedAt { get { return BackgroundJob.CreatedAt; } }
     }
 }

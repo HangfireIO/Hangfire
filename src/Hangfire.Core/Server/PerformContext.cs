@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 
@@ -27,30 +28,25 @@ namespace Hangfire.Server
     /// </summary>
     public class PerformContext : WorkerContext
     {
-        internal PerformContext(PerformContext context)
-            : this(context, context.Connection, context.JobId, context.Job, context.CreatedAt, context.CancellationToken)
+        internal PerformContext([NotNull] PerformContext context)
+            : this(context, context.Connection, context.BackgroundJob, context.CancellationToken)
         {
             Items = context.Items;
         }
 
         internal PerformContext(
-            WorkerContext workerContext,
-            IStorageConnection connection,
-            string jobId,
-            Job job,
-            DateTime createdAt,
-            IJobCancellationToken cancellationToken)
+            [NotNull] WorkerContext workerContext,
+            [NotNull] IStorageConnection connection, 
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IJobCancellationToken cancellationToken)
             : base(workerContext)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (jobId == null) throw new ArgumentNullException("jobId");
-            if (job == null) throw new ArgumentNullException("job");
+            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
             if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
 
             Connection = connection;
-            JobId = jobId;
-            Job = job;
-            CreatedAt = createdAt;
+            BackgroundJob = backgroundJob;
             CancellationToken = cancellationToken;
 
             Items = new Dictionary<string, object>();
@@ -61,20 +57,30 @@ namespace Hangfire.Server
         /// to pass additional information between different client filters
         /// or just between different methods.
         /// </summary>
+        [NotNull]
         public IDictionary<string, object> Items { get; private set; }
 
-        public string JobId { get; private set; }
-        public Job Job { get; private set; }
-        public DateTime CreatedAt { get; private set; }
+        [NotNull]
+        public BackgroundJob BackgroundJob { get; private set; }
 
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public string JobId { get { return BackgroundJob.Id; } }
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public Job Job { get { return BackgroundJob.Job; } }
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public DateTime CreatedAt { get { return BackgroundJob.CreatedAt; } }
+
+        [NotNull]
         public IJobCancellationToken CancellationToken { get; private set; }
-        public IStorageConnection Connection { get; private set; }
 
+        [NotNull]
+        public IStorageConnection Connection { get; private set; }
+        
         public void SetJobParameter(string name, object value)
         {
             if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
 
-            Connection.SetJobParameter(JobId, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
@@ -83,7 +89,7 @@ namespace Hangfire.Server
 
             try
             {
-                return JobHelper.FromJson<T>(Connection.GetJobParameter(JobId, name));
+                return JobHelper.FromJson<T>(Connection.GetJobParameter(BackgroundJob.Id, name));
             }
             catch (Exception ex)
             {

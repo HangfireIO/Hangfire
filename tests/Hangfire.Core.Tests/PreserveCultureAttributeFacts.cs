@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading;
 using Hangfire.Client;
-using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -24,17 +23,17 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
 
             var storage = new Mock<JobStorage>();
-            var job = Job.FromExpression(() => Sample());
+            var backgroundJob = new BackgroundJobMock { Id = JobId };
             var state = new Mock<IState>();
 
             var createContext = new CreateContext(
-                storage.Object, _connection.Object, job, state.Object);
+                storage.Object, _connection.Object, backgroundJob.Job, state.Object);
             _creatingContext = new CreatingContext(createContext);
 
             var workerContext = new WorkerContextMock();
 
             var performContext = new PerformContext(
-                workerContext.Object, _connection.Object, JobId, job, DateTime.UtcNow, new Mock<IJobCancellationToken>().Object);
+                workerContext.Object, _connection.Object, backgroundJob.Object, new Mock<IJobCancellationToken>().Object);
             _performingContext = new PerformingContext(performContext);
             _performedContext = new PerformedContext(performContext, null, false, null);
         }

@@ -200,12 +200,12 @@ namespace Hangfire.States
         {
             public void Apply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.AddToSet("awaiting", context.JobId, JobHelper.ToTimestamp(DateTime.UtcNow));
+                transaction.AddToSet("awaiting", context.BackgroundJob.Id, JobHelper.ToTimestamp(DateTime.UtcNow));
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.RemoveFromSet("awaiting", context.JobId);
+                transaction.RemoveFromSet("awaiting", context.BackgroundJob.Id);
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass

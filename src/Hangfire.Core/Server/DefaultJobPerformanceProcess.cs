@@ -52,7 +52,7 @@ namespace Hangfire.Server
         {
             if (context == null) throw new ArgumentNullException("context");
 
-            var filterInfo = GetFilters(context.Job);
+            var filterInfo = GetFilters(context.BackgroundJob.Job);
 
             try
             {

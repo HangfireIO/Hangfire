@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.States
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
 
-            var context = new StateContextMock { JobIdValue = JobId };
+            var context = new StateContextMock { BackgroundJob = new BackgroundJobMock { Id = JobId } };
             _electStateContext = new ElectStateContextMock
             {
                 StateContextValue = context,

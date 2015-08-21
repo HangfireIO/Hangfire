@@ -44,19 +44,19 @@ namespace Hangfire.Server
             {
                 object instance = null;
 
-                if (!context.Job.Method.IsStatic)
+                if (!context.BackgroundJob.Job.Method.IsStatic)
                 {
-                    instance = scope.Resolve(context.Job.Type);
+                    instance = scope.Resolve(context.BackgroundJob.Job.Type);
 
                     if (instance == null)
                     {
                         throw new InvalidOperationException(
-                            String.Format("JobActivator returned NULL instance of the '{0}' type.", context.Job.Type));
+                            String.Format("JobActivator returned NULL instance of the '{0}' type.", context.BackgroundJob.Job.Type));
                     }
                 }
 
                 var deserializedArguments = DeserializeArguments(context);
-                var result = InvokeMethod(context.Job.Method, instance, deserializedArguments);
+                var result = InvokeMethod(context.BackgroundJob.Job.Method, instance, deserializedArguments);
 
                 return result;
             }
@@ -88,13 +88,13 @@ namespace Hangfire.Server
         {
             try
             {
-                var parameters = context.Job.Method.GetParameters();
-                var result = new List<object>(context.Job.Arguments.Length);
+                var parameters = context.BackgroundJob.Job.Method.GetParameters();
+                var result = new List<object>(context.BackgroundJob.Job.Arguments.Length);
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
-                    var argument = context.Job.Arguments[i];
+                    var argument = context.BackgroundJob.Job.Arguments[i];
 
                     object value;
 

@@ -44,7 +44,7 @@ namespace Hangfire.States
 
         public void ElectState(IStorageConnection connection, ElectStateContext context)
         {
-            var filterInfo = GetFilters(context.Job);
+            var filterInfo = GetFilters(context.BackgroundJob.Job);
             foreach (var filter in filterInfo.ElectStateFilters)
             {
                 filter.OnStateElection(context);
@@ -53,12 +53,12 @@ namespace Hangfire.States
 
         public void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context)
         {
-            var filterInfo = GetFilters(context.Job);
+            var filterInfo = GetFilters(context.BackgroundJob.Job);
             var filters = filterInfo.ApplyStateFilters;
 
             foreach (var state in context.TraversedStates)
             {
-                transaction.AddJobState(context.JobId, state);
+                transaction.AddJobState(context.BackgroundJob.Id, state);
             }
 
             foreach (var handler in _handlers.GetHandlers(context.OldStateName))
@@ -71,7 +71,7 @@ namespace Hangfire.States
                 filter.OnStateUnapplied(context, transaction);
             }
 
-            transaction.SetJobState(context.JobId, context.NewState);
+            transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
 
             foreach (var handler in _handlers.GetHandlers(context.NewState.Name))
             {
@@ -85,11 +85,11 @@ namespace Hangfire.States
 
             if (context.NewState.IsFinal)
             {
-                transaction.ExpireJob(context.JobId, context.JobExpirationTimeout);
+                transaction.ExpireJob(context.BackgroundJob.Id, context.JobExpirationTimeout);
             }
             else
             {
-                transaction.PersistJob(context.JobId);
+                transaction.PersistJob(context.BackgroundJob.Id);
             }
         }
 

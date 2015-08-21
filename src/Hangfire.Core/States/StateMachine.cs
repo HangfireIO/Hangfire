@@ -64,10 +64,11 @@ namespace Hangfire.States
                 createdAt,
                 TimeSpan.FromHours(1));
 
-            var context = new StateContext(_storage, jobId, job, createdAt);
+            var backgroundJob = new BackgroundJob(jobId, job, createdAt);
+            var context = new StateContext(_storage, backgroundJob);
             ChangeState(context, state, null);
 
-            return jobId;
+            return backgroundJob.Id;
         }
 
         /// <summary>
@@ -136,13 +137,12 @@ namespace Hangfire.States
                     }
                 }
 
-                var context = new StateContext(_storage, jobId, jobData.Job, jobData.CreatedAt);
-                IState appliedState = ChangeState(context, toState, jobData.State);
+                var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
+                var context = new StateContext(_storage, backgroundJob);
+                var appliedState = ChangeState(context, toState, jobData.State);
 
                 // Only return the applied state if everything loaded correctly
-                return loadSucceeded
-                    ? appliedState
-                    : null;
+                return loadSucceeded ? appliedState : null;
             }
         }
 

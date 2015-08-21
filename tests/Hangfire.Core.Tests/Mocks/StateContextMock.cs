@@ -5,25 +5,21 @@ using Moq;
 
 namespace Hangfire.Core.Tests
 {
-    public class StateContextMock
+    class StateContextMock
     {
         private readonly Lazy<StateContext> _context;
 
         public StateContextMock()
         {
             Storage = new Mock<JobStorage>();
-            JobIdValue = "job-id";
-            JobValue = Job.FromExpression(() => Console.WriteLine());
-            CreatedAtValue = DateTime.UtcNow;
+            BackgroundJob = new BackgroundJobMock();
 
             _context = new Lazy<StateContext>(
-                () => new StateContext(Storage.Object, JobIdValue, JobValue, CreatedAtValue));
+                () => new StateContext(Storage.Object, BackgroundJob.Object));
         }
 
         public Mock<JobStorage> Storage { get; set; }
-        public string JobIdValue { get; set; }
-        public Job JobValue { get; set; }
-        public DateTime CreatedAtValue { get; set; }
+        public BackgroundJobMock BackgroundJob { get; set; }
 
         public StateContext Object
         {

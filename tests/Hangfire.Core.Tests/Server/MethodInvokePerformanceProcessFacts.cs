@@ -37,7 +37,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_CanInvokeStaticMethods()
         {
             _methodInvoked = false;
-            _context.Job = Job.FromExpression(() => StaticMethod());
+            _context.BackgroundJob.Job = Job.FromExpression(() => StaticMethod());
             var process = CreateProcess();
 
             process.Run(_context.Object);
@@ -49,7 +49,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_CanInvokeInstanceMethods()
         {
             _methodInvoked = false;
-            _context.Job = Job.FromExpression<MethodInvokePerformanceProcessFacts>(x => x.InstanceMethod());
+            _context.BackgroundJob.Job = Job.FromExpression<MethodInvokePerformanceProcessFacts>(x => x.InstanceMethod());
             var process = CreateProcess();
 
             process.Run(_context.Object);
@@ -61,7 +61,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_DisposesDisposableInstance_AfterPerformance()
         {
             _disposed = false;
-            _context.Job = Job.FromExpression<Disposable>(x => x.Method());
+            _context.BackgroundJob.Job = Job.FromExpression<Disposable>(x => x.Method());
             var process = CreateProcess();
 
             process.Run(_context.Object);
@@ -74,7 +74,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _methodInvoked = false;
-            _context.Job = Job.FromExpression(() => MethodWithArguments("hello", 5));
+            _context.BackgroundJob.Job = Job.FromExpression(() => MethodWithArguments("hello", 5));
             var process = CreateProcess();
 
             // Act
@@ -95,7 +95,7 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(MethodInvokePerformanceProcessFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.Job = new Job(type, method, new[] { convertedDate });
+            _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
             var process = CreateProcess();
 
             // Act
@@ -115,7 +115,7 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(MethodInvokePerformanceProcessFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.Job = new Job(type, method, new[] { convertedDate });
+            _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
             var process = CreateProcess();
 
             // Act
@@ -130,7 +130,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _methodInvoked = false;
-            _context.Job = Job.FromExpression(() => MethodWithDateTimeArgument(SomeDateTime));
+            _context.BackgroundJob.Job = Job.FromExpression(() => MethodWithDateTimeArgument(SomeDateTime));
             var process = CreateProcess();
 
             // Act
@@ -145,7 +145,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _methodInvoked = false;
-            _context.Job = Job.FromExpression(() => NullArgumentMethod(null));
+            _context.BackgroundJob.Job = Job.FromExpression(() => NullArgumentMethod(null));
 
             var process = CreateProcess();
             // Act
@@ -162,7 +162,7 @@ namespace Hangfire.Core.Tests.Server
             var exception = new InvalidOperationException();
             _activator.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws(exception);
 
-            _context.Job = Job.FromExpression(() => InstanceMethod());
+            _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
             var process = CreateProcess();
 
             // Act
@@ -174,7 +174,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
             _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
-            _context.Job = Job.FromExpression(() => InstanceMethod());
+            _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
             var process = CreateProcess();
 
             Assert.Throws<InvalidOperationException>(
@@ -186,7 +186,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
-            _context.Job = new Job(type, method, new[] { "sdfa" });
+            _context.BackgroundJob.Job = new Job(type, method, new[] { "sdfa" });
             var process = CreateProcess();
 
             var exception = Assert.Throws<JobPerformanceException>(
@@ -199,10 +199,10 @@ namespace Hangfire.Core.Tests.Server
         public void Run_ThrowsPerformanceException_OnDisposalFailure()
         {
             _methodInvoked = false;
-            _context.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
+            _context.BackgroundJob.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
             var process = CreateProcess();
             
-            var exception = Assert.Throws<InvalidOperationException>(
+            Assert.Throws<InvalidOperationException>(
                 () => process.Run(_context.Object));
 
             Assert.True(_methodInvoked);
@@ -211,7 +211,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Run_ThrowsPerformanceException_WithUnwrappedInnerException()
         {
-            _context.Job = Job.FromExpression(() => ExceptionMethod());
+            _context.BackgroundJob.Job = Job.FromExpression(() => ExceptionMethod());
             var process = CreateProcess();
 
             var thrownException = Assert.Throws<JobPerformanceException>(
@@ -225,7 +225,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
         {
             // Arrange
-            _context.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
             var process = CreateProcess();
 
@@ -237,7 +237,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Run_ReturnsValue_WhenCallingFunctionReturningValue()
         {
-            _context.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValue());
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValue());
             var process = CreateProcess();
 
             var result = process.Run(_context.Object);

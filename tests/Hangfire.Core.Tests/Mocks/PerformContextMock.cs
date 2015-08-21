@@ -14,20 +14,16 @@ namespace Hangfire.Core.Tests
         {
             WorkerContext = new WorkerContextMock();
             Connection = new Mock<IStorageConnection>();
-            JobId = "JobId";
-            Job = Job.FromExpression(() => SomeMethod());
-            CreatedAt = DateTime.UtcNow;
+            BackgroundJob = new BackgroundJobMock();
             CancellationToken = new Mock<IJobCancellationToken>();
 
             _context = new Lazy<PerformContext>(
-                () => new PerformContext(WorkerContext.Object, Connection.Object, JobId, Job, CreatedAt, CancellationToken.Object));
+                () => new PerformContext(WorkerContext.Object, Connection.Object, BackgroundJob.Object, CancellationToken.Object));
         }
-
+        
         public WorkerContextMock WorkerContext { get; set; }
         public Mock<IStorageConnection> Connection { get; set; }
-        public string JobId { get; set; }
-        public Job Job { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public BackgroundJobMock BackgroundJob { get; set; }
         public Mock<IJobCancellationToken> CancellationToken { get; set; } 
 
         public PerformContext Object

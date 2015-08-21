@@ -158,7 +158,7 @@ namespace Hangfire.Core.Tests.States
 
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
-                It.Is<ApplyStateContext>(sc => sc.JobId == JobId && sc.Job == _job
+                It.Is<ApplyStateContext>(sc => sc.BackgroundJob.Id == JobId && sc.BackgroundJob.Job == _job
                     && sc.NewState == _state.Object && sc.OldStateName == null)));
         }
 
@@ -224,7 +224,7 @@ namespace Hangfire.Core.Tests.States
             // Assert
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
-                It.Is<ApplyStateContext>(sc => sc.JobId == JobId && sc.Job.Type.Name.Equals("Console")
+                It.Is<ApplyStateContext>(sc => sc.BackgroundJob.Id == JobId && sc.BackgroundJob.Job.Type.Name.Equals("Console")
                     && sc.NewState == _state.Object && sc.OldStateName == OldStateName)));
 
             Assert.NotNull(result);
@@ -370,7 +370,7 @@ namespace Hangfire.Core.Tests.States
             // Assert
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
-                It.Is<ApplyStateContext>(ctx => ctx.JobId == JobId && ctx.Job == null && ctx.NewState is FailedState)));
+                It.Is<ApplyStateContext>(ctx => ctx.BackgroundJob.Id == JobId && ctx.BackgroundJob.Job == null && ctx.NewState is FailedState)));
 
             Assert.Null(result);
         }
@@ -416,7 +416,7 @@ namespace Hangfire.Core.Tests.States
             _process.Verify(x => x.ApplyState(
                 _transaction.Object,
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName
-                    && ctx.Job == _job && ctx.JobId == JobId)));
+                    && ctx.BackgroundJob.Job == _job && ctx.BackgroundJob.Id == JobId)));
 
             _transaction.Verify(x => x.Commit());
 
