@@ -19,35 +19,39 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.States;
 
 namespace Hangfire.Client
 {
     public class DefaultJobCreationProcess : IJobCreationProcess
     {
         private readonly IJobFilterProvider _filterProvider;
+        private readonly IJobCreationProcess _innerProcess;
 
         public DefaultJobCreationProcess()
-            : this(JobFilterProviders.Providers)
+            : this(JobFilterProviders.Providers, new StateMachineJobCreationProcess())
         {
         }
 
-        public DefaultJobCreationProcess([NotNull] IJobFilterProvider filterProvider)
+        public DefaultJobCreationProcess(
+            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] IJobCreationProcess innerProcess)
         {
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
+
             _filterProvider = filterProvider;
+            _innerProcess = innerProcess;
         }
 
-        public string Run(CreateContext context, IStateMachine creator)
+        public string Run(CreateContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
-            if (creator == null) throw new ArgumentNullException("creator");
 
             var filterInfo = GetFilters(context.Job);
 
             try
             {
-                var createdContext = CreateWithFilters(context, creator, filterInfo.ClientFilters);
+                var createdContext = CreateWithFilters(context, filterInfo.ClientFilters);
                 return createdContext.JobId;
             }
             catch (Exception ex)
@@ -69,17 +73,14 @@ namespace Hangfire.Client
             return new JobFilterInfo(_filterProvider.GetFilters(job));
         }
 
-        private static CreatedContext CreateWithFilters(
-            CreateContext context,
-            IStateMachine creator,
+        private CreatedContext CreateWithFilters(
+            CreateContext context, 
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                var parameters = context.Parameters.ToDictionary(x => x.Key, x => JobHelper.ToJson(x.Value));
-
-                var jobId = creator.CreateJob(context.Job, parameters, context.InitialState);
+                var jobId = _innerProcess.Run(context);
                 return new CreatedContext(context, jobId, false, null);
             };
 

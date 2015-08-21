@@ -30,6 +30,6 @@ namespace Hangfire.Client
         /// Runs the process of job creation with the specified context.
         /// </summary>
         [CanBeNull]
-        string Run([NotNull] CreateContext context, [NotNull] IStateMachine creator);
+        string Run([NotNull] CreateContext context);
     }
 }

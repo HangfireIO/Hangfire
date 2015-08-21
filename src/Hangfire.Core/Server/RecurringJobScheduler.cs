@@ -31,8 +31,7 @@ namespace Hangfire.Server
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
-
-        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
+        
         private readonly IJobCreationProcess _creationProcess;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
@@ -41,31 +40,22 @@ namespace Hangfire.Server
             : this(new DefaultJobCreationProcess())
         {
         }
-
-        public RecurringJobScheduler([NotNull] IJobCreationProcess creationProcess)
-            : this(creationProcess, new StateMachineFactoryFactory())
-        {
-        }
-
+        
         public RecurringJobScheduler(
-            [NotNull] IJobCreationProcess creationProcess, 
-            [NotNull] IStateMachineFactoryFactory stateMachineFactoryFactory)
-            : this(creationProcess, stateMachineFactoryFactory, ScheduleInstant.Factory, new EveryMinuteThrottler())
+            [NotNull] IJobCreationProcess creationProcess)
+            : this(creationProcess, ScheduleInstant.Factory, new EveryMinuteThrottler())
         {
         }
 
         internal RecurringJobScheduler(
             [NotNull] IJobCreationProcess creationProcess,
-            [NotNull] IStateMachineFactoryFactory stateMachineFactoryFactory,
             [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
             [NotNull] IThrottler throttler)
         {
-            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
             if (creationProcess == null) throw new ArgumentNullException("creationProcess");
             if (instantFactory == null) throw new ArgumentNullException("instantFactory");
             if (throttler == null) throw new ArgumentNullException("throttler");
-
-            _stateMachineFactoryFactory = stateMachineFactoryFactory;
+            
             _creationProcess = creationProcess;
             _instantFactory = instantFactory;
             _throttler = throttler;
@@ -79,8 +69,6 @@ namespace Hangfire.Server
             using (connection.AcquireDistributedLock("recurring-jobs:lock", LockTimeout))
             {
                 var recurringJobIds = connection.GetAllItemsFromSet("recurring-jobs");
-                var stateMachineFactory = _stateMachineFactoryFactory.CreateFactory(context.Storage);
-                var stateMachine = stateMachineFactory.Create(connection);
 
                 foreach (var recurringJobId in recurringJobIds)
                 {
@@ -94,7 +82,7 @@ namespace Hangfire.Server
 
                     try
                     {
-                        TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob, stateMachine);
+                        TryScheduleJob(context.Storage, connection, recurringJobId, recurringJob);
                     }
                     catch (JobLoadException ex)
                     {
@@ -119,8 +107,7 @@ namespace Hangfire.Server
             JobStorage storage,
             IStorageConnection connection, 
             string recurringJobId, 
-            Dictionary<string, string> recurringJob,
-            IStateMachine stateMachine)
+            Dictionary<string, string> recurringJob)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
@@ -150,7 +137,7 @@ namespace Hangfire.Server
                     }
 
                     var context = new CreateContext(storage, connection, job, state);
-                    var jobId = _creationProcess.Run(context, stateMachine);
+                    var jobId = _creationProcess.Run(context);
 
                     if (String.IsNullOrEmpty(jobId))
                     {

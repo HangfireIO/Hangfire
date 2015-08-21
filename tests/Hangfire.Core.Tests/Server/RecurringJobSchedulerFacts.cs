@@ -21,23 +21,12 @@ namespace Hangfire.Core.Tests.Server
         private Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory; 
         private readonly Mock<IThrottler> _throttler;
         private readonly Mock<IScheduleInstant> _instant;
-        private readonly Mock<IStateMachineFactoryFactory> _stateMachineFactoryFactory;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IJobCreationProcess> _process;
 
         public RecurringJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _stateMachineFactoryFactory = new Mock<IStateMachineFactoryFactory>();
-            _stateMachineFactoryFactory
-                .Setup(x => x.CreateFactory(It.IsNotNull<JobStorage>()))
-                .Returns(() =>
-                {
-                    var factory = new Mock<IStateMachineFactory>();
-                    factory.Setup(x => x.Create(It.IsNotNull<IStorageConnection>()))
-                        .Returns(new Mock<IStateMachine>().Object);
-                    return factory.Object;
-                });
 
             _throttler = new Mock<IThrottler>();
 
@@ -66,7 +55,7 @@ namespace Hangfire.Core.Tests.Server
                 .Returns(_recurringJob);
 
             _process = new Mock<IJobCreationProcess>();
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>())).Returns("job-id");
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns("job-id");
         }
 
         [Fact]
@@ -74,19 +63,9 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(null, _stateMachineFactoryFactory.Object, _instantFactory, _throttler.Object));
+                () => new RecurringJobScheduler(null, _instantFactory, _throttler.Object));
 
             Assert.Equal("creationProcess", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_process.Object, null, _instantFactory, _throttler.Object));
-
-            Assert.Equal("stateMachineFactoryFactory", exception.ParamName);
         }
 
         [Fact]
@@ -94,7 +73,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_process.Object, _stateMachineFactoryFactory.Object, null, _throttler.Object));
+                () => new RecurringJobScheduler(_process.Object, null, _throttler.Object));
 
             Assert.Equal("instantFactory", exception.ParamName);
         }
@@ -104,7 +83,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new RecurringJobScheduler(_process.Object, _stateMachineFactoryFactory.Object, _instantFactory, null));
+                () => new RecurringJobScheduler(_process.Object, _instantFactory, null));
 
             Assert.Equal("throttler", exception.ParamName);
         }
@@ -116,7 +95,7 @@ namespace Hangfire.Core.Tests.Server
 
             scheduler.Execute(_context.Object);
 
-            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>(), It.IsNotNull<IStateMachine>()));
+            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>()));
         }
 
         [Fact]
@@ -128,8 +107,7 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             _process.Verify(x => x.Run(
-                It.Is<CreateContext>(cc => ((EnqueuedState)cc.InitialState).Queue == "critical"),
-                It.IsNotNull<IStateMachine>()));
+                It.Is<CreateContext>(cc => ((EnqueuedState)cc.InitialState).Queue == "critical")));
         }
 
         [Fact]
@@ -170,9 +148,7 @@ namespace Hangfire.Core.Tests.Server
 
             scheduler.Execute(_context.Object);
 
-            _process.Verify(
-                x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>()),
-                Times.Never);
+            _process.Verify(x => x.Run(It.IsAny<CreateContext>()), Times.Never);
 
             _connection.Verify(x => x.SetRangeInHash(
                 String.Format("recurring-job:{0}", RecurringJobId),
@@ -259,14 +235,13 @@ namespace Hangfire.Core.Tests.Server
 
             scheduler.Execute(_context.Object);
 
-            _process.Verify(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>()), Times.Never);
+            _process.Verify(x => x.Run(It.IsAny<CreateContext>()), Times.Never);
         }
 
         private RecurringJobScheduler CreateScheduler()
         {
             return new RecurringJobScheduler(
                 _process.Object,
-                _stateMachineFactoryFactory.Object,
                 _instantFactory,
                 _throttler.Object);
         }

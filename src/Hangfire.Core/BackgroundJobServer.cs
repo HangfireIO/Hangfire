@@ -122,7 +122,7 @@ namespace Hangfire
             processes.Add(new ServerHeartbeat(_options.HeartbeatInterval));
             processes.Add(new ServerWatchdog(_options.ServerWatchdogOptions));
             processes.Add(new SchedulePoller(_options.SchedulePollingInterval, _options.StateMachineFactoryFactory));
-            processes.Add(new RecurringJobScheduler(_options.CreationProcess, _options.StateMachineFactoryFactory));
+            processes.Add(new RecurringJobScheduler(_options.CreationProcess));
 
             return processes;
         }
