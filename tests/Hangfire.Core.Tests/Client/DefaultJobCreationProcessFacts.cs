@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests.Client
         private const string JobId = "some-job";
         private readonly Mock<CreateContext> _context;
         private readonly IList<object> _filters;
-        private readonly Mock<IJobCreator> _creator;
+        private readonly Mock<IStateMachine> _creator;
         private readonly Mock<IJobFilterProvider> _filterProvider;
 
         public DefaultJobCreationProcessFacts()
@@ -31,7 +31,7 @@ namespace Hangfire.Core.Tests.Client
                 CallBase = true
             };
 
-            _creator = new Mock<IJobCreator>();
+            _creator = new Mock<IStateMachine>();
             _creator.Setup(x => x.CreateJob(
                 job,
                 It.IsNotNull<IDictionary<string, string>>(),

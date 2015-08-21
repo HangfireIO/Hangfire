@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.States;
 
 namespace Hangfire.Client
 {
@@ -37,7 +38,7 @@ namespace Hangfire.Client
             _filterProvider = filterProvider;
         }
 
-        public string Run(CreateContext context, IJobCreator creator)
+        public string Run(CreateContext context, IStateMachine creator)
         {
             if (context == null) throw new ArgumentNullException("context");
             if (creator == null) throw new ArgumentNullException("creator");
@@ -70,7 +71,7 @@ namespace Hangfire.Client
 
         private static CreatedContext CreateWithFilters(
             CreateContext context,
-            IJobCreator creator,
+            IStateMachine creator,
             IEnumerable<IClientFilter> filters)
         {
             var preContext = new CreatingContext(context);

@@ -66,7 +66,7 @@ namespace Hangfire.Core.Tests.Server
                 .Returns(_recurringJob);
 
             _process = new Mock<IJobCreationProcess>();
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IJobCreator>())).Returns("job-id");
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>())).Returns("job-id");
         }
 
         [Fact]
@@ -116,7 +116,7 @@ namespace Hangfire.Core.Tests.Server
 
             scheduler.Execute(_context.Object);
 
-            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>(), It.IsNotNull<IJobCreator>()));
+            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>(), It.IsNotNull<IStateMachine>()));
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace Hangfire.Core.Tests.Server
 
             _process.Verify(x => x.Run(
                 It.Is<CreateContext>(cc => ((EnqueuedState)cc.InitialState).Queue == "critical"),
-                It.IsNotNull<IJobCreator>()));
+                It.IsNotNull<IStateMachine>()));
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             _process.Verify(
-                x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IJobCreator>()),
+                x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>()),
                 Times.Never);
 
             _connection.Verify(x => x.SetRangeInHash(
@@ -259,7 +259,7 @@ namespace Hangfire.Core.Tests.Server
 
             scheduler.Execute(_context.Object);
 
-            _process.Verify(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IJobCreator>()), Times.Never);
+            _process.Verify(x => x.Run(It.IsAny<CreateContext>(), It.IsAny<IStateMachine>()), Times.Never);
         }
 
         private RecurringJobScheduler CreateScheduler()
