@@ -148,7 +148,7 @@ namespace Hangfire.States
 
         private IState ChangeState(StateContext context, IState toState, string oldStateName)
         {
-            var electStateContext = new ElectStateContext(context, _connection, this, toState, oldStateName);
+            var electStateContext = new ElectStateContext(context, _connection, toState, oldStateName);
             _stateChangeProcess.ElectState(_connection, electStateContext);
 
             var applyStateContext = new ApplyStateContext(

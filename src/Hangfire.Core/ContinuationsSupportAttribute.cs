@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -33,6 +34,7 @@ namespace Hangfire
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly HashSet<string> _knownFinalStates;
+        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
 
         public ContinuationsSupportAttribute()
             : this(new HashSet<string> { DeletedState.StateName, SucceededState.StateName })
@@ -40,8 +42,19 @@ namespace Hangfire
         }
 
         public ContinuationsSupportAttribute(HashSet<string> knownFinalStates)
+            : this(knownFinalStates, new StateMachineFactoryFactory())
         {
+        }
+
+        public ContinuationsSupportAttribute(
+            [NotNull] HashSet<string> knownFinalStates, 
+            [NotNull] IStateMachineFactoryFactory stateMachineFactoryFactory)
+        {
+            if (knownFinalStates == null) throw new ArgumentNullException("knownFinalStates");
+            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
+
             _knownFinalStates = knownFinalStates;
+            _stateMachineFactoryFactory = stateMachineFactoryFactory;
 
             // Ensure this filter is the last filter in the chain to start
             // continuations on the last candidate state only.
@@ -115,7 +128,7 @@ namespace Hangfire
             }
         }
 
-        private static void ExecuteContinuationsIfExist(ElectStateContext context)
+        private void ExecuteContinuationsIfExist(ElectStateContext context)
         {
             // The following lines are being executed inside a distributed job lock,
             // so it is safe to get continuation list here.
@@ -164,9 +177,12 @@ namespace Hangfire
                 nextStates.Add(continuation.JobId, nextState);
             }
 
+            var stateMachineFactory = _stateMachineFactoryFactory.CreateFactory(context.Storage);
+            var stateMachine = stateMachineFactory.Create(context.Connection);
+
             foreach (var tuple in nextStates)
             {
-                context.StateMachine.ChangeState(tuple.Key, tuple.Value, new[] { AwaitingState.StateName });
+                stateMachine.ChangeState(tuple.Key, tuple.Value, new[] { AwaitingState.StateName });
             }
         }
 

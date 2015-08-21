@@ -30,28 +30,22 @@ namespace Hangfire.States
 
         public ElectStateContext(
             [NotNull] StateContext context, 
-            [NotNull] IStorageConnection connection, 
-            [NotNull] IStateMachine stateMachine,
+            [NotNull] IStorageConnection connection,
             [NotNull] IState candidateState, 
             [CanBeNull] string currentState)
             : base(context)
         {
             if (connection == null) throw new ArgumentNullException("connection");
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             if (candidateState == null) throw new ArgumentNullException("candidateState");
 
             _candidateState = candidateState;
 
             Connection = connection;
-            StateMachine = stateMachine;
             CurrentState = currentState;
         }
 
         [NotNull]
         public IStorageConnection Connection { get; private set; }
-
-        [NotNull]
-        public IStateMachine StateMachine { get; private set; }
 
         [NotNull]
         public IState CandidateState
