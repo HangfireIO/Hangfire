@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 
@@ -26,15 +27,21 @@ namespace Hangfire.States
     internal class StateMachine : IStateMachine
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
-        
+
+        private readonly JobStorage _storage;
         private readonly IStorageConnection _connection;
         private readonly IStateChangeProcess _stateChangeProcess;
 
-        public StateMachine(IStorageConnection connection, IStateChangeProcess stateChangeProcess)
+        public StateMachine(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection, 
+            [NotNull] IStateChangeProcess stateChangeProcess)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (connection == null) throw new ArgumentNullException("connection");
             if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
 
+            _storage = storage;
             _connection = connection;
             _stateChangeProcess = stateChangeProcess;
         }
@@ -57,7 +64,7 @@ namespace Hangfire.States
                 createdAt,
                 TimeSpan.FromHours(1));
 
-            var context = new StateContext(jobId, job, createdAt);
+            var context = new StateContext(_storage, jobId, job, createdAt);
             ChangeState(context, state, null);
 
             return jobId;
@@ -129,7 +136,7 @@ namespace Hangfire.States
                     }
                 }
 
-                var context = new StateContext(jobId, jobData.Job, jobData.CreatedAt);
+                var context = new StateContext(_storage, jobId, jobData.Job, jobData.CreatedAt);
                 IState appliedState = ChangeState(context, toState, jobData.State);
 
                 // Only return the applied state if everything loaded correctly

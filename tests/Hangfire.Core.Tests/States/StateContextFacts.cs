@@ -12,20 +12,29 @@ namespace Hangfire.Core.Tests.States
 
         private readonly Job _job;
         private readonly DateTime _createdAt;
-        private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<JobStorage> _storage;
 
         public StateContextFacts()
         {
+            _storage = new Mock<JobStorage>();
             _job = Job.FromExpression(() => Console.WriteLine());
             _createdAt = new DateTime(2012, 12, 12);
-            _stateMachine = new Mock<IStateMachine>();
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new StateContext(null, JobId, _job, _createdAt));
+
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(null, _job, _createdAt));
+                () => new StateContext(_storage.Object, null, _job, _createdAt));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -34,7 +43,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenJobIdIsEmpty()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateContext(String.Empty, _job, _createdAt));
+                () => new StateContext(_storage.Object, String.Empty, _job, _createdAt));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -42,7 +51,7 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void Ctor_DoesNotThrowAnException_WhenJobIsNull()
         {
-            Assert.DoesNotThrow(() => new StateContext(JobId, null, _createdAt));
+            Assert.DoesNotThrow(() => new StateContext(_storage.Object, JobId, null, _createdAt));
         }
 
         [Fact]
@@ -50,6 +59,7 @@ namespace Hangfire.Core.Tests.States
         {
             var context = CreateContext();
 
+            Assert.Equal(_storage.Object, context.Storage);
             Assert.Equal(JobId, context.JobId);
             Assert.Equal(_createdAt, context.CreatedAt);
             Assert.Same(_job, context.Job);
@@ -60,7 +70,8 @@ namespace Hangfire.Core.Tests.States
         {
             var context = CreateContext();
             var contextCopy = new StateContext(context);
-
+            
+            Assert.Same(context.Storage, contextCopy.Storage);
             Assert.Equal(context.JobId, contextCopy.JobId);
             Assert.Equal(context.CreatedAt, contextCopy.CreatedAt);
             Assert.Same(context.Job, contextCopy.Job);
@@ -68,7 +79,7 @@ namespace Hangfire.Core.Tests.States
 
         private StateContext CreateContext()
         {
-            return new StateContext(JobId, _job, _createdAt);
+            return new StateContext(_storage.Object, JobId, _job, _createdAt);
         }
     }
 }

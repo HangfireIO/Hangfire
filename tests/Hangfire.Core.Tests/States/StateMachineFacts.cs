@@ -24,6 +24,7 @@ namespace Hangfire.Core.Tests.States
         private readonly Mock<IDisposable> _distributedLock;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly CancellationTokenSource _cts;
+        private readonly Mock<JobStorage> _storage;
 
         public StateMachineFacts()
         {
@@ -34,6 +35,7 @@ namespace Hangfire.Core.Tests.States
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
 
+            _storage = new Mock<JobStorage>();
             _connection = new Mock<IStorageConnection>();
             _transaction = new Mock<IWriteOnlyTransaction>();
 
@@ -61,10 +63,19 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new StateMachine(null, _connection.Object, _process.Object));
+
+            Assert.Equal("storage", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateMachine(null, _process.Object));
+                () => new StateMachine(_storage.Object, null, _process.Object));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -73,7 +84,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenStateChangeProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateMachine(_connection.Object, null));
+                () => new StateMachine(_storage.Object, _connection.Object, null));
 
             Assert.Equal("stateChangeProcess", exception.ParamName);
         }
@@ -436,6 +447,7 @@ namespace Hangfire.Core.Tests.States
         private StateMachine CreateStateMachine()
         {
             return new StateMachine(
+                _storage.Object,
                 _connection.Object,
                 _process.Object);
         }

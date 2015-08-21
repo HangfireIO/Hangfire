@@ -22,24 +22,35 @@ namespace Hangfire.States
 {
     public class StateContext
     {
-        public StateContext([NotNull] string jobId, [CanBeNull] Job job, DateTime createdAt)
+        public StateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] string jobId, 
+            [CanBeNull] Job job, 
+            DateTime createdAt)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
-            
+
+            Storage = storage;
             JobId = jobId;
             Job = job;
             CreatedAt = createdAt;
         }
 
         internal StateContext(StateContext context)
-            : this(context.JobId, context.Job, context.CreatedAt)
+            : this(context.Storage, context.JobId, context.Job, context.CreatedAt)
         {
         }
 
         [NotNull]
+        public JobStorage Storage { get; private set; }
+
+        [NotNull]
         public string JobId { get; private set; }
+
         [CanBeNull]
         public Job Job { get; private set; }
+
         public DateTime CreatedAt { get; private set; }
     }
 }
