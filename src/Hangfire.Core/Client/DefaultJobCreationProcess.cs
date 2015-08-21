@@ -76,7 +76,9 @@ namespace Hangfire.Client
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                var jobId = creator.CreateJob(context.Job, preContext.Parameters, context.InitialState);
+                var parameters = context.Parameters.ToDictionary(x => x.Key, x => JobHelper.ToJson(x.Value));
+
+                var jobId = creator.CreateJob(context.Job, parameters, context.InitialState);
                 return new CreatedContext(context, jobId, false, null);
             };
 

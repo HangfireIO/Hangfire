@@ -26,7 +26,10 @@ namespace Hangfire.Core.Tests.Client
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
 
-            _context = new Mock<CreateContext>(storage.Object, connection.Object, job, state.Object);
+            _context = new Mock<CreateContext>(storage.Object, connection.Object, job, state.Object)
+            {
+                CallBase = true
+            };
 
             _creator = new Mock<IJobCreator>();
             _creator.Setup(x => x.CreateJob(

@@ -67,6 +67,7 @@ namespace Hangfire.Core.Tests.Client
             Assert.Same(_state.Object, context.InitialState);
 
             Assert.NotNull(context.Items);
+            Assert.NotNull(context.Parameters);
         }
 
         [Fact]
@@ -76,6 +77,7 @@ namespace Hangfire.Core.Tests.Client
             var contextCopy = new CreateContext(context);
 
             Assert.Same(context.Items, contextCopy.Items);
+            Assert.Same(context.Parameters, contextCopy.Parameters);
         }
 
         public static void Method()

@@ -33,6 +33,7 @@ namespace Hangfire.Client
             : this(context.Storage, context.Connection, context.Job, context.InitialState)
         {
             Items = context.Items;
+            Parameters = context.Parameters;
         }
 
         public CreateContext(
@@ -51,6 +52,7 @@ namespace Hangfire.Client
             InitialState = initialState;
 
             Items = new Dictionary<string, object>();
+            Parameters = new Dictionary<string, object>();
         }
 
         [NotNull]
@@ -67,6 +69,9 @@ namespace Hangfire.Client
         [NotNull]
         public IDictionary<string, object> Items { get; private set; }
 
+        [NotNull]
+        public virtual IDictionary<string, object> Parameters { get; private set; }
+            
         [NotNull]
         public Job Job { get; private set; }
 
