@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 
 namespace Hangfire.Core.Tests
@@ -13,6 +14,7 @@ namespace Hangfire.Core.Tests
         public ApplyStateContextMock()
         {
             Storage = new Mock<JobStorage>();
+            Transaction = new Mock<IWriteOnlyTransaction>();
             BackgroundJob = new BackgroundJobMock();
             NewStateValue = new Mock<IState>().Object;
             OldStateValue = null;
@@ -21,6 +23,7 @@ namespace Hangfire.Core.Tests
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
                     Storage.Object,
+                    Transaction.Object,
                     BackgroundJob.Object,
                     NewStateValue,
                     OldStateValue,
@@ -28,6 +31,7 @@ namespace Hangfire.Core.Tests
         }
 
         public Mock<JobStorage> Storage { get; set; }
+        public Mock<IWriteOnlyTransaction> Transaction { get; set; } 
         public BackgroundJobMock BackgroundJob { get; set; } 
         public IState NewStateValue { get; set; }
         public string OldStateValue { get; set; }

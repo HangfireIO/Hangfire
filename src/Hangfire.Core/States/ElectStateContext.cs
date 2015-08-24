@@ -97,9 +97,9 @@ namespace Hangfire.States
                 BackgroundJob.Id, name));
         }
 
-        public ApplyStateContext ToApplyContext()
+        public ApplyStateContext ToApplyContext(IWriteOnlyTransaction transaction)
         {
-            return new ApplyStateContext(Storage, BackgroundJob, CandidateState, CurrentState, TraversedStates);
+            return new ApplyStateContext(Storage, transaction, BackgroundJob, CandidateState, CurrentState, TraversedStates);
         }
     }
 }

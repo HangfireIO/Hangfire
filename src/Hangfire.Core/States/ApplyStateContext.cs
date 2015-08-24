@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Storage;
 
 namespace Hangfire.States
 {
@@ -25,13 +26,15 @@ namespace Hangfire.States
         private readonly BackgroundJob _backgroundJob;
 
         public ApplyStateContext(
-            [NotNull] JobStorage storage, 
+            [NotNull] JobStorage storage,
+            [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
             [CanBeNull] string oldStateName, 
             [NotNull] IEnumerable<IState> traversedStates)
         {
             if (storage == null) throw new ArgumentNullException("storage");
+            if (transaction == null) throw new ArgumentNullException("transaction");
             if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
             if (newState == null) throw new ArgumentNullException("newState");
             if (traversedStates == null) throw new ArgumentNullException("traversedStates");
@@ -39,6 +42,7 @@ namespace Hangfire.States
             _backgroundJob = backgroundJob;
 
             Storage = storage;
+            Transaction = transaction;
             OldStateName = oldStateName;
             NewState = newState;
             TraversedStates = traversedStates;
@@ -47,6 +51,9 @@ namespace Hangfire.States
 
         [NotNull]
         public JobStorage Storage { get; private set; }
+
+        [NotNull]
+        public IWriteOnlyTransaction Transaction { get; private set; }
 
         [NotNull]
         public override BackgroundJob BackgroundJob { get { return _backgroundJob; } }

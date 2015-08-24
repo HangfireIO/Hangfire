@@ -153,7 +153,7 @@ namespace Hangfire.States
             
             using (var transaction = _connection.CreateWriteTransaction())
             {
-                var applyStateContext = electStateContext.ToApplyContext();
+                var applyStateContext = electStateContext.ToApplyContext(transaction);
                 _stateChangeProcess.ApplyState(transaction, applyStateContext);
 
                 transaction.Commit();
