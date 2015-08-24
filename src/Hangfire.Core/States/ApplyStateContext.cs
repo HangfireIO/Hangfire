@@ -26,6 +26,13 @@ namespace Hangfire.States
         private readonly BackgroundJob _backgroundJob;
 
         public ApplyStateContext(
+            [NotNull] IWriteOnlyTransaction transaction, 
+            [NotNull] ElectStateContext context)
+            : this(context.Storage, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.TraversedStates)
+        {
+        }
+
+        public ApplyStateContext(
             [NotNull] JobStorage storage,
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,

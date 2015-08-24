@@ -96,10 +96,5 @@ namespace Hangfire.States
             return JobHelper.FromJson<T>(Connection.GetJobParameter(
                 BackgroundJob.Id, name));
         }
-
-        public ApplyStateContext ToApplyContext(IWriteOnlyTransaction transaction)
-        {
-            return new ApplyStateContext(Storage, transaction, BackgroundJob, CandidateState, CurrentState, TraversedStates);
-        }
     }
 }

@@ -146,19 +146,19 @@ namespace Hangfire.States
 
         private IState ChangeState(BackgroundJob backgroundJob, IState toState, string oldStateName)
         {
-            var electStateContext = new ElectStateContext(
+            var electContext = new ElectStateContext(
                 _storage, _connection, backgroundJob, toState, oldStateName);
 
-            _stateChangeProcess.ElectState(electStateContext);
+            _stateChangeProcess.ElectState(electContext);
             
             using (var transaction = _connection.CreateWriteTransaction())
             {
-                var applyStateContext = electStateContext.ToApplyContext(transaction);
-                _stateChangeProcess.ApplyState(applyStateContext);
+                var applyContext = new ApplyStateContext(transaction, electContext);
+                _stateChangeProcess.ApplyState(applyContext);
 
                 transaction.Commit();
 
-                return applyStateContext.NewState;
+                return applyContext.NewState;
             }
         }
 
