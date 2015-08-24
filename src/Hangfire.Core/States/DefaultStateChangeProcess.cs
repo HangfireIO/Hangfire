@@ -22,23 +22,28 @@ namespace Hangfire.States
 {
     public class DefaultStateChangeProcess : IStateChangeProcess
     {
-        private readonly StateHandlerCollection _handlers;
         private readonly IJobFilterProvider _filterProvider;
+        private readonly Func<JobStorage, StateHandlerCollection> _stateHandlersThunk;
 
-        public DefaultStateChangeProcess([NotNull] StateHandlerCollection handlers)
-            : this(handlers, JobFilterProviders.Providers)
+        public DefaultStateChangeProcess()
+            : this(JobFilterProviders.Providers)
         {
         }
 
-        public DefaultStateChangeProcess(
-            [NotNull] StateHandlerCollection handlers,
-            [NotNull] IJobFilterProvider filterProvider)
+        public DefaultStateChangeProcess([NotNull] IJobFilterProvider filterProvider)
+            : this(filterProvider, GetStateHandlers)
         {
-            if (handlers == null) throw new ArgumentNullException("handlers");
-            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+        }
 
-            _handlers = handlers;
+        internal DefaultStateChangeProcess(
+            [NotNull] IJobFilterProvider filterProvider,
+            [NotNull] Func<JobStorage, StateHandlerCollection> stateHandlersThunk)
+        {
+            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+            if (stateHandlersThunk == null) throw new ArgumentNullException("stateHandlersThunk");
+            
             _filterProvider = filterProvider;
+            _stateHandlersThunk = stateHandlersThunk;
         }
 
         public void ElectState(ElectStateContext context)
@@ -54,13 +59,14 @@ namespace Hangfire.States
         {
             var filterInfo = GetFilters(context.BackgroundJob.Job);
             var filters = filterInfo.ApplyStateFilters;
+            var handlers = _stateHandlersThunk(context.Storage);
 
             foreach (var state in context.TraversedStates)
             {
                 context.Transaction.AddJobState(context.BackgroundJob.Id, state);
             }
 
-            foreach (var handler in _handlers.GetHandlers(context.OldStateName))
+            foreach (var handler in handlers.GetHandlers(context.OldStateName))
             {
                 handler.Unapply(context, context.Transaction);
             }
@@ -72,7 +78,7 @@ namespace Hangfire.States
 
             context.Transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
 
-            foreach (var handler in _handlers.GetHandlers(context.NewState.Name))
+            foreach (var handler in handlers.GetHandlers(context.NewState.Name))
             {
                 handler.Apply(context, context.Transaction);
             }
@@ -95,6 +101,15 @@ namespace Hangfire.States
         private JobFilterInfo GetFilters(Job job)
         {
             return new JobFilterInfo(_filterProvider.GetFilters(job));
+        }
+
+        private static StateHandlerCollection GetStateHandlers(JobStorage storage)
+        {
+            var stateHandlers = new StateHandlerCollection();
+            stateHandlers.AddRange(GlobalStateHandlers.Handlers);
+            stateHandlers.AddRange(storage.GetStateHandlers());
+
+            return stateHandlers;
         }
     }
 }

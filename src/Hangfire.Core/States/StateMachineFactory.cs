@@ -24,7 +24,6 @@ namespace Hangfire.States
     /// <exclude />
     public class StateMachineFactory : IStateMachineFactory
     {
-        private readonly StateHandlerCollection _handlers;
         private readonly JobStorage _storage;
         private readonly IJobFilterProvider _filterProvider;
 
@@ -37,11 +36,7 @@ namespace Hangfire.States
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-
-            _handlers = new StateHandlerCollection();
-            _handlers.AddRange(GlobalStateHandlers.Handlers);
-            _handlers.AddRange(storage.GetStateHandlers());
-
+            
             _storage = storage;
             _filterProvider = filterProvider;
         }
@@ -50,7 +45,7 @@ namespace Hangfire.States
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
-            var process = new DefaultStateChangeProcess(_handlers, _filterProvider);
+            var process = new DefaultStateChangeProcess(_filterProvider);
             return new StateMachine(_storage, connection, process);
         }
     }
