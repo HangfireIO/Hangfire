@@ -29,16 +29,14 @@ namespace Hangfire.States
         /// Performs the state election process, where a new state will be elected
         /// for a background job depending on state election rules.
         /// </summary>
-        /// <param name="connection">The current connection for a state election process.</param>
         /// <param name="context">The context of a state election process.</param>
-        void ElectState(IStorageConnection connection, ElectStateContext context);
+        void ElectState(ElectStateContext context);
 
         /// <summary>
         /// Performs the state applying process, where a current background job
         /// will be moved to the elected state.
         /// </summary>
-        /// <param name="transaction">The current transaction for a state applying process.</param>
         /// <param name="context">The context of a state applying process.</param>
-        void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context);
+        void ApplyState(ApplyStateContext context);
     }
 }

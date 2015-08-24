@@ -157,7 +157,6 @@ namespace Hangfire.Core.Tests.States
             stateMachine.CreateJob(_job, _parameters, _state.Object);
 
             _process.Verify(x => x.ApplyState(
-                _transaction.Object,
                 It.Is<ApplyStateContext>(sc => sc.BackgroundJob.Id == JobId && sc.BackgroundJob.Job == _job
                     && sc.NewState == _state.Object && sc.OldStateName == null)));
         }
@@ -223,7 +222,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _process.Verify(x => x.ApplyState(
-                _transaction.Object,
                 It.Is<ApplyStateContext>(sc => sc.BackgroundJob.Id == JobId && sc.BackgroundJob.Job.Type.Name.Equals("Console")
                     && sc.NewState == _state.Object && sc.OldStateName == OldStateName)));
 
@@ -242,7 +240,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _process.Verify(x => x.ApplyState(
-                _transaction.Object,
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName)));
         }
 
@@ -263,7 +260,7 @@ namespace Hangfire.Core.Tests.States
             _connection.Verify(x => x.GetJobData(JobId));
 
             _process.Verify(
-                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()),
+                x => x.ApplyState(It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
 
@@ -287,11 +284,11 @@ namespace Hangfire.Core.Tests.States
             Assert.Null(result);
 
             _process.Verify(
-                x => x.ElectState(It.IsAny<IStorageConnection>(), It.IsAny<ElectStateContext>()),
+                x => x.ElectState(It.IsAny<ElectStateContext>()),
                 Times.Never);
 
             _process.Verify(
-                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()),
+                x => x.ApplyState(It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
 
@@ -332,7 +329,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Null(result);
 
             _process.Verify(
-                x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()),
+                x => x.ApplyState(It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
 
@@ -340,7 +337,7 @@ namespace Hangfire.Core.Tests.States
         public void ChangeState_ThrowsAnException_WhenApplyStateThrowsException()
         {
             // Arrange
-            _process.Setup(x => x.ApplyState(It.IsAny<IWriteOnlyTransaction>(), It.IsAny<ApplyStateContext>()))
+            _process.Setup(x => x.ApplyState(It.IsAny<ApplyStateContext>()))
                 .Throws(new FieldAccessException());
 
             var stateMachine = CreateStateMachine();
@@ -369,7 +366,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _process.Verify(x => x.ApplyState(
-                _transaction.Object,
                 It.Is<ApplyStateContext>(ctx => ctx.BackgroundJob.Id == JobId && ctx.BackgroundJob.Job == null && ctx.NewState is FailedState)));
 
             Assert.Null(result);
@@ -396,7 +392,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _process.Verify(x => x.ApplyState(
-                _transaction.Object, 
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object)));
 
             Assert.NotNull(result);
@@ -414,7 +409,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert
             _process.Verify(x => x.ApplyState(
-                _transaction.Object,
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName
                     && ctx.BackgroundJob.Job == _job && ctx.BackgroundJob.Id == JobId)));
 
@@ -430,8 +424,8 @@ namespace Hangfire.Core.Tests.States
             // Arrange
             var anotherState = new Mock<IState>();
 
-            _process.Setup(x => x.ElectState(_connection.Object, It.IsAny<ElectStateContext>()))
-                .Callback((IStorageConnection connection, ElectStateContext context) => context.CandidateState = anotherState.Object);
+            _process.Setup(x => x.ElectState(It.IsAny<ElectStateContext>()))
+                .Callback((ElectStateContext context) => context.CandidateState = anotherState.Object);
 
             var machine = CreateStateMachine();
 
@@ -440,7 +434,6 @@ namespace Hangfire.Core.Tests.States
 
             // Assert - Sequence
             _process.Verify(x => x.ApplyState(
-                _transaction.Object, 
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == anotherState.Object)));
         }
 

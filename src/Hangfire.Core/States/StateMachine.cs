@@ -149,12 +149,12 @@ namespace Hangfire.States
             var electStateContext = new ElectStateContext(
                 _storage, _connection, backgroundJob, toState, oldStateName);
 
-            _stateChangeProcess.ElectState(_connection, electStateContext);
+            _stateChangeProcess.ElectState(electStateContext);
             
             using (var transaction = _connection.CreateWriteTransaction())
             {
                 var applyStateContext = electStateContext.ToApplyContext(transaction);
-                _stateChangeProcess.ApplyState(transaction, applyStateContext);
+                _stateChangeProcess.ApplyState(applyStateContext);
 
                 transaction.Commit();
 

@@ -40,13 +40,15 @@ namespace Hangfire.Core.Tests.States
             {
                 BackgroundJob = backgroundJob,
                 CandidateStateValue = _state.Object,
-                CurrentStateValue = OldStateName
+                CurrentStateValue = OldStateName,
+                ConnectionValue = _connection
             };
             _applyStateContext = new ApplyStateContextMock
             {
                 BackgroundJob = backgroundJob,
                 NewStateValue = _state.Object,
-                OldStateValue = OldStateName
+                OldStateValue = OldStateName,
+                Transaction = _transaction
             };
 
             _filterProvider = new Mock<IJobFilterProvider>();
@@ -87,7 +89,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ElectState(_connection.Object, _electStateContext.Object);
+            process.ElectState(_electStateContext.Object);
 
             // Assert - Sequence
         }
@@ -113,7 +115,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             // Assert - Sequence
         }
@@ -126,7 +128,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             // Assert
             handler.Verify(
@@ -153,7 +155,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             // Assert - Sequence
         }
@@ -166,7 +168,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             // Assert
             handler.Verify(
@@ -180,7 +182,7 @@ namespace Hangfire.Core.Tests.States
             _state.Setup(x => x.IsFinal).Returns(true);
             var process = CreateProcess();
 
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             _transaction.Verify(x => x.ExpireJob(JobId, It.IsAny<TimeSpan>()));
         }
@@ -191,7 +193,7 @@ namespace Hangfire.Core.Tests.States
             _state.Setup(x => x.IsFinal).Returns(false);
             var process = CreateProcess();
 
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             _transaction.Verify(x => x.PersistJob(JobId));
         }
@@ -214,7 +216,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             // Assert - Sequence
         }
@@ -234,7 +236,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             // Assert - Sequence
         }
@@ -248,7 +250,7 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            process.ApplyState(_transaction.Object, _applyStateContext.Object);
+            process.ApplyState(_applyStateContext.Object);
 
             // Assert
             _transaction.Verify(x => x.AddJobState(JobId, _state.Object));

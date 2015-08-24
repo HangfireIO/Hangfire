@@ -17,7 +17,6 @@
 using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.Storage;
 
 namespace Hangfire.States
 {
@@ -42,7 +41,7 @@ namespace Hangfire.States
             _filterProvider = filterProvider;
         }
 
-        public void ElectState(IStorageConnection connection, ElectStateContext context)
+        public void ElectState(ElectStateContext context)
         {
             var filterInfo = GetFilters(context.BackgroundJob.Job);
             foreach (var filter in filterInfo.ElectStateFilters)
@@ -51,45 +50,45 @@ namespace Hangfire.States
             }
         }
 
-        public void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context)
+        public void ApplyState(ApplyStateContext context)
         {
             var filterInfo = GetFilters(context.BackgroundJob.Job);
             var filters = filterInfo.ApplyStateFilters;
 
             foreach (var state in context.TraversedStates)
             {
-                transaction.AddJobState(context.BackgroundJob.Id, state);
+                context.Transaction.AddJobState(context.BackgroundJob.Id, state);
             }
 
             foreach (var handler in _handlers.GetHandlers(context.OldStateName))
             {
-                handler.Unapply(context, transaction);
+                handler.Unapply(context, context.Transaction);
             }
 
             foreach (var filter in filters)
             {
-                filter.OnStateUnapplied(context, transaction);
+                filter.OnStateUnapplied(context, context.Transaction);
             }
 
-            transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
+            context.Transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
 
             foreach (var handler in _handlers.GetHandlers(context.NewState.Name))
             {
-                handler.Apply(context, transaction);
+                handler.Apply(context, context.Transaction);
             }
 
             foreach (var filter in filters)
             {
-                filter.OnStateApplied(context, transaction);
+                filter.OnStateApplied(context, context.Transaction);
             }
 
             if (context.NewState.IsFinal)
             {
-                transaction.ExpireJob(context.BackgroundJob.Id, context.JobExpirationTimeout);
+                context.Transaction.ExpireJob(context.BackgroundJob.Id, context.JobExpirationTimeout);
             }
             else
             {
-                transaction.PersistJob(context.BackgroundJob.Id);
+                context.Transaction.PersistJob(context.BackgroundJob.Id);
             }
         }
 
