@@ -1,5 +1,5 @@
-﻿// This file is part of Hangfire.
-// Copyright © 2013-2014 Sergey Odinokov.
+// This file is part of Hangfire.
+// Copyright � 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -15,129 +15,101 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.Storage;
 
 namespace Hangfire.States
 {
-    internal class StateMachine : IStateMachine
+    public class StateMachine : IStateMachine
     {
-        private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
-        private readonly IStateChangeProcess _stateChangeProcess;
+        private readonly IJobFilterProvider _filterProvider;
+        private readonly Func<JobStorage, StateHandlerCollection> _stateHandlersThunk;
 
-        public StateMachine([NotNull] IStateChangeProcess stateChangeProcess)
+        public StateMachine()
+            : this(JobFilterProviders.Providers)
         {
-            if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
-            _stateChangeProcess = stateChangeProcess;
-        }
-        
-        /// <summary>
-        /// Attempts to change the state of a job, respecting any applicable job filters and state handlers
-        /// <remarks>Also ensures that the job data can be loaded for this job</remarks>
-        /// </summary>
-        /// <returns><c>Null</c> if a constraint has failed or if the job data could not be loaded, otherwise the final applied state</returns>
-        public IState ChangeState(StateChangeContext context)
-        {
-            // To ensure that job state will be changed only from one of the
-            // specified states, we need to ensure that other users/workers
-            // are not able to change the state of the job during the
-            // execution of this method. To guarantee this behavior, we are
-            // using distributed application locks and rely on fact, that
-            // any state transitions will be made only within a such lock.
-            using (context.Connection.AcquireDistributedJobLock(context.BackgroundJobId, JobLockTimeout))
-            {
-                var jobData = GetJobData(context);
-
-                if (jobData == null)
-                {
-                    // The job does not exist. This may happen, because not
-                    // all storage backends support foreign keys.
-                    return null;
-                }
-
-                if (context.ExpectedStates != null && !context.ExpectedStates.Contains(jobData.State, StringComparer.OrdinalIgnoreCase))
-                {
-                    return null;
-                }
-                
-                var appliedState = context.NewState;
-
-                try
-                {
-                    jobData.EnsureLoaded();
-                }
-                catch (JobLoadException ex)
-                {
-                    // If the job type could not be loaded, we are unable to
-                    // load corresponding filters, unable to process the job
-                    // and sometimes unable to change its state (the enqueued
-                    // state depends on the type of a job).
-
-                    if (!appliedState.IgnoreJobLoadException)
-                    {
-                        appliedState = new FailedState(ex.InnerException)
-                        {
-                            Reason = String.Format(
-                                "Can not change the state to '{0}': target method was not found.",
-                                appliedState.Name)
-                        };
-                    }
-                }
-
-                var backgroundJob = new BackgroundJob(context.BackgroundJobId, jobData.Job, jobData.CreatedAt);
-                appliedState = ChangeState(context, backgroundJob, appliedState, jobData.State);
-
-                return appliedState;
-            }
         }
 
-        private IState ChangeState(
-            StateChangeContext context, BackgroundJob backgroundJob, IState toState, string oldStateName)
+        public StateMachine([NotNull] IJobFilterProvider filterProvider)
+            : this(filterProvider, GetStateHandlers)
         {
-            var electContext = new ElectStateContext(
-                context.Storage, context.Connection, backgroundJob, toState, oldStateName);
+        }
 
-            _stateChangeProcess.ElectState(electContext);
+        internal StateMachine(
+            [NotNull] IJobFilterProvider filterProvider,
+            [NotNull] Func<JobStorage, StateHandlerCollection> stateHandlersThunk)
+        {
+            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+            if (stateHandlersThunk == null) throw new ArgumentNullException("stateHandlersThunk");
             
-            using (var transaction = context.Connection.CreateWriteTransaction())
+            _filterProvider = filterProvider;
+            _stateHandlersThunk = stateHandlersThunk;
+        }
+
+        public void ElectState(ElectStateContext context)
+        {
+            var filterInfo = GetFilters(context.BackgroundJob.Job);
+            foreach (var filter in filterInfo.ElectStateFilters)
             {
-                var applyContext = new ApplyStateContext(transaction, electContext);
-                _stateChangeProcess.ApplyState(applyContext);
-
-                transaction.Commit();
-
-                return applyContext.NewState;
+                filter.OnStateElection(context);
             }
         }
 
-        private JobData GetJobData(StateChangeContext context)
+        public void ApplyState(ApplyStateContext context)
         {
-            var firstAttempt = true;
+            var filterInfo = GetFilters(context.BackgroundJob.Job);
+            var filters = filterInfo.ApplyStateFilters;
+            var handlers = _stateHandlersThunk(context.Storage);
 
-            while (true)
+            foreach (var state in context.TraversedStates)
             {
-                var jobData = context.Connection.GetJobData(context.BackgroundJobId);
-                if (jobData == null)
-                {
-                    return null;
-                }
-
-                if (!String.IsNullOrEmpty(jobData.State))
-                {
-                    return jobData;
-                }
-
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return null;
-                }
-
-                Thread.Sleep(firstAttempt ? 0 : 100);
-                firstAttempt = false;
+                context.Transaction.AddJobState(context.BackgroundJob.Id, state);
             }
+
+            foreach (var handler in handlers.GetHandlers(context.OldStateName))
+            {
+                handler.Unapply(context, context.Transaction);
+            }
+
+            foreach (var filter in filters)
+            {
+                filter.OnStateUnapplied(context, context.Transaction);
+            }
+
+            context.Transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
+
+            foreach (var handler in handlers.GetHandlers(context.NewState.Name))
+            {
+                handler.Apply(context, context.Transaction);
+            }
+
+            foreach (var filter in filters)
+            {
+                filter.OnStateApplied(context, context.Transaction);
+            }
+
+            if (context.NewState.IsFinal)
+            {
+                context.Transaction.ExpireJob(context.BackgroundJob.Id, context.JobExpirationTimeout);
+            }
+            else
+            {
+                context.Transaction.PersistJob(context.BackgroundJob.Id);
+            }
+        }
+
+        private JobFilterInfo GetFilters(Job job)
+        {
+            return new JobFilterInfo(_filterProvider.GetFilters(job));
+        }
+
+        private static StateHandlerCollection GetStateHandlers(JobStorage storage)
+        {
+            var stateHandlers = new StateHandlerCollection();
+            stateHandlers.AddRange(GlobalStateHandlers.Handlers);
+            stateHandlers.AddRange(storage.GetStateHandlers());
+
+            return stateHandlers;
         }
     }
 }

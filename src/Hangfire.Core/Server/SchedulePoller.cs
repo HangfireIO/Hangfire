@@ -27,7 +27,7 @@ namespace Hangfire.Server
 
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly IStateMachine _stateMachine;
+        private readonly IStateChangeProcess _process;
         private readonly TimeSpan _pollingInterval;
 
         private int _enqueuedCount;
@@ -38,15 +38,15 @@ namespace Hangfire.Server
         }
 
         public SchedulePoller(TimeSpan pollingInterval)
-            : this(pollingInterval, new StateMachine(new DefaultStateChangeProcess()))
+            : this(pollingInterval, new StateChangeProcess())
         {
         }
 
-        public SchedulePoller(TimeSpan pollingInterval, IStateMachine stateMachine)
+        public SchedulePoller(TimeSpan pollingInterval, IStateChangeProcess process)
         {
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
+            if (process == null) throw new ArgumentNullException("process");
 
-            _stateMachine = stateMachine;
+            _process = process;
             _pollingInterval = pollingInterval;
         }
 
@@ -94,7 +94,7 @@ namespace Hangfire.Server
                     Reason = "Enqueued as a scheduled job"
                 };
 
-                _stateMachine.ChangeState(new StateChangeContext(
+                _process.ChangeState(new StateChangeContext(
                     context.Storage,
                     connection,
                     jobId, 

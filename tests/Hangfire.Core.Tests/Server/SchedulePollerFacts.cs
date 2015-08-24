@@ -13,7 +13,7 @@ namespace Hangfire.Core.Tests.Server
     {
         private const string JobId = "id";
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<IStateChangeProcess> _process;
         private readonly BackgroundProcessContextMock _context;
 
         public SchedulePollerFacts()
@@ -24,19 +24,19 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _stateMachine = new Mock<IStateMachine>();
+            _process = new Mock<IStateChangeProcess>();
 
             _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
                 "schedule", 0, It.Is<double>(time => time > 0))).Returns(JobId);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
+        public void Ctor_ThrowsAnException_WhenProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SchedulePoller(Timeout.InfiniteTimeSpan, null));
 
-            Assert.Equal("stateMachine", exception.ParamName);
+            Assert.Equal("process", exception.ParamName);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace Hangfire.Core.Tests.Server
 
 			scheduler.Execute(_context.Object);
 
-            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _process.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is EnqueuedState &&
                 ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
@@ -55,7 +55,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_DoesNotCallStateMachine_IfThereAreNoJobsToEnqueue()
+        public void Execute_DoesNotCallStateChangeProcess_IfThereAreNoJobsToEnqueue()
         {
             _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
                 "schedule", 0, It.Is<double>(time => time > 0))).Returns((string)null);
@@ -63,14 +63,14 @@ namespace Hangfire.Core.Tests.Server
 
 			scheduler.Execute(_context.Object);
 
-            _stateMachine.Verify(
+            _process.Verify(
                 x => x.ChangeState(It.IsAny<StateChangeContext>()),
                 Times.Never);
         }
 
         private SchedulePoller CreateScheduler()
         {
-            return new SchedulePoller(Timeout.InfiniteTimeSpan, _stateMachine.Object);
+            return new SchedulePoller(Timeout.InfiniteTimeSpan, _process.Object);
         }
     }
 }

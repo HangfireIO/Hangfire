@@ -1,5 +1,5 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -16,13 +16,25 @@
 
 namespace Hangfire.States
 {
+    /// <summary>
+    /// Provides a mechanism for running state election and state applying processes.
+    /// </summary>
+    /// 
+    /// <seealso cref="StateMachine"/>
     public interface IStateMachine
     {
         /// <summary>
-        /// Attempts to change the state of a job, respecting any applicable job filters and state handlers
-        /// <remarks>Also ensures that the job data can be loaded for this job</remarks>
+        /// Performs the state election process, where a new state will be elected
+        /// for a background job depending on state election rules.
         /// </summary>
-        /// <returns><c>Null</c> if a constraint has failed or if the job data could not be loaded, otherwise the final applied state</returns>
-        IState ChangeState(StateChangeContext context);
+        /// <param name="context">The context of a state election process.</param>
+        void ElectState(ElectStateContext context);
+
+        /// <summary>
+        /// Performs the state applying process, where a current background job
+        /// will be moved to the elected state.
+        /// </summary>
+        /// <param name="context">The context of a state applying process.</param>
+        void ApplyState(ApplyStateContext context);
     }
 }

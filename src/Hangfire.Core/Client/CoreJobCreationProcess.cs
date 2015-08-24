@@ -1,4 +1,4 @@
-// This file is part of Hangfire.
+﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
@@ -24,16 +24,16 @@ namespace Hangfire.Client
 {
     public class CoreJobCreationProcess : IJobCreationProcess
     {
-        private readonly IStateChangeProcess _stateMachine;
+        private readonly IStateMachine _stateMachine;
 
         public CoreJobCreationProcess()
-            : this(new DefaultStateChangeProcess())
+            : this(new StateMachine())
         {
         }
 
-        public CoreJobCreationProcess([NotNull] IStateChangeProcess stateMachine)
+        public CoreJobCreationProcess([NotNull] IStateMachine stateMachine)
         {
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
+            if (stateMachine == null) throw new ArgumentNullException("StateChangeProcess");
             _stateMachine = stateMachine;
         }
 

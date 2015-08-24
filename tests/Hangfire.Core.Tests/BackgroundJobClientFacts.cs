@@ -12,10 +12,10 @@ namespace Hangfire.Core.Tests
     public class BackgroundJobClientFacts
     {
         private readonly Mock<JobStorage> _storage;
-        private readonly Mock<IJobCreationProcess> _process;
+        private readonly Mock<IJobCreationProcess> _creationProcess;
         private readonly Mock<IState> _state;
         private readonly Job _job;
-        private readonly Mock<IStateMachine> _stateMachine;
+        private readonly Mock<IStateChangeProcess> _stateChangeProcess;
 
         public BackgroundJobClientFacts()
         {
@@ -23,9 +23,9 @@ namespace Hangfire.Core.Tests
             _storage = new Mock<JobStorage>();
             _storage.Setup(x => x.GetConnection()).Returns(connection.Object);
 
-            _stateMachine = new Mock<IStateMachine>();
+            _stateChangeProcess = new Mock<IStateChangeProcess>();
             
-            _process = new Mock<IJobCreationProcess>();
+            _creationProcess = new Mock<IJobCreationProcess>();
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns("Mock");
             _job = Job.FromExpression(() => Method());
@@ -35,27 +35,27 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(null, _stateMachine.Object, _process.Object));
+                () => new BackgroundJobClient(null, _stateChangeProcess.Object, _creationProcess.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStateMachineFactoryIsNull()
+        public void Ctor_ThrowsAnException_WhenStateChangeProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(_storage.Object, null, _process.Object));
+                () => new BackgroundJobClient(_storage.Object, null, _creationProcess.Object));
 
-            Assert.Equal("stateMachine", exception.ParamName);
+            Assert.Equal("stateChangeProcess", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenCreationProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundJobClient(_storage.Object, _stateMachine.Object, null));
+                () => new BackgroundJobClient(_storage.Object, _stateChangeProcess.Object, null));
 
-            Assert.Equal("process", exception.ParamName);
+            Assert.Equal("creationProcess", exception.ParamName);
         }
 
         [Fact, GlobalLock(Reason = "Needs JobStorage.Current instance")]
@@ -64,21 +64,6 @@ namespace Hangfire.Core.Tests
             JobStorage.Current = new Mock<JobStorage>().Object;
             // ReSharper disable once ObjectCreationAsStatement
             Assert.DoesNotThrow(() => new BackgroundJobClient());
-        }
-
-        [Fact]
-        public void Ctor_HasDefaultValue_ForStateMachineFactory()
-        {
-            // ReSharper disable once ObjectCreationAsStatement
-            Assert.DoesNotThrow(() => new BackgroundJobClient(_storage.Object));
-        }
-
-        [Fact]
-        public void Ctor_HasDefaultValue_ForCreationProcess()
-        {
-            Assert.DoesNotThrow(
-                // ReSharper disable once ObjectCreationAsStatement
-                () => new BackgroundJobClient(_storage.Object, _stateMachine.Object));
         }
 
         [Fact]
@@ -110,13 +95,13 @@ namespace Hangfire.Core.Tests
 
             client.Create(_job, _state.Object);
 
-            _process.Verify(x => x.Run(It.IsNotNull<CreateContext>()));
+            _creationProcess.Verify(x => x.Run(It.IsNotNull<CreateContext>()));
         }
 
         [Fact]
         public void CreateJob_ReturnsJobIdentifier()
         {
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns("some-job");
+            _creationProcess.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns("some-job");
             var client = CreateClient();
 
             var id = client.Create(_job, _state.Object);
@@ -128,7 +113,7 @@ namespace Hangfire.Core.Tests
         public void CreateJob_WrapsProcessException_IntoItsOwnException()
         {
             var client = CreateClient();
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>()))
+            _creationProcess.Setup(x => x.Run(It.IsAny<CreateContext>()))
                 .Throws<InvalidOperationException>();
 
             var exception = Assert.Throws<CreateJobFailedException>(
@@ -167,7 +152,7 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, null);
 
-            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == "job-id" &&
                 ctx.NewState == _state.Object &&
                 ctx.ExpectedStates == null)));
@@ -180,16 +165,16 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, "State");
 
-            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == "job-id" &&
                 ctx.NewState == _state.Object &&
                 ctx.ExpectedStates.SequenceEqual(new[] { "State" }))));
         }
 
         [Fact]
-        public void ChangeState_ReturnsTheResult_OfStateMachineInvocation()
+        public void ChangeState_ReturnsTheResult_OfStateChangeProcessInvocation()
         {
-            _stateMachine.Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
+            _stateChangeProcess.Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns(_state.Object);
             var client = CreateClient();
 
@@ -204,7 +189,7 @@ namespace Hangfire.Core.Tests
 
         private BackgroundJobClient CreateClient()
         {
-            return new BackgroundJobClient(_storage.Object, _stateMachine.Object, _process.Object);
+            return new BackgroundJobClient(_storage.Object, _stateChangeProcess.Object, _creationProcess.Object);
         }
     }
 }

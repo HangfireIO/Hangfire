@@ -20,7 +20,7 @@ namespace Hangfire.States
 {
     /// <summary>
     /// Provides a mechanism for performing custom actions when applying or
-    /// unapplying the state of a background job by <see cref="DefaultStateChangeProcess"/>.
+    /// unapplying the state of a background job by <see cref="StateMachine"/>.
     /// </summary>
     public interface IStateHandler
     {

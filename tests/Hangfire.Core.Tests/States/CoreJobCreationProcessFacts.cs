@@ -12,13 +12,13 @@ namespace Hangfire.Core.Tests.States
     public class CoreJobCreationProcessFacts
     {
         private const string JobId = "jobId";
-        private readonly Mock<IStateChangeProcess> _stateMachine;
+        private readonly Mock<IStateMachine> _stateMachine;
         private readonly CreateContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public CoreJobCreationProcessFacts()
         {
-            _stateMachine = new Mock<IStateChangeProcess>();
+            _stateMachine = new Mock<IStateMachine>();
             _context = new CreateContextMock();
             _transaction = new Mock<IWriteOnlyTransaction>();
 
@@ -37,7 +37,7 @@ namespace Hangfire.Core.Tests.States
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new CoreJobCreationProcess(null));
 
-            Assert.Equal("stateMachine", exception.ParamName);
+            Assert.Equal("StateChangeProcess", exception.ParamName);
         }
         
         [Fact]

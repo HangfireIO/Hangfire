@@ -116,12 +116,12 @@ namespace Hangfire
 
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(new WorkerContext(_options.Queues, i + 1), _options.PerformanceProcess, _options.StateMachine));
+                processes.Add(new Worker(new WorkerContext(_options.Queues, i + 1), _options.PerformanceProcess, _options.StateChangeProcess));
             }
 
             processes.Add(new ServerHeartbeat(_options.HeartbeatInterval));
             processes.Add(new ServerWatchdog(_options.ServerWatchdogOptions));
-            processes.Add(new SchedulePoller(_options.SchedulePollingInterval, _options.StateMachine));
+            processes.Add(new SchedulePoller(_options.SchedulePollingInterval, _options.StateChangeProcess));
             processes.Add(new RecurringJobScheduler(_options.CreationProcess));
 
             return processes;

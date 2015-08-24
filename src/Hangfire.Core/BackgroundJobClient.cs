@@ -28,8 +28,8 @@ namespace Hangfire
     public class BackgroundJobClient : IBackgroundJobClient
     {
         private readonly JobStorage _storage;
-        private readonly IJobCreationProcess _process;
-        private readonly IStateMachine _stateMachine;
+        private readonly IJobCreationProcess _creationProcess;
+        private readonly IStateChangeProcess _stateChangeProcess;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
@@ -47,34 +47,34 @@ namespace Hangfire
         /// <see cref="DefaultJobCreationProcess"/> instance.
         /// </summary>
         public BackgroundJobClient(JobStorage storage)
-            : this(storage, new StateMachine(new DefaultStateChangeProcess()))
+            : this(storage, new StateChangeProcess())
         {
         }
 
-        public BackgroundJobClient(JobStorage storage, IStateMachine stateMachine)
-            : this(storage, stateMachine, new DefaultJobCreationProcess())
+        public BackgroundJobClient(JobStorage storage, IStateChangeProcess stateChangeProcess)
+            : this(storage, stateChangeProcess, new DefaultJobCreationProcess())
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with a specified job storage and job creation process.
+        /// with a specified job storage and job creation creationProcess.
         /// </summary>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> argument is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="process"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="creationProcess"/> argument is null.</exception>
         public BackgroundJobClient(
             JobStorage storage,
-            IStateMachine stateMachine, 
-            IJobCreationProcess process)
+            IStateChangeProcess stateChangeProcess, 
+            IJobCreationProcess creationProcess)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
-            if (process == null) throw new ArgumentNullException("process");
+            if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
+            if (creationProcess == null) throw new ArgumentNullException("creationProcess");
             
             _storage = storage;
-            _stateMachine = stateMachine;
-            _process = process;
+            _stateChangeProcess = stateChangeProcess;
+            _creationProcess = creationProcess;
         }
 
         /// <inheritdoc />
@@ -88,12 +88,12 @@ namespace Hangfire
                 using (var connection = _storage.GetConnection())
                 {
                     var context = new CreateContext(_storage, connection, job, state);
-                    return _process.Run(context);
+                    return _creationProcess.Run(context);
                 }
             }
             catch (Exception ex)
             {
-                throw new CreateJobFailedException("Job creation process has failed. See inner exception for details", ex);
+                throw new CreateJobFailedException("Job creation creationProcess has failed. See inner exception for details", ex);
             }
         }
 
@@ -105,8 +105,12 @@ namespace Hangfire
 
             using (var connection = _storage.GetConnection())
             {
-                var context = new StateChangeContext(_storage, connection, jobId, state, fromState != null ? new[] { fromState } : null);
-                var appliedState = _stateMachine.ChangeState(context);
+                var appliedState = _stateChangeProcess.ChangeState(new StateChangeContext(
+                    _storage, 
+                    connection, 
+                    jobId, 
+                    state, 
+                    fromState != null ? new[] { fromState } : null));
 
                 return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
             }
