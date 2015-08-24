@@ -335,9 +335,10 @@
     <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\JobFilterInfo.cs" />
     <Compile Include="States\IStateChangeProcess.cs" />
-    <Compile Include="States\IStateMachineFactory.cs" />
     <Compile Include="States\DefaultStateChangeProcess.cs" />
+    <Compile Include="States\IStateMachineFactory.cs" />
     <Compile Include="States\IStateMachineFactoryFactory.cs" />
+    <Compile Include="States\StateChangeContext.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />

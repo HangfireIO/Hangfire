@@ -46,7 +46,7 @@ namespace Hangfire.States
             if (connection == null) throw new ArgumentNullException("connection");
 
             var process = new DefaultStateChangeProcess(_filterProvider);
-            return new StateMachine(_storage, connection, process);
+            return new StateMachine(process);
         }
     }
 }

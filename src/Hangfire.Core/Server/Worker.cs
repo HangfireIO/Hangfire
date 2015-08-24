@@ -77,12 +77,13 @@ namespace Hangfire.Server
                     {
                         var processingState = new ProcessingState(context.ServerId, _context.WorkerNumber);
 
-                        IState appliedState = stateMachine.ChangeState(
+                        var appliedState = stateMachine.ChangeState(new StateChangeContext(
+                            context.Storage,
+                            connection,
                             fetchedJob.JobId,
                             processingState,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
-                            linkedCts.Token
-                        );
+                            linkedCts.Token));
 
                         // Cancel job processing if the job could not be loaded, was not in the initial state expected
                         // or if a job filter changed the state to something other than processing state
@@ -111,7 +112,12 @@ namespace Hangfire.Server
                     if (state != null)
                     {
                         // Ignore return value, because we should not do anything when current state is not Processing.
-                        stateMachine.ChangeState(fetchedJob.JobId, state, new[] { ProcessingState.StateName });
+                        stateMachine.ChangeState(new StateChangeContext(
+                            context.Storage,
+                            connection,
+                            fetchedJob.JobId, 
+                            state, 
+                            ProcessingState.StateName));
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one

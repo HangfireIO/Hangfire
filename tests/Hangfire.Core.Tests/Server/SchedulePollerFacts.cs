@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using Hangfire.Server;
 using Hangfire.States;
@@ -55,11 +56,11 @@ namespace Hangfire.Core.Tests.Server
 
 			scheduler.Execute(_context.Object);
 
-            _stateMachine.Verify(x => x.ChangeState(
-                JobId,
-                It.IsAny<EnqueuedState>(),
-                new[] { ScheduledState.StateName },
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == JobId &&
+                ctx.NewState is EnqueuedState &&
+                ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
+
             _connection.Verify(x => x.Dispose());
         }
 
@@ -73,7 +74,7 @@ namespace Hangfire.Core.Tests.Server
 			scheduler.Execute(_context.Object);
 
             _stateMachine.Verify(
-                x => x.ChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
+                x => x.ChangeState(It.IsAny<StateChangeContext>()),
                 Times.Never);
         }
 

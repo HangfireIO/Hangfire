@@ -95,7 +95,12 @@ namespace Hangfire.Server
                     Reason = "Enqueued as a scheduled job"
                 };
 
-                stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName });
+                stateMachine.ChangeState(new StateChangeContext(
+                    context.Storage,
+                    connection,
+                    jobId, 
+                    enqueuedState, 
+                    ScheduledState.StateName));
 
                 return true;
             }

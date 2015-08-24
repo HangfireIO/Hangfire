@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -51,12 +52,8 @@ namespace Hangfire.Core.Tests.Server
                 .Setup(x => x.Create(_connection.Object))
                 .Returns(_stateMachine.Object);
 
-            _stateMachine.Setup(x => x.ChangeState(
-                It.IsAny<string>(),
-                It.IsAny<IState>(),
-                It.IsAny<string[]>(),
-                It.IsAny<CancellationToken>()
-            )).Returns<string, IState, string[], CancellationToken>((j, t, f, c) => t);
+            _stateMachine.Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
+                .Returns<StateChangeContext>(ctx => ctx.NewState);
 
             _stateMachineFactoryFactory = new Mock<IStateMachineFactoryFactory>();
             _stateMachineFactoryFactory
@@ -120,7 +117,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_RequeuesAJob_WhenThereWasAnException()
         {
             _stateMachine
-                .Setup(x => x.ChangeState(It.IsAny<string>(), It.IsAny<IState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Throws<InvalidOperationException>();
 
             var worker = CreateWorker();
@@ -137,19 +134,17 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _stateMachine
-                .Setup(x => x.ChangeState(
-                    JobId, It.IsAny<ProcessingState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is ProcessingState)))
                 .InSequence()
-                .Returns<string, IState, string[], CancellationToken>((j, t, f, c) => t);
+                .Returns<StateChangeContext>(ctx => ctx.NewState);
 
             _process.Setup(x => x.Run(It.IsAny<PerformContext>()))
                 .InSequence();
 
             _stateMachine
-                .Setup(x => x.ChangeState(
-                    JobId, It.IsAny<SucceededState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is SucceededState)))
                 .InSequence()
-                .Returns<string, IState, string[], CancellationToken>((j, t, f, c) => t);
+                .Returns<StateChangeContext>(context => context.NewState);
 
             var worker = CreateWorker();
 
@@ -166,11 +161,8 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _stateMachine.Verify(x => x.ChangeState(
-                It.IsAny<string>(),
-                It.Is<ProcessingState>(state => state.ServerId == _context.ServerId),
-                It.IsAny<string[]>(),
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is ProcessingState && (((ProcessingState) ctx.NewState).ServerId == _context.ServerId))));
         }
 
         [Fact]
@@ -180,13 +172,10 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _stateMachine.Verify(x => x.ChangeState(
-                It.IsAny<string>(),
-                It.IsAny<ProcessingState>(),
-                It.Is<string[]>(
-                    states => states.Length == 2 &&
-                        states[0] == EnqueuedState.StateName && states[1] == ProcessingState.StateName),
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is ProcessingState &&
+                ctx.ExpectedStates.ElementAt(0) == EnqueuedState.StateName &&
+                ctx.ExpectedStates.ElementAt(1) == ProcessingState.StateName)));
         }
 
         [Fact]
@@ -194,11 +183,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             _stateMachine
-                .Setup(x => x.ChangeState(
-                    It.IsAny<string>(),
-                    It.IsAny<ProcessingState>(),
-                    It.IsAny<string[]>(),
-                    It.IsAny<CancellationToken>()))
+                .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is ProcessingState)))
                 .Returns<IState>(null);
 
             var worker = CreateWorker();
@@ -234,7 +219,7 @@ namespace Hangfire.Core.Tests.Server
 
             // Assert
             _stateMachine.Verify(
-                x => x.ChangeState(It.IsAny<string>(), It.IsAny<FailedState>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()),
+                x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is FailedState)),
                 Times.Never);
             _fetchedJob.Verify(x => x.Requeue());
         }
@@ -262,11 +247,9 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _stateMachine.Verify(x => x.ChangeState(
-                It.IsAny<string>(),
-                It.IsAny<SucceededState>(),
-                It.Is<string[]>(states => states.Length == 1 && states[0] == ProcessingState.StateName),
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is SucceededState &&
+                ctx.ExpectedStates.ElementAt(0) == ProcessingState.StateName)));
         }
 
         [Fact]
@@ -284,11 +267,10 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _stateMachine.Verify(x => x.ChangeState(
-                JobId,
-                It.Is<FailedState>(state => state.Exception == exception && state.Reason.Contains("Internal")),
-                It.IsAny<string[]>(),
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == JobId &&
+                ctx.NewState is FailedState &&
+                ((FailedState) ctx.NewState).Exception == exception)));
         }
 
         [Fact]
@@ -306,11 +288,9 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _stateMachine.Verify(x => x.ChangeState(
-                JobId,
-                It.Is<FailedState>(state => state.Exception == exception && state.Reason == "hello"),
-                It.IsAny<string[]>(),
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == JobId &&
+                ctx.NewState is FailedState)));
         }
 
         [Fact]
@@ -326,11 +306,8 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _stateMachine.Verify(x => x.ChangeState(
-                JobId,
-                It.IsAny<FailedState>(),
-                It.IsAny<string[]>(),
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.NewState is FailedState)));
         }
 
         private Worker CreateWorker()

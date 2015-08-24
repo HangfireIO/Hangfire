@@ -107,7 +107,8 @@ namespace Hangfire
             {
                 var factory = _stateMachineFactoryFactory.CreateFactory(_storage);
                 var stateMachine = factory.Create(connection);
-                var appliedState = stateMachine.ChangeState(jobId, state, fromState != null ? new[] { fromState } : null);
+                var context = new StateChangeContext(_storage, connection, jobId, state, fromState != null ? new[] { fromState } : null);
+                var appliedState = stateMachine.ChangeState(context);
 
                 return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
             }

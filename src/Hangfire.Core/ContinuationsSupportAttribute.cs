@@ -182,7 +182,12 @@ namespace Hangfire
 
             foreach (var tuple in nextStates)
             {
-                stateMachine.ChangeState(tuple.Key, tuple.Value, new[] { AwaitingState.StateName });
+                stateMachine.ChangeState(new StateChangeContext(
+                    context.Storage,
+                    context.Connection,
+                    tuple.Key,
+                    tuple.Value,
+                    AwaitingState.StateName));
             }
         }
 

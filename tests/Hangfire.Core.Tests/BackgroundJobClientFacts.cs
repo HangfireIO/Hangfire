@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading;
+using System.Linq;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -176,11 +176,10 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, null);
 
-            _stateMachine.Verify(x => x.ChangeState(
-                "job-id",
-                _state.Object,
-                null,
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-id" &&
+                ctx.NewState == _state.Object &&
+                ctx.ExpectedStates == null)));
         }
 
         [Fact]
@@ -190,17 +189,16 @@ namespace Hangfire.Core.Tests
 
             client.ChangeState("job-id", _state.Object, "State");
 
-            _stateMachine.Verify(x => x.ChangeState(
-                "job-id",
-                _state.Object,
-                new[] { "State" },
-                It.IsAny<CancellationToken>()));
+            _stateMachine.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+                ctx.BackgroundJobId == "job-id" &&
+                ctx.NewState == _state.Object &&
+                ctx.ExpectedStates.SequenceEqual(new[] { "State" }))));
         }
 
         [Fact]
         public void ChangeState_ReturnsTheResult_OfStateMachineInvocation()
         {
-            _stateMachine.Setup(x => x.ChangeState("job-id", _state.Object, null, It.IsAny<CancellationToken>()))
+            _stateMachine.Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns(_state.Object);
             var client = CreateClient();
 
