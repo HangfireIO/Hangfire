@@ -93,6 +93,7 @@
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
     <Compile Include="Mocks\BackgroundJobMock.cs" />
     <Compile Include="Mocks\BackgroundProcessContextMock.cs" />
+    <Compile Include="Mocks\CreateContextMock.cs" />
     <Compile Include="Mocks\ElectStateContextMock.cs" />
     <Compile Include="Mocks\PerformContextMock.cs" />
     <Compile Include="Mocks\WorkerContextMock.cs" />
@@ -123,6 +124,7 @@
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
+    <Compile Include="States\CoreJobCreationProcessFacts.cs" />
     <Compile Include="States\ScheduledStateHandlerFacts.cs" />
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />

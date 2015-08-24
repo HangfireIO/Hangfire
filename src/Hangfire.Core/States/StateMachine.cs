@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
@@ -47,28 +46,6 @@ namespace Hangfire.States
         }
 
         public IStateChangeProcess Process { get { return _stateChangeProcess; } }
-
-        public string CreateJob(
-            Job job,
-            IDictionary<string, string> parameters,
-            IState state)
-        {
-            if (job == null) throw new ArgumentNullException("job");
-            if (parameters == null) throw new ArgumentNullException("parameters");
-            if (state == null) throw new ArgumentNullException("state");
-
-            var createdAt = DateTime.UtcNow;
-            var jobId = _connection.CreateExpiredJob(
-                job,
-                parameters,
-                createdAt,
-                TimeSpan.FromHours(1));
-
-            var backgroundJob = new BackgroundJob(jobId, job, createdAt);
-            ChangeState(backgroundJob, state, null);
-
-            return backgroundJob.Id;
-        }
 
         /// <summary>
         /// Attempts to change the state of a job, respecting any applicable job filters and state handlers

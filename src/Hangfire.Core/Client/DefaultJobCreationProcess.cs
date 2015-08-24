@@ -28,7 +28,7 @@ namespace Hangfire.Client
         private readonly IJobCreationProcess _innerProcess;
 
         public DefaultJobCreationProcess()
-            : this(JobFilterProviders.Providers, new StateMachineJobCreationProcess())
+            : this(JobFilterProviders.Providers, new CoreJobCreationProcess())
         {
         }
 

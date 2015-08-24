@@ -18,7 +18,6 @@ namespace Hangfire.Core.Tests.States
 
         private readonly Mock<IStorageConnection> _connection;
         private readonly Job _job;
-        private readonly Dictionary<string, string> _parameters;
         private readonly Mock<IState> _state;
         private readonly Mock<IStateChangeProcess> _process;
         private readonly Mock<IDisposable> _distributedLock;
@@ -31,7 +30,6 @@ namespace Hangfire.Core.Tests.States
             _process = new Mock<IStateChangeProcess>();
 
             _job = Job.FromExpression(() => Console.WriteLine());
-            _parameters = new Dictionary<string, string>();
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns(StateName);
 
@@ -97,75 +95,6 @@ namespace Hangfire.Core.Tests.States
             var result = stateMachine.Process;
 
             Assert.Same(_process.Object, result);
-        }
-
-        [Fact]
-        public void CreateJob_ThrowsAnException_WhenJobIsNull()
-        {
-            var stateMachine = CreateStateMachine();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.CreateJob(null, _parameters, _state.Object));
-
-            Assert.Equal("job", exception.ParamName);
-        }
-
-        [Fact]
-        public void CreateJob_ThrowsAnException_WhenParametersIsNull()
-        {
-            var stateMachine = CreateStateMachine();
-
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => stateMachine.CreateJob(_job, null, _state.Object));
-
-            Assert.Equal("parameters", exception.ParamName);
-        }
-
-        [Fact]
-        public void CreateJob_ThrowsAnException_WhenStateIsNull()
-        {
-            var stateMachine = CreateStateMachine();
-
-            var exception = Assert.Throws<ArgumentNullException> (
-                () => stateMachine.CreateJob(_job, _parameters, null));
-
-            Assert.Equal("state", exception.ParamName);
-        }
-
-        [Fact]
-        public void CreateJob_CreatesExpiredJob()
-        {
-            var job = Job.FromExpression(() => Console.WriteLine("SomeString"));
-            _parameters.Add("Name", "Value");
-
-            var stateMachine = CreateStateMachine();
-
-            stateMachine.CreateJob(job, _parameters, _state.Object);
-
-            _connection.Verify(x => x.CreateExpiredJob(
-				job,
-                It.Is<Dictionary<string, string>>(d => d["Name"] == "Value"),
-                It.IsAny<DateTime>(),
-                It.IsAny<TimeSpan>()));
-        }
-
-        [Fact]
-        public void CreateJob_ChangesTheStateOfACreatedJob()
-        {
-            var stateMachine = CreateStateMachine();
-
-            stateMachine.CreateJob(_job, _parameters, _state.Object);
-
-            _process.Verify(x => x.ApplyState(
-                It.Is<ApplyStateContext>(sc => sc.BackgroundJob.Id == JobId && sc.BackgroundJob.Job == _job
-                    && sc.NewState == _state.Object && sc.OldStateName == null)));
-        }
-
-        [Fact]
-        public void CreateJob_ReturnsNewJobId()
-        {
-            var stateMachine = CreateStateMachine();
-            Assert.Equal(JobId, stateMachine.CreateJob(_job, _parameters, _state.Object));
         }
 
         [Fact]
