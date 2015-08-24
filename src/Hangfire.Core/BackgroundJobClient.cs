@@ -29,7 +29,7 @@ namespace Hangfire
     {
         private readonly JobStorage _storage;
         private readonly IJobCreationProcess _process;
-        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
+        private readonly IStateMachine _stateMachine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
@@ -47,12 +47,12 @@ namespace Hangfire
         /// <see cref="DefaultJobCreationProcess"/> instance.
         /// </summary>
         public BackgroundJobClient(JobStorage storage)
-            : this(storage, new StateMachineFactoryFactory())
+            : this(storage, new StateMachine(new DefaultStateChangeProcess()))
         {
         }
 
-        public BackgroundJobClient(JobStorage storage, IStateMachineFactoryFactory stateMachineFactoryFactory)
-            : this(storage, stateMachineFactoryFactory, new DefaultJobCreationProcess())
+        public BackgroundJobClient(JobStorage storage, IStateMachine stateMachine)
+            : this(storage, stateMachine, new DefaultJobCreationProcess())
         {
         }
 
@@ -65,15 +65,15 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="process"/> argument is null.</exception>
         public BackgroundJobClient(
             JobStorage storage,
-            IStateMachineFactoryFactory stateMachineFactoryFactory, 
+            IStateMachine stateMachine, 
             IJobCreationProcess process)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
+            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             if (process == null) throw new ArgumentNullException("process");
             
             _storage = storage;
-            _stateMachineFactoryFactory = stateMachineFactoryFactory;
+            _stateMachine = stateMachine;
             _process = process;
         }
 
@@ -105,10 +105,8 @@ namespace Hangfire
 
             using (var connection = _storage.GetConnection())
             {
-                var factory = _stateMachineFactoryFactory.CreateFactory(_storage);
-                var stateMachine = factory.Create(connection);
                 var context = new StateChangeContext(_storage, connection, jobId, state, fromState != null ? new[] { fromState } : null);
-                var appliedState = stateMachine.ChangeState(context);
+                var appliedState = _stateMachine.ChangeState(context);
 
                 return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
             }

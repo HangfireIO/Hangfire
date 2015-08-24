@@ -133,7 +133,6 @@
     <Compile Include="States\ElectStateContextFacts.cs" />
     <Compile Include="States\DefaultStateChangeProcessFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
-    <Compile Include="States\StateMachineFactoryFacts.cs" />
     <Compile Include="States\StateMachineFacts.cs" />
     <Compile Include="States\SucceededStateFacts.cs" />
     <Compile Include="States\SucceededStateHandlerFacts.cs" />

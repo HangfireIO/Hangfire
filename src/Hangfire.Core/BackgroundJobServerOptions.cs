@@ -43,7 +43,7 @@ namespace Hangfire
 
             CreationProcess = new DefaultJobCreationProcess();
             PerformanceProcess = new DefaultJobPerformanceProcess();
-            StateMachineFactoryFactory = new StateMachineFactoryFactory();
+            StateMachine = new StateMachine(new DefaultStateChangeProcess());
         }
 
         public string ServerName { get; set; }
@@ -79,7 +79,7 @@ namespace Hangfire
 
         public IJobCreationProcess CreationProcess { get; set; }
         public IJobPerformanceProcess PerformanceProcess { get; set; }
-        public IStateMachineFactoryFactory StateMachineFactoryFactory { get; set; }
+        public IStateMachine StateMachine { get; set; }
 
         public void WriteToLog(ILog logger)
         {

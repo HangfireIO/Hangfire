@@ -336,8 +336,6 @@
     <Compile Include="Common\JobFilterInfo.cs" />
     <Compile Include="States\IStateChangeProcess.cs" />
     <Compile Include="States\DefaultStateChangeProcess.cs" />
-    <Compile Include="States\IStateMachineFactory.cs" />
-    <Compile Include="States\IStateMachineFactoryFactory.cs" />
     <Compile Include="States\StateChangeContext.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
@@ -360,8 +358,6 @@
     <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\Worker.cs" />
     <Compile Include="States\IStateMachine.cs" />
-    <Compile Include="States\StateMachineFactory.cs" />
-    <Compile Include="States\StateMachineFactoryFactory.cs" />
     <Compile Include="Storage\DistributedLockTimeoutException.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IMonitoringApi.cs" />

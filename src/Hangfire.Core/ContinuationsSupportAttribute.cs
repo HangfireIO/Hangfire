@@ -34,7 +34,7 @@ namespace Hangfire
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly HashSet<string> _knownFinalStates;
-        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
+        private readonly IStateMachine _stateMachine;
 
         public ContinuationsSupportAttribute()
             : this(new HashSet<string> { DeletedState.StateName, SucceededState.StateName })
@@ -42,19 +42,19 @@ namespace Hangfire
         }
 
         public ContinuationsSupportAttribute(HashSet<string> knownFinalStates)
-            : this(knownFinalStates, new StateMachineFactoryFactory())
+            : this(knownFinalStates, new StateMachine(new DefaultStateChangeProcess()))
         {
         }
 
         public ContinuationsSupportAttribute(
             [NotNull] HashSet<string> knownFinalStates, 
-            [NotNull] IStateMachineFactoryFactory stateMachineFactoryFactory)
+            [NotNull] IStateMachine stateMachine)
         {
             if (knownFinalStates == null) throw new ArgumentNullException("knownFinalStates");
-            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
+            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
 
             _knownFinalStates = knownFinalStates;
-            _stateMachineFactoryFactory = stateMachineFactoryFactory;
+            _stateMachine = stateMachine;
 
             // Ensure this filter is the last filter in the chain to start
             // continuations on the last candidate state only.
@@ -176,13 +176,10 @@ namespace Hangfire
 
                 nextStates.Add(continuation.JobId, nextState);
             }
-
-            var stateMachineFactory = _stateMachineFactoryFactory.CreateFactory(context.Storage);
-            var stateMachine = stateMachineFactory.Create(context.Connection);
-
+            
             foreach (var tuple in nextStates)
             {
-                stateMachine.ChangeState(new StateChangeContext(
+                _stateMachine.ChangeState(new StateChangeContext(
                     context.Storage,
                     context.Connection,
                     tuple.Key,
