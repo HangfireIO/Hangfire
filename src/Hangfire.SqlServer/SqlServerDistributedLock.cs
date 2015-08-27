@@ -58,12 +58,12 @@ namespace Hangfire.SqlServer
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
             // Ensuring the timeout for the command is 1 second longer than the timeout specified for the stored procedure.
-            var connectionTimeout = timeout.Seconds + 1;
+            var commandTimeout = timeout.Seconds + 1;
 
             connection.Execute(
                 @"sp_getapplock",
                 parameters,
-                commandTimeout: connectionTimeout,
+                commandTimeout: commandTimeout,
                 commandType: CommandType.StoredProcedure);
 
             var lockResult = parameters.Get<int>("@Result");
