@@ -61,20 +61,20 @@ namespace Hangfire.SqlServer
             var connectionTimeout = timeout.Seconds + 1;
 
             connection.Execute(
-            @"sp_getapplock",
-            parameters,
-            commandTimeout: connectionTimeout,
-            commandType: CommandType.StoredProcedure);
+                @"sp_getapplock",
+                parameters,
+                commandTimeout: connectionTimeout,
+                commandType: CommandType.StoredProcedure);
 
             var lockResult = parameters.Get<int>("@Result");
 
             if (lockResult < 0)
             {
                 throw new SqlServerDistributedLockException(
-                String.Format(
+                    String.Format(
                     "Could not place a lock on the resource '{0}': {1}.",
                     _resource,
-                    LockErrorMessages.ContainsKey(lockResult)
+                    LockErrorMessages.ContainsKey(lockResult) 
                         ? LockErrorMessages[lockResult]
                         : String.Format("Server returned the '{0}' error.", lockResult)));
             }
@@ -102,7 +102,7 @@ namespace Hangfire.SqlServer
             {
                 throw new SqlServerDistributedLockException(
                     String.Format(
-                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
+                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.", 
                         _resource,
                         releaseResult));
             }
