@@ -59,7 +59,9 @@ namespace Hangfire.SqlServer
             connection.Execute(
                 @"sp_getapplock", 
                 parameters, 
-                commandType: CommandType.StoredProcedure);
+                null,
+                timeout.Seconds,
+                CommandType.StoredProcedure);
 
             var lockResult = parameters.Get<int>("@Result");
 
