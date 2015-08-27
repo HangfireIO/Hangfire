@@ -57,38 +57,27 @@ namespace Hangfire.SqlServer
             parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
-            try
+            // Ensuring the timeout for the connection is 1 second longer than the timeout specified for the stored procedure.
+            var connectionTimeout = timeout.Seconds + 1;
+
+            connection.Execute(
+            @"sp_getapplock",
+            parameters,
+            commandTimeout: connectionTimeout,
+            commandType: CommandType.StoredProcedure);
+
+            var lockResult = parameters.Get<int>("@Result");
+
+            if (lockResult < 0)
             {
-                connection.Execute(
-                @"sp_getapplock",
-                parameters,
-                null,
-                timeout.Seconds,
-                CommandType.StoredProcedure);
-
-                var lockResult = parameters.Get<int>("@Result");
-
-                if (lockResult < 0)
-                {
-                    throw CreateLockException(lockResult);
-                }
-            }
-            catch (SqlException ex)
-            {
-                throw CreateLockException(ex.Number);
-            }
-
-        }
-
-        private SqlServerDistributedLockException CreateLockException(int lockResult)
-        {
-            return new SqlServerDistributedLockException(
+                throw new SqlServerDistributedLockException(
                 String.Format(
                     "Could not place a lock on the resource '{0}': {1}.",
                     _resource,
                     LockErrorMessages.ContainsKey(lockResult)
                         ? LockErrorMessages[lockResult]
                         : String.Format("Server returned the '{0}' error.", lockResult)));
+            }
         }
 
         public void Dispose()
