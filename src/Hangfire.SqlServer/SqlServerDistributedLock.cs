@@ -77,7 +77,7 @@ namespace Hangfire.SqlServer
             {
                 throw CreateLockException(ex.Number);
             }
-            
+
         }
 
         private SqlServerDistributedLockException CreateLockException(int lockResult)
@@ -113,7 +113,7 @@ namespace Hangfire.SqlServer
             {
                 throw new SqlServerDistributedLockException(
                     String.Format(
-                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.", 
+                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
                         _resource,
                         releaseResult));
             }
