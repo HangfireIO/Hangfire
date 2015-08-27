@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using Dapper;
 
 namespace Hangfire.SqlServer
@@ -56,25 +57,38 @@ namespace Hangfire.SqlServer
             parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
-            connection.Execute(
-                @"sp_getapplock", 
-                parameters, 
+            try
+            {
+                connection.Execute(
+                @"sp_getapplock",
+                parameters,
                 null,
                 timeout.Seconds,
                 CommandType.StoredProcedure);
 
-            var lockResult = parameters.Get<int>("@Result");
+                var lockResult = parameters.Get<int>("@Result");
 
-            if (lockResult < 0)
+                if (lockResult < 0)
+                {
+                    throw CreateLockException(lockResult);
+                }
+            }
+            catch (SqlException ex)
             {
-                throw new SqlServerDistributedLockException(
-                    String.Format(
+                throw CreateLockException(ex.Number);
+            }
+            
+        }
+
+        private SqlServerDistributedLockException CreateLockException(int lockResult)
+        {
+            return new SqlServerDistributedLockException(
+                String.Format(
                     "Could not place a lock on the resource '{0}': {1}.",
                     _resource,
-                    LockErrorMessages.ContainsKey(lockResult) 
+                    LockErrorMessages.ContainsKey(lockResult)
                         ? LockErrorMessages[lockResult]
                         : String.Format("Server returned the '{0}' error.", lockResult)));
-            }
         }
 
         public void Dispose()
