@@ -16,11 +16,13 @@ namespace Hangfire.Core.Tests
             ConnectionValue = new Mock<IStorageConnection>();
             CandidateStateValue = new Mock<IState>().Object;
             CurrentStateValue = "OldState";
+            Transaction = new Mock<IWriteOnlyTransaction>();
 
             _context = new Lazy<ElectStateContext>(
                 () => new ElectStateContext(
                     Storage.Object,
                     ConnectionValue.Object,
+                    Transaction.Object,
                     BackgroundJob.Object,
                     CandidateStateValue,
                     CurrentStateValue));
@@ -31,6 +33,7 @@ namespace Hangfire.Core.Tests
         public IState CandidateStateValue { get; set; }
         public string CurrentStateValue { get; set; }
         public Mock<IStorageConnection> ConnectionValue { get; set; }
+        public Mock<IWriteOnlyTransaction> Transaction { get; set; }
 
         public ElectStateContext Object
         {

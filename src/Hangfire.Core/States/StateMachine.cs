@@ -57,6 +57,7 @@ namespace Hangfire.States
             var electContext = new ElectStateContext(
                 initialContext.Storage,
                 initialContext.Connection,
+                initialContext.Transaction,
                 initialContext.BackgroundJob,
                 initialContext.NewState,
                 initialContext.OldStateName);

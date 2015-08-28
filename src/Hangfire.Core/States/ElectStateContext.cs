@@ -31,13 +31,15 @@ namespace Hangfire.States
 
         internal ElectStateContext(
             [NotNull] JobStorage storage,
-            [NotNull] IStorageConnection connection, 
+            [NotNull] IStorageConnection connection,
+            [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState candidateState, 
             [CanBeNull] string currentState)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (connection == null) throw new ArgumentNullException("connection");
+            if (transaction == null) throw new ArgumentNullException("transaction");
             if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
             if (candidateState == null) throw new ArgumentNullException("candidateState");
 
@@ -46,6 +48,7 @@ namespace Hangfire.States
 
             Storage = storage;
             Connection = connection;
+            Transaction = transaction;
             CurrentState = currentState;
         }
 
@@ -60,6 +63,9 @@ namespace Hangfire.States
 
         [NotNull]
         public IStorageConnection Connection { get; private set; }
+
+        [NotNull]
+        public IWriteOnlyTransaction Transaction { get; private set; }
 
         [NotNull]
         public IState CandidateState

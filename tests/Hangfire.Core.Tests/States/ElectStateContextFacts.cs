@@ -13,12 +13,14 @@ namespace Hangfire.Core.Tests.States
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<JobStorage> _storage;
         private readonly BackgroundJobMock _backgroundJob;
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
 
         public ElectStateContextFacts()
         {
             _storage = new Mock<JobStorage>();
             _backgroundJob = new BackgroundJobMock();
             _connection = new Mock<IStorageConnection>();
+            _transaction = new Mock<IWriteOnlyTransaction>();
             _candidateState = new Mock<IState>();
         }
 
@@ -27,7 +29,7 @@ namespace Hangfire.Core.Tests.States
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () =>
-                    new ElectStateContext(null, _connection.Object, _backgroundJob.Object, _candidateState.Object, null));
+                    new ElectStateContext(null, _connection.Object, _transaction.Object, _backgroundJob.Object, _candidateState.Object, null));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -39,6 +41,7 @@ namespace Hangfire.Core.Tests.States
                 () => new ElectStateContext(
                     _storage.Object,
                     null,
+                    _transaction.Object,
                     _backgroundJob.Object,
                     _candidateState.Object,
                     null));
@@ -47,10 +50,25 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenTransactionIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ElectStateContext(
+                    _storage.Object,
+                    _connection.Object,
+                    null,
+                    _backgroundJob.Object,
+                    _candidateState.Object,
+                    null));
+
+            Assert.Equal("transaction", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsAnException_WhenBackgroundJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ElectStateContext(_storage.Object, _connection.Object, null, _candidateState.Object, null));
+                () => new ElectStateContext(_storage.Object, _connection.Object, _transaction.Object, null, _candidateState.Object, null));
 
             Assert.Equal("backgroundJob", exception.ParamName);
         }
@@ -62,6 +80,7 @@ namespace Hangfire.Core.Tests.States
                 () => new ElectStateContext(
                     _storage.Object,
                     _connection.Object,
+                    _transaction.Object,
                     _backgroundJob.Object,
                     null,
                     null));
@@ -73,11 +92,10 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_CorrectlySetAllProperties()
         {
             var context = CreateContext();
-
-            Assert.Equal(_backgroundJob.Id, context.BackgroundJob.Id);
-            Assert.Equal(_backgroundJob.Job, context.BackgroundJob.Job);
-
+            
             Assert.Same(_connection.Object, context.Connection);
+            Assert.Same(_transaction.Object, context.Transaction);
+            Assert.Same(_backgroundJob.Object, context.BackgroundJob);
             Assert.Same(_candidateState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
             Assert.Empty(context.TraversedStates);
@@ -164,6 +182,7 @@ namespace Hangfire.Core.Tests.States
             return new ElectStateContext(
                 _storage.Object,
                 _connection.Object,
+                _transaction.Object,
                 _backgroundJob.Object,
                 _candidateState.Object,
                 "State");
