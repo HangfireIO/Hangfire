@@ -23,7 +23,7 @@ namespace Hangfire.States
     public class StateMachine : IStateMachine
     {
         private readonly IJobFilterProvider _filterProvider;
-        private readonly Func<JobStorage, StateHandlerCollection> _stateHandlersThunk;
+        private readonly IStateMachine _innerStateMachine;
 
         public StateMachine()
             : this(JobFilterProviders.Providers)
@@ -31,19 +31,19 @@ namespace Hangfire.States
         }
 
         public StateMachine([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, GetStateHandlers)
+            : this(filterProvider, new CoreStateMachine())
         {
         }
 
         internal StateMachine(
-            [NotNull] IJobFilterProvider filterProvider,
-            [NotNull] Func<JobStorage, StateHandlerCollection> stateHandlersThunk)
+            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] IStateMachine innerStateMachine)
         {
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-            if (stateHandlersThunk == null) throw new ArgumentNullException("stateHandlersThunk");
+            if (innerStateMachine == null) throw new ArgumentNullException("innerStateMachine");
             
             _filterProvider = filterProvider;
-            _stateHandlersThunk = stateHandlersThunk;
+            _innerStateMachine = innerStateMachine;
         }
 
         public void ElectState(ElectStateContext context)
@@ -59,57 +59,23 @@ namespace Hangfire.States
         {
             var filterInfo = GetFilters(context.BackgroundJob.Job);
             var filters = filterInfo.ApplyStateFilters;
-            var handlers = _stateHandlersThunk(context.Storage);
-
-            foreach (var state in context.TraversedStates)
-            {
-                context.Transaction.AddJobState(context.BackgroundJob.Id, state);
-            }
-
-            foreach (var handler in handlers.GetHandlers(context.OldStateName))
-            {
-                handler.Unapply(context, context.Transaction);
-            }
 
             foreach (var filter in filters)
             {
                 filter.OnStateUnapplied(context, context.Transaction);
             }
 
-            context.Transaction.SetJobState(context.BackgroundJob.Id, context.NewState);
-
-            foreach (var handler in handlers.GetHandlers(context.NewState.Name))
-            {
-                handler.Apply(context, context.Transaction);
-            }
+            _innerStateMachine.ApplyState(context);
 
             foreach (var filter in filters)
             {
                 filter.OnStateApplied(context, context.Transaction);
-            }
-
-            if (context.NewState.IsFinal)
-            {
-                context.Transaction.ExpireJob(context.BackgroundJob.Id, context.JobExpirationTimeout);
-            }
-            else
-            {
-                context.Transaction.PersistJob(context.BackgroundJob.Id);
             }
         }
 
         private JobFilterInfo GetFilters(Job job)
         {
             return new JobFilterInfo(_filterProvider.GetFilters(job));
-        }
-
-        private static StateHandlerCollection GetStateHandlers(JobStorage storage)
-        {
-            var stateHandlers = new StateHandlerCollection();
-            stateHandlers.AddRange(GlobalStateHandlers.Handlers);
-            stateHandlers.AddRange(storage.GetStateHandlers());
-
-            return stateHandlers;
         }
     }
 }

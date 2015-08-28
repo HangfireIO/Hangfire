@@ -329,6 +329,7 @@
     <Compile Include="Obsolete\ServerOwinExtensions.cs" />
     <Compile Include="Obsolete\StartupConfiguration.cs" />
     <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
+    <Compile Include="States\CoreStateMachine.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />

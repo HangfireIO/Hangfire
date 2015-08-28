@@ -120,6 +120,7 @@
     <Compile Include="Server\ServerWatchdogFacts.cs" />
     <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
+    <Compile Include="States\CoreStateMachineFacts.cs" />
     <Compile Include="States\DeletedStateFacts.cs" />
     <Compile Include="States\DeletedStateHandlerFacts.cs" />
     <Compile Include="States\EnqueuedStateFacts.cs" />

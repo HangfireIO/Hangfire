@@ -16,7 +16,6 @@ namespace Hangfire.Core.Tests.States
         private const string StateName = "State";
         private const string JobId = "job";
 
-        private readonly StateHandlerCollection _handlers = new StateHandlerCollection();
         private readonly List<object> _filters = new List<object>();
 
         private readonly Mock<IState> _state;
@@ -24,7 +23,8 @@ namespace Hangfire.Core.Tests.States
         private readonly ElectStateContextMock _electStateContext;
         private readonly ApplyStateContextMock _applyStateContext;
         private readonly Mock<IJobFilterProvider> _filterProvider;
-        private readonly Func<JobStorage, StateHandlerCollection> _stateHandlersThunk; 
+        
+        private readonly Mock<IStateMachine> _innerMachine;
 
         public StateMachineFacts()
         {
@@ -46,34 +46,34 @@ namespace Hangfire.Core.Tests.States
             _applyStateContext = new ApplyStateContextMock
             {
                 BackgroundJob = backgroundJob,
-                NewStateValue = _state.Object,
-                OldStateValue = OldStateName,
+                NewState = _state,
+                OldStateName = OldStateName,
                 Transaction = _transaction
             };
 
             _filterProvider = new Mock<IJobFilterProvider>();
             _filterProvider.Setup(x => x.GetFilters(It.IsNotNull<Job>())).Returns(
                 _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
-
-            _stateHandlersThunk = storage => _handlers;
+            
+            _innerMachine = new Mock<IStateMachine>();
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenFilterProviderIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateMachine(null, _stateHandlersThunk));
+                () => new StateMachine(null, _innerMachine.Object));
 
             Assert.Equal("filterProvider", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStateHandlersThunkIsNull()
+        public void Ctor_ThrowsAnException_WhenInnerStateMachineIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new StateMachine(_filterProvider.Object, null));
 
-            Assert.Equal("stateHandlersThunk", exception.ParamName);
+            Assert.Equal("innerStateMachine", exception.ParamName);
         }
 
         [Fact, Sequence]
@@ -95,113 +95,9 @@ namespace Hangfire.Core.Tests.States
 
             // Assert - Sequence
         }
-
+        
         [Fact, Sequence]
-        public void ApplyState_CallsUnapplyHandlers_BeforeSettingTheState()
-        {
-            // Arrange
-            var handler1 = CreateStateHandler(OldStateName);
-            var handler2 = CreateStateHandler(OldStateName);
-
-            handler1
-                .Setup(x => x.Unapply(It.IsNotNull<ApplyStateContext>(), _transaction.Object))
-                .InSequence();
-
-            handler2
-                .Setup(x => x.Unapply(It.IsNotNull<ApplyStateContext>(), _transaction.Object))
-                .InSequence();
-
-            _transaction.Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<IState>()))
-                .InSequence();
-
-            var stateMachine = CreateStateMachine();
-
-            // Act
-            stateMachine.ApplyState(_applyStateContext.Object);
-
-            // Assert - Sequence
-        }
-
-        [Fact]
-        public void ApplyState_DoesNotCallUnapplyHandlers_ForDifferentStates()
-        {
-            // Arrange
-            var handler = CreateStateHandler(StateName);
-            var stateMachine = CreateStateMachine();
-
-            // Act
-            stateMachine.ApplyState(_applyStateContext.Object);
-
-            // Assert
-            handler.Verify(
-                x => x.Unapply(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()),
-                Times.Never);
-        }
-
-        [Fact, Sequence]
-        public void ApplyState_ShouldCallApplyHandlers_AfterSettingTheState()
-        {
-            // Arrange
-            var handler1 = CreateStateHandler(StateName);
-            var handler2 = CreateStateHandler(StateName);
-
-            _transaction
-                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<IState>()))
-                .InSequence();
-
-            handler1.Setup(x => x.Apply(It.IsNotNull<ApplyStateContext>(), _transaction.Object))
-                .InSequence();
-            handler2.Setup(x => x.Apply(It.IsNotNull<ApplyStateContext>(), _transaction.Object))
-                .InSequence();
-
-            var stateMachine = CreateStateMachine();
-
-            // Act
-            stateMachine.ApplyState(_applyStateContext.Object);
-
-            // Assert - Sequence
-        }
-
-        [Fact]
-        public void ApplyState_DoesNotCallApplyHandlers_ForDifferentStates()
-        {
-            // Arrange
-            var handler = CreateStateHandler(OldStateName);
-            var stateMachine = CreateStateMachine();
-
-            // Act
-            stateMachine.ApplyState(_applyStateContext.Object);
-
-            // Assert
-            handler.Verify(
-                x => x.Apply(It.IsAny<ApplyStateContext>(), It.IsAny<IWriteOnlyTransaction>()),
-                Times.Never);
-        }
-
-        [Fact]
-        public void ApplyState_SetsJobExpiration_IfStateIsFinal()
-        {
-            _state.Setup(x => x.IsFinal).Returns(true);
-            var stateMachine = CreateStateMachine();
-
-            stateMachine.ApplyState(_applyStateContext.Object);
-
-            _transaction.Verify(x => x.ExpireJob(JobId, It.IsAny<TimeSpan>()));
-        }
-
-        [Fact]
-        public void ApplyState_PersistTheJob_IfStateIsNotFinal()
-        {
-            _state.Setup(x => x.IsFinal).Returns(false);
-            var stateMachine = CreateStateMachine();
-
-            stateMachine.ApplyState(_applyStateContext.Object);
-
-            _transaction.Verify(x => x.PersistJob(JobId));
-        }
-
-        [Fact, Sequence]
-        public void ApplyState_CallsStateUnappliedFilters_BeforeSettingTheState()
+        public void ApplyState_CallsStateUnappliedFilters_BeforeCallingInnerStateMachine()
         {
             // Arrange
             var filter1 = CreateFilter<IApplyStateFilter>();
@@ -211,8 +107,8 @@ namespace Hangfire.Core.Tests.States
                 .InSequence();
             filter2.Setup(x => x.OnStateUnapplied(It.IsNotNull<ApplyStateContext>(), _transaction.Object))
                 .InSequence();
-            _transaction
-                .Setup(x => x.SetJobState(It.IsAny<string>(), It.IsAny<IState>()))
+            _innerMachine
+                .Setup(x => x.ApplyState(It.IsAny<ApplyStateContext>()))
                 .InSequence();
 
             var stateMachine = CreateStateMachine();
@@ -243,33 +139,9 @@ namespace Hangfire.Core.Tests.States
             // Assert - Sequence
         }
         
-        [Fact]
-        public void ApplyState_AddsJobHistory_ForTraversedStates()
-        {
-            // Arrange
-            _applyStateContext.TraversedStatesValue = new[] { _state.Object };
-
-            var stateMachine = CreateStateMachine();
-
-            // Act
-            stateMachine.ApplyState(_applyStateContext.Object);
-
-            // Assert
-            _transaction.Verify(x => x.AddJobState(JobId, _state.Object));
-        }
-
         private StateMachine CreateStateMachine()
         {
-            return new StateMachine(_filterProvider.Object, _stateHandlersThunk);
-        }
-
-        private Mock<IStateHandler> CreateStateHandler(string stateName)
-        {
-            var handler = new Mock<IStateHandler>();
-            handler.Setup(x => x.StateName).Returns(stateName);
-
-            _handlers.AddHandler(handler.Object);
-            return handler;
+            return new StateMachine(_filterProvider.Object, _innerMachine.Object);
         }
 
         private Mock<T> CreateFilter<T>() where T : class

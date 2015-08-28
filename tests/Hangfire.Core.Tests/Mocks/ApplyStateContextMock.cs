@@ -17,9 +17,10 @@ namespace Hangfire.Core.Tests
             Connection = new Mock<IStorageConnection>();
             Transaction = new Mock<IWriteOnlyTransaction>();
             BackgroundJob = new BackgroundJobMock();
-            NewStateValue = new Mock<IState>().Object;
-            OldStateValue = null;
-            TraversedStatesValue = Enumerable.Empty<IState>();
+            NewState = new Mock<IState>();
+            OldStateName = null;
+            TraversedStates = Enumerable.Empty<IState>();
+            JobExpirationTimeout = TimeSpan.FromMinutes(1);
 
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
@@ -27,18 +28,23 @@ namespace Hangfire.Core.Tests
                     Connection.Object,
                     Transaction.Object,
                     BackgroundJob.Object,
-                    NewStateValue,
-                    OldStateValue,
-                    TraversedStatesValue));
+                    NewStateObject ?? NewState.Object,
+                    OldStateName,
+                    TraversedStates)
+                {
+                    JobExpirationTimeout = JobExpirationTimeout
+                });
         }
 
         public Mock<JobStorage> Storage { get; set; }
         public Mock<IStorageConnection> Connection { get; set; } 
         public Mock<IWriteOnlyTransaction> Transaction { get; set; } 
         public BackgroundJobMock BackgroundJob { get; set; } 
-        public IState NewStateValue { get; set; }
-        public string OldStateValue { get; set; }
-        public IEnumerable<IState> TraversedStatesValue { get; set; } 
+        public IState NewStateObject { get; set; }
+        public Mock<IState> NewState { get; set; }
+        public string OldStateName { get; set; }
+        public IEnumerable<IState> TraversedStates { get; set; }
+        public TimeSpan JobExpirationTimeout { get; set; } 
 
         public ApplyStateContext Object
         {

@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests.States
         public EnqueuedStateHandlerFacts()
         {
             _context = new ApplyStateContextMock();
-            _context.NewStateValue = new EnqueuedState { Queue = Queue };
+            _context.NewStateObject = new EnqueuedState { Queue = Queue };
 
             _transaction = new Mock<IWriteOnlyTransaction>();
         }
@@ -42,7 +42,8 @@ namespace Hangfire.Core.Tests.States
         public void Apply_ThrowsAnException_WhenOtherThanEnqueuedStateGiven()
         {
             var handler = new EnqueuedState.Handler();
-            _context.NewStateValue = new Mock<IState>().Object;
+            _context.NewStateObject = null;
+            _context.NewState = new Mock<IState>();
 
             Assert.Throws<InvalidOperationException>(
                 () => handler.Apply(_context.Object, _transaction.Object));
