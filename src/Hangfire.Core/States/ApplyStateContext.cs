@@ -28,12 +28,13 @@ namespace Hangfire.States
         public ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
-            : this(context.Storage, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.TraversedStates)
+            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState, context.TraversedStates)
         {
         }
 
         public ApplyStateContext(
             [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
             [NotNull] IWriteOnlyTransaction transaction,
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IState newState, 
@@ -41,6 +42,7 @@ namespace Hangfire.States
             [NotNull] IEnumerable<IState> traversedStates)
         {
             if (storage == null) throw new ArgumentNullException("storage");
+            if (connection == null) throw new ArgumentNullException("connection");
             if (transaction == null) throw new ArgumentNullException("transaction");
             if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
             if (newState == null) throw new ArgumentNullException("newState");
@@ -49,6 +51,7 @@ namespace Hangfire.States
             _backgroundJob = backgroundJob;
 
             Storage = storage;
+            Connection = connection;
             Transaction = transaction;
             OldStateName = oldStateName;
             NewState = newState;
@@ -58,6 +61,9 @@ namespace Hangfire.States
 
         [NotNull]
         public JobStorage Storage { get; private set; }
+
+        [NotNull]
+        public IStorageConnection Connection { get; private set; }
 
         [NotNull]
         public IWriteOnlyTransaction Transaction { get; private set; }

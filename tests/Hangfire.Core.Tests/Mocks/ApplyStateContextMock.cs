@@ -14,6 +14,7 @@ namespace Hangfire.Core.Tests
         public ApplyStateContextMock()
         {
             Storage = new Mock<JobStorage>();
+            Connection = new Mock<IStorageConnection>();
             Transaction = new Mock<IWriteOnlyTransaction>();
             BackgroundJob = new BackgroundJobMock();
             NewStateValue = new Mock<IState>().Object;
@@ -23,6 +24,7 @@ namespace Hangfire.Core.Tests
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
                     Storage.Object,
+                    Connection.Object,
                     Transaction.Object,
                     BackgroundJob.Object,
                     NewStateValue,
@@ -31,6 +33,7 @@ namespace Hangfire.Core.Tests
         }
 
         public Mock<JobStorage> Storage { get; set; }
+        public Mock<IStorageConnection> Connection { get; set; } 
         public Mock<IWriteOnlyTransaction> Transaction { get; set; } 
         public BackgroundJobMock BackgroundJob { get; set; } 
         public IState NewStateValue { get; set; }
