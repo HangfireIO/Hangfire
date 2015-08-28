@@ -48,25 +48,25 @@ namespace Hangfire.Client
                 createdAt,
                 TimeSpan.FromHours(1));
 
-            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
-
             if (context.InitialState != null)
             {
-                var electContext = new ElectStateContext(
-                    context.Storage, context.Connection, backgroundJob, context.InitialState, null);
-
-                _stateMachine.ElectState(electContext);
-
                 using (var transaction = context.Connection.CreateWriteTransaction())
                 {
-                    var applyContext = new ApplyStateContext(transaction, electContext);
+                    var applyContext = new ApplyStateContext(
+                        context.Storage,
+                        context.Connection,
+                        transaction,
+                        new BackgroundJob(jobId, context.Job, createdAt),
+                        context.InitialState,
+                        null);
+
                     _stateMachine.ApplyState(applyContext);
 
                     transaction.Commit();
                 }
             }
 
-            return backgroundJob.Id;
+            return jobId;
         }
     }
 }

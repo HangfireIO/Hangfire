@@ -46,31 +46,51 @@ namespace Hangfire.States
             _innerStateMachine = innerStateMachine;
         }
 
-        public void ElectState(ElectStateContext context)
+        public IState ApplyState(ApplyStateContext initialContext)
         {
-            var filterInfo = GetFilters(context.BackgroundJob.Job);
-            foreach (var filter in filterInfo.ElectStateFilters)
+            var filterInfo = GetFilters(initialContext.BackgroundJob.Job);
+            var electFilters = filterInfo.ElectStateFilters;
+            var applyFilters = filterInfo.ApplyStateFilters;
+
+            // Electing a a state
+
+            var electContext = new ElectStateContext(
+                initialContext.Storage,
+                initialContext.Connection,
+                initialContext.BackgroundJob,
+                initialContext.NewState,
+                initialContext.OldStateName);
+
+            foreach (var filter in electFilters)
             {
-                filter.OnStateElection(context);
+                filter.OnStateElection(electContext);
             }
-        }
 
-        public void ApplyState(ApplyStateContext context)
-        {
-            var filterInfo = GetFilters(context.BackgroundJob.Job);
-            var filters = filterInfo.ApplyStateFilters;
+            foreach (var state in electContext.TraversedStates)
+            {
+                initialContext.Transaction.AddJobState(electContext.BackgroundJob.Id, state);
+            }
 
-            foreach (var filter in filters)
+            // Applying the elected state
+
+            var context = new ApplyStateContext(
+                initialContext.Transaction,
+                electContext)
+            {
+                JobExpirationTimeout = initialContext.JobExpirationTimeout
+            };
+
+            foreach (var filter in applyFilters)
             {
                 filter.OnStateUnapplied(context, context.Transaction);
             }
 
-            _innerStateMachine.ApplyState(context);
-
-            foreach (var filter in filters)
+            foreach (var filter in applyFilters)
             {
                 filter.OnStateApplied(context, context.Transaction);
             }
+
+            return _innerStateMachine.ApplyState(context);
         }
 
         private JobFilterInfo GetFilters(Job job)

@@ -19,7 +19,7 @@ namespace Hangfire.Core.Tests.States
         private readonly Mock<IStorageConnection> _connection;
         private readonly Job _job;
         private readonly Mock<IState> _state;
-        private readonly Mock<IStateMachine> _process;
+        private readonly Mock<IStateMachine> _stateMachine;
         private readonly Mock<IDisposable> _distributedLock;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly CancellationTokenSource _cts;
@@ -27,7 +27,7 @@ namespace Hangfire.Core.Tests.States
 
         public StateChangeProcessFacts()
         {
-            _process = new Mock<IStateMachine>();
+            _stateMachine = new Mock<IStateMachine>();
 
             _job = Job.FromExpression(() => Console.WriteLine());
             _state = new Mock<IState>();
@@ -65,6 +65,9 @@ namespace Hangfire.Core.Tests.States
                 NewState = _state,
                 ExpectedStates = FromOldState
             };
+
+            _stateMachine.Setup(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()))
+                .Returns(_context.NewState.Object);
         }
         
         [Fact]
@@ -96,7 +99,7 @@ namespace Hangfire.Core.Tests.States
             var result = process.ChangeState(_context.Object);
 
             // Assert
-            _process.Verify(x => x.ApplyState(
+            _stateMachine.Verify(x => x.ApplyState(
                 It.Is<ApplyStateContext>(sc => sc.BackgroundJob.Id == JobId && sc.BackgroundJob.Job.Type.Name.Equals("Console")
                     && sc.NewState == _state.Object && sc.OldStateName == OldStateName)));
 
@@ -115,7 +118,7 @@ namespace Hangfire.Core.Tests.States
             process.ChangeState(_context.Object);
 
             // Assert
-            _process.Verify(x => x.ApplyState(
+            _stateMachine.Verify(x => x.ApplyState(
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName)));
         }
 
@@ -135,7 +138,7 @@ namespace Hangfire.Core.Tests.States
             Assert.Null(result);
             _connection.Verify(x => x.GetJobData(JobId));
 
-            _process.Verify(
+            _stateMachine.Verify(
                 x => x.ApplyState(It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
@@ -159,11 +162,7 @@ namespace Hangfire.Core.Tests.States
             // Assert
             Assert.Null(result);
 
-            _process.Verify(
-                x => x.ElectState(It.IsAny<ElectStateContext>()),
-                Times.Never);
-
-            _process.Verify(
+            _stateMachine.Verify(
                 x => x.ApplyState(It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
@@ -204,7 +203,7 @@ namespace Hangfire.Core.Tests.States
             // Assert
             Assert.Null(result);
 
-            _process.Verify(
+            _stateMachine.Verify(
                 x => x.ApplyState(It.IsAny<ApplyStateContext>()),
                 Times.Never);
         }
@@ -213,7 +212,7 @@ namespace Hangfire.Core.Tests.States
         public void ChangeState_ThrowsAnException_WhenApplyStateThrowsException()
         {
             // Arrange
-            _process.Setup(x => x.ApplyState(It.IsAny<ApplyStateContext>()))
+            _stateMachine.Setup(x => x.ApplyState(It.IsAny<ApplyStateContext>()))
                 .Throws(new FieldAccessException());
 
             var process = CreateProcess();
@@ -238,14 +237,12 @@ namespace Hangfire.Core.Tests.States
             var process = CreateProcess();
 
             // Act
-            var result = process.ChangeState(_context.Object);
+            process.ChangeState(_context.Object);
 
             // Assert
-            _process.Verify(x => x.ApplyState(
+            _stateMachine.Verify(x => x.ApplyState(
                 It.Is<ApplyStateContext>(ctx => ctx.BackgroundJob.Id == JobId && 
                 ctx.BackgroundJob.Job == null && ctx.NewState is FailedState)));
-
-            Assert.IsType<FailedState>(result);
         }
 
         [Fact]
@@ -268,7 +265,7 @@ namespace Hangfire.Core.Tests.States
             var result = process.ChangeState(_context.Object);
 
             // Assert
-            _process.Verify(x => x.ApplyState(
+            _stateMachine.Verify(x => x.ApplyState(
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object)));
 
             Assert.NotNull(result);
@@ -286,7 +283,7 @@ namespace Hangfire.Core.Tests.States
             var result = machine.ChangeState(_context.Object);
 
             // Assert
-            _process.Verify(x => x.ApplyState(
+            _stateMachine.Verify(x => x.ApplyState(
                 It.Is<ApplyStateContext>(ctx => ctx.NewState == _state.Object && ctx.OldStateName == OldStateName
                     && ctx.BackgroundJob.Job == _job && ctx.BackgroundJob.Id == JobId)));
 
@@ -297,28 +294,26 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void ChangeState_SetsAnotherState_WhenItWasElected()
+        public void ChangeState_ReturnsState_ReturnedByAStateMachine()
         {
             // Arrange
             var anotherState = new Mock<IState>();
 
-            _process.Setup(x => x.ElectState(It.IsAny<ElectStateContext>()))
-                .Callback((ElectStateContext context) => context.CandidateState = anotherState.Object);
-            _context.ExpectedStates = new[] { OldStateName };
+            _stateMachine.Setup(x => x.ApplyState(It.IsNotNull<ApplyStateContext>()))
+                .Returns(anotherState.Object);
 
             var machine = CreateProcess();
 
             // Act
-            machine.ChangeState(_context.Object);
+            var result = machine.ChangeState(_context.Object);
 
-            // Assert - Sequence
-            _process.Verify(x => x.ApplyState(
-                It.Is<ApplyStateContext>(ctx => ctx.NewState == anotherState.Object)));
+            // Assert
+            Assert.Same(result, anotherState.Object);
         }
 
         private StateChangeProcess CreateProcess()
         {
-            return new StateChangeProcess(_process.Object);
+            return new StateChangeProcess(_stateMachine.Object);
         }
     }
 }

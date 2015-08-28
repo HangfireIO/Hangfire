@@ -24,17 +24,10 @@ namespace Hangfire.States
     public interface IStateMachine
     {
         /// <summary>
-        /// Performs the state election process, where a new state will be elected
-        /// for a background job depending on state election rules.
-        /// </summary>
-        /// <param name="context">The context of a state election process.</param>
-        void ElectState(ElectStateContext context);
-
-        /// <summary>
         /// Performs the state applying process, where a current background job
         /// will be moved to the elected state.
         /// </summary>
         /// <param name="context">The context of a state applying process.</param>
-        void ApplyState(ApplyStateContext context);
+        IState ApplyState(ApplyStateContext context);
     }
 }

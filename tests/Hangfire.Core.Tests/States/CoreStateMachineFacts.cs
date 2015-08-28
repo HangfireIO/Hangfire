@@ -64,21 +64,6 @@ namespace Hangfire.Core.Tests.States
             _applyContext.Transaction.Verify(x => x.PersistJob(JobId));
         }
 
-        [Fact]
-        public void ApplyState_AddsJobHistory_ForTraversedStates()
-        {
-            // Arrange
-            _applyContext.TraversedStates = new[] { _applyContext.NewState.Object };
-
-            var stateMachine = CreateStateMachine();
-
-            // Act
-            stateMachine.ApplyState(_applyContext.Object);
-
-            // Assert
-            _applyContext.Transaction.Verify(x => x.AddJobState(JobId, _applyContext.NewState.Object));
-        }
-
         [Fact, Sequence]
         public void ApplyState_CallsUnapplyHandlers_BeforeSettingTheState()
         {

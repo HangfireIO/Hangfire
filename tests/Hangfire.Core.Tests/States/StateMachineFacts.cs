@@ -17,11 +17,9 @@ namespace Hangfire.Core.Tests.States
         private const string JobId = "job";
 
         private readonly List<object> _filters = new List<object>();
-
-        private readonly Mock<IState> _state;
+        
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        private readonly ElectStateContextMock _electStateContext;
-        private readonly ApplyStateContextMock _applyStateContext;
+        private readonly ApplyStateContextMock _context;
         private readonly Mock<IJobFilterProvider> _filterProvider;
         
         private readonly Mock<IStateMachine> _innerMachine;
@@ -32,21 +30,10 @@ namespace Hangfire.Core.Tests.States
             _transaction = new Mock<IWriteOnlyTransaction>();
             connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
-            _state = new Mock<IState>();
-            _state.Setup(x => x.Name).Returns(StateName);
-
             var backgroundJob = new BackgroundJobMock { Id = JobId };
-            _electStateContext = new ElectStateContextMock
+            _context = new ApplyStateContextMock
             {
                 BackgroundJob = backgroundJob,
-                CandidateStateValue = _state.Object,
-                CurrentStateValue = OldStateName,
-                ConnectionValue = connection
-            };
-            _applyStateContext = new ApplyStateContextMock
-            {
-                BackgroundJob = backgroundJob,
-                NewState = _state,
                 OldStateName = OldStateName,
                 Transaction = _transaction
             };
@@ -76,26 +63,63 @@ namespace Hangfire.Core.Tests.States
             Assert.Equal("innerStateMachine", exception.ParamName);
         }
 
+        [Fact]
+        public void ApplyState_CallsElectionFilterWithCorrectProperties()
+        {
+            // Arrange
+            var filter = CreateFilter<IElectStateFilter>();
+            
+            var stateMachine = CreateStateMachine();
+
+            // Act
+            stateMachine.ApplyState(_context.Object);
+
+            filter.Verify(x => x.OnStateElection(It.Is<ElectStateContext>(context =>
+                context.Storage == _context.Storage.Object &&
+                context.Connection == _context.Connection.Object &&
+                context.BackgroundJob == _context.BackgroundJob.Object &&
+                context.CandidateState == _context.NewState.Object &&
+                context.CurrentState == _context.OldStateName)));
+        }
+
         [Fact, Sequence]
-        public void ElectState_CallsElectionFilters()
+        public void ApplyState_CallsElectionFilters()
         {
             // Arrange
             var filter1 = CreateFilter<IElectStateFilter>();
             var filter2 = CreateFilter<IElectStateFilter>();
 
-            filter1.Setup(x => x.OnStateElection(_electStateContext.Object))
+            filter1.Setup(x => x.OnStateElection(It.IsAny<ElectStateContext>()))
                 .InSequence();
-            filter2.Setup(x => x.OnStateElection(_electStateContext.Object))
+            filter2.Setup(x => x.OnStateElection(It.IsAny<ElectStateContext>()))
                 .InSequence();
 
             var stateMachine = CreateStateMachine();
 
             // Act
-            stateMachine.ElectState(_electStateContext.Object);
+            stateMachine.ApplyState(_context.Object);
 
             // Assert - Sequence
         }
-        
+
+        [Fact]
+        public void ApplyState_AddsJobHistory_ForTraversedStates()
+        {
+            // Arrange
+            var anotherState = new Mock<IState>();
+            var filter = CreateFilter<IElectStateFilter>();
+            filter.Setup(x => x.OnStateElection(It.IsNotNull<ElectStateContext>()))
+                .Callback<ElectStateContext>(context => context.CandidateState = anotherState.Object);
+
+            var stateMachine = CreateStateMachine();
+
+            // Act
+            stateMachine.ApplyState(_context.Object);
+
+            // Assert
+            _context.Transaction.Verify(x => x.AddJobState(JobId, _context.NewState.Object));
+        }
+
         [Fact, Sequence]
         public void ApplyState_CallsStateUnappliedFilters_BeforeCallingInnerStateMachine()
         {
@@ -114,7 +138,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            stateMachine.ApplyState(_applyStateContext.Object);
+            stateMachine.ApplyState(_context.Object);
 
             // Assert - Sequence
         }
@@ -134,7 +158,7 @@ namespace Hangfire.Core.Tests.States
             var stateMachine = CreateStateMachine();
 
             // Act
-            stateMachine.ApplyState(_applyStateContext.Object);
+            stateMachine.ApplyState(_context.Object);
 
             // Assert - Sequence
         }

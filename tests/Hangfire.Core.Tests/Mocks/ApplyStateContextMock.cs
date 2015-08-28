@@ -19,7 +19,6 @@ namespace Hangfire.Core.Tests
             BackgroundJob = new BackgroundJobMock();
             NewState = new Mock<IState>();
             OldStateName = null;
-            TraversedStates = Enumerable.Empty<IState>();
             JobExpirationTimeout = TimeSpan.FromMinutes(1);
 
             _context = new Lazy<ApplyStateContext>(
@@ -29,8 +28,7 @@ namespace Hangfire.Core.Tests
                     Transaction.Object,
                     BackgroundJob.Object,
                     NewStateObject ?? NewState.Object,
-                    OldStateName,
-                    TraversedStates)
+                    OldStateName)
                 {
                     JobExpirationTimeout = JobExpirationTimeout
                 });
@@ -43,7 +41,6 @@ namespace Hangfire.Core.Tests
         public IState NewStateObject { get; set; }
         public Mock<IState> NewState { get; set; }
         public string OldStateName { get; set; }
-        public IEnumerable<IState> TraversedStates { get; set; }
         public TimeSpan JobExpirationTimeout { get; set; } 
 
         public ApplyStateContext Object

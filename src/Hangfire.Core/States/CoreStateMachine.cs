@@ -34,19 +34,9 @@ namespace Hangfire.States
             _stateHandlersThunk = stateHandlersThunk;
         }
 
-        public void ElectState(ElectStateContext context)
-        {
-            // The method is empty, and this is very strange. Isn't it?
-        }
-
-        public void ApplyState(ApplyStateContext context)
+        public IState ApplyState(ApplyStateContext context)
         {
             var handlers = _stateHandlersThunk(context.Storage);
-
-            foreach (var state in context.TraversedStates)
-            {
-                context.Transaction.AddJobState(context.BackgroundJob.Id, state);
-            }
 
             foreach (var handler in handlers.GetHandlers(context.OldStateName))
             {
@@ -68,6 +58,8 @@ namespace Hangfire.States
             {
                 context.Transaction.PersistJob(context.BackgroundJob.Id);
             }
+
+            return context.NewState;
         }
 
         private static StateHandlerCollection GetStateHandlers(JobStorage storage)

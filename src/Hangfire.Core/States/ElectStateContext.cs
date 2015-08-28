@@ -29,7 +29,7 @@ namespace Hangfire.States
         private readonly BackgroundJob _backgroundJob;
         private IState _candidateState;
 
-        public ElectStateContext(
+        internal ElectStateContext(
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
