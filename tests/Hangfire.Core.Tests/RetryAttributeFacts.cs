@@ -20,9 +20,9 @@ namespace Hangfire.Core.Tests
             _connection = new Mock<IStorageConnection>();
 
             _context = new ElectStateContextMock();
-            _context.BackgroundJob.Id = JobId;
-            _context.ConnectionValue = _connection;
-            _context.CandidateStateValue = _failedState;
+            _context.ApplyContext.BackgroundJob.Id = JobId;
+            _context.ApplyContext.Connection = _connection;
+            _context.ApplyContext.NewStateObject = _failedState;
         }
 
         [Fact]
@@ -73,7 +73,8 @@ namespace Hangfire.Core.Tests
         {
             var filter = CreateFilter();
             var state = new Mock<IState>();
-            _context.CandidateStateValue = state.Object;
+            _context.ApplyContext.NewStateObject = null;
+            _context.ApplyContext.NewState = state;
 
             filter.OnStateElection(_context.Object);
 

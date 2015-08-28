@@ -29,27 +29,17 @@ namespace Hangfire.States
         private readonly BackgroundJob _backgroundJob;
         private IState _candidateState;
 
-        internal ElectStateContext(
-            [NotNull] JobStorage storage,
-            [NotNull] IStorageConnection connection,
-            [NotNull] IWriteOnlyTransaction transaction,
-            [NotNull] BackgroundJob backgroundJob,
-            [NotNull] IState candidateState, 
-            [CanBeNull] string currentState)
+        internal ElectStateContext([NotNull] ApplyStateContext applyContext)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
-            if (candidateState == null) throw new ArgumentNullException("candidateState");
+            if (applyContext == null) throw new ArgumentNullException("applyContext");
+            
+            _backgroundJob = applyContext.BackgroundJob;
+            _candidateState = applyContext.NewState;
 
-            _backgroundJob = backgroundJob;
-            _candidateState = candidateState;
-
-            Storage = storage;
-            Connection = connection;
-            Transaction = transaction;
-            CurrentState = currentState;
+            Storage = applyContext.Storage;
+            Connection = applyContext.Connection;
+            Transaction = applyContext.Transaction;
+            CurrentState = applyContext.OldStateName;
         }
 
         [NotNull]

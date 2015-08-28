@@ -1,7 +1,6 @@
 ﻿using System;
 using Hangfire.Common;
 using Hangfire.States;
-using Hangfire.Storage;
 using Moq;
 using Xunit;
 
@@ -9,83 +8,21 @@ namespace Hangfire.Core.Tests.States
 {
     public class ElectStateContextFacts
     {
-        private readonly Mock<IState> _candidateState;
-        private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<JobStorage> _storage;
-        private readonly BackgroundJobMock _backgroundJob;
-        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly ApplyStateContextMock _applyContext;
 
         public ElectStateContextFacts()
         {
-            _storage = new Mock<JobStorage>();
-            _backgroundJob = new BackgroundJobMock();
-            _connection = new Mock<IStorageConnection>();
-            _transaction = new Mock<IWriteOnlyTransaction>();
-            _candidateState = new Mock<IState>();
+            _applyContext = new ApplyStateContextMock();
+            _applyContext.OldStateName = "State";
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        public void Ctor_ThrowsAnException_WhenApplyContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () =>
-                    new ElectStateContext(null, _connection.Object, _transaction.Object, _backgroundJob.Object, _candidateState.Object, null));
+                () => new ElectStateContext(null));
 
-            Assert.Equal("storage", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ElectStateContext(
-                    _storage.Object,
-                    null,
-                    _transaction.Object,
-                    _backgroundJob.Object,
-                    _candidateState.Object,
-                    null));
-
-            Assert.Equal("connection", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenTransactionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ElectStateContext(
-                    _storage.Object,
-                    _connection.Object,
-                    null,
-                    _backgroundJob.Object,
-                    _candidateState.Object,
-                    null));
-
-            Assert.Equal("transaction", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenBackgroundJobIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ElectStateContext(_storage.Object, _connection.Object, _transaction.Object, null, _candidateState.Object, null));
-
-            Assert.Equal("backgroundJob", exception.ParamName);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenCandidateStateIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ElectStateContext(
-                    _storage.Object,
-                    _connection.Object,
-                    _transaction.Object,
-                    _backgroundJob.Object,
-                    null,
-                    null));
-
-            Assert.Equal("candidateState", exception.ParamName);
+            Assert.Equal("applyContext", exception.ParamName);
         }
 
         [Fact]
@@ -93,10 +30,10 @@ namespace Hangfire.Core.Tests.States
         {
             var context = CreateContext();
             
-            Assert.Same(_connection.Object, context.Connection);
-            Assert.Same(_transaction.Object, context.Transaction);
-            Assert.Same(_backgroundJob.Object, context.BackgroundJob);
-            Assert.Same(_candidateState.Object, context.CandidateState);
+            Assert.Same(_applyContext.Connection.Object, context.Connection);
+            Assert.Same(_applyContext.Transaction.Object, context.Transaction);
+            Assert.Same(_applyContext.BackgroundJob.Object, context.BackgroundJob);
+            Assert.Same(_applyContext.NewState.Object, context.CandidateState);
             Assert.Equal("State", context.CurrentState);
             Assert.Empty(context.TraversedStates);
         }
@@ -128,7 +65,7 @@ namespace Hangfire.Core.Tests.States
 
             context.CandidateState = state.Object;
 
-            Assert.Contains(_candidateState.Object, context.TraversedStates);
+            Assert.Contains(_applyContext.NewState.Object, context.TraversedStates);
         }
 
         [Fact]
@@ -138,8 +75,8 @@ namespace Hangfire.Core.Tests.States
 
             context.SetJobParameter("Name", "Value");
 
-            _connection.Verify(x => x.SetJobParameter(
-                _backgroundJob.Id, "Name", JobHelper.ToJson("Value")));
+            _applyContext.Connection.Verify(x => x.SetJobParameter(
+                _applyContext.BackgroundJob.Id, "Name", JobHelper.ToJson("Value")));
         }
 
         [Fact]
@@ -149,15 +86,15 @@ namespace Hangfire.Core.Tests.States
 
             context.SetJobParameter("Name", (string)null);
 
-            _connection.Verify(x => x.SetJobParameter(
-                _backgroundJob.Id, "Name", JobHelper.ToJson(null)));
+            _applyContext.Connection.Verify(x => x.SetJobParameter(
+                _applyContext.BackgroundJob.Id, "Name", JobHelper.ToJson(null)));
         }
 
         [Fact]
         public void GetJobParameter_CallsTheCorrespondingMethod_WithJsonDecodedValue()
         {
             var context = CreateContext();
-            _connection.Setup(x => x.GetJobParameter(_backgroundJob.Id, "Name"))
+            _applyContext.Connection.Setup(x => x.GetJobParameter(_applyContext.BackgroundJob.Id, "Name"))
                 .Returns(JobHelper.ToJson("Value"));
 
             var value = context.GetJobParameter<string>("Name");
@@ -169,7 +106,7 @@ namespace Hangfire.Core.Tests.States
         public void GetJobParameter_ReturnsDefaultValue_WhenNoValueProvided()
         {
             var context = CreateContext();
-            _connection.Setup(x => x.GetJobParameter("1", "Value"))
+            _applyContext.Connection.Setup(x => x.GetJobParameter("1", "Value"))
                 .Returns(JobHelper.ToJson(null));
 
             var value = context.GetJobParameter<int>("Name");
@@ -179,13 +116,7 @@ namespace Hangfire.Core.Tests.States
 
         private ElectStateContext CreateContext()
         {
-            return new ElectStateContext(
-                _storage.Object,
-                _connection.Object,
-                _transaction.Object,
-                _backgroundJob.Object,
-                _candidateState.Object,
-                "State");
+            return new ElectStateContext(_applyContext.Object);
         }
     }
 }

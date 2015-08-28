@@ -53,14 +53,7 @@ namespace Hangfire.States
             var applyFilters = filterInfo.ApplyStateFilters;
 
             // Electing a a state
-
-            var electContext = new ElectStateContext(
-                initialContext.Storage,
-                initialContext.Connection,
-                initialContext.Transaction,
-                initialContext.BackgroundJob,
-                initialContext.NewState,
-                initialContext.OldStateName);
+            var electContext = new ElectStateContext(initialContext);
 
             foreach (var filter in electFilters)
             {
@@ -73,10 +66,7 @@ namespace Hangfire.States
             }
 
             // Applying the elected state
-
-            var context = new ApplyStateContext(
-                initialContext.Transaction,
-                electContext)
+            var context = new ApplyStateContext(initialContext.Transaction, electContext)
             {
                 JobExpirationTimeout = initialContext.JobExpirationTimeout
             };

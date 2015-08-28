@@ -11,29 +11,13 @@ namespace Hangfire.Core.Tests
 
         public ElectStateContextMock()
         {
-            Storage = new Mock<JobStorage>();
-            BackgroundJob = new BackgroundJobMock();
-            ConnectionValue = new Mock<IStorageConnection>();
-            CandidateStateValue = new Mock<IState>().Object;
-            CurrentStateValue = "OldState";
-            Transaction = new Mock<IWriteOnlyTransaction>();
+            ApplyContext = new ApplyStateContextMock();
 
             _context = new Lazy<ElectStateContext>(
-                () => new ElectStateContext(
-                    Storage.Object,
-                    ConnectionValue.Object,
-                    Transaction.Object,
-                    BackgroundJob.Object,
-                    CandidateStateValue,
-                    CurrentStateValue));
+                () => new ElectStateContext(ApplyContext.Object));
         }
 
-        public Mock<JobStorage> Storage { get; set; } 
-        public BackgroundJobMock BackgroundJob { get; set; }
-        public IState CandidateStateValue { get; set; }
-        public string CurrentStateValue { get; set; }
-        public Mock<IStorageConnection> ConnectionValue { get; set; }
-        public Mock<IWriteOnlyTransaction> Transaction { get; set; }
+        public ApplyStateContextMock ApplyContext { get; set; }
 
         public ElectStateContext Object
         {

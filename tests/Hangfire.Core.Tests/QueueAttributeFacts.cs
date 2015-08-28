@@ -11,7 +11,7 @@ namespace Hangfire.Core.Tests
         public QueueAttributeFacts()
         {
             _context = new ElectStateContextMock();
-            _context.CandidateStateValue = new EnqueuedState("queue");
+            _context.ApplyContext.NewStateObject = new EnqueuedState("queue");
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests
         {
             var filter = new QueueAttribute("override");
             var context = new ElectStateContextMock();
-            context.CandidateStateValue = new Mock<IState>().Object;
+            context.ApplyContext.NewState = new Mock<IState>();
 
             Assert.DoesNotThrow(() => filter.OnStateElection(context.Object));
         }
