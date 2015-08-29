@@ -26,6 +26,7 @@ namespace Hangfire.Server
         public static readonly TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(15);
 
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
 
         private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
         private readonly TimeSpan _pollingInterval;
@@ -77,6 +78,7 @@ namespace Hangfire.Server
         private bool EnqueueNextScheduledJob(BackgroundProcessContext context)
         {
             using (var connection = context.Storage.GetConnection())
+            using (connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout))
             {
                 var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
@@ -86,16 +88,27 @@ namespace Hangfire.Server
 
                 if (String.IsNullOrEmpty(jobId))
                 {
+                    // No more scheduled jobs pending.
                     return false;
                 }
 
                 var stateMachine = _stateMachineFactoryFactory.CreateFactory(context.Storage).Create(connection);
                 var enqueuedState = new EnqueuedState
                 {
-                    Reason = "Enqueued as a scheduled job"
+                    Reason = "Triggered scheduled job"
                 };
 
-                stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName });
+                if (stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName }) == null)
+                {
+                    // When a background job with the given id does not exist, we should
+                    // remove its id from a schedule manually. This may happen when someone
+                    // modifies a storage bypassing Hangfire API.
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.RemoveFromSet("schedule", jobId);
+                        transaction.Commit();
+                    }
+                }
 
                 return true;
             }
