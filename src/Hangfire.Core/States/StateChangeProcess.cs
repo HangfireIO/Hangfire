@@ -29,11 +29,16 @@ namespace Hangfire.States
         private readonly IStateMachine _stateMachine;
 
         public StateChangeProcess()
-            : this(new StateMachine())
+            : this(JobFilterProviders.Providers)
         {
         }
 
-        public StateChangeProcess([NotNull] IStateMachine stateMachine)
+        public StateChangeProcess([NotNull] IJobFilterProvider filterProvider)
+            : this(new StateMachine(filterProvider))
+        {
+        }
+
+        internal StateChangeProcess([NotNull] IStateMachine stateMachine)
         {
             if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             _stateMachine = stateMachine;

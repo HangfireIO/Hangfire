@@ -40,7 +40,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenInnerProcess_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobPerformanceProcess(_filterProvider.Object, null));
+                () => new JobPerformanceProcess(_filterProvider.Object, (IJobPerformanceProcess)null));
 
             Assert.Equal("innerProcess", exception.ParamName);
         }

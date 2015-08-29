@@ -25,11 +25,6 @@ namespace Hangfire.States
         private readonly IJobFilterProvider _filterProvider;
         private readonly IStateMachine _innerStateMachine;
 
-        public StateMachine()
-            : this(JobFilterProviders.Providers)
-        {
-        }
-
         public StateMachine([NotNull] IJobFilterProvider filterProvider)
             : this(filterProvider, new CoreStateMachine())
         {

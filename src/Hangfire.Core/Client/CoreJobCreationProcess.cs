@@ -26,11 +26,6 @@ namespace Hangfire.Client
     {
         private readonly IStateMachine _stateMachine;
 
-        public CoreJobCreationProcess()
-            : this(new StateMachine())
-        {
-        }
-
         public CoreJobCreationProcess([NotNull] IStateMachine stateMachine)
         {
             if (stateMachine == null) throw new ArgumentNullException("StateChangeProcess");

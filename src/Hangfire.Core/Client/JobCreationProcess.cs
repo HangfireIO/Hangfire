@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.States;
 
 namespace Hangfire.Client
 {
@@ -33,7 +34,7 @@ namespace Hangfire.Client
         }
 
         public JobCreationProcess([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, new CoreJobCreationProcess())
+            : this(filterProvider, new CoreJobCreationProcess(new StateMachine(filterProvider)))
         {
         }
 

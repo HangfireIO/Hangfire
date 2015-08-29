@@ -74,7 +74,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenStateMachineNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new StateChangeProcess(null));
+                () => new StateChangeProcess((IStateMachine)null));
 
             Assert.Equal("stateMachine", exception.ParamName);
         }

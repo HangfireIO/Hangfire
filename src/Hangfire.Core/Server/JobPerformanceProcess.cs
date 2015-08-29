@@ -33,7 +33,14 @@ namespace Hangfire.Server
         }
 
         public JobPerformanceProcess([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, new CoreJobPerformanceProcess())
+            : this(filterProvider, JobActivator.Current)
+        {
+        }
+
+        public JobPerformanceProcess(
+            [NotNull] IJobFilterProvider filterProvider,
+            [NotNull] JobActivator activator)
+            : this(filterProvider, new CoreJobPerformanceProcess(activator))
         {
         }
 

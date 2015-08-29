@@ -28,11 +28,6 @@ namespace Hangfire.Server
     {
         private readonly JobActivator _activator;
 
-        public CoreJobPerformanceProcess()
-            : this(JobActivator.Current)
-        {
-        }
-
         public CoreJobPerformanceProcess([NotNull] JobActivator activator)
         {
             if (activator == null) throw new ArgumentNullException("activator");
