@@ -18,6 +18,17 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.5.0-beta3
+* Added – Allow to use CancellationToken as a job method parameter.
+* Added – Possibility to query the storage in state applying filters.
+* Changed – WorkerId is now auto-generated and based on a GUID.
+* Changed – Worker constructor now takes only queues collection instead of WorkerContext.
+* Changed – DefaultJobCreationProcess renamed to JobCreationProcess.
+* Changed – DefaultJobPerformanceProcess renamed to JobPerformanceProcess.
+* Changed – IStateMachine and IStateChangeProcess methods swapped with each other.
+* Changed – Use StackTraceFormatter package for marking-up stack traces (by @atifaziz).
+* Fixed – "The index 'IX_HangFire_JobQueue_QueueAndFetchedAt' is dependent on column 'Queue'" exception.
+    
 1.5.0-beta2
 Hangfire.Core
 * Added – Allow to specify a custom queue for recurring jobs (by @maleet).
