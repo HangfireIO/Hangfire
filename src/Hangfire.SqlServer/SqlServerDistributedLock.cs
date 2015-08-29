@@ -53,8 +53,29 @@ namespace Hangfire.SqlServer
             _resource = resource;
             _connection = storage.CreateAndOpenConnection();
 
+            Acquire(_connection, _resource, timeout);
+        }
+
+        public void Dispose()
+        {
+            if (_completed) return;
+
+            _completed = true;
+
+            try
+            {
+                Release(_connection, _resource);
+            }
+            finally
+            {
+                _storage.ReleaseConnection(_connection);
+            }
+        }
+
+        internal static void Acquire(IDbConnection connection, string resource, TimeSpan timeout)
+        {
             var parameters = new DynamicParameters();
-            parameters.Add("@Resource", _resource);
+            parameters.Add("@Resource", resource);
             parameters.Add("@DbPrincipal", "public");
             parameters.Add("@LockMode", LockMode);
             parameters.Add("@LockOwner", LockOwner);
@@ -64,7 +85,7 @@ namespace Hangfire.SqlServer
             // Ensuring the timeout for the command is 1 second longer than the timeout specified for the stored procedure.
             var commandTimeout = (int)(timeout.TotalSeconds + 1);
 
-            _connection.Execute(
+            connection.Execute(
                 @"sp_getapplock",
                 parameters,
                 commandTimeout: commandTimeout,
@@ -76,51 +97,40 @@ namespace Hangfire.SqlServer
             {
                 if (lockResult == -1)
                 {
-                    throw new DistributedLockTimeoutException(_resource);
+                    throw new DistributedLockTimeoutException(resource);
                 }
 
                 throw new SqlServerDistributedLockException(
                     String.Format(
                     "Could not place a lock on the resource '{0}': {1}.",
-                    _resource,
-                    LockErrorMessages.ContainsKey(lockResult) 
+                    resource,
+                    LockErrorMessages.ContainsKey(lockResult)
                         ? LockErrorMessages[lockResult]
                         : String.Format("Server returned the '{0}' error.", lockResult)));
             }
         }
 
-        public void Dispose()
+        internal static void Release(IDbConnection connection, string resource)
         {
-            if (_completed) return;
+            var parameters = new DynamicParameters();
+            parameters.Add("@Resource", resource);
+            parameters.Add("@LockOwner", LockOwner);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
-            _completed = true;
+            connection.Execute(
+                @"sp_releaseapplock",
+                parameters,
+                commandType: CommandType.StoredProcedure);
 
-            try
+            var releaseResult = parameters.Get<int>("@Result");
+
+            if (releaseResult < 0)
             {
-                var parameters = new DynamicParameters();
-                parameters.Add("@Resource", _resource);
-                parameters.Add("@LockOwner", LockOwner);
-                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-
-                _connection.Execute(
-                    @"sp_releaseapplock",
-                    parameters,
-                    commandType: CommandType.StoredProcedure);
-
-                var releaseResult = parameters.Get<int>("@Result");
-
-                if (releaseResult < 0)
-                {
-                    throw new SqlServerDistributedLockException(
-                        String.Format(
-                            "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
-                            _resource,
-                            releaseResult));
-                }
-            }
-            finally
-            {
-                _storage.ReleaseConnection(_connection);
+                throw new SqlServerDistributedLockException(
+                    String.Format(
+                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
+                        resource,
+                        releaseResult));
             }
         }
     }
