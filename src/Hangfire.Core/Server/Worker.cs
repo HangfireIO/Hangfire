@@ -34,7 +34,7 @@ namespace Hangfire.Server
         private readonly WorkerContext _context;
 
         public Worker([NotNull] WorkerContext context)
-            : this(context, new DefaultJobPerformanceProcess())
+            : this(context, new JobPerformanceProcess())
         {
         }
 

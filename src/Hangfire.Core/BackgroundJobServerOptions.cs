@@ -42,7 +42,7 @@ namespace Hangfire
             ServerWatchdogOptions = new ServerWatchdogOptions();
 
             CreationProcess = new JobCreationProcess();
-            PerformanceProcess = new DefaultJobPerformanceProcess();
+            PerformanceProcess = new JobPerformanceProcess();
             StateChangeProcess = new StateChangeProcess();
         }
 

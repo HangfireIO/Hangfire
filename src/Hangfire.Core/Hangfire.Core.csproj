@@ -389,7 +389,7 @@
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />
-    <Compile Include="Server\DefaultJobPerformanceProcess.cs" />
+    <Compile Include="Server\JobPerformanceProcess.cs" />
     <Compile Include="BackgroundJobClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />

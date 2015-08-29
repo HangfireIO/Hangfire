@@ -93,7 +93,7 @@ namespace Hangfire.Common
         /// </summary>
         public string[] Arguments { get; private set; }
 
-        [Obsolete("This method is deprecated. Please use `MethodInvokePerformanceProcess` or `DefaultJobPerformanceProcess` classes instead. Will be removed in 2.0.0.")]
+        [Obsolete("This method is deprecated. Please use `MethodInvokePerformanceProcess` or `JobPerformanceProcess` classes instead. Will be removed in 2.0.0.")]
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
             if (activator == null) throw new ArgumentNullException("activator");

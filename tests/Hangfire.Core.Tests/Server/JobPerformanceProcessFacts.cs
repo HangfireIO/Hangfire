@@ -3,21 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Common;
 using Hangfire.Server;
-using Hangfire.Storage;
 using Moq;
 using Moq.Sequences;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class DefaultJobPerformanceProcessFacts
+    public class JobPerformanceProcessFacts
     {
         private readonly PerformContextMock _context;
         private readonly Mock<IJobPerformanceProcess> _innerProcess;
         private readonly IList<object> _filters;
         private readonly Mock<IJobFilterProvider> _filterProvider;
 
-        public DefaultJobPerformanceProcessFacts()
+        public JobPerformanceProcessFacts()
         {
             _context = new PerformContextMock();
             _innerProcess = new Mock<IJobPerformanceProcess>();
@@ -32,7 +31,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenFilterProvider_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultJobPerformanceProcess(null, _innerProcess.Object));
+                () => new JobPerformanceProcess(null, _innerProcess.Object));
 
             Assert.Equal("filterProvider", exception.ParamName);
         }
@@ -41,7 +40,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenInnerProcess_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultJobPerformanceProcess(_filterProvider.Object, null));
+                () => new JobPerformanceProcess(_filterProvider.Object, null));
 
             Assert.Equal("innerProcess", exception.ParamName);
         }
@@ -460,9 +459,9 @@ namespace Hangfire.Core.Tests.Server
         {
         }
 
-        private DefaultJobPerformanceProcess CreateProcess()
+        private JobPerformanceProcess CreateProcess()
         {
-            return new DefaultJobPerformanceProcess(_filterProvider.Object, _innerProcess.Object);
+            return new JobPerformanceProcess(_filterProvider.Object, _innerProcess.Object);
         }
 
         private Mock<T> CreateFilter<T>()

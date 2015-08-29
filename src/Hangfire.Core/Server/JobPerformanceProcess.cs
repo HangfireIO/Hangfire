@@ -22,22 +22,22 @@ using Hangfire.Common;
 
 namespace Hangfire.Server
 {
-    public class DefaultJobPerformanceProcess : IJobPerformanceProcess
+    public class JobPerformanceProcess : IJobPerformanceProcess
     {
         private readonly IJobFilterProvider _filterProvider;
         private readonly IJobPerformanceProcess _innerProcess;
 
-        public DefaultJobPerformanceProcess()
+        public JobPerformanceProcess()
             : this(JobFilterProviders.Providers)
         {
         }
 
-        public DefaultJobPerformanceProcess([NotNull] IJobFilterProvider filterProvider)
+        public JobPerformanceProcess([NotNull] IJobFilterProvider filterProvider)
             : this(filterProvider, new MethodInvokePerformanceProcess())
         {
         }
 
-        public DefaultJobPerformanceProcess(
+        public JobPerformanceProcess(
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IJobPerformanceProcess innerProcess)
         {
