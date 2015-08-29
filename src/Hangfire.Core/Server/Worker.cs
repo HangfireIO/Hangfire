@@ -15,7 +15,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Logging;
@@ -29,38 +31,35 @@ namespace Hangfire.Server
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
+        private readonly string[] _queues;
         private readonly IJobPerformanceProcess _performanceProcess;
         private readonly IStateChangeProcess _stateChangeProcess;
-        private readonly WorkerContext _context;
+        private readonly string _workerId;
 
-        public Worker([NotNull] WorkerContext context)
-            : this(context, new JobPerformanceProcess())
-        {
-        }
-
-        public Worker([NotNull] WorkerContext context, [NotNull] IJobPerformanceProcess performanceProcess)
-            : this(context, performanceProcess, new StateChangeProcess())
+        public Worker([NotNull] IEnumerable<string> queues)
+            : this(queues, new JobPerformanceProcess(), new StateChangeProcess())
         {
         }
 
         public Worker(
-            [NotNull] WorkerContext context,
+            [NotNull] IEnumerable<string> queues,
             [NotNull] IJobPerformanceProcess performanceProcess, 
             [NotNull] IStateChangeProcess stateChangeProcess)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (queues == null) throw new ArgumentNullException("queues");
             if (performanceProcess == null) throw new ArgumentNullException("performanceProcess");
             if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
             
-            _context = context;
+            _queues = queues.ToArray();
             _performanceProcess = performanceProcess;
             _stateChangeProcess = stateChangeProcess;
+            _workerId = Guid.NewGuid().ToString();
         }
 
         public void Execute(BackgroundProcessContext context)
         {
             using (var connection = context.Storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_context.Queues, context.CancellationToken))
+            using (var fetchedJob = connection.FetchNextJob(_queues, context.CancellationToken))
             {
                 context.CancellationToken.ThrowIfCancellationRequested();
 
@@ -71,7 +70,7 @@ namespace Hangfire.Server
                         context.CancellationToken,
                         timeoutCts.Token))
                     {
-                        var processingState = new ProcessingState(context.ServerId, _context.WorkerId);
+                        var processingState = new ProcessingState(context.ServerId, _workerId);
 
                         var appliedState = _stateChangeProcess.ChangeState(new StateChangeContext(
                             context.Storage,
@@ -101,7 +100,7 @@ namespace Hangfire.Server
                     // It will be re-queued after the JobTimeout was expired.
 
                     var jobCancellationToken = new ServerJobCancellationToken(
-                        fetchedJob.JobId, connection, _context, context);
+                        connection, fetchedJob.JobId, _workerId, context.CancellationToken);
 
                     var state = PerformJob(fetchedJob.JobId, connection, jobCancellationToken);
 
@@ -142,7 +141,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Worker #" + _context.WorkerId;
+            return "Worker #" + _workerId.Substring(0, 8);
         }
 
         private IState PerformJob(string jobId, IStorageConnection connection, IJobCancellationToken token)
@@ -162,7 +161,7 @@ namespace Hangfire.Server
                 jobData.EnsureLoaded();
 
                 var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
-                var performContext = new PerformContext(_context, connection, backgroundJob, token);
+                var performContext = new PerformContext(connection, backgroundJob, token);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();

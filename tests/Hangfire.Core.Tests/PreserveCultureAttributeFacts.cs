@@ -30,10 +30,8 @@ namespace Hangfire.Core.Tests
                 storage.Object, _connection.Object, backgroundJob.Job, state.Object);
             _creatingContext = new CreatingContext(createContext);
 
-            var workerContext = new WorkerContextMock();
-
             var performContext = new PerformContext(
-                workerContext.Object, _connection.Object, backgroundJob.Object, new Mock<IJobCancellationToken>().Object);
+                _connection.Object, backgroundJob.Object, new Mock<IJobCancellationToken>().Object);
             _performingContext = new PerformingContext(performContext);
             _performedContext = new PerformedContext(performContext, null, false, null);
         }

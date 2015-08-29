@@ -26,20 +26,18 @@ namespace Hangfire.Server
     /// Provides information about the context in which the job
     /// is being performed.
     /// </summary>
-    public class PerformContext : WorkerContext
+    public class PerformContext
     {
         internal PerformContext([NotNull] PerformContext context)
-            : this(context, context.Connection, context.BackgroundJob, context.CancellationToken)
+            : this(context.Connection, context.BackgroundJob, context.CancellationToken)
         {
             Items = context.Items;
         }
 
         internal PerformContext(
-            [NotNull] WorkerContext workerContext,
             [NotNull] IStorageConnection connection, 
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
-            : base(workerContext)
         {
             if (connection == null) throw new ArgumentNullException("connection");
             if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");

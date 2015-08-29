@@ -8,31 +8,22 @@ namespace Hangfire.Core.Tests.Server
 {
     public class PerformContextFacts
     {
-        private readonly WorkerContextMock _workerContext;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IJobCancellationToken> _cancellationToken;
         private readonly BackgroundJobMock _backgroundJob;
 
         public PerformContextFacts()
         {
-            _workerContext = new WorkerContextMock();
             _connection = new Mock<IStorageConnection>();
             _backgroundJob = new BackgroundJobMock();
             _cancellationToken = new Mock<IJobCancellationToken>();
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenWorkerContextIsNull()
-        {
-            Assert.Throws<NullReferenceException>(
-                () => new PerformContext(null, _connection.Object, _backgroundJob.Object, _cancellationToken.Object));
-        }
-
-        [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext.Object, null, _backgroundJob.Object, _cancellationToken.Object));
+                () => new PerformContext(null, _backgroundJob.Object, _cancellationToken.Object));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -41,7 +32,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenBackgroundJobIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext.Object, _connection.Object, null, _cancellationToken.Object));
+                () => new PerformContext(_connection.Object, null, _cancellationToken.Object));
 
             Assert.Equal("backgroundJob", exception.ParamName);
         }
@@ -50,7 +41,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenCancellationTokenIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new PerformContext(_workerContext.Object, _connection.Object, _backgroundJob.Object, null));
+                () => new PerformContext(_connection.Object, _backgroundJob.Object, null));
 
             Assert.Equal("cancellationToken", exception.ParamName);
         }
@@ -128,7 +119,7 @@ namespace Hangfire.Core.Tests.Server
         private PerformContext CreateContext()
         {
             return new PerformContext(
-                _workerContext.Object, _connection.Object, _backgroundJob.Object, _cancellationToken.Object);
+                _connection.Object, _backgroundJob.Object, _cancellationToken.Object);
         }
 
         public static void Method() { }

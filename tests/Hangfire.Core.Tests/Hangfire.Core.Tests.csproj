@@ -97,7 +97,6 @@
     <Compile Include="Mocks\ElectStateContextMock.cs" />
     <Compile Include="Mocks\PerformContextMock.cs" />
     <Compile Include="Mocks\StateChangeContextMock.cs" />
-    <Compile Include="Mocks\WorkerContextMock.cs" />
     <Compile Include="PreserveCultureAttributeFacts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueAttributeFacts.cs" />
@@ -118,7 +117,6 @@
     <Compile Include="Server\AutomaticRetryProcessFacts.cs" />
     <Compile Include="Server\ServerHeartbeatFacts.cs" />
     <Compile Include="Server\ServerWatchdogFacts.cs" />
-    <Compile Include="Server\WorkerContextFacts.cs" />
     <Compile Include="Server\WorkerFacts.cs" />
     <Compile Include="States\CoreStateMachineFacts.cs" />
     <Compile Include="States\DeletedStateFacts.cs" />

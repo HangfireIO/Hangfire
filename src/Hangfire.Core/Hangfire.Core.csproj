@@ -393,7 +393,6 @@
     <Compile Include="BackgroundJobClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />
-    <Compile Include="Server\WorkerContext.cs" />
     <Compile Include="States\IStateHandler.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />

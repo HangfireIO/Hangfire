@@ -15,7 +15,7 @@ namespace Hangfire.Core.Tests.Server
     {
         private const string JobId = "my-job";
 
-        private readonly WorkerContextMock _workerContext;
+        private readonly string[] _queues;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IStateChangeProcess> _stateChangeProcess;
         private readonly Mock<IFetchedJob> _fetchedJob;
@@ -25,7 +25,7 @@ namespace Hangfire.Core.Tests.Server
         public WorkerFacts()
         {
             _context = new BackgroundProcessContextMock();
-            _workerContext = new WorkerContextMock();
+            _queues = new[] {"critical"};
             _performanceProcess = new Mock<IJobPerformanceProcess>();
 
             _connection = new Mock<IStorageConnection>();
@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.Server
             _fetchedJob.Setup(x => x.JobId).Returns(JobId);
 
             _connection
-                .Setup(x => x.FetchNextJob(_workerContext.Queues, It.IsNotNull<CancellationToken>()))
+                .Setup(x => x.FetchNextJob(_queues, It.IsNotNull<CancellationToken>()))
                 .Returns(_fetchedJob.Object);
 
             _connection.Setup(x => x.GetJobData(JobId))
@@ -50,19 +50,19 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenContextIsNull()
+        public void Ctor_ThrowsAnException_WhenQueuesCollectionNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new Worker(null, _performanceProcess.Object, _stateChangeProcess.Object));
 
-            Assert.Equal("context", exception.ParamName);
+            Assert.Equal("queues", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenPerformanceProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_workerContext.Object, null, _stateChangeProcess.Object));
+                () => new Worker(_queues, null, _stateChangeProcess.Object));
 
             Assert.Equal("performanceProcess", exception.ParamName);
         }
@@ -71,7 +71,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStateChangeProcess_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_workerContext.Object, _performanceProcess.Object, null));
+                () => new Worker(_queues, _performanceProcess.Object, null));
 
             Assert.Equal("stateChangeProcess", exception.ParamName);
         }
@@ -95,7 +95,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             _connection.Verify(
-                x => x.FetchNextJob(_workerContext.Queues, _context.CancellationTokenSource.Token),
+                x => x.FetchNextJob(_queues, _context.CancellationTokenSource.Token),
                 Times.Once);
 
             _fetchedJob.Verify(x => x.RemoveFromQueue());
@@ -300,7 +300,7 @@ namespace Hangfire.Core.Tests.Server
 
         private Worker CreateWorker()
         {
-            return new Worker(_workerContext.Object, _performanceProcess.Object, _stateChangeProcess.Object);
+            return new Worker(_queues, _performanceProcess.Object, _stateChangeProcess.Object);
         }
 
         public static void Method() { }

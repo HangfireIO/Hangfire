@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Globalization;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.States;
@@ -26,35 +25,34 @@ namespace Hangfire.Server
     internal class ServerJobCancellationToken : IJobCancellationToken
     {
         private readonly string _jobId;
+        private readonly string _workerId;
         private readonly IStorageConnection _connection;
-        private readonly WorkerContext _workerContext;
-        private readonly BackgroundProcessContext _backgroundProcessContext;
+        private readonly CancellationToken _shutdownToken;
 
         public ServerJobCancellationToken(
+            [NotNull] IStorageConnection connection,
             [NotNull] string jobId, 
-            [NotNull] IStorageConnection connection, 
-            [NotNull] WorkerContext workerContext, 
-            [NotNull] BackgroundProcessContext backgroundProcessContext)
+            [NotNull] string workerId,
+            CancellationToken shutdownToken)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
+            if (workerId == null) throw new ArgumentNullException("workerId");
             if (connection == null) throw new ArgumentNullException("connection");
-            if (workerContext == null) throw new ArgumentNullException("workerContext");
-            if (backgroundProcessContext == null) throw new ArgumentNullException("backgroundProcessContext");
 
             _jobId = jobId;
+            _workerId = workerId;
             _connection = connection;
-            _workerContext = workerContext;
-            _backgroundProcessContext = backgroundProcessContext;
+            _shutdownToken = shutdownToken;
         }
 
         public CancellationToken ShutdownToken
         {
-            get { return _backgroundProcessContext.CancellationToken; }
+            get { return _shutdownToken; }
         }
 
         public void ThrowIfCancellationRequested()
         {
-            _backgroundProcessContext.CancellationToken.ThrowIfCancellationRequested();
+            _shutdownToken.ThrowIfCancellationRequested();
 
             if (IsJobAborted())
             {
@@ -76,17 +74,12 @@ namespace Hangfire.Server
                 return true;
             }
 
-            if (!state.Data["ServerId"].Equals(_backgroundProcessContext.ServerId, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
             if (!state.Data.ContainsKey("WorkerId"))
             {
                 return true;
             }
 
-            if (!state.Data["WorkerId"].Equals(_workerContext.WorkerId, StringComparison.OrdinalIgnoreCase))
+            if (!state.Data["WorkerId"].Equals(_workerId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

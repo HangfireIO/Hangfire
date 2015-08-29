@@ -197,7 +197,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("WorkerId"))
             {
                 builder.Append("<dt>Worker:</dt>");
-                builder.AppendFormat("<dd>#{0}</dd>", stateData["WorkerId"]);
+                builder.AppendFormat("<dd>{0}</dd>", stateData["WorkerId"].Substring(0, 8));
             }
             else if (stateData.ContainsKey("WorkerNumber"))
             {
