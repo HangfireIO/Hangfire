@@ -73,7 +73,7 @@ namespace Hangfire.Server
                     _logger.Log(
                         logLevel,
                         () => String.Format(
-                            "Error occurred during execution of '{0}' component. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
+                            "Error occurred during execution of '{0}' process. Execution will be retried (attempt {1} of {2}) in {3} seconds.",
                             _innerProcess,
                             i + 1,
                             MaxRetryAttempts,

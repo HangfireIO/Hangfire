@@ -70,7 +70,7 @@ namespace Hangfire.Server
             // LogProvider.GetLogger does not throw any exception, that is why we are not
             // using the `try` statement here. It does not return `null` value as well.
             var logger = LogProvider.GetLogger(process.ToString());
-            logger.DebugFormat("Server component '{0}' started.", process);
+            logger.DebugFormat("Background process '{0}' started.", process);
 
             try
             {
@@ -83,12 +83,12 @@ namespace Hangfire.Server
             {
                 logger.FatalException(
                     String.Format(
-                        "Fatal error occurred during execution of '{0}' component. It will be stopped. See the exception for details.",
+                        "Fatal error occurred during execution of '{0}' process. It will be stopped. See the exception for details.",
                         process),
                     ex);
             }
 
-            logger.DebugFormat("Server component '{0}' stopped.", process);
+            logger.DebugFormat("Background process '{0}' stopped.", process);
         }
 
         private static void TrySetThreadName(string name)
