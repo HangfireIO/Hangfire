@@ -15,8 +15,9 @@
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
 1.5.0-beta3
-* Added – Allow to use CancellationToken as a job method parameter.
-* Added – Possibility to query the storage in state applying filters.
+* Added – Allow to use CancellationToken type as a job method parameter.
+* Added – It is now possible to query the storage in state applying filters.
+* Changed – Worker does not process a job when a transition to the Processing state failed (by @yngndrw).
 * Changed – WorkerId is now auto-generated and based on a GUID.
 * Changed – Worker constructor now takes only queues collection instead of WorkerContext.
 * Changed – DefaultJobCreationProcess renamed to JobCreationProcess.
