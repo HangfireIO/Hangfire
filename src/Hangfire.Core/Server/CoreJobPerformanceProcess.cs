@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
@@ -101,6 +102,10 @@ namespace Hangfire.Server
                     if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
                     {
                         value = context.CancellationToken;
+                    }
+                    else if (typeof (CancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    {
+                        value = context.CancellationToken.ShutdownToken;
                     }
                     else
                     {
