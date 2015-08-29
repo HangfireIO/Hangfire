@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class MethodInvokePerformanceProcessFacts : IDisposable
+    public class CoreJobPerformanceProcessFacts : IDisposable
     {
         private readonly Mock<JobActivator> _activator;
         private readonly PerformContextMock _context;
@@ -17,7 +17,7 @@ namespace Hangfire.Core.Tests.Server
         private static bool _methodInvoked;
         private static bool _disposed;
 
-        public MethodInvokePerformanceProcessFacts()
+        public CoreJobPerformanceProcessFacts()
         {
             _activator = new Mock<JobActivator>() { CallBase = true };
             _context = new PerformContextMock();
@@ -28,7 +28,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new MethodInvokePerformanceProcess(null));
+                () => new CoreJobPerformanceProcess(null));
 
             Assert.Equal("activator", exception.ParamName);
         }
@@ -49,7 +49,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_CanInvokeInstanceMethods()
         {
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression<MethodInvokePerformanceProcessFacts>(x => x.InstanceMethod());
+            _context.BackgroundJob.Job = Job.FromExpression<CoreJobPerformanceProcessFacts>(x => x.InstanceMethod());
             var process = CreateProcess();
 
             process.Run(_context.Object);
@@ -92,7 +92,7 @@ namespace Hangfire.Core.Tests.Server
             var typeConverter = TypeDescriptor.GetConverter(typeof(DateTime));
             var convertedDate = typeConverter.ConvertToInvariantString(SomeDateTime);
 
-            var type = typeof(MethodInvokePerformanceProcessFacts);
+            var type = typeof(CoreJobPerformanceProcessFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
             _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
@@ -112,7 +112,7 @@ namespace Hangfire.Core.Tests.Server
             _methodInvoked = false;
             var convertedDate = SomeDateTime.ToString("MM/dd/yyyy HH:mm:ss.ffff");
 
-            var type = typeof(MethodInvokePerformanceProcessFacts);
+            var type = typeof(CoreJobPerformanceProcessFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
             _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
@@ -317,9 +317,9 @@ namespace Hangfire.Core.Tests.Server
             throw new InvalidOperationException("exception");
         }
 
-        private MethodInvokePerformanceProcess CreateProcess()
+        private CoreJobPerformanceProcess CreateProcess()
         {
-            return new MethodInvokePerformanceProcess(_activator.Object);
+            return new CoreJobPerformanceProcess(_activator.Object);
         }
     }
 }

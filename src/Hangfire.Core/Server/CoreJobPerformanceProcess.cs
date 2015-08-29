@@ -23,16 +23,16 @@ using Hangfire.Common;
 
 namespace Hangfire.Server
 {
-    public class MethodInvokePerformanceProcess : IJobPerformanceProcess
+    public class CoreJobPerformanceProcess : IJobPerformanceProcess
     {
         private readonly JobActivator _activator;
 
-        public MethodInvokePerformanceProcess()
+        public CoreJobPerformanceProcess()
             : this(JobActivator.Current)
         {
         }
 
-        public MethodInvokePerformanceProcess([NotNull] JobActivator activator)
+        public CoreJobPerformanceProcess([NotNull] JobActivator activator)
         {
             if (activator == null) throw new ArgumentNullException("activator");
             _activator = activator;

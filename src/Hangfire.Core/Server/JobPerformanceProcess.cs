@@ -33,7 +33,7 @@ namespace Hangfire.Server
         }
 
         public JobPerformanceProcess([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, new MethodInvokePerformanceProcess())
+            : this(filterProvider, new CoreJobPerformanceProcess())
         {
         }
 

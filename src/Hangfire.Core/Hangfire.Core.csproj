@@ -93,7 +93,7 @@
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
     <Compile Include="Server\BackgroundProcessContextExtensions.cs" />
-    <Compile Include="Server\MethodInvokePerformanceProcess.cs" />
+    <Compile Include="Server\CoreJobPerformanceProcess.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />
     <Compile Include="Server\InfiniteLoopProcess.cs" />
     <Compile Include="Server\BackgroundProcessExtensions.cs" />
