@@ -37,7 +37,7 @@ namespace Hangfire.Server
         {
         }
 
-        public JobPerformanceProcess(
+        internal JobPerformanceProcess(
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IJobPerformanceProcess innerProcess)
         {

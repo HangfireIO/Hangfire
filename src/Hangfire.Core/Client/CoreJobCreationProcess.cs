@@ -22,7 +22,7 @@ using Hangfire.States;
 
 namespace Hangfire.Client
 {
-    public class CoreJobCreationProcess : IJobCreationProcess
+    internal class CoreJobCreationProcess : IJobCreationProcess
     {
         private readonly IStateMachine _stateMachine;
 

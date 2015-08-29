@@ -28,11 +28,16 @@ namespace Hangfire.Client
         private readonly IJobCreationProcess _innerProcess;
 
         public JobCreationProcess()
-            : this(JobFilterProviders.Providers, new CoreJobCreationProcess())
+            : this(JobFilterProviders.Providers)
         {
         }
 
-        public JobCreationProcess(
+        public JobCreationProcess([NotNull] IJobFilterProvider filterProvider)
+            : this(filterProvider, new CoreJobCreationProcess())
+        {
+        }
+
+        internal JobCreationProcess(
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IJobCreationProcess innerProcess)
         {

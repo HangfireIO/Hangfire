@@ -23,7 +23,7 @@ using Hangfire.Common;
 
 namespace Hangfire.Server
 {
-    public class CoreJobPerformanceProcess : IJobPerformanceProcess
+    internal class CoreJobPerformanceProcess : IJobPerformanceProcess
     {
         private readonly JobActivator _activator;
 
