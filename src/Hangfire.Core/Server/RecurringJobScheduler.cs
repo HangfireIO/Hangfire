@@ -37,7 +37,7 @@ namespace Hangfire.Server
         private readonly IThrottler _throttler;
 
         public RecurringJobScheduler()
-            : this(new DefaultJobCreationProcess())
+            : this(new JobCreationProcess())
         {
         }
         

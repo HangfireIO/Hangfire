@@ -22,17 +22,17 @@ using Hangfire.Common;
 
 namespace Hangfire.Client
 {
-    public class DefaultJobCreationProcess : IJobCreationProcess
+    public class JobCreationProcess : IJobCreationProcess
     {
         private readonly IJobFilterProvider _filterProvider;
         private readonly IJobCreationProcess _innerProcess;
 
-        public DefaultJobCreationProcess()
+        public JobCreationProcess()
             : this(JobFilterProviders.Providers, new CoreJobCreationProcess())
         {
         }
 
-        public DefaultJobCreationProcess(
+        public JobCreationProcess(
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IJobCreationProcess innerProcess)
         {

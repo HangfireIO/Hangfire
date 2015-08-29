@@ -292,7 +292,7 @@
     <Compile Include="IJobCancellationToken.cs" />
     <Compile Include="DisableConcurrentExecutionAttribute.cs" />
     <Compile Include="IBackgroundJobClient.cs" />
-    <Compile Include="Client\DefaultJobCreationProcess.cs" />
+    <Compile Include="Client\JobCreationProcess.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Common\Job.cs" />
     <Compile Include="Common\JobLoadException.cs" />

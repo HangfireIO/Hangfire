@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Client
 {
-    public class DefaultJobCreationProcessFacts
+    public class JobCreationProcessFacts
     {
         private const string JobId = "some-job";
         private readonly Mock<CreateContext> _context;
@@ -19,7 +19,7 @@ namespace Hangfire.Core.Tests.Client
         private readonly Mock<IJobFilterProvider> _filterProvider;
         private readonly Mock<IJobCreationProcess> _innerProcess;
 
-        public DefaultJobCreationProcessFacts()
+        public JobCreationProcessFacts()
         {
             var storage = new Mock<JobStorage>();
             var connection = new Mock<IStorageConnection>();
@@ -44,7 +44,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenFilterProviderIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultJobCreationProcess(null, _innerProcess.Object));
+                () => new JobCreationProcess(null, _innerProcess.Object));
 
             Assert.Equal("filterProvider", exception.ParamName);
         }
@@ -53,7 +53,7 @@ namespace Hangfire.Core.Tests.Client
         public void Ctor_ThrowsAnException_WhenInnerProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultJobCreationProcess(_filterProvider.Object, null));
+                () => new JobCreationProcess(_filterProvider.Object, null));
 
             Assert.Equal("innerProcess", exception.ParamName);
         }
@@ -383,9 +383,9 @@ namespace Hangfire.Core.Tests.Client
         {
         }
 
-        private DefaultJobCreationProcess CreateProcess()
+        private JobCreationProcess CreateProcess()
         {
-            return new DefaultJobCreationProcess(_filterProvider.Object, _innerProcess.Object);
+            return new JobCreationProcess(_filterProvider.Object, _innerProcess.Object);
         }
     }
 }

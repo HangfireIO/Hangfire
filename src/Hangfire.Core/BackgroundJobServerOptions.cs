@@ -41,7 +41,7 @@ namespace Hangfire
 
             ServerWatchdogOptions = new ServerWatchdogOptions();
 
-            CreationProcess = new DefaultJobCreationProcess();
+            CreationProcess = new JobCreationProcess();
             PerformanceProcess = new DefaultJobPerformanceProcess();
             StateChangeProcess = new StateChangeProcess();
         }
