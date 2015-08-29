@@ -71,7 +71,7 @@ namespace Hangfire.Server
                         context.CancellationToken,
                         timeoutCts.Token))
                     {
-                        var processingState = new ProcessingState(context.ServerId, _context.WorkerNumber);
+                        var processingState = new ProcessingState(context.ServerId, _context.WorkerId);
 
                         var appliedState = _stateChangeProcess.ChangeState(new StateChangeContext(
                             context.Storage,
@@ -142,7 +142,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Worker #" + _context.WorkerNumber;
+            return "Worker #" + _context.WorkerId;
         }
 
         private IState PerformJob(string jobId, IStorageConnection connection, IJobCancellationToken token)

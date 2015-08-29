@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Hangfire.Common;
 
 namespace Hangfire.States
@@ -35,13 +34,13 @@ namespace Hangfire.States
         /// </remarks>
         public static readonly string StateName = "Processing";
 
-        internal ProcessingState(string serverId, int workerNumber)
+        internal ProcessingState(string serverId, string workerId)
         {
             if (String.IsNullOrWhiteSpace(serverId)) throw new ArgumentNullException("serverId");
 
             ServerId = serverId;
             StartedAt = DateTime.UtcNow;
-            WorkerNumber = workerNumber;
+            WorkerId = workerId;
         }
 
         /// <summary>
@@ -61,7 +60,7 @@ namespace Hangfire.States
         /// Gets the identifier of a <see cref="Server.Worker"/> that started to
         /// process an <i>enqueued</i> background job.
         /// </summary>
-        public int WorkerNumber { get; private set; }
+        public string WorkerId { get; private set; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -116,13 +115,10 @@ namespace Hangfire.States
         ///         <description>Please see the <see cref="ServerId"/> property.</description>
         ///     </item>
         ///     <item>
-        ///         <term><c>WorkerNumber</c></term>
-        ///         <term><see cref="int"/></term>
-        ///         <term>
-        ///             <see cref="Int32.Parse(string, IFormatProvider)"/> with 
-        ///             <see cref="CultureInfo.InvariantCulture"/>
-        ///         </term>
-        ///         <description>Please see the <see cref="WorkerNumber"/> property.</description>
+        ///         <term><c>WorkerId</c></term>
+        ///         <term><see cref="string"/></term>
+        ///         <term><i>Not required</i></term>
+        ///         <description>Please see the <see cref="WorkerId"/> property.</description>
         ///     </item>
         /// </list>
         /// </remarks>
@@ -132,7 +128,7 @@ namespace Hangfire.States
             {
                 { "StartedAt", JobHelper.SerializeDateTime(StartedAt) },
                 { "ServerId", ServerId },
-                { "WorkerNumber", WorkerNumber.ToString(CultureInfo.InvariantCulture) }
+                { "WorkerId", WorkerId }
             };
         }
     }

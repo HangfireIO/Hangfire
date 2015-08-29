@@ -81,7 +81,12 @@ namespace Hangfire.Server
                 return true;
             }
 
-            if (state.Data["WorkerNumber"] != _workerContext.WorkerNumber.ToString(CultureInfo.InvariantCulture))
+            if (!state.Data.ContainsKey("WorkerId"))
+            {
+                return true;
+            }
+
+            if (!state.Data["WorkerId"].Equals(_workerContext.WorkerId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

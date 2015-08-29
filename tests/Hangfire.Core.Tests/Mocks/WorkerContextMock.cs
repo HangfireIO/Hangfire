@@ -10,15 +10,15 @@ namespace Hangfire.Core.Tests
         public WorkerContextMock()
         {
             Queues = new[] { "default" };
-            WorkerNumber = 1;
+            WorkerId = "1";
 
             _context = new Lazy<WorkerContext>(
-                () => new WorkerContext(Queues, WorkerNumber));
+                () => new WorkerContext(Queues, WorkerId));
         }
 
         public WorkerContext Object {get { return _context.Value; }}
 
         public string[] Queues { get; set; }
-        public int WorkerNumber { get; set; }
+        public string WorkerId { get; set; }
     }
 }

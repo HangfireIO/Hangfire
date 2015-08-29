@@ -116,7 +116,7 @@ namespace Hangfire
 
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(new WorkerContext(_options.Queues, i + 1), _options.PerformanceProcess, _options.StateChangeProcess));
+                processes.Add(new Worker(new WorkerContext(_options.Queues, (i + 1).ToString()), _options.PerformanceProcess, _options.StateChangeProcess));
             }
 
             processes.Add(new ServerHeartbeat(_options.HeartbeatInterval));

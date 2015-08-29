@@ -67,7 +67,7 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void OnStateElection_DoesNotCreateTransaction_ForUnsuitableState()
         {
-            _context.ApplyContext.NewStateObject = new ProcessingState("server", 1);
+            _context.ApplyContext.NewStateObject = new ProcessingState("server", "1");
 
             _filter.OnStateElection(_context.Object);
 

@@ -194,7 +194,12 @@ namespace Hangfire.Dashboard
                     serverId.ToUpperInvariant());
             }
 
-            if (stateData.ContainsKey("WorkerNumber"))
+            if (stateData.ContainsKey("WorkerId"))
+            {
+                builder.Append("<dt>Worker:</dt>");
+                builder.AppendFormat("<dd>#{0}</dd>", stateData["WorkerId"]);
+            }
+            else if (stateData.ContainsKey("WorkerNumber"))
             {
                 builder.Append("<dt>Worker:</dt>");
                 builder.AppendFormat("<dd>#{0}</dd>", stateData["WorkerNumber"]);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -24,7 +23,7 @@ namespace Hangfire.Core.Tests.Server
                 Name = ProcessingState.StateName,
                 Data = new Dictionary<string, string>
                 {
-                    { "WorkerNumber", "1" },
+                    { "WorkerId", "1" },
                     { "ServerId", "Server" },
                 }
             };
@@ -35,7 +34,7 @@ namespace Hangfire.Core.Tests.Server
             _context = new BackgroundProcessContextMock();
             _context.ServerId = "Server";
 
-            _workerContext = new WorkerContextMock { WorkerNumber = 1 };
+            _workerContext = new WorkerContextMock { WorkerId = "1" };
         }
 
         [Fact]
@@ -135,7 +134,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void ThrowIfCancellationRequested_ThrowsJobAborted_IfWorkerNumberWasChanged()
         {
-            _stateData.Data["WorkerNumber"] = "999";
+            _stateData.Data["WorkerId"] = "999";
             var token = CreateToken();
 
             Assert.Throws<JobAbortedException>(

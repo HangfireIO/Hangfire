@@ -7,13 +7,13 @@ namespace Hangfire.Core.Tests.Server
     public class WorkerContextFacts
     {
         private static readonly string[] Queues = { "critical", "default" };
-        private const int WorkerNumber = 1;
+        private const string WorkerId = "1";
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenQueuesArrayIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new WorkerContext(null, WorkerNumber));
+                () => new WorkerContext(null, WorkerId));
 
             Assert.Equal("queues", exception.ParamName);
         }
@@ -24,7 +24,7 @@ namespace Hangfire.Core.Tests.Server
             var context = CreateContext();
 
             Assert.Equal(Queues, context.Queues);
-            Assert.Equal(WorkerNumber, context.WorkerNumber);
+            Assert.Equal(WorkerId, context.WorkerId);
         }
         
         [Fact]
@@ -41,12 +41,12 @@ namespace Hangfire.Core.Tests.Server
             var contextCopy = new WorkerContext(context);
 
             Assert.Equal(Queues, context.Queues);
-            Assert.Equal(context.WorkerNumber, contextCopy.WorkerNumber);
+            Assert.Equal(context.WorkerId, contextCopy.WorkerId);
         }
 
         private WorkerContext CreateContext()
         {
-            return new WorkerContext(Queues, WorkerNumber);
+            return new WorkerContext(Queues, WorkerId);
         }
     }
 }
