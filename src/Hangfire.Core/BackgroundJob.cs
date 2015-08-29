@@ -26,6 +26,7 @@ namespace Hangfire
     /// </summary>
     public partial class BackgroundJob
     {
+        // TODO: cache the client, it is thread-safe.
         private static readonly Func<IBackgroundJobClient> DefaultFactory
             = () => new BackgroundJobClient(JobStorage.Current);
 
