@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.6
+* Fixed – SQL command timeout in `DisableConcurrentExecution` filter (by @Tom-Kelly).
+* Fixed – SQL deadlocks in `ExpirationManager` background process.
+    
 1.4.3
 * Fixed – SQL Server storage does not work with case-sensitive and binary collations (by @ilessa).
 * Fixed – "Incorrect syntax near 'MERGE'" error in `CountersAggregator` component.

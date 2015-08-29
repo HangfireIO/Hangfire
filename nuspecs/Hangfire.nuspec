@@ -18,6 +18,11 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.6
+* Fixed – SQL command timeout in `DisableConcurrentExecution` filter (by @Tom-Kelly).
+* Fixed – SQL deadlocks in `ExpirationManager` background process.
+* Fixed – Too many queries in `SchedulePoller` when background job is missing or in another state.
+    
 1.4.5
 * Fixed – "This stream does not support seek operations." exception in Dashboard buttons and stats.
     
