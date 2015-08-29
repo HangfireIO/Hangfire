@@ -25,6 +25,7 @@ namespace Hangfire.Server
     public class SchedulePoller : IServerComponent
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
 
         private readonly JobStorage _storage;
         private readonly IStateMachineFactory _stateMachineFactory;
@@ -72,6 +73,7 @@ namespace Hangfire.Server
         private bool EnqueueNextScheduledJob()
         {
             using (var connection = _storage.GetConnection())
+            using (connection.AcquireDistributedLock("locks:schedulepoller", DefaultLockTimeout))
             {
                 var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
@@ -81,16 +83,28 @@ namespace Hangfire.Server
 
                 if (String.IsNullOrEmpty(jobId))
                 {
+                    // No more scheduled jobs pending.
                     return false;
                 }
 
                 var stateMachine = _stateMachineFactory.Create(connection);
                 var enqueuedState = new EnqueuedState
                 {
-                    Reason = "Enqueued as a scheduled job"
+                    Reason = "Triggered scheduled job"
                 };
 
-                stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName });
+                if (!stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName }))
+                {
+                    // When state change does not succeed, this means that background job
+                    // was in a state other than Scheduled, or it was moved to a state other
+                    // than Enqueued. We should remove the job identifier from the set in
+                    // the first case only, but can't differentiate these cases yet.
+                    using (var transaction = connection.CreateWriteTransaction())
+                    {
+                        transaction.RemoveFromSet("schedule", jobId);
+                        transaction.Commit();
+                    }
+                }
 
                 return true;
             }
