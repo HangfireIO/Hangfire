@@ -126,7 +126,7 @@
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
-    <Compile Include="States\CoreJobCreationProcessFacts.cs" />
+    <Compile Include="Client\CoreJobCreationProcessFacts.cs" />
     <Compile Include="States\ScheduledStateHandlerFacts.cs" />
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
