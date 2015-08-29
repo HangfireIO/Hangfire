@@ -61,11 +61,12 @@ namespace Hangfire.Core.Tests.Client
 
         private CreatedContext CreateContext()
         {
+            var storage = new Mock<JobStorage>();
             var connection = new Mock<IStorageConnection>();
             var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
             
-            var createContext = new CreateContext(connection.Object, job, state.Object);
+            var createContext = new CreateContext(storage.Object, connection.Object, job, state.Object);
             return new CreatedContext(createContext, JobId, true, _exception);
         }
     }

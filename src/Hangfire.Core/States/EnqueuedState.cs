@@ -243,7 +243,7 @@ namespace Hangfire.States
                         typeof(Handler).FullName));
                 }
 
-                transaction.AddToQueue(enqueuedState.Queue, context.JobId);
+                transaction.AddToQueue(enqueuedState.Queue, context.BackgroundJob.Id);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)

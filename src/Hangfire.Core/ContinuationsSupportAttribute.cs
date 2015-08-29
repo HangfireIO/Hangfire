@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -33,6 +34,7 @@ namespace Hangfire
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly HashSet<string> _knownFinalStates;
+        private readonly IStateChangeProcess _stateChangeProcess;
 
         public ContinuationsSupportAttribute()
             : this(new HashSet<string> { DeletedState.StateName, SucceededState.StateName })
@@ -40,8 +42,19 @@ namespace Hangfire
         }
 
         public ContinuationsSupportAttribute(HashSet<string> knownFinalStates)
+            : this(knownFinalStates, new StateChangeProcess())
         {
+        }
+
+        public ContinuationsSupportAttribute(
+            [NotNull] HashSet<string> knownFinalStates, 
+            [NotNull] IStateChangeProcess stateChangeProcess)
+        {
+            if (knownFinalStates == null) throw new ArgumentNullException("knownFinalStates");
+            if (stateChangeProcess == null) throw new ArgumentNullException("StateChangeProcess");
+
             _knownFinalStates = knownFinalStates;
+            _stateChangeProcess = stateChangeProcess;
 
             // Ensure this filter is the last filter in the chain to start
             // continuations on the last candidate state only.
@@ -84,7 +97,7 @@ namespace Hangfire
             using (connection.AcquireDistributedJobLock(parentId, AddJobLockTimeout))
             {
                 var continuations = GetContinuations(connection, parentId);
-                continuations.Add(new Continuation { JobId = context.JobId, Options = awaitingState.Options });
+                continuations.Add(new Continuation { JobId = context.BackgroundJob.Id, Options = awaitingState.Options });
 
                 var jobData = connection.GetJobData(parentId);
                 if (jobData == null)
@@ -115,11 +128,11 @@ namespace Hangfire
             }
         }
 
-        private static void ExecuteContinuationsIfExist(ElectStateContext context)
+        private void ExecuteContinuationsIfExist(ElectStateContext context)
         {
             // The following lines are being executed inside a distributed job lock,
             // so it is safe to get continuation list here.
-            var continuations = GetContinuations(context.Connection, context.JobId);
+            var continuations = GetContinuations(context.Connection, context.BackgroundJob.Id);
             var nextStates = new Dictionary<string, IState>();
 
             // Getting continuation data for all continuations – state they are waiting 
@@ -163,10 +176,15 @@ namespace Hangfire
 
                 nextStates.Add(continuation.JobId, nextState);
             }
-
+            
             foreach (var tuple in nextStates)
             {
-                context.StateMachine.ChangeState(tuple.Key, tuple.Value, new[] { AwaitingState.StateName });
+                _stateChangeProcess.ChangeState(new StateChangeContext(
+                    context.Storage,
+                    context.Connection,
+                    tuple.Key,
+                    tuple.Value,
+                    AwaitingState.StateName));
             }
         }
 
@@ -185,7 +203,7 @@ namespace Hangfire
                     Logger.Warn(String.Format(
                         "Can not start continuation '{0}' for background job '{1}': continuation does not exist.",
                         continuationJobId,
-                        context.JobId));
+                        context.BackgroundJob.Id));
 
                     break;
                 }
@@ -201,7 +219,7 @@ namespace Hangfire
                     throw new TimeoutException(String.Format(
                         "Can not start continuation '{0}' for background job '{1}': timeout expired while trying to fetch continuation state.",
                         continuationJobId,
-                        context.JobId));
+                        context.BackgroundJob.Id));
                 }
 
                 Thread.Sleep(firstAttempt ? 0 : 1);

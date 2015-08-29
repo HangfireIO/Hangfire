@@ -20,26 +20,21 @@ using Hangfire.Common;
 
 namespace Hangfire.States
 {
-    public class StateContext
+    [Obsolete("This class is here for compatibility reasons. Will be removed in 2.0.0.")]
+    public abstract class StateContext
     {
-        public StateContext([NotNull] string jobId, [CanBeNull] Job job, DateTime createdAt)
-        {
-            if (String.IsNullOrEmpty(jobId)) throw new ArgumentNullException("jobId");
-            
-            JobId = jobId;
-            Job = job;
-            CreatedAt = createdAt;
-        }
-
-        internal StateContext(StateContext context)
-            : this(context.JobId, context.Job, context.CreatedAt)
-        {
-        }
+        [NotNull]
+        public abstract BackgroundJob BackgroundJob { get; }
 
         [NotNull]
-        public string JobId { get; private set; }
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public string JobId { get { return BackgroundJob.Id; } }
+
         [CanBeNull]
-        public Job Job { get; private set; }
-        public DateTime CreatedAt { get; private set; }
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public Job Job { get { return BackgroundJob.Job; } }
+
+        [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
+        public DateTime CreatedAt { get { return BackgroundJob.CreatedAt; } }
     }
 }

@@ -28,7 +28,7 @@ namespace Hangfire.Server
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
 
-        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
+        private readonly IStateChangeProcess _process;
         private readonly TimeSpan _pollingInterval;
 
         private int _enqueuedCount;
@@ -39,15 +39,15 @@ namespace Hangfire.Server
         }
 
         public SchedulePoller(TimeSpan pollingInterval)
-            : this(pollingInterval, new StateMachineFactoryFactory())
+            : this(pollingInterval, new StateChangeProcess())
         {
         }
 
-        public SchedulePoller(TimeSpan pollingInterval, IStateMachineFactoryFactory stateMachineFactoryFactory)
+        public SchedulePoller(TimeSpan pollingInterval, IStateChangeProcess process)
         {
-            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
+            if (process == null) throw new ArgumentNullException("process");
 
-            _stateMachineFactoryFactory = stateMachineFactoryFactory;
+            _process = process;
             _pollingInterval = pollingInterval;
         }
 
@@ -91,14 +91,20 @@ namespace Hangfire.Server
                     // No more scheduled jobs pending.
                     return false;
                 }
-
-                var stateMachine = _stateMachineFactoryFactory.CreateFactory(context.Storage).Create(connection);
+                
                 var enqueuedState = new EnqueuedState
                 {
                     Reason = "Triggered scheduled job"
                 };
 
-                if (stateMachine.ChangeState(jobId, enqueuedState, new[] { ScheduledState.StateName }) == null)
+                var appliedState = _process.ChangeState(new StateChangeContext(
+                    context.Storage,
+                    connection,
+                    jobId, 
+                    enqueuedState, 
+                    ScheduledState.StateName));
+
+                if (appliedState == null)
                 {
                     // When a background job with the given id does not exist, we should
                     // remove its id from a schedule manually. This may happen when someone

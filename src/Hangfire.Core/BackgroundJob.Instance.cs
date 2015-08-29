@@ -14,12 +14,29 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using Hangfire.Storage;
+using System;
+using Hangfire.Annotations;
+using Hangfire.Common;
 
-namespace Hangfire.States
+namespace Hangfire
 {
-    public interface IStateMachineFactory
+    partial class BackgroundJob
     {
-        IStateMachine Create(IStorageConnection connection);
+        public BackgroundJob([NotNull] string id, [CanBeNull] Job job, DateTime createdAt)
+        {
+            if (id == null) throw new ArgumentNullException("id");
+
+            Id = id;
+            Job = job;
+            CreatedAt = createdAt;
+        }
+        
+        [NotNull]
+        public string Id { get; private set; }
+
+        [CanBeNull]
+        public Job Job { get; private set; }
+        
+        public DateTime CreatedAt { get; private set; }
     }
 }

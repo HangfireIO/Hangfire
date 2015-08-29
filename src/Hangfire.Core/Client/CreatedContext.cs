@@ -15,6 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Hangfire.Annotations;
 
 namespace Hangfire.Client
@@ -39,6 +41,14 @@ namespace Hangfire.Client
 
         [CanBeNull]
         public string JobId { get; private set; }
+
+        public override IDictionary<string, object> Parameters
+        {
+            get
+            {
+                return new ReadOnlyDictionary<string, object>(base.Parameters);
+            }
+        }
 
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.

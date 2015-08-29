@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -28,24 +29,36 @@ namespace Hangfire.Client
     /// </summary>
     public class CreateContext
     {
-        internal CreateContext(CreateContext context)
-            : this(context.Connection, context.Job, context.InitialState)
+        internal CreateContext([NotNull] CreateContext context)
+            : this(context.Storage, context.Connection, context.Job, context.InitialState)
         {
             Items = context.Items;
+            Parameters = context.Parameters;
         }
 
-        public CreateContext(IStorageConnection connection, Job job, IState initialState)
+        public CreateContext(
+            [NotNull] JobStorage storage, 
+            [NotNull] IStorageConnection connection, 
+            [NotNull] Job job, 
+            [CanBeNull] IState initialState)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (connection == null) throw new ArgumentNullException("connection");
             if (job == null) throw new ArgumentNullException("job");
-            
+
+            Storage = storage;
             Connection = connection;
             Job = job;
             InitialState = initialState;
 
             Items = new Dictionary<string, object>();
+            Parameters = new Dictionary<string, object>();
         }
 
+        [NotNull]
+        public JobStorage Storage { get; private set; }
+
+        [NotNull]
         public IStorageConnection Connection { get; private set; }
 
         /// <summary>
@@ -53,8 +66,13 @@ namespace Hangfire.Client
         /// to pass additional information between different client filters
         /// or just between different methods.
         /// </summary>
+        [NotNull]
         public IDictionary<string, object> Items { get; private set; }
 
+        [NotNull]
+        public virtual IDictionary<string, object> Parameters { get; private set; }
+            
+        [NotNull]
         public Job Job { get; private set; }
 
         /// <summary>
@@ -63,6 +81,7 @@ namespace Hangfire.Client
         /// the registered instances of the <see cref="IElectStateFilter"/>
         /// class are doing their job.
         /// </summary>
+        [CanBeNull]
         public IState InitialState { get; private set; }
     }
 }

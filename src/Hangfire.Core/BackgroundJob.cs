@@ -24,7 +24,7 @@ namespace Hangfire
     /// <summary>
     /// Represents a static facade for the Hangfire Client API.
     /// </summary>
-    public abstract class BackgroundJob
+    public partial class BackgroundJob
     {
         private static readonly Lazy<IBackgroundJobClient> CachedClient 
             = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()); 

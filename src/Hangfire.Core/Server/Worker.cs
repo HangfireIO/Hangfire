@@ -29,8 +29,8 @@ namespace Hangfire.Server
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly IJobPerformanceProcess _process;
-        private readonly IStateMachineFactoryFactory _stateMachineFactoryFactory;
+        private readonly IJobPerformanceProcess _performanceProcess;
+        private readonly IStateChangeProcess _stateChangeProcess;
         private readonly WorkerContext _context;
 
         public Worker([NotNull] WorkerContext context)
@@ -38,29 +38,27 @@ namespace Hangfire.Server
         {
         }
 
-        public Worker([NotNull] WorkerContext context, [NotNull] IJobPerformanceProcess process)
-            : this(context, process, new StateMachineFactoryFactory())
+        public Worker([NotNull] WorkerContext context, [NotNull] IJobPerformanceProcess performanceProcess)
+            : this(context, performanceProcess, new StateChangeProcess())
         {
         }
 
         public Worker(
             [NotNull] WorkerContext context,
-            [NotNull] IJobPerformanceProcess process, 
-            [NotNull] IStateMachineFactoryFactory stateMachineFactoryFactory)
+            [NotNull] IJobPerformanceProcess performanceProcess, 
+            [NotNull] IStateChangeProcess stateChangeProcess)
         {
             if (context == null) throw new ArgumentNullException("context");
-            if (process == null) throw new ArgumentNullException("process");
-            if (stateMachineFactoryFactory == null) throw new ArgumentNullException("stateMachineFactoryFactory");
+            if (performanceProcess == null) throw new ArgumentNullException("performanceProcess");
+            if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
             
             _context = context;
-            _process = process;
-            _stateMachineFactoryFactory = stateMachineFactoryFactory;
+            _performanceProcess = performanceProcess;
+            _stateChangeProcess = stateChangeProcess;
         }
 
         public void Execute(BackgroundProcessContext context)
         {
-            var stateMachineFactory = _stateMachineFactoryFactory.CreateFactory(context.Storage);
-
             using (var connection = context.Storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_context.Queues, context.CancellationToken))
             {
@@ -68,8 +66,6 @@ namespace Hangfire.Server
 
                 try
                 {
-                    var stateMachine = stateMachineFactory.Create(connection);
-
                     using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
                         context.CancellationToken,
@@ -77,12 +73,13 @@ namespace Hangfire.Server
                     {
                         var processingState = new ProcessingState(context.ServerId, _context.WorkerNumber);
 
-                        IState appliedState = stateMachine.ChangeState(
+                        var appliedState = _stateChangeProcess.ChangeState(new StateChangeContext(
+                            context.Storage,
+                            connection,
                             fetchedJob.JobId,
                             processingState,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
-                            linkedCts.Token
-                        );
+                            linkedCts.Token));
 
                         // Cancel job processing if the job could not be loaded, was not in the initial state expected
                         // or if a job filter changed the state to something other than processing state
@@ -111,7 +108,12 @@ namespace Hangfire.Server
                     if (state != null)
                     {
                         // Ignore return value, because we should not do anything when current state is not Processing.
-                        stateMachine.ChangeState(fetchedJob.JobId, state, new[] { ProcessingState.StateName });
+                        _stateChangeProcess.ChangeState(new StateChangeContext(
+                            context.Storage,
+                            connection,
+                            fetchedJob.JobId, 
+                            state, 
+                            ProcessingState.StateName));
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -159,13 +161,13 @@ namespace Hangfire.Server
 
                 jobData.EnsureLoaded();
 
-                var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, token);
+                var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
+                var performContext = new PerformContext(_context, connection, backgroundJob, token);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
-                var result = _process.Run(performContext);
+                var result = _performanceProcess.Run(performContext);
                 duration.Stop();
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);

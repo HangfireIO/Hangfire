@@ -64,7 +64,7 @@ namespace Hangfire.States
     /// <code lang="cs" source="..\Samples\States.cs" region="FaultedState" />
     /// </example>
     /// 
-    /// <seealso cref="IStateMachine" />
+    /// <seealso cref="IStateChangeProcess" />
     /// <seealso cref="IStateHandler" />
     /// <seealso cref="IElectStateFilter" />
     /// <seealso cref="IApplyStateFilter" />
@@ -136,7 +136,7 @@ namespace Hangfire.States
         /// processing pipeline. Background jobs in a final state is considered 
         /// as finished with no further processing required.</para>
         /// 
-        /// <para>The <see cref="IStateMachine">state machine</see> marks
+        /// <para>The <see cref="IStateChangeProcess">state machine</see> marks
         /// finished background jobs to be expired within an interval that
         /// is defined in the <see cref="ApplyStateContext.JobExpirationTimeout"/>
         /// property that is available from a state changing filter that 
@@ -170,7 +170,7 @@ namespace Hangfire.States
         /// 
         /// <para>However we cannot always deserialize a job, for example, when job method was
         /// removed from the code base or its assembly reference is missing. Since background
-        /// processing is impossible anyway, the <see cref="IStateMachine">state machine</see>
+        /// processing is impossible anyway, the <see cref="IStateChangeProcess">state machine</see>
         /// moves such a background job to the <see cref="FailedState"/> in this case to
         /// highlight a problem to the developers (because deserialization exception may
         /// occur due to bad refactorings or other programming mistakes).</para>

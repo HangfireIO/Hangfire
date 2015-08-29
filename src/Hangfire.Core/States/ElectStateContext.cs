@@ -26,32 +26,36 @@ namespace Hangfire.States
     public class ElectStateContext : StateContext
     {
         private readonly IList<IState> _traversedStates = new List<IState>();
+        private readonly BackgroundJob _backgroundJob;
         private IState _candidateState;
 
-        public ElectStateContext(
-            [NotNull] StateContext context, 
-            [NotNull] IStorageConnection connection, 
-            [NotNull] IStateMachine stateMachine,
-            [NotNull] IState candidateState, 
-            [CanBeNull] string currentState)
-            : base(context)
+        internal ElectStateContext([NotNull] ApplyStateContext applyContext)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
-            if (candidateState == null) throw new ArgumentNullException("candidateState");
+            if (applyContext == null) throw new ArgumentNullException("applyContext");
+            
+            _backgroundJob = applyContext.BackgroundJob;
+            _candidateState = applyContext.NewState;
 
-            _candidateState = candidateState;
-
-            Connection = connection;
-            StateMachine = stateMachine;
-            CurrentState = currentState;
+            Storage = applyContext.Storage;
+            Connection = applyContext.Connection;
+            Transaction = applyContext.Transaction;
+            CurrentState = applyContext.OldStateName;
         }
+
+        [NotNull]
+        public override BackgroundJob BackgroundJob
+        {
+            get { return _backgroundJob; }
+        }
+
+        [NotNull]
+        public JobStorage Storage { get; private set; }
 
         [NotNull]
         public IStorageConnection Connection { get; private set; }
 
         [NotNull]
-        public IStateMachine StateMachine { get; private set; }
+        public IWriteOnlyTransaction Transaction { get; private set; }
 
         [NotNull]
         public IState CandidateState
@@ -80,13 +84,13 @@ namespace Hangfire.States
 
         public void SetJobParameter<T>(string name, T value)
         {
-            Connection.SetJobParameter(JobId, name, JobHelper.ToJson(value));
+            Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
             return JobHelper.FromJson<T>(Connection.GetJobParameter(
-                JobId, name));
+                BackgroundJob.Id, name));
         }
     }
 }

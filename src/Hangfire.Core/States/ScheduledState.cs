@@ -166,12 +166,12 @@ namespace Hangfire.States
                 }
 
                 var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);
-                transaction.AddToSet("schedule", context.JobId, timestamp);
+                transaction.AddToSet("schedule", context.BackgroundJob.Id, timestamp);
             }
 
             public void Unapply(ApplyStateContext context, IWriteOnlyTransaction transaction)
             {
-                transaction.RemoveFromSet("schedule", context.JobId);
+                transaction.RemoveFromSet("schedule", context.BackgroundJob.Id);
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass
