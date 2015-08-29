@@ -26,9 +26,11 @@ namespace Hangfire
     /// </summary>
     public partial class BackgroundJob
     {
-        // TODO: cache the client, it is thread-safe.
+        private static readonly Lazy<IBackgroundJobClient> CachedClient 
+            = new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()); 
+
         private static readonly Func<IBackgroundJobClient> DefaultFactory
-            = () => new BackgroundJobClient(JobStorage.Current);
+            = () => CachedClient.Value;
 
         private static Func<IBackgroundJobClient> _clientFactory;
         private static readonly object ClientFactoryLock = new object();

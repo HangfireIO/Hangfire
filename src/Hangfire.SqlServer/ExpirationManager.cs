@@ -24,10 +24,13 @@ namespace Hangfire.SqlServer
 {
     internal class ExpirationManager : IServerComponent
     {
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+
+        private const string DistributedLockKey = "locks:expirationmanager";
+        private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
         private const int NumberOfRecordsInSinglePass = 1000;
-
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        
         private static readonly string[] ProcessedTables =
         {
             "AggregatedCounter",
@@ -65,11 +68,20 @@ namespace Hangfire.SqlServer
                 {
                     _storage.UseConnection(connection =>
                     {
-                        removedCount = connection.Execute(
-                            String.Format(@"
+                        SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
+
+                        try
+                        {
+                            removedCount = connection.Execute(
+                                String.Format(@"
 set transaction isolation level read committed;
 delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;", table),
-                            new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
+                                new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
+                        }
+                        finally
+                        {
+                            SqlServerDistributedLock.Release(connection, DistributedLockKey);
+                        }
                     });
 
                     if (removedCount > 0)

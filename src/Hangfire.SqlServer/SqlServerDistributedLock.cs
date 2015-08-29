@@ -47,41 +47,13 @@ namespace Hangfire.SqlServer
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
+            if (timeout.TotalSeconds > Int32.MaxValue) throw new ArgumentException("The timeout specified is greater than Int32.MaxValue when expressed as seconds.", "timeout");
 
             _storage = storage;
             _resource = resource;
             _connection = storage.CreateAndOpenConnection();
 
-            var parameters = new DynamicParameters();
-            parameters.Add("@Resource", _resource);
-            parameters.Add("@DbPrincipal", "public");
-            parameters.Add("@LockMode", LockMode);
-            parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
-            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-
-            _connection.Execute(
-                @"sp_getapplock", 
-                parameters, 
-                commandType: CommandType.StoredProcedure);
-
-            var lockResult = parameters.Get<int>("@Result");
-
-            if (lockResult < 0)
-            {
-                if (lockResult == -1)
-                {
-                    throw new DistributedLockTimeoutException(_resource);
-                }
-
-                throw new SqlServerDistributedLockException(
-                    String.Format(
-                    "Could not place a lock on the resource '{0}': {1}.",
-                    _resource,
-                    LockErrorMessages.ContainsKey(lockResult) 
-                        ? LockErrorMessages[lockResult]
-                        : String.Format("Server returned the '{0}' error.", lockResult)));
-            }
+            Acquire(_connection, _resource, timeout);
         }
 
         public void Dispose()
@@ -92,30 +64,73 @@ namespace Hangfire.SqlServer
 
             try
             {
-                var parameters = new DynamicParameters();
-                parameters.Add("@Resource", _resource);
-                parameters.Add("@LockOwner", LockOwner);
-                parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
-
-                _connection.Execute(
-                    @"sp_releaseapplock",
-                    parameters,
-                    commandType: CommandType.StoredProcedure);
-
-                var releaseResult = parameters.Get<int>("@Result");
-
-                if (releaseResult < 0)
-                {
-                    throw new SqlServerDistributedLockException(
-                        String.Format(
-                            "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
-                            _resource,
-                            releaseResult));
-                }
+                Release(_connection, _resource);
             }
             finally
             {
                 _storage.ReleaseConnection(_connection);
+            }
+        }
+
+        internal static void Acquire(IDbConnection connection, string resource, TimeSpan timeout)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@Resource", resource);
+            parameters.Add("@DbPrincipal", "public");
+            parameters.Add("@LockMode", LockMode);
+            parameters.Add("@LockOwner", LockOwner);
+            parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+            // Ensuring the timeout for the command is 1 second longer than the timeout specified for the stored procedure.
+            var commandTimeout = (int)(timeout.TotalSeconds + 1);
+
+            connection.Execute(
+                @"sp_getapplock",
+                parameters,
+                commandTimeout: commandTimeout,
+                commandType: CommandType.StoredProcedure);
+
+            var lockResult = parameters.Get<int>("@Result");
+
+            if (lockResult < 0)
+            {
+                if (lockResult == -1)
+                {
+                    throw new DistributedLockTimeoutException(resource);
+                }
+
+                throw new SqlServerDistributedLockException(
+                    String.Format(
+                    "Could not place a lock on the resource '{0}': {1}.",
+                    resource,
+                    LockErrorMessages.ContainsKey(lockResult)
+                        ? LockErrorMessages[lockResult]
+                        : String.Format("Server returned the '{0}' error.", lockResult)));
+            }
+        }
+
+        internal static void Release(IDbConnection connection, string resource)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("@Resource", resource);
+            parameters.Add("@LockOwner", LockOwner);
+            parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+            connection.Execute(
+                @"sp_releaseapplock",
+                parameters,
+                commandType: CommandType.StoredProcedure);
+
+            var releaseResult = parameters.Get<int>("@Result");
+
+            if (releaseResult < 0)
+            {
+                throw new SqlServerDistributedLockException(
+                    String.Format(
+                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
+                        resource,
+                        releaseResult));
             }
         }
     }

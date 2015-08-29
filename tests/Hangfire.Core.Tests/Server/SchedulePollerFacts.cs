@@ -15,6 +15,8 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IStateChangeProcess> _process;
         private readonly BackgroundProcessContextMock _context;
+        private readonly Mock<IWriteOnlyTransaction> _transaction;
+        private readonly Mock<IDisposable> _distributedLock;
 
         public SchedulePollerFacts()
         {
@@ -25,6 +27,13 @@ namespace Hangfire.Core.Tests.Server
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
             _process = new Mock<IStateChangeProcess>();
+            _transaction = new Mock<IWriteOnlyTransaction>();
+            _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
+
+            _distributedLock = new Mock<IDisposable>();
+            _connection
+                .Setup(x => x.AcquireDistributedLock("locks:schedulepoller", It.IsAny<TimeSpan>()))
+                .Returns(_distributedLock.Object);
 
             _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
                 "schedule", 0, It.Is<double>(time => time > 0))).Returns(JobId);
@@ -66,6 +75,32 @@ namespace Hangfire.Core.Tests.Server
             _process.Verify(
                 x => x.ChangeState(It.IsAny<StateChangeContext>()),
                 Times.Never);
+        }
+
+        [Fact]
+        public void Execute_RemovesAJobIdentifierFromTheSet_WhenStateChangeFails()
+        {
+            _process
+                .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
+                .Returns<IState>(null);
+
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _transaction.Verify(x => x.RemoveFromSet("schedule", JobId));
+            _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void Execute_ActsWithinADistributedLock()
+        {
+            var scheduler = CreateScheduler();
+
+            scheduler.Execute(_context.Object);
+
+            _connection.Verify(x => x.AcquireDistributedLock(It.IsAny<string>(), It.IsAny<TimeSpan>()));
+            _distributedLock.Verify(x => x.Dispose());
         }
 
         private SchedulePoller CreateScheduler()
