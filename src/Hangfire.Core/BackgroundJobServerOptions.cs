@@ -46,6 +46,7 @@ namespace Hangfire
             Activator = JobActivator.Current;
         }
 
+        [Obsolete("Server Id is auto-generated now, and this option does not make sense anymore. Will be removed in 2.0.0.")]
         public string ServerName { get; set; }
 
         public int WorkerCount
