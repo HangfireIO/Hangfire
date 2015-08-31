@@ -17,6 +17,7 @@
 using System;
 using System.Linq;
 using Hangfire.Client;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
@@ -40,10 +41,9 @@ namespace Hangfire
             HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
 
             ServerWatchdogOptions = new ServerWatchdogOptions();
-
-            CreationProcess = new JobCreationProcess();
-            PerformanceProcess = new JobPerformanceProcess();
-            StateChangeProcess = new StateChangeProcess();
+            
+            FilterProvider = JobFilterProviders.Providers;
+            Activator = JobActivator.Current;
         }
 
         public string ServerName { get; set; }
@@ -77,9 +77,8 @@ namespace Hangfire
 
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
 
-        public IJobCreationProcess CreationProcess { get; set; }
-        public IJobPerformanceProcess PerformanceProcess { get; set; }
-        public IStateChangeProcess StateChangeProcess { get; set; }
+        public IJobFilterProvider FilterProvider { get; set; }
+        public JobActivator Activator { get; set; }
 
         public void WriteToLog(ILog logger)
         {

@@ -18,8 +18,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
+using Hangfire.Client;
 using Hangfire.Logging;
 using Hangfire.Server;
+using Hangfire.States;
 
 namespace Hangfire
 {
@@ -116,13 +118,16 @@ namespace Hangfire
 
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(_options.Queues, _options.PerformanceProcess, _options.StateChangeProcess));
+                processes.Add(new Worker(
+                    _options.Queues, 
+                    new JobPerformanceProcess(_options.FilterProvider), 
+                    new StateChangeProcess(_options.FilterProvider)));
             }
 
             processes.Add(new ServerHeartbeat(_options.HeartbeatInterval));
             processes.Add(new ServerWatchdog(_options.ServerWatchdogOptions));
-            processes.Add(new SchedulePoller(_options.SchedulePollingInterval, _options.StateChangeProcess));
-            processes.Add(new RecurringJobScheduler(_options.CreationProcess));
+            processes.Add(new SchedulePoller(_options.SchedulePollingInterval, new StateChangeProcess(_options.FilterProvider)));
+            processes.Add(new RecurringJobScheduler(new JobCreationProcess(_options.FilterProvider)));
 
             return processes;
         }
