@@ -36,7 +36,11 @@ namespace Hangfire.Server
         private readonly IStateChangeProcess _stateChangeProcess;
         private readonly string _workerId;
 
-        public Worker([NotNull] IEnumerable<string> queues)
+        public Worker() : this(EnqueuedState.DefaultQueue)
+        {
+        }
+
+        public Worker([NotNull] params string[] queues)
             : this(queues, new JobPerformanceProcess(), new StateChangeProcess())
         {
         }
