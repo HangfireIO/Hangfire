@@ -190,7 +190,7 @@ namespace Hangfire.Server
             {
                 return new FailedState(ex)
                 {
-                    Reason = "Internal Hangfire Server exception occurred. Please, report it to Hangfire developers."
+                    Reason = "An exception occurred during processing of a background job."
                 };
             }
         }
