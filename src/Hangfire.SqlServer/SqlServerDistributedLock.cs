@@ -27,7 +27,7 @@ namespace Hangfire.SqlServer
     {
         private const string LockMode = "Exclusive";
         private const string LockOwner = "Session";
-        private const int CommandTimeoutAddition = 1;
+        private const int CommandTimeoutAdditionSeconds = 1;
 
         private static readonly IDictionary<int, string> LockErrorMessages
             = new Dictionary<int, string>
@@ -48,7 +48,7 @@ namespace Hangfire.SqlServer
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
-            if ((timeout.TotalSeconds + CommandTimeoutAddition) > Int32.MaxValue) throw new ArgumentException(string.Format("The timeout specified is too large. Please supply a timeout equal to or less than {0} seconds", Int32.MaxValue - CommandTimeoutAddition), "timeout");
+            if ((timeout.TotalSeconds + CommandTimeoutAdditionSeconds) > Int32.MaxValue) throw new ArgumentException(string.Format("The timeout specified is too large. Please supply a timeout equal to or less than {0} seconds", Int32.MaxValue - CommandTimeoutAdditionSeconds), "timeout");
 
             _storage = storage;
             _resource = resource;
@@ -84,7 +84,7 @@ namespace Hangfire.SqlServer
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
             // Ensuring the timeout for the command is longer than the timeout specified for the stored procedure.
-            var commandTimeout = (int)(timeout.TotalSeconds + CommandTimeoutAddition);
+            var commandTimeout = (int)(timeout.TotalSeconds + CommandTimeoutAdditionSeconds);
 
             connection.Execute(
                 @"sp_getapplock",
