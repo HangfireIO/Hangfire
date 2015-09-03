@@ -51,7 +51,7 @@ namespace Hangfire.SqlServer
             SqlTransaction transaction = null;
 
             const string fetchJobSqlTemplate = @"
-delete top (1) from HangFire.JobQueue with (readpast, updlock)
+delete top (1) from HangFire.JobQueue with (readpast, updlock, rowlock)
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 where (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
 and Queue in @queues";
