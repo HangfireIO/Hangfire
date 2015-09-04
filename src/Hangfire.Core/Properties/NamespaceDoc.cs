@@ -15,6 +15,22 @@ namespace Hangfire
     }
 }
 
+namespace Hangfire.Annotations
+{
+    /// <summary>
+    /// The <see cref="Hangfire.Annotations"/> namespace contains attributes that enable
+    /// additional code inspections in design time with JetBrains ReSharper.
+    /// </summary>
+    /// <remarks>
+    /// To enable annotations, open ReSharper options → Code Inspections → Code Annotations 
+    /// and add the <see cref="Hangfire.Annotations"/> namespace to the corresponding list.
+    /// </remarks>
+    [CompilerGenerated]
+    class NamespaceDoc
+    {
+    }
+}
+
 namespace Hangfire.Client
 {
     /// <summary>
@@ -44,6 +60,16 @@ namespace Hangfire.Common
 namespace Hangfire.Dashboard
 {
     /// <summary>
+    /// The Hangfire.Dashboard namespaces contain types that allow you to
+    /// restrict an access to the Dashboard UI by implementing the <see cref="IAuthorizationFilter"/>
+    /// interface, as well as customize it by adding new pages, menu items, metrics, routes.
+    /// </summary>
+    [CompilerGenerated]
+    class NamespaceGroupDoc
+    {
+    }
+
+    /// <summary>
     /// The <see cref="Hangfire.Dashboard"/> namespace contains types that allow you to
     /// restrict an access to the Dashboard UI by implementing the <see cref="IAuthorizationFilter"/>
     /// interface, as well as customize it by adding new pages, menu items, metrics, routes.
@@ -68,6 +94,16 @@ namespace Hangfire.Dashboard.Pages
 
 namespace Hangfire.Logging
 {
+    /// <summary>
+    /// The Hangfire.Logging namespaces contain types that allow you to 
+    /// integrate Hangfire's logging with your projects as well as use it 
+    /// to log custom messages.
+    /// </summary>
+    [CompilerGenerated]
+    class NamespaceGroupDoc
+    {
+    }
+
     /// <summary>
     /// The <see cref="Hangfire.Logging"/> namespace contains types that allow you to 
     /// integrate Hangfire's logging with your projects as well as use it 
@@ -125,8 +161,20 @@ namespace Hangfire.States
 namespace Hangfire.Storage
 {
     /// <summary>
-    /// The <see cref="Hangfire.Storage"/> namespace contains abstract types and
-    /// methods for querying and modifying the underlying background job storage. 
+    /// The Hangfire.Storage namespaces contain abstract types like <see cref="JobStorage"/>,
+    /// <see cref="IStorageConnection"/> and <see cref="IWriteOnlyTransaction"/> for
+    /// querying and modifying the underlying background job storage. 
+    /// These types are also used to implement support for other persistent storages.
+    /// </summary>
+    [CompilerGenerated]
+    class NamespaceGroupDoc
+    {
+    }
+
+    /// <summary>
+    /// The Hangfire.Storage namespaces contain abstract types like <see cref="JobStorage"/>,
+    /// <see cref="IStorageConnection"/> and <see cref="IWriteOnlyTransaction"/> for
+    /// querying and modifying the underlying background job storage. 
     /// These types are also used to implement support for other persistent storages.
     /// </summary>
     [CompilerGenerated]
