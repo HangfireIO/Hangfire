@@ -21,7 +21,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
-using Hangfire.SqlServer.Annotations;
+using Hangfire.Annotations;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
