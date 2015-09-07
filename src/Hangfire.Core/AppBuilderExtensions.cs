@@ -18,7 +18,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
@@ -30,11 +29,6 @@ using Microsoft.Owin.Infrastructure;
 
 namespace Hangfire
 {
-    using AppFunc = Func<IDictionary<string, object>, Task>;
-    using MidFunc = Func<
-        Func<IDictionary<string, object>, Task>,
-        Func<IDictionary<string, object>, Task>
-        >;
     using BuildFunc = Action<
         Func<
             IDictionary<string, object>,
@@ -43,6 +37,13 @@ namespace Hangfire
                 Func<IDictionary<string, object>, Task>
         >>>;
 
+    /// <summary>
+    /// Provides extension methods for the <see cref="IAppBuilder"/> interface
+    /// defined in the <see href="https://www.nuget.org/packages/Owin/">Owin</see> 
+    /// NuGet package to simplify the integration with OWIN applications.
+    /// </summary>
+    /// 
+    /// <threadsafety static="true" instance="false" />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class AppBuilderExtensions
     {
@@ -51,11 +52,30 @@ namespace Hangfire
         private static readonly ConcurrentBag<BackgroundJobServer> Servers
             = new ConcurrentBag<BackgroundJobServer>();
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with default options and <see cref="JobStorage.Current"/> storage and
+        /// registers its disposal on application shutdown.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         public static IAppBuilder UseHangfireServer([NotNull] this IAppBuilder builder)
         {
             return builder.UseHangfireServer(new BackgroundJobServerOptions());
         }
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="BackgroundJobServer"/> class 
+        /// with the given collection of additional background processes and 
+        /// <see cref="JobStorage.Current"/> storage, and registers its disposal
+        /// on application shutdown.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="additionalProcesses">Collection of additional background processes.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="additionalProcesses"/> is null.</exception>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder, 
             [NotNull] params IBackgroundProcess[] additionalProcesses)
@@ -63,6 +83,16 @@ namespace Hangfire
             return builder.UseHangfireServer(JobStorage.Current, new BackgroundJobServerOptions(), additionalProcesses);
         }
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with the specified options and <see cref="JobStorage.Current"/> storage,
+        /// and registers its disposal on application shutdown.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="options">Options for background job server.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options)
@@ -70,6 +100,19 @@ namespace Hangfire
             return builder.UseHangfireServer(options, JobStorage.Current);
         }
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with the specified options, given collection of background processes
+        /// and <see cref="JobStorage.Current"/> storage, and registers its
+        /// disposal on application shutdown.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="options">Options for background job server.</param>
+        /// <param name="additionalProcesses">Collection of additional background processes.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="additionalProcesses"/> is null.</exception>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options,
@@ -78,6 +121,18 @@ namespace Hangfire
             return builder.UseHangfireServer(JobStorage.Current, options, additionalProcesses);
         }
 
+        /// <summary>
+        /// Creates a new instance of the <see cref="BackgroundJobServer"/> class
+        /// with the given options and specified storage, and registers its disposal
+        /// on application shutdown.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="options">Options for background job server.</param>
+        /// <param name="storage">Storage to use by background job server.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options,
@@ -86,6 +141,20 @@ namespace Hangfire
             return builder.UseHangfireServer(storage, options, new IBackgroundProcess[0]);
         }
 
+        /// <summary>
+        /// Starts a new instance of the <see cref="BackgroundJobServer"/> class with
+        /// the given arguments, and registers its disposal on application shutdown.
+        /// </summary>
+        /// 
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="storage">Storage to use by background job server.</param>
+        /// <param name="options">Options for background job server.</param>
+        /// <param name="additionalProcesses">Collection of additional background processes.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="additionalProcesses"/> is null.</exception>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] JobStorage storage,
@@ -118,11 +187,27 @@ namespace Hangfire
             return builder;
         }
 
+        /// <summary>
+        /// Adds Dashboard UI middleware to the OWIN request processing pipeline under 
+        /// the <c>/hangfire</c> path, for the <see cref="JobStorage.Current"/> storage.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         public static IAppBuilder UseHangfireDashboard([NotNull] this IAppBuilder builder)
         {
             return builder.UseHangfireDashboard("/hangfire");
         }
 
+        /// <summary>
+        /// Adds Dashboard UI middleware to the OWIN request processing pipeline under
+        /// the given path, for the <see cref="JobStorage.Current"/> storage.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="pathMatch">Path prefix for middleware to use, e.g. "/hangfire".</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="pathMatch"/> is null.</exception>
         public static IAppBuilder UseHangfireDashboard(
             [NotNull] this IAppBuilder builder,
             [NotNull] string pathMatch)
@@ -130,6 +215,18 @@ namespace Hangfire
             return builder.UseHangfireDashboard(pathMatch, new DashboardOptions());
         }
 
+        /// <summary>
+        /// Adds Dashboard UI middleware to the OWIN request processing pipeline under
+        /// the specified path and the given options, for the <see cref="JobStorage.Current"/>
+        /// storage.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="pathMatch">Path prefix for middleware to use, e.g. "/hangfire".</param>
+        /// <param name="options">Options for Dashboard UI.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="pathMatch"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
         public static IAppBuilder UseHangfireDashboard(
             [NotNull] this IAppBuilder builder,
             [NotNull] string pathMatch,
@@ -138,6 +235,19 @@ namespace Hangfire
             return builder.UseHangfireDashboard(pathMatch, options, JobStorage.Current);
         }
 
+        /// <summary>
+        /// Adds Dashboard UI middleware to the OWIN request processing pipeline with the
+        /// specified parameters.
+        /// </summary>
+        /// <param name="builder">OWIN application builder.</param>
+        /// <param name="pathMatch">Path prefix for middleware to use, e.g. "/hangfire".</param>
+        /// <param name="options">Options for Dashboard UI.</param>
+        /// <param name="storage">Job storage to use by Dashboard IO.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="pathMatch"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
         public static IAppBuilder UseHangfireDashboard(
             [NotNull] this IAppBuilder builder,
             [NotNull] string pathMatch,
