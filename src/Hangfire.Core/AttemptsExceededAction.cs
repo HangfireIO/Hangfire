@@ -16,9 +16,21 @@
 
 namespace Hangfire
 {
+    /// <summary>
+    /// Specifies a candidate state for a background job that will be chosen
+    /// by the <see cref="AutomaticRetryAttribute"/> filter after exceeding
+    /// the number of retry attempts.
+    /// </summary>
     public enum AttemptsExceededAction
     {
+        /// <summary>
+        /// Background job will be moved to the <see cref="States.FailedState"/>.
+        /// </summary>
         Fail = 0,
+
+        /// <summary>
+        /// Background job will be moved to the <see cref="States.DeletedState"/>.
+        /// </summary>
         Delete
     }
 }

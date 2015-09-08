@@ -22,13 +22,72 @@ using Hangfire.Storage;
 
 namespace Hangfire
 {
+    /// <summary>
+    /// Represents a <i>state filter</i> that performs automatic retries for 
+    /// background jobs whose processing was failed due to an exception, with 
+    /// a limited number of attempts.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>Filter is added to the global <see cref="GlobalJobFilters.Filters"/> 
+    /// collection by default. Intervals between attempts are based on increasing 
+    /// exponential back-off multiplier in seconds.</para>
+    /// 
+    /// <para>This filter works in a <i>state election</i> phase by changing the
+    /// candidate state from <see cref="FailedState"/> to the <see cref="ScheduledState"/>
+    /// when another retry should be attempted, or other state based on the value
+    /// of the <see cref="OnAttemptsExceeded"/> property when attempts exceeded.
+    /// </para>
+    /// </remarks>
+    /// 
+    /// <example>
+    /// <h3>Disabling Automatic Retries</h3>
+    /// <para>The following example shows how to disable automatic retries for
+    /// a specific job method by applying an attribute to a method.</para>
+    /// 
+    /// <note>Even if you disable <see cref="AutomaticRetryAttribute"/> filter, 
+    /// your background jobs can still be executed several times, due to re-queue 
+    /// on shutdown and other compensation logic that guarantees the <i>at least
+    /// once</i> processing.</note>
+    /// 
+    /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Disable Retries" />
+    /// 
+    /// <h3>Overriding Defaults</h3>
+    /// <para>The following example shows how to override the default number of
+    /// retry attempts for all of the background jobs by modifying the global
+    /// <see cref="GlobalJobFilters.Filters"/> collection.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Override Default" />
+    /// 
+    /// <h3>Specifying Attempts Exceeded Action</h3>
+    /// <para>The following example shows how to ignore a background job when
+    /// number of retry attempts exceed using the <see cref="OnAttemptsExceeded"/>
+    /// property.</para>
+    /// 
+    /// <note type="tip">Choose <see cref="AttemptsExceededAction.Delete"/> action 
+    /// when you aren't interested in processing background job that failed several
+    /// times.</note>
+    /// 
+    /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Attempts Exceeded" />
+    /// </example>
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
-        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
-        private const int DefaultRetryAttempts = 10;
+        /// <summary>
+        /// Represents the default number of retry attempts. This field is read-only.
+        /// </summary>
+        /// <remarks>
+        /// The value of this field is <c>10</c>.
+        /// </remarks>
+        public static readonly int DefaultRetryAttempts = 10;
 
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+        
         private int _attempts;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
+        /// class with <see cref="DefaultRetryAttempts"/> number.
+        /// </summary>
         public AutomaticRetryAttribute()
         {
             Attempts = DefaultRetryAttempts;
@@ -36,6 +95,11 @@ namespace Hangfire
             OnAttemptsExceeded = AttemptsExceededAction.Fail;
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of automatic retry attempts.
+        /// </summary>
+        /// <value>Any non-negative number.</value>
+        /// <exception cref="ArgumentOutOfRangeException">The value in a set operation is less than zero.</exception>
         public int Attempts
         {
             get { return _attempts; }
@@ -49,10 +113,18 @@ namespace Hangfire
             }
         }
 
+        /// <summary>
+        /// Gets or sets a candidate state for a background job that 
+        /// will be chosen when number of retry attempts exceeded.
+        /// </summary>
         public AttemptsExceededAction OnAttemptsExceeded { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether to produce log messages on retry attempts.
+        /// </summary>
         public bool LogEvents { get; set; }
 
+        /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
         {
             var failedState = context.CandidateState as FailedState;
@@ -82,6 +154,26 @@ namespace Hangfire
                             context.BackgroundJob.Id),
                         failedState.Exception);
                 }
+            }
+        }
+
+        /// <inheritdoc />
+        public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            if (context.NewState is ScheduledState &&
+                context.NewState.Reason != null &&
+                context.NewState.Reason.StartsWith("Retry attempt"))
+            {
+                transaction.AddToSet("retries", context.BackgroundJob.Id);
+            }
+        }
+
+        /// <inheritdoc />
+        public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
+        {
+            if (context.OldStateName == ScheduledState.StateName)
+            {
+                transaction.RemoveFromSet("retries", context.BackgroundJob.Id);
             }
         }
 
@@ -135,7 +227,7 @@ namespace Hangfire
         {
             context.CandidateState = new DeletedState
             {
-                Reason = String.Format("Exceeded the maximum number of retry attempts.")
+                Reason = "Exceeded the maximum number of retry attempts."
             };
 
             if (LogEvents)
@@ -155,24 +247,6 @@ namespace Hangfire
             var random = new Random();
             return (int)Math.Round(
                 Math.Pow(retryCount - 1, 4) + 15 + (random.Next(30) * (retryCount)));
-        }
-
-        public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
-        {
-            if (context.NewState is ScheduledState && 
-                context.NewState.Reason != null && 
-                context.NewState.Reason.StartsWith("Retry attempt"))
-            {
-                transaction.AddToSet("retries", context.BackgroundJob.Id);
-            }
-        }
-
-        public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
-        {
-            if (context.OldStateName == ScheduledState.StateName)
-            {
-                transaction.RemoveFromSet("retries", context.BackgroundJob.Id);
-            }
         }
     }
 }
