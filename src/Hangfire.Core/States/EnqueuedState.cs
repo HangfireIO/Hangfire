@@ -29,10 +29,12 @@ namespace Hangfire.States
     /// background process <i>as soon as possible</i>.
     /// </summary>
     /// <remarks>
-    /// Background job identifier is placed on a queue with the given name. When
+    /// <para>Background job in <see cref="EnqueuedState"/> is referred as
+    /// <b>fire-and-forget job</b>.</para>
+    /// <para>Background job identifier is placed on a queue with the given name. When
     /// a queue name wasn't specified, the <see cref="DefaultQueue"/> name will
     /// be used. Message queue implementation depends on a current <see cref="JobStorage"/>
-    /// instance.
+    /// instance.</para>
     /// </remarks> 
     /// <example>
     /// The following example demonstrates the creation of a background job in

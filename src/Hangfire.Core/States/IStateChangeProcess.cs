@@ -19,10 +19,10 @@ namespace Hangfire.States
     public interface IStateChangeProcess
     {
         /// <summary>
-        /// Attempts to change the state of a job, respecting any applicable job filters and state handlers
-        /// <remarks>Also ensures that the job data can be loaded for this job</remarks>
+        /// Attempts to change the state of a job, respecting any applicable job filters and state handlers.
         /// </summary>
         /// <returns><c>Null</c> if a constraint has failed, otherwise the final applied state</returns>
+        /// <remarks>Also ensures that the job data can be loaded for this job</remarks>
         IState ChangeState(StateChangeContext context);
     }
 }

@@ -29,6 +29,11 @@ namespace Hangfire.States
     /// <see cref="EnqueuedState"/> by the <see cref="ContinuationsSupportAttribute"/>
     /// filter.
     /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>Background job in <see cref="AwaitingState"/> is referred as a
+    /// <b>continuation</b> of a background job with <see cref="ParentId"/>.</para>
+    /// </remarks>
     public class AwaitingState : IState
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);

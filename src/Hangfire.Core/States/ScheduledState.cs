@@ -28,6 +28,11 @@ namespace Hangfire.States
     /// by <see cref="Server.SchedulePoller"/> background process.
     /// </summary>
     /// 
+    /// <remarks>
+    /// <para>Background job in <see cref="ScheduledState"/> is referred as
+    /// <b>delayed job</b>.</para>
+    /// </remarks>
+    /// 
     /// <example>
     /// The following example demonstrates the creation of a background job that will
     /// be processed after two hours. Please see <see cref="O:Hangfire.BackgroundJob.Schedule">BackgroundJob.Schedule</see>

@@ -22,8 +22,25 @@ using Hangfire.States;
 namespace Hangfire
 {
     /// <summary>
-    /// Represents a static facade for the Hangfire Client API.
+    /// Provides static methods for creating <i>fire-and-forget</i>, <i>delayed</i>
+    /// jobs and <i>continuations</i> as well as re-queue and delete existing
+    /// background jobs.
     /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>This class is a wrapper for the <see cref="IBackgroundJobClient"/> 
+    /// and its default implementation, <see cref="BackgroundJobClient"/>, that 
+    /// was created for the most simple scenarios. Please consider using the types
+    /// above in real world applications.</para>
+    /// <para>This class also contains undocumented constructor and instance 
+    /// members. They were hidden to not to confuse new users. You can freely 
+    /// use them in low-level API.</para>
+    /// </remarks>
+    /// 
+    /// <seealso cref="IBackgroundJobClient"/>
+    /// <seealso cref="BackgroundJobClient"/>
+    /// 
+    /// <threadsafety static="true" instance="false" />
     public partial class BackgroundJob
     {
         private static readonly Lazy<IBackgroundJobClient> CachedClient 
@@ -54,14 +71,17 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Creates a background job based on a specified static method 
-        /// call expression and places it into its actual queue. 
-        /// Please, see the <see cref="QueueAttribute"/> to learn how to 
-        /// place the job on a non-default queue.
+        /// Creates a new fire-and-forget job based on a given method call expression.
         /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a background job.</returns>
         /// 
-        /// <param name="methodCall">Static method call expression that will be marshalled to the Server.</param>
-        /// <returns>Unique identifier of the created job.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
         public static string Enqueue([NotNull, InstantHandle] Expression<Action> methodCall)
         {
             var client = ClientFactory();
@@ -69,15 +89,17 @@ namespace Hangfire
         }
 
         /// <summary>
-        /// Creates a background job based on a specified instance method 
-        /// call expression and places it into its actual queue. 
-        /// Please, see the <see cref="QueueAttribute"/> to learn how to 
-        /// place the job on a non-default queue.
+        /// Creates a new fire-and-forget job based on a given method call expression.
         /// </summary>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a background job.</returns>
         /// 
-        /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
-        /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
-        /// <returns>Unique identifier of the created job.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="methodCall"/> is <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <seealso cref="EnqueuedState"/>
+        /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
         public static string Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             var client = ClientFactory();
