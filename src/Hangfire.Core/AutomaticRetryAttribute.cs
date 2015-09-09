@@ -70,6 +70,8 @@ namespace Hangfire
     /// 
     /// <code lang="cs" source="..\Samples\AutomaticRetry.cs" region="Attempts Exceeded" />
     /// </example>
+    /// 
+    /// <threadsafety static="true" instance="true" />
     public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
         /// <summary>
@@ -82,7 +84,10 @@ namespace Hangfire
 
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         
+        private readonly object _lockObject = new object();
         private int _attempts;
+        private AttemptsExceededAction _onAttemptsExceeded;
+        private bool _logEvents;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
@@ -102,14 +107,18 @@ namespace Hangfire
         /// <exception cref="ArgumentOutOfRangeException">The value in a set operation is less than zero.</exception>
         public int Attempts
         {
-            get { return _attempts; }
+            get { lock (_lockObject) { return _attempts; } }
             set
             {
                 if (value < 0)
                 {
                     throw new ArgumentOutOfRangeException("value", "Attempts value must be equal or greater than zero.");
                 }
-                _attempts = value;
+
+                lock (_lockObject)
+                {
+                    _attempts = value;
+                }
             }
         }
 
@@ -117,12 +126,20 @@ namespace Hangfire
         /// Gets or sets a candidate state for a background job that 
         /// will be chosen when number of retry attempts exceeded.
         /// </summary>
-        public AttemptsExceededAction OnAttemptsExceeded { get; set; }
+        public AttemptsExceededAction OnAttemptsExceeded
+        {
+            get { lock (_lockObject) { return _onAttemptsExceeded; } }
+            set { lock (_lockObject) { _onAttemptsExceeded = value; } }
+        }
 
         /// <summary>
         /// Gets or sets whether to produce log messages on retry attempts.
         /// </summary>
-        public bool LogEvents { get; set; }
+        public bool LogEvents
+        {
+            get { lock (_lockObject) { return _logEvents; } }
+            set { lock (_lockObject) { _logEvents = value; } }
+        }
 
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
