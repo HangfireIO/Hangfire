@@ -47,7 +47,7 @@ namespace Hangfire.States
         /// <see cref="EnqueuedState"/> class as a next state.
         /// </summary>
         /// <param name="parentId">The identifier of a background job to wait for.</param>
-        public AwaitingState(string parentId)
+        public AwaitingState([NotNull] string parentId)
             : this(parentId, new EnqueuedState())
         {
         }
@@ -58,7 +58,7 @@ namespace Hangfire.States
         /// </summary>
         /// <param name="parentId">The identifier of a background job to wait for.</param>
         /// <param name="nextState">The next state for the continuation.</param>
-        public AwaitingState(string parentId, IState nextState)
+        public AwaitingState([NotNull] string parentId, [NotNull] IState nextState)
             : this(parentId, nextState, JobContinuationOptions.OnAnyFinishedState)
         {
         }
@@ -70,7 +70,7 @@ namespace Hangfire.States
         /// <param name="parentId">The identifier of a background job to wait for.</param>
         /// <param name="nextState">The next state for the continuation.</param>
         /// <param name="options">Options to configure a continuation.</param>
-        public AwaitingState(string parentId, IState nextState, JobContinuationOptions options)
+        public AwaitingState([NotNull] string parentId, [NotNull] IState nextState, JobContinuationOptions options)
             : this(parentId, nextState, options, DefaultExpiration)
         {
         }
@@ -103,11 +103,13 @@ namespace Hangfire.States
         /// <summary>
         /// Gets the identifier of a parent background job.
         /// </summary>
+        [NotNull]
         public string ParentId { get; private set; }
 
         /// <summary>
         /// Gets the next state, to which a background job will be moved.
         /// </summary>
+        [NotNull]
         public IState NextState { get; private set; }
 
         /// <summary>

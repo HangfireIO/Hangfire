@@ -62,7 +62,7 @@ namespace Hangfire
         /// 
         /// <param name="methodCall">Static method call expression that will be marshalled to the Server.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue([InstantHandle] Expression<Action> methodCall)
+        public static string Enqueue([NotNull, InstantHandle] Expression<Action> methodCall)
         {
             var client = ClientFactory();
             return client.Enqueue(methodCall);
@@ -78,7 +78,7 @@ namespace Hangfire
         /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue<T>([InstantHandle] Expression<Action<T>> methodCall)
+        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             var client = ClientFactory();
             return client.Enqueue(methodCall);
@@ -92,7 +92,9 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule([InstantHandle] Expression<Action> methodCall, TimeSpan delay)
+        public static string Schedule(
+            [NotNull, InstantHandle] Expression<Action> methodCall, 
+            TimeSpan delay)
         {
             var client = ClientFactory();
             return client.Schedule(methodCall, delay);
@@ -106,7 +108,9 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule([InstantHandle] Expression<Action> methodCall, DateTimeOffset enqueueAt)
+        public static string Schedule(
+            [NotNull, InstantHandle] Expression<Action> methodCall, 
+            DateTimeOffset enqueueAt)
         {
             var client = ClientFactory();
             return client.Schedule(methodCall, enqueueAt);
@@ -121,7 +125,9 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule<T>([InstantHandle] Expression<Action<T>> methodCall, TimeSpan delay)
+        public static string Schedule<T>(
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            TimeSpan delay)
         {
             var client = ClientFactory();
             return client.Schedule(methodCall, delay);
@@ -136,7 +142,9 @@ namespace Hangfire
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
         /// <returns>Unique identifier of a created job.</returns>
-        public static string Schedule<T>([InstantHandle] Expression<Action<T>> methodCall, DateTimeOffset enqueueAt)
+        public static string Schedule<T>(
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            DateTimeOffset enqueueAt)
         {
             var client = ClientFactory();
             return client.Schedule(methodCall, enqueueAt);
@@ -150,7 +158,7 @@ namespace Hangfire
         /// 
         /// <param name="jobId">An identifier, that will be used to find a job.</param>
         /// <returns>True on a successfull state transition, false otherwise.</returns>
-        public static bool Delete(string jobId)
+        public static bool Delete([NotNull] string jobId)
         {
             var client = ClientFactory();
             return client.Delete(jobId);
@@ -166,7 +174,7 @@ namespace Hangfire
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Delete(string jobId, string fromState)
+        public static bool Delete([NotNull] string jobId, [CanBeNull] string fromState)
         {
             var client = ClientFactory();
             return client.Delete(jobId, fromState);
@@ -179,7 +187,7 @@ namespace Hangfire
         /// 
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Requeue(string jobId)
+        public static bool Requeue([NotNull] string jobId)
         {
             var client = ClientFactory();
             return client.Requeue(jobId);
@@ -195,31 +203,41 @@ namespace Hangfire
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Requeue(string jobId, string fromState)
+        public static bool Requeue([NotNull] string jobId, [CanBeNull] string fromState)
         {
             var client = ClientFactory();
             return client.Requeue(jobId, fromState);
         }
 
-        public static string ContinueWith(string parentId, [InstantHandle] Expression<Action> methodCall)
+        public static string ContinueWith(
+            [NotNull] string parentId, 
+            [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             var client = ClientFactory();
             return client.ContinueWith(parentId, methodCall);
         }
 
-        public static string ContinueWith<T>(string parentId, [InstantHandle] Expression<Action<T>> methodCall)
+        public static string ContinueWith<T>(
+            [NotNull] string parentId, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             var client = ClientFactory();
             return client.ContinueWith(parentId, methodCall);
         }
 
-        public static string ContinueWith(string parentId, [InstantHandle] Expression<Action> methodCall, JobContinuationOptions options)
+        public static string ContinueWith(
+            [NotNull] string parentId, 
+            [NotNull, InstantHandle] Expression<Action> methodCall, 
+            JobContinuationOptions options)
         {
             var client = ClientFactory();
             return client.ContinueWith(parentId, methodCall, options);
         }
 
-        public static string ContinueWith<T>(string parentId, [InstantHandle] Expression<Action<T>> methodCall, JobContinuationOptions options)
+        public static string ContinueWith<T>(
+            [NotNull] string parentId, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            JobContinuationOptions options)
         {
             var client = ClientFactory();
             return client.ContinueWith(parentId, methodCall, options);

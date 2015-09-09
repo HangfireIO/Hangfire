@@ -34,7 +34,9 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Static method call expression that will be marshalled to the Server.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action> methodCall)
+        public static string Enqueue(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -52,7 +54,9 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Enqueue<T>([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action<T>> methodCall)
+        public static string Enqueue<T>(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -67,7 +71,10 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action> methodCall, TimeSpan delay)
+        public static string Schedule(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull, InstantHandle] Expression<Action> methodCall, 
+            TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -84,7 +91,7 @@ namespace Hangfire
         /// <returns>Unique identifier or a created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
-            [InstantHandle] Expression<Action> methodCall,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException("client");
@@ -102,7 +109,10 @@ namespace Hangfire
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
         /// <returns>Unique identifier of the created job.</returns>
-        public static string Schedule<T>([NotNull] this IBackgroundJobClient client, [InstantHandle] Expression<Action<T>> methodCall, TimeSpan delay)
+        public static string Schedule<T>(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
+            TimeSpan delay)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -120,7 +130,7 @@ namespace Hangfire
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
-            [InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             DateTimeOffset enqueueAt)
         {
             if (client == null) throw new ArgumentNullException("client");
@@ -138,8 +148,8 @@ namespace Hangfire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Create(
             [NotNull] this IBackgroundJobClient client,
-            [InstantHandle] Expression<Action> methodCall,
-            IState state)
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            [NotNull] IState state)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -158,8 +168,8 @@ namespace Hangfire
         /// <returns>Unique identifier of the created job.</returns>
         public static string Create<T>(
             [NotNull] this IBackgroundJobClient client,
-            [InstantHandle] Expression<Action<T>> methodCall,
-            IState state)
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] IState state)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -175,7 +185,10 @@ namespace Hangfire
         /// <param name="jobId">A job, whose state is being changed.</param>
         /// <param name="state">New state for a job.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool ChangeState([NotNull] this IBackgroundJobClient client, string jobId, IState state)
+        public static bool ChangeState(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull] string jobId, 
+            [NotNull] IState state)
         {
             if (client == null) throw new ArgumentNullException("client");
             return client.ChangeState(jobId, state, null);
@@ -202,7 +215,7 @@ namespace Hangfire
         /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Delete([NotNull] this IBackgroundJobClient client, string jobId)
+        public static bool Delete([NotNull] this IBackgroundJobClient client, [NotNull] string jobId)
         {
             return Delete(client, jobId, null);
         }
@@ -231,7 +244,10 @@ namespace Hangfire
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Delete([NotNull] this IBackgroundJobClient client, string jobId, string fromState)
+        public static bool Delete(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull] string jobId, 
+            [CanBeNull] string fromState)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -247,7 +263,7 @@ namespace Hangfire
         /// <param name="client">An instance of <see cref="IBackgroundJobClient"/> implementation.</param>
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Requeue([NotNull] this IBackgroundJobClient client, string jobId)
+        public static bool Requeue([NotNull] this IBackgroundJobClient client, [NotNull] string jobId)
         {
             return Requeue(client, jobId, null);
         }
@@ -263,7 +279,10 @@ namespace Hangfire
         /// <param name="jobId">Identifier of job, whose state is being changed.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded, otherwise false.</returns>
-        public static bool Requeue([NotNull] this IBackgroundJobClient client, string jobId, string fromState)
+        public static bool Requeue(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull] string jobId, 
+            [CanBeNull] string fromState)
         {
             if (client == null) throw new ArgumentNullException("client");
 
@@ -271,40 +290,44 @@ namespace Hangfire
             return client.ChangeState(jobId, state, fromState);
         }
 
-        public static string ContinueWith(this IBackgroundJobClient client, string parentId,
-            [InstantHandle] Expression<Action> methodCall)
+        public static string ContinueWith(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action> methodCall)
         {
             return ContinueWith(client, parentId, methodCall, new EnqueuedState());
         }
 
-        public static string ContinueWith<T>(this IBackgroundJobClient client, string parentId,
-            [InstantHandle] Expression<Action<T>> methodCall)
+        public static string ContinueWith<T>(
+            [NotNull] this IBackgroundJobClient client, 
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall)
         {
             return ContinueWith(client, parentId, methodCall, new EnqueuedState());
         }
 
         public static string ContinueWith(
-            this IBackgroundJobClient client,
-            string parentId,
-            [InstantHandle] Expression<Action> methodCall,
-            IState nextState)
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            [NotNull] IState nextState)
         {
             return ContinueWith(client, parentId, methodCall, nextState, JobContinuationOptions.OnlyOnSucceededState);
         }
 
         public static string ContinueWith<T>(
-            this IBackgroundJobClient client,
-            string parentId,
-            [InstantHandle] Expression<Action<T>> methodCall,
-            IState nextState)
+            [NotNull] this IBackgroundJobClient client,
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] IState nextState)
         {
             return ContinueWith(client, parentId, methodCall, nextState, JobContinuationOptions.OnlyOnSucceededState);
         }
 
         public static string ContinueWith(
             [NotNull] this IBackgroundJobClient client,
-            string parentId,
-            [InstantHandle] Expression<Action> methodCall,
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action> methodCall,
             JobContinuationOptions options)
         {
             return ContinueWith(client, parentId, methodCall, new EnqueuedState(), options);
@@ -312,8 +335,8 @@ namespace Hangfire
 
         public static string ContinueWith<T>(
             [NotNull] this IBackgroundJobClient client,
-            string parentId,
-            [InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             JobContinuationOptions options)
         {
             return ContinueWith(client, parentId, methodCall, new EnqueuedState(), options);
@@ -321,9 +344,9 @@ namespace Hangfire
 
         public static string ContinueWith(
             [NotNull] this IBackgroundJobClient client,
-            string parentId,
+            [NotNull] string parentId,
             [InstantHandle] Expression<Action> methodCall,
-            IState nextState,
+            [NotNull] IState nextState,
             JobContinuationOptions options)
         {
             if (client == null) throw new ArgumentNullException("client");
@@ -334,9 +357,9 @@ namespace Hangfire
 
         public static string ContinueWith<T>(
             [NotNull] this IBackgroundJobClient client,
-            string parentId,
-            [InstantHandle] Expression<Action<T>> methodCall,
-            IState nextState,
+            [NotNull] string parentId,
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            [NotNull] IState nextState,
             JobContinuationOptions options)
         {
             if (client == null) throw new ArgumentNullException("client");

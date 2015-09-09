@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -39,7 +40,7 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="job"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="state"/> argument is null.</exception>
         /// <exception cref="CreateJobFailedException">Job creation has been failed due to inner exception.</exception>
-        string Create(Job job, IState state);
+        string Create([NotNull] Job job, [NotNull] IState state);
 
         /// <summary>
         /// Changes state of a job with the given <paramref name="jobId"/> to
@@ -52,6 +53,6 @@ namespace Hangfire
         /// <param name="state">New state for a job.</param>
         /// <param name="fromState">Current state assertion, or null if unneeded.</param>
         /// <returns>True, if state change succeeded and a job filter did not request another state, otherwise false.</returns>
-        bool ChangeState(string jobId, IState state, string fromState);
+        bool ChangeState([NotNull] string jobId, [NotNull] IState state, [CanBeNull] string fromState);
     }
 }
