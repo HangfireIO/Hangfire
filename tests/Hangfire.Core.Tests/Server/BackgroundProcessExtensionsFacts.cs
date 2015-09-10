@@ -20,7 +20,7 @@ namespace Hangfire.Core.Tests.Server
         public void CreateTask_ThrowsAnException_WhenProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => BackgroundProcessExtensions.CreateTask(null, _context.Object));
+                () => ServerProcessExtensions.CreateTask(null, _context.Object));
 
             Assert.Equal("process", exception.ParamName);
         }
@@ -30,7 +30,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var process = CreateProcess<IServerProcess>();
             var exception = Assert.Throws<ArgumentOutOfRangeException>(
-                () => BackgroundProcessExtensions.CreateTask(process.Object, _context.Object));
+                () => ServerProcessExtensions.CreateTask(process.Object, _context.Object));
 
             Assert.Equal("process", exception.ParamName);
         }

@@ -22,7 +22,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal static class BackgroundProcessExtensions
+    internal static class ServerProcessExtensions
     {
         public static void Execute(this IServerProcess process, BackgroundProcessContext context)
         {

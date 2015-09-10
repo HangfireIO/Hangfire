@@ -96,7 +96,7 @@
     <Compile Include="Server\CoreJobPerformanceProcess.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />
     <Compile Include="Server\InfiniteLoopProcess.cs" />
-    <Compile Include="Server\BackgroundProcessExtensions.cs" />
+    <Compile Include="Server\ServerProcessExtensions.cs" />
     <Compile Include="Server\BackgroundServer.cs" />
     <Compile Include="MoreLinq\MoreEnumerable.Pairwise.cs" />
     <Compile Include="States\AwaitingState.cs" />
