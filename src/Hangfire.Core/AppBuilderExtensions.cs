@@ -38,7 +38,7 @@ namespace Hangfire
         >>>;
 
     /// <summary>
-    /// Provides extension methods for the <see cref="IAppBuilder"/> interface
+    /// Provides extension methods for the <c>IAppBuilder</c> interface
     /// defined in the <see href="https://www.nuget.org/packages/Owin/">Owin</see> 
     /// NuGet package to simplify the integration with OWIN applications.
     /// </summary>

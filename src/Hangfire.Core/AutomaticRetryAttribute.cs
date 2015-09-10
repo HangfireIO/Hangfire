@@ -23,7 +23,7 @@ using Hangfire.Storage;
 namespace Hangfire
 {
     /// <summary>
-    /// Represents a <i>state filter</i> that performs automatic retries for 
+    /// Represents a job filter that performs <i>automatic retries</i> for 
     /// background jobs whose processing was failed due to an exception, with 
     /// a limited number of attempts.
     /// </summary>
