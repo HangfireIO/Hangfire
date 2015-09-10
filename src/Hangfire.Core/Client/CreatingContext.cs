@@ -38,7 +38,7 @@ namespace Hangfire.Client
         /// <summary>
         /// Sets the job parameter of the specified <paramref name="name"/>
         /// to the corresponding <paramref name="value"/>. The value of the
-        /// parameter is being serialized to a JSON string.
+        /// parameter is serialized to a JSON string.
         /// </summary>
         /// 
         /// <param name="name">The name of the parameter.</param>
@@ -53,7 +53,7 @@ namespace Hangfire.Client
 
         /// <summary>
         /// Gets the job parameter of the specified <paramref name="name"/>
-        /// if it exists. The parameter is being deserialized from a JSON 
+        /// if it exists. The parameter is deserialized from a JSON 
         /// string value to the given type <typeparamref name="T"/>.
         /// </summary>
         /// 

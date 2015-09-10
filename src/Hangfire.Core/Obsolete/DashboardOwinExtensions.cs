@@ -99,7 +99,7 @@ namespace Hangfire.Dashboard
         /// <summary>
         /// Maps dashboard to the app builder pipeline at the specified path
         /// with given authorization filters that apply to any request and
-        /// storage instance that is being used to query the information.
+        /// storage instance that is used to query the information.
         /// </summary>
         /// <param name="app">The app builder</param>
         /// <param name="dashboardPath">The path to map dashboard</param>

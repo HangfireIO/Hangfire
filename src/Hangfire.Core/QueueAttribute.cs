@@ -21,7 +21,7 @@ using Hangfire.States;
 namespace Hangfire
 {
     /// <summary>
-    /// Represents attribute, that is being used to determine queue name
+    /// Represents attribute, that is used to determine queue name
     /// for background jobs. It can be applied to the methods and classes. 
     /// If the attribute is not applied neither to the method, nor the class, 
     /// then default queue will be used.

@@ -24,7 +24,7 @@ namespace Hangfire.Server
 {
     /// <summary>
     /// Provides information about the context in which the job
-    /// is being performed.
+    /// is performed.
     /// </summary>
     public class PerformContext
     {

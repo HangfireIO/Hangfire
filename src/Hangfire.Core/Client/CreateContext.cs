@@ -24,8 +24,7 @@ using Hangfire.Storage;
 namespace Hangfire.Client
 {
     /// <summary>
-    /// Provides information about the context in which the job
-    /// is being created.
+    /// Provides information about the context in which the job is created.
     /// </summary>
     public class CreateContext
     {

@@ -24,7 +24,7 @@ namespace Hangfire
         /// <summary>
         /// Tells bootstrapper to start a job server with default options
         /// on application start and stop it automatically on application
-        /// shutdown request. Global job storage is being used.
+        /// shutdown request. Global job storage is used.
         /// </summary>
         /// <param name="configuration">Configuration</param>
         [Obsolete("Please use `IAppBuilder.UseHangfireServer` OWIN extension method instead. Will be removed in version 2.0.0.")]
@@ -36,7 +36,7 @@ namespace Hangfire
         /// <summary>
         /// Tells bootstrapper to start a job server with the given
         /// amount of workers on application start and stop it automatically
-        /// on application shutdown request. Global job storage is being used.
+        /// on application shutdown request. Global job storage is used.
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="workerCount">Worker count</param>
@@ -56,7 +56,7 @@ namespace Hangfire
         /// <summary>
         /// Tells bootstrapper to start a job server with the given
         /// queues array on application start and stop it automatically
-        /// on application shutdown request. Global job storage is being used.
+        /// on application shutdown request. Global job storage is used.
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="queues">Queues to listen</param>
@@ -77,7 +77,7 @@ namespace Hangfire
         /// Tells bootstrapper to start a job server with the given
         /// queues array and specified amount of workers on application
         /// start and stop it automatically on application shutdown request.
-        /// Global job storage is being used.
+        /// Global job storage is used.
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="workerCount">Worker count</param>
@@ -100,7 +100,7 @@ namespace Hangfire
         /// <summary>
         /// Tells bootstrapper to start a job server with the given
         /// options on application start and stop it automatically
-        /// on application shutdown request. Global job storage is being used.
+        /// on application shutdown request. Global job storage is used.
         /// </summary>
         /// <param name="configuration">Configuration</param>
         /// <param name="options">Job server options</param>

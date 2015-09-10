@@ -188,7 +188,7 @@ namespace Hangfire
 
         /// <summary>
         /// Changes state of a job with the specified <paramref name="jobId"/>
-        /// to the <see cref="DeletedState"/>. State change is being only performed
+        /// to the <see cref="DeletedState"/>. State change is only performed
         /// if current job state is equal to the <paramref name="fromState"/> value.
         /// <seealso cref="BackgroundJobClientExtensions.Delete(IBackgroundJobClient, string, string)"/>
         /// </summary>

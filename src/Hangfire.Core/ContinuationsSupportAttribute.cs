@@ -130,7 +130,7 @@ namespace Hangfire
 
         private void ExecuteContinuationsIfExist(ElectStateContext context)
         {
-            // The following lines are being executed inside a distributed job lock,
+            // The following lines are executed inside a distributed job lock,
             // so it is safe to get continuation list here.
             var continuations = GetContinuations(context.Connection, context.BackgroundJob.Id);
             var nextStates = new Dictionary<string, IState>();
