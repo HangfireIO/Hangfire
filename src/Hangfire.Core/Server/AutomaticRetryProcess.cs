@@ -20,7 +20,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    internal class AutomaticRetryProcess : IBackgroundProcess
+    internal class AutomaticRetryProcess : IBackgroundProcessWrapper
     {
         private static readonly TimeSpan DefaultMaxAttemptDelay = TimeSpan.FromMinutes(5);
         private const int DefaultMaxRetryAttempts = int.MaxValue;
@@ -33,7 +33,7 @@ namespace Hangfire.Server
             if (innerProcess == null) throw new ArgumentNullException("innerProcess");
 
             _innerProcess = innerProcess;
-            _logger = LogProvider.GetLogger(_innerProcess.GetType());
+            _logger = LogProvider.GetLogger(_innerProcess.GetProcessType());
             
             MaxRetryAttempts = DefaultMaxRetryAttempts;
             MaxAttemptDelay = DefaultMaxAttemptDelay;

@@ -60,6 +60,20 @@ namespace Hangfire.Server
                 TaskCreationOptions.LongRunning);
         }
 
+        public static Type GetProcessType([NotNull] this IServerProcess process)
+        {
+            if (process == null) throw new ArgumentNullException("process");
+
+            var nextProcess = process;
+
+            while (nextProcess is IBackgroundProcessWrapper)
+            {
+                nextProcess = ((IBackgroundProcessWrapper) nextProcess).InnerProcess;
+            }
+
+            return nextProcess.GetType();
+        }
+
         private static void RunProcess(IServerProcess process, BackgroundProcessContext context)
         {
             // Long-running tasks are based on custom threads (not threadpool ones) as in 
@@ -69,7 +83,7 @@ namespace Hangfire.Server
 
             // LogProvider.GetLogger does not throw any exception, that is why we are not
             // using the `try` statement here. It does not return `null` value as well.
-            var logger = LogProvider.GetLogger(process.ToString());
+            var logger = LogProvider.GetLogger(process.GetProcessType());
             logger.DebugFormat("Background process '{0}' started.", process);
 
             try

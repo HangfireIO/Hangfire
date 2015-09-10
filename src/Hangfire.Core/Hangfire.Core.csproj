@@ -95,6 +95,7 @@
     <Compile Include="Server\BackgroundProcessContextExtensions.cs" />
     <Compile Include="Server\CoreJobPerformanceProcess.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />
+    <Compile Include="Server\IBackgroundProcessWrapper.cs" />
     <Compile Include="Server\InfiniteLoopProcess.cs" />
     <Compile Include="Server\ServerProcessExtensions.cs" />
     <Compile Include="Server\BackgroundServer.cs" />

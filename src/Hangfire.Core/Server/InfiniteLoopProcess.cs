@@ -15,12 +15,11 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 using Hangfire.Annotations;
 
 namespace Hangfire.Server
 {
-    internal class InfiniteLoopProcess : IBackgroundProcess
+    internal class InfiniteLoopProcess : IBackgroundProcessWrapper
     {
         public InfiniteLoopProcess([NotNull] IServerProcess innerProcess)
         {
