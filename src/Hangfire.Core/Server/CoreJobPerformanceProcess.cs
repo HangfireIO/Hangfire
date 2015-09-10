@@ -110,7 +110,7 @@ namespace Hangfire.Server
                                 ? JobHelper.FromJson(argument, parameter.ParameterType)
                                 : null;
                         }
-                        catch (Exception)
+                        catch (Exception jsonException)
                         {
                             if (parameter.ParameterType == typeof(object))
                             {
@@ -120,8 +120,15 @@ namespace Hangfire.Server
                             }
                             else
                             {
-                                var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-                                value = converter.ConvertFromInvariantString(argument);
+                                try
+                                {
+                                    var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
+                                    value = converter.ConvertFromInvariantString(argument);
+                                }
+                                catch (Exception)
+                                {
+                                    throw jsonException;
+                                }
                             }
                         }
                     }
