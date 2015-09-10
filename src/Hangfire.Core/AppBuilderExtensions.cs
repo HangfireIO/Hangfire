@@ -43,6 +43,88 @@ namespace Hangfire
     /// NuGet package to simplify the integration with OWIN applications.
     /// </summary>
     /// 
+    /// <remarks>
+    /// 
+    /// <para>This class simplifies Hangfire configuration in OWIN applications,
+    /// please read <see href="http://www.asp.net/aspnet/overview/owin-and-katana/getting-started-with-owin-and-katana">
+    /// Getting Started with OWIN and Katana</see> if you aren't familiar with OWIN
+    /// and/or don't know what is the <c>Startup</c> class.
+    /// </para>
+    /// 
+    /// <para>The methods of this class should be called from OWIN's <c>Startup</c> 
+    /// class.</para>
+    /// 
+    /// <h3>UseHangfireDashboard</h3>
+    /// <para>Dashboard UI contains pages that allow you to monitor almost every
+    /// aspect of background processing. It is exposed as an OWIN middleware that 
+    /// intercepts requests to the given path.</para>
+    /// <para>OWIN implementation of Dashboard UI allows to use it outside of web
+    /// applications, including console applications and Windows Services.</para>
+    /// <note type="important">
+    /// By default, an access to the Dashboard UI is restricted <b>only to local
+    /// requests</b> for security reasons. Before publishing a project to
+    /// production, make sure you still have access to the Dashboard UI by using the
+    /// <see href="https://www.nuget.org/packages/Hangfire.Dashboard.Authorization/">
+    /// Hangfire.Dashboard.Authorization</see> package.</note>
+    /// 
+    /// <h3>UseHangfireServer</h3>
+    /// <para>In addition to creation of a new instance of the <see cref="BackgroundJobServer"/> 
+    /// class, these methods also register the call to its <see cref="BackgroundJobServer.Dispose"/> 
+    /// method on application shutdown. This is done via registering a callback on the corresponding 
+    /// <see cref="CancellationToken"/> from OWIN environment (<c>"host.OnAppDisposing"</c> or 
+    /// <c>"server.OnDispose"</c> keys).</para>
+    /// <para>This enables <i>graceful shutdown</i> feature for background jobs and background processes
+    /// without any additional configuration.</para>
+    /// <para>Please see <see cref="BackgroundJobServer"/> for more details regarding
+    /// background processing.</para>
+    /// </remarks>
+    /// 
+    /// <example>
+    /// <h3>Basic Configuration</h3> 
+    /// <para>Basic setup in an OWIN application looks like the following example. Please note
+    /// that job storage should be configured before using the methods of this class.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\AppBuilderExtensions.cs" region="Basic Setup" />
+    /// 
+    /// <h3>Adding Dashboard Only</h3>
+    /// <para>If you want to install dashboard without starting a background job server, for example,
+    /// to process background jobs outside of your web application, call only the
+    /// <see cref="O:Hangfire.AppBuilderExtensions.UseHangfireDashboard"/>.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\AppBuilderExtensions.cs" region="Dashboard Only" />
+    /// 
+    /// <h3>Change Dashboard Path</h3>
+    /// <para>By default, you can access Dashboard UI by hitting the <i>http(s)://&lt;app&gt;/hangfire</i>
+    /// URL, however you can change it as in the following example.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\AppBuilderExtensions.cs" region="Change Dashboard Path" />
+    /// 
+    /// <h3>Configuring Authorization</h3>
+    /// <para>The following example demonstrates how to change default local-requests-only
+    /// authorization for Dashboard UI.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\AppBuilderExtensions.cs" region="Configuring Authorization" />
+    /// 
+    /// <h3>Changing Application Path</h3>
+    /// <para>Have you seen the <i>Back to site</i> button in the Dashboard? By default it leads
+    /// you to the root of your site, but you can configure the behavior.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\AppBuilderExtensions.cs" region="Change Application Path" />
+    /// 
+    /// <h3>Multiple Dashboards</h3>
+    /// <para>The following example demonstrates adding multiple Dashboard UI endpoints. This may
+    /// be useful when you are using multiple shards for your background processing needs.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\AppBuilderExtensions.cs" region="Multiple Dashboards" />
+    /// 
+    /// </example>
+    /// 
+    /// <seealso cref="BackgroundJobServer"/>
+    /// <seealso cref="Hangfire.Dashboard"/>
+    /// <seealso href="https://www.nuget.org/packages/Hangfire.Dashboard.Authorization/">
+    /// Hangfire.Dashboard.Authorization Package
+    /// </seealso>
+    /// 
     /// <threadsafety static="true" instance="false" />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class AppBuilderExtensions
@@ -60,6 +142,13 @@ namespace Hangfire
         /// <param name="builder">OWIN application builder.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireServer([NotNull] this IAppBuilder builder)
         {
             return builder.UseHangfireServer(new BackgroundJobServerOptions());
@@ -76,6 +165,13 @@ namespace Hangfire
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="additionalProcesses"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder, 
             [NotNull] params IBackgroundProcess[] additionalProcesses)
@@ -93,6 +189,13 @@ namespace Hangfire
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options)
@@ -113,6 +216,13 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="additionalProcesses"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options,
@@ -133,6 +243,13 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] BackgroundJobServerOptions options,
@@ -155,6 +272,13 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="additionalProcesses"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// OWIN environment does not contain the application shutdown cancellation token.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireServer(
             [NotNull] this IAppBuilder builder,
             [NotNull] JobStorage storage,
@@ -179,7 +303,9 @@ namespace Hangfire
 
             if (token == default(CancellationToken))
             {
-                throw new InvalidOperationException("Current OWIN environment does not contain an instance of the `CancellationToken` class under `host.OnAppDisposing` key.");
+                throw new InvalidOperationException(
+                    "Current OWIN environment does not contain an instance of the `CancellationToken` class neither under `host.OnAppDisposing`, nor `server.OnDispose` key.\r\n"
+                    + "Please use another OWIN host or create an instance of the `BackgroundJobServer` class manually.");
             }
 
             token.Register(server.Dispose);
@@ -194,6 +320,10 @@ namespace Hangfire
         /// <param name="builder">OWIN application builder.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireDashboard([NotNull] this IAppBuilder builder)
         {
             return builder.UseHangfireDashboard("/hangfire");
@@ -208,6 +338,10 @@ namespace Hangfire
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="pathMatch"/> is null.</exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireDashboard(
             [NotNull] this IAppBuilder builder,
             [NotNull] string pathMatch)
@@ -227,6 +361,10 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="builder"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="pathMatch"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireDashboard(
             [NotNull] this IAppBuilder builder,
             [NotNull] string pathMatch,
@@ -248,6 +386,10 @@ namespace Hangfire
         /// <exception cref="ArgumentNullException"><paramref name="pathMatch"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
+        /// 
+        /// <remarks>
+        /// Please see <see cref="AppBuilderExtensions"/> for details and examples.
+        /// </remarks>
         public static IAppBuilder UseHangfireDashboard(
             [NotNull] this IAppBuilder builder,
             [NotNull] string pathMatch,
