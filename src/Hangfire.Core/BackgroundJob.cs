@@ -29,11 +29,11 @@ namespace Hangfire
     /// 
     /// <remarks>
     /// <para>This class is a wrapper for the <see cref="IBackgroundJobClient"/> 
-    /// and its default implementation, <see cref="BackgroundJobClient"/>, that 
-    /// was created for the most simple scenarios. Please consider using the types
-    /// above in real world applications.</para>
+    /// interface and its default implementation, <see cref="BackgroundJobClient"/>
+    /// class, that was created for the most simple scenarios. Please consider 
+    /// using the types above in real world applications.</para>
     /// <para>This class also contains undocumented constructor and instance 
-    /// members. They were hidden to not to confuse new users. You can freely 
+    /// members. They are hidden to not to confuse new users. You can freely 
     /// use them in low-level API.</para>
     /// </remarks>
     /// 
