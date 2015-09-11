@@ -186,7 +186,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
-            _context.BackgroundJob.Job = new Job(type, method, new[] { "sdfa" });
+            _context.BackgroundJob.Job = new Job(type, method, new object[] { "sdfa" });
             var process = CreateProcess();
 
             var exception = Assert.Throws<JobPerformanceException>(

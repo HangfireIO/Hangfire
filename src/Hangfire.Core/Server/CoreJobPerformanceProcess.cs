@@ -16,16 +16,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using Hangfire.Annotations;
-using Hangfire.Common;
 
 namespace Hangfire.Server
 {
     internal class CoreJobPerformanceProcess : IJobPerformanceProcess
     {
+        internal static readonly Dictionary<Type, Func<PerformContext, object>> Substitutions
+            = new Dictionary<Type, Func<PerformContext, object>>
+            {
+                { typeof (IJobCancellationToken), x => x.CancellationToken },
+                { typeof (CancellationToken), x => x.CancellationToken.ShutdownToken }
+            };
+
         private readonly JobActivator _activator;
 
         public CoreJobPerformanceProcess([NotNull] JobActivator activator)
@@ -51,18 +56,24 @@ namespace Hangfire.Server
                     }
                 }
 
-                var deserializedArguments = DeserializeArguments(context);
-                var result = InvokeMethod(context.BackgroundJob.Job.Method, instance, deserializedArguments);
+                var arguments = SubstituteArguments(context);
+                var result = InvokeMethod(context.BackgroundJob.Job.Method, instance, arguments);
 
                 return result;
             }
         }
 
-        private object InvokeMethod(MethodInfo methodInfo, object instance, object[] deserializedArguments)
+        private static object InvokeMethod(MethodInfo methodInfo, object instance, object[] arguments)
         {
             try
             {
-                return methodInfo.Invoke(instance, deserializedArguments);
+                return methodInfo.Invoke(instance, arguments);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new JobPerformanceException(
+                    "An exception occurred during performance of the job.",
+                    ex);
             }
             catch (TargetInvocationException ex)
             {
@@ -80,70 +91,24 @@ namespace Hangfire.Server
             }
         }
 
-        private object[] DeserializeArguments(PerformContext context)
+        private static object[] SubstituteArguments(PerformContext context)
         {
-            try
+            var parameters = context.BackgroundJob.Job.Method.GetParameters();
+            var result = new List<object>(context.BackgroundJob.Job.Args.Count);
+
+            for (var i = 0; i < parameters.Length; i++)
             {
-                var parameters = context.BackgroundJob.Job.Method.GetParameters();
-                var result = new List<object>(context.BackgroundJob.Job.Arguments.Length);
+                var parameter = parameters[i];
+                var argument = context.BackgroundJob.Job.Args[i];
 
-                for (var i = 0; i < parameters.Length; i++)
-                {
-                    var parameter = parameters[i];
-                    var argument = context.BackgroundJob.Job.Arguments[i];
+                var value = Substitutions.ContainsKey(parameter.ParameterType) 
+                    ? Substitutions[parameter.ParameterType](context) 
+                    : argument;
 
-                    object value;
-
-                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
-                    {
-                        value = context.CancellationToken;
-                    }
-                    else if (typeof (CancellationToken).IsAssignableFrom(parameter.ParameterType))
-                    {
-                        value = context.CancellationToken.ShutdownToken;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            value = argument != null
-                                ? JobHelper.FromJson(argument, parameter.ParameterType)
-                                : null;
-                        }
-                        catch (Exception jsonException)
-                        {
-                            if (parameter.ParameterType == typeof(object))
-                            {
-                                // Special case for handling object types, because string can not
-                                // be converted to object type.
-                                value = argument;
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-                                    value = converter.ConvertFromInvariantString(argument);
-                                }
-                                catch (Exception)
-                                {
-                                    throw jsonException;
-                                }
-                            }
-                        }
-                    }
-
-                    result.Add(value);
-                }
-
-                return result.ToArray();
+                result.Add(value);
             }
-            catch (Exception ex)
-            {
-                throw new JobPerformanceException(
-                    "An exception occurred during arguments deserialization.",
-                    ex);
-            }
+
+            return result.ToArray();
         }
     }
 }

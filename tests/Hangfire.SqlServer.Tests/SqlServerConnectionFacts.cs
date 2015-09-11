@@ -203,7 +203,7 @@ select scope_identity() as Id";
                 Assert.NotNull(result);
                 Assert.NotNull(result.Job);
                 Assert.Equal("Succeeded", result.State);
-                Assert.Equal("Arguments", result.Job.Arguments[0]);
+                Assert.Equal("Arguments", result.Job.Args[0]);
                 Assert.Null(result.LoadException);
                 Assert.True(DateTime.UtcNow.AddMinutes(-1) < result.CreatedAt);
                 Assert.True(result.CreatedAt < DateTime.UtcNow.AddMinutes(1));

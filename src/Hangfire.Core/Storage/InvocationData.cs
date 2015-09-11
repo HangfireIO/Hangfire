@@ -16,9 +16,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Hangfire.Common;
+using Hangfire.Server;
 
 namespace Hangfire.Storage
 {
@@ -55,7 +59,8 @@ namespace Hangfire.Storage
                         String.Join(", ", parameterTypes.Select(x => x.Name))));
                 }
 
-                var arguments = JobHelper.FromJson<string[]>(Arguments);
+                var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
+                var arguments = DeserializeArguments(method, serializedArguments);
 
                 return new Job(type, method, arguments);
             }
@@ -71,7 +76,98 @@ namespace Hangfire.Storage
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
                 JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.ToJson(job.Arguments));
+                JobHelper.ToJson(SerializeArguments(job.Args)));
+        }
+
+        internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
+        {
+            var serializedArguments = new List<string>(arguments.Count);
+            foreach (var argument in arguments)
+            {
+                string value = null;
+
+                if (argument != null)
+                {
+                    if (argument is DateTime)
+                    {
+                        value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        value = JobHelper.ToJson(argument);
+                    }
+                }
+
+                // Logic, related to optional parameters and their default values, 
+                // can be skipped, because it is impossible to omit them in 
+                // lambda-expressions (leads to a compile-time error).
+
+                serializedArguments.Add(value);
+            }
+
+            return serializedArguments.ToArray();
+        }
+
+        internal static object[] DeserializeArguments(MethodInfo methodInfo, string[] arguments)
+        {
+            var parameters = methodInfo.GetParameters();
+            var result = new List<object>(arguments.Length);
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                var argument = arguments[i];
+
+                object value;
+
+                if (CoreJobPerformanceProcess.Substitutions.ContainsKey(parameter.ParameterType))
+                {
+                    value = parameter.ParameterType.IsValueType
+                        ? Activator.CreateInstance(parameter.ParameterType)
+                        : null;
+                }
+                else
+                {
+                    value = DeserializeArgument(argument, parameter.ParameterType);
+                }
+
+                result.Add(value);
+            }
+
+            return result.ToArray();
+        }
+
+        private static object DeserializeArgument(string argument, Type type)
+        {
+            object value;
+            try
+            {
+                value = argument != null
+                    ? JobHelper.FromJson(argument, type)
+                    : null;
+            }
+            catch (Exception jsonException)
+            {
+                if (type == typeof (object))
+                {
+                    // Special case for handling object types, because string can not
+                    // be converted to object type.
+                    value = argument;
+                }
+                else
+                {
+                    try
+                    {
+                        var converter = TypeDescriptor.GetConverter(type);
+                        value = converter.ConvertFromInvariantString(argument);
+                    }
+                    catch (Exception)
+                    {
+                        throw jsonException;
+                    }
+                }
+            }
+            return value;
         }
 
         private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)

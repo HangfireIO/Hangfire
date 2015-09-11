@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Common
@@ -69,7 +70,7 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Same(_type, job.Type);
             Assert.Same(_method, job.Method);
-            Assert.Same(_arguments, job.Arguments);
+            Assert.True(_arguments.SequenceEqual(job.Arguments));
         }
 
         [Fact]
@@ -397,16 +398,13 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
+        public void Ctor_ThrowsJsonReaderException_OnArgumentsDeserializationFailure()
         {
 	        var type = typeof (JobFacts);
 	        var method = type.GetMethod("MethodWithDateTimeArgument");
-			var job = new Job(type, method, new []{ "sdfa" });
 
-            var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
-
-            Assert.NotNull(exception.InnerException);
+            Assert.Throws<JsonReaderException>(
+                () => new Job(type, method, new []{ JobHelper.ToJson("sdfa") }));
         }
 
         [Fact, StaticLock]
