@@ -29,12 +29,62 @@ using Hangfire.Server;
 namespace Hangfire.Common
 {
     /// <summary>
-    /// Represents the information about background invocation of a method.
+    /// Represents an action that can be marshalled to another process to
+    /// be performed.
     /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>The ability to serialize an action is the cornerstone of 
+    /// marshalling it outside of a current process boundaries. We are leaving 
+    /// behind all the tricky features, e.g. serializing lambdas or so, and 
+    /// considering a simple method call information as a such an action,
+    /// and using reflection to perform it.</para>
+    /// 
+    /// <para>Reflection-based method invocation requires an instance of
+    /// the <see cref="MethodInfo"/> class, the arguments and an instance of 
+    /// the type on which to invoke the method (unless it is static). Since
+    /// the same <see cref="MethodInfo"/> instance can be shared across
+    /// multiple types (especially when they are defined in interfaces),
+    /// we require to explicitly specify a corresponding <see cref="Type"/>
+    /// instance to avoid any ambiguities to uniquely determine which type
+    /// contains the method to be called.</para>
+    /// 
+    /// <para>The tuple Type/MethodInfo/Arguments can be easily serialized 
+    /// and deserialized back.</para>
+    /// </remarks>
+    /// 
+    /// <seealso cref="IJobPerformanceProcess"/>
+    /// 
+    /// <threadsafety static="true" instance="false" />
     public class Job
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Job"/> class with
+        /// Initializes a new instance of the <see cref="Job"/> class with the 
+        /// given method metadata and no arguments. Its declaring type will be
+        /// used to describe a type that contains the method.
+        /// </summary>
+        /// <param name="method">Method that supposed to be invoked.</param>
+        public Job([NotNull] MethodInfo method)
+            : this(method, new string[0])
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Job"/> class with the
+        /// given method metadata and specified list of serialized arguments.
+        /// The type that declares the method will be used to describe a type
+        /// that contains the method.
+        /// </summary>
+        /// <param name="method">Method that supposed to be invoked.</param>
+        /// <param name="arguments">Arguments that will be passed to a method invocation.</param>
+        public Job([NotNull] MethodInfo method, [NotNull] params string[] arguments)
+            : this(method.DeclaringType, method, arguments)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Job"/> class with the
+        /// given method metadata, 
         /// a given method data and an empty arguments array.
         /// </summary>
         /// 
@@ -47,7 +97,7 @@ namespace Hangfire.Common
         /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
-        public Job(Type type, MethodInfo method) 
+        public Job([NotNull] Type type, [NotNull] MethodInfo method)
             : this(type, method, new string[0])
         {
         }
@@ -67,7 +117,7 @@ namespace Hangfire.Common
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="arguments"/> argument is null.</exception>
         /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
-        public Job(Type type, MethodInfo method, string[] arguments)
+        public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] params string[] arguments)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
@@ -85,12 +135,25 @@ namespace Hangfire.Common
             Validate();
         }
 
+        /// <summary>
+        /// Gets the metadata of a type that contains a method that supposed 
+        /// to be invoked during the performance.
+        /// </summary>
+        [NotNull]
         public Type Type { get; private set; }
+
+        /// <summary>
+        /// Gets the metadata of a method that supposed to be invoked during
+        /// the performance.
+        /// </summary>
+        [NotNull]
         public MethodInfo Method { get; private set; }
 
         /// <summary>
-        /// Gets arguments array that will be passed to the method during its invocation.
+        /// Gets an array of arguments that will be passed to a method 
+        /// invocation during the performance.
         /// </summary>
+        [NotNull]
         public string[] Arguments { get; private set; }
 
         [Obsolete("This method is deprecated. Please use `CoreJobPerformanceProcess` or `JobPerformanceProcess` classes instead. Will be removed in 2.0.0.")]
@@ -178,8 +241,8 @@ namespace Hangfire.Common
             // Static methods can not be overridden in the derived classes, 
             // so we can take the method's declaring type.
             return new Job(
-                type, 
-                callExpression.Method, 
+                type,
+                callExpression.Method,
                 GetArguments(callExpression));
         }
 
@@ -201,8 +264,8 @@ namespace Hangfire.Common
             }
 
             return new Job(
-                typeof(T), 
-                callExpression.Method, 
+                typeof(T),
+                callExpression.Method,
                 GetArguments(callExpression));
         }
 
@@ -226,7 +289,7 @@ namespace Hangfire.Common
                 throw new NotSupportedException("Only public methods can be invoked in the background.");
             }
 
-            if (typeof (Task).IsAssignableFrom(Method.ReturnType))
+            if (typeof(Task).IsAssignableFrom(Method.ReturnType))
             {
                 throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
             }
@@ -294,32 +357,32 @@ namespace Hangfire.Common
 
                     object value;
 
-                    if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
+                    if (typeof(IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
                     {
                         value = cancellationToken;
                     }
                     else
                     {
-	                    try
-	                    {
-							value = argument != null
-								? JobHelper.FromJson(argument, parameter.ParameterType)
-								: null;
-	                    }
-	                    catch (Exception)
-	                    {
-		                    if (parameter.ParameterType == typeof (object))
-		                    {
-			                    // Special case for handling object types, because string can not
-			                    // be converted to object type.
-			                    value = argument;
-		                    }
-		                    else
-		                    {
-			                    var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
-			                    value = converter.ConvertFromInvariantString(argument);
-		                    }
-	                    }
+                        try
+                        {
+                            value = argument != null
+                                ? JobHelper.FromJson(argument, parameter.ParameterType)
+                                : null;
+                        }
+                        catch (Exception)
+                        {
+                            if (parameter.ParameterType == typeof(object))
+                            {
+                                // Special case for handling object types, because string can not
+                                // be converted to object type.
+                                value = argument;
+                            }
+                            else
+                            {
+                                var converter = TypeDescriptor.GetConverter(parameter.ParameterType);
+                                value = converter.ConvertFromInvariantString(argument);
+                            }
+                        }
                     }
 
                     result.Add(value);
@@ -390,11 +453,11 @@ namespace Hangfire.Common
                 {
                     if (argument is DateTime)
                     {
-                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                        value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-	                    value = JobHelper.ToJson(argument);
+                        value = JobHelper.ToJson(argument);
                     }
                 }
 
