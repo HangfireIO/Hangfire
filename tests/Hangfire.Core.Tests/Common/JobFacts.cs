@@ -120,7 +120,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void FromStaticExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
-            Assert.Throws<NotSupportedException>(
+            Assert.Throws<ArgumentException>(
                 () => Job.FromExpression(() => new JobFacts()));
         }
 
@@ -179,7 +179,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void FromInstanceExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
-            Assert.Throws<NotSupportedException>(
+            Assert.Throws<ArgumentException>(
                 () => Job.FromExpression<JobFacts>(x => new JobFacts()));
         }
 

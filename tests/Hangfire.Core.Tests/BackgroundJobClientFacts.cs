@@ -118,7 +118,7 @@ namespace Hangfire.Core.Tests
             _factory.Setup(x => x.Create(It.IsAny<CreateContext>()))
                 .Throws<InvalidOperationException>();
 
-            var exception = Assert.Throws<CreateJobFailedException>(
+            var exception = Assert.Throws<BackgroundJobClientException>(
                 () => client.Create(_job, _state.Object));
 
             Assert.NotNull(exception.InnerException);
