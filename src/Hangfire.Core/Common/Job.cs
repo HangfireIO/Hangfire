@@ -21,7 +21,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
-using Hangfire.Server;
 
 namespace Hangfire.Common
 {
@@ -44,27 +43,46 @@ namespace Hangfire.Common
     /// types (especially when they are defined in interfaces), we also allow 
     /// to specify a <see cref="Type"/> that contains the defined method 
     /// explicitly for better flexibility.</para>
-    ///  
-    /// <para>The tuple Type/MethodInfo/Arguments can be easily serialized 
-    /// and deserialized back.</para>
     /// 
-    /// <para>Marshalling imposes restrictions on a method that supposed to
-    /// be performed. Please see the following table to learn the details.
-    /// </para>
+    /// <para>Marshalling imposes restrictions on a method that should be 
+    /// performed:</para>
     /// 
+    /// <list type="bullet">
+    ///     <item>Method should be public.</item>
+    ///     <item>Method should not contain <see langword="out"/> and <see langword="ref"/> parameters.</item>
+    ///     <item>Method should not contain open generic parameters.</item>
+    /// </list>
     /// </remarks>
     /// 
-    /// <seealso cref="IBackgroundJobPerformer"/>
+    /// <example>
+    /// <para>The following example demonstrates the creation of a <see cref="Job"/>
+    /// type instances using expression trees. This is the recommended way of
+    /// creating jobs.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\Job.cs" region="Supported Methods" />
+    /// 
+    /// <para>The next example demonstrates unsupported methods. Any attempt
+    /// to create a job based on these methods fails with 
+    /// <see cref="NotSupportedException"/>.</para>
+    /// 
+    /// <code lang="cs" source="..\Samples\Job.cs" region="Unsupported Methods" />
+    /// </example>
+    /// 
+    /// <seealso cref="IBackgroundJobClient"/>
+    /// <seealso cref="Server.IBackgroundJobPerformer"/>
     /// 
     /// <threadsafety static="true" instance="false" />
     public partial class Job
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Job"/> class with the 
-        /// given method metadata and no arguments. Its declaring type will be
-        /// used to describe a type that contains the method.
+        /// Initializes a new instance of the <see cref="Job"/> class with the
+        /// metadata of a method with no arguments.
         /// </summary>
-        /// <param name="method">Method that supposed to be invoked.</param>
+        /// 
+        /// <param name="method">Method that should be invoked.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] MethodInfo method)
             : this(method, new object[0])
         {
@@ -72,59 +90,64 @@ namespace Hangfire.Common
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with the
-        /// given method metadata and specified list of arguments. The type 
-        /// that declares the method will be used to describe a type that 
-        /// contains the method.
+        /// metadata of a method and the given list of arguments.
         /// </summary>
-        /// <param name="method">Method that supposed to be invoked.</param>
-        /// <param name="arguments">Arguments that will be passed to a method invocation.</param>
-        public Job([NotNull] MethodInfo method, [NotNull] params object[] arguments)
+        /// 
+        /// <param name="method">Method that should be invoked.</param>
+        /// <param name="args">Arguments that will be passed to a method invocation.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
+        /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
+        public Job([NotNull] MethodInfo method, [NotNull] params object[] args)
             // ReSharper disable once AssignNullToNotNullAttribute
-            : this(method.DeclaringType, method, arguments)
+            : this(method.DeclaringType, method, args)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Job"/> class with the
-        /// given method metadata, 
-        /// a given method data and an empty arguments array.
+        /// type, metadata of a method with no arguments.
         /// </summary>
         /// 
-        /// <remarks>
-        /// Each argument should be serialized into a string using the 
-        /// <see cref="JobHelper.ToJson(object)"/> method of the <see cref="JobHelper"/> 
-        /// class.
-        /// </remarks>
+        /// <param name="type">Type that contains the given method.</param>
+        /// <param name="method">Method that should be invoked.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
-        /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="type"/> does not contain the given <paramref name="method"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] Type type, [NotNull] MethodInfo method)
             : this(type, method, new object[0])
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Job"/> class with
-        /// a given method data and arguments.
+        /// Initializes a new instance of the <see cref="Job"/> class with the 
+        /// type, metadata of a method and the given list of arguments.
         /// </summary>
         /// 
-        /// <remarks>
-        /// Each argument should be serialized into a string using the 
-        /// <see cref="JobHelper.ToJson(object)"/> method of the <see cref="JobHelper"/> 
-        /// class.
-        /// </remarks>
+        /// <param name="type">Type that contains the given method.</param>
+        /// <param name="method">Method that should be invoked.</param>
+        /// <param name="args">Arguments that should be passed during the method call.</param>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="type"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="method"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="args"/> argument is null.</exception>
-        /// <exception cref="ArgumentException">Method contains unassigned generic type parameters.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="type"/> does not contain the given <paramref name="method"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">Parameter/argument count mismatch.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] params object[] args)
         {
             if (type == null) throw new ArgumentNullException("type");
             if (method == null) throw new ArgumentNullException("method");
             if (args == null) throw new ArgumentNullException("args");
-
+            
             Validate(type, "type", method, "method", args.Length, "args");
 
             Type = type;
@@ -133,31 +156,26 @@ namespace Hangfire.Common
         }
 
         /// <summary>
-        /// Gets the metadata of a type that contains a method that supposed 
-        /// to be invoked during the performance.
+        /// Gets the metadata of a type that contains a method that should be 
+        /// invoked during the performance.
         /// </summary>
         [NotNull]
         public Type Type { get; private set; }
 
         /// <summary>
-        /// Gets the metadata of a method that supposed to be invoked during
-        /// the performance.
+        /// Gets the metadata of a method that should be invoked during the 
+        /// performance.
         /// </summary>
         [NotNull]
         public MethodInfo Method { get; private set; }
 
         /// <summary>
-        /// Gets a collection of arguments that will be passed to a method 
-        /// invocation during the performance.
+        /// Gets a read-only collection of arguments that Should be passed to a 
+        /// method invocation during the performance.
         /// </summary>
         [NotNull]
         public IReadOnlyList<object> Args { get; private set; }
-            
-        public override string ToString()
-        {
-            return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
-        }
-
+        
         internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
         {
             return useCache
@@ -180,12 +198,33 @@ namespace Hangfire.Common
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="Job"/> class on a 
-        /// basis of the given static method call expression.
+        /// Gets a new instance of the <see cref="Job"/> class based on the
+        /// given expression tree of a method call.
         /// </summary>
         /// 
-        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
+        /// <param name="methodCall">Expression tree of a method call.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type 
+        /// <see cref="MethodCallExpression"/>.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="methodCall"/> 
+        /// expression contains a method that is not supported.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="methodCall"/>
+        /// instance object of a given expression points to <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// <para>The <see cref="Job.Type"/> property of a returning job will 
+        /// point to the type of a given instance object when it is specified, 
+        /// or to the declaring type otherwise. All the arguments are evaluated 
+        /// using the expression compiler that uses caching where possible to 
+        /// decrease the performance penalty.</para>
+        /// 
+        /// <note>Instance object (e.g. <c>() => instance.Method()</c>) is 
+        /// <b>only used to obtain the type</b> for a job. It is not
+        /// serialized and not passed across the process boundaries.</note>
+        /// </remarks>
         public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
@@ -193,7 +232,7 @@ namespace Hangfire.Common
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
+                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
             }
 
             Type type;
@@ -203,7 +242,7 @@ namespace Hangfire.Common
                 var objectValue = GetExpressionValue(callExpression.Object);
                 if (objectValue == null)
                 {
-                    throw new InvalidOperationException("Expression object should not be null.");
+                    throw new InvalidOperationException("Expression object should be not null.");
                 }
 
                 type = objectValue.GetType();
@@ -212,9 +251,7 @@ namespace Hangfire.Common
             {
                 type = callExpression.Method.DeclaringType;
             }
-
-            // Static methods can not be overridden in the derived classes, 
-            // so we can take the method's declaring type.
+            
             return new Job(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 type,
@@ -223,24 +260,37 @@ namespace Hangfire.Common
         }
 
         /// <summary>
-        /// Creates a new instance of the <see cref="Job"/> class on a 
-        /// basis of the given instance method call expression.
+        /// Gets a new instance of the <see cref="Job"/> class based on the
+        /// given expression tree of an instance method call with explicit
+        /// type specification.
         /// </summary>
+        /// <typeparam name="TType">Explicit type that should be used on method call.</typeparam>
+        /// <param name="methodCall">Expression tree of a method call on <typeparamref name="TType"/>.</param>
         /// 
-        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> argument is null.</exception>
-        /// <exception cref="ArgumentException"><paramref name="methodCall"/> expression body does not contain <see cref="MethodCallExpression"/>.</exception>
-        public static Job FromExpression<T>([InstantHandle] Expression<Action<T>> methodCall)
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type 
+        /// <see cref="MethodCallExpression"/>.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="methodCall"/> 
+        /// expression contains a method that is not supported.</exception>
+        /// 
+        /// <remarks>
+        /// <para>All the arguments are evaluated using the expression compiler
+        /// that uses caching where possible to decrease the performance 
+        /// penalty.</para>
+        /// </remarks>
+        public static Job FromExpression<TType>([InstantHandle] Expression<Action<TType>> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException("methodCall");
 
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new NotSupportedException("Expression body should be of type `MethodCallExpression`");
+                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
             }
 
             return new Job(
-                typeof(T),
+                typeof(TType),
                 callExpression.Method,
                 GetExpressionValues(callExpression.Arguments));
         }

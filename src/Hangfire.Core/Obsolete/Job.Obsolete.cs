@@ -10,7 +10,6 @@ namespace Hangfire.Common
 {
     partial class Job
     {
-        /// <exclude />
         [Obsolete("Please use Job(Type, MethodInfo, object[]) ctor overload instead. Will be removed in 2.0.0.")]
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] string[] arguments)
         {

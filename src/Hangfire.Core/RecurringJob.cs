@@ -122,7 +122,7 @@ namespace Hangfire
 
         private static string GetRecurringJobId(Job job)
         {
-            return job.ToString();
+            return String.Format("{0}.{1}", job.Type.ToGenericTypeString(), job.Method.Name);
         }
     }
 }

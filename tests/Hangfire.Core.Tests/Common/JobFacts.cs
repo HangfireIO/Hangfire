@@ -480,17 +480,6 @@ namespace Hangfire.Core.Tests.Common
             Assert.True(cachedAttributes[0] is TestMethodAttribute);
         }
 
-        [Fact]
-        public void Jobs_With_Generics_Have_Different_Ids()
-        {
-            var job1 = Job.FromExpression<JobClassWrapper<Instance>>(x => x.Dispose());
-            var job2 = Job.FromExpression<JobClassWrapper<BrokenDispose>>(x => x.Dispose());
-            var id1 = job1.ToString();
-            var id2 = job2.ToString();
-
-            Assert.NotEqual(id1, id2);
-        }
-
         private static void PrivateMethod()
         {
         }
