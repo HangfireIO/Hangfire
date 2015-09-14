@@ -10,16 +10,14 @@ namespace Hangfire.Core.Tests.Server
     public class ServerWatchdogFacts
     {
         private readonly Mock<IStorageConnection> _connection;
-        private readonly ServerWatchdogOptions _options;
         private readonly BackgroundProcessContextMock _context;
+        private readonly TimeSpan _checkInterval;
+        private readonly TimeSpan _serverTimeout;
 
         public ServerWatchdogFacts()
         {
-            
-            _options = new ServerWatchdogOptions
-            {
-                CheckInterval = Timeout.InfiniteTimeSpan // To check that it exits by cancellation token
-            };
+            _checkInterval = Timeout.InfiniteTimeSpan;
+            _serverTimeout = TimeSpan.FromSeconds(5);
 
             _context = new BackgroundProcessContextMock();
             _context.CancellationTokenSource.Cancel();
@@ -28,22 +26,15 @@ namespace Hangfire.Core.Tests.Server
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
         }
 
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenOptionsArgumentIsNull()
-        {
-            Assert.Throws<ArgumentNullException>(
-                () => new ServerWatchdog(null));
-        }
-
         [PossibleHangingFact]
         public void Execute_DelegatesRemovalToStorageConnection()
         {
             _connection.Setup(x => x.RemoveTimedOutServers(It.IsAny<TimeSpan>())).Returns(1);
-            var watchdog = new ServerWatchdog(_options);
+            var watchdog = new ServerWatchdog(_checkInterval, _serverTimeout);
 
 			watchdog.Execute(_context.Object);
 
-            _connection.Verify(x => x.RemoveTimedOutServers(_options.ServerTimeout));
+            _connection.Verify(x => x.RemoveTimedOutServers(_serverTimeout));
             _connection.Verify(x => x.Dispose(), Times.Once);
         }
     }

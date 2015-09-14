@@ -12,14 +12,14 @@ namespace Hangfire.Core.Tests.Server
     {
         private readonly string[] _queues = { "queue" };
         private readonly Mock<JobStorage> _storage;
-        private readonly List<IServerProcess> _processes;
+        private readonly List<IBackgroundProcess> _processes;
         private readonly Dictionary<string, object> _properties;
         private readonly Mock<IStorageConnection> _connection;
 
         public BackgroundProcessingServerFacts()
         {
             _storage = new Mock<JobStorage>();
-            _processes = new List<IServerProcess>();
+            _processes = new List<IBackgroundProcess>();
             _properties = new Dictionary<string, object> { { "Queues", _queues } };
 
             _connection = new Mock<IStorageConnection>();
@@ -66,11 +66,11 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_StartsAllTheComponents_InLoop_AndWaitsForThem()
+        public void Execute_StartsAllTheProcesses_InLoop_AndWaitsForThem()
         {
             // Arrange
-            var component1 = CreateProcessMock<IServerComponent>();
-            component1.Setup(x => x.Execute(It.IsAny<CancellationToken>())).Callback(() => Thread.Sleep(10));
+            var component1 = CreateProcessMock<IBackgroundProcess>();
+            component1.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => Thread.Sleep(10));
             var component2 = CreateProcessMock<IBackgroundProcess>();
             component2.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Callback(() => Thread.Sleep(10));
 
@@ -78,7 +78,7 @@ namespace Hangfire.Core.Tests.Server
             using (CreateServer()) { Thread.Sleep(100); }
 
             // Assert
-            component1.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.AtLeast(5));
+            component1.Verify(x => x.Execute(It.IsAny<BackgroundProcessContext>()), Times.AtLeast(5));
             component2.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.AtLeast(5));
         }
 
@@ -88,7 +88,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         private Mock<T> CreateProcessMock<T>()
-            where T : class, IServerProcess
+            where T : class, IBackgroundProcess
         {
             var mock = new Mock<T>();
             _processes.Add(mock.Object);

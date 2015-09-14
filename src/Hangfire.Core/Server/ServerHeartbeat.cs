@@ -18,16 +18,11 @@ using System;
 
 namespace Hangfire.Server
 {
-    public class ServerHeartbeat : IBackgroundProcess
+    internal class ServerHeartbeat : IBackgroundProcess
     {
         public static readonly TimeSpan DefaultHeartbeatInterval = TimeSpan.FromSeconds(5);
 
         private readonly TimeSpan _heartbeatInterval;
-
-        public ServerHeartbeat()
-            : this(DefaultHeartbeatInterval)
-        {
-        }
 
         public ServerHeartbeat(TimeSpan heartbeatInterval)
         {

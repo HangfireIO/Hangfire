@@ -1,4 +1,5 @@
-﻿using Hangfire.Server;
+﻿using System;
+using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
@@ -21,7 +22,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_UpdateServerHeartbeat()
         {
-            var server = new ServerHeartbeat();
+            var server = new ServerHeartbeat(ServerHeartbeat.DefaultHeartbeatInterval);
 
 			server.Execute(_context.Object);
 

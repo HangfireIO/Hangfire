@@ -1,5 +1,5 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -18,16 +18,19 @@ using System;
 
 namespace Hangfire.Server
 {
-    [Obsolete("Please use `BackgroundJobServerOptions` properties instead. Will be removed in 2.0.0.")]
-    public class ServerWatchdogOptions
+    public sealed class BackgroundProcessingServerOptions
     {
-        public ServerWatchdogOptions()
+        public BackgroundProcessingServerOptions()
         {
+            ShutdownTimeout = BackgroundProcessingServer.DefaultShutdownTimeout;
+            HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
+            ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
-            CheckInterval = ServerWatchdog.DefaultCheckInterval;
         }
 
+        public TimeSpan ShutdownTimeout { get; set; }
+        public TimeSpan HeartbeatInterval { get; set; }
+        public TimeSpan ServerCheckInterval { get; set; }
         public TimeSpan ServerTimeout { get; set; }
-        public TimeSpan CheckInterval { get; set; }
     }
 }

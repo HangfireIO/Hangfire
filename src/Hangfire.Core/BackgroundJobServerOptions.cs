@@ -39,8 +39,8 @@ namespace Hangfire
             ShutdownTimeout = BackgroundProcessingServer.DefaultShutdownTimeout;
             SchedulePollingInterval = DelayedJobScheduler.DefaultPollingInterval;
             HeartbeatInterval = ServerHeartbeat.DefaultHeartbeatInterval;
-
-            ServerWatchdogOptions = new ServerWatchdogOptions();
+            ServerTimeout = ServerWatchdog.DefaultServerTimeout;
+            ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             
             FilterProvider = JobFilterProviders.Providers;
             Activator = JobActivator.Current;
@@ -75,7 +75,10 @@ namespace Hangfire
         public TimeSpan ShutdownTimeout { get; set; }
         public TimeSpan SchedulePollingInterval { get; set; }
         public TimeSpan HeartbeatInterval { get; set; }
+        public TimeSpan ServerTimeout { get; set; }
+        public TimeSpan ServerCheckInterval { get; set; }
 
+        [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
 
         public IJobFilterProvider FilterProvider { get; set; }

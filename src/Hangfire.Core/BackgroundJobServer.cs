@@ -83,9 +83,8 @@ namespace Hangfire
 
             _options = options;
 
-            var processes = new List<IServerProcess>();
-            processes.AddRange(GetProcesses());
-            processes.AddRange(storage.GetComponents());
+            var processes = new List<IBackgroundProcess>();
+            processes.AddRange(GetRequiredProcesses());
             processes.AddRange(additionalProcesses);
 
             var properties = new Dictionary<string, object>
@@ -99,11 +98,12 @@ namespace Hangfire
 
             storage.WriteOptionsToLog(Logger);
             options.WriteToLog(Logger);
-
-            _processingServer = new BackgroundProcessingServer(storage, processes, properties)
-            {
-                ShutdownTimeout = options.ShutdownTimeout
-            };
+            
+            _processingServer = new BackgroundProcessingServer(
+                storage, 
+                processes, 
+                properties, 
+                GetProcessingServerOptions());
         }
 
         public void Dispose()
@@ -112,9 +112,9 @@ namespace Hangfire
             Logger.Info("Hangfire Server stopped.");
         }
 
-        private IEnumerable<IServerProcess> GetProcesses()
+        private IEnumerable<IBackgroundProcess> GetRequiredProcesses()
         {
-            var processes = new List<IServerProcess>();
+            var processes = new List<IBackgroundProcess>();
 
             for (var i = 0; i < _options.WorkerCount; i++)
             {
@@ -123,13 +123,26 @@ namespace Hangfire
                     new JobPerformanceProcess(_options.FilterProvider), 
                     new StateChangeProcess(_options.FilterProvider)));
             }
-
-            processes.Add(new ServerHeartbeat(_options.HeartbeatInterval));
-            processes.Add(new ServerWatchdog(_options.ServerWatchdogOptions));
+            
             processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, new StateChangeProcess(_options.FilterProvider)));
             processes.Add(new RecurringJobScheduler(new JobCreationProcess(_options.FilterProvider)));
 
             return processes;
+        }
+
+        private BackgroundProcessingServerOptions GetProcessingServerOptions()
+        {
+            return new BackgroundProcessingServerOptions
+            {
+                ShutdownTimeout = _options.ShutdownTimeout,
+                HeartbeatInterval = _options.HeartbeatInterval,
+                ServerCheckInterval = _options.ServerWatchdogOptions != null
+                    ? _options.ServerWatchdogOptions.CheckInterval
+                    : _options.ServerCheckInterval,
+                ServerTimeout = _options.ServerWatchdogOptions != null
+                    ? _options.ServerWatchdogOptions.ServerTimeout
+                    : _options.ServerTimeout
+            };
         }
 
         [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]

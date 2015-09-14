@@ -19,28 +19,27 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    public class ServerWatchdog : IBackgroundProcess
+    internal class ServerWatchdog : IBackgroundProcess
     {
+        public static readonly TimeSpan DefaultCheckInterval = TimeSpan.FromMinutes(5);
+        public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromMinutes(5);
+
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly ServerWatchdogOptions _options;
+        private readonly TimeSpan _checkInterval;
+        private readonly TimeSpan _serverTimeout;
 
-        public ServerWatchdog()
-            : this(new ServerWatchdogOptions())
+        public ServerWatchdog(TimeSpan checkInterval, TimeSpan serverTimeout)
         {
-        }
-
-        public ServerWatchdog(ServerWatchdogOptions options)
-        {
-            if (options == null) throw new ArgumentNullException("options");
-            _options = options;
+            _checkInterval = checkInterval;
+            _serverTimeout = serverTimeout;
         }
 
         public void Execute(BackgroundProcessContext context)
         {
             using (var connection = context.Storage.GetConnection())
             {
-                var serversRemoved = connection.RemoveTimedOutServers(_options.ServerTimeout);
+                var serversRemoved = connection.RemoveTimedOutServers(_serverTimeout);
                 if (serversRemoved != 0)
                 {
                     Logger.Info(String.Format(
@@ -49,12 +48,12 @@ namespace Hangfire.Server
                 }
             }
 
-            context.Sleep(_options.CheckInterval);
+            context.Sleep(_checkInterval);
         }
 
         public override string ToString()
         {
-            return "Server Watchdog";
+            return GetType().Name;
         }
     }
 }
