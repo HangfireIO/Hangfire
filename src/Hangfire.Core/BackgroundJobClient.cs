@@ -28,15 +28,22 @@ namespace Hangfire
     /// <see cref="IBackgroundJobClient"/> interface.
     /// </summary>
     /// 
-    /// <remarks><see cref="BackgroundJobClient"/> class uses the 
-    /// <see cref="IBackgroundJobFactory"/> interface for creating background 
-    /// jobs, and the <see cref="IBackgroundJobStateChanger"/> interface for 
-    /// changing their states. Please see these types and their implementations 
-    /// to learn the details.</remarks>
+    /// <remarks>
+    /// <para>This class uses the <see cref="IBackgroundJobFactory"/> interface 
+    /// for creating background jobs and the <see cref="IBackgroundJobStateChanger"/> 
+    /// interface for changing their states. Please see documentation for those 
+    /// types and their implementations to learn the details.</para>
+    /// 
+    /// <note type="warning">
+    /// Despite the fact that instance methods of this class are thread-safe,
+    /// most implementations of the <see cref="IState"/> interface are <b>neither
+    /// thread-safe, nor immutable</b>. Please create a new instance of a state 
+    /// class for each operation to avoid race conditions and unexpected side 
+    /// effects.
+    /// </note>
+    /// </remarks>
     /// 
     /// <threadsafety static="true" instance="true" />
-    /// 
-    /// <seealso cref="IBackgroundJobClient"/>
     public class BackgroundJobClient : IBackgroundJobClient
     {
         private readonly JobStorage _storage;
@@ -44,10 +51,14 @@ namespace Hangfire
         private readonly IBackgroundJobStateChanger _stateChanger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with the default connection and default global 
-        /// <see cref="BackgroundJobFactory"/> instance.
+        /// Initializes a new instance of the <see cref="BackgroundJobClient"/>
+        /// class with the storage from a global configuration.
         /// </summary>
+        /// 
+        /// <remarks>
+        /// Please see the <see cref="GlobalConfiguration"/> class for the
+        /// details regarding the global configuration.
+        /// </remarks>
         public BackgroundJobClient()
             : this(JobStorage.Current)
         {
@@ -55,9 +66,12 @@ namespace Hangfire
         
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/>
-        /// class with a specified storage and the default global
-        /// <see cref="BackgroundJobFactory"/> instance.
+        /// class with the specified storage.
         /// </summary>
+        /// 
+        /// <param name="storage">Job storage to use for background jobs.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
         public BackgroundJobClient([NotNull] JobStorage storage)
             : this(storage, new BackgroundJobFactory(), new BackgroundJobStateChanger())
         {
@@ -65,11 +79,16 @@ namespace Hangfire
         
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with the specified job storage and job creation factory.
+        /// with the specified storage, background job factory and state changer.
         /// </summary>
         /// 
-        /// <exception cref="ArgumentNullException"><paramref name="storage"/> argument is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="factory"/> argument is null.</exception>
+        /// <param name="storage">Job storage to use for background jobs.</param>
+        /// <param name="factory">Factory to create background jobs.</param>
+        /// <param name="stateChanger">State changer to change states of background jobs.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="storage"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
         public BackgroundJobClient(
             [NotNull] JobStorage storage,
             [NotNull] IBackgroundJobFactory factory,
