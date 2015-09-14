@@ -18,6 +18,7 @@ using System;
 
 namespace Hangfire
 {
+    /// <exclude />
     [Obsolete("Please use `AppBuilderExtensions` class instead. Will be removed in version 2.0.0.")]
     public static class BootstrapperConfigurationExtensions
     {

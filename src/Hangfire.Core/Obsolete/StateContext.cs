@@ -20,6 +20,7 @@ using Hangfire.Common;
 
 namespace Hangfire.States
 {
+    /// <exclude />
     [Obsolete("This class is here for compatibility reasons. Will be removed in 2.0.0.")]
     public abstract class StateContext
     {

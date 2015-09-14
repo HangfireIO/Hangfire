@@ -18,6 +18,7 @@ using System;
 
 namespace Hangfire.Server
 {
+    /// <exclude />
     [Obsolete("Please use `BackgroundJobServerOptions` properties instead. Will be removed in 2.0.0.")]
     public class ServerWatchdogOptions
     {

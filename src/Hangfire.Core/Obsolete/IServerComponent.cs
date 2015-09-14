@@ -19,6 +19,7 @@ using System.Threading;
 
 namespace Hangfire.Server
 {
+    /// <exclude />
     [Obsolete("Please use the `IBackgroundProcess` interface where you can. Will be removed in 2.0.0.")]
     public interface IServerComponent : IServerProcess
     {

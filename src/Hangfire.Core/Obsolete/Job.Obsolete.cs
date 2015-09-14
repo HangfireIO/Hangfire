@@ -10,6 +10,7 @@ namespace Hangfire.Common
 {
     partial class Job
     {
+        /// <exclude />
         [Obsolete("Please use Job(Type, MethodInfo, object[]) ctor overload instead. Will be removed in 2.0.0.")]
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] string[] arguments)
         {
@@ -24,14 +25,12 @@ namespace Hangfire.Common
             Args = InvocationData.DeserializeArguments(method, arguments);
         }
 
-        /// <summary>
-        /// Gets an array of serialized arguments that will be passed to a 
-        /// method invocation during the performance.
-        /// </summary>
+        /// <exclude />
         [NotNull]
         [Obsolete("Please use `Args` property instead to avoid unnecessary serializations/deserializations. Will be deleted in 2.0.0.")]
         public string[] Arguments { get { return InvocationData.SerializeArguments(Args); } }
 
+        /// <exclude />
         [Obsolete("This method is deprecated. Please use `CoreBackgroundJobPerformer` or `BackgroundJobPerformer` classes instead. Will be removed in 2.0.0.")]
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {

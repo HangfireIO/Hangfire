@@ -19,6 +19,7 @@ using Hangfire.Dashboard;
 
 namespace Hangfire
 {
+    /// <exclude />
     /// <summary>
     /// Represents a configuration class for Hangfire components that
     /// is used by the <see cref="OwinBootstrapper"/> class.
