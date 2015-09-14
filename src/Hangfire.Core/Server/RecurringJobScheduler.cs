@@ -100,7 +100,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Recurring Job Scheduler";
+            return GetType().Name;
         }
 
         private void TryScheduleJob(

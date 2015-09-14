@@ -100,7 +100,7 @@ delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;",
 
         public override string ToString()
         {
-            return "SQL Records Expiration Manager";
+            return GetType().ToString();
         }
     }
 }

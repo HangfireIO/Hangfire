@@ -145,7 +145,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Worker #" + _workerId.Substring(0, 8);
+            return String.Format("{0} #{1}", GetType().Name, _workerId.Substring(0, 8));
         }
 
         private IState PerformJob(string jobId, IStorageConnection connection, IJobCancellationToken token)

@@ -41,7 +41,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Server Heartbeat";
+            return GetType().Name;
         }
     }
 }

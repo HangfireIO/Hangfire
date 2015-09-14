@@ -67,7 +67,7 @@ namespace Hangfire.SqlServer
 
         public override string ToString()
         {
-            return "SQL Counter Table Aggregator";
+            return GetType().ToString();
         }
 
         private static string GetAggregationQuery()
