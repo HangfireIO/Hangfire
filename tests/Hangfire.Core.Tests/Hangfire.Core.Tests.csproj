@@ -104,7 +104,7 @@
     <Compile Include="RetryAttributeFacts.cs" />
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
     <Compile Include="Server\BackgroundProcessContextFacts.cs" />
-    <Compile Include="Server\BackgroundServerFacts.cs" />
+    <Compile Include="Server\BackgroundProcessingServerFacts.cs" />
     <Compile Include="Server\JobPerformanceProcessFacts.cs" />
     <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
     <Compile Include="Server\CoreJobPerformanceProcessFacts.cs" />

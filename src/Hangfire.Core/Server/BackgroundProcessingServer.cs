@@ -9,7 +9,7 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    public sealed class BackgroundServer : IBackgroundProcess, IDisposable
+    public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
 
@@ -19,26 +19,26 @@ namespace Hangfire.Server
         private readonly IEnumerable<IServerProcess> _processes;
         private readonly Task _bootstrapTask;
 
-        public BackgroundServer([NotNull] IEnumerable<IServerProcess> processes)
+        public BackgroundProcessingServer([NotNull] IEnumerable<IServerProcess> processes)
             : this(JobStorage.Current, processes)
         {
         }
 
-        public BackgroundServer(
+        public BackgroundProcessingServer(
             [NotNull] IEnumerable<IServerProcess> processes,
             [NotNull] IDictionary<string, object> properties)
             : this(JobStorage.Current, processes, properties)
         {
         }
 
-        public BackgroundServer(
+        public BackgroundProcessingServer(
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IServerProcess> processes)
             : this(storage, processes, new Dictionary<string, object>())
         {
         }
 
-        public BackgroundServer(
+        public BackgroundProcessingServer(
             [NotNull] JobStorage storage, 
             [NotNull] IEnumerable<IServerProcess> processes,
             [NotNull] IDictionary<string, object> properties)
@@ -100,7 +100,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Background Server";
+            return GetType().Name;
         }
 
         private static IServerProcess WrapProcess(IServerProcess process)

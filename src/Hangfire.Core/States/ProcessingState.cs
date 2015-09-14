@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Common;
+using Hangfire.Server;
 
 namespace Hangfire.States
 {
@@ -49,7 +50,7 @@ namespace Hangfire.States
         public DateTime StartedAt { get; private set; }
 
         /// <summary>
-        /// Gets the <i>instance id</i> of an instance of the <see cref="Server.BackgroundServer"/>
+        /// Gets the <i>instance id</i> of an instance of the <see cref="BackgroundProcessingServer"/>
         /// class, whose <see cref="Server.Worker"/> background process started to process an 
         /// <i>enqueued</i> background job.
         /// </summary>

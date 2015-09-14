@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class BackgroundServerFacts
+    public class BackgroundProcessingServerFacts
     {
         private readonly string[] _queues = { "queue" };
         private readonly Mock<JobStorage> _storage;
@@ -16,7 +16,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Dictionary<string, object> _properties;
         private readonly Mock<IStorageConnection> _connection;
 
-        public BackgroundServerFacts()
+        public BackgroundProcessingServerFacts()
         {
             _storage = new Mock<JobStorage>();
             _processes = new List<IServerProcess>();
@@ -30,7 +30,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundServer(null, _processes, _properties));
+                () => new BackgroundProcessingServer(null, _processes, _properties));
 
             Assert.Equal("storage", exception.ParamName);
         }
@@ -39,7 +39,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenProcessesArgumentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundServer(_storage.Object, null, _properties));
+                () => new BackgroundProcessingServer(_storage.Object, null, _properties));
 
             Assert.Equal("processes", exception.ParamName);
         }
@@ -48,7 +48,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenPropertiesArgumentIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new BackgroundServer(_storage.Object, _processes, null));
+                () => new BackgroundProcessingServer(_storage.Object, _processes, null));
             
             Assert.Equal("properties", exception.ParamName);
         }
@@ -82,9 +82,9 @@ namespace Hangfire.Core.Tests.Server
             component2.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.AtLeast(5));
         }
 
-        private BackgroundServer CreateServer()
+        private BackgroundProcessingServer CreateServer()
         {
-            return new BackgroundServer(_storage.Object, _processes, _properties);
+            return new BackgroundProcessingServer(_storage.Object, _processes, _properties);
         }
 
         private Mock<T> CreateProcessMock<T>()

@@ -135,7 +135,7 @@ namespace Hangfire.Server
     /// for background processing. You may use them to customize your processing pipeline
     /// by implementing the <see cref="IServerFilter"/> interface or define your own 
     /// continuously-running background processes by implementing the <see cref="IBackgroundProcess"/> 
-    /// as well as create completely custom instances of <see cref="BackgroundServer"/>.
+    /// as well as create completely custom instances of <see cref="BackgroundProcessingServer"/>.
     /// </summary>
     [CompilerGenerated]
     class NamespaceDoc

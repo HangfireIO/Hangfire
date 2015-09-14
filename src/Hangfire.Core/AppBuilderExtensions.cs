@@ -129,8 +129,8 @@ namespace Hangfire
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class AppBuilderExtensions
     {
-        // Prevent GC to collect background servers in hosts that do not
-        // support shutdown notifications.
+        // Prevent GC to collect background processing servers in hosts that do
+        // not support shutdown notifications.
         private static readonly ConcurrentBag<BackgroundJobServer> Servers
             = new ConcurrentBag<BackgroundJobServer>();
 

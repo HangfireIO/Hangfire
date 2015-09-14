@@ -30,7 +30,7 @@ namespace Hangfire
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly BackgroundJobServerOptions _options;
-        private readonly IDisposable _server;
+        private readonly IDisposable _processingServer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -100,7 +100,7 @@ namespace Hangfire
             storage.WriteOptionsToLog(Logger);
             options.WriteToLog(Logger);
 
-            _server = new BackgroundServer(storage, processes, properties)
+            _processingServer = new BackgroundProcessingServer(storage, processes, properties)
             {
                 ShutdownTimeout = options.ShutdownTimeout
             };
@@ -108,7 +108,7 @@ namespace Hangfire
 
         public void Dispose()
         {
-            _server.Dispose();
+            _processingServer.Dispose();
             Logger.Info("Hangfire Server stopped.");
         }
 
