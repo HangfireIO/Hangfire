@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -9,7 +8,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class SchedulePollerFacts
+    public class DelayedJobScheduler
     {
         private const string JobId = "id";
         private readonly Mock<IStorageConnection> _connection;
@@ -18,7 +17,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IDisposable> _distributedLock;
 
-        public SchedulePollerFacts()
+        public DelayedJobScheduler()
         {
             _context = new BackgroundProcessContextMock();
             _context.CancellationTokenSource.Cancel();
@@ -43,7 +42,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SchedulePoller(Timeout.InfiniteTimeSpan, null));
+                () => new Hangfire.Server.DelayedJobScheduler(Timeout.InfiniteTimeSpan, null));
 
             Assert.Equal("process", exception.ParamName);
         }
@@ -103,9 +102,9 @@ namespace Hangfire.Core.Tests.Server
             _distributedLock.Verify(x => x.Dispose());
         }
 
-        private SchedulePoller CreateScheduler()
+        private Hangfire.Server.DelayedJobScheduler CreateScheduler()
         {
-            return new SchedulePoller(Timeout.InfiniteTimeSpan, _process.Object);
+            return new Hangfire.Server.DelayedJobScheduler(Timeout.InfiniteTimeSpan, _process.Object);
         }
     }
 }

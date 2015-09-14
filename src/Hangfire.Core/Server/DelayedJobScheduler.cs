@@ -21,7 +21,7 @@ using Hangfire.States;
 
 namespace Hangfire.Server
 {
-    public class SchedulePoller : IBackgroundProcess
+    public class DelayedJobScheduler : IBackgroundProcess
     {
         public static readonly TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(15);
 
@@ -33,17 +33,17 @@ namespace Hangfire.Server
 
         private int _enqueuedCount;
 
-        public SchedulePoller() 
+        public DelayedJobScheduler() 
             : this(DefaultPollingInterval)
         {
         }
 
-        public SchedulePoller(TimeSpan pollingInterval)
+        public DelayedJobScheduler(TimeSpan pollingInterval)
             : this(pollingInterval, new StateChangeProcess())
         {
         }
 
-        public SchedulePoller(TimeSpan pollingInterval, IStateChangeProcess process)
+        public DelayedJobScheduler(TimeSpan pollingInterval, IStateChangeProcess process)
         {
             if (process == null) throw new ArgumentNullException("process");
 
@@ -72,7 +72,7 @@ namespace Hangfire.Server
 
         public override string ToString()
         {
-            return "Schedule Poller";
+            return GetType().Name;
         }
 
         private bool EnqueueNextScheduledJob(BackgroundProcessContext context)

@@ -341,7 +341,7 @@
     <Compile Include="States\StateMachine.cs" />
     <Compile Include="States\StateChangeContext.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
-    <Compile Include="Server\SchedulePoller.cs" />
+    <Compile Include="Server\DelayedJobScheduler.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />
     <Compile Include="Server\ServerWatchdogOptions.cs" />
     <Compile Include="Server\IServerExceptionFilter.cs" />

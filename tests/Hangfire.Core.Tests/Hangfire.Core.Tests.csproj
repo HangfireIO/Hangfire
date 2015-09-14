@@ -111,7 +111,7 @@
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
-    <Compile Include="Server\SchedulePollerFacts.cs" />
+    <Compile Include="Server\DelayedJobScheduler.cs" />
     <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
     <Compile Include="Server\AutomaticRetryProcessFacts.cs" />

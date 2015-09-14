@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Common;
+using Hangfire.Server;
 using Hangfire.Storage;
 using Newtonsoft.Json;
 
@@ -25,7 +26,7 @@ namespace Hangfire.States
     /// <summary>
     /// Defines the <i>intermediate</i> state of a background job when it is placed 
     /// on a schedule to be moved to the <see cref="EnqueuedState"/> in the future 
-    /// by <see cref="Server.SchedulePoller"/> background process.
+    /// by <see cref="DelayedJobScheduler"/> background process.
     /// </summary>
     /// 
     /// <remarks>
@@ -44,7 +45,7 @@ namespace Hangfire.States
     /// 
     /// <seealso cref="O:Hangfire.BackgroundJob.Schedule">BackgroundJob.Schedule Overload</seealso>
     /// <seealso cref="O:Hangfire.BackgroundJobClientExtensions.Schedule">BackgroundJobClientExtensions.Schedule Overload</seealso>
-    /// <seealso cref="Server.SchedulePoller"/>
+    /// <seealso cref="DelayedJobScheduler"/>
     /// <seealso cref="EnqueuedState"/>
     /// 
     /// <threadsafety static="true" instance="false"/>
