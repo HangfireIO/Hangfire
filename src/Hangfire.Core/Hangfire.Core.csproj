@@ -81,7 +81,7 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\CoreBackgroundJobFactory.cs" />
-    <Compile Include="Common\Job.Obsolete.cs" />
+    <Compile Include="Obsolete\Job.Obsolete.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="Dashboard\OwinRequestExtensions.cs" />
     <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
@@ -344,11 +344,11 @@
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="Server\DelayedJobScheduler.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />
-    <Compile Include="Server\ServerWatchdogOptions.cs" />
+    <Compile Include="Obsolete\ServerWatchdogOptions.cs" />
     <Compile Include="Server\IServerExceptionFilter.cs" />
     <Compile Include="Client\CreatedContext.cs" />
     <Compile Include="Client\CreatingContext.cs" />
-    <Compile Include="Server\IServerComponent.cs" />
+    <Compile Include="Obsolete\IServerComponent.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
     <Compile Include="Server\IBackgroundJobPerformer.cs" />
     <Compile Include="Server\PerformContext.cs" />
@@ -401,7 +401,7 @@
     <Compile Include="States\ScheduledState.cs" />
     <Compile Include="States\ApplyStateContext.cs" />
     <Compile Include="States\ElectStateContext.cs" />
-    <Compile Include="States\StateContext.cs" />
+    <Compile Include="Obsolete\StateContext.cs" />
     <Compile Include="States\BackgroundJobStateChanger.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="StatisticsHistoryAttribute.cs" />
