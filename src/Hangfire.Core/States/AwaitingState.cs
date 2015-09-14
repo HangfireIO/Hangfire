@@ -34,6 +34,8 @@ namespace Hangfire.States
     /// <para>Background job in <see cref="AwaitingState"/> is referred as a
     /// <b>continuation</b> of a background job with <see cref="ParentId"/>.</para>
     /// </remarks>
+    /// 
+    /// <threadsafety static="true" instance="false"/>
     public class AwaitingState : IState
     {
         private static readonly TimeSpan DefaultExpiration = TimeSpan.FromDays(365);

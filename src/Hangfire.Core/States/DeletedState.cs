@@ -49,7 +49,7 @@ namespace Hangfire.States
     /// <seealso cref="O:Hangfire.BackgroundJobClientExtensions.Delete">BackgroundJobClientExtensions.Delete Overload</seealso>
     /// <seealso cref="IBackgroundJobClient.ChangeState" />
     /// 
-    /// <threadsafety static="true" instance="true" />
+    /// <threadsafety static="true" instance="false" />
     public class DeletedState : IState
     {
         /// <summary>

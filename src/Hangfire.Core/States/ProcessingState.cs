@@ -25,6 +25,8 @@ namespace Hangfire.States
     /// Defines the <i>intermediate</i> state of a background job when a 
     /// <see cref="Hangfire.Server.Worker"/> has started to process it.
     /// </summary>
+    /// 
+    /// <threadsafety static="true" instance="false"/>
     public class ProcessingState : IState
     {
         /// <summary>
