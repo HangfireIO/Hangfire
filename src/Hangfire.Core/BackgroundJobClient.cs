@@ -22,9 +22,14 @@ using Hangfire.States;
 namespace Hangfire
 {
     /// <summary>
-    /// Represents a Hangfire Client API. Contains methods related
-    /// to the job creation feature.
+    /// Provides methods for creating all the types of background jobs and 
+    /// changing their states. Represents a default implementation of the 
+    /// <see cref="IBackgroundJobClient"/> interface.
     /// </summary>
+    /// 
+    /// <threadsafety static="true" instance="false" />
+    /// 
+    /// <seealso cref="IBackgroundJobClient"/>
     public class BackgroundJobClient : IBackgroundJobClient
     {
         private readonly JobStorage _storage;

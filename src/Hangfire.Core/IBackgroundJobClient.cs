@@ -23,17 +23,25 @@ using Hangfire.States;
 namespace Hangfire
 {
     /// <summary>
-    /// Represents a Hangfire Client API. Contains methods related
-    /// to the job creation feature. See the default implementation
-    /// in the <see cref="BackgroundJobClient"/> class.
+    /// Provides methods for creating all the types of background jobs and 
+    /// changing their states.
     /// </summary>
+    /// 
+    /// <remarks>
+    /// <para><i>Background job</i> is a job in a certain state that can be 
+    /// processed outside of the process in which it was created.
+    /// </para>
+    /// </remarks>
+    /// 
+    /// <seealso cref="BackgroundJobClient"/>
     public interface IBackgroundJobClient
     {
         /// <summary>
-        /// Creates a given job in a specified state in the storage.
+        /// Creates a background job based on a given information in a
+        /// specified state.
         /// </summary>
         /// 
-        /// <param name="job">Background job that will be created in a storage.</param>
+        /// <param name="job">Job that will be created.</param>
         /// <param name="state">The initial state of the job.</param>
         /// <returns>The unique identifier of the created job.</returns>
         /// 

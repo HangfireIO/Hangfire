@@ -32,21 +32,25 @@ namespace Hangfire.Common
     /// <remarks>
     /// <para>The ability to serialize an action is the cornerstone of 
     /// marshalling it outside of a current process boundaries. We are leaving 
-    /// behind all the tricky features, e.g. serializing lambdas or so, and 
-    /// considering a simple method call information as a such an action,
-    /// and using reflection to perform it.</para>
+    /// behind all the tricky features, e.g. serializing lambdas with their
+    /// closures or so, and considering a simple method call information as 
+    /// a such an action, and using reflection to perform it.</para>
     /// 
     /// <para>Reflection-based method invocation requires an instance of
     /// the <see cref="MethodInfo"/> class, the arguments and an instance of 
-    /// the type on which to invoke the method (unless it is static). Since
-    /// the same <see cref="MethodInfo"/> instance can be shared across
-    /// multiple types (especially when they are defined in interfaces),
-    /// we require to explicitly specify a corresponding <see cref="Type"/>
-    /// instance to avoid any ambiguities to uniquely determine which type
-    /// contains the method to be called.</para>
-    /// 
+    /// the type on which to invoke the method (unless it is static). Since the
+    /// same <see cref="MethodInfo"/> instance can be shared across multiple 
+    /// types (especially when they are defined in interfaces), we also allow 
+    /// to specify a <see cref="Type"/> that contains the defined method 
+    /// explicitly for better flexibility.</para>
+    ///  
     /// <para>The tuple Type/MethodInfo/Arguments can be easily serialized 
     /// and deserialized back.</para>
+    /// 
+    /// <para>Marshalling imposes restrictions on a method that supposed to
+    /// be performed. Please see the following table to learn the details.
+    /// </para>
+    /// 
     /// </remarks>
     /// 
     /// <seealso cref="Server.IJobPerformanceProcess"/>
@@ -249,9 +253,14 @@ namespace Hangfire.Common
             int argumentCount,
             [InvokerParameterName] string argumentParameterName)
         {
+            if (!method.IsPublic)
+            {
+                throw new NotSupportedException("Only public methods can be invoked in the background.");
+            }
+
             if (method.ContainsGenericParameters)
             {
-                throw new ArgumentException("Job method can not contain unassigned generic type parameters.", methodParameterName);
+                throw new NotSupportedException("Job method can not contain unassigned generic type parameters.");
             }
 
             if (method.DeclaringType == null)
@@ -264,11 +273,6 @@ namespace Hangfire.Common
                 throw new ArgumentException(
                     String.Format("The type `{0}` must be derived from the `{1}` type.", method.DeclaringType, type),
                     typeParameterName);
-            }
-
-            if (!method.IsPublic)
-            {
-                throw new NotSupportedException("Only public methods can be invoked in the background.");
             }
 
             if (typeof(Task).IsAssignableFrom(method.ReturnType))
