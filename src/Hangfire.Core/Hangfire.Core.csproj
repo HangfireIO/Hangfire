@@ -78,6 +78,7 @@
     <Compile Include="App_Packages\StackTraceFormatter\StackTraceFormatter.cs" />
     <Compile Include="App_Packages\StackTraceParser\StackTraceParser.cs" />
     <Compile Include="AutomaticRetryAttribute.cs" />
+    <Compile Include="BackgroundJobClientException.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\CoreBackgroundJobFactory.cs" />
@@ -291,7 +292,7 @@
     <Compile Include="Client\IBackgroundJobFactory.cs" />
     <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />
-    <Compile Include="Client\CreateJobFailedException.cs" />
+    <Compile Include="Obsolete\CreateJobFailedException.cs" />
     <Compile Include="IJobCancellationToken.cs" />
     <Compile Include="DisableConcurrentExecutionAttribute.cs" />
     <Compile Include="IBackgroundJobClient.cs" />

@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
@@ -27,7 +28,13 @@ namespace Hangfire
     /// <see cref="IBackgroundJobClient"/> interface.
     /// </summary>
     /// 
-    /// <threadsafety static="true" instance="false" />
+    /// <remarks><see cref="BackgroundJobClient"/> class uses the 
+    /// <see cref="IBackgroundJobFactory"/> interface for creating background 
+    /// jobs, and the <see cref="IBackgroundJobStateChanger"/> interface for 
+    /// changing their states. Please see these types and their implementations 
+    /// to learn the details.</remarks>
+    /// 
+    /// <threadsafety static="true" instance="true" />
     /// 
     /// <seealso cref="IBackgroundJobClient"/>
     public class BackgroundJobClient : IBackgroundJobClient
@@ -47,26 +54,26 @@ namespace Hangfire
         }
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with a specified storage and the default global
+        /// Initializes a new instance of the <see cref="BackgroundJobClient"/>
+        /// class with a specified storage and the default global
         /// <see cref="BackgroundJobFactory"/> instance.
         /// </summary>
-        public BackgroundJobClient(JobStorage storage)
+        public BackgroundJobClient([NotNull] JobStorage storage)
             : this(storage, new BackgroundJobFactory(), new BackgroundJobStateChanger())
         {
         }
         
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with a specified job storage and job creation factory.
+        /// with the specified job storage and job creation factory.
         /// </summary>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> argument is null.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="factory"/> argument is null.</exception>
         public BackgroundJobClient(
-            JobStorage storage,
-            IBackgroundJobFactory factory,
-            IBackgroundJobStateChanger stateChanger)
+            [NotNull] JobStorage storage,
+            [NotNull] IBackgroundJobFactory factory,
+            [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (storage == null) throw new ArgumentNullException("storage");
             if (factory == null) throw new ArgumentNullException("factory");
@@ -95,26 +102,33 @@ namespace Hangfire
             }
             catch (Exception ex)
             {
-                throw new CreateJobFailedException("Job creation factory has failed. See inner exception for details", ex);
+                throw new BackgroundJobClientException("Background job creation failed. See inner exception for details.", ex);
             }
         }
 
         /// <inheritdoc />
-        public bool ChangeState(string jobId, IState state, string fromState)
+        public bool ChangeState(string jobId, IState state, string expectedState)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (state == null) throw new ArgumentNullException("state");
 
-            using (var connection = _storage.GetConnection())
+            try
             {
-                var appliedState = _stateChanger.ChangeState(new StateChangeContext(
-                    _storage, 
-                    connection, 
-                    jobId, 
-                    state, 
-                    fromState != null ? new[] { fromState } : null));
+                using (var connection = _storage.GetConnection())
+                {
+                    var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                        _storage,
+                        connection,
+                        jobId,
+                        state,
+                        expectedState != null ? new[] { expectedState } : null));
 
-                return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
+                    return appliedState != null && appliedState.Name.Equals(state.Name, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new BackgroundJobClientException("State change of a background job failed. See inner exception for details", ex);
             }
         }
     }
