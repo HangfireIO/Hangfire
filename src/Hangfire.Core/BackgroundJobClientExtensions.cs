@@ -22,6 +22,12 @@ using Hangfire.States;
 
 namespace Hangfire
 {
+    /// <summary>
+    /// Provides extension methods for the <see cref="IBackgroundJobClient"/>
+    /// interface to simplify the creation of fire-and-forget jobs, delayed 
+    /// jobs, continuations and other background jobs in well-known states.
+    /// Also allows to re-queue and delete existing background jobs.
+    /// </summary>
     public static class BackgroundJobClientExtensions
     {
         /// <summary>

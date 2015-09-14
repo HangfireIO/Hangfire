@@ -19,8 +19,20 @@ using Hangfire.Client;
 
 namespace Hangfire
 {
+    /// <summary>
+    /// The exception that is thrown when an instance of the class that 
+    /// implements the <see cref="IBackgroundJobClient"/> interface is unable
+    /// to perform an operation due to an error.
+    /// </summary>
     public class BackgroundJobClientException : CreateJobFailedException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundJobClientException"/>
+        /// class with a specified error message and a reference to the inner exception
+        /// that is the cause of this exception.
+        /// </summary>
+        /// <param name="message">The error message that explains the reason for the exception.</param>
+        /// <param name="inner">The exception that is the cause of this exception, not null.</param>
         public BackgroundJobClientException(string message, Exception inner) : base(message, inner)
         {
         }

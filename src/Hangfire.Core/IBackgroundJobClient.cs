@@ -34,7 +34,7 @@ namespace Hangfire
     public interface IBackgroundJobClient
     {
         /// <summary>
-        /// Creates a new background job in the specified state.
+        /// Creates a new background job in a specified state.
         /// </summary>
         /// 
         /// <param name="job">Job that should be processed in background.</param>
@@ -66,15 +66,15 @@ namespace Hangfire
         string Create([NotNull] Job job, [NotNull] IState state);
 
         /// <summary>
-        /// Attempts to change a state of a background job with the given
-        /// identifier to the specified one.
+        /// Attempts to change a state of a background job with a given
+        /// identifier to a specified one.
         /// </summary>
         /// 
         /// <param name="jobId">Identifier of background job, whose state should be changed.</param>
         /// <param name="state">New state for a background job.</param>
         /// <param name="expectedState">Expected state assertion, or <see langword="null"/> if unneeded.</param>
         /// 
-        /// <returns><see langword="true"/>, if the <b>given</b> state was applied
+        /// <returns><see langword="true"/>, if a <b>given</b> state was applied
         /// successfully otherwise <see langword="false"/>.</returns>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="jobId"/> is null.</exception>
