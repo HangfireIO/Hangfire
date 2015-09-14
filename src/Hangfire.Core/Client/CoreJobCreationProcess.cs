@@ -28,11 +28,11 @@ namespace Hangfire.Client
 
         public CoreJobCreationProcess([NotNull] IStateMachine stateMachine)
         {
-            if (stateMachine == null) throw new ArgumentNullException("StateChangeProcess");
+            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             _stateMachine = stateMachine;
         }
 
-        public string Run(CreateContext context)
+        public BackgroundJob Run(CreateContext context)
         {
             var parameters = context.Parameters.ToDictionary(x => x.Key, x => JobHelper.ToJson(x.Value));
 
@@ -43,6 +43,8 @@ namespace Hangfire.Client
                 createdAt,
                 TimeSpan.FromHours(1));
 
+            var backgroundJob = new BackgroundJob(jobId, context.Job, createdAt);
+
             if (context.InitialState != null)
             {
                 using (var transaction = context.Connection.CreateWriteTransaction())
@@ -51,7 +53,7 @@ namespace Hangfire.Client
                         context.Storage,
                         context.Connection,
                         transaction,
-                        new BackgroundJob(jobId, context.Job, createdAt),
+                        backgroundJob,
                         context.InitialState,
                         null);
 
@@ -61,7 +63,7 @@ namespace Hangfire.Client
                 }
             }
 
-            return jobId;
+            return backgroundJob;
         }
     }
 }

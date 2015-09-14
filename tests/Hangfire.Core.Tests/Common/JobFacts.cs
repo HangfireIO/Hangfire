@@ -95,10 +95,8 @@ namespace Hangfire.Core.Tests.Common
         {
             var method = _type.GetMethod("GenericMethod");
 
-            var exception = Assert.Throws<ArgumentException>(
+            Assert.Throws<NotSupportedException>(
                 () => new Job(_type, method, new[] { "hello!" }));
-
-            Assert.Equal("method", exception.ParamName);
         }
 
         [Fact]

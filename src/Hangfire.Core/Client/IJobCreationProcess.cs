@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using Hangfire.Annotations;
-using Hangfire.States;
 
 namespace Hangfire.Client
 {
@@ -30,6 +29,6 @@ namespace Hangfire.Client
         /// Runs the process of job creation with the specified context.
         /// </summary>
         [CanBeNull]
-        string Run([NotNull] CreateContext context);
+        BackgroundJob Run([NotNull] CreateContext context);
     }
 }

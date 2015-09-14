@@ -49,7 +49,7 @@ namespace Hangfire.Client
             _innerProcess = innerProcess;
         }
 
-        public string Run(CreateContext context)
+        public BackgroundJob Run(CreateContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
 
@@ -58,7 +58,7 @@ namespace Hangfire.Client
             try
             {
                 var createdContext = CreateWithFilters(context, filterInfo.ClientFilters);
-                return createdContext.JobId;
+                return createdContext.BackgroundJob;
             }
             catch (Exception ex)
             {
@@ -86,8 +86,8 @@ namespace Hangfire.Client
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                var jobId = _innerProcess.Run(context);
-                return new CreatedContext(context, jobId, false, null);
+                var backgroundJob = _innerProcess.Run(context);
+                return new CreatedContext(context, backgroundJob, false, null);
             };
 
             var thunk = filters.Reverse().Aggregate(continuation,

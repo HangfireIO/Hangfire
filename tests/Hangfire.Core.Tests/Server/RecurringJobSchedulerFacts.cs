@@ -23,6 +23,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<IScheduleInstant> _instant;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IJobCreationProcess> _process;
+        private readonly BackgroundJobMock _backgroundJobMock;
 
         public RecurringJobSchedulerFacts()
         {
@@ -54,8 +55,10 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.GetAllEntriesFromHash(String.Format("recurring-job:{0}", RecurringJobId)))
                 .Returns(_recurringJob);
 
+            _backgroundJobMock = new BackgroundJobMock();
+
             _process = new Mock<IJobCreationProcess>();
-            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns("job-id");
+            _process.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns(_backgroundJobMock.Object);
         }
 
         [Fact]
@@ -125,7 +128,7 @@ namespace Hangfire.Core.Tests.Server
             _connection.Verify(x => x.SetRangeInHash(
                 jobKey,
                 It.Is<Dictionary<string, string>>(rj =>
-                    rj.ContainsKey("LastJobId") && rj["LastJobId"] == "job-id")));
+                    rj.ContainsKey("LastJobId") && rj["LastJobId"] == _backgroundJobMock.Id)));
 
             _connection.Verify(x => x.SetRangeInHash(
                 jobKey,

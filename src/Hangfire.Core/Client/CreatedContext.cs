@@ -29,19 +29,23 @@ namespace Hangfire.Client
     {
         internal CreatedContext(
             [NotNull] CreateContext context, 
-            [CanBeNull] string jobId,
+            [CanBeNull] BackgroundJob backgroundJob,
             bool canceled, 
             [CanBeNull] Exception exception)
             : base(context)
         {
-            JobId = jobId;
+            BackgroundJob = backgroundJob;
             Canceled = canceled;
             Exception = exception;
         }
 
         [CanBeNull]
-        public string JobId { get; private set; }
+        [Obsolete("Please use `BackgroundJob` property instead. Will be removed in 2.0.0.")]
+        public string JobId { get { return BackgroundJob != null ? BackgroundJob.Id : null; } }
 
+        [CanBeNull]
+        public BackgroundJob BackgroundJob { get; private set; }
+        
         public override IDictionary<string, object> Parameters
         {
             get
@@ -68,7 +72,7 @@ namespace Hangfire.Client
         /// </summary>
         public bool ExceptionHandled { get; set; }
 
-        public void SetJobParameter(string name, object value)
+        public void SetJobParameter([NotNull] string name, object value)
         {
             if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
 

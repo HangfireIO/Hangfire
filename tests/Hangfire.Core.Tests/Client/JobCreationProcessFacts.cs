@@ -13,20 +13,20 @@ namespace Hangfire.Core.Tests.Client
 {
     public class JobCreationProcessFacts
     {
-        private const string JobId = "some-job";
         private readonly Mock<CreateContext> _context;
         private readonly IList<object> _filters;
         private readonly Mock<IJobFilterProvider> _filterProvider;
         private readonly Mock<IJobCreationProcess> _innerProcess;
+        private readonly BackgroundJobMock _backgroundJob;
 
         public JobCreationProcessFacts()
         {
             var storage = new Mock<JobStorage>();
             var connection = new Mock<IStorageConnection>();
-            var job = Job.FromExpression(() => TestMethod());
             var state = new Mock<IState>();
+            _backgroundJob = new BackgroundJobMock();
 
-            _context = new Mock<CreateContext>(storage.Object, connection.Object, job, state.Object)
+            _context = new Mock<CreateContext>(storage.Object, connection.Object, _backgroundJob.Job, state.Object)
             {
                 CallBase = true
             };
@@ -35,9 +35,9 @@ namespace Hangfire.Core.Tests.Client
             _filterProvider = new Mock<IJobFilterProvider>();
             _filterProvider.Setup(x => x.GetFilters(It.IsNotNull<Job>())).Returns(
                 _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
-
+            
             _innerProcess = new Mock<IJobCreationProcess>();
-            _innerProcess.Setup(x => x.Run((_context.Object))).Returns(JobId);
+            _innerProcess.Setup(x => x.Run((_context.Object))).Returns(_backgroundJob.Object);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Hangfire.Core.Tests.Client
 
             var result = process.Run(_context.Object);
 
-            Assert.Equal(JobId, result);
+            Assert.Equal(_backgroundJob.Id, result.Id);
         }
 
         [Fact]

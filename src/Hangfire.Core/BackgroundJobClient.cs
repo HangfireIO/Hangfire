@@ -93,7 +93,9 @@ namespace Hangfire
                 using (var connection = _storage.GetConnection())
                 {
                     var context = new CreateContext(_storage, connection, job, state);
-                    return _creationProcess.Run(context);
+                    var backroundJob = _creationProcess.Run(context);
+
+                    return backroundJob != null ? backroundJob.Id : null;
                 }
             }
             catch (Exception ex)

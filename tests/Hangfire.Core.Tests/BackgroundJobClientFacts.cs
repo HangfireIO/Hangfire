@@ -25,10 +25,13 @@ namespace Hangfire.Core.Tests
 
             _stateChangeProcess = new Mock<IStateChangeProcess>();
             
-            _creationProcess = new Mock<IJobCreationProcess>();
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns("Mock");
             _job = Job.FromExpression(() => Method());
+
+            _creationProcess = new Mock<IJobCreationProcess>();
+            _creationProcess.Setup(x => x.Run(It.IsAny<CreateContext>()))
+                .Returns(new BackgroundJob("some-job", _job, DateTime.UtcNow));
         }
 
         [Fact]
@@ -101,7 +104,6 @@ namespace Hangfire.Core.Tests
         [Fact]
         public void CreateJob_ReturnsJobIdentifier()
         {
-            _creationProcess.Setup(x => x.Run(It.IsAny<CreateContext>())).Returns("some-job");
             var client = CreateClient();
 
             var id = client.Create(_job, _state.Object);

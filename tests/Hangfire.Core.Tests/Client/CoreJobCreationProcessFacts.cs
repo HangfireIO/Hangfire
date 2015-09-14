@@ -37,7 +37,7 @@ namespace Hangfire.Core.Tests.States
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new CoreJobCreationProcess(null));
 
-            Assert.Equal("StateChangeProcess", exception.ParamName);
+            Assert.Equal("stateMachine", exception.ParamName);
         }
         
         [Fact]
@@ -75,7 +75,7 @@ namespace Hangfire.Core.Tests.States
         public void CreateJob_ReturnsNewJobId()
         {
             var process = CreateProcess();
-            Assert.Equal(JobId, process.Run(_context.Object));
+            Assert.Equal(JobId, process.Run(_context.Object).Id);
         }
 
         private CoreJobCreationProcess CreateProcess()
