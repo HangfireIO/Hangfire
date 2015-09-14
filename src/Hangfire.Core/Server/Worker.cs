@@ -31,32 +31,33 @@ namespace Hangfire.Server
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly string[] _queues;
-        private readonly IJobPerformanceProcess _performanceProcess;
-        private readonly IStateChangeProcess _stateChangeProcess;
         private readonly string _workerId;
+        private readonly string[] _queues;
 
+        private readonly IBackgroundJobPerformer _performer;
+        private readonly IBackgroundJobStateChanger _stateChanger;
+        
         public Worker() : this(EnqueuedState.DefaultQueue)
         {
         }
 
         public Worker([NotNull] params string[] queues)
-            : this(queues, new JobPerformanceProcess(), new StateChangeProcess())
+            : this(queues, new BackgroundJobPerformer(), new BackgroundJobStateChanger())
         {
         }
 
         public Worker(
             [NotNull] IEnumerable<string> queues,
-            [NotNull] IJobPerformanceProcess performanceProcess, 
-            [NotNull] IStateChangeProcess stateChangeProcess)
+            [NotNull] IBackgroundJobPerformer performer, 
+            [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (queues == null) throw new ArgumentNullException("queues");
-            if (performanceProcess == null) throw new ArgumentNullException("performanceProcess");
-            if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
+            if (performer == null) throw new ArgumentNullException("performer");
+            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
             
             _queues = queues.ToArray();
-            _performanceProcess = performanceProcess;
-            _stateChangeProcess = stateChangeProcess;
+            _performer = performer;
+            _stateChanger = stateChanger;
             _workerId = Guid.NewGuid().ToString();
         }
 
@@ -76,7 +77,7 @@ namespace Hangfire.Server
                     {
                         var processingState = new ProcessingState(context.ServerId, _workerId);
 
-                        var appliedState = _stateChangeProcess.ChangeState(new StateChangeContext(
+                        var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                             context.Storage,
                             connection,
                             fetchedJob.JobId,
@@ -111,7 +112,7 @@ namespace Hangfire.Server
                     if (state != null)
                     {
                         // Ignore return value, because we should not do anything when current state is not Processing.
-                        _stateChangeProcess.ChangeState(new StateChangeContext(
+                        _stateChanger.ChangeState(new StateChangeContext(
                             context.Storage,
                             connection,
                             fetchedJob.JobId, 
@@ -170,7 +171,7 @@ namespace Hangfire.Server
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
-                var result = _performanceProcess.Run(performContext);
+                var result = _performer.Perform(performContext);
                 duration.Stop();
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);

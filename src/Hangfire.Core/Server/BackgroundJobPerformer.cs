@@ -22,40 +22,40 @@ using Hangfire.Common;
 
 namespace Hangfire.Server
 {
-    public class JobPerformanceProcess : IJobPerformanceProcess
+    public class BackgroundJobPerformer : IBackgroundJobPerformer
     {
         private readonly IJobFilterProvider _filterProvider;
-        private readonly IJobPerformanceProcess _innerProcess;
+        private readonly IBackgroundJobPerformer _innerPerformer;
 
-        public JobPerformanceProcess()
+        public BackgroundJobPerformer()
             : this(JobFilterProviders.Providers)
         {
         }
 
-        public JobPerformanceProcess([NotNull] IJobFilterProvider filterProvider)
+        public BackgroundJobPerformer([NotNull] IJobFilterProvider filterProvider)
             : this(filterProvider, JobActivator.Current)
         {
         }
 
-        public JobPerformanceProcess(
+        public BackgroundJobPerformer(
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] JobActivator activator)
-            : this(filterProvider, new CoreJobPerformanceProcess(activator))
+            : this(filterProvider, new CoreBackgroundJobPerformer(activator))
         {
         }
 
-        internal JobPerformanceProcess(
+        internal BackgroundJobPerformer(
             [NotNull] IJobFilterProvider filterProvider, 
-            [NotNull] IJobPerformanceProcess innerProcess)
+            [NotNull] IBackgroundJobPerformer innerPerformer)
         {
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
+            if (innerPerformer == null) throw new ArgumentNullException("innerPerformer");
 
             _filterProvider = filterProvider;
-            _innerProcess = innerProcess;
+            _innerPerformer = innerPerformer;
         }
 
-        public object Run(PerformContext context)
+        public object Perform(PerformContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
 
@@ -95,7 +95,7 @@ namespace Hangfire.Server
             var preContext = new PerformingContext(context);
             Func<PerformedContext> continuation = () =>
             {
-                result = _innerProcess.Run(context);
+                result = _innerPerformer.Perform(context);
                 return new PerformedContext(context, result, false, null);
             };
 

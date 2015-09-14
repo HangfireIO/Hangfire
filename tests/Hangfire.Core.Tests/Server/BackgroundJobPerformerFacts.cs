@@ -9,17 +9,17 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class JobPerformanceProcessFacts
+    public class BackgroundJobPerformerFacts
     {
         private readonly PerformContextMock _context;
-        private readonly Mock<IJobPerformanceProcess> _innerProcess;
+        private readonly Mock<IBackgroundJobPerformer> _innerPerformer;
         private readonly IList<object> _filters;
         private readonly Mock<IJobFilterProvider> _filterProvider;
 
-        public JobPerformanceProcessFacts()
+        public BackgroundJobPerformerFacts()
         {
             _context = new PerformContextMock();
-            _innerProcess = new Mock<IJobPerformanceProcess>();
+            _innerPerformer = new Mock<IBackgroundJobPerformer>();
 
             _filters = new List<object>();
             _filterProvider = new Mock<IJobFilterProvider>();
@@ -31,27 +31,27 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenFilterProvider_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobPerformanceProcess(null, _innerProcess.Object));
+                () => new BackgroundJobPerformer(null, _innerPerformer.Object));
 
             Assert.Equal("filterProvider", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenInnerProcess_IsNull()
+        public void Ctor_ThrowsAnException_WhenInnerPerformer_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new JobPerformanceProcess(_filterProvider.Object, (IJobPerformanceProcess)null));
+                () => new BackgroundJobPerformer(_filterProvider.Object, (IBackgroundJobPerformer)null));
 
-            Assert.Equal("innerProcess", exception.ParamName);
+            Assert.Equal("innerPerformer", exception.ParamName);
         }
 
         [Fact]
         public void Run_ThrowsAnException_WhenContextIsNull()
         {
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => process.Run(null));
+                () => performer.Perform(null));
 
             Assert.Equal("context", exception.ParamName);
         }
@@ -59,11 +59,11 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Run_CallsTheRunMethod_OfInnerProcess()
         {
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
-            _innerProcess.Verify(x => x.Run(_context.Object), Times.Once);
+            _innerPerformer.Verify(x => x.Perform(_context.Object), Times.Once);
         }
 
         [Fact]
@@ -71,14 +71,14 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var filter = CreateFilter<IServerFilter>();
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Returns("Returned value");
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert
             filter.Verify(
@@ -90,14 +90,14 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var filter = CreateFilter<IServerFilter>();
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Returns("Returned value");
 
             // Act
-            var result = process.Run(_context.Object);
+            var result = performer.Perform(_context.Object);
 
             // Assert
             Assert.Equal("Returned value", result);
@@ -107,14 +107,14 @@ namespace Hangfire.Core.Tests.Server
         public void Run_DoesNotCatchExceptions()
         {
             // Arrange
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws<InvalidOperationException>();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => process.Run(_context.Object));
+            Assert.Throws<InvalidOperationException>(() => performer.Perform(_context.Object));
         }
 
         [Fact]
@@ -123,14 +123,14 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             var filter = CreateFilter<IServerExceptionFilter>();
 
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws<InvalidOperationException>();
             
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => process.Run(_context.Object));
+            Assert.Throws<InvalidOperationException>(() => performer.Perform(_context.Object));
 
             filter.Verify(x => x.OnServerException(
                 It.IsNotNull<ServerExceptionContext>()));
@@ -146,14 +146,14 @@ namespace Hangfire.Core.Tests.Server
             filter2.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>())).InSequence();
             filter1.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>())).InSequence();
 
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws<InvalidOperationException>();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            Assert.Throws<InvalidOperationException>(() => process.Run(_context.Object));
+            Assert.Throws<InvalidOperationException>(() => performer.Perform(_context.Object));
 
             // Assert - see the `SequenceAttribute` class.
         }
@@ -162,18 +162,18 @@ namespace Hangfire.Core.Tests.Server
         public void Run_EatsException_WhenItWasHandlerByFilter()
         {
             // Arrange
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws<InvalidOperationException>();
 
             var filter = CreateFilter<IServerExceptionFilter>();
             filter.Setup(x => x.OnServerException(It.IsAny<ServerExceptionContext>()))
                 .Callback((ServerExceptionContext x) => x.ExceptionHandled = true);
             
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
-            Assert.DoesNotThrow(() => process.Run(_context.Object));
+            Assert.DoesNotThrow(() => performer.Perform(_context.Object));
         }
 
         [Fact, Sequence]
@@ -185,17 +185,17 @@ namespace Hangfire.Core.Tests.Server
             filter.Setup(x => x.OnPerforming(It.IsNotNull<PerformingContext>()))
                 .InSequence();
 
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .InSequence();
 
             filter.Setup(x => x.OnPerformed(It.IsNotNull<PerformedContext>()))
                 .InSequence();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert - see the `SequenceAttribute` class.
         }
@@ -212,10 +212,10 @@ namespace Hangfire.Core.Tests.Server
             innerFilter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>())).InSequence();
             outerFilter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>())).InSequence();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert - see the `SequenceAttribute` class.
         }
@@ -229,13 +229,13 @@ namespace Hangfire.Core.Tests.Server
             filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Callback((PerformingContext x) => x.Canceled = true);
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert
-            _innerProcess.Verify(x => x.Run(_context.Object), Times.Never);
+            _innerPerformer.Verify(x => x.Perform(_context.Object), Times.Never);
 
             filter.Verify(x => x.OnPerformed(It.IsAny<PerformedContext>()), Times.Never);
         }
@@ -250,10 +250,10 @@ namespace Hangfire.Core.Tests.Server
             innerFilter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Callback((PerformingContext context) => context.Canceled = true);
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert
             outerFilter.Verify(x => x.OnPerformed(It.Is<PerformedContext>(context => context.Canceled)));
@@ -268,16 +268,16 @@ namespace Hangfire.Core.Tests.Server
             filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Throws<InvalidOperationException>();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
             var exception = Assert.Throws<JobPerformanceException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
 
             // Assert
             Assert.IsType<InvalidOperationException>(exception.InnerException);
 
-            _innerProcess.Verify(x => x.Run(It.IsAny<PerformContext>()), Times.Never);
+            _innerPerformer.Verify(x => x.Perform(It.IsAny<PerformContext>()), Times.Never);
 
             filter.Verify(x => x.OnPerformed(It.IsAny<PerformedContext>()), Times.Never);
         }
@@ -289,14 +289,14 @@ namespace Hangfire.Core.Tests.Server
             var filter = CreateFilter<IServerFilter>();
 
             var exception = new InvalidOperationException();
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws(exception);
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            Assert.Throws<InvalidOperationException>(() => process.Run(_context.Object));
+            Assert.Throws<InvalidOperationException>(() => performer.Perform(_context.Object));
 
             // Assert
             filter.Verify(x => x.OnPerformed(It.Is<PerformedContext>(
@@ -311,14 +311,14 @@ namespace Hangfire.Core.Tests.Server
             var innerFilter = CreateFilter<IServerFilter>();
 
             var exception = new InvalidOperationException();
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws(exception);
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            Assert.Throws<InvalidOperationException>(() => process.Run(_context.Object));
+            Assert.Throws<InvalidOperationException>(() => performer.Perform(_context.Object));
 
             outerFilter.Verify(x => x.OnPerformed(It.Is<PerformedContext>(context => context.Exception == exception)));
         }
@@ -330,17 +330,17 @@ namespace Hangfire.Core.Tests.Server
             var filter = CreateFilter<IServerFilter>();
 
             var exception = new InvalidOperationException();
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws(exception);
 
             filter.Setup(x => x.OnPerformed(It.Is<PerformedContext>(context => context.Exception == exception)))
                 .Callback((PerformedContext x) => x.ExceptionHandled = true);
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
-            Assert.DoesNotThrow(() => process.Run(_context.Object));
+            Assert.DoesNotThrow(() => performer.Perform(_context.Object));
         }
 
         [Fact]
@@ -350,17 +350,17 @@ namespace Hangfire.Core.Tests.Server
             var outerFilter = CreateFilter<IServerFilter>();
             var innerFilter = CreateFilter<IServerFilter>();
 
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws<InvalidOperationException>();
 
             innerFilter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
                 .Callback((PerformedContext x) => x.ExceptionHandled = true);
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            Assert.DoesNotThrow(() => process.Run(_context.Object));
+            Assert.DoesNotThrow(() => performer.Perform(_context.Object));
 
             // Assert
             outerFilter.Verify(x => x.OnPerformed(It.Is<PerformedContext>(context => context.Exception != null)));
@@ -374,11 +374,11 @@ namespace Hangfire.Core.Tests.Server
             filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
                 .Throws<InvalidOperationException>();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
             var exception = Assert.Throws<JobPerformanceException>(() => 
-                process.Run(_context.Object));
+                performer.Perform(_context.Object));
 
             Assert.IsType<InvalidOperationException>(exception.InnerException);
         }
@@ -391,15 +391,15 @@ namespace Hangfire.Core.Tests.Server
             filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
                 .Throws<InvalidOperationException>();
 
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws<ArgumentNullException>();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
             var exception = Assert.Throws<JobPerformanceException>(() =>
-                process.Run(_context.Object));
+                performer.Perform(_context.Object));
 
             Assert.IsType<InvalidOperationException>(exception.InnerException);
         }
@@ -408,16 +408,16 @@ namespace Hangfire.Core.Tests.Server
         public void Run_ServerFiltersAreNotInvoked_OnOperationCanceledException()
         {
             // Arrange
-            _innerProcess
-                .Setup(x => x.Run(_context.Object))
+            _innerPerformer
+                .Setup(x => x.Perform(_context.Object))
                 .Throws<OperationCanceledException>();
 
             var filter = CreateFilter<IServerExceptionFilter>();
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
             Assert.Throws<OperationCanceledException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
 
             // Assert
             filter.Verify(
@@ -433,11 +433,11 @@ namespace Hangfire.Core.Tests.Server
             filter.Setup(x => x.OnPerforming(It.IsAny<PerformingContext>()))
                 .Throws<OperationCanceledException>();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
             Assert.Throws<OperationCanceledException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
         }
 
         [Fact]
@@ -448,20 +448,20 @@ namespace Hangfire.Core.Tests.Server
             filter.Setup(x => x.OnPerformed(It.IsAny<PerformedContext>()))
                 .Throws<OperationCanceledException>();
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
             Assert.Throws<OperationCanceledException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
         }
 
         public static void Method()
         {
         }
 
-        private JobPerformanceProcess CreateProcess()
+        private BackgroundJobPerformer CreatePerformer()
         {
-            return new JobPerformanceProcess(_filterProvider.Object, _innerProcess.Object);
+            return new BackgroundJobPerformer(_filterProvider.Object, _innerPerformer.Object);
         }
 
         private Mock<T> CreateFilter<T>()

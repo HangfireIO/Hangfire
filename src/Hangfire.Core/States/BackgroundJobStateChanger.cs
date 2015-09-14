@@ -23,22 +23,22 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
-    public class StateChangeProcess : IStateChangeProcess
+    public class BackgroundJobStateChanger : IBackgroundJobStateChanger
     {
         private static readonly TimeSpan JobLockTimeout = TimeSpan.FromMinutes(15);
         private readonly IStateMachine _stateMachine;
 
-        public StateChangeProcess()
+        public BackgroundJobStateChanger()
             : this(JobFilterProviders.Providers)
         {
         }
 
-        public StateChangeProcess([NotNull] IJobFilterProvider filterProvider)
+        public BackgroundJobStateChanger([NotNull] IJobFilterProvider filterProvider)
             : this(new StateMachine(filterProvider))
         {
         }
 
-        internal StateChangeProcess([NotNull] IStateMachine stateMachine)
+        internal BackgroundJobStateChanger([NotNull] IStateMachine stateMachine)
         {
             if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             _stateMachine = stateMachine;

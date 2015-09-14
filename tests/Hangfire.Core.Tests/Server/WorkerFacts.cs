@@ -17,16 +17,16 @@ namespace Hangfire.Core.Tests.Server
 
         private readonly string[] _queues;
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IStateChangeProcess> _stateChangeProcess;
+        private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
         private readonly Mock<IFetchedJob> _fetchedJob;
-        private readonly Mock<IJobPerformanceProcess> _performanceProcess;
+        private readonly Mock<IBackgroundJobPerformer> _performer;
         private readonly BackgroundProcessContextMock _context;
 
         public WorkerFacts()
         {
             _context = new BackgroundProcessContextMock();
             _queues = new[] {"critical"};
-            _performanceProcess = new Mock<IJobPerformanceProcess>();
+            _performer = new Mock<IBackgroundJobPerformer>();
 
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
@@ -44,8 +44,8 @@ namespace Hangfire.Core.Tests.Server
                     Job = Job.FromExpression(() => Method()),
                 });
 
-            _stateChangeProcess = new Mock<IStateChangeProcess>();
-            _stateChangeProcess.Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
+            _stateChanger = new Mock<IBackgroundJobStateChanger>();
+            _stateChanger.Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<StateChangeContext>(ctx => ctx.NewState);
         }
 
@@ -53,7 +53,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenQueuesCollectionNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(null, _performanceProcess.Object, _stateChangeProcess.Object));
+                () => new Worker(null, _performer.Object, _stateChanger.Object));
 
             Assert.Equal("queues", exception.ParamName);
         }
@@ -62,18 +62,18 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenPerformanceProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_queues, null, _stateChangeProcess.Object));
+                () => new Worker(_queues, null, _stateChanger.Object));
 
-            Assert.Equal("performanceProcess", exception.ParamName);
+            Assert.Equal("performer", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStateChangeProcess_IsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Worker(_queues, _performanceProcess.Object, null));
+                () => new Worker(_queues, _performer.Object, null));
 
-            Assert.Equal("stateChangeProcess", exception.ParamName);
+            Assert.Equal("stateChanger", exception.ParamName);
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_RequeuesAJob_WhenThereWasAnException()
         {
-            _stateChangeProcess
+            _stateChanger
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Throws<InvalidOperationException>();
 
@@ -121,15 +121,15 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_ExecutesDefaultWorkflow_WhenJobIsCorrect()
         {
             // Arrange
-            _stateChangeProcess
+            _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is ProcessingState)))
                 .InSequence()
                 .Returns<StateChangeContext>(ctx => ctx.NewState);
 
-            _performanceProcess.Setup(x => x.Run(It.IsAny<PerformContext>()))
+            _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
                 .InSequence();
 
-            _stateChangeProcess
+            _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.BackgroundJobId == JobId && ctx.NewState is SucceededState)))
                 .InSequence()
                 .Returns<StateChangeContext>(context => context.NewState);
@@ -149,7 +149,7 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.NewState is ProcessingState && (((ProcessingState) ctx.NewState).ServerId == _context.ServerId))));
         }
 
@@ -160,7 +160,7 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.NewState is ProcessingState &&
                 ctx.ExpectedStates.ElementAt(0) == EnqueuedState.StateName &&
                 ctx.ExpectedStates.ElementAt(1) == ProcessingState.StateName)));
@@ -170,7 +170,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_DoesNotRun_PerformanceProcess_IfTransitionToProcessingStateFailed()
         {
             // Arrange
-            _stateChangeProcess
+            _stateChanger
                 .Setup(x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is ProcessingState)))
                 .Returns<IState>(null);
 
@@ -180,7 +180,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _performanceProcess.Verify(x => x.Run(It.IsAny<PerformContext>()), Times.Never);
+            _performer.Verify(x => x.Perform(It.IsAny<PerformContext>()), Times.Never);
         }
 
         [Fact]
@@ -190,14 +190,14 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _performanceProcess.Verify(x => x.Run(It.IsNotNull<PerformContext>()));
+            _performer.Verify(x => x.Perform(It.IsNotNull<PerformContext>()));
         }
 
         [Fact]
         public void Execute_DoesNotMoveAJob_ToTheFailedState_ButRequeuesIt_WhenProcessThrowsOperationCanceled()
         {
             // Arrange
-            _performanceProcess.Setup(x => x.Run(It.IsAny<PerformContext>()))
+            _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
                 .Throws<OperationCanceledException>();
 
             var worker = CreateWorker();
@@ -206,7 +206,7 @@ namespace Hangfire.Core.Tests.Server
             Assert.Throws<OperationCanceledException>(() => worker.Execute(_context.Object));
 
             // Assert
-            _stateChangeProcess.Verify(
+            _stateChanger.Verify(
                 x => x.ChangeState(It.Is<StateChangeContext>(ctx => ctx.NewState is FailedState)),
                 Times.Never);
             _fetchedJob.Verify(x => x.Requeue());
@@ -216,7 +216,7 @@ namespace Hangfire.Core.Tests.Server
         public void Execute_RemovesJobFromQueue_WhenProcessThrowsJobAbortedException()
         {
             // Arrange
-            _performanceProcess.Setup(x => x.Run(It.IsAny<PerformContext>()))
+            _performer.Setup(x => x.Perform(It.IsAny<PerformContext>()))
                 .Throws<JobAbortedException>();
 
             var worker = CreateWorker();
@@ -235,7 +235,7 @@ namespace Hangfire.Core.Tests.Server
 
             worker.Execute(_context.Object);
 
-            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.NewState is SucceededState &&
                 ctx.ExpectedStates.ElementAt(0) == ProcessingState.StateName)));
         }
@@ -245,8 +245,8 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var exception = new InvalidOperationException();
-            _performanceProcess
-                .Setup(x => x.Run(It.IsAny<PerformContext>()))
+            _performer
+                .Setup(x => x.Perform(It.IsAny<PerformContext>()))
                 .Throws(exception);
 
             var worker = CreateWorker();
@@ -255,7 +255,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is FailedState &&
                 ((FailedState) ctx.NewState).Exception == exception)));
@@ -266,8 +266,8 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var exception = new InvalidOperationException();
-            _performanceProcess
-                .Setup(x => x.Run(It.IsAny<PerformContext>()))
+            _performer
+                .Setup(x => x.Perform(It.IsAny<PerformContext>()))
                 .Throws(new JobPerformanceException("hello", exception));
 
             var worker = CreateWorker();
@@ -276,7 +276,7 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is FailedState)));
         }
@@ -294,13 +294,13 @@ namespace Hangfire.Core.Tests.Server
             worker.Execute(_context.Object);
 
             // Assert
-            _stateChangeProcess.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.NewState is FailedState)));
         }
 
         private Worker CreateWorker()
         {
-            return new Worker(_queues, _performanceProcess.Object, _stateChangeProcess.Object);
+            return new Worker(_queues, _performer.Object, _stateChanger.Object);
         }
 
         public static void Method() { }

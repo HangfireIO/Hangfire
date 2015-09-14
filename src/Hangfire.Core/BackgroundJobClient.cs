@@ -33,13 +33,13 @@ namespace Hangfire
     public class BackgroundJobClient : IBackgroundJobClient
     {
         private readonly JobStorage _storage;
-        private readonly IJobCreationProcess _creationProcess;
-        private readonly IStateChangeProcess _stateChangeProcess;
+        private readonly IBackgroundJobFactory _factory;
+        private readonly IBackgroundJobStateChanger _stateChanger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
         /// with the default connection and default global 
-        /// <see cref="JobCreationProcess"/> instance.
+        /// <see cref="BackgroundJobFactory"/> instance.
         /// </summary>
         public BackgroundJobClient()
             : this(JobStorage.Current)
@@ -49,37 +49,32 @@ namespace Hangfire
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
         /// with a specified storage and the default global
-        /// <see cref="JobCreationProcess"/> instance.
+        /// <see cref="BackgroundJobFactory"/> instance.
         /// </summary>
         public BackgroundJobClient(JobStorage storage)
-            : this(storage, new StateChangeProcess())
+            : this(storage, new BackgroundJobFactory(), new BackgroundJobStateChanger())
         {
         }
-
-        public BackgroundJobClient(JobStorage storage, IStateChangeProcess stateChangeProcess)
-            : this(storage, stateChangeProcess, new JobCreationProcess())
-        {
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClient"/> class
-        /// with a specified job storage and job creation creationProcess.
+        /// with a specified job storage and job creation factory.
         /// </summary>
         /// 
         /// <exception cref="ArgumentNullException"><paramref name="storage"/> argument is null.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="creationProcess"/> argument is null.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> argument is null.</exception>
         public BackgroundJobClient(
             JobStorage storage,
-            IStateChangeProcess stateChangeProcess, 
-            IJobCreationProcess creationProcess)
+            IBackgroundJobFactory factory,
+            IBackgroundJobStateChanger stateChanger)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (stateChangeProcess == null) throw new ArgumentNullException("stateChangeProcess");
-            if (creationProcess == null) throw new ArgumentNullException("creationProcess");
+            if (factory == null) throw new ArgumentNullException("factory");
+            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
             
             _storage = storage;
-            _stateChangeProcess = stateChangeProcess;
-            _creationProcess = creationProcess;
+            _stateChanger = stateChanger;
+            _factory = factory;
         }
 
         /// <inheritdoc />
@@ -93,14 +88,14 @@ namespace Hangfire
                 using (var connection = _storage.GetConnection())
                 {
                     var context = new CreateContext(_storage, connection, job, state);
-                    var backroundJob = _creationProcess.Run(context);
+                    var backroundJob = _factory.Create(context);
 
                     return backroundJob != null ? backroundJob.Id : null;
                 }
             }
             catch (Exception ex)
             {
-                throw new CreateJobFailedException("Job creation creationProcess has failed. See inner exception for details", ex);
+                throw new CreateJobFailedException("Job creation factory has failed. See inner exception for details", ex);
             }
         }
 
@@ -112,7 +107,7 @@ namespace Hangfire
 
             using (var connection = _storage.GetConnection())
             {
-                var appliedState = _stateChangeProcess.ChangeState(new StateChangeContext(
+                var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                     _storage, 
                     connection, 
                     jobId, 

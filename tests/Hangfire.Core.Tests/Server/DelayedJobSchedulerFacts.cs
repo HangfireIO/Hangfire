@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
@@ -8,16 +9,16 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class DelayedJobScheduler
+    public class DelayedJobSchedulerFacts
     {
         private const string JobId = "id";
         private readonly Mock<IStorageConnection> _connection;
-        private readonly Mock<IStateChangeProcess> _process;
+        private readonly Mock<IBackgroundJobStateChanger> _stateChanger;
         private readonly BackgroundProcessContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
         private readonly Mock<IDisposable> _distributedLock;
 
-        public DelayedJobScheduler()
+        public DelayedJobSchedulerFacts()
         {
             _context = new BackgroundProcessContextMock();
             _context.CancellationTokenSource.Cancel();
@@ -25,7 +26,7 @@ namespace Hangfire.Core.Tests.Server
             _connection = new Mock<IStorageConnection>();
             _context.Storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
 
-            _process = new Mock<IStateChangeProcess>();
+            _stateChanger = new Mock<IBackgroundJobStateChanger>();
             _transaction = new Mock<IWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
 
@@ -39,12 +40,12 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenProcessIsNull()
+        public void Ctor_ThrowsAnException_WhenStateChangerIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new Hangfire.Server.DelayedJobScheduler(Timeout.InfiniteTimeSpan, null));
+                () => new DelayedJobScheduler(Timeout.InfiniteTimeSpan, null));
 
-            Assert.Equal("process", exception.ParamName);
+            Assert.Equal("stateChanger", exception.ParamName);
         }
 
         [Fact]
@@ -54,7 +55,7 @@ namespace Hangfire.Core.Tests.Server
 
 			scheduler.Execute(_context.Object);
 
-            _process.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
+            _stateChanger.Verify(x => x.ChangeState(It.Is<StateChangeContext>(ctx =>
                 ctx.BackgroundJobId == JobId &&
                 ctx.NewState is EnqueuedState &&
                 ctx.ExpectedStates.SequenceEqual(new[] { ScheduledState.StateName }))));
@@ -63,7 +64,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Execute_DoesNotCallStateChangeProcess_IfThereAreNoJobsToEnqueue()
+        public void Execute_DoesNotCallStateChanger_IfThereAreNoJobsToEnqueue()
         {
             _connection.Setup(x => x.GetFirstByLowestScoreFromSet(
                 "schedule", 0, It.Is<double>(time => time > 0))).Returns((string)null);
@@ -71,7 +72,7 @@ namespace Hangfire.Core.Tests.Server
 
 			scheduler.Execute(_context.Object);
 
-            _process.Verify(
+            _stateChanger.Verify(
                 x => x.ChangeState(It.IsAny<StateChangeContext>()),
                 Times.Never);
         }
@@ -79,7 +80,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_RemovesAJobIdentifierFromTheSet_WhenStateChangeFails()
         {
-            _process
+            _stateChanger
                 .Setup(x => x.ChangeState(It.IsAny<StateChangeContext>()))
                 .Returns<IState>(null);
 
@@ -102,9 +103,9 @@ namespace Hangfire.Core.Tests.Server
             _distributedLock.Verify(x => x.Dispose());
         }
 
-        private Hangfire.Server.DelayedJobScheduler CreateScheduler()
+        private DelayedJobScheduler CreateScheduler()
         {
-            return new Hangfire.Server.DelayedJobScheduler(Timeout.InfiniteTimeSpan, _process.Object);
+            return new DelayedJobScheduler(Timeout.InfiniteTimeSpan, _stateChanger.Object);
         }
     }
 }

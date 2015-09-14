@@ -50,7 +50,7 @@ namespace Hangfire.States
     /// </remarks>
     /// 
     /// <seealso cref="AutomaticRetryAttribute"/>
-    /// <seealso cref="IStateChangeProcess"/>
+    /// <seealso cref="IBackgroundJobStateChanger"/>
     /// <seealso cref="Server.Worker"/>
     /// 
     /// <threadsafety static="true" instance="false" />

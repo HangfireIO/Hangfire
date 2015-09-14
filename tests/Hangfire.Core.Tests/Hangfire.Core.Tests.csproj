@@ -75,7 +75,7 @@
     <Compile Include="Client\CreateContextFacts.cs" />
     <Compile Include="Client\CreatedContextFacts.cs" />
     <Compile Include="Client\CreatingContextFacts.cs" />
-    <Compile Include="Client\JobCreationProcessFacts.cs" />
+    <Compile Include="Client\BackgroundJobFactoryFacts.cs" />
     <Compile Include="Common\JobFilterCollectionFacts.cs" />
     <Compile Include="Common\JobArgumentFacts.cs" />
     <Compile Include="Common\JobFacts.cs" />
@@ -105,13 +105,13 @@
     <Compile Include="Server\BackgroundJobServerOptionsFacts.cs" />
     <Compile Include="Server\BackgroundProcessContextFacts.cs" />
     <Compile Include="Server\BackgroundProcessingServerFacts.cs" />
-    <Compile Include="Server\JobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\BackgroundJobPerformerFacts.cs" />
     <Compile Include="Server\InfiniteLoopComponentFacts.cs" />
-    <Compile Include="Server\CoreJobPerformanceProcessFacts.cs" />
+    <Compile Include="Server\CoreBackgroundJobPerformerFacts.cs" />
     <Compile Include="Server\RecurringJobSchedulerFacts.cs" />
     <Compile Include="Server\ScheduleInstantFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
-    <Compile Include="Server\DelayedJobScheduler.cs" />
+    <Compile Include="Server\DelayedJobSchedulerFacts.cs" />
     <Compile Include="Server\BackgroundProcessExtensionsFacts.cs" />
     <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
     <Compile Include="Server\AutomaticRetryProcessFacts.cs" />
@@ -124,7 +124,7 @@
     <Compile Include="States\EnqueuedStateFacts.cs" />
     <Compile Include="States\EnqueuedStateHandlerFacts.cs" />
     <Compile Include="States\FailedStateFacts.cs" />
-    <Compile Include="Client\CoreJobCreationProcessFacts.cs" />
+    <Compile Include="Client\CoreBackgroundJobFactoryFacts.cs" />
     <Compile Include="States\ScheduledStateHandlerFacts.cs" />
     <Compile Include="States\ProcessingStateFacts.cs" />
     <Compile Include="States\ScheduledStateFacts.cs" />
@@ -132,7 +132,7 @@
     <Compile Include="States\ElectStateContextFacts.cs" />
     <Compile Include="States\StateMachineFacts.cs" />
     <Compile Include="States\StateHandlerCollectionFacts.cs" />
-    <Compile Include="States\StateChangeProcessFacts.cs" />
+    <Compile Include="States\BackgroundJobStateChangerFacts.cs" />
     <Compile Include="States\SucceededStateFacts.cs" />
     <Compile Include="States\SucceededStateHandlerFacts.cs" />
     <Compile Include="StatisticsHistoryAttributeFacts.cs" />

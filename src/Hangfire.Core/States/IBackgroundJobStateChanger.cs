@@ -14,21 +14,15 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using Hangfire.Annotations;
-
-namespace Hangfire.Client
+namespace Hangfire.States
 {
-    /// <summary>
-    /// This interface acts as extensibility point for the process
-    /// of job creation. See the default implementation in the
-    /// <see cref="JobCreationProcess"/> class.
-    /// </summary>
-    public interface IJobCreationProcess
+    public interface IBackgroundJobStateChanger
     {
         /// <summary>
-        /// Runs the process of job creation with the specified context.
+        /// Attempts to change the state of a job, respecting any applicable job filters and state handlers.
         /// </summary>
-        [CanBeNull]
-        BackgroundJob Run([NotNull] CreateContext context);
+        /// <returns><c>Null</c> if a constraint has failed, otherwise the final applied state</returns>
+        /// <remarks>Also ensures that the job data can be loaded for this job</remarks>
+        IState ChangeState(StateChangeContext context);
     }
 }

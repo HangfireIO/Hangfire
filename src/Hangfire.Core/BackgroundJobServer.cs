@@ -120,12 +120,12 @@ namespace Hangfire
             {
                 processes.Add(new Worker(
                     _options.Queues, 
-                    new JobPerformanceProcess(_options.FilterProvider), 
-                    new StateChangeProcess(_options.FilterProvider)));
+                    new BackgroundJobPerformer(_options.FilterProvider), 
+                    new BackgroundJobStateChanger(_options.FilterProvider)));
             }
             
-            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, new StateChangeProcess(_options.FilterProvider)));
-            processes.Add(new RecurringJobScheduler(new JobCreationProcess(_options.FilterProvider)));
+            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, new BackgroundJobStateChanger(_options.FilterProvider)));
+            processes.Add(new RecurringJobScheduler(new BackgroundJobFactory(_options.FilterProvider)));
 
             return processes;
         }

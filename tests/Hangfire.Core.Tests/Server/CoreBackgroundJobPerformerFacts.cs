@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class CoreJobPerformanceProcessFacts : IDisposable
+    public class CoreBackgroundJobPerformerFacts : IDisposable
     {
         private readonly Mock<JobActivator> _activator;
         private readonly PerformContextMock _context;
@@ -17,7 +17,7 @@ namespace Hangfire.Core.Tests.Server
         private static bool _methodInvoked;
         private static bool _disposed;
 
-        public CoreJobPerformanceProcessFacts()
+        public CoreBackgroundJobPerformerFacts()
         {
             _activator = new Mock<JobActivator>() { CallBase = true };
             _context = new PerformContextMock();
@@ -28,7 +28,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new CoreJobPerformanceProcess(null));
+                () => new CoreBackgroundJobPerformer(null));
 
             Assert.Equal("activator", exception.ParamName);
         }
@@ -38,9 +38,9 @@ namespace Hangfire.Core.Tests.Server
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression(() => StaticMethod());
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -49,10 +49,10 @@ namespace Hangfire.Core.Tests.Server
         public void Run_CanInvokeInstanceMethods()
         {
             _methodInvoked = false;
-            _context.BackgroundJob.Job = Job.FromExpression<CoreJobPerformanceProcessFacts>(x => x.InstanceMethod());
-            var process = CreateProcess();
+            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+            var performer = CreatePerformer();
 
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             Assert.True(_methodInvoked);
         }
@@ -62,9 +62,9 @@ namespace Hangfire.Core.Tests.Server
         {
             _disposed = false;
             _context.BackgroundJob.Job = Job.FromExpression<Disposable>(x => x.Method());
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             Assert.True(_disposed);
         }
@@ -75,10 +75,10 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression(() => MethodWithArguments("hello", 5));
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert - see the `MethodWithArguments` method.
             Assert.True(_methodInvoked);
@@ -92,14 +92,14 @@ namespace Hangfire.Core.Tests.Server
             var typeConverter = TypeDescriptor.GetConverter(typeof(DateTime));
             var convertedDate = typeConverter.ConvertToInvariantString(SomeDateTime);
 
-            var type = typeof(CoreJobPerformanceProcessFacts);
+            var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
             _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
@@ -112,14 +112,14 @@ namespace Hangfire.Core.Tests.Server
             _methodInvoked = false;
             var convertedDate = SomeDateTime.ToString("MM/dd/yyyy HH:mm:ss.ffff");
 
-            var type = typeof(CoreJobPerformanceProcessFacts);
+            var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
             _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
@@ -131,10 +131,10 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression(() => MethodWithDateTimeArgument(SomeDateTime));
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert - see also the `MethodWithDateTimeArgument` method.
             Assert.True(_methodInvoked);
@@ -147,9 +147,9 @@ namespace Hangfire.Core.Tests.Server
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression(() => NullArgumentMethod(null));
 
-            var process = CreateProcess();
+            var performer = CreatePerformer();
             // Act
-            process.Run(_context.Object);
+            performer.Perform(_context.Object);
 
             // Assert - see also `NullArgumentMethod` method.
             Assert.True(_methodInvoked);
@@ -163,11 +163,11 @@ namespace Hangfire.Core.Tests.Server
             _activator.Setup(x => x.ActivateJob(It.IsAny<Type>())).Throws(exception);
 
             _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
         }
 
         [Fact]
@@ -175,10 +175,10 @@ namespace Hangfire.Core.Tests.Server
         {
             _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
             _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
         }
 
         [Fact]
@@ -187,10 +187,10 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
             _context.BackgroundJob.Job = new Job(type, method, new object[] { "sdfa" });
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             var exception = Assert.Throws<JobPerformanceException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
 
             Assert.NotNull(exception.InnerException);
         }
@@ -200,10 +200,10 @@ namespace Hangfire.Core.Tests.Server
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
-            var process = CreateProcess();
+            var performer = CreatePerformer();
             
             Assert.Throws<InvalidOperationException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
 
             Assert.True(_methodInvoked);
         }
@@ -212,10 +212,10 @@ namespace Hangfire.Core.Tests.Server
         public void Run_ThrowsPerformanceException_WithUnwrappedInnerException()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => ExceptionMethod());
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             var thrownException = Assert.Throws<JobPerformanceException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
 
             Assert.IsType<InvalidOperationException>(thrownException.InnerException);
             Assert.Equal("exception", thrownException.InnerException.Message);
@@ -227,20 +227,20 @@ namespace Hangfire.Core.Tests.Server
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
             _context.CancellationToken.Setup(x => x.ThrowIfCancellationRequested()).Throws<OperationCanceledException>();
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
             // Act & Assert
             Assert.Throws<OperationCanceledException>(
-                () => process.Run(_context.Object));
+                () => performer.Perform(_context.Object));
         }
 
         [Fact]
         public void Run_ReturnsValue_WhenCallingFunctionReturningValue()
         {
             _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValue());
-            var process = CreateProcess();
+            var performer = CreatePerformer();
 
-            var result = process.Run(_context.Object);
+            var result = performer.Perform(_context.Object);
 
             Assert.Equal("Return value", result);
         }
@@ -317,9 +317,9 @@ namespace Hangfire.Core.Tests.Server
             throw new InvalidOperationException("exception");
         }
 
-        private CoreJobPerformanceProcess CreateProcess()
+        private CoreBackgroundJobPerformer CreatePerformer()
         {
-            return new CoreJobPerformanceProcess(_activator.Object);
+            return new CoreBackgroundJobPerformer(_activator.Object);
         }
     }
 }

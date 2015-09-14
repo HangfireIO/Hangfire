@@ -23,33 +23,33 @@ using Hangfire.States;
 
 namespace Hangfire.Client
 {
-    public class JobCreationProcess : IJobCreationProcess
+    public class BackgroundJobFactory : IBackgroundJobFactory
     {
         private readonly IJobFilterProvider _filterProvider;
-        private readonly IJobCreationProcess _innerProcess;
+        private readonly IBackgroundJobFactory _innerFactory;
 
-        public JobCreationProcess()
+        public BackgroundJobFactory()
             : this(JobFilterProviders.Providers)
         {
         }
 
-        public JobCreationProcess([NotNull] IJobFilterProvider filterProvider)
-            : this(filterProvider, new CoreJobCreationProcess(new StateMachine(filterProvider)))
+        public BackgroundJobFactory([NotNull] IJobFilterProvider filterProvider)
+            : this(filterProvider, new CoreBackgroundJobFactory(new StateMachine(filterProvider)))
         {
         }
 
-        internal JobCreationProcess(
+        internal BackgroundJobFactory(
             [NotNull] IJobFilterProvider filterProvider, 
-            [NotNull] IJobCreationProcess innerProcess)
+            [NotNull] IBackgroundJobFactory innerFactory)
         {
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-            if (innerProcess == null) throw new ArgumentNullException("innerProcess");
+            if (innerFactory == null) throw new ArgumentNullException("innerFactory");
 
             _filterProvider = filterProvider;
-            _innerProcess = innerProcess;
+            _innerFactory = innerFactory;
         }
 
-        public BackgroundJob Run(CreateContext context)
+        public BackgroundJob Create(CreateContext context)
         {
             if (context == null) throw new ArgumentNullException("context");
 
@@ -86,7 +86,7 @@ namespace Hangfire.Client
             var preContext = new CreatingContext(context);
             Func<CreatedContext> continuation = () =>
             {
-                var backgroundJob = _innerProcess.Run(context);
+                var backgroundJob = _innerFactory.Create(context);
                 return new CreatedContext(context, backgroundJob, false, null);
             };
 

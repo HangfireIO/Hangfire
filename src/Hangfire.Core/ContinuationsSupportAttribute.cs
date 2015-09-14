@@ -34,7 +34,7 @@ namespace Hangfire
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly HashSet<string> _knownFinalStates;
-        private readonly IStateChangeProcess _stateChangeProcess;
+        private readonly IBackgroundJobStateChanger _stateChanger;
 
         public ContinuationsSupportAttribute()
             : this(new HashSet<string> { DeletedState.StateName, SucceededState.StateName })
@@ -42,19 +42,19 @@ namespace Hangfire
         }
 
         public ContinuationsSupportAttribute(HashSet<string> knownFinalStates)
-            : this(knownFinalStates, new StateChangeProcess())
+            : this(knownFinalStates, new BackgroundJobStateChanger())
         {
         }
 
         public ContinuationsSupportAttribute(
             [NotNull] HashSet<string> knownFinalStates, 
-            [NotNull] IStateChangeProcess stateChangeProcess)
+            [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (knownFinalStates == null) throw new ArgumentNullException("knownFinalStates");
-            if (stateChangeProcess == null) throw new ArgumentNullException("StateChangeProcess");
+            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
 
             _knownFinalStates = knownFinalStates;
-            _stateChangeProcess = stateChangeProcess;
+            _stateChanger = stateChanger;
 
             // Ensure this filter is the last filter in the chain to start
             // continuations on the last candidate state only.
@@ -179,7 +179,7 @@ namespace Hangfire
             
             foreach (var tuple in nextStates)
             {
-                _stateChangeProcess.ChangeState(new StateChangeContext(
+                _stateChanger.ChangeState(new StateChangeContext(
                     context.Storage,
                     context.Connection,
                     tuple.Key,

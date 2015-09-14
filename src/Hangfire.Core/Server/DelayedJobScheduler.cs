@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
@@ -28,7 +29,7 @@ namespace Hangfire.Server
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
 
-        private readonly IStateChangeProcess _process;
+        private readonly IBackgroundJobStateChanger _stateChanger;
         private readonly TimeSpan _pollingInterval;
 
         private int _enqueuedCount;
@@ -39,15 +40,15 @@ namespace Hangfire.Server
         }
 
         public DelayedJobScheduler(TimeSpan pollingInterval)
-            : this(pollingInterval, new StateChangeProcess())
+            : this(pollingInterval, new BackgroundJobStateChanger())
         {
         }
 
-        public DelayedJobScheduler(TimeSpan pollingInterval, IStateChangeProcess process)
+        public DelayedJobScheduler(TimeSpan pollingInterval, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (process == null) throw new ArgumentNullException("process");
+            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
 
-            _process = process;
+            _stateChanger = stateChanger;
             _pollingInterval = pollingInterval;
         }
 
@@ -97,7 +98,7 @@ namespace Hangfire.Server
                     Reason = "Triggered scheduled job"
                 };
 
-                var appliedState = _process.ChangeState(new StateChangeContext(
+                var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                     context.Storage,
                     connection,
                     jobId, 

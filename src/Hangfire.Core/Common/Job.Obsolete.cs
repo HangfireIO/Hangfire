@@ -32,7 +32,7 @@ namespace Hangfire.Common
         [Obsolete("Please use `Args` property instead to avoid unnecessary serializations/deserializations. Will be deleted in 2.0.0.")]
         public string[] Arguments { get { return InvocationData.SerializeArguments(Args); } }
 
-        [Obsolete("This method is deprecated. Please use `CoreJobPerformanceProcess` or `JobPerformanceProcess` classes instead. Will be removed in 2.0.0.")]
+        [Obsolete("This method is deprecated. Please use `CoreBackgroundJobPerformer` or `BackgroundJobPerformer` classes instead. Will be removed in 2.0.0.")]
         public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
         {
             if (activator == null) throw new ArgumentNullException("activator");

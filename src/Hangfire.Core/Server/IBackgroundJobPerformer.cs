@@ -16,8 +16,8 @@
 
 namespace Hangfire.Server
 {
-    public interface IJobPerformanceProcess
+    public interface IBackgroundJobPerformer
     {
-        object Run(PerformContext context);
+        object Perform(PerformContext context);
     }
 }

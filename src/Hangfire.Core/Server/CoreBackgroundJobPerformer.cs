@@ -22,7 +22,7 @@ using Hangfire.Annotations;
 
 namespace Hangfire.Server
 {
-    internal class CoreJobPerformanceProcess : IJobPerformanceProcess
+    internal class CoreBackgroundJobPerformer : IBackgroundJobPerformer
     {
         internal static readonly Dictionary<Type, Func<PerformContext, object>> Substitutions
             = new Dictionary<Type, Func<PerformContext, object>>
@@ -33,13 +33,13 @@ namespace Hangfire.Server
 
         private readonly JobActivator _activator;
 
-        public CoreJobPerformanceProcess([NotNull] JobActivator activator)
+        public CoreBackgroundJobPerformer([NotNull] JobActivator activator)
         {
             if (activator == null) throw new ArgumentNullException("activator");
             _activator = activator;
         }
 
-        public object Run(PerformContext context)
+        public object Perform(PerformContext context)
         {
             using (var scope = _activator.BeginScope())
             {

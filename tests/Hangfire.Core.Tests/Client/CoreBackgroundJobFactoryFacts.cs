@@ -7,16 +7,16 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
-namespace Hangfire.Core.Tests.States
+namespace Hangfire.Core.Tests.Client
 {
-    public class CoreJobCreationProcessFacts
+    public class CoreBackgroundJobFactoryFacts
     {
         private const string JobId = "jobId";
         private readonly Mock<IStateMachine> _stateMachine;
         private readonly CreateContextMock _context;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
 
-        public CoreJobCreationProcessFacts()
+        public CoreBackgroundJobFactoryFacts()
         {
             _stateMachine = new Mock<IStateMachine>();
             _context = new CreateContextMock();
@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.States
         public void Ctor_ThrowsAnException_WhenStateMachineIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new CoreJobCreationProcess(null));
+                () => new CoreBackgroundJobFactory(null));
 
             Assert.Equal("stateMachine", exception.ParamName);
         }
@@ -45,9 +45,9 @@ namespace Hangfire.Core.Tests.States
         {
             _context.Object.Parameters.Add("Name", "Value");
 
-            var process = CreateProcess();
+            var factory = CreateFactory();
 
-            process.Run(_context.Object);
+            factory.Create(_context.Object);
 
             _context.Connection.Verify(x => x.CreateExpiredJob(
                 _context.Job,
@@ -59,9 +59,9 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void CreateJob_ChangesTheStateOfACreatedJob()
         {
-            var process = CreateProcess();
+            var factory = CreateFactory();
 
-            process.Run(_context.Object);
+            factory.Create(_context.Object);
 
             _stateMachine.Verify(x => x.ApplyState(
                 It.Is<ApplyStateContext>(
@@ -74,13 +74,13 @@ namespace Hangfire.Core.Tests.States
         [Fact]
         public void CreateJob_ReturnsNewJobId()
         {
-            var process = CreateProcess();
-            Assert.Equal(JobId, process.Run(_context.Object).Id);
+            var factory = CreateFactory();
+            Assert.Equal(JobId, factory.Create(_context.Object).Id);
         }
 
-        private CoreJobCreationProcess CreateProcess()
+        private CoreBackgroundJobFactory CreateFactory()
         {
-            return new CoreJobCreationProcess(_stateMachine.Object);
+            return new CoreBackgroundJobFactory(_stateMachine.Object);
         }
     }
 }

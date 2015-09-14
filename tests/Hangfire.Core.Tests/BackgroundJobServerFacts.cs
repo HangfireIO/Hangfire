@@ -120,7 +120,7 @@ namespace Hangfire.Core.Tests
             Assert.Contains(typeof(Worker), componentTypes);
             Assert.Contains(typeof(ServerHeartbeat), componentTypes);
             Assert.Contains(typeof(ServerWatchdog), componentTypes);
-            Assert.Contains(typeof(DelayedJobScheduler), componentTypes);
+            Assert.Contains(typeof(DelayedJobSchedulerFacts), componentTypes);
         }
 
         [Fact]

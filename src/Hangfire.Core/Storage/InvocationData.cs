@@ -120,7 +120,7 @@ namespace Hangfire.Storage
 
                 object value;
 
-                if (CoreJobPerformanceProcess.Substitutions.ContainsKey(parameter.ParameterType))
+                if (CoreBackgroundJobPerformer.Substitutions.ContainsKey(parameter.ParameterType))
                 {
                     value = parameter.ParameterType.IsValueType
                         ? Activator.CreateInstance(parameter.ParameterType)

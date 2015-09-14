@@ -32,31 +32,30 @@ namespace Hangfire.Server
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         
-        private readonly IJobCreationProcess _creationProcess;
+        private readonly IBackgroundJobFactory _factory;
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
 
         public RecurringJobScheduler()
-            : this(new JobCreationProcess())
+            : this(new BackgroundJobFactory())
         {
         }
         
-        public RecurringJobScheduler(
-            [NotNull] IJobCreationProcess creationProcess)
-            : this(creationProcess, ScheduleInstant.Factory, new EveryMinuteThrottler())
+        public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory)
+            : this(factory, ScheduleInstant.Factory, new EveryMinuteThrottler())
         {
         }
 
         internal RecurringJobScheduler(
-            [NotNull] IJobCreationProcess creationProcess,
+            [NotNull] IBackgroundJobFactory factory,
             [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
             [NotNull] IThrottler throttler)
         {
-            if (creationProcess == null) throw new ArgumentNullException("creationProcess");
+            if (factory == null) throw new ArgumentNullException("factory");
             if (instantFactory == null) throw new ArgumentNullException("instantFactory");
             if (throttler == null) throw new ArgumentNullException("throttler");
             
-            _creationProcess = creationProcess;
+            _factory = factory;
             _instantFactory = instantFactory;
             _throttler = throttler;
         }
@@ -137,7 +136,7 @@ namespace Hangfire.Server
                     }
 
                     var context = new CreateContext(storage, connection, job, state);
-                    var backgroundJob = _creationProcess.Run(context);
+                    var backgroundJob = _factory.Create(context);
                     var jobId = backgroundJob != null ? backgroundJob.Id : null;
 
                     if (String.IsNullOrEmpty(jobId))

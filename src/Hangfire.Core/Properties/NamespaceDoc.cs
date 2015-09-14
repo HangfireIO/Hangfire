@@ -36,7 +36,7 @@ namespace Hangfire.Client
     /// <summary>
     /// The <see cref="Hangfire.Client"/> namespace contains types that allow you to
     /// customize the background job creation pipeline using the <see cref="IClientFilter"/>,
-    /// or define your own creation process by implementing the <see cref="IJobCreationProcess"/>
+    /// or define your own creation process by implementing the <see cref="IBackgroundJobFactory"/>
     /// interface.
     /// </summary>
     [CompilerGenerated]

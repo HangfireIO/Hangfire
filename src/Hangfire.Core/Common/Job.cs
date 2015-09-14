@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Server;
 
 namespace Hangfire.Common
 {
@@ -53,7 +54,7 @@ namespace Hangfire.Common
     /// 
     /// </remarks>
     /// 
-    /// <seealso cref="Server.IJobPerformanceProcess"/>
+    /// <seealso cref="IBackgroundJobPerformer"/>
     /// 
     /// <threadsafety static="true" instance="false" />
     public partial class Job

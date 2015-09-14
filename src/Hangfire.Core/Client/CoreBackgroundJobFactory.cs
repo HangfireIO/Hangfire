@@ -22,17 +22,17 @@ using Hangfire.States;
 
 namespace Hangfire.Client
 {
-    internal class CoreJobCreationProcess : IJobCreationProcess
+    internal class CoreBackgroundJobFactory : IBackgroundJobFactory
     {
         private readonly IStateMachine _stateMachine;
 
-        public CoreJobCreationProcess([NotNull] IStateMachine stateMachine)
+        public CoreBackgroundJobFactory([NotNull] IStateMachine stateMachine)
         {
             if (stateMachine == null) throw new ArgumentNullException("stateMachine");
             _stateMachine = stateMachine;
         }
 
-        public BackgroundJob Run(CreateContext context)
+        public BackgroundJob Create(CreateContext context)
         {
             var parameters = context.Parameters.ToDictionary(x => x.Key, x => JobHelper.ToJson(x.Value));
 
