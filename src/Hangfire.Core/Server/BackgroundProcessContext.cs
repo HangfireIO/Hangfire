@@ -26,22 +26,28 @@ namespace Hangfire.Server
         public BackgroundProcessContext(
             [NotNull] string serverId,
             [NotNull] JobStorage storage, 
+            [NotNull] IDictionary<string, object> properties, 
             CancellationToken cancellationToken)
         {
             if (serverId == null) throw new ArgumentNullException("serverId");
             if (storage == null) throw new ArgumentNullException("storage");
-
-            Properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            if (properties == null) throw new ArgumentNullException("properties");
 
             ServerId = serverId;
             Storage = storage;
+            Properties = new Dictionary<string, object>(properties, StringComparer.OrdinalIgnoreCase);
             CancellationToken = cancellationToken;
         }
-
+        
+        [NotNull]
         public string ServerId { get; private set; }
-        public IDictionary<string, object> Properties { get; private set; }
 
+        [NotNull]
+        public IReadOnlyDictionary<string, object> Properties { get; private set; }
+
+        [NotNull]
         public JobStorage Storage { get; private set; }
+
         public CancellationToken CancellationToken { get; private set; }
     }
 }

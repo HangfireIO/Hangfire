@@ -27,13 +27,13 @@ namespace Hangfire.Server
 {
     public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
     {
-        private readonly BackgroundProcessingServerOptions _options;
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
-
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly List<IServerProcess> _processes = new List<IServerProcess>();
+
+        private readonly BackgroundProcessingServerOptions _options;
         private readonly Task _bootstrapTask;
 
         public BackgroundProcessingServer([NotNull] IEnumerable<IBackgroundProcess> processes)
@@ -80,11 +80,11 @@ namespace Hangfire.Server
             _processes.AddRange(storage.GetComponents());
             _processes.AddRange(processes);
 
-            var context = new BackgroundProcessContext(GetGloballyUniqueServerId(), storage, _cts.Token);
-            foreach (var item in properties)
-            {
-                context.Properties.Add(item.Key, item.Value);
-            }
+            var context = new BackgroundProcessContext(
+                GetGloballyUniqueServerId(), 
+                storage,
+                properties,
+                _cts.Token);
 
             _bootstrapTask = WrapProcess(this).CreateTask(context);
         }
@@ -150,7 +150,7 @@ namespace Hangfire.Server
                 Guid.NewGuid());
         }
 
-        private static ServerContext GetServerContext(IDictionary<string, object> properties)
+        private static ServerContext GetServerContext(IReadOnlyDictionary<string, object> properties)
         {
             var serverContext = new ServerContext();
 
