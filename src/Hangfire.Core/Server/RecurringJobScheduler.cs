@@ -38,6 +38,12 @@ namespace Hangfire.Server
     /// polls is hard-coded to <b>1 minute</b> as a compromise between
     /// frequency and additional stress on job storage.</para>
     /// 
+    /// <note type="tip">
+    /// Use custom background processes if you need to schedule recurring jobs
+    /// with frequency less than one minute. Please see the 
+    /// <see cref="IBackgroundProcess"/> interface for details.
+    /// </note>
+    /// 
     /// <para>Recurring job schedule is based on Set and Hash data structures
     /// of a job storage, so you can use this background process as an example 
     /// of a custom extension.</para>
@@ -47,13 +53,7 @@ namespace Hangfire.Server
     /// locks are used). However, this only adds support for fail-over, and does 
     /// not increase the performance.</para>
     /// 
-    /// <note>
-    /// Use custom background processes if you need to schedule recurring jobs
-    /// with frequency less than one minute. Please see the 
-    /// <see cref="IBackgroundProcess"/> interface for details.
-    /// </note>
-    /// 
-    /// <note class="important">
+    /// <note type="important">
     /// If you are using <b>custom filter providers</b>, you need to pass a 
     /// custom <see cref="IBackgroundJobFactory"/> instance to make this 
     /// process respect your filters when enqueueing background jobs.

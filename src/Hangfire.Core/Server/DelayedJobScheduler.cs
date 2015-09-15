@@ -47,7 +47,7 @@ namespace Hangfire.Server
     /// locks are used). However, this only adds support for fail-over, and does 
     /// not increase the performance.</para>
     /// 
-    /// <note class="important">
+    /// <note type="important">
     /// If you are using <b>custom filter providers</b>, you need to pass a custom
     /// <see cref="IBackgroundJobStateChanger"/> instance to make this process
     /// respect your filters when enqueueing background jobs.
