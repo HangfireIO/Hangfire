@@ -22,55 +22,106 @@ using Hangfire.States;
 
 namespace Hangfire.Server
 {
+    /// <summary>
+    /// Represents a background process responsible for <i>enqueueing delayed
+    /// jobs</i>.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>This background process polls the <i>delayed job schedule</i> for 
+    /// delayed jobs that are ready to be enqueued. To prevent a stress load
+    /// on a job storage, the configurable delay is used between scheduler 
+    /// runs. When a background job is ready to be enqueued, it is simply
+    /// moved from <see cref="ScheduledState"/> to the <see cref="EnqueuedState"/>
+    /// by using <see cref="IBackgroundJobStateChanger"/>.</para>
+    /// 
+    /// <para>Delayed job schedule is based on a Set data structure of a job
+    /// storage, so you can use this background process as an example of a
+    /// custom extension.</para>
+    /// </remarks>
+    /// 
+    /// <threadsafety static="true" instance="true"/>
+    /// 
+    /// <seealso cref="ScheduledState"/>
     public class DelayedJobScheduler : IBackgroundProcess
     {
-        public static readonly TimeSpan DefaultPollingInterval = TimeSpan.FromSeconds(15);
+        /// <summary>
+        /// Represents a default polling interval for delayed job scheduler. 
+        /// This field is read-only.
+        /// </summary>
+        /// <remarks>
+        /// The value of this field is <c>TimeSpan.FromSeconds(15)</c>.
+        /// </remarks>
+        public static readonly TimeSpan DefaultPollingDelay = TimeSpan.FromSeconds(15);
 
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(1);
 
         private readonly IBackgroundJobStateChanger _stateChanger;
-        private readonly TimeSpan _pollingInterval;
+        private readonly TimeSpan _pollingDelay;
 
-        private int _enqueuedCount;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DelayedJobScheduler"/>
+        /// class with the <see cref="DefaultPollingDelay"/> value as a
+        /// delay between runs.
+        /// </summary>
         public DelayedJobScheduler() 
-            : this(DefaultPollingInterval)
+            : this(DefaultPollingDelay)
         {
         }
 
-        public DelayedJobScheduler(TimeSpan pollingInterval)
-            : this(pollingInterval, new BackgroundJobStateChanger())
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DelayedJobScheduler"/>
+        /// class with a specified polling interval.
+        /// </summary>
+        /// <param name="pollingDelay">Delay between scheduler runs.</param>
+        public DelayedJobScheduler(TimeSpan pollingDelay)
+            : this(pollingDelay, new BackgroundJobStateChanger())
         {
         }
 
-        public DelayedJobScheduler(TimeSpan pollingInterval, [NotNull] IBackgroundJobStateChanger stateChanger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DelayedJobScheduler"/>
+        /// class with a specified polling interval and given state changer.
+        /// </summary>
+        /// <param name="pollingDelay">Delay between scheduler runs.</param>
+        /// <param name="stateChanger">State changer to use for background jobs.</param>
+        public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (stateChanger == null) throw new ArgumentNullException("stateChanger");
 
             _stateChanger = stateChanger;
-            _pollingInterval = pollingInterval;
+            _pollingDelay = pollingDelay;
         }
 
+        /// <summary>
+        /// Polls for a delayed job schedule while there are background
+        /// jobs to enqueue.
+        /// </summary>
+        /// <param name="context">Context of a background process.</param>
         public void Execute(BackgroundProcessContext context)
         {
-            if (!EnqueueNextScheduledJob(context))
-            {
-                if (_enqueuedCount != 0)
-                {
-                    Logger.InfoFormat("{0} scheduled jobs were enqueued.", _enqueuedCount);
-                    _enqueuedCount = 0;
-                }
+            var jobsEnqueued = 0;
 
-                context.Sleep(_pollingInterval);
-            }
-            else
+            while (EnqueueNextScheduledJob(context))
             {
-                // No wait, try to fetch next scheduled job immediately.
-                _enqueuedCount++;
+                jobsEnqueued++;
+
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
+
+            if (jobsEnqueued != 0)
+            {
+                Logger.InfoFormat("{0} scheduled job(s) enqueued.", jobsEnqueued);
+            }
+
+            context.Sleep(_pollingDelay);
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return GetType().Name;
@@ -84,8 +135,7 @@ namespace Hangfire.Server
                 var timestamp = JobHelper.ToTimestamp(DateTime.UtcNow);
 
                 // TODO: it is very slow. Add batching.
-                var jobId = connection
-                    .GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
+                var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
 
                 if (String.IsNullOrEmpty(jobId))
                 {
