@@ -147,7 +147,7 @@ namespace Hangfire.Server
                     context.Storage,
                     connection,
                     jobId,
-                    new EnqueuedState { Reason = "Triggered scheduled job" }, 
+                    new EnqueuedState { Reason = String.Format("Triggered by {0}", ToString()) }, 
                     ScheduledState.StateName));
 
                 if (appliedState == null)
