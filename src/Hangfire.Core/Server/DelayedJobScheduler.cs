@@ -31,13 +31,27 @@ namespace Hangfire.Server
     /// <para>This background process polls the <i>delayed job schedule</i> for 
     /// delayed jobs that are ready to be enqueued. To prevent a stress load
     /// on a job storage, the configurable delay is used between scheduler 
-    /// runs. When a background job is ready to be enqueued, it is simply
+    /// runs. Delay is used only when there are no more background jobs to be
+    /// enqueued.</para>
+    /// 
+    /// <para>When a background job is ready to be enqueued, it is simply
     /// moved from <see cref="ScheduledState"/> to the <see cref="EnqueuedState"/>
     /// by using <see cref="IBackgroundJobStateChanger"/>.</para>
     /// 
     /// <para>Delayed job schedule is based on a Set data structure of a job
     /// storage, so you can use this background process as an example of a
     /// custom extension.</para>
+    ///  
+    /// <para>Multiple instances of this background process can be used in
+    /// separate threads/processes without additional configuration (distributed
+    /// locks are used). However, this only adds support for fail-over, and does 
+    /// not increase the performance.</para>
+    /// 
+    /// <note class="important">
+    /// If you are using <b>custom filter providers</b>, you need to pass a custom
+    /// <see cref="IBackgroundJobStateChanger"/> instance to make this process
+    /// respect your filters when enqueueing background jobs.
+    /// </note>
     /// </remarks>
     /// 
     /// <threadsafety static="true" instance="true"/>
@@ -86,6 +100,8 @@ namespace Hangfire.Server
         /// </summary>
         /// <param name="pollingDelay">Delay between scheduler runs.</param>
         /// <param name="stateChanger">State changer to use for background jobs.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
         public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
             if (stateChanger == null) throw new ArgumentNullException("stateChanger");
@@ -94,13 +110,11 @@ namespace Hangfire.Server
             _pollingDelay = pollingDelay;
         }
 
-        /// <summary>
-        /// Polls for a delayed job schedule while there are background
-        /// jobs to enqueue.
-        /// </summary>
-        /// <param name="context">Context of a background process.</param>
+        /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
+            if (context == null) throw new ArgumentNullException("context");
+
             var jobsEnqueued = 0;
 
             while (EnqueueNextScheduledJob(context))
