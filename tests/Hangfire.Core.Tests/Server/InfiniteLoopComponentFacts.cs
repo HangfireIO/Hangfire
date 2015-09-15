@@ -44,7 +44,7 @@ namespace Hangfire.Core.Tests.Server
             _context.CancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(100));
 
             // Act
-            Assert.Throws<OperationCanceledException>(() => process.Execute(_context.Object));
+            process.Execute(_context.Object);
 
             // Assert
             _innerComponent.Verify(x => x.Execute(_context.CancellationTokenSource.Token), Times.AtLeast(5));
@@ -61,7 +61,7 @@ namespace Hangfire.Core.Tests.Server
             _context.CancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(100));
 
             // Act
-            Assert.Throws<OperationCanceledException>(() => process.Execute(_context.Object));
+            process.Execute(_context.Object);
 
             // Assert
             _innerProcess.Verify(x => x.Execute(_context.Object), Times.AtLeast(5));
@@ -75,7 +75,7 @@ namespace Hangfire.Core.Tests.Server
             _context.CancellationTokenSource.Cancel();
 
             // Act
-            Assert.Throws<OperationCanceledException>(() => process.Execute(_context.Object));
+            process.Execute(_context.Object);
 
             // Assert
             _innerComponent.Verify(x => x.Execute(It.IsAny<CancellationToken>()), Times.Never);
