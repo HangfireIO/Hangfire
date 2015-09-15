@@ -137,22 +137,17 @@ namespace Hangfire.Server
                 // TODO: it is very slow. Add batching.
                 var jobId = connection.GetFirstByLowestScoreFromSet("schedule", 0, timestamp);
 
-                if (String.IsNullOrEmpty(jobId))
+                if (jobId == null)
                 {
                     // No more scheduled jobs pending.
                     return false;
                 }
                 
-                var enqueuedState = new EnqueuedState
-                {
-                    Reason = "Triggered scheduled job"
-                };
-
                 var appliedState = _stateChanger.ChangeState(new StateChangeContext(
                     context.Storage,
                     connection,
-                    jobId, 
-                    enqueuedState, 
+                    jobId,
+                    new EnqueuedState { Reason = "Triggered scheduled job" }, 
                     ScheduledState.StateName));
 
                 if (appliedState == null)
