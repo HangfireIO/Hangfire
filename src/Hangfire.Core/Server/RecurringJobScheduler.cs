@@ -27,6 +27,42 @@ using NCrontab;
 
 namespace Hangfire.Server
 {
+    /// <summary>
+    /// Represents a background process responsible for <i>enqueueing recurring 
+    /// jobs</i>.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>This background process polls the <i>recurring job schedule</i>
+    /// for recurring jobs ready to be enqueued. Interval between scheduler
+    /// polls is hard-coded to <b>1 minute</b> as a compromise between
+    /// frequency and additional stress on job storage.</para>
+    /// 
+    /// <para>Recurring job schedule is based on Set and Hash data structures
+    /// of a job storage, so you can use this background process as an example 
+    /// of a custom extension.</para>
+    /// 
+    /// <para>Multiple instances of this background process can be used in
+    /// separate threads/processes without additional configuration (distributed
+    /// locks are used). However, this only adds support for fail-over, and does 
+    /// not increase the performance.</para>
+    /// 
+    /// <note>
+    /// Use custom background processes if you need to schedule recurring jobs
+    /// with frequency less than one minute. Please see the 
+    /// <see cref="IBackgroundProcess"/> interface for details.
+    /// </note>
+    /// 
+    /// <note class="important">
+    /// If you are using <b>custom filter providers</b>, you need to pass a 
+    /// custom <see cref="IBackgroundJobFactory"/> instance to make this 
+    /// process respect your filters when enqueueing background jobs.
+    /// </note>
+    /// </remarks>
+    /// 
+    /// <threadsafety static="true" instance="true"/>
+    /// 
+    /// <seealso cref="RecurringJobManager"/>
     public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
@@ -36,11 +72,22 @@ namespace Hangfire.Server
         private readonly Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> _instantFactory;
         private readonly IThrottler _throttler;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
+        /// class with default background job factory.
+        /// </summary>
         public RecurringJobScheduler()
             : this(new BackgroundJobFactory())
         {
         }
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
+        /// class with custom background job factory.
+        /// </summary>
+        /// <param name="factory">Factory that will be used to create background jobs.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="factory"/> is null.</exception>
         public RecurringJobScheduler([NotNull] IBackgroundJobFactory factory)
             : this(factory, ScheduleInstant.Factory, new EveryMinuteThrottler())
         {
@@ -60,8 +107,11 @@ namespace Hangfire.Server
             _throttler = throttler;
         }
 
+        /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
+            if (context == null) throw new ArgumentNullException("context");
+
             _throttler.Throttle(context.CancellationToken);
 
             using (var connection = context.Storage.GetConnection())
@@ -97,6 +147,7 @@ namespace Hangfire.Server
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return GetType().Name;
@@ -106,7 +157,7 @@ namespace Hangfire.Server
             JobStorage storage,
             IStorageConnection connection, 
             string recurringJobId, 
-            Dictionary<string, string> recurringJob)
+            IReadOnlyDictionary<string, string> recurringJob)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             var job = serializedJob.Deserialize();
@@ -135,8 +186,7 @@ namespace Hangfire.Server
                         state.Queue = recurringJob["Queue"];
                     }
 
-                    var context = new CreateContext(storage, connection, job, state);
-                    var backgroundJob = _factory.Create(context);
+                    var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state));
                     var jobId = backgroundJob != null ? backgroundJob.Id : null;
 
                     if (String.IsNullOrEmpty(jobId))
