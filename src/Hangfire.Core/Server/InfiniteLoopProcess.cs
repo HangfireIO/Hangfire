@@ -31,9 +31,8 @@ namespace Hangfire.Server
 
         public void Execute(BackgroundProcessContext context)
         {
-            while (true)
+            while (!context.CancellationToken.IsCancellationRequested)
             {
-                context.CancellationToken.ThrowIfCancellationRequested();
                 InnerProcess.Execute(context);
             }
         }
