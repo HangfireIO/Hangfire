@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Common.Logging;
+using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 
@@ -26,7 +26,7 @@ namespace Hangfire
 {
     public class BackgroundJobServer : IServerSupervisor
     {
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(BackgroundJobServer));
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly JobStorage _storage;
         private readonly BackgroundJobServerOptions _options;
@@ -81,11 +81,8 @@ namespace Hangfire
 
             // ReSharper disable once DoNotCallOverridableMethodsInConstructor
             _bootstrapSupervisor = GetBootstrapSupervisor();
-        }
 
-        public void Start()
-        {
-            Logger.Info("Starting Hangfire Server...");
+            Logger.Info("Starting Hangfire Server");
             Logger.InfoFormat("Using job storage: '{0}'.", _storage);
             
             _storage.WriteOptionsToLog(Logger);
@@ -94,9 +91,14 @@ namespace Hangfire
             _bootstrapSupervisor.Start();
         }
 
+        [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
+        public void Start()
+        { 
+        }
+
+        [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
         public void Stop()
         {
-            _bootstrapSupervisor.Stop();
         }
 
         public virtual void Dispose()
@@ -119,7 +121,7 @@ namespace Hangfire
                 _storage, 
                 new Lazy<IServerSupervisor>(GetSupervisors));
 
-            return new ServerSupervisor(
+            return CreateSupervisor(
                 bootstrapper, 
                 new ServerSupervisorOptions
                 {
@@ -139,19 +141,18 @@ namespace Hangfire
 
         private IEnumerable<IServerComponent> GetCommonComponents()
         {
+            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
             var stateMachineFactory = new StateMachineFactory(_storage);
-            var sharedWorkerContext = new SharedWorkerContext(
-                _serverId,
-                _options.Queues,
-                _storage,
-                new JobPerformanceProcess(),
-                JobActivator.Current,
-                stateMachineFactory);
 
-            yield return new WorkerManager(sharedWorkerContext, _options.WorkerCount);
+            for (var i = 0; i < _options.WorkerCount; i++)
+            {
+                var context = new WorkerContext(_serverId, _options.Queues, i + 1);
+                yield return new Worker(context, _storage, performanceProcess, stateMachineFactory);
+            }
+
             yield return new ServerHeartbeat(_storage, _serverId);
-            yield return new ServerWatchdog(_storage);
             yield return new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval);
+            yield return new ServerWatchdog(_storage, _options.ServerWatchdogOptions);
 
             yield return new RecurringJobScheduler(
                 _storage, 
@@ -162,7 +163,12 @@ namespace Hangfire
 
         private static ServerSupervisor CreateSupervisor(IServerComponent component)
         {
-            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component));
+            return CreateSupervisor(component, new ServerSupervisorOptions());
+        }
+
+        private static ServerSupervisor CreateSupervisor(IServerComponent component, ServerSupervisorOptions options)
+        {
+            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component), options);
         }
     }
 }

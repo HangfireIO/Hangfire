@@ -29,6 +29,7 @@ namespace Hangfire
             Filters.Add(new CaptureCultureAttribute());
             Filters.Add(new AutomaticRetryAttribute());
             Filters.Add(new StatisticsHistoryAttribute());
+            Filters.Add(new ContinuationsSupportAttribute());
         }
 
         /// <summary>

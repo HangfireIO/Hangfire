@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Hangfire</id>
-    <version>__HANGFIRE_PACKAGE_VERSION__</version>
+    <version>0.0.0</version>
     <title>Hangfire</title>
     <authors>Sergey Odinokov</authors>
     <owners>odinserj</owners>
@@ -14,52 +14,88 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
-    <copyright>Copyright © Sergey Odinokov</copyright>
-    <tags>Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
+    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
+    <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
-1.2.2
-* Changed – Add constraint for Common.Logging package to support only versions 2.2.0 and below.
-* Fixed – QueuePollInterval option for SQL Server storage do not work.
+1.4.6
+* Fixed – SQL command timeout in `DisableConcurrentExecution` filter (by @Tom-Kelly).
+* Fixed – SQL deadlocks in `ExpirationManager` background process.
+* Fixed – Too many queries in `SchedulePoller` when background job is missing or in another state.
     
-1.2.1
-* Added – Ability to pass existing `SqlConnection` to `SqlServerStorage`.
-* Changed – Throw `NotSupportedException` for methods returning `Task`.
-* Fixed – Dashboard throws exception for deleted job in 1.2.
-* Fixed – SqlServerStorage.ToString() uses case sensitive checks.
+1.4.5
+* Fixed – "This stream does not support seek operations." exception in Dashboard buttons and stats.
     
-1.2.0
-* Removed – HANGFIRE.REDIS PACKAGE MOVED TO PRO VERSION.
-* Added – Support for **generic types and methods** for background jobs (by @gorbach).
-* Added – GetDescription method to Cron (by @djrineh).
-* Added – Support for System.Threading.CancellationToken.
-* Added – Make Job(Type, MethodInfo, string[]) ctor public.
-* Changed – Provide a ceiling value for `WorkerCount` setting.
-* Fixed – Call `Dispose` method instead of `Stop` for graceful shutdown.
-* Fixed – ArgumentException: No conversion available between `Func` and `OwinMiddleware`.
-* Fixed – Updated UseRabbitMq extension method to actually use the VirtualHost property (by @gaiazov).
+1.4.4
+* Fixed – `InvalidCastException` in Dashboard when using Microsoft.Owin 3.0.1 package.
+* Fixed – Non-working buttons and counter updates in Dashboard when a body stream isn't at the start position.
     
-1.1.1
-* Fixed – `IAuthorizationFilter.Authorize` method issues with `IOwinContext` interface.
+1.4.3
+* Fixed – SQL Server storage does not work with case-sensitive and binary collations (by @ilessa).
+* Fixed – "Incorrect syntax near 'MERGE'" error in `CountersAggregator` component.
+* Fixed – `OverflowException` on Job Details page when latency is too high (by @schulz3000).
+* Fixed – Job serialization fix when using `TypeNameHandling.All` option (by @tystol).
+    
+1.4.2
+* Added – Missing generic methods for continuations (by @yngndrw).
+* Fixed – MSMQ extension does not work without explicit queue names in `UseMsmqQueues`.
+* Fixed – Missing null-check in Retries page after casting connection to `JobStorageConnection`.
+* Fixed – Enqueued jobs cannot be deleted from the Dashboard.
+* Fixed – Error when building the project using `build.bat` on a machine with VS 2013 only (by @Cussa).
+* Fixed – Incompatibility issue with RabbitMQ.Client >= 3.4.0 (by @justmara).
+    
+1.4.1
+* Fixed – 1.4.0 ignoring `BackgroundJobServerOptions` settings in `UseHangfireServer` method.
 
-1.1.0
-* Added – Add ability to automatically delete job when retry attempts exceeded. Thanks to @sgrassie!
-* Added – Serializing job arguments to JSON: arrays, collections and custom objects are fully supported now.
-* Added – Job filters can access method's return value. You can also see it in the Dashboard. Thanks to @gius!
-* Added – Ability to plug in multiple dashboards with different storages.
-* Added – Method to query recurring jobs to the Storage API.
-* Changed – NCrontab, CronExpressionDescriptor and Microsoft.Owin dependencies merged with Hangfire.Core and internalized.
-* Fixed – NextExecution values are only updated upon execution.
-* Fixed – Force IE compatibility to edge for Intranet sites. Thanks to @jeremycook!
-* Fixed – Added missing event argument in Dashboard UI. Thanks to @jeremycook!
-* Fixed – `ArgumentNullException` is being thrown on job completion.
-* Fixed – CPU bursts every 0th minute caused by the `RecurringJobScheduler` class.
-* Fixed – Redis.FetchedJobsWatcher prohibits jobs from running longer than 15 minutes.
+1.4.0
+
+Hangfire.Core:
+* Added – Job continuations, please see new `BackgroundJob.ContinueWith` methods.
+* Added – Time zone support for recurring jobs using `TimeZoneInfo` class.
+* Added – Single place for global configuration, please see `GlobalConfiguration` class.
+* Added – Made configurable the 'Back to Site' path in the dashboard (by @ysasaki1985).
+* Added – Ability to plug in custom dashboard pages and modify navigation.
+* Added – Ability to add custom metrics to the Home page in Dashboard.
+* Added – Test coverage badge from Coveralls application.
+* Added – Dedicated page for retrying jobs to distinguish them from other scheduled jobs.
+* Added – Show expiration time on Job Details page.
+* Added – More methods for build-in storage through `JobStorageConnection` and `JobStorageTransaction` classes.
+* Added – Paging support for Recurring Jobs page.
+* Added – New OWIN's `IAppBuilder` extension methods: `UseHangfireDashboard` and `UseHangfireServer`.
+* Added – Add a notice about failed jobs expiration time.
+* Added – Show warnings in Dashboard for jobs processing by inactive servers.
+* Changed – New look and feel for Dashboard. New navigation, less colors, more accents.
+* Changed – Determine job type of a current object when `MethodCallExpression` has `Object` property set.
+* Changed – Making Product Version and File Version on the dll match the Assembly Version (by @fire-eagle).
+* Changed – Use different log level for exceptions occured within automatic retry wrapper.
+* Changed – Retry a job when there was an exception during state transition instead of moving it to the Failed state.
+* Fixed – Recurring Page throws exception from CronExpressionDescriptor library.
+* Fixed – Hangfire stops processing when storage outage was too long.
+* Fixed – Don't leak foreground colors in ColouredConsoleLogger.
+* Obsolete – `BackgroundJobServer`'s `Start` and `Stop` methods are obsolete.
+
+Hangfire.SqlServer:
+* Added – Ability to pass isolation level to use in transactions, default is `serializable`.
+* Added – Make the expiration check interval configurable (by @travisblakeney).
+* Changed – Use read committed or parent transaction isolation level instead of `serializable`.
+* Changed – Automatically aggregate records in `Hangfire.Counter` table.
+* Changed – Add indexes to prevent blocking rows by Expiration Manager.
+* Changed – Remove the `with tablock` hint from the expiration cleanup (by @travisblakeney).
+* Changed – Don't pass IsolationLevel to TransactionScope by default.
+* Changed – Coarse grained locks for Hash, List and Set tables to prevent deadlocks.
+* Fixed – Retry on deadlocks during automatic migration on server restart.
+
+Hangfire.SqlServer.Msmq:
+* Changed – Speed up `GetCount` method with native implementation.
+* Fixed – Incorrect order of fetching when multiple queues used.
+
+Hangfire.RabbitMQ:
+* Added – Allow a URI to be used for `RabbitMQConnectionConfiguration` (by @dennyferra).
     </releaseNotes>
     <dependencies>
-      <dependency id="Hangfire.Core" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Hangfire.SqlServer" version="__HANGFIRE_PACKAGE_VERSION__" />
-      <dependency id="Microsoft.Owin.Host.SystemWeb" version="2.1.0" />
+      <dependency id="Hangfire.Core" version="[0.0.0]" />
+      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
+      <dependency id="Microsoft.Owin.Host.SystemWeb" version="3.0.0" />
     </dependencies>
   </metadata>
   <files>

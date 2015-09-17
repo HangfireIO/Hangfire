@@ -14,7 +14,8 @@ namespace Hangfire.SqlServer.Tests
 
         public ExpirationManagerFacts()
         {
-            _token = new CancellationToken(true);
+            var cts = new CancellationTokenSource();
+            _token = cts.Token;
         }
 
         [Fact]
@@ -66,13 +67,13 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact, CleanDatabase]
-        public void Execute_Processes_CounterTable()
+        public void Execute_Processes_AggregatedCounterTable()
         {
             using (var connection = CreateConnection())
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.Counter ([Key], [Value], ExpireAt) 
+insert into HangFire.AggregatedCounter ([Key], [Value], ExpireAt) 
 values ('key', 1, @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -173,7 +174,7 @@ values ('key', 'field', '', @expireAt)";
         private static int CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
         {
             const string insertSql = @"
-insert into HangFire.Counter ([Key], [Value], [ExpireAt])
+insert into HangFire.AggregatedCounter ([Key], [Value], [ExpireAt])
 values ('key', 1, @expireAt)
 select scope_identity() as Id";
 
@@ -185,7 +186,7 @@ select scope_identity() as Id";
         private static bool IsEntryExpired(SqlConnection connection, int entryId)
         {
             var count = connection.Query<int>(
-                    "select count(*) from HangFire.Counter where Id = @id", new { id = entryId }).Single();
+                    "select count(*) from HangFire.AggregatedCounter where Id = @id", new { id = entryId }).Single();
             return count == 0;
         }
 
@@ -197,7 +198,7 @@ select scope_identity() as Id";
         private ExpirationManager CreateManager(SqlConnection connection)
         {
             var storage = new SqlServerStorage(connection);
-            return new ExpirationManager(storage);
+            return new ExpirationManager(storage, TimeSpan.Zero);
         }
     }
 }

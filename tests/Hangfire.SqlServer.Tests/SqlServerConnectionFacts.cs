@@ -10,31 +10,31 @@ using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerConnectionFacts
     {
         private readonly Mock<IPersistentJobQueue> _queue;
-        private readonly Mock<IPersistentJobQueueProvider> _provider;
         private readonly PersistentJobQueueProviderCollection _providers;
 
         public SqlServerConnectionFacts()
         {
             _queue = new Mock<IPersistentJobQueue>();
 
-            _provider = new Mock<IPersistentJobQueueProvider>();
-            _provider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+            var provider = new Mock<IPersistentJobQueueProvider>();
+            provider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
                 .Returns(_queue.Object);
 
-            _providers = new PersistentJobQueueProviderCollection(_provider.Object);
+            _providers = new PersistentJobQueueProviderCollection(provider.Object);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, _providers));
+                () => new SqlServerConnection(null, IsolationLevel.Serializable, _providers));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -43,7 +43,7 @@ namespace Hangfire.SqlServer.Tests
         public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), null));
+                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), IsolationLevel.Serializable, null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -53,7 +53,7 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {
-                var connection = new SqlServerConnection(sqlConnection, _providers);
+                var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers);
 
                 connection.Dispose();
 
@@ -66,7 +66,7 @@ namespace Hangfire.SqlServer.Tests
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {
-                var connection = new SqlServerConnection(sqlConnection, _providers, ownsConnection: false);
+                var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers, ownsConnection: false);
 
                 connection.Dispose();
 
@@ -297,6 +297,41 @@ select @JobId as Id;";
 
                 Assert.Equal("Name", result.Name);
                 Assert.Equal("Reason", result.Reason);
+                Assert.Equal("Value", result.Data["Key"]);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetStateData_ReturnsCorrectData_WhenPropertiesAreCamelcased()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Job (InvocationData, Arguments, StateName, CreatedAt)
+values ('', '', '', getutcdate());
+declare @JobId int;
+set @JobId = scope_identity();
+insert into HangFire.State (JobId, Name, CreatedAt)
+values (@JobId, 'old-state', getutcdate());
+insert into HangFire.State (JobId, Name, Reason, Data, CreatedAt)
+values (@JobId, @name, @reason, @data, getutcdate());
+declare @StateId int;
+set @StateId = scope_identity();
+update HangFire.Job set StateId = @StateId;
+select @JobId as Id;";
+
+            UseConnections((sql, connection) =>
+            {
+                var data = new Dictionary<string, string>
+                {
+                    { "key", "Value" }
+                };
+
+                var jobId = (int)sql.Query(
+                    arrangeSql,
+                    new { name = "Name", reason = "Reason", @data = JobHelper.ToJson(data) }).Single().Id;
+
+                var result = connection.GetStateData(jobId.ToString());
+                Assert.NotNull(result);
+
                 Assert.Equal("Value", result.Data["Key"]);
             });
         }
@@ -809,10 +844,530 @@ values (@key, @field, @value)";
             });
         }
 
+        [Fact, CleanDatabase]
+        public void GetSetCount_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => connection.GetSetCount(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetSetCount_ReturnsZero_WhenSetDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetCount("my-set");
+                Assert.Equal(0, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetSetCount_ReturnsNumberOfElements_InASet()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], [Value], [Score])
+values (@key, @value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { key = "set-1", value = "value-1" },
+                    new { key = "set-2", value = "value-1" },
+                    new { key = "set-1", value = "value-2" }
+                });
+
+                var result = connection.GetSetCount("set-1");
+
+                Assert.Equal(2, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(() => connection.GetRangeFromSet(null, 0, 1));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetRangeFromSet_ReturnsPagedElements()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], [Value], [Score])
+values (@Key, @Value, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                sql.Execute(arrangeSql, new List<dynamic>
+                {
+                    new { Key = "set-1", Value = "1" },
+                    new { Key = "set-1", Value = "2" },
+                    new { Key = "set-1", Value = "3" },
+                    new { Key = "set-1", Value = "4" },
+                    new { Key = "set-2", Value = "4" },
+                    new { Key = "set-1", Value = "5" }
+                });
+
+                var result = connection.GetRangeFromSet("set-1", 2, 3);
+
+                Assert.Equal(new [] { "3", "4" }, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetCounter_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => connection.GetCounter(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetCounter_ReturnsZero_WhenKeyDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetCounter("my-counter");
+                Assert.Equal(0, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetCounter_ReturnsSumOfValues_InCounterTable()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Counter ([Key], [Value])
+values (@key, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "counter-1", value = 1 },
+                    new { key = "counter-2", value = 1 },
+                    new { key = "counter-1", value = 1 }
+                });
+
+                // Act
+                var result = connection.GetCounter("counter-1");
+
+                // Assert
+                Assert.Equal(2, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetCounter_IncludesValues_FromCounterAggregateTable()
+        {
+            const string arrangeSql = @"
+insert into HangFire.AggregatedCounter ([Key], [Value])
+values (@key, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "counter-1", value = 12 },
+                    new { key = "counter-2", value = 15 }
+                });
+
+                // Act
+                var result = connection.GetCounter("counter-1");
+
+                Assert.Equal(12, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetHashCount_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(() => connection.GetHashCount(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetHashCount_ReturnsZero_WhenKeyDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetHashCount("my-hash");
+                Assert.Equal(0, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetHashCount_ReturnsNumber_OfHashFields()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Hash ([Key], [Field])
+values (@key, @field)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "hash-1", field = "field-1" },
+                    new { key = "hash-1", field = "field-2" },
+                    new { key = "hash-2", field = "field-1" }
+                });
+
+                // Act
+                var result = connection.GetHashCount("hash-1");
+
+                // Assert
+                Assert.Equal(2, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetHashTtl_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => connection.GetHashTtl(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetHashTtl_ReturnsNegativeValue_WhenHashDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetHashTtl("my-hash");
+                Assert.True(result < TimeSpan.Zero);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetHashTtl_ReturnsExpirationTimeForHash()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Hash ([Key], [Field], [ExpireAt])
+values (@key, @field, @expireAt)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "hash-1", field = "field", expireAt = (DateTime?)DateTime.UtcNow.AddHours(1) },
+                    new { key = "hash-2", field = "field", expireAt = (DateTime?) null }
+                });
+
+                // Act
+                var result = connection.GetHashTtl("hash-1");
+
+                // Assert
+                Assert.True(TimeSpan.FromMinutes(59) < result);
+                Assert.True(result < TimeSpan.FromMinutes(61));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetListCount_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => connection.GetListCount(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetListCount_ReturnsZero_WhenListDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetListCount("my-list");
+                Assert.Equal(0, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetListCount_ReturnsTheNumberOfListElements()
+        {
+            const string arrangeSql = @"
+insert into HangFire.List ([Key])
+values (@key)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "list-1" },
+                    new { key = "list-1" },
+                    new { key = "list-2" }
+                });
+
+                // Act
+                var result = connection.GetListCount("list-1");
+
+                // Assert
+                Assert.Equal(2, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetListTtl_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => connection.GetListTtl(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetListTtl_ReturnsNegativeValue_WhenListDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetListTtl("my-list");
+                Assert.True(result < TimeSpan.Zero);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetListTtl_ReturnsExpirationTimeForList()
+        {
+            const string arrangeSql = @"
+insert into HangFire.List ([Key], [ExpireAt])
+values (@key, @expireAt)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "list-1", expireAt = (DateTime?) DateTime.UtcNow.AddHours(1) },
+                    new { key = "list-2", expireAt = (DateTime?) null }
+                });
+
+                // Act
+                var result = connection.GetListTtl("list-1");
+
+                // Assert
+                Assert.True(TimeSpan.FromMinutes(59) < result);
+                Assert.True(result < TimeSpan.FromMinutes(61));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetValueFromHash_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetValueFromHash(null, "name"));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetValueFromHash_ThrowsAnException_WhenNameIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetValueFromHash("key", null));
+
+                Assert.Equal("name", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetValueFromHash_ReturnsNull_WhenHashDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetValueFromHash("my-hash", "name");
+                Assert.Null(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetValueFromHash_ReturnsValue_OfAGivenField()
+        {
+            const string arrangeSql = @"
+insert into HangFire.Hash ([Key], [Field], [Value])
+values (@key, @field, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "hash-1", field = "field-1", value = "1" },
+                    new { key = "hash-1", field = "field-2", value = "2" },
+                    new { key = "hash-2", field = "field-1", value = "3" }
+                });
+
+                // Act
+                var result = connection.GetValueFromHash("hash-1", "field-1");
+
+                // Assert
+                Assert.Equal("1", result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetRangeFromList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                var exception = Assert.Throws<ArgumentNullException>(
+                    () => connection.GetRangeFromList(null, 0, 1));
+
+                Assert.Equal("key", exception.ParamName);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetRangeFromList_ReturnsAnEmptyList_WhenListDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetRangeFromList("my-list", 0, 1);
+                Assert.Empty(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetRangeFromList_ReturnsAllEntries_WithinGivenBounds()
+        {
+            const string arrangeSql = @"
+insert into HangFire.List ([Key], [Value])
+values (@key, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "list-1", value = "1" },
+                    new { key = "list-2", value = "2" },
+                    new { key = "list-1", value = "3" },
+                    new { key = "list-1", value = "4" },
+                    new { key = "list-1", value = "5" }
+                });
+
+                // Act
+                var result = connection.GetRangeFromList("list-1", 1, 2);
+                
+                // Assert
+                Assert.Equal(new [] { "4", "3" }, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(
+                    () => connection.GetAllItemsFromList(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromList_ReturnsAnEmptyList_WhenListDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetAllItemsFromList("my-list");
+                Assert.Empty(result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetAllItemsFromList_ReturnsAllItems_FromAGivenList()
+        {
+            const string arrangeSql = @"
+insert into HangFire.List ([Key], Value)
+values (@key, @value)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "list-1", value = "1" },
+                    new { key = "list-2", value = "2" },
+                    new { key = "list-1", value = "3" }
+                });
+
+                // Act
+                var result = connection.GetAllItemsFromList("list-1");
+
+                // Assert
+                Assert.Equal(new [] { "3", "1" }, result);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetSetTtl_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseConnection(connection =>
+            {
+                Assert.Throws<ArgumentNullException>(() => connection.GetSetTtl(null));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetSetTtl_ReturnsNegativeValue_WhenSetDoesNotExist()
+        {
+            UseConnection(connection =>
+            {
+                var result = connection.GetSetTtl("my-set");
+                Assert.True(result < TimeSpan.Zero);
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void GetSetTtl_ReturnsExpirationTime_OfAGivenSet()
+        {
+            const string arrangeSql = @"
+insert into HangFire.[Set] ([Key], [Value], [ExpireAt], [Score])
+values (@key, @value, @expireAt, 0.0)";
+
+            UseConnections((sql, connection) =>
+            {
+                // Arrange
+                sql.Execute(arrangeSql, new[]
+                {
+                    new { key = "set-1", value = "1", expireAt = (DateTime?) DateTime.UtcNow.AddMinutes(60) },
+                    new { key = "set-2", value = "2", expireAt = (DateTime?) null }
+                });
+
+                // Act
+                var result = connection.GetSetTtl("set-1");
+
+                // Assert
+                Assert.True(TimeSpan.FromMinutes(59) < result);
+                Assert.True(result < TimeSpan.FromMinutes(61));
+            });
+        }
+
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, _providers))
+            using (var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers))
             {
                 action(sqlConnection, connection);
             }
@@ -822,6 +1377,7 @@ values (@key, @field, @value)";
         {
             using (var connection = new SqlServerConnection( 
                 ConnectionUtils.CreateConnection(),
+                IsolationLevel.Serializable,
                 _providers))
             {
                 action(connection);

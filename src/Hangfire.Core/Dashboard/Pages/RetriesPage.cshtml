@@ -1,0 +1,149 @@
+﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
+@using System.Collections.Generic
+@using Hangfire.Common
+@using Hangfire.Dashboard
+@using Hangfire.Dashboard.Pages
+@using Hangfire.Storage
+@inherits RazorPage
+@{
+    Layout = new LayoutPage("Retries");
+    
+    int from, perPage;
+
+    int.TryParse(Query("from"), out from);
+    int.TryParse(Query("count"), out perPage);
+
+    Pager pager = null;
+    List<string> jobIds = null;
+
+    using (var connection = Storage.GetConnection())
+    {
+        var storageConnection = connection as JobStorageConnection;
+
+        if (storageConnection != null)
+        {
+            pager = new Pager(@from, perPage, storageConnection.GetSetCount("retries"));
+            jobIds = storageConnection.GetRangeFromSet("retries", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
+        }
+    }
+}
+
+@if (pager == null)
+{
+    <div class="alert alert-warning">
+        <h4>Retries are working, but this page can't be displayed</h4>
+        <p>
+            Don't worry, retries are fully supported. Your current job storage does not fully support
+            some queries required to show this page. Please try to update your storage or wait until
+            the full command set is implemented.
+        </p>
+        <p>
+            Please go to the <a href="@Url.To("/jobs/scheduled")">Scheduled jobs</a> page to see all the
+            scheduled jobs including retries.
+        </p>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header">Retries</h1>
+            @if (jobIds.Count == 0)
+            {
+                <div class="alert alert-success">
+                    All is OK – you have no retries.
+                </div>
+            }
+            else
+            {
+                <div class="js-jobs-list">
+                    <div class="btn-toolbar btn-toolbar-top">
+                        <button class="js-jobs-list-command btn btn-sm btn-primary"
+                                data-url="@Url.To("/jobs/scheduled/enqueue")"
+                                data-loading-text="Enqueueing..."
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-repeat"></span>
+                            Enqueue jobs
+                        </button>
+
+                        <button class="js-jobs-list-command btn btn-sm btn-default"
+                                data-url="@Url.To("/jobs/scheduled/delete")"
+                                data-loading-text="Deleting..."
+                                data-confirm="Do you really want to DELETE ALL selected jobs?"
+                                disabled="disabled">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            Delete selected
+                        </button>
+
+                        @Html.PerPageSelector(pager)
+                    </div>
+
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all" />
+                                </th>
+                                <th class="min-width">Id</th>
+                                <th class="min-width">State</th>
+                                <th>Job</th>
+                                <th>Reason</th>
+                                <th class="align-right">Retry</th>
+                                <th class="align-right">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var jobId in jobIds)
+                            {
+                                JobData jobData;
+                                StateData stateData;
+
+                                using (var connection = Storage.GetConnection())
+                                {
+                                    jobData = connection.GetJobData(jobId);
+                                    stateData = connection.GetStateData(jobId);
+                                }
+
+                                <tr class="js-jobs-list-row @(jobData != null ? "hover" : null)">
+                                    <td>
+                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@jobId" />
+                                    </td>
+                                    <td class="min-width">
+                                        @Html.JobIdLink(jobId)
+                                    </td>
+                                    @if (jobData == null)
+                                    {
+                                        <td colspan="5"><em>Job expired.</em></td>
+                                    }
+                                    else
+                                    {
+                                        <td class="min-width">
+                                            @Html.StateLabel(jobData.State)
+                                        </td>
+                                        <td>
+                                            @Html.JobNameLink(jobId, jobData.Job)
+                                        </td>
+                                        <td>
+                                            @(stateData != null ? stateData.Reason : null)
+                                        </td>
+                                        <td class="align-right">
+                                            @if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))
+                                            {
+                                                @Html.RelativeTime(JobHelper.DeserializeDateTime(stateData.Data["EnqueueAt"]))
+                                            }
+                                        </td>
+                                        <td class="align-right">
+                                            @Html.RelativeTime(jobData.CreatedAt)
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @Html.Paginator(pager)
+                </div>
+            }
+        </div>
+    </div>
+}

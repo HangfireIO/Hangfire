@@ -182,13 +182,5 @@ namespace Hangfire.Core.Tests
             string actual = Cron.Yearly(month, day, hour, minute);
             Assert.Equal(expected, actual);
         }
-
-        [Fact]
-        public void GetDescription_ReturnsTheDescription_OfAGivenCron()
-        {
-            string expected = "Every minute";
-            string actual = Cron.GetDescription(Cron.Minutely());
-            Assert.Equal(expected, actual);
-        }
     }
 }

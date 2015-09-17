@@ -17,6 +17,8 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Hangfire.Annotations;
+using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 
@@ -24,23 +26,78 @@ namespace Hangfire.Server
 {
     internal class Worker : IServerComponent
     {
+        private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
+
+        private readonly JobStorage _storage;
+        private readonly IJobPerformanceProcess _process;
+        private readonly IStateMachineFactory _stateMachineFactory;
         private readonly WorkerContext _context;
 
-        public Worker(WorkerContext context)
+        public Worker(
+            [NotNull] WorkerContext context,
+            [NotNull] JobStorage storage, 
+            [NotNull] IJobPerformanceProcess process, 
+            [NotNull] IStateMachineFactory stateMachineFactory)
         {
             if (context == null) throw new ArgumentNullException("context");
-
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (process == null) throw new ArgumentNullException("process");
+            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
+            
             _context = context;
+            _storage = storage;
+            _process = process;
+            _stateMachineFactory = stateMachineFactory;
         }
 
         public void Execute(CancellationToken cancellationToken)
         {
-            using (var connection = _context.Storage.GetConnection())
+            using (var connection = _storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_context.Queues, cancellationToken))
             {
                 try
                 {
-                    ProcessJob(fetchedJob.JobId, connection, _context.PerformanceProcess, cancellationToken);
+                    var stateMachine = _stateMachineFactory.Create(connection);
+
+                    using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
+                    using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                        cancellationToken,
+                        timeoutCts.Token))
+                    {
+                        var processingState = new ProcessingState(_context.ServerId, _context.WorkerNumber);
+
+                        if (!stateMachine.ChangeState(
+                            fetchedJob.JobId,
+                            processingState,
+                            new[] { EnqueuedState.StateName, ProcessingState.StateName },
+                            linkedCts.Token))
+                        {
+                            // We should re-queue a job identifier only when graceful shutdown
+                            // initiated.
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            // We should forget a job in a wrong state, or when timeout exceeded.
+                            fetchedJob.RemoveFromQueue();
+                            return;
+                        }
+                    }
+
+                    // Checkpoint #3. Job is in the Processing state. However, there are
+                    // no guarantees that it was performed. We need to re-queue it even
+                    // it was performed to guarantee that it was performed AT LEAST once.
+                    // It will be re-queued after the JobTimeout was expired.
+
+                    var jobCancellationToken = new ServerJobCancellationToken(
+                        fetchedJob.JobId, connection, _context, cancellationToken);
+
+                    var state = PerformJob(fetchedJob.JobId, connection, jobCancellationToken);
+
+                    if (state != null)
+                    {
+                        // Ignore return value, because we should not do anything when current state is not Processing.
+                        stateMachine.ChangeState(fetchedJob.JobId, state, new[] { ProcessingState.StateName });
+                    }
 
                     // Checkpoint #4. The job was performed, and it is in the one
                     // of the explicit states (Succeeded, Scheduled and so on).
@@ -56,8 +113,10 @@ namespace Hangfire.Server
                 {
                     fetchedJob.RemoveFromQueue();
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.DebugException("An exception occurred while processing a job. It will be re-queued.", ex);
+
                     fetchedJob.Requeue();
                     throw;
                 }
@@ -69,48 +128,32 @@ namespace Hangfire.Server
             return "Worker #" + _context.WorkerNumber;
         }
 
-        private void ProcessJob(
-            string jobId,
-            IStorageConnection connection, 
-            IJobPerformanceProcess process,
-            CancellationToken shutdownToken)
+        private IState PerformJob(string jobId, IStorageConnection connection, IJobCancellationToken token)
         {
-            var stateMachine = _context.StateMachineFactory.Create(connection);
-            var processingState = new ProcessingState(_context.ServerId, _context.WorkerNumber);
-
-            if (!stateMachine.TryToChangeState(
-                jobId,
-                processingState,
-                new[] { EnqueuedState.StateName, ProcessingState.StateName }))
-            {
-                return;
-            }
-
-            // Checkpoint #3. Job is in the Processing state. However, there are
-            // no guarantees that it was performed. We need to re-queue it even
-            // it was performed to guarantee that it was performed AT LEAST once.
-            // It will be re-queued after the JobTimeout was expired.
-
-            IState state;
-
             try
             {
                 var jobData = connection.GetJobData(jobId);
+                if (jobData == null)
+                {
+                    // Job expired just after moving to a processing state. This is an
+                    // unreal scenario, but shit happens. Returning null instead of throwing
+                    // an exception and rescuing from en-queueing a poisoned jobId back
+                    // to a queue.
+                    return null;
+                }
+
                 jobData.EnsureLoaded();
 
-                var cancellationToken = new ServerJobCancellationToken(
-                    jobId, connection, _context, shutdownToken);
-
                 var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, cancellationToken);
+                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, token);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
-                var result = process.Run(performContext, jobData.Job);
+                var result = _process.Run(performContext, jobData.Job);
                 duration.Stop();
 
-                state = new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
             }
             catch (OperationCanceledException)
             {
@@ -118,22 +161,18 @@ namespace Hangfire.Server
             }
             catch (JobPerformanceException ex)
             {
-                state = new FailedState(ex.InnerException)
+                return new FailedState(ex.InnerException)
                 {
                     Reason = ex.Message
                 };
             }
             catch (Exception ex)
             {
-                state = new FailedState(ex)
+                return new FailedState(ex)
                 {
                     Reason = "Internal Hangfire Server exception occurred. Please, report it to Hangfire developers."
                 };
             }
-
-            // Ignore return value, because we should not do
-            // anything when current state is not Processing.
-            stateMachine.TryToChangeState(jobId, state, new[] { ProcessingState.StateName });
         }
     }
 }

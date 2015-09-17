@@ -14,10 +14,13 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Storage;
+
 namespace Hangfire.States
 {
     public interface IStateChangeProcess
     {
-        bool ChangeState(StateContext context, IState toState, string oldStateName);
+        void ElectState(IStorageConnection connection, ElectStateContext context);
+        void ApplyState(IWriteOnlyTransaction transaction, ApplyStateContext context);
     }
 }

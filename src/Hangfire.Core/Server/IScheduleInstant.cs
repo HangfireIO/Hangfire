@@ -21,8 +21,8 @@ namespace Hangfire.Server
 {
     internal interface IScheduleInstant
     {
-        DateTime UtcTime { get; }
-        DateTime NextOccurrence { get; }
-        IEnumerable<DateTime> GetMatches(DateTime? lastMachingTime);
+        DateTime NowInstant { get; }
+        DateTime NextInstant { get; }
+        IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant);
     }
 }

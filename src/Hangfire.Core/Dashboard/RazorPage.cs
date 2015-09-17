@@ -15,47 +15,91 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
+using Hangfire.Storage.Monitoring;
 using Microsoft.Owin;
 
 namespace Hangfire.Dashboard
 {
     public abstract class RazorPage 
     {
-        public static Func<Exception, RazorPage> ExceptionHandler;
+        private Lazy<StatisticsDto> _statisticsLazy;
 
         private readonly StringBuilder _content = new StringBuilder();
-        private string _innerContent;
+        private string _body;
+
+        protected RazorPage()
+        {
+            GenerationTime = Stopwatch.StartNew();
+            Html = new HtmlHelper(this);
+        }
 
         public RazorPage Layout { get; protected set; }
-        public IOwinRequest Request { get; internal set; }
-        public IOwinResponse Response { get; internal set; }
+        public HtmlHelper Html { get; private set; }
+        public UrlHelper Url { get; private set; }
+
         public JobStorage Storage { get; internal set; }
+        public string AppPath { get; internal set; }
+        public Stopwatch GenerationTime { get; private set; }
+
+        public StatisticsDto Statistics
+        {
+            get
+            {
+                if (_statisticsLazy == null) throw new InvalidOperationException("Page is not initialized.");
+                return _statisticsLazy.Value;
+            }
+        }
+
+        internal IOwinRequest Request { private get; set; }
+        internal IOwinResponse Response { private get; set; }
+
+        public string RequestPath
+        {
+            get { return Request.Path.Value; }
+        }
 
         public abstract void Execute();
 
-        public string TransformText()
+        public string Query(string key)
+        {
+            return Request.Query[key];
+        }
+
+        public override string ToString()
         {
             return TransformText(null);
         }
 
-        public string TransformText(string innerContent)
+        public void Assign(RazorPage parentPage)
         {
-            _innerContent = innerContent;
+            Request = parentPage.Request;
+            Response = parentPage.Response;
+            Storage = parentPage.Storage;
+            AppPath = parentPage.AppPath;
+            Url = parentPage.Url;
 
-            Execute();
+            GenerationTime = parentPage.GenerationTime;
+            _statisticsLazy = parentPage._statisticsLazy;
+        }
 
-            if (Layout != null)
+        internal void Assign(RequestDispatcherContext context)
+        {
+            var owinContext = new OwinContext(context.OwinEnvironment);
+
+            Request = owinContext.Request;
+            Response = owinContext.Response;
+            Storage = context.JobStorage;
+            AppPath = context.AppPath;
+            Url = new UrlHelper(context.OwinEnvironment);
+
+            _statisticsLazy = new Lazy<StatisticsDto>(() =>
             {
-                Layout.Request = Request;
-                Layout.Response = Response;
-                Layout.Storage = Storage;
-
-                return Layout.TransformText(_content.ToString());
-            }
-
-            return _content.ToString();
+                var monitoring = Storage.GetMonitoringApi();
+                return monitoring.GetStatistics();
+            });
         }
 
         protected void WriteLiteral(string textToAppend)
@@ -75,16 +119,25 @@ namespace Hangfire.Dashboard
 
         protected virtual object RenderBody()
         {
-            return new NonEscapedString(_innerContent);
+            return new NonEscapedString(_body);
         }
 
-        protected NonEscapedString RenderPartial(RazorPage page)
+        private string TransformText(string body)
         {
-            page.Execute();
-            return new NonEscapedString(page._content.ToString());
+            _body = body;
+            
+            Execute();
+            
+            if (Layout != null)
+            {
+                Layout.Assign(this);
+                return Layout.TransformText(_content.ToString());
+            }
+            
+            return _content.ToString();
         }
 
-        private string Encode(string text)
+        private static string Encode(string text)
         {
             return string.IsNullOrEmpty(text)
                        ? string.Empty

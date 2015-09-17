@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Messaging;
+using Rsft.Lib.Msmq.MessageCounter;
 
 namespace Hangfire.SqlServer.Msmq
 {
@@ -79,18 +80,10 @@ namespace Hangfire.SqlServer.Msmq
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
             using (var messageQueue = new MessageQueue(String.Format(_pathPattern, queue)))
-            {
-                var count = 0;
-                var enumerator = messageQueue.GetMessageEnumerator2();
-
-                while (enumerator.MoveNext())
-                {
-                    count++; 
-                }
-
+            {                
                 return new EnqueuedAndFetchedCountDto
                 {
-                    EnqueuedCount = count
+                    EnqueuedCount = (int?)messageQueue.GetCount()
                 };
             }
         }

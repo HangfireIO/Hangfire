@@ -15,11 +15,10 @@
 -- License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 3;
+SET @TARGET_SCHEMA_VERSION = 4;
 
 PRINT 'Installing Hangfire SQL objects...';
 
-SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
 BEGIN TRANSACTION;
 
 -- Create the database schema if it doesn't exists
@@ -297,13 +296,61 @@ BEGIN
 		SET @CURRENT_SCHEMA_VERSION = 3;
 	END
 
-	/*IF @CURRENT_SCHEMA_VERSION = 3
+	IF @CURRENT_SCHEMA_VERSION = 3
 	BEGIN
 		PRINT 'Installing schema version 4';
 
-		-- Insert migration here
+		CREATE TABLE [HangFire].[AggregatedCounter] (
+			[Id] [int] IDENTITY(1,1) NOT NULL,
+			[Key] [nvarchar](100) NOT NULL,
+			[Value] [bigint] NOT NULL,
+			[ExpireAt] [datetime] NULL,
+
+			CONSTRAINT [PK_HangFire_CounterAggregated] PRIMARY KEY CLUSTERED ([Id] ASC)
+		);
+		PRINT 'Created table [HangFire].[AggregatedCounter]';
+
+		CREATE UNIQUE NONCLUSTERED INDEX [UX_HangFire_CounterAggregated_Key] ON [HangFire].[AggregatedCounter] (
+			[Key] ASC
+		) INCLUDE ([Value]);
+		PRINT 'Created index [UX_HangFire_CounterAggregated_Key]';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_ExpireAt] ON [HangFire].[Hash] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Job_ExpireAt] ON [HangFire].[Job] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_List_ExpireAt] ON [HangFire].[List] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Set_ExpireAt] ON [HangFire].[Set] ([ExpireAt])
+		INCLUDE ([Id]);
+
+		PRINT 'Created indexes for [ExpireAt] columns';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Hash_Key] ON [HangFire].[Hash] ([Key] ASC)
+		INCLUDE ([ExpireAt]);
+		PRINT 'Created index [IX_HangFire_Hash_Key]';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_List_Key] ON [HangFire].[List] ([Key] ASC)
+		INCLUDE ([ExpireAt], [Value]);
+		PRINT 'Created index [IX_HangFire_List_Key]';
+
+		CREATE NONCLUSTERED INDEX [IX_HangFire_Set_Key] ON [HangFire].[Set] ([Key] ASC)
+		INCLUDE ([ExpireAt], [Value]);
+		PRINT 'Created index [IX_HangFire_Set_Key]';
 
 		SET @CURRENT_SCHEMA_VERSION = 4;
+	END
+
+	/*IF @CURRENT_SCHEMA_VERSION = 4
+	BEGIN
+		PRINT 'Installing schema version 5';
+
+		-- Insert migration here
+
+		SET @CURRENT_SCHEMA_VERSION = 5;
 	END*/
 
 	UPDATE [HangFire].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION

@@ -112,6 +112,28 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void StaticSchedule_WithDateTimeOffset_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Schedule(
+                    null, () => StaticMethod(), DateTimeOffset.UtcNow));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void StaticSchedule_WithDateTimeOffset_ShouldCreateAJob_InTheScheduledState()
+        {
+            var now = DateTimeOffset.Now;
+
+            _client.Object.Schedule(() => StaticMethod(), now);
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
+        }
+
+        [Fact]
         public void InstanceSchedule_ThrowsAnException_WhenClientIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -130,6 +152,30 @@ namespace Hangfire.Core.Tests
             _client.Verify(x => x.Create(
                 It.IsNotNull<Job>(),
                 It.Is<ScheduledState>(state => state.EnqueueAt > DateTime.UtcNow)));
+        }
+
+        [Fact]
+        public void InstanceSchedule_WithDateTimeOffset_ThrowsAnException_WhenClientIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => BackgroundJobClientExtensions.Schedule<BackgroundJobClientExtensionsFacts>(
+                    null, x => x.InstanceMethod(), DateTimeOffset.UtcNow));
+
+            Assert.Equal("client", exception.ParamName);
+        }
+
+        [Fact]
+        public void InstanceSchedule_WithDateTimeOffset_ShouldCreateAJobInTheScheduledState()
+        {
+            var now = DateTimeOffset.Now;
+
+            _client.Object.Schedule<BackgroundJobClientExtensionsFacts>(
+                x => x.InstanceMethod(),
+                now);
+
+            _client.Verify(x => x.Create(
+                It.IsNotNull<Job>(),
+                It.Is<ScheduledState>(state => state.EnqueueAt == now.UtcDateTime)));
         }
 
         [Fact]

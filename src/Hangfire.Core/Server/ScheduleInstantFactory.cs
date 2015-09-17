@@ -21,9 +21,12 @@ namespace Hangfire.Server
 {
     internal class ScheduleInstantFactory : IScheduleInstantFactory
     {
-        public IScheduleInstant GetInstant(CrontabSchedule schedule)
+        public IScheduleInstant GetInstant(CrontabSchedule schedule, TimeZoneInfo timeZone)
         {
-            return new ScheduleInstant(DateTime.UtcNow, schedule);
+            if (schedule == null) throw new ArgumentNullException("schedule");
+            if (timeZone == null) throw new ArgumentNullException("timeZone");
+
+            return new ScheduleInstant(DateTime.UtcNow, timeZone, schedule);
         }
     }
 }

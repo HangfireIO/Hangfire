@@ -220,9 +220,10 @@ namespace Hangfire
         /// </summary>
         /// <param name="cronExpression">A Cron expression string.</param>
         /// <returns>English description.</returns>
+        [Obsolete("Please install `CronExpressionDescriptor` package manually and use it.")]
         public static string GetDescription(string cronExpression)
         {
-            string[] expressionParts = cronExpression.Split(Convert.ToChar(" "));
+            string[] expressionParts = cronExpression.Split(' ');
 
             if (expressionParts.Length != 5)
             {

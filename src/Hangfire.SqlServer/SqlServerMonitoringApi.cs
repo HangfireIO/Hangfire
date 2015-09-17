@@ -286,13 +286,16 @@ select * from HangFire.State where JobId = @id order by Id desc";
                                 StateName = x.Name,
                                 CreatedAt = x.CreatedAt,
                                 Reason = x.Reason,
-                                Data = JobHelper.FromJson<Dictionary<string, string>>(x.Data)
+                                Data = new Dictionary<string, string>(
+                                    JobHelper.FromJson<Dictionary<string, string>>(x.Data),
+                                    StringComparer.OrdinalIgnoreCase),
                             })
                             .ToList();
 
                     return new JobDetailsDto
                     {
                         CreatedAt = job.CreatedAt,
+                        ExpireAt = job.ExpireAt,
                         Job = DeserializeJob(job.InvocationData, job.Arguments),
                         History = history,
                         Properties = parameters
@@ -322,8 +325,16 @@ select StateName as [State], count(Id) as [Count] From HangFire.Job
 group by StateName
 having StateName is not null;
 select count(Id) from HangFire.Server;
-select sum([Value]) from HangFire.Counter where [Key] = N'stats:succeeded';
-select sum([Value]) from HangFire.Counter where [Key] = N'stats:deleted';
+select sum(s.[Value]) from (
+    select sum([Value]) as [Value] from HangFire.Counter where [Key] = N'stats:succeeded'
+    union all
+    select [Value] from HangFire.AggregatedCounter where [Key] = N'stats:succeeded'
+) as s;
+select sum(s.[Value]) from (
+    select sum([Value]) as [Value] from HangFire.Counter where [Key] = N'stats:deleted'
+    union all
+    select [Value] from HangFire.AggregatedCounter where [Key] = N'stats:deleted'
+) as s;
 select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
 ";
 
@@ -341,8 +352,8 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
 
                     stats.Servers = multi.Read<int>().Single();
 
-                    stats.Succeeded = multi.Read<int?>().SingleOrDefault() ?? 0;
-                    stats.Deleted = multi.Read<int?>().SingleOrDefault() ?? 0;
+                    stats.Succeeded = multi.Read<long?>().SingleOrDefault() ?? 0;
+                    stats.Deleted = multi.Read<long?>().SingleOrDefault() ?? 0;
 
                     stats.Recurring = multi.Read<int>().Single();
                 }
@@ -367,31 +378,9 @@ select count(*) from HangFire.[Set] where [Key] = N'recurring-jobs';
                 endDate = endDate.AddHours(-1);
             }
 
-            var keys = dates.Select(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH"))).ToList();
+            var keyMaps = dates.ToDictionary(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH")), x => x);
 
-            const string sqlQuery = @"
-select [Key], count([Value]) as Count from [HangFire].[Counter]
-group by [Key]
-having [Key] in @keys";
-
-            var valuesMap = connection.Query(
-                sqlQuery,
-                new { keys = keys })
-                .ToDictionary(x => (string)x.Key, x => (long)x.Count);
-
-            foreach (var key in keys)
-            {
-                if (!valuesMap.ContainsKey(key)) valuesMap.Add(key, 0);
-            }
-
-            var result = new Dictionary<DateTime, long>();
-            for (var i = 0; i < dates.Count; i++)
-            {
-                var value = valuesMap[valuesMap.Keys.ElementAt(i)];
-                result.Add(dates[i], value);
-            }
-
-            return result;
+            return GetTimelineStats(connection, keyMaps);
         }
 
         private Dictionary<DateTime, long> GetTimelineStats(
@@ -399,38 +388,40 @@ having [Key] in @keys";
             string type)
         {
             var endDate = DateTime.UtcNow.Date;
-            var startDate = endDate.AddDays(-7);
             var dates = new List<DateTime>();
-
-            while (startDate <= endDate)
+            for (var i = 0; i < 7; i++)
             {
                 dates.Add(endDate);
                 endDate = endDate.AddDays(-1);
             }
 
-            var stringDates = dates.Select(x => x.ToString("yyyy-MM-dd")).ToList();
-            var keys = stringDates.Select(x => String.Format("stats:{0}:{1}", type, x)).ToList();
+            var keyMaps = dates.ToDictionary(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd")), x => x);
 
+            return GetTimelineStats(connection, keyMaps);
+        }
+
+        private Dictionary<DateTime, long> GetTimelineStats(SqlConnection connection,
+            IDictionary<string, DateTime> keyMaps)
+        {
             const string sqlQuery = @"
-select [Key], count([Value]) as Count from [HangFire].[Counter]
-group by [Key]
-having [Key] in @keys";
+select [Key], [Value] as Count from [HangFire].[AggregatedCounter]
+where [Key] in @keys";
 
             var valuesMap = connection.Query(
                 sqlQuery,
-                new { keys = keys })
+                new { keys = keyMaps.Keys })
                 .ToDictionary(x => (string)x.Key, x => (long)x.Count);
 
-            foreach (var key in keys)
+            foreach (var key in keyMaps.Keys)
             {
                 if (!valuesMap.ContainsKey(key)) valuesMap.Add(key, 0);
             }
 
             var result = new Dictionary<DateTime, long>();
-            for (var i = 0; i < stringDates.Count; i++)
+            for (var i = 0; i < keyMaps.Count; i++)
             {
-                var value = valuesMap[valuesMap.Keys.ElementAt(i)];
-                result.Add(dates[i], value);
+                var value = valuesMap[keyMaps.ElementAt(i).Key];
+                result.Add(keyMaps.ElementAt(i).Value, value);
             }
 
             return result;
@@ -549,7 +540,11 @@ select * from (
 
             foreach (var job in jobs)
             {
-                var stateData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                var stateData = deserializedData != null
+                    ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
+                    : null;
+
                 var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
 
                 result.Add(new KeyValuePair<string, TDto>(

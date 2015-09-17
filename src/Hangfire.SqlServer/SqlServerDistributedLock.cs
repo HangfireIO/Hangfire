@@ -44,6 +44,7 @@ namespace Hangfire.SqlServer
         {
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
             if (connection == null) throw new ArgumentNullException("connection");
+            if (timeout.TotalSeconds > Int32.MaxValue) throw new ArgumentException("The timeout specified is greater than Int32.MaxValue when expressed as seconds.", "timeout");
 
             _resource = resource;
             _connection = connection;
@@ -56,9 +57,13 @@ namespace Hangfire.SqlServer
             parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
+            // Ensuring the timeout for the command is 1 second longer than the timeout specified for the stored procedure.
+            var commandTimeout = (int)(timeout.TotalSeconds + 1);
+
             connection.Execute(
-                @"sp_getapplock", 
-                parameters, 
+                @"sp_getapplock",
+                parameters,
+                commandTimeout: commandTimeout,
                 commandType: CommandType.StoredProcedure);
 
             var lockResult = parameters.Get<int>("@Result");

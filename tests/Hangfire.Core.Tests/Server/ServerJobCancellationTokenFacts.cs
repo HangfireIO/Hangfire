@@ -33,7 +33,7 @@ namespace Hangfire.Core.Tests.Server
             _connection.Setup(x => x.GetStateData(JobId)).Returns(_stateData);
 
             _workerContextMock = new WorkerContextMock { WorkerNumber = 1 };
-            _workerContextMock.SharedContext.ServerId = "Server";
+            _workerContextMock.ServerId = "Server";
 
             _shutdownToken = new CancellationToken(false);
         }

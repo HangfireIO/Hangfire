@@ -48,10 +48,19 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
         }
 
         [Fact]
+        public void Ctor_ThrowsException_WhenUriIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new RabbitMqConnectionConfiguration((Uri)null));
+
+            Assert.Equal("uri", exception.ParamName);
+        }
+
+        [Fact]
         public void Ctor_ThrowsException_WhenHostIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RabbitMqConnectionConfiguration(null));
+                () => new RabbitMqConnectionConfiguration((string)null));
 
             Assert.Equal("host", exception.ParamName);
         }
