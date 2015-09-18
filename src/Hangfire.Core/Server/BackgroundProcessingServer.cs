@@ -25,6 +25,20 @@ using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
+    /// <summary>
+    /// Responsible for running the given collection background processes.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// Immediately starts the processes in a background thread.
+    /// Responsible for announcing/removing a server, bound to a storage.
+    /// Wraps all the processes with a infinite loop and automatic retry.
+    /// Executes all the processes in a single context.
+    /// Uses timeout in dispose method, waits for all the components, cancel signals shutdown
+    /// Contains some required processes and uses storage processes.
+    /// Generates unique id.
+    /// Properties are still bad.
+    /// </remarks>
     public sealed class BackgroundProcessingServer : IBackgroundProcess, IDisposable
     {
         public static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(15);
@@ -63,6 +77,14 @@ namespace Hangfire.Server
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundProcessingServer"/>
+        /// class and immediately starts all the given background processes.
+        /// </summary>
+        /// <param name="storage"></param>
+        /// <param name="processes"></param>
+        /// <param name="properties"></param>
+        /// <param name="options"></param>
         public BackgroundProcessingServer(
             [NotNull] JobStorage storage, 
             [NotNull] IEnumerable<IBackgroundProcess> processes,

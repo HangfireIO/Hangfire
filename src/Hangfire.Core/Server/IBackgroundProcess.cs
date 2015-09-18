@@ -14,10 +14,30 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using Hangfire.Annotations;
+
 namespace Hangfire.Server
 {
+    /// <summary>
+    /// Provides methods for defining processes that will be executed in a
+    /// background thread by <see cref="BackgroundProcessingServer"/>.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// Needs a wait.
+    /// Cancellation token
+    /// Connection disposal
+    /// </remarks>
+    /// 
+    /// <seealso cref="BackgroundProcessingServer"/>
     public interface IBackgroundProcess : IServerProcess
     {
-        void Execute(BackgroundProcessContext context);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context">Context for a background process.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="context"/> is null.</exception>
+        void Execute([NotNull] BackgroundProcessContext context);
     }
 }

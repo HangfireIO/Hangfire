@@ -26,6 +26,18 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
+    /// <summary>
+    /// Represents a background process responsible for <i>processing 
+    /// fire-and-forget jobs</i>.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>This is the heart of background processing in Hangfire</para>
+    /// </remarks>
+    /// 
+    /// <threadsafety static="true" instance="true"/>
+    /// 
+    /// <seealso cref="EnqueuedState"/>
     public class Worker : IBackgroundProcess
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
@@ -61,8 +73,11 @@ namespace Hangfire.Server
             _workerId = Guid.NewGuid().ToString();
         }
 
+        /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
+            if (context == null) throw new ArgumentNullException("context");
+
             using (var connection = context.Storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_queues, context.CancellationToken))
             {
@@ -144,6 +159,7 @@ namespace Hangfire.Server
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return String.Format("{0} #{1}", GetType().Name, _workerId.Substring(0, 8));
