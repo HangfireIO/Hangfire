@@ -14,10 +14,24 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-namespace Hangfire.Server
+namespace Hangfire
 {
-    public interface IJobPerformer
+    public interface IJobExecutionContext : IJobCancellationToken
     {
-        object Perform(JobActivator activator, IJobExecutionContext callback);
+        string JobId { get; }
+
+        /// <summary>
+        /// Report the current status of a job, potentially to an end-user, along with an
+        /// estimate of the % of the job that is completed.
+        /// </summary>
+        /// <param name="percentComplete"></param>
+        /// <param name="currentStatus"></param>
+        void UpdateProgress(int percentComplete, string currentStatus);
+        
+        void LogDebug(string message);
+        void LogInfo(string message);
+        void LogWarn(string message);
+        void LogError(string message);
+        void LogFatal(string message);
     }
 }

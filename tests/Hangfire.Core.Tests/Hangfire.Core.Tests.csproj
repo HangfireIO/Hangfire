@@ -88,6 +88,7 @@
     <Compile Include="CronFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
+    <Compile Include="JobExecutionContextFacts.cs" />
     <Compile Include="JobCancellationTokenFacts.cs" />
     <Compile Include="JobStorageFacts.cs" />
     <Compile Include="Mocks\ApplyStateContextMock.cs" />
@@ -107,7 +108,7 @@
     <Compile Include="Server\ServerBootstrapperFacts.cs" />
     <Compile Include="Server\PerformContextFacts.cs" />
     <Compile Include="Server\SchedulePollerFacts.cs" />
-    <Compile Include="Server\ServerJobCancellationTokenFacts.cs" />
+    <Compile Include="Server\ServerJobExecutionContextFacts.cs" />
     <Compile Include="Server\ServerSupervisorCollectionFacts.cs" />
     <Compile Include="Server\ServerSupervisorFacts.cs" />
     <Compile Include="Server\AutomaticRetryServerComponentWrapperFacts.cs" />

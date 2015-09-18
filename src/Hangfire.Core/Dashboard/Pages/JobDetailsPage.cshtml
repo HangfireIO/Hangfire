@@ -36,7 +36,7 @@
         else
         {
             var currentState = job.History.Count > 0 ? job.History[0] : null;
-            if (currentState != null && currentState.StateName == ProcessingState.StateName)
+            if (currentState != null && currentState.StateName == ProcessingState.StateName && currentState.Data.ContainsKey("ServerId"))
             {
                 var server = monitor.Servers().FirstOrDefault(x => x.Name == currentState.Data["ServerId"]);
                 if (server == null)
@@ -119,11 +119,15 @@
                 <h3>History</h3>
                 var index = 0;
 
-                DateTime[] entriesCreationTime = job.History.Select(x => x.CreatedAt).ToArray();
+                var stateGroups = job.History.ChunkBy(x => x.StateName);
+        
+                DateTime[] entriesCreationTime = stateGroups.Select(x => x.Last().CreatedAt).ToArray();
                 var nextEntry = 1;
 
-                foreach (var entry in job.History)
+                foreach (IGrouping<string, Hangfire.Storage.Monitoring.StateHistoryDto> stateGroup in stateGroups)
                 {
+                    var entry = stateGroup.Last();
+
                     var background = index == 0
                         ? JobHistoryRenderer.GetForegroundStateColor(entry.StateName)
                         : JobHistoryRenderer.GetBackgroundStateColor(entry.StateName);
@@ -154,7 +158,7 @@
                                 </div>
                             }
                         }
-                        else
+                        else if (entry.Data.Count > 0)
                         {
                             <div class="job-history-body">
                                 <dl class="dl-horizontal">
@@ -166,9 +170,28 @@
                                 </dl>
                             </div>
                         }
-                    </div>
 
-                        index++;
+                        @if (stateGroup.Count() > 1) {
+                            var stateStartedAt = entry.CreatedAt;
+
+                            <div class="job-history-body">
+                                @foreach (Hangfire.Storage.Monitoring.StateHistoryDto subentry in stateGroup.Take(stateGroup.Count() - 1))
+                                {
+                                    <div>
+                                        <span class="pull-right" data-moment-title="@(JobHelper.ToTimestamp(subentry.CreatedAt))">
+                                            @Html.ToHumanDuration(subentry.CreatedAt - stateStartedAt)</span>
+                                        <span style="display: inline-block; width: 85px">
+                                            @subentry.Data.GetValueOrDefault("Level", "UPDATE")</span>
+                                            @subentry.Reason
+                                    </div>
+                                }   
+                            </div>
+                        }
+
+                        @{
+                            index++;
+                        }
+                    </div>
                 }
             }
         }

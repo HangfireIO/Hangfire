@@ -75,6 +75,7 @@
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
     <Compile Include="Client\IJobCreator.cs" />
+    <Compile Include="Common\EnumerableExtensions.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="Dashboard\OwinRequestExtensions.cs" />
     <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
@@ -259,6 +260,8 @@
     <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="Obsolete\OwinBootstrapper.cs" />
     <Compile Include="Dashboard\MiddlewareExtensions.cs" />
+    <Compile Include="IJobExecutionContext.cs" />
+    <Compile Include="JobExecutionContext.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
@@ -310,10 +313,10 @@
     <Compile Include="Server\RecurringJobScheduler.cs" />
     <Compile Include="Server\ScheduleInstant.cs" />
     <Compile Include="Server\ScheduleInstantFactory.cs" />
-    <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Obsolete\ServerOwinExtensions.cs" />
     <Compile Include="Obsolete\StartupConfiguration.cs" />
     <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
+    <Compile Include="Server\ServerJobExecutionContext.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
@@ -322,6 +325,8 @@
     <Compile Include="States\IStateChangeProcess.cs" />
     <Compile Include="States\IStateMachineFactory.cs" />
     <Compile Include="States\DefaultStateChangeProcess.cs" />
+    <Compile Include="States\ProcessingLogState.cs" />
+    <Compile Include="States\ProcessingSubState.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
     <Compile Include="Server\SchedulePoller.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />

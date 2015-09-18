@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {
-    public class ServerJobCancellationTokenFacts
+    public class ServerJobExecutionContextFacts
     {
         private const string JobId = "my-job";
         private readonly Mock<IStorageConnection> _connection;
@@ -17,7 +17,7 @@ namespace Hangfire.Core.Tests.Server
         private readonly WorkerContextMock _workerContextMock;
         private readonly StateData _stateData;
 
-        public ServerJobCancellationTokenFacts()
+        public ServerJobExecutionContextFacts()
         {
             _stateData = new StateData
             {
@@ -42,7 +42,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenJobIsIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(
+                () => new ServerJobExecutionContext(
                     null, _connection.Object, _workerContextMock.Object, new CancellationToken()));
 
             Assert.Equal("jobId", exception.ParamName);
@@ -52,7 +52,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(
+                () => new ServerJobExecutionContext(
                     JobId, null, _workerContextMock.Object, new CancellationToken()));
 
             Assert.Equal("connection", exception.ParamName);
@@ -62,7 +62,7 @@ namespace Hangfire.Core.Tests.Server
         public void Ctor_ThrowsAnException_WhenWorkerContextIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(
+                () => new ServerJobExecutionContext(
                     JobId, _connection.Object, null, new CancellationToken()));
 
             Assert.Equal("workerContext", exception.ParamName);
@@ -73,6 +73,14 @@ namespace Hangfire.Core.Tests.Server
         {
             var token = CreateToken();
             Assert.Equal(_shutdownToken, token.ShutdownToken);
+        }
+
+        [Fact]
+        public void JobId_ReturnsJobId()
+        {
+            var context = CreateContext();
+
+            Assert.Equal(JobId, context.JobId);
         }
 
         [Fact]
@@ -134,7 +142,12 @@ namespace Hangfire.Core.Tests.Server
 
         private IJobCancellationToken CreateToken()
         {
-            return new ServerJobCancellationToken(
+            return this.CreateContext();
+        }
+
+        private IJobExecutionContext CreateContext()
+        {
+            return new ServerJobExecutionContext(
                 JobId, _connection.Object, _workerContextMock.Object, _shutdownToken);
         }
     }

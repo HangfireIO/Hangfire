@@ -93,10 +93,10 @@ namespace Hangfire.Common
         /// </summary>
         public string[] Arguments { get; private set; }
 
-        public object Perform(JobActivator activator, IJobCancellationToken cancellationToken)
+        public object Perform(JobActivator activator, IJobExecutionContext jobExecutionContext)
         {
             if (activator == null) throw new ArgumentNullException("activator");
-            if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
+            if (jobExecutionContext == null) throw new ArgumentNullException("jobExecutionContext");
 
             object instance = null;
 
@@ -108,7 +108,7 @@ namespace Hangfire.Common
                     instance = Activate(activator);
                 }
 
-                var deserializedArguments = DeserializeArguments(cancellationToken);
+                var deserializedArguments = DeserializeArguments(jobExecutionContext);
                 result = InvokeMethod(instance, deserializedArguments);
             }
             finally
@@ -279,7 +279,7 @@ namespace Hangfire.Common
             }
         }
 
-        private object[] DeserializeArguments(IJobCancellationToken cancellationToken)
+        private object[] DeserializeArguments(IJobExecutionContext jobExecutionContext)
         {
             try
             {
@@ -295,7 +295,7 @@ namespace Hangfire.Common
 
                     if (typeof (IJobCancellationToken).IsAssignableFrom(parameter.ParameterType))
                     {
-                        value = cancellationToken;
+                        value = jobExecutionContext;
                     }
                     else
                     {

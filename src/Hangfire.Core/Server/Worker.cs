@@ -88,10 +88,10 @@ namespace Hangfire.Server
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
-                    var jobCancellationToken = new ServerJobCancellationToken(
+                    var context = new ServerJobExecutionContext(
                         fetchedJob.JobId, connection, _context, cancellationToken);
 
-                    var state = PerformJob(fetchedJob.JobId, connection, jobCancellationToken);
+                    var state = PerformJob(fetchedJob.JobId, connection, context);
 
                     if (state != null)
                     {
@@ -128,7 +128,7 @@ namespace Hangfire.Server
             return "Worker #" + _context.WorkerNumber;
         }
 
-        private IState PerformJob(string jobId, IStorageConnection connection, IJobCancellationToken token)
+        private IState PerformJob(string jobId, IStorageConnection connection, IJobExecutionContext jobExecutionContext)
         {
             try
             {
@@ -144,16 +144,24 @@ namespace Hangfire.Server
 
                 jobData.EnsureLoaded();
 
-                var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, token);
+                JobExecutionContext.Current = jobExecutionContext;
+                try
+                {
+                    var performContext = new PerformContext(
+                        _context, connection, jobId, jobData.Job, jobData.CreatedAt, jobExecutionContext);
 
-                var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
-                var duration = Stopwatch.StartNew();
+                    var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
+                    var duration = Stopwatch.StartNew();
 
-                var result = _process.Run(performContext, jobData.Job);
-                duration.Stop();
+                    var result = _process.Run(performContext, jobData.Job);
+                    duration.Stop();
 
-                return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
+                    return new SucceededState(result, (long)latency, duration.ElapsedMilliseconds);
+                }
+                finally
+                {
+                    JobExecutionContext.Current = null;
+                }
             }
             catch (OperationCanceledException)
             {
