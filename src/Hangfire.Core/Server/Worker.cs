@@ -119,7 +119,7 @@ namespace Hangfire.Server
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
-                    var state = PerformJob(fetchedJob.JobId, connection, context.CancellationToken);
+                    var state = PerformJob(context, connection, fetchedJob.JobId);
 
                     if (state != null)
                     {
@@ -162,7 +162,7 @@ namespace Hangfire.Server
             return String.Format("{0} #{1}", GetType().Name, _workerId.Substring(0, 8));
         }
 
-        private IState PerformJob(string jobId, IStorageConnection connection, CancellationToken shutdownToken)
+        private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
         {
             try
             {
@@ -180,7 +180,7 @@ namespace Hangfire.Server
 
                 var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
 
-                var jobToken = new ServerJobCancellationToken(connection, jobId, _workerId, shutdownToken);
+                var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, _workerId, context.CancellationToken);
                 var performContext = new PerformContext(connection, backgroundJob, jobToken);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;

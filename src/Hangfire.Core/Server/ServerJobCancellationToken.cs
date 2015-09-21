@@ -25,6 +25,7 @@ namespace Hangfire.Server
     internal class ServerJobCancellationToken : IJobCancellationToken
     {
         private readonly string _jobId;
+        private readonly string _serverId;
         private readonly string _workerId;
         private readonly IStorageConnection _connection;
         private readonly CancellationToken _shutdownToken;
@@ -32,14 +33,17 @@ namespace Hangfire.Server
         public ServerJobCancellationToken(
             [NotNull] IStorageConnection connection,
             [NotNull] string jobId, 
+            [NotNull] string serverId,
             [NotNull] string workerId,
             CancellationToken shutdownToken)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
+            if (serverId == null) throw new ArgumentNullException("serverId");
             if (workerId == null) throw new ArgumentNullException("workerId");
             if (connection == null) throw new ArgumentNullException("connection");
 
             _jobId = jobId;
+            _serverId = serverId;
             _workerId = workerId;
             _connection = connection;
             _shutdownToken = shutdownToken;
@@ -70,6 +74,16 @@ namespace Hangfire.Server
             }
 
             if (!state.Name.Equals(ProcessingState.StateName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (!state.Data.ContainsKey("ServerId"))
+            {
+                return true;
+            }
+
+            if (!state.Data["ServerId"].Equals(_serverId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
