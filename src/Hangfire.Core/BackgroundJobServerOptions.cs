@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
@@ -39,8 +40,8 @@ namespace Hangfire
             ServerTimeout = ServerWatchdog.DefaultServerTimeout;
             ServerCheckInterval = ServerWatchdog.DefaultCheckInterval;
             
-            FilterProvider = JobFilterProviders.Providers;
-            Activator = JobActivator.Current;
+            FilterProvider = null;
+            Activator = null;
         }
 
         [Obsolete("Server Id is auto-generated now, and this option does not make sense anymore. Will be removed in 2.0.0.")]
@@ -78,7 +79,10 @@ namespace Hangfire
         [Obsolete("Please use `ServerTimeout` or `ServerCheckInterval` options instead. Will be removed in 2.0.0.")]
         public ServerWatchdogOptions ServerWatchdogOptions { get; set; }
 
+        [CanBeNull]
         public IJobFilterProvider FilterProvider { get; set; }
+
+        [CanBeNull]
         public JobActivator Activator { get; set; }
     }
 }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Client;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
@@ -121,16 +122,19 @@ namespace Hangfire
         {
             var processes = new List<IBackgroundProcess>();
 
+            var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
+
+            var factory = new BackgroundJobFactory(filterProvider);
+            var performer = new BackgroundJobPerformer(filterProvider, _options.Activator ?? JobActivator.Current);
+            var stateChanger = new BackgroundJobStateChanger(filterProvider);
+            
             for (var i = 0; i < _options.WorkerCount; i++)
             {
-                processes.Add(new Worker(
-                    _options.Queues, 
-                    new BackgroundJobPerformer(_options.FilterProvider), 
-                    new BackgroundJobStateChanger(_options.FilterProvider)));
+                processes.Add(new Worker(_options.Queues, performer, stateChanger));
             }
             
-            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, new BackgroundJobStateChanger(_options.FilterProvider)));
-            processes.Add(new RecurringJobScheduler(new BackgroundJobFactory(_options.FilterProvider)));
+            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));
+            processes.Add(new RecurringJobScheduler(factory));
 
             return processes;
         }
