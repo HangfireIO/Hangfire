@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
+using System.Transactions;
 using Dapper;
 using Hangfire.Storage;
 using Xunit;
@@ -115,6 +116,18 @@ namespace Hangfire.SqlServer.Tests
 
                 Assert.Equal("NoLock", lockMode);
             });
+        }
+
+        [Fact(Timeout = 1000), CleanDatabase(IsolationLevel.Unspecified)]
+        public void DistributedLocks_AreReEntrant_FromTheSameThread_OnTheSameResource()
+        {
+            var storage = new SqlServerStorage(ConnectionUtils.GetConnectionString());
+            
+            using (new SqlServerDistributedLock(storage, "hello", TimeSpan.FromMinutes(5)))
+            using (new SqlServerDistributedLock(storage, "hello", TimeSpan.FromMinutes(5)))
+            {
+                Assert.True(true);
+            }
         }
 
         private SqlServerStorage CreateStorage(SqlConnection connection)

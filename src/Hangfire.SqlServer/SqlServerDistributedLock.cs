@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Storage;
@@ -38,6 +39,9 @@ namespace Hangfire.SqlServer
                 { -999, "Indicates a parameter validation or other call error" }
             };
 
+        private static readonly ThreadLocal<Dictionary<string, int>> AcquiredLocks
+            = new ThreadLocal<Dictionary<string, int>>(() => new Dictionary<string, int>()); 
+
         private readonly IDbConnection _connection;
         private readonly SqlServerStorage _storage;
         private readonly string _resource;
@@ -54,7 +58,15 @@ namespace Hangfire.SqlServer
             _resource = resource;
             _connection = storage.CreateAndOpenConnection();
 
-            Acquire(_connection, _resource, timeout);
+            if (!AcquiredLocks.Value.ContainsKey(_resource))
+            {
+                Acquire(_connection, _resource, timeout);
+                AcquiredLocks.Value[_resource] = 1;
+            }
+            else
+            {
+                AcquiredLocks.Value[_resource]++;
+            }
         }
 
         public void Dispose()
@@ -63,9 +75,16 @@ namespace Hangfire.SqlServer
 
             _completed = true;
 
+            if (!AcquiredLocks.Value.ContainsKey(_resource)) return;
+
+            AcquiredLocks.Value[_resource]--;
+
+            if (AcquiredLocks.Value[_resource] != 0) return;
+
             try
             {
                 Release(_connection, _resource);
+                AcquiredLocks.Value.Remove(_resource);
             }
             finally
             {

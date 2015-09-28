@@ -41,7 +41,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.NotNull(storage);
         }
 
-        [Fact, CleanDatabase(IsolationLevel.ReadUncommitted)]
+        [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
