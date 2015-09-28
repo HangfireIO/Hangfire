@@ -121,6 +121,11 @@ namespace Hangfire
                 var job = JobHelper.FromJson<InvocationData>(hash["Job"]).Deserialize();
                 var state = new EnqueuedState { Reason = "Triggered using recurring job manager" };
 
+                if (hash.ContainsKey("Queue"))
+                {
+                    state.Queue = hash["Queue"];
+                }
+
                 _client.Create(job, state);
             }
         }

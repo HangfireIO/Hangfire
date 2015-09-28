@@ -167,6 +167,26 @@ namespace Hangfire.Core.Tests
         }
 
         [Fact]
+        public void Trigger_EnqueuedJobToTheSpecificQueue_IfSpecified()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash(String.Format("recurring-job:{0}", _id)))
+                .Returns(new Dictionary<string, string>
+                {
+                    { "Job", JobHelper.ToJson(InvocationData.Serialize(Job.FromExpression(() => Console.WriteLine()))) },
+                    { "Queue", "my_queue" }
+                });
+
+            var manager = CreateManager();
+
+            // Act
+            manager.Trigger(_id);
+
+            // Assert
+            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.Is<EnqueuedState>(state => state.Queue == "my_queue")));
+        }
+
+        [Fact]
         public void Trigger_DoesNotThrowIfJobDoesNotExist()
         {
             var manager = CreateManager();
