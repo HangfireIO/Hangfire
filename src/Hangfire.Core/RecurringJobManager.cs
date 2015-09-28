@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -31,7 +32,7 @@ namespace Hangfire
     public class RecurringJobManager
     {
         private readonly JobStorage _storage;
-        private readonly IBackgroundJobClient _client;
+        private readonly IBackgroundJobFactory _factory;
 
         public RecurringJobManager()
             : this(JobStorage.Current)
@@ -39,17 +40,17 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage)
-            : this(storage, new BackgroundJobClient(storage))
+            : this(storage, new BackgroundJobFactory())
         {
         }
 
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobClient client)
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (client == null) throw new ArgumentNullException("client");
+            if (factory == null) throw new ArgumentNullException("factory");
 
             _storage = storage;
-            _client = client;
+            _factory = factory;
         }
 
         public void AddOrUpdate(
@@ -126,7 +127,7 @@ namespace Hangfire
                     state.Queue = hash["Queue"];
                 }
 
-                _client.Create(job, state);
+                _factory.Create(new CreateContext(_storage, connection, job, state));
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -16,7 +17,7 @@ namespace Hangfire.Core.Tests
         private readonly string _cronExpression;
         private readonly Mock<IStorageConnection> _connection;
         private readonly Mock<IWriteOnlyTransaction> _transaction;
-        private readonly Mock<IBackgroundJobClient> _client;
+        private Mock<IBackgroundJobFactory> _factory;
 
         public RecurringJobManagerFacts()
         {
@@ -24,7 +25,7 @@ namespace Hangfire.Core.Tests
             _job = Job.FromExpression(() => Method());
             _cronExpression = Cron.Minutely();
             _storage = new Mock<JobStorage>();
-            _client = new Mock<IBackgroundJobClient>();
+            _factory = new Mock<IBackgroundJobFactory>();
             
             _connection = new Mock<IStorageConnection>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
@@ -37,18 +38,18 @@ namespace Hangfire.Core.Tests
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new RecurringJobManager(null, _client.Object));
+                () => new RecurringJobManager(null, _factory.Object));
 
             Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenClientIsNull()
+        public void Ctor_ThrowsAnException_WhenFactoryIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new RecurringJobManager(_storage.Object, null));
 
-            Assert.Equal("client", exception.ParamName);
+            Assert.Equal("factory", exception.ParamName);
         }
 
         [Fact]
@@ -163,7 +164,7 @@ namespace Hangfire.Core.Tests
             manager.Trigger(_id);
 
             // Assert
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.IsAny<EnqueuedState>()));
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(context => context.InitialState is EnqueuedState)));
         }
 
         [Fact]
@@ -183,7 +184,8 @@ namespace Hangfire.Core.Tests
             manager.Trigger(_id);
 
             // Assert
-            _client.Verify(x => x.Create(It.IsNotNull<Job>(), It.Is<EnqueuedState>(state => state.Queue == "my_queue")));
+            _factory.Verify(x => x.Create(It.Is<CreateContext>(context =>
+                ((EnqueuedState)context.InitialState).Queue == "my_queue")));
         }
 
         [Fact]
@@ -192,9 +194,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             Assert.DoesNotThrow(() => manager.Trigger(_id));
-            _client.Verify(
-                x => x.Create(It.IsAny<Job>(), It.IsAny<EnqueuedState>()),
-                Times.Never);
+            _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
         }
 
         [Fact]
@@ -220,7 +220,7 @@ namespace Hangfire.Core.Tests
 
         private RecurringJobManager CreateManager()
         {
-            return new RecurringJobManager(_storage.Object, _client.Object);
+            return new RecurringJobManager(_storage.Object, _factory.Object);
         }
 
         public static void Method() { }
