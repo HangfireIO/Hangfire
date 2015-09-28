@@ -22,6 +22,7 @@ namespace Hangfire.SqlServer
     public class SqlServerStorageOptions
     {
         private TimeSpan _queuePollInterval;
+        private string _schema;
 
         public SqlServerStorageOptions()
         {
@@ -32,6 +33,7 @@ namespace Hangfire.SqlServer
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
             DashboardJobListLimit = 50000;
+            _schema = Constants.DefaultSchema;
             TransactionTimeout = TimeSpan.FromMinutes(1);
         }
 
@@ -69,5 +71,18 @@ namespace Hangfire.SqlServer
 
         public int? DashboardJobListLimit { get; set; }
         public TimeSpan TransactionTimeout { get; set; }
+
+        public string Schema
+        {
+            get { return _schema; }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(_schema))
+                {
+                    throw new ArgumentException(_schema, "value");
+                }
+                _schema = value;
+            }
+        }
     }
 }

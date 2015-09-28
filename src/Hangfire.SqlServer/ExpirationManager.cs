@@ -75,7 +75,7 @@ namespace Hangfire.SqlServer
                             removedCount = connection.Execute(
                                 String.Format(@"
 set transaction isolation level read committed;
-delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;", table),
+delete top (@count) from [{0}].[{1}] with (readpast) where ExpireAt < @now;", _storage.GetSchema(), table),
                                 new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
                         }
                         finally

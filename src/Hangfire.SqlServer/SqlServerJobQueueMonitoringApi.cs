@@ -42,7 +42,7 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<string> GetQueues()
         {
-            const string sqlQuery = @"select distinct(Queue) from HangFire.JobQueue";
+            string sqlQuery = string.Format(@"select distinct(Queue) from [{0}].JobQueue", _storage.GetSchema());
 
             lock (_cacheLock)
             {
@@ -63,13 +63,13 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
-            const string sqlQuery = @"
+            string sqlQuery = string.Format(@"
 select r.Id from (
   select jq.Id, row_number() over (order by jq.Id) as row_num 
-  from HangFire.JobQueue jq
+  from [{0}].JobQueue jq
   where jq.Queue = @queue
 ) as r
-where r.row_num between @start and @end";
+where r.row_num between @start and @end", _storage.GetSchema());
 
             return UseTransaction(connection =>
             {
@@ -89,8 +89,8 @@ where r.row_num between @start and @end";
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            const string sqlQuery = @"
-select count(Id) from HangFire.JobQueue where [Queue] = @queue";
+            string sqlQuery = string.Format(@"
+select count(Id) from [{0}].JobQueue where [Queue] = @queue", _storage.GetSchema());
 
             return UseTransaction(connection =>
             {

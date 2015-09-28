@@ -79,10 +79,10 @@ namespace Hangfire.SqlServer
             if (job == null) throw new ArgumentNullException("job");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
-            const string createJobSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt)
+            string createJobSql = string.Format(@"
+insert into [{0}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 values (@invocationData, @arguments, @createdAt, @expireAt);
-SELECT CAST(SCOPE_IDENTITY() as int)";
+SELECT CAST(SCOPE_IDENTITY() as int)", _storage.GetSchema());
 
             var invocationData = InvocationData.Serialize(job);
 
@@ -112,9 +112,9 @@ SELECT CAST(SCOPE_IDENTITY() as int)";
                         };
                     }
 
-                    const string insertParameterSql = @"
-insert into HangFire.JobParameter (JobId, Name, Value)
-values (@jobId, @name, @value)";
+                    string insertParameterSql = string.Format(@"
+insert into [{0}].JobParameter (JobId, Name, Value)
+values (@jobId, @name, @value)", _storage.GetSchema());
 
                     connection.Execute(insertParameterSql, parameterArray);
                 }
@@ -127,8 +127,8 @@ values (@jobId, @name, @value)";
         {
             if (id == null) throw new ArgumentNullException("id");
 
-            const string sql = 
-                @"select InvocationData, StateName, Arguments, CreatedAt from HangFire.Job where Id = @id";
+            string sql =
+                string.Format(@"select InvocationData, StateName, Arguments, CreatedAt from [{0}].Job where Id = @id", _storage.GetSchema());
 
             return _storage.UseConnection(connection =>
             {
@@ -167,11 +167,11 @@ values (@jobId, @name, @value)";
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
 
-            const string sql = @"
+            string sql = string.Format(@"
 select s.Name, s.Reason, s.Data
-from HangFire.State s
-inner join HangFire.Job j on j.StateId = s.Id
-where j.Id = @jobId";
+from [{0}].State s
+inner join [{0}].Job j on j.StateId = s.Id
+where j.Id = @jobId", _storage.GetSchema());
 
             return _storage.UseConnection(connection =>
             {
@@ -202,12 +202,12 @@ where j.Id = @jobId";
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    @";merge HangFire.JobParameter with (holdlock) as Target "
+                    string.Format(@";merge [{0}].JobParameter with (holdlock) as Target "
                     + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
                     + @"on Target.JobId = Source.JobId AND Target.Name = Source.Name "
                     + @"when matched then update set Value = Source.Value "
                     +
-                    @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
+                    @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);", _storage.GetSchema()),
                     new { jobId = id, name, value });
             });
         }
@@ -218,7 +218,7 @@ where j.Id = @jobId";
             if (name == null) throw new ArgumentNullException("name");
 
             return _storage.UseConnection(connection => connection.Query<string>(
-                @"select Value from HangFire.JobParameter where JobId = @id and Name = @name",
+                string.Format(@"select Value from [{0}].JobParameter where JobId = @id and Name = @name", _storage.GetSchema()),
                 new { id = id, name = name })
                 .SingleOrDefault());
         }
@@ -230,7 +230,7 @@ where j.Id = @jobId";
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<string>(
-                    @"select Value from HangFire.[Set] where [Key] = @key",
+                    string.Format(@"select Value from [{0}].[Set] where [Key] = @key", _storage.GetSchema()),
                     new { key });
 
                 return new HashSet<string>(result);
@@ -243,7 +243,7 @@ where j.Id = @jobId";
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
 
             return _storage.UseConnection(connection => connection.Query<string>(
-                @"select top 1 Value from HangFire.[Set] where [Key] = @key and Score between @from and @to order by Score",
+                string.Format(@"select top 1 Value from [{0}].[Set] where [Key] = @key and Score between @from and @to order by Score", _storage.GetSchema()),
                 new { key, from = fromScore, to = toScore })
                 .SingleOrDefault());
         }
@@ -253,12 +253,12 @@ where j.Id = @jobId";
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
-            const string sql = @"
-;merge HangFire.Hash with (holdlock) as Target
+            string sql = string.Format(@"
+;merge [{0}].Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);", _storage.GetSchema());
 
             _storage.UseTransaction(connection =>
             {
@@ -276,7 +276,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<SqlHash>(
-                    "select Field, Value from HangFire.Hash with (forceseek) where [Key] = @key",
+                    string.Format("select Field, Value from [{0}].Hash with (forceseek) where [Key] = @key", _storage.GetSchema()),
                     new { key })
                     .ToDictionary(x => x.Field, x => x.Value);
 
@@ -299,12 +299,12 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    @";merge HangFire.Server with (holdlock) as Target "
+                    string.Format(@";merge [{0}].Server with (holdlock) as Target "
                     + @"using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat) "
                     + @"on Target.Id = Source.Id "
                     + @"when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat "
                     +
-                    @"when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
+                    @"when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);", _storage.GetSchema()),
                     new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
             });
         }
@@ -316,7 +316,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    @"delete from HangFire.Server where Id = @id",
+                    string.Format(@"delete from [{0}].Server where Id = @id", _storage.GetSchema()),
                     new { id = serverId });
             });
         }
@@ -328,7 +328,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    @"update HangFire.Server set LastHeartbeat = @now where Id = @id",
+                    string.Format(@"update [{0}].Server set LastHeartbeat = @now where Id = @id", _storage.GetSchema()),
                     new { now = DateTime.UtcNow, id = serverId });
             });
         }
@@ -341,7 +341,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             }
 
             return _storage.UseConnection(connection => connection.Execute(
-                @"delete from HangFire.Server where LastHeartbeat < @timeOutAt",
+                string.Format(@"delete from [{0}].Server where LastHeartbeat < @timeOutAt", _storage.GetSchema()),
                 new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) }));
         }
 
@@ -350,7 +350,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException("key");
 
             return _storage.UseConnection(connection => connection.Query<int>(
-                "select count([Key]) from HangFire.[Set] where [Key] = @key",
+                string.Format("select count([Key]) from [{0}].[Set] where [Key] = @key", _storage.GetSchema()),
                 new { key = key }).First());
         }
 
@@ -358,12 +358,12 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
+            string query = string.Format(@"
 select [Value] from (
 	select [Value], row_number() over (order by [Id] ASC) as row_num 
-	from HangFire.[Set]
+	from [{0}].[Set]
 	where [Key] = @key 
-) as s where s.row_num between @startingFrom and @endingAt";
+) as s where s.row_num between @startingFrom and @endingAt", _storage.GetSchema());
 
             return _storage.UseConnection(connection => connection
                 .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 })
@@ -374,9 +374,9 @@ select [Value] from (
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-select min([ExpireAt]) from HangFire.[Set]
-where [Key] = @key";
+            string query = string.Format(@"
+select min([ExpireAt]) from [{0}].[Set]
+where [Key] = @key", _storage.GetSchema());
 
             return _storage.UseConnection(connection =>
             {
@@ -391,12 +391,12 @@ where [Key] = @key";
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-select sum(s.[Value]) from (select sum([Value]) as [Value] from HangFire.Counter
+            string query = string.Format(@"
+select sum(s.[Value]) from (select sum([Value]) as [Value] from [{0}].Counter
 where [Key] = @key
 union all
-select [Value] from HangFire.AggregatedCounter
-where [Key] = @key) as s";
+select [Value] from [{0}].AggregatedCounter
+where [Key] = @key) as s", _storage.GetSchema());
 
             return _storage.UseConnection(connection => 
                 connection.Query<long?>(query, new { key = key }).Single() ?? 0);
@@ -406,9 +406,9 @@ where [Key] = @key) as s";
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-select count([Id]) from HangFire.Hash
-where [Key] = @key";
+            string query = string.Format(@"
+select count([Id]) from [{0}].Hash
+where [Key] = @key", _storage.GetSchema());
 
             return _storage.UseConnection(connection => connection.Query<long>(query, new { key = key }).Single());
         }
@@ -417,9 +417,9 @@ where [Key] = @key";
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-select min([ExpireAt]) from HangFire.Hash
-where [Key] = @key";
+            string query = string.Format(@"
+select min([ExpireAt]) from [{0}].Hash
+where [Key] = @key", _storage.GetSchema());
 
             return _storage.UseConnection(connection =>
             {
@@ -435,9 +435,9 @@ where [Key] = @key";
             if (key == null) throw new ArgumentNullException("key");
             if (name == null) throw new ArgumentNullException("name");
 
-            const string query = @"
-select [Value] from HangFire.Hash
-where [Key] = @key and [Field] = @field";
+            string query = string.Format(@"
+select [Value] from [{0}].Hash
+where [Key] = @key and [Field] = @field", _storage.GetSchema());
 
             return _storage.UseConnection(connection => connection
                 .Query<string>(query, new { key = key, field = name }).SingleOrDefault());
@@ -447,9 +447,9 @@ where [Key] = @key and [Field] = @field";
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-select count([Id]) from HangFire.List
-where [Key] = @key";
+            string query = string.Format(@"
+select count([Id]) from [{0}].List
+where [Key] = @key", _storage.GetSchema());
 
             return _storage.UseConnection(connection => connection.Query<long>(query, new { key = key }).Single());
         }
@@ -458,9 +458,9 @@ where [Key] = @key";
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-select min([ExpireAt]) from HangFire.List
-where [Key] = @key";
+            string query = string.Format(@"
+select min([ExpireAt]) from [{0}].List
+where [Key] = @key", _storage.GetSchema());
 
             return _storage.UseConnection(connection =>
             {
@@ -475,12 +475,12 @@ where [Key] = @key";
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
+            string query = string.Format(@"
 select [Value] from (
 	select [Value], row_number() over (order by [Id] desc) as row_num 
-	from HangFire.List
+	from [{0}].List
 	where [Key] = @key 
-) as s where s.row_num between @startingFrom and @endingAt";
+) as s where s.row_num between @startingFrom and @endingAt", _storage.GetSchema());
 
             return _storage.UseConnection(connection => connection
                 .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 })
@@ -491,10 +491,10 @@ select [Value] from (
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            const string query = @"
-select [Value] from HangFire.List
+            string query = string.Format(@"
+select [Value] from [{0}].List
 where [Key] = @key
-order by [Id] desc";
+order by [Id] desc", _storage.GetSchema());
 
             return _storage.UseConnection(connection => connection.Query<string>(query, new { key = key }).ToList());
         }

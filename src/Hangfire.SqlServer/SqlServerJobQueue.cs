@@ -50,11 +50,11 @@ namespace Hangfire.SqlServer
             SqlConnection connection = null;
             SqlTransaction transaction = null;
 
-            const string fetchJobSqlTemplate = @"
-delete top (1) from HangFire.JobQueue with (readpast, updlock, rowlock)
+            string fetchJobSqlTemplate = string.Format(@"
+delete top (1) from [{0}].JobQueue with (readpast, updlock, rowlock)
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 where (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
-and Queue in @queues";
+and Queue in @queues", _storage.GetSchema());
 
             do
             {
@@ -99,8 +99,8 @@ and Queue in @queues";
 
         public void Enqueue(IDbConnection connection, string queue, string jobId)
         {
-            const string enqueueJobSql = @"
-insert into HangFire.JobQueue (JobId, Queue) values (@jobId, @queue)";
+            string enqueueJobSql = string.Format(@"
+insert into [{0}].JobQueue (JobId, Queue) values (@jobId, @queue)", _storage.GetSchema());
 
             connection.Execute(enqueueJobSql, new { jobId = jobId, queue = queue });
         }
