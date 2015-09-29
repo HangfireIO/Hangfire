@@ -12,7 +12,7 @@
     <description>MSMQ queues support for SQL Server job storage implementation for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2014-2015 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    <releaseNotes>http://hangfire.io/blog/
     
 1.5.0
 * Added – Support for remote MSMQ queues through DTC transactions.

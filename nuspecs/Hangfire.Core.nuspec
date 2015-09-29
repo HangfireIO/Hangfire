@@ -12,7 +12,22 @@
     <description>Core components for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    <releaseNotes>http://hangfire.io/blog/
+    
+1.5.0-beta4
+* Changed – `ServerHeartbeat` and `ServerWatchdog` background processes are internal now.
+* Changed – Remove processes from server options, add filter provider and activator instead.
+* Changed – `BackgroundServer` class renamed to `BackgroundProcessingServer`.
+* Changed – `SchedulePoller` class renamed to `DelayedJobScheduler`.
+* Changed – `IJobCreationProcess` interface renamed to `IBackgroundJobFactory`.
+* Changed – `IJobPerformanceProcess` interface renamed to `IBackgroundJobPerformer`.
+* Changed – `IStateChangeProcess` interface renamed to `IBackgroundJobStateChanger`.
+* Changed – `BackgroundJobClientException` is thrown instead of `CreateJobFailedException`.
+* Fixed – Logger names now include the `Hangfire.` namespace as expected.
+* Fixed – `TaskCanceledException` thrown from a job method leads to failed job as expected.
+* Fixed – Specified queue is now considered when triggering a recurring job.
+* Fixed – Same Worker instance in multiple servers caused cancellation token to work improperly.
+* Fixed – Make `DelayedJobScheduler` resilient to empty background job ids.
     
 1.5.0-beta3
 * Added – Allow to use CancellationToken type as a job method parameter.

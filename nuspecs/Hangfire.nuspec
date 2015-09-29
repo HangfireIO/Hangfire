@@ -10,13 +10,32 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
     <description>
-      Incredibly easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
+      An easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
     <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    <releaseNotes>http://hangfire.io/blog/
+    
+1.5.0-beta4
+* Added – Ability to specify the schema for SQL Server job storage (by @ryanmwright).
+* Changed – `ServerHeartbeat` and `ServerWatchdog` background processes are internal now.
+* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
+* Changed – Remove processes from server options, add filter provider and activator instead.
+* Changed – `BackgroundServer` class renamed to `BackgroundProcessingServer`.
+* Changed – `SchedulePoller` class renamed to `DelayedJobScheduler`.
+* Changed – `IJobCreationProcess` interface renamed to `IBackgroundJobFactory`.
+* Changed – `IJobPerformanceProcess` interface renamed to `IBackgroundJobPerformer`.
+* Changed – `IStateChangeProcess` interface renamed to `IBackgroundJobStateChanger`.
+* Changed – `BackgroundJobClientException` is thrown instead of `CreateJobFailedException`.
+* Fixed – Logger names now include the `Hangfire.` namespace as expected.
+* Fixed – `TaskCanceledException` thrown from a job method leads to failed job as expected.
+* Fixed – Specified queue is now considered when triggering a recurring job.
+* Fixed – Distributed locks are reentrant in SQL Server job storage (relates to 1.5.0-beta1).
+* Fixed – Same Worker instance in multiple servers caused cancellation token to work improperly.
+* Fixed – Make `DelayedJobScheduler` resilient to empty background job ids.
+* Fixed – Logical error in SqlServerDistributedLockTimeout value check (by @Tom-Kelly).
     
 1.5.0-beta3
 * Added – Allow to use CancellationToken type as a job method parameter.

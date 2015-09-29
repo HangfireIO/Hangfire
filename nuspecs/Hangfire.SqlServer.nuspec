@@ -12,7 +12,13 @@
     <description>SQL Server 2008+ (including Express), SQL Server LocalDB and SQL Azure storage support for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    <releaseNotes>http://hangfire.io/blog/
+    
+1.5.0-beta4
+* Added – Ability to specify the schema for SQL Server job storage (by @ryanmwright).
+* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
+* Fixed – Distributed locks are reentrant in SQL Server job storage (relates to 1.5.0-beta1).
+* Fixed – Logical error in SqlServerDistributedLockTimeout value check (by @Tom-Kelly).
     
 1.5.0-beta2
 * Changed – `SqlServerDistributedLock` class is now public.
