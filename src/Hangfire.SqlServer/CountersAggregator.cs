@@ -51,7 +51,7 @@ namespace Hangfire.SqlServer
                 _storage.UseConnection(connection =>
                 {
                     removedCount = connection.Execute(
-                        GetAggregationQuery(),
+                        GetAggregationQuery(_storage),
                         new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
                 });
 
@@ -70,9 +70,9 @@ namespace Hangfire.SqlServer
             return GetType().ToString();
         }
 
-        private static string GetAggregationQuery()
+        private static string GetAggregationQuery(SqlServerStorage storage)
         {
-            return @"
+            return string.Format(@"
 DECLARE @RecordsToAggregate TABLE
 (
 	[Key] NVARCHAR(100) NOT NULL,
@@ -83,12 +83,12 @@ DECLARE @RecordsToAggregate TABLE
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 BEGIN TRAN
 
-DELETE TOP (@count) [HangFire].[Counter] with (readpast)
+DELETE TOP (@count) [{0}].[Counter] with (readpast)
 OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggregate
 
 SET NOCOUNT ON
 
-;MERGE [HangFire].[AggregatedCounter] AS [Target]
+;MERGE [{0}].[AggregatedCounter] AS [Target]
 USING (
 	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
 	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])
@@ -98,7 +98,7 @@ WHEN MATCHED THEN UPDATE SET
 	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
 WHEN NOT MATCHED THEN INSERT ([Key], [Value], [ExpireAt]) VALUES ([Source].[Key], [Source].[Value], [Source].[ExpireAt]);
 
-COMMIT TRAN";
+COMMIT TRAN", storage.GetSchema());
         }
     }
 }

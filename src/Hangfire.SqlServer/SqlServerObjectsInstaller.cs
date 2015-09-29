@@ -35,6 +35,11 @@ namespace Hangfire.SqlServer
 
         public static void Install(SqlConnection connection)
         {
+            Install(connection, null);
+        }
+
+        public static void Install(SqlConnection connection, string schema)
+        {
             if (connection == null) throw new ArgumentNullException("connection");
 
             Log.Info("Start installing Hangfire SQL objects...");
@@ -49,6 +54,8 @@ namespace Hangfire.SqlServer
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 5;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
+
+            script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
 
             for (var i = 0; i < RetryAttempts; i++)
             {
