@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Core.Tests.Common;
 using Hangfire.Server;
@@ -222,6 +223,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
+        public void Run_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression(() => TaskCanceledExceptionMethod());
+            var performer = CreatePerformer();
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => performer.Perform(_context.Object));
+
+            Assert.IsType<TaskCanceledException>(thrownException.InnerException);
+        }
+
+        [Fact]
         public void Run_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
         {
             // Arrange
@@ -315,6 +328,11 @@ namespace Hangfire.Core.Tests.Server
         public static void ExceptionMethod()
         {
             throw new InvalidOperationException("exception");
+        }
+
+        public static void TaskCanceledExceptionMethod()
+        {
+            throw new TaskCanceledException();
         }
 
         private CoreBackgroundJobPerformer CreatePerformer()

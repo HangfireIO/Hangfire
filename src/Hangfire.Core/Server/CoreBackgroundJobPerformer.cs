@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire.Annotations;
 
 namespace Hangfire.Server
@@ -77,7 +78,7 @@ namespace Hangfire.Server
             }
             catch (TargetInvocationException ex)
             {
-                if (ex.InnerException is OperationCanceledException)
+                if (ex.InnerException is OperationCanceledException && !(ex.InnerException is TaskCanceledException))
                 {
                     // `OperationCanceledException` and its descendants are used
                     // to notify a worker that job performance was canceled,
