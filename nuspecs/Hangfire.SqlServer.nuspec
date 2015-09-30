@@ -14,18 +14,12 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
-1.5.0-beta4
+1.5.0
 * Added – Ability to specify the schema for SQL Server job storage (by @ryanmwright).
-* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
-* Fixed – Distributed locks are reentrant in SQL Server job storage (relates to 1.5.0-beta1).
-* Fixed – Logical error in SqlServerDistributedLockTimeout value check (by @Tom-Kelly).
-    
-1.5.0-beta2
-* Changed – `SqlServerDistributedLock` class is now public.
-    
-1.5.0-beta1
 * Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
 * Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
+* Changed – `SqlServerDistributedLock` class is now public.
+* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
 * Changed – Dramatically improved page load times in Dashboard.
 * Changed – Instant re-queue for background jobs even after ungraceful shutdown.
 * Changed – `JobQueue.Queue` and `Server.Id` column length increased to 50 and 100 respectively (by @maleet).
