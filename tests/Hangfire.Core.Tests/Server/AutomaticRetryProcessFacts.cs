@@ -11,11 +11,13 @@ namespace Hangfire.Core.Tests.Server
     {
         private readonly Mock<IBackgroundProcess> _process;
         private readonly BackgroundProcessContextMock _context;
+        private TimeSpan _delay;
         private int _maxRetryAttempts;
 
         public AutomaticRetryProcessFacts()
         {
             _process = new Mock<IBackgroundProcess>();
+            _delay = TimeSpan.Zero;
             _maxRetryAttempts = 3;
             _context = new BackgroundProcessContextMock();
         }
@@ -89,11 +91,12 @@ namespace Hangfire.Core.Tests.Server
         [PossibleHangingFact]
         public void Execute_ShouldBeInterrupted_ByCancellationToken()
         {
+            _delay = TimeSpan.FromDays(1);
             var wrapper = CreateWrapper();
             _process.Setup(x => x.Execute(It.IsAny<BackgroundProcessContext>())).Throws<InvalidOperationException>();
             _context.CancellationTokenSource.Cancel();
 
-            Assert.Throws<OperationCanceledException>(() => wrapper.Execute(_context.Object));
+            wrapper.Execute(_context.Object);
 
             _process.Verify(x => x.Execute(It.IsNotNull<BackgroundProcessContext>()), Times.Once);
         }
@@ -114,7 +117,7 @@ namespace Hangfire.Core.Tests.Server
             return new AutomaticRetryProcess(_process.Object)
             {
                 MaxRetryAttempts = _maxRetryAttempts,
-                DelayCallback = x => TimeSpan.Zero
+                DelayCallback = x => _delay
             };
         }
 
