@@ -42,7 +42,7 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<string> GetQueues()
         {
-            string sqlQuery = string.Format(@"select distinct(Queue) from [{0}].JobQueue", _storage.GetSchema());
+            string sqlQuery = string.Format(@"select distinct(Queue) from [{0}].JobQueue", _storage.GetSchemaName());
 
             lock (_cacheLock)
             {
@@ -69,7 +69,7 @@ select r.Id from (
   from [{0}].JobQueue jq
   where jq.Queue = @queue
 ) as r
-where r.row_num between @start and @end", _storage.GetSchema());
+where r.row_num between @start and @end", _storage.GetSchemaName());
 
             return UseTransaction(connection =>
             {
@@ -90,7 +90,7 @@ where r.row_num between @start and @end", _storage.GetSchema());
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
             string sqlQuery = string.Format(@"
-select count(Id) from [{0}].JobQueue where [Queue] = @queue", _storage.GetSchema());
+select count(Id) from [{0}].JobQueue where [Queue] = @queue", _storage.GetSchemaName());
 
             return UseTransaction(connection =>
             {

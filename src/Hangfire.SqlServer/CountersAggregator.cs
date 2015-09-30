@@ -98,7 +98,7 @@ WHEN MATCHED THEN UPDATE SET
 	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
 WHEN NOT MATCHED THEN INSERT ([Key], [Value], [ExpireAt]) VALUES ([Source].[Key], [Source].[Value], [Source].[ExpireAt]);
 
-COMMIT TRAN", storage.GetSchema());
+COMMIT TRAN", storage.GetSchemaName());
         }
     }
 }

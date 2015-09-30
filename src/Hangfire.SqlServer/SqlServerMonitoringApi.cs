@@ -121,7 +121,7 @@ namespace Hangfire.SqlServer
             return UseConnection<IList<ServerDto>>(connection =>
             {
                 var servers = connection.Query<Entities.Server>(
-                    string.Format(@"select * from [{0}].Server", _storage.GetSchema()))
+                    string.Format(@"select * from [{0}].Server", _storage.GetSchemaName()))
                     .ToList();
 
                 var result = new List<ServerDto>();
@@ -258,7 +258,7 @@ namespace Hangfire.SqlServer
                 string sql = string.Format(@"
 select * from [{0}].Job where Id = @id
 select * from [{0}].JobParameter where JobId = @id
-select * from [{0}].State where JobId = @id order by Id desc", _storage.GetSchema());
+select * from [{0}].State where JobId = @id order by Id desc", _storage.GetSchemaName());
 
                 using (var multi = connection.QueryMultiple(sql, new { id = jobId }))
                 {
@@ -323,7 +323,7 @@ select sum(s.[Value]) from (
     select [Value] from [{0}].AggregatedCounter where [Key] = N'stats:deleted'
 ) as s;
 select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
-", _storage.GetSchema());
+", _storage.GetSchemaName());
 
             var statistics = UseConnection(connection =>
             {
@@ -391,7 +391,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
         {
             string sqlQuery = string.Format(@"
 select [Key], [Value] as [Count] from [{0}].AggregatedCounter
-where [Key] in @keys", _storage.GetSchema());
+where [Key] in @keys", _storage.GetSchemaName());
 
             var valuesMap = connection.Query(
                 sqlQuery,
@@ -434,7 +434,7 @@ where [Key] in @keys", _storage.GetSchema());
 select j.*, s.Reason as StateReason, s.Data as StateData 
 from [{0}].Job j
 left join [{0}].State s on s.Id = j.StateId
-where j.Id in @jobIds", _storage.GetSchema());
+where j.Id in @jobIds", _storage.GetSchemaName());
 
             var jobs = connection.Query<SqlJob>(
                 enqueuedJobsSql,
@@ -456,8 +456,8 @@ where j.Id in @jobIds", _storage.GetSchema());
         private long GetNumberOfJobsByStateName(SqlConnection connection, string stateName)
         {
             var sqlQuery = _jobListLimit.HasValue
-                ? string.Format(@"select count(j.Id) from (select top (@limit) Id from [{0}].Job where StateName = @state) as j", _storage.GetSchema())
-                : string.Format(@"select count(Id) from [{0}].Job where StateName = @state", _storage.GetSchema());
+                ? string.Format(@"select count(j.Id) from (select top (@limit) Id from [{0}].Job where StateName = @state) as j", _storage.GetSchemaName())
+                : string.Format(@"select count(Id) from [{0}].Job where StateName = @state", _storage.GetSchemaName());
 
             var count = connection.Query<int>(
                  sqlQuery,
@@ -496,7 +496,7 @@ select * from (
   left join [{0}].State s on j.StateId = s.Id
   where j.StateName = @stateName
 ) as j where j.row_num between @start and @end
-", _storage.GetSchema());
+", _storage.GetSchemaName());
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,
@@ -536,7 +536,7 @@ select * from (
 select j.*, s.Reason as StateReason, s.Data as StateData 
 from [{0}].Job j
 left join [{0}].State s on s.Id = j.StateId
-where j.Id in @jobIds", _storage.GetSchema());
+where j.Id in @jobIds", _storage.GetSchemaName());
 
             var jobs = connection.Query<SqlJob>(
                 fetchedJobsSql,

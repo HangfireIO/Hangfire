@@ -66,14 +66,14 @@ namespace Hangfire.SqlServer
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
             QueueCommand(x => x.Execute(
-                string.Format(@"update [{0}].Job set ExpireAt = @expireAt where Id = @id", _storage.GetSchema()),
+                string.Format(@"update [{0}].Job set ExpireAt = @expireAt where Id = @id", _storage.GetSchemaName()),
                 new { expireAt = DateTime.UtcNow.Add(expireIn), id = jobId }));
         }
 
         public override void PersistJob(string jobId)
         {
             QueueCommand(x => x.Execute(
-                string.Format(@"update [{0}].Job set ExpireAt = NULL where Id = @id", _storage.GetSchema()),
+                string.Format(@"update [{0}].Job set ExpireAt = NULL where Id = @id", _storage.GetSchemaName()),
                 new { id = jobId }));
         }
 
@@ -82,7 +82,7 @@ namespace Hangfire.SqlServer
             string addAndSetStateSql = string.Format(@"
 insert into [{0}].State (JobId, Name, Reason, CreatedAt, Data)
 values (@jobId, @name, @reason, @createdAt, @data);
-update [{0}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;", _storage.GetSchema());
+update [{0}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @id;", _storage.GetSchemaName());
 
             QueueCommand(x => x.Execute(
                 addAndSetStateSql,
@@ -101,7 +101,7 @@ update [{0}].Job set StateId = SCOPE_IDENTITY(), StateName = @name where Id = @i
         {
             string addStateSql = string.Format(@"
 insert into [{0}].State (JobId, Name, Reason, CreatedAt, Data)
-values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchema());
+values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchemaName());
 
             QueueCommand(x => x.Execute(
                 addStateSql,
@@ -126,28 +126,28 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchema());
         public override void IncrementCounter(string key)
         {
             QueueCommand(x => x.Execute(
-                string.Format(@"insert into [{0}].Counter ([Key], [Value]) values (@key, @value)", _storage.GetSchema()),
+                string.Format(@"insert into [{0}].Counter ([Key], [Value]) values (@key, @value)", _storage.GetSchemaName()),
                 new { key, value = +1 }));
         }
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(x => x.Execute(
-                string.Format(@"insert into [{0}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)", _storage.GetSchema()),
+                string.Format(@"insert into [{0}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)", _storage.GetSchemaName()),
                 new { key, value = +1, expireAt = DateTime.UtcNow.Add(expireIn) }));
         }
 
         public override void DecrementCounter(string key)
         {
             QueueCommand(x => x.Execute(
-                string.Format(@"insert into [{0}].Counter ([Key], [Value]) values (@key, @value)", _storage.GetSchema()),
+                string.Format(@"insert into [{0}].Counter ([Key], [Value]) values (@key, @value)", _storage.GetSchemaName()),
                 new { key, value = -1 }));
         }
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
             QueueCommand(x => x.Execute(
-                string.Format(@"insert into [{0}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)", _storage.GetSchema()),
+                string.Format(@"insert into [{0}].Counter ([Key], [Value], [ExpireAt]) values (@key, @value, @expireAt)", _storage.GetSchemaName()),
                 new { key, value = -1, expireAt = DateTime.UtcNow.Add(expireIn) }));
         }
 
@@ -163,7 +163,7 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchema());
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
-when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);", _storage.GetSchema());
+when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);", _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(
@@ -173,7 +173,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
 
         public override void RemoveFromSet(string key, string value)
         {
-            string query = string.Format(@"delete from [{0}].[Set] where [Key] = @key and Value = @value", _storage.GetSchema());
+            string query = string.Format(@"delete from [{0}].[Set] where [Key] = @key and Value = @value", _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(
@@ -185,7 +185,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             AcquireListLock();
             QueueCommand(x => x.Execute(
-                string.Format(@"insert into [{0}].List ([Key], Value) values (@key, @value);", _storage.GetSchema()),
+                string.Format(@"insert into [{0}].List ([Key], Value) values (@key, @value);", _storage.GetSchemaName()),
                 new { key, value }));
         }
 
@@ -193,7 +193,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             AcquireListLock();
             QueueCommand(x => x.Execute(
-                string.Format(@"delete from [{0}].List where [Key] = @key and Value = @value", _storage.GetSchema()),
+                string.Format(@"delete from [{0}].List where [Key] = @key and Value = @value", _storage.GetSchemaName()),
                 new { key, value }));
         }
 
@@ -204,7 +204,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
     select row_number() over (order by Id desc) as row_num, [Key] 
     from [{0}].List
     where [Key] = @key)
-delete from cte where row_num not between @start and @end", _storage.GetSchema());
+delete from cte where row_num not between @start and @end", _storage.GetSchemaName());
 
             AcquireListLock();
             QueueCommand(x => x.Execute(
@@ -222,7 +222,7 @@ delete from cte where row_num not between @start and @end", _storage.GetSchema()
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);", _storage.GetSchema());
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);", _storage.GetSchemaName());
 
             AcquireHashLock();
             QueueCommand(x => x.Execute(
@@ -234,7 +234,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"delete from [{0}].Hash where [Key] = @key", _storage.GetSchema());
+            string query = string.Format(@"delete from [{0}].Hash where [Key] = @key", _storage.GetSchemaName());
 
             AcquireHashLock();
             QueueCommand(x => x.Execute(query, new { key }));
@@ -247,7 +247,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             string query = string.Format(@"
 insert into [{0}].[Set] ([Key], Value, Score)
-values (@key, @value, 0.0)", _storage.GetSchema());
+values (@key, @value, 0.0)", _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(query, items.Select(value => new { key = key, value = value }).ToList()));
@@ -257,7 +257,7 @@ values (@key, @value, 0.0)", _storage.GetSchema());
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"delete from [{0}].[Set] where [Key] = @key", _storage.GetSchema());
+            string query = string.Format(@"delete from [{0}].[Set] where [Key] = @key", _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(query, new { key = key }));
@@ -268,7 +268,7 @@ values (@key, @value, 0.0)", _storage.GetSchema());
             if (key == null) throw new ArgumentNullException("key");
 
              string query = string.Format(@"
-update [{0}].[Hash] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSchema());
+update [{0}].[Hash] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSchemaName());
 
             AcquireHashLock();
             QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
@@ -279,7 +279,7 @@ update [{0}].[Hash] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSc
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-update [{0}].[Set] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSchema());
+update [{0}].[Set] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
@@ -290,7 +290,7 @@ update [{0}].[Set] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSch
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-update [{0}].[List] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSchema());
+update [{0}].[List] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSchemaName());
 
             AcquireListLock();
             QueueCommand(x => x.Execute(query, new { key = key, expireAt = DateTime.UtcNow.Add(expireIn) }));
@@ -301,7 +301,7 @@ update [{0}].[List] set ExpireAt = @expireAt where [Key] = @key", _storage.GetSc
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-update [{0}].Hash set ExpireAt = null where [Key] = @key", _storage.GetSchema());
+update [{0}].Hash set ExpireAt = null where [Key] = @key", _storage.GetSchemaName());
 
             AcquireHashLock();
             QueueCommand(x => x.Execute(query, new { key = key }));
@@ -312,7 +312,7 @@ update [{0}].Hash set ExpireAt = null where [Key] = @key", _storage.GetSchema())
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-update [{0}].[Set] set ExpireAt = null where [Key] = @key", _storage.GetSchema());
+update [{0}].[Set] set ExpireAt = null where [Key] = @key", _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(query, new { key = key }));
@@ -323,7 +323,7 @@ update [{0}].[Set] set ExpireAt = null where [Key] = @key", _storage.GetSchema()
             if (key == null) throw new ArgumentNullException("key");
 
             string query = string.Format(@"
-update [{0}].[List] set ExpireAt = null where [Key] = @key", _storage.GetSchema());
+update [{0}].[List] set ExpireAt = null where [Key] = @key", _storage.GetSchemaName());
 
             AcquireListLock();
             QueueCommand(x => x.Execute(query, new { key = key }));

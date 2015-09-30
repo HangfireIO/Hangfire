@@ -81,7 +81,7 @@ namespace Hangfire.SqlServer
             {
                 using (var connection = CreateAndOpenConnection())
                 {
-                    SqlServerObjectsInstaller.Install(connection, options.Schema);
+                    SqlServerObjectsInstaller.Install(connection, options.SchemaName);
                 }
             }
 
@@ -236,9 +236,9 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal string GetSchema()
+        internal string GetSchemaName()
         {
-            return _options.Schema;
+            return _options.SchemaName;
         }
 
         private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
