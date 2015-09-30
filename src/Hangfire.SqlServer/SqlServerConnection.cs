@@ -46,7 +46,7 @@ namespace Hangfire.SqlServer
         {
             return new SqlServerDistributedLock(
                 _storage,
-                String.Format("HangFire:{0}", resource),
+                String.Format("{0}:{1}", _storage.GetSchema(), resource),
                 timeout);
         }
 
