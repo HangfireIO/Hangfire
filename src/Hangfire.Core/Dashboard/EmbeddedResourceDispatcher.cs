@@ -69,13 +69,7 @@ namespace Hangfire.Dashboard
                         resourceName, assembly));
                 }
 
-                var buffer = new byte[Math.Min(inputStream.Length, 4096)];
-                var readLength = inputStream.Read(buffer, 0, buffer.Length);
-                while (readLength > 0)
-                {
-                    response.Write(buffer, 0, readLength);
-                    readLength = inputStream.Read(buffer, 0, buffer.Length);
-                }
+                inputStream.CopyTo(response.Body);
             }
         }
     }
