@@ -48,7 +48,7 @@ namespace Hangfire.Server
                 }
             }
 
-            context.Sleep(_checkInterval);
+            context.Wait(_checkInterval);
         }
 
         public override string ToString()

@@ -49,5 +49,15 @@ namespace Hangfire.Server
         public JobStorage Storage { get; private set; }
 
         public CancellationToken CancellationToken { get; private set; }
+
+        public bool IsShutdownRequested
+        {
+            get { return CancellationToken.IsCancellationRequested; }
+        }
+
+        public void Wait(TimeSpan timeout)
+        {
+            CancellationToken.WaitHandle.WaitOne(timeout);
+        }
     }
 }

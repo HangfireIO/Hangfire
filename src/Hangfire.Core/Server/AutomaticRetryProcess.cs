@@ -80,8 +80,12 @@ namespace Hangfire.Server
                             nextTry),
                         ex);
 
-                    // Break the loop when the wait handle was signaled.
-                    context.SleepOrThrow(nextTry);
+                    context.Wait(nextTry);
+
+                    if (context.IsShutdownRequested)
+                    {
+                        break;
+                    }
                 }
             }
         }

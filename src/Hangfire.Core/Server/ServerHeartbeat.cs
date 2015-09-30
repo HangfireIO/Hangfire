@@ -36,7 +36,7 @@ namespace Hangfire.Server
                 connection.Heartbeat(context.ServerId);
             }
 
-            context.Sleep(_heartbeatInterval);
+            context.Wait(_heartbeatInterval);;
         }
 
         public override string ToString()

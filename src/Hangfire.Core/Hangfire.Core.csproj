@@ -94,7 +94,6 @@
     <Compile Include="Properties\NamespaceDoc.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
-    <Compile Include="Server\BackgroundProcessContextExtensions.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformer.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />

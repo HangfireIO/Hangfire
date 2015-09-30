@@ -121,7 +121,7 @@ namespace Hangfire.Server
             {
                 jobsEnqueued++;
 
-                if (context.CancellationToken.IsCancellationRequested)
+                if (context.IsShutdownRequested)
                 {
                     break;
                 }
@@ -132,7 +132,7 @@ namespace Hangfire.Server
                 Logger.InfoFormat("{0} scheduled job(s) enqueued.", jobsEnqueued);
             }
 
-            context.Sleep(_pollingDelay);
+            context.Wait(_pollingDelay);
         }
 
         /// <inheritdoc />
