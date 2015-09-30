@@ -167,7 +167,21 @@ namespace Hangfire.States
 
             if (Result != null)
             {
-                data.Add("Result", JobHelper.ToJson(Result));
+                string serializedResult;
+
+                try
+                {
+                    serializedResult = JobHelper.ToJson(Result);
+                }
+                catch (Exception)
+                {
+                    serializedResult = "Can not serialize the return value";
+                }
+
+                if (serializedResult != null)
+                {
+                    data.Add("Result", serializedResult);
+                }
             }
 
             return data;
