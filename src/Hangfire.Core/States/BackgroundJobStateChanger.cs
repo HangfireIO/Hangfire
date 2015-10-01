@@ -127,12 +127,7 @@ namespace Hangfire.States
             while (true)
             {
                 var jobData = context.Connection.GetJobData(context.BackgroundJobId);
-                if (jobData == null)
-                {
-                    return null;
-                }
-
-                if (!String.IsNullOrEmpty(jobData.State))
+                if (jobData != null && !String.IsNullOrEmpty(jobData.State))
                 {
                     return jobData;
                 }
