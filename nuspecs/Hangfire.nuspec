@@ -18,6 +18,10 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
     
+1.4.7
+* Fixed – TaskCanceledException causes the job to be Processing state indefinitely.
+* Fixed – Child job isn't executed when created in a TransactionScope with MSMQ.
+    
 1.4.6
 * Fixed – SQL command timeout in `DisableConcurrentExecution` filter (by @Tom-Kelly).
 * Fixed – SQL deadlocks in `ExpirationManager` background process.
