@@ -284,11 +284,11 @@ namespace Hangfire.Core.Tests.States
         }
 
         [Fact]
-        public void ChangeState_WaitsFor_NonNullStateValue()
+        public void ChangeState_WaitsFor_NonNullJobAndStateValue()
         {
             // Arrange
             var results = new Queue<JobData>();
-            results.Enqueue(new JobData { Job = _job, State = null });
+            results.Enqueue(null);
             results.Enqueue(new JobData { Job = _job, State = null });
             results.Enqueue(new JobData { Job = _job, State = OldStateName });
 
