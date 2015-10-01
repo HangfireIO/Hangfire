@@ -436,6 +436,17 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void Perform_ThrowsPerformanceException_WhenAMethodThrowsTaskCanceledException()
+        {
+            var job = Job.FromExpression(() => TaskCanceledExceptionMethod());
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => job.Perform(_activator.Object, _token.Object));
+
+            Assert.IsType<TaskCanceledException>(thrownException.InnerException);
+        }
+
+        [Fact]
         public void Perform_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
         {
             // Arrange
@@ -558,6 +569,11 @@ namespace Hangfire.Core.Tests.Common
         public static void ExceptionMethod()
         {
             throw new InvalidOperationException("exception");
+        }
+
+        public static void TaskCanceledExceptionMethod()
+        {
+            throw new TaskCanceledException();
         }
 
         public void GenericMethod<T>(T arg)
