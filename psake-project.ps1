@@ -36,7 +36,7 @@ Task Collect -Depends Merge -Description "Copy all artifacts to the build folder
     Collect-Assembly "Hangfire.SqlServer.RabbitMq" "Net45"
     
     Collect-Content "content\readme.txt"
-    Collect-Tool "src\Hangfire.SqlServer\Install.sql"
+    Collect-Tool "src\Hangfire.SqlServer\DefaultInstall.sql"
 }
 
 Task Pack -Depends Collect -Description "Create NuGet packages and archive files." {

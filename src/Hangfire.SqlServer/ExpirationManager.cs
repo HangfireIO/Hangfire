@@ -26,6 +26,7 @@ namespace Hangfire.SqlServer
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
+        private const string DistributedLockKey = "locks:expirationmanager";
         private static readonly TimeSpan DefaultLockTimeout = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan DelayBetweenPasses = TimeSpan.FromSeconds(1);
         private const int NumberOfRecordsInSinglePass = 1000;
@@ -61,19 +62,27 @@ namespace Hangfire.SqlServer
             {
                 Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
 
-                int removedCount;
+                int removedCount = 0;
 
                 do
                 {
-                    using (var storageConnection = (SqlServerConnection)_storage.GetConnection())
-                    using (storageConnection.AcquireDistributedLock("locks:expirationmanager", DefaultLockTimeout))
+                    _storage.UseConnection(connection =>
                     {
-                        removedCount = storageConnection.Connection.Execute(
-                            String.Format(@"
+                        SqlServerDistributedLock.Acquire(connection, DistributedLockKey, DefaultLockTimeout);
+
+                        try
+                        {
+                            removedCount = connection.Execute(
+                                String.Format(@"
 set transaction isolation level read committed;
-delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;", table),
-                            new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
-                    }
+delete top (@count) from [{0}].[{1}] with (readpast) where ExpireAt < @now;", _storage.GetSchemaName(), table),
+                                new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
+                        }
+                        finally
+                        {
+                            SqlServerDistributedLock.Release(connection, DistributedLockKey);
+                        }
+                    });
 
                     if (removedCount > 0)
                     {
@@ -91,7 +100,7 @@ delete top (@count) from HangFire.[{0}] with (readpast) where ExpireAt < @now;",
 
         public override string ToString()
         {
-            return "SQL Records Expiration Manager";
+            return GetType().ToString();
         }
     }
 }

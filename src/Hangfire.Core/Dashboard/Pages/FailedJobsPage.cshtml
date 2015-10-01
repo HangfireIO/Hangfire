@@ -100,7 +100,7 @@
                                 @if (!String.IsNullOrEmpty(job.Value.ExceptionMessage))
                                 {
                                     <div style="color: #888;">
-                                        @job.Value.Reason <a class="expander" href="#">More&nbsp;details...</a>
+                                        @job.Value.Reason <a class="expander" href="#">@(index == 0 ? "Less details..." : "More details...")</a>
                                     </div>
                                 }
                             </td>
@@ -117,7 +117,7 @@
 
                                         @if (!String.IsNullOrEmpty(job.Value.ExceptionDetails))
                                         {
-                                            <pre class="stack-trace">@Html.StackTrace(job.Value.ExceptionDetails)</pre>
+                                            <pre class="stack-trace"><code>@Html.StackTrace(job.Value.ExceptionDetails)</code></pre>
                                         }
                                     </div>
                                 </td>

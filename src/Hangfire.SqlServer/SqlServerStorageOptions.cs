@@ -22,6 +22,7 @@ namespace Hangfire.SqlServer
     public class SqlServerStorageOptions
     {
         private TimeSpan _queuePollInterval;
+        private string _schemaName;
 
         public SqlServerStorageOptions()
         {
@@ -31,6 +32,9 @@ namespace Hangfire.SqlServer
             JobExpirationCheckInterval = TimeSpan.FromHours(1);
             CountersAggregateInterval = TimeSpan.FromMinutes(5);
             PrepareSchemaIfNecessary = true;
+            DashboardJobListLimit = 50000;
+            _schemaName = Constants.DefaultSchema;
+            TransactionTimeout = TimeSpan.FromMinutes(1);
         }
 
         public IsolationLevel? TransactionIsolationLevel { get; set; }
@@ -57,11 +61,28 @@ namespace Hangfire.SqlServer
             }
         }
 
+        [Obsolete("Does not make sense anymore. Background jobs re-queued instantly even after ungraceful shutdown now. Will be removed in 2.0.0.")]
         public TimeSpan InvisibilityTimeout { get; set; }
 
         public bool PrepareSchemaIfNecessary { get; set; }
 
         public TimeSpan JobExpirationCheckInterval { get; set; }
         public TimeSpan CountersAggregateInterval { get; set; }
+
+        public int? DashboardJobListLimit { get; set; }
+        public TimeSpan TransactionTimeout { get; set; }
+
+        public string SchemaName
+        {
+            get { return _schemaName; }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(_schemaName))
+                {
+                    throw new ArgumentException(_schemaName, "value");
+                }
+                _schemaName = value;
+            }
+        }
     }
 }

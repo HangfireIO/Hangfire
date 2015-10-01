@@ -15,7 +15,9 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Logging;
@@ -24,58 +26,87 @@ using Hangfire.Storage;
 
 namespace Hangfire.Server
 {
-    internal class Worker : IServerComponent
+    /// <summary>
+    /// Represents a background process responsible for <i>processing 
+    /// fire-and-forget jobs</i>.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// <para>This is the heart of background processing in Hangfire</para>
+    /// </remarks>
+    /// 
+    /// <threadsafety static="true" instance="true"/>
+    /// 
+    /// <seealso cref="EnqueuedState"/>
+    public class Worker : IBackgroundProcess
     {
         private static readonly TimeSpan JobInitializationWaitTimeout = TimeSpan.FromMinutes(1);
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly JobStorage _storage;
-        private readonly IJobPerformanceProcess _process;
-        private readonly IStateMachineFactory _stateMachineFactory;
-        private readonly WorkerContext _context;
+        private readonly string _workerId;
+        private readonly string[] _queues;
 
-        public Worker(
-            [NotNull] WorkerContext context,
-            [NotNull] JobStorage storage, 
-            [NotNull] IJobPerformanceProcess process, 
-            [NotNull] IStateMachineFactory stateMachineFactory)
+        private readonly IBackgroundJobPerformer _performer;
+        private readonly IBackgroundJobStateChanger _stateChanger;
+        
+        public Worker() : this(EnqueuedState.DefaultQueue)
         {
-            if (context == null) throw new ArgumentNullException("context");
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (process == null) throw new ArgumentNullException("process");
-            if (stateMachineFactory == null) throw new ArgumentNullException("stateMachineFactory");
-            
-            _context = context;
-            _storage = storage;
-            _process = process;
-            _stateMachineFactory = stateMachineFactory;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public Worker([NotNull] params string[] queues)
+            : this(queues, new BackgroundJobPerformer(), new BackgroundJobStateChanger())
         {
-            using (var connection = _storage.GetConnection())
-            using (var fetchedJob = connection.FetchNextJob(_context.Queues, cancellationToken))
+        }
+
+        public Worker(
+            [NotNull] IEnumerable<string> queues,
+            [NotNull] IBackgroundJobPerformer performer, 
+            [NotNull] IBackgroundJobStateChanger stateChanger)
+        {
+            if (queues == null) throw new ArgumentNullException("queues");
+            if (performer == null) throw new ArgumentNullException("performer");
+            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
+            
+            _queues = queues.ToArray();
+            _performer = performer;
+            _stateChanger = stateChanger;
+            _workerId = Guid.NewGuid().ToString();
+        }
+
+        /// <inheritdoc />
+        public void Execute(BackgroundProcessContext context)
+        {
+            if (context == null) throw new ArgumentNullException("context");
+
+            using (var connection = context.Storage.GetConnection())
+            using (var fetchedJob = connection.FetchNextJob(_queues, context.CancellationToken))
             {
+                context.CancellationToken.ThrowIfCancellationRequested();
+
                 try
                 {
-                    var stateMachine = _stateMachineFactory.Create(connection);
-
                     using (var timeoutCts = new CancellationTokenSource(JobInitializationWaitTimeout))
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-                        cancellationToken,
+                        context.CancellationToken,
                         timeoutCts.Token))
                     {
-                        var processingState = new ProcessingState(_context.ServerId, _context.WorkerNumber);
+                        var processingState = new ProcessingState(context.ServerId, _workerId);
 
-                        if (!stateMachine.ChangeState(
+                        var appliedState = _stateChanger.ChangeState(new StateChangeContext(
+                            context.Storage,
+                            connection,
                             fetchedJob.JobId,
                             processingState,
                             new[] { EnqueuedState.StateName, ProcessingState.StateName },
-                            linkedCts.Token))
+                            linkedCts.Token));
+
+                        // Cancel job processing if the job could not be loaded, was not in the initial state expected
+                        // or if a job filter changed the state to something other than processing state
+                        if (appliedState == null || !appliedState.Name.Equals(ProcessingState.StateName, StringComparison.OrdinalIgnoreCase))
                         {
                             // We should re-queue a job identifier only when graceful shutdown
                             // initiated.
-                            cancellationToken.ThrowIfCancellationRequested();
+                            context.CancellationToken.ThrowIfCancellationRequested();
 
                             // We should forget a job in a wrong state, or when timeout exceeded.
                             fetchedJob.RemoveFromQueue();
@@ -88,15 +119,17 @@ namespace Hangfire.Server
                     // it was performed to guarantee that it was performed AT LEAST once.
                     // It will be re-queued after the JobTimeout was expired.
 
-                    var jobCancellationToken = new ServerJobCancellationToken(
-                        fetchedJob.JobId, connection, _context, cancellationToken);
-
-                    var state = PerformJob(fetchedJob.JobId, connection, jobCancellationToken);
+                    var state = PerformJob(context, connection, fetchedJob.JobId);
 
                     if (state != null)
                     {
                         // Ignore return value, because we should not do anything when current state is not Processing.
-                        stateMachine.ChangeState(fetchedJob.JobId, state, new[] { ProcessingState.StateName });
+                        _stateChanger.ChangeState(new StateChangeContext(
+                            context.Storage,
+                            connection,
+                            fetchedJob.JobId, 
+                            state, 
+                            ProcessingState.StateName));
                     }
 
                     // Checkpoint #4. The job was performed, and it is in the one
@@ -123,12 +156,13 @@ namespace Hangfire.Server
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
-            return "Worker #" + _context.WorkerNumber;
+            return String.Format("{0} #{1}", GetType().Name, _workerId.Substring(0, 8));
         }
 
-        private IState PerformJob(string jobId, IStorageConnection connection, IJobCancellationToken token)
+        private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)
         {
             try
             {
@@ -144,13 +178,15 @@ namespace Hangfire.Server
 
                 jobData.EnsureLoaded();
 
-                var performContext = new PerformContext(
-                    _context, connection, jobId, jobData.Job, jobData.CreatedAt, token);
+                var backgroundJob = new BackgroundJob(jobId, jobData.Job, jobData.CreatedAt);
+
+                var jobToken = new ServerJobCancellationToken(connection, jobId, context.ServerId, _workerId, context.CancellationToken);
+                var performContext = new PerformContext(connection, backgroundJob, jobToken);
 
                 var latency = (DateTime.UtcNow - jobData.CreatedAt).TotalMilliseconds;
                 var duration = Stopwatch.StartNew();
 
-                var result = _process.Run(performContext, jobData.Job);
+                var result = _performer.Perform(performContext);
                 duration.Stop();
 
                 return new SucceededState(result, (long) latency, duration.ElapsedMilliseconds);
@@ -170,7 +206,7 @@ namespace Hangfire.Server
             {
                 return new FailedState(ex)
                 {
-                    Reason = "Internal Hangfire Server exception occurred. Please, report it to Hangfire developers."
+                    Reason = "An exception occurred during processing of a background job."
                 };
             }
         }

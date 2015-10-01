@@ -61,6 +61,7 @@ namespace Hangfire.Dashboard
             get { return Request.Path.Value; }
         }
 
+        /// <exclude />
         public abstract void Execute();
 
         public string Query(string key)
@@ -73,6 +74,7 @@ namespace Hangfire.Dashboard
             return TransformText(null);
         }
 
+        /// <exclude />
         public void Assign(RazorPage parentPage)
         {
             Request = parentPage.Request;
@@ -102,6 +104,7 @@ namespace Hangfire.Dashboard
             });
         }
 
+        /// <exclude />
         protected void WriteLiteral(string textToAppend)
         {
             if (string.IsNullOrEmpty(textToAppend))
@@ -109,6 +112,7 @@ namespace Hangfire.Dashboard
             _content.Append(textToAppend);
         }
 
+        /// <exclude />
         protected virtual void Write(object value)
         {
             if (value == null)

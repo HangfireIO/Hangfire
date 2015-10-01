@@ -12,60 +12,33 @@
     <description>Core components for Hangfire (background job system for ASP.NET applications).</description>
     <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
-    <releaseNotes>https://github.com/HangfireIO/Hangfire/releases
+    <releaseNotes>http://hangfire.io/blog/
     
-1.4.7
-* Fixed – TaskCanceledException causes the job to be Processing state indefinitely.
-* Fixed – Child job isn't executed when created in a TransactionScope with MSMQ.
-    
-1.4.6
-* Fixed – Too many queries in `SchedulePoller` when background job is missing or in another state.
-    
-1.4.5
-* Fixed – "This stream does not support seek operations." exception in Dashboard buttons and stats.
-    
-1.4.4
-* Fixed – `InvalidCastException` in Dashboard when using Microsoft.Owin 3.0.1 package.
-* Fixed – Non-working buttons and counter updates in Dashboard when a body stream isn't at the start position.
-    
-1.4.3
-* Fixed – `OverflowException` on Job Details page when latency is too high (by @schulz3000).
-* Fixed – Job serialization fix when using `TypeNameHandling.All` option (by @tystol).
-    
-1.4.2
-* Added – Missing generic methods for continuations (by @yngndrw).
-* Fixed – MSMQ extension does not work without explicit queue names in `UseMsmqQueues`.
-* Fixed – Missing null-check in Retries page after casting connection to `JobStorageConnection`.
-* Fixed – Enqueued jobs cannot be deleted from the Dashboard.
-* Fixed – Error when building the project using `build.bat` on a machine with VS 2013 only (by @Cussa).
-    
-1.4.1
-* Fixed – 1.4.0 ignoring `BackgroundJobServerOptions` settings in `UseHangfireServer` method.
-    
-1.4.0
-* Added – Job continuations, please see new `BackgroundJob.ContinueWith` methods.
-* Added – Time zone support for recurring jobs using `TimeZoneInfo` class.
-* Added – Single place for global configuration, please see `GlobalConfiguration` class.
-* Added – Made configurable the 'Back to Site' path in the dashboard (by @ysasaki1985).
-* Added – Ability to plug in custom dashboard pages and modify navigation.
-* Added – Ability to add custom metrics to the Home page in Dashboard.
-* Added – Test coverage badge from Coveralls application.
-* Added – Dedicated page for retrying jobs to distinguish them from other scheduled jobs.
-* Added – Show expiration time on Job Details page.
-* Added – More methods for build-in storage through `JobStorageConnection` and `JobStorageTransaction` classes.
-* Added – Paging support for Recurring Jobs page.
-* Added – New OWIN's `IAppBuilder` extension methods: `UseHangfireDashboard` and `UseHangfireServer`.
-* Added – Add a notice about failed jobs expiration time.
-* Added – Show warnings in Dashboard for jobs processing by inactive servers.
-* Changed – New look and feel for Dashboard. New navigation, less colors, more accents.
-* Changed – Determine job type of a current object when `MethodCallExpression` has `Object` property set.
-* Changed – Making Product Version and File Version on the dll match the Assembly Version (by @fire-eagle).
-* Changed – Use different log level for exceptions occured within automatic retry wrapper.
-* Changed – Retry a job when there was an exception during state transition instead of moving it to the Failed state.
-* Fixed – Recurring Page throws exception from CronExpressionDescriptor library.
-* Fixed – Hangfire stops processing when storage outage was too long.
-* Fixed – Don't leak foreground colors in ColouredConsoleLogger.
-* Obsolete – `BackgroundJobServer`'s `Start` and `Stop` methods are obsolete.
+1.5.0
+* Added – `IBackgroundProcess` interface that allows to implement custom background processes.
+* Added – `BackgroundProcessingServer` class for creating a server instance with completely custom background processes.
+* Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain without explicit server names.
+* Added – `JobActivatorScope` class to support custom IoC scopes/lifetimes.
+* Added – Allow to specify a custom queue for recurring jobs (by @maleet).
+* Added – Allow to use CancellationToken type as a job method parameter.
+* Added – It is now possible to query the storage in state applying filters.
+* Added – Allow to pass custom filters to `BackgroundJobServer` via options.
+* Added – Option to hide the "Back to site" link (by @dradovic).
+* Changed – Server components and background processes now use `Task` with `TaskCreationOptions.LongRunning`.
+* Changed – ServerIds are now generated without ServerName, server names are deprecated.
+* Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
+* Changed – Minor improvements for Dashboard navigation (by @pwelter34).
+* Changed – Worker does not process a job when a transition to the Processing state failed (by @yngndrw).
+* Changed – `BackgroundJobClientException` is thrown instead of `CreateJobFailedException`.
+* Changed – WorkerId is now auto-generated and based on a GUID.
+* Changed – Use StackTraceFormatter package for marking-up stack traces (by @atifaziz).
+* Changed – Updated Dashboard CSS to Twitter Bootstrap 3.3.5.
+* Fixed – Prevent worker from fetching and processing a job on shutdown.
+* Fixed – `TaskCanceledException` thrown from a job method leads to failed job as expected.
+* Fixed – Make `DelayedJobScheduler` resilient to empty background job ids.
+* Fixed – Logical error in SqlServerDistributedLockTimeout value check (by @Tom-Kelly).
+* Fixed – `OverflowException` in Dashboard when job duration exceeds int.MaxValue (by @mavenius).
+* Fixed – "More details" button in Dashboard changes to "Less details" when collapsed (by @pascalberger).
     </releaseNotes>
     <dependencies>
       <dependency id="Owin" version="1.0" />

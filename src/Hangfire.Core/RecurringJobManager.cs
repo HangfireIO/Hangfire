@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -31,7 +32,7 @@ namespace Hangfire
     public class RecurringJobManager
     {
         private readonly JobStorage _storage;
-        private readonly IBackgroundJobClient _client;
+        private readonly IBackgroundJobFactory _factory;
 
         public RecurringJobManager()
             : this(JobStorage.Current)
@@ -39,17 +40,17 @@ namespace Hangfire
         }
 
         public RecurringJobManager([NotNull] JobStorage storage)
-            : this (storage, new BackgroundJobClient(storage))
+            : this(storage, new BackgroundJobFactory())
         {
         }
 
-        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobClient client)
+        public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory)
         {
             if (storage == null) throw new ArgumentNullException("storage");
-            if (client == null) throw new ArgumentNullException("client");
+            if (factory == null) throw new ArgumentNullException("factory");
 
             _storage = storage;
-            _client = client;
+            _factory = factory;
         }
 
         public void AddOrUpdate(
@@ -61,10 +62,20 @@ namespace Hangfire
         }
 
         public void AddOrUpdate(
-            [NotNull] string recurringJobId, 
-            [NotNull] Job job, 
-            [NotNull] string cronExpression, 
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
             [NotNull] TimeZoneInfo timeZone)
+        {
+            AddOrUpdate(recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
+        }
+
+        public void AddOrUpdate(
+            [NotNull] string recurringJobId,
+            [NotNull] Job job,
+            [NotNull] string cronExpression,
+            [NotNull] TimeZoneInfo timeZone,
+            [NotNull] string queue)
         {
             if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
             if (job == null) throw new ArgumentNullException("job");
@@ -77,15 +88,16 @@ namespace Hangfire
             {
                 var recurringJob = new Dictionary<string, string>();
                 var invocationData = InvocationData.Serialize(job);
-                
+
                 recurringJob["Job"] = JobHelper.ToJson(invocationData);
                 recurringJob["Cron"] = cronExpression;
                 recurringJob["TimeZoneId"] = timeZone.Id;
+                recurringJob["Queue"] = queue;
 
                 using (var transaction = connection.CreateWriteTransaction())
                 {
                     transaction.SetRangeInHash(
-                        String.Format("recurring-job:{0}", recurringJobId), 
+                        String.Format("recurring-job:{0}", recurringJobId),
                         recurringJob);
 
                     transaction.AddToSet("recurring-jobs", recurringJobId);
@@ -108,9 +120,14 @@ namespace Hangfire
                 }
                 
                 var job = JobHelper.FromJson<InvocationData>(hash["Job"]).Deserialize();
-                var state = new EnqueuedState { Reason = "Triggered" };
+                var state = new EnqueuedState { Reason = "Triggered using recurring job manager" };
 
-                _client.Create(job, state);
+                if (hash.ContainsKey("Queue"))
+                {
+                    state.Queue = hash["Queue"];
+                }
+
+                _factory.Create(new CreateContext(_storage, connection, job, state));
             }
         }
 

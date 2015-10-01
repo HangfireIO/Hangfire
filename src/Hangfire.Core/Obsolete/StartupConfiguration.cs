@@ -20,6 +20,8 @@ using Hangfire.Dashboard;
 
 namespace Hangfire
 {
+    /// <exclude />
+    [Obsolete]
     internal class BootstrapperConfiguration : IBootstrapperConfiguration
     {
         public BootstrapperConfiguration()

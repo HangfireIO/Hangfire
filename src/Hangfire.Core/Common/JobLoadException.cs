@@ -24,7 +24,6 @@ namespace Hangfire.Common
     /// be loaded from the storage due to missing or incorrect 
     /// information about its type or method.
     /// </summary>
-    [Serializable]
     public class JobLoadException : Exception
     {
         /// <summary>
@@ -32,16 +31,6 @@ namespace Hangfire.Common
         /// class with a given message and information about inner exception.
         /// </summary>
         public JobLoadException(string message, Exception inner) : base(message, inner)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JobLoadException"/>
-        /// class with given serialization info and streaming context.
-        /// </summary>
-        protected JobLoadException(
-            SerializationInfo info,
-            StreamingContext context) : base(info, context)
         {
         }
     }

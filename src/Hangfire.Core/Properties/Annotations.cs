@@ -9,6 +9,7 @@
 // ReSharper disable MemberCanBeProtected.Global
 // ReSharper disable InconsistentNaming
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Annotations
 {
   /// <summary>
@@ -16,10 +17,13 @@ namespace Hangfire.Annotations
   /// so the check for <c>null</c> is necessary before its usage
   /// </summary>
   /// <example><code>
-  /// [CanBeNull] public object Test() { return null; }
-  /// public void UseTest() {
-  ///   var p = Test();
-  ///   var s = p.ToString(); // Warning: Possible 'System.NullReferenceException'
+  /// [CanBeNull] 
+  /// public object Test() { return null; }
+  /// 
+  /// public void UseTest() 
+  /// {
+  ///     var p = Test();
+  ///     var s = p.ToString(); // Warning: Possible 'System.NullReferenceException'
   /// }
   /// </code></example>
   [AttributeUsage(
@@ -32,8 +36,10 @@ namespace Hangfire.Annotations
   /// Indicates that the value of the marked element could never be <c>null</c>
   /// </summary>
   /// <example><code>
-  /// [NotNull] public object Foo() {
-  ///   return null; // Warning: Possible 'null' assignment
+  /// [NotNull] 
+  /// public object Foo() 
+  /// {
+  ///     return null; // Warning: Possible 'null' assignment
   /// }
   /// </code></example>
   [AttributeUsage(
@@ -50,8 +56,10 @@ namespace Hangfire.Annotations
   /// <example><code>
   /// [StringFormatMethod("message")]
   /// public void ShowError(string message, params object[] args) { /* do something */ }
-  /// public void Foo() {
-  ///   ShowError("Failed: {0}"); // Warning: Non-existing argument in format string
+  /// 
+  /// public void Foo() 
+  /// {
+  ///     ShowError("Failed: {0}"); // Warning: Non-existing argument in format string
   /// }
   /// </code></example>
   [AttributeUsage(
@@ -76,9 +84,10 @@ namespace Hangfire.Annotations
   /// the parameter of <see cref="System.ArgumentNullException"/>
   /// </summary>
   /// <example><code>
-  /// public void Foo(string param) {
-  ///   if (param == null)
-  ///     throw new ArgumentNullException("par"); // Warning: Cannot resolve symbol
+  /// public void Foo(string param) 
+  /// {
+  ///     if (param == null)
+  ///         throw new ArgumentNullException("par"); // Warning: Cannot resolve symbol
   /// }
   /// </code></example>
   [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
@@ -100,16 +109,17 @@ namespace Hangfire.Annotations
   /// </list>
   /// </remarks>
   /// <example><code>
-  /// public class Foo : INotifyPropertyChanged {
-  ///   public event PropertyChangedEventHandler PropertyChanged;
-  ///   [NotifyPropertyChangedInvocator]
-  ///   protected virtual void NotifyChanged(string propertyName) { ... }
+  /// public class Foo : INotifyPropertyChanged 
+  /// {
+  ///     public event PropertyChangedEventHandler PropertyChanged;
+  ///     [NotifyPropertyChangedInvocator]
+  ///     protected virtual void NotifyChanged(string propertyName) { ... }
   ///
-  ///   private string _name;
-  ///   public string Name {
-  ///     get { return _name; }
-  ///     set { _name = value; NotifyChanged("LastName"); /* Warning */ }
-  ///   }
+  ///     private string _name;
+  ///     public string Name {
+  ///         get { return _name; }
+  ///         set { _name = value; NotifyChanged("LastName"); /* Warning */ }
+  ///     }
   /// }
   /// </code>
   /// Examples of generated notifications:
@@ -195,8 +205,9 @@ namespace Hangfire.Annotations
   /// </summary>
   /// <example><code>
   /// [LocalizationRequiredAttribute(true)]
-  /// public class Foo {
-  ///   private string str = "my string"; // Warning: Localizable string
+  /// public class Foo 
+  /// {
+  ///     private string str = "my string"; // Warning: Localizable string
   /// }
   /// </code></example>
   [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
@@ -220,14 +231,17 @@ namespace Hangfire.Annotations
   /// <example><code>
   /// [CannotApplyEqualityOperator]
   /// class NoEquality { }
-  /// class UsesNoEquality {
-  ///   public void Test() {
-  ///     var ca1 = new NoEquality();
-  ///     var ca2 = new NoEquality();
-  ///     if (ca1 != null) { // OK
-  ///       bool condition = ca1 == ca2; // Warning
+  /// class UsesNoEquality 
+  /// {
+  ///     public void Test() 
+  ///     {
+  ///         var ca1 = new NoEquality();
+  ///         var ca2 = new NoEquality();
+  ///         if (ca1 != null) // OK
+  ///         { 
+  ///             bool condition = ca1 == ca2; // Warning
+  ///         }
   ///     }
-  ///   }
   /// }
   /// </code></example>
   [AttributeUsage(
@@ -386,195 +400,6 @@ namespace Hangfire.Annotations
   [AttributeUsage(AttributeTargets.Method, Inherited = true)]
   public sealed class PureAttribute : Attribute { }
 
-  /// <summary>
-  /// Indicates that a parameter is a path to a file or a folder
-  /// within a web project. Path can be relative or absolute,
-  /// starting from web root (~)
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter)]
-  public class PathReferenceAttribute : Attribute
-  {
-    public PathReferenceAttribute() { }
-    public PathReferenceAttribute([PathReference] string basePath)
-    {
-      BasePath = basePath;
-    }
-
-    [NotNull] public string BasePath { get; private set; }
-  }
-
-  // ASP.NET MVC attributes
-
-  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-  public sealed class AspMvcAreaMasterLocationFormatAttribute : Attribute
-  {
-    public AspMvcAreaMasterLocationFormatAttribute(string format) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-  public sealed class AspMvcAreaPartialViewLocationFormatAttribute : Attribute
-  {
-    public AspMvcAreaPartialViewLocationFormatAttribute(string format) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-  public sealed class AspMvcAreaViewLocationFormatAttribute : Attribute
-  {
-    public AspMvcAreaViewLocationFormatAttribute(string format) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-  public sealed class AspMvcMasterLocationFormatAttribute : Attribute
-  {
-    public AspMvcMasterLocationFormatAttribute(string format) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-  public sealed class AspMvcPartialViewLocationFormatAttribute : Attribute
-  {
-    public AspMvcPartialViewLocationFormatAttribute(string format) { }
-  }
-
-  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-  public sealed class AspMvcViewLocationFormatAttribute : Attribute
-  {
-    public AspMvcViewLocationFormatAttribute(string format) { }
-  }
-  
-  /// <summary>
-  /// ASP.NET MVC attribute. If applied to a parameter, indicates that the parameter
-  /// is an MVC action. If applied to a method, the MVC action name is calculated
-  /// implicitly from the context. Use this attribute for custom wrappers similar to
-  /// <c>System.Web.Mvc.Html.ChildActionExtensions.RenderAction(HtmlHelper, String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
-  public sealed class AspMvcActionAttribute : Attribute
-  {
-    public AspMvcActionAttribute() { }
-    public AspMvcActionAttribute([NotNull] string anonymousProperty)
-    {
-      AnonymousProperty = anonymousProperty;
-    }
-
-    [NotNull] public string AnonymousProperty { get; private set; }
-  }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. Indicates that a parameter is an MVC area.
-  /// Use this attribute for custom wrappers similar to
-  /// <c>System.Web.Mvc.Html.ChildActionExtensions.RenderAction(HtmlHelper, String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter)]
-  public sealed class AspMvcAreaAttribute : PathReferenceAttribute
-  {
-    public AspMvcAreaAttribute() { }
-    public AspMvcAreaAttribute([NotNull] string anonymousProperty)
-    {
-      AnonymousProperty = anonymousProperty;
-    }
-
-    [NotNull] public string AnonymousProperty { get; private set; }
-  }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. If applied to a parameter, indicates that
-  /// the parameter is an MVC controller. If applied to a method,
-  /// the MVC controller name is calculated implicitly from the context.
-  /// Use this attribute for custom wrappers similar to 
-  /// <c>System.Web.Mvc.Html.ChildActionExtensions.RenderAction(HtmlHelper, String, String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
-  public sealed class AspMvcControllerAttribute : Attribute
-  {
-    public AspMvcControllerAttribute() { }
-    public AspMvcControllerAttribute([NotNull] string anonymousProperty)
-    {
-      AnonymousProperty = anonymousProperty;
-    }
-
-    [NotNull] public string AnonymousProperty { get; private set; }
-  }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. Indicates that a parameter is an MVC Master.
-  /// Use this attribute for custom wrappers similar to
-  /// <c>System.Web.Mvc.Controller.View(String, String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter)]
-  public sealed class AspMvcMasterAttribute : Attribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. Indicates that a parameter is an MVC model type.
-  /// Use this attribute for custom wrappers similar to
-  /// <c>System.Web.Mvc.Controller.View(String, Object)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter)]
-  public sealed class AspMvcModelTypeAttribute : Attribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. If applied to a parameter, indicates that
-  /// the parameter is an MVC partial view. If applied to a method,
-  /// the MVC partial view name is calculated implicitly from the context.
-  /// Use this attribute for custom wrappers similar to
-  /// <c>System.Web.Mvc.Html.RenderPartialExtensions.RenderPartial(HtmlHelper, String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
-  public sealed class AspMvcPartialViewAttribute : PathReferenceAttribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. Allows disabling all inspections
-  /// for MVC views within a class or a method.
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-  public sealed class AspMvcSupressViewErrorAttribute : Attribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. Indicates that a parameter is an MVC display template.
-  /// Use this attribute for custom wrappers similar to 
-  /// <c>System.Web.Mvc.Html.DisplayExtensions.DisplayForModel(HtmlHelper, String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter)]
-  public sealed class AspMvcDisplayTemplateAttribute : Attribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. Indicates that a parameter is an MVC editor template.
-  /// Use this attribute for custom wrappers similar to
-  /// <c>System.Web.Mvc.Html.EditorExtensions.EditorForModel(HtmlHelper, String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter)]
-  public sealed class AspMvcEditorTemplateAttribute : Attribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. Indicates that a parameter is an MVC template.
-  /// Use this attribute for custom wrappers similar to
-  /// <c>System.ComponentModel.DataAnnotations.UIHintAttribute(System.String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter)]
-  public sealed class AspMvcTemplateAttribute : Attribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. If applied to a parameter, indicates that the parameter
-  /// is an MVC view. If applied to a method, the MVC view name is calculated implicitly
-  /// from the context. Use this attribute for custom wrappers similar to
-  /// <c>System.Web.Mvc.Controller.View(Object)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method)]
-  public sealed class AspMvcViewAttribute : PathReferenceAttribute { }
-
-  /// <summary>
-  /// ASP.NET MVC attribute. When applied to a parameter of an attribute,
-  /// indicates that this parameter is an MVC action name
-  /// </summary>
-  /// <example><code>
-  /// [ActionName("Foo")]
-  /// public ActionResult Login(string returnUrl) {
-  ///   ViewBag.ReturnUrl = Url.Action("Foo"); // OK
-  ///   return RedirectToAction("Bar"); // Error: Cannot resolve action
-  /// }
-  /// </code></example>
-  [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-  public sealed class AspMvcActionSelectorAttribute : Attribute { }
-
   [AttributeUsage(
     AttributeTargets.Parameter | AttributeTargets.Property |
     AttributeTargets.Field, Inherited = true)]
@@ -601,14 +426,4 @@ namespace Hangfire.Annotations
 
     [NotNull] public string Name { get; private set; }
   }
-
-  // Razor attributes
-
-  /// <summary>
-  /// Razor attribute. Indicates that a parameter or a method is a Razor section.
-  /// Use this attribute for custom wrappers similar to 
-  /// <c>System.Web.WebPages.WebPageBase.RenderSection(String)</c>
-  /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Method, Inherited = true)]
-  public sealed class RazorSectionAttribute : Attribute { }
 }

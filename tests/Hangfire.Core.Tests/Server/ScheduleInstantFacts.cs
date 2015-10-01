@@ -113,6 +113,15 @@ namespace Hangfire.Core.Tests.Server
             Assert.Empty(matches);
         }
 
+        [Fact]
+        public void Factory_ReturnsCorrectlyInitializedInstant()
+        {
+            var instant = ScheduleInstant.Factory(CrontabSchedule.Parse("* * * * *"), _timeZone);
+
+            Assert.True(DateTime.UtcNow.AddMinutes(-2) < instant.NowInstant);
+            Assert.True(instant.NowInstant < DateTime.UtcNow.AddMinutes(2));
+        }
+
         private ScheduleInstant CreateInstant(DateTime? localTime = null)
         {
             return new ScheduleInstant(localTime ?? _now, _timeZone, _schedule);

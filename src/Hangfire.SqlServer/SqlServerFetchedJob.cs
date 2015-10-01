@@ -16,68 +16,55 @@
 
 using System;
 using System.Data;
-using Dapper;
+using Hangfire.Annotations;
 using Hangfire.Storage;
 
 namespace Hangfire.SqlServer
 {
     internal class SqlServerFetchedJob : IFetchedJob
     {
+        private readonly SqlServerStorage _storage;
         private readonly IDbConnection _connection;
-
-        private bool _disposed;
-        private bool _removedFromQueue;
-        private bool _requeued;
+        private readonly IDbTransaction _transaction;
 
         public SqlServerFetchedJob(
-            IDbConnection connection, 
-            int id, 
+            [NotNull] SqlServerStorage storage,
+            [NotNull] IDbConnection connection, 
+            [NotNull] IDbTransaction transaction, 
             string jobId, 
             string queue)
         {
+            if (storage == null) throw new ArgumentNullException("storage");
             if (connection == null) throw new ArgumentNullException("connection");
+            if (transaction == null) throw new ArgumentNullException("transaction");
             if (jobId == null) throw new ArgumentNullException("jobId");
             if (queue == null) throw new ArgumentNullException("queue");
 
+            _storage = storage;
             _connection = connection;
+            _transaction = transaction;
 
-            Id = id;
             JobId = jobId;
             Queue = queue;
         }
 
-        public int Id { get; private set; }
         public string JobId { get; private set; }
         public string Queue { get; private set; }
 
         public void RemoveFromQueue()
         {
-            _connection.Execute(
-                "delete from HangFire.JobQueue where Id = @id",
-                new { id = Id });
-
-            _removedFromQueue = true;
+            _transaction.Commit();
         }
 
         public void Requeue()
         {
-            _connection.Execute(
-                "update HangFire.JobQueue set FetchedAt = null where Id = @id",
-                new { id = Id });
-
-            _requeued = true;
+            _transaction.Rollback();
         }
 
         public void Dispose()
         {
-            if (_disposed) return;
-
-            if (!_removedFromQueue && !_requeued)
-            {
-                Requeue();
-            }
-
-            _disposed = true;
+            _transaction.Dispose();
+            _storage.ReleaseConnection(_connection);
         }
     }
 }

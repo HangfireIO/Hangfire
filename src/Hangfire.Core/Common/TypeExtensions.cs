@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 
 namespace Hangfire.Common
 {
-    public static class TypeExtensions
+    internal static class TypeExtensions
     {
         public static string ToGenericTypeString(this Type t)
         {
-            if (!t.IsGenericType)
+            if (!t.GetTypeInfo().IsGenericType)
             {
                 return t.Name;
             }

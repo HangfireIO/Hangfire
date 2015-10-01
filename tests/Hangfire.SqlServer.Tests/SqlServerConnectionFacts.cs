@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -24,54 +23,19 @@ namespace Hangfire.SqlServer.Tests
             _queue = new Mock<IPersistentJobQueue>();
 
             var provider = new Mock<IPersistentJobQueueProvider>();
-            provider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
+            provider.Setup(x => x.GetJobQueue())
                 .Returns(_queue.Object);
 
             _providers = new PersistentJobQueueProviderCollection(provider.Object);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(null, IsolationLevel.Serializable, _providers));
+                () => new SqlServerConnection(null));
 
-            Assert.Equal("connection", exception.ParamName);
-        }
-
-        [Fact, CleanDatabase]
-        public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerConnection(ConnectionUtils.CreateConnection(), IsolationLevel.Serializable, null));
-
-            Assert.Equal("queueProviders", exception.ParamName);
-        }
-
-        [Fact, CleanDatabase]
-        public void Dispose_DisposesTheConnection_IfOwned()
-        {
-            using (var sqlConnection = ConnectionUtils.CreateConnection())
-            {
-                var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers);
-
-                connection.Dispose();
-
-                Assert.Equal(ConnectionState.Closed, sqlConnection.State);
-            }
-        }
-
-        [Fact, CleanDatabase]
-        public void Dispose_DoesNotDisposeTheConnection_IfNotOwned()
-        {
-            using (var sqlConnection = ConnectionUtils.CreateConnection())
-            {
-                var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers, ownsConnection: false);
-
-                connection.Dispose();
-
-                Assert.Equal(ConnectionState.Open, sqlConnection.State);
-            }
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact, CleanDatabase]
@@ -239,7 +203,7 @@ select scope_identity() as Id";
                 Assert.NotNull(result);
                 Assert.NotNull(result.Job);
                 Assert.Equal("Succeeded", result.State);
-                Assert.Equal("Arguments", result.Job.Arguments[0]);
+                Assert.Equal("Arguments", result.Job.Args[0]);
                 Assert.Null(result.LoadException);
                 Assert.True(DateTime.UtcNow.AddMinutes(-1) < result.CreatedAt);
                 Assert.True(result.CreatedAt < DateTime.UtcNow.AddMinutes(1));
@@ -1367,20 +1331,26 @@ values (@key, @value, @expireAt, 0.0)";
         private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new SqlServerConnection(sqlConnection, IsolationLevel.Serializable, _providers))
             {
-                action(sqlConnection, connection);
+                var storage = new SqlServerStorage(sqlConnection);
+                using (var connection = new SqlServerConnection(storage))
+                {
+                    action(sqlConnection, connection);
+                }
             }
         }
 
         private void UseConnection(Action<SqlServerConnection> action)
         {
-            using (var connection = new SqlServerConnection( 
-                ConnectionUtils.CreateConnection(),
-                IsolationLevel.Serializable,
-                _providers))
+            using (var sql = ConnectionUtils.CreateConnection())
             {
-                action(connection);
+                var storage = new Mock<SqlServerStorage>(sql);
+                storage.Setup(x => x.QueueProviders).Returns(_providers);
+
+                using (var connection = new SqlServerConnection(storage.Object))
+                {
+                    action(connection);
+                }
             }
         }
 

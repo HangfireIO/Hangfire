@@ -15,37 +15,63 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Storage;
 
 namespace Hangfire.States
 {
     public class ApplyStateContext : StateContext
     {
-        public ApplyStateContext(
-            [NotNull] StateContext context, 
-            [NotNull] IState newState, 
-            [CanBeNull] string oldStateName, 
-            [NotNull] IEnumerable<IState> traversedStates)
-            : base(context)
+        private readonly BackgroundJob _backgroundJob;
+        
+        internal ApplyStateContext(
+            [NotNull] IWriteOnlyTransaction transaction, 
+            [NotNull] ElectStateContext context)
+            : this(context.Storage, context.Connection, transaction, context.BackgroundJob, context.CandidateState, context.CurrentState)
         {
-            if (newState == null) throw new ArgumentNullException("newState");
-            if (traversedStates == null) throw new ArgumentNullException("traversedStates");
+        }
 
+        public ApplyStateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] IWriteOnlyTransaction transaction,
+            [NotNull] BackgroundJob backgroundJob,
+            [NotNull] IState newState, 
+            [CanBeNull] string oldStateName)
+        {
+            if (storage == null) throw new ArgumentNullException("storage");
+            if (connection == null) throw new ArgumentNullException("connection");
+            if (transaction == null) throw new ArgumentNullException("transaction");
+            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
+            if (newState == null) throw new ArgumentNullException("newState");
+            
+            _backgroundJob = backgroundJob;
+
+            Storage = storage;
+            Connection = connection;
+            Transaction = transaction;
             OldStateName = oldStateName;
             NewState = newState;
-            TraversedStates = traversedStates;
             JobExpirationTimeout = TimeSpan.FromDays(1);
         }
+
+        [NotNull]
+        public JobStorage Storage { get; private set; }
+
+        [NotNull]
+        public IStorageConnection Connection { get; private set; }
+
+        [NotNull]
+        public IWriteOnlyTransaction Transaction { get; private set; }
+
+        [NotNull]
+        public override BackgroundJob BackgroundJob { get { return _backgroundJob; } }
 
         [CanBeNull]
         public string OldStateName { get; private set; }
 
         [NotNull]
         public IState NewState { get; private set; }
-        
-        [NotNull]
-        public IEnumerable<IState> TraversedStates { get; private set; } 
         
         public TimeSpan JobExpirationTimeout { get; set; }
     }

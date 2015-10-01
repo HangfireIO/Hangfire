@@ -15,7 +15,6 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Globalization;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.States;
@@ -26,24 +25,28 @@ namespace Hangfire.Server
     internal class ServerJobCancellationToken : IJobCancellationToken
     {
         private readonly string _jobId;
-        private readonly CancellationToken _shutdownToken;
+        private readonly string _serverId;
+        private readonly string _workerId;
         private readonly IStorageConnection _connection;
-        private readonly WorkerContext _workerContext;
+        private readonly CancellationToken _shutdownToken;
 
         public ServerJobCancellationToken(
+            [NotNull] IStorageConnection connection,
             [NotNull] string jobId, 
-            [NotNull] IStorageConnection connection, 
-            [NotNull] WorkerContext workerContext,
+            [NotNull] string serverId,
+            [NotNull] string workerId,
             CancellationToken shutdownToken)
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
+            if (serverId == null) throw new ArgumentNullException("serverId");
+            if (workerId == null) throw new ArgumentNullException("workerId");
             if (connection == null) throw new ArgumentNullException("connection");
-            if (workerContext == null) throw new ArgumentNullException("workerContext");
 
             _jobId = jobId;
-            _shutdownToken = shutdownToken;
+            _serverId = serverId;
+            _workerId = workerId;
             _connection = connection;
-            _workerContext = workerContext;
+            _shutdownToken = shutdownToken;
         }
 
         public CancellationToken ShutdownToken
@@ -75,12 +78,22 @@ namespace Hangfire.Server
                 return true;
             }
 
-            if (!state.Data["ServerId"].Equals(_workerContext.ServerId))
+            if (!state.Data.ContainsKey("ServerId"))
             {
                 return true;
             }
 
-            if (state.Data["WorkerNumber"] != _workerContext.WorkerNumber.ToString(CultureInfo.InvariantCulture))
+            if (!state.Data["ServerId"].Equals(_serverId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (!state.Data.ContainsKey("WorkerId"))
+            {
+                return true;
+            }
+
+            if (!state.Data["WorkerId"].Equals(_workerId, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

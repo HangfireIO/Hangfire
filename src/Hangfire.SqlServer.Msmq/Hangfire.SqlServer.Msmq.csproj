@@ -42,7 +42,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Messaging" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,6 +55,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="IMsmqTransaction.cs" />
+    <Compile Include="MsmqInternalTransaction.cs" />
     <Compile Include="MessageQueueExtensions.cs" />
     <Compile Include="MsmqExtensions.cs" />
     <Compile Include="MsmqFetchedJob.cs" />
@@ -60,7 +64,9 @@
     <Compile Include="MsmqJobQueueMonitoringApi.cs" />
     <Compile Include="MsmqJobQueueProvider.cs" />
     <Compile Include="MsmqSqlServerStorageExtensions.cs" />
+    <Compile Include="MsmqTransactionType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MsmqDtcTransaction.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Hangfire.Core\Hangfire.Core.csproj">

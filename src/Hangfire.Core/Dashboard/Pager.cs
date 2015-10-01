@@ -47,7 +47,7 @@ namespace Hangfire.Dashboard
         public int TotalPageCount { get; private set; }
         public long TotalRecordCount { get; private set; }
 
-        public ICollection<Item> PagerItems { get; private set; }
+        internal ICollection<Item> PagerItems { get; private set; }
 
         public string PageUrl(int page)
         {
@@ -147,7 +147,7 @@ namespace Hangfire.Dashboard
             results.Add(item);
         }
 
-        public class Item
+        internal class Item
         {
             public Item(int pageIndex, bool disabled, ItemType type)
             {
@@ -161,7 +161,7 @@ namespace Hangfire.Dashboard
             public ItemType Type { get; private set; }
         }
 
-        public enum ItemType
+        internal enum ItemType
         {
             Page,
             PrevPage,

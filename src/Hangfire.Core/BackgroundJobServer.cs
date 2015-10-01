@@ -16,23 +16,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using Hangfire.Annotations;
+using Hangfire.Client;
+using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.States;
 
 namespace Hangfire
 {
-    public class BackgroundJobServer : IServerSupervisor
+    public class BackgroundJobServer : IDisposable
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly JobStorage _storage;
         private readonly BackgroundJobServerOptions _options;
-
-        private readonly string _serverId;
-        private readonly IServerSupervisor _bootstrapSupervisor;
+        private readonly IDisposable _processingServer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobServer"/> class
@@ -48,7 +47,7 @@ namespace Hangfire
         /// with default options and the given storage.
         /// </summary>
         /// <param name="storage">The storage</param>
-        public BackgroundJobServer(JobStorage storage)
+        public BackgroundJobServer([NotNull] JobStorage storage)
             : this(new BackgroundJobServerOptions(), storage)
         {
         }
@@ -58,7 +57,7 @@ namespace Hangfire
         /// with the given options and <see cref="JobStorage.Current"/> storage.
         /// </summary>
         /// <param name="options">Server options</param>
-        public BackgroundJobServer(BackgroundJobServerOptions options)
+        public BackgroundJobServer([NotNull] BackgroundJobServerOptions options)
             : this(options, JobStorage.Current)
         {
         }
@@ -69,106 +68,100 @@ namespace Hangfire
         /// </summary>
         /// <param name="options">Server options</param>
         /// <param name="storage">The storage</param>
-        public BackgroundJobServer(BackgroundJobServerOptions options, JobStorage storage)
+        public BackgroundJobServer([NotNull] BackgroundJobServerOptions options, [NotNull] JobStorage storage)
+            : this(options, storage, Enumerable.Empty<IBackgroundProcess>())
         {
-            if (options == null) throw new ArgumentNullException("options");
+        }
+
+        public BackgroundJobServer(
+            [NotNull] BackgroundJobServerOptions options,
+            [NotNull] JobStorage storage,
+            [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
+        {
             if (storage == null) throw new ArgumentNullException("storage");
+            if (options == null) throw new ArgumentNullException("options");
+            if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
 
             _options = options;
-            _storage = storage;
 
-            _serverId = String.Format("{0}:{1}", _options.ServerName.ToLowerInvariant(), Process.GetCurrentProcess().Id);
+            var processes = new List<IBackgroundProcess>();
+            processes.AddRange(GetRequiredProcesses());
+            processes.AddRange(additionalProcesses);
 
-            // ReSharper disable once DoNotCallOverridableMethodsInConstructor
-            _bootstrapSupervisor = GetBootstrapSupervisor();
+            var properties = new Dictionary<string, object>
+            {
+                { "Queues", options.Queues },
+                { "WorkerCount", options.WorkerCount }
+            };
 
             Logger.Info("Starting Hangfire Server");
-            Logger.InfoFormat("Using job storage: '{0}'.", _storage);
-            
-            _storage.WriteOptionsToLog(Logger);
-            _options.WriteToLog(Logger);
+            Logger.InfoFormat("Using job storage: '{0}'.", storage);
 
-            _bootstrapSupervisor.Start();
+            storage.WriteOptionsToLog(Logger);
+
+            Logger.Info("Using the following options for Hangfire Server:");
+            Logger.InfoFormat("    Worker count: {0}.", options.WorkerCount);
+            Logger.InfoFormat("    Listening queues: {0}.", String.Join(", ", options.Queues.Select(x => "'" + x + "'")));
+            Logger.InfoFormat("    Shutdown timeout: {0}.", options.ShutdownTimeout);
+            Logger.InfoFormat("    Schedule polling interval: {0}.", options.SchedulePollingInterval);
+            
+            _processingServer = new BackgroundProcessingServer(
+                storage, 
+                processes, 
+                properties, 
+                GetProcessingServerOptions());
+        }
+
+        public void Dispose()
+        {
+            _processingServer.Dispose();
+            Logger.Info("Hangfire Server stopped.");
+        }
+
+        private IEnumerable<IBackgroundProcess> GetRequiredProcesses()
+        {
+            var processes = new List<IBackgroundProcess>();
+
+            var filterProvider = _options.FilterProvider ?? JobFilterProviders.Providers;
+
+            var factory = new BackgroundJobFactory(filterProvider);
+            var performer = new BackgroundJobPerformer(filterProvider, _options.Activator ?? JobActivator.Current);
+            var stateChanger = new BackgroundJobStateChanger(filterProvider);
+            
+            for (var i = 0; i < _options.WorkerCount; i++)
+            {
+                processes.Add(new Worker(_options.Queues, performer, stateChanger));
+            }
+            
+            processes.Add(new DelayedJobScheduler(_options.SchedulePollingInterval, stateChanger));
+            processes.Add(new RecurringJobScheduler(factory));
+
+            return processes;
+        }
+
+        private BackgroundProcessingServerOptions GetProcessingServerOptions()
+        {
+            return new BackgroundProcessingServerOptions
+            {
+                ShutdownTimeout = _options.ShutdownTimeout,
+                HeartbeatInterval = _options.HeartbeatInterval,
+                ServerCheckInterval = _options.ServerWatchdogOptions != null
+                    ? _options.ServerWatchdogOptions.CheckInterval
+                    : _options.ServerCheckInterval,
+                ServerTimeout = _options.ServerWatchdogOptions != null
+                    ? _options.ServerWatchdogOptions.ServerTimeout
+                    : _options.ServerTimeout
+            };
         }
 
         [Obsolete("This method is a stub. There is no need to call the `Start` method. Will be removed in version 2.0.0.")]
         public void Start()
-        { 
+        {
         }
 
         [Obsolete("This method is a stub. Please call the `Dispose` method instead. Will be removed in version 2.0.0.")]
         public void Stop()
         {
-        }
-
-        public virtual void Dispose()
-        {
-            _bootstrapSupervisor.Dispose();
-            Logger.Info("Hangfire Server stopped.");
-        }
-
-        internal virtual IServerSupervisor GetBootstrapSupervisor()
-        {
-            var context = new ServerContext
-            {
-                Queues = _options.Queues,
-                WorkerCount = _options.WorkerCount
-            };
-
-            var bootstrapper = new ServerBootstrapper(
-                _serverId, 
-                context, 
-                _storage, 
-                new Lazy<IServerSupervisor>(GetSupervisors));
-
-            return CreateSupervisor(
-                bootstrapper, 
-                new ServerSupervisorOptions
-                {
-                    ShutdownTimeout = _options.ShutdownTimeout
-                });
-        }
-
-        internal ServerSupervisorCollection GetSupervisors()
-        {
-            var supervisors = new List<IServerSupervisor>();
-
-            supervisors.AddRange(GetCommonComponents().Select(CreateSupervisor));
-            supervisors.AddRange(_storage.GetComponents().Select(CreateSupervisor));
-
-            return new ServerSupervisorCollection(supervisors);
-        }
-
-        private IEnumerable<IServerComponent> GetCommonComponents()
-        {
-            var performanceProcess = new DefaultJobPerformanceProcess(JobActivator.Current);
-            var stateMachineFactory = new StateMachineFactory(_storage);
-
-            for (var i = 0; i < _options.WorkerCount; i++)
-            {
-                var context = new WorkerContext(_serverId, _options.Queues, i + 1);
-                yield return new Worker(context, _storage, performanceProcess, stateMachineFactory);
-            }
-
-            yield return new ServerHeartbeat(_storage, _serverId);
-            yield return new SchedulePoller(_storage, stateMachineFactory, _options.SchedulePollingInterval);
-            yield return new ServerWatchdog(_storage, _options.ServerWatchdogOptions);
-
-            yield return new RecurringJobScheduler(
-                _storage, 
-                new BackgroundJobClient(_storage, stateMachineFactory),
-                new ScheduleInstantFactory(),
-                new EveryMinuteThrottler());
-        }
-
-        private static ServerSupervisor CreateSupervisor(IServerComponent component)
-        {
-            return CreateSupervisor(component, new ServerSupervisorOptions());
-        }
-
-        private static ServerSupervisor CreateSupervisor(IServerComponent component, ServerSupervisorOptions options)
-        {
-            return new ServerSupervisor(new AutomaticRetryServerComponentWrapper(component), options);
         }
     }
 }

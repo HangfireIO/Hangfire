@@ -15,37 +15,31 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Threading;
 using Hangfire.Logging;
 
 namespace Hangfire.Server
 {
-    public class ServerWatchdog : IServerComponent
+    internal class ServerWatchdog : IBackgroundProcess
     {
+        public static readonly TimeSpan DefaultCheckInterval = TimeSpan.FromMinutes(5);
+        public static readonly TimeSpan DefaultServerTimeout = TimeSpan.FromMinutes(5);
+
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
-        private readonly JobStorage _storage;
-        private readonly ServerWatchdogOptions _options;
+        private readonly TimeSpan _checkInterval;
+        private readonly TimeSpan _serverTimeout;
 
-        public ServerWatchdog(JobStorage storage)
-            : this(storage, new ServerWatchdogOptions())
+        public ServerWatchdog(TimeSpan checkInterval, TimeSpan serverTimeout)
         {
+            _checkInterval = checkInterval;
+            _serverTimeout = serverTimeout;
         }
 
-        public ServerWatchdog(JobStorage storage, ServerWatchdogOptions options)
+        public void Execute(BackgroundProcessContext context)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (options == null) throw new ArgumentNullException("options");
-
-            _storage = storage;
-            _options = options;
-        }
-
-        public void Execute(CancellationToken cancellationToken)
-        {
-            using (var connection = _storage.GetConnection())
+            using (var connection = context.Storage.GetConnection())
             {
-                var serversRemoved = connection.RemoveTimedOutServers(_options.ServerTimeout);
+                var serversRemoved = connection.RemoveTimedOutServers(_serverTimeout);
                 if (serversRemoved != 0)
                 {
                     Logger.Info(String.Format(
@@ -54,12 +48,12 @@ namespace Hangfire.Server
                 }
             }
 
-            cancellationToken.WaitHandle.WaitOne(_options.CheckInterval);
+            context.Wait(_checkInterval);
         }
 
         public override string ToString()
         {
-            return "Server Watchdog";
+            return GetType().Name;
         }
     }
 }

@@ -24,6 +24,7 @@
 // SOFTWARE.
 //===============================================================================
 
+using System.Reflection;
 using Hangfire.Logging.LogProviders;
 
 namespace Hangfire.Logging
@@ -375,11 +376,11 @@ namespace Hangfire.Logging
             _currentLogProvider = logProvider;
         }
 
-        public delegate bool IsLoggerAvailable();
+        internal delegate bool IsLoggerAvailable();
 
-        public delegate ILogProvider CreateLogProvider();
+        internal delegate ILogProvider CreateLogProvider();
 
-        public static readonly List<Tuple<IsLoggerAvailable, CreateLogProvider>> LogProviderResolvers =
+        internal static readonly List<Tuple<IsLoggerAvailable, CreateLogProvider>> LogProviderResolvers =
             new List<Tuple<IsLoggerAvailable, CreateLogProvider>>
         {
             new Tuple<IsLoggerAvailable, CreateLogProvider>(SerilogLogProvider.IsLoggerAvailable, () => new SerilogLogProvider()),
@@ -406,13 +407,13 @@ namespace Hangfire.Logging
             {
                 Console.WriteLine(
                     "Exception occured resolving a log provider. Logging for this assembly {0} is disabled. {1}",
-                    typeof(LogProvider).Assembly.FullName,
+                    typeof(LogProvider).GetTypeInfo().Assembly.FullName,
                     ex);
             }
             return null;
         }
 
-        public class NoOpLogger : ILog
+        internal class NoOpLogger : ILog
         {
             public bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception)
             {
@@ -421,7 +422,7 @@ namespace Hangfire.Logging
         }
     }
 
-    public class LoggerExecutionWrapper : ILog
+    internal class LoggerExecutionWrapper : ILog
     {
         private readonly ILog _logger;
         public const string FailedToGenerateLogMessage = "Failed to generate log message";
@@ -515,7 +516,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        public class NLogLogger : ILog
+        internal class NLogLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -697,7 +698,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<string, object>>(methodCall, new[] { nameParam }).Compile();
         }
 
-        public class Log4NetLogger : ILog
+        internal class Log4NetLogger : ILog
         {
             private readonly dynamic _logger;
 
@@ -923,7 +924,7 @@ namespace Hangfire.Logging.LogProviders
             return memberInit;
         }
 
-        public class EntLibLogger : ILog
+        internal class EntLibLogger : ILog
         {
             private readonly string _loggerName;
             private readonly Action<string, string, TraceEventType> _writeLog;
@@ -1035,7 +1036,7 @@ namespace Hangfire.Logging.LogProviders
             return name => func("Name", name, false);
         }
 
-        public class SerilogLogger : ILog
+        internal class SerilogLogger : ILog
         {
             private readonly object _logger;
             private static readonly object DebugLevel;
@@ -1281,11 +1282,10 @@ namespace Hangfire.Logging.LogProviders
                                                                       logWriteModeType, typeof(string), typeof(string), typeof(string), typeof(string), typeof(object[])
                                                                   });
 
-            var callDelegate = (WriteDelegate)Delegate.CreateDelegate(typeof(WriteDelegate), method);
-            return callDelegate;
+            return (WriteDelegate) method.CreateDelegate(typeof (WriteDelegate));
         }
 
-        public class LoupeLogger : ILog
+        internal class LoupeLogger : ILog
         {
             private const string LogSystem = "LibLog";
 
@@ -1419,7 +1419,7 @@ namespace Hangfire.Logging.LogProviders
             return stringBuilder.ToString();
         }
 
-        public class ColouredConsoleLogger : ILog
+        internal class ColouredConsoleLogger : ILog
         {
             private static readonly object Lock = new object();
             private readonly string _name;
@@ -1540,7 +1540,7 @@ namespace Hangfire.Logging.LogProviders
             return Expression.Lambda<Func<object>>(methodCall).Compile();
         }
 
-        public class ElmahLog : ILog
+        internal class ElmahLog : ILog
         {
             private readonly LogLevel _minLevel;
             private readonly Type _errorType;

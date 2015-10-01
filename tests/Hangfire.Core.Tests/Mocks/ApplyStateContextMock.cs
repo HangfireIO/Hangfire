@@ -2,33 +2,46 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hangfire.States;
+using Hangfire.Storage;
 using Moq;
 
 namespace Hangfire.Core.Tests
 {
-    public class ApplyStateContextMock
+    class ApplyStateContextMock
     {
         private readonly Lazy<ApplyStateContext> _context;
 
         public ApplyStateContextMock()
         {
-            StateContextValue = new StateContextMock();
-            NewStateValue = new Mock<IState>().Object;
-            OldStateValue = null;
-            TraversedStatesValue = Enumerable.Empty<IState>();
+            Storage = new Mock<JobStorage>();
+            Connection = new Mock<IStorageConnection>();
+            Transaction = new Mock<IWriteOnlyTransaction>();
+            BackgroundJob = new BackgroundJobMock();
+            NewState = new Mock<IState>();
+            OldStateName = null;
+            JobExpirationTimeout = TimeSpan.FromMinutes(1);
 
             _context = new Lazy<ApplyStateContext>(
                 () => new ApplyStateContext(
-                    StateContextValue.Object,
-                    NewStateValue,
-                    OldStateValue,
-                    TraversedStatesValue));
+                    Storage.Object,
+                    Connection.Object,
+                    Transaction.Object,
+                    BackgroundJob.Object,
+                    NewStateObject ?? NewState.Object,
+                    OldStateName)
+                {
+                    JobExpirationTimeout = JobExpirationTimeout
+                });
         }
 
-        public StateContextMock StateContextValue { get; set; }
-        public IState NewStateValue { get; set; }
-        public string OldStateValue { get; set; }
-        public IEnumerable<IState> TraversedStatesValue { get; set; } 
+        public Mock<JobStorage> Storage { get; set; }
+        public Mock<IStorageConnection> Connection { get; set; } 
+        public Mock<IWriteOnlyTransaction> Transaction { get; set; } 
+        public BackgroundJobMock BackgroundJob { get; set; } 
+        public IState NewStateObject { get; set; }
+        public Mock<IState> NewState { get; set; }
+        public string OldStateName { get; set; }
+        public TimeSpan JobExpirationTimeout { get; set; } 
 
         public ApplyStateContext Object
         {

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Data;
 using System.Threading;
 using Hangfire.SqlServer.RabbitMQ;
+using Moq;
 using Xunit;
 
 namespace Hangfire.SqlServer.RabbitMq.Tests
@@ -11,7 +13,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
 
         public RabbitMqJobQueueFacts()
         {
-            _token = new CancellationToken();
+            _token = new CancellationTokenSource().Token;
         }
 
         [Fact]
@@ -32,14 +34,14 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             Assert.Equal("factory", exception.ParamName);
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Enqueue_SendsTheJobId()
         {
             // Arrange
             using (var queue = CleanRabbitMqQueueAttribute.GetMessageQueue("my-queue"))
             {
                 // Act
-                queue.Enqueue("my-queue", "job-id");
+                queue.Enqueue(new Mock<IDbConnection>().Object, "my-queue", "job-id");
 
                 // Assert
                 var fetchedJob = queue.Dequeue(new[] { "my-queue" }, _token);
@@ -51,7 +53,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Dequeue_ReturnsFetchedJob_WithJobId()
         {
             RabbitMqUtils.EnqueueJobId("my-queue", "job-id");
@@ -65,7 +67,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Dequeue_ThrowsCanceledException_WhenTokenHasBeenCancelled()
         {
             using (var queue = CleanRabbitMqQueueAttribute.GetMessageQueue("my-queue"))
@@ -77,7 +79,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("queue-1", "queue-2")]
+        [FactWithTimeout, CleanRabbitMqQueue("queue-1", "queue-2")]
         public void Dequeue_ReturnsFetchedJob_FromOtherQueues_IfFirstAreEmpty()
         {
             RabbitMqUtils.EnqueueJobId("queue-2", "job-id");
@@ -89,7 +91,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void Dequeue_MakesJobInvisibleForOtherFetchers()
         {
             // Arrange
@@ -110,7 +112,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void RemoveFromQueue_OnFetchedJob_RemovesTheJobCompletely()
         {
             // Arrange
@@ -131,7 +133,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void DisposeWithoutRemoval_OnFetchedJob_ReturnsTheJobToTheQueue()
         {
             // Arrange
@@ -149,7 +151,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             }
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void DisposeWithoutRemoval_OnFetchedJob_CanBeDequeuedAgain()
         {
             // Arrange

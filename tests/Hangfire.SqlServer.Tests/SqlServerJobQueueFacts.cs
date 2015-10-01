@@ -4,7 +4,6 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
-using Moq;
 using Xunit;
 
 namespace Hangfire.SqlServer.Tests
@@ -14,19 +13,19 @@ namespace Hangfire.SqlServer.Tests
         private static readonly string[] DefaultQueues = { "default" };
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenConnectionIsNull()
+        public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new SqlServerJobQueue(null, new SqlServerStorageOptions()));
 
-            Assert.Equal("connection", exception.ParamName);
+            Assert.Equal("storage", exception.ParamName);
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new SqlServerJobQueue(new Mock<IDbConnection>().Object, null));
+                () => new SqlServerJobQueue(new SqlServerStorage(ConnectionUtils.GetConnectionString()), null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -108,14 +107,13 @@ select scope_identity() as Id;";
                     CreateTimingOutCancellationToken());
 
                 // Assert
-                Assert.Equal(id, payload.Id);
                 Assert.Equal("1", payload.JobId);
                 Assert.Equal("default", payload.Queue);
             });
         }
 
         [Fact, CleanDatabase]
-        public void Dequeue_ShouldLeaveJobInTheQueue_ButSetItsFetchedAtValue()
+        public void Dequeue_ShouldDeleteAJob()
         {
             const string arrangeSql = @"
 insert into HangFire.Job (InvocationData, Arguments, CreatedAt)
@@ -139,12 +137,8 @@ values (scope_identity(), @queue)";
                 // Assert
                 Assert.NotNull(payload);
 
-                var fetchedAt = connection.Query<DateTime?>(
-                    "select FetchedAt from HangFire.JobQueue where JobId = @id",
-                    new { id = payload.JobId }).Single();
-
-                Assert.NotNull(fetchedAt);
-                Assert.True(fetchedAt > DateTime.UtcNow.AddMinutes(-1));
+                var jobInQueue = connection.Query("select * from HangFire.JobQueue").SingleOrDefault();
+                Assert.Null(jobInQueue);
             });
         }
 
@@ -284,7 +278,7 @@ values (scope_identity(), @queue)";
             {
                 var queue = CreateJobQueue(connection);
 
-                queue.Enqueue("default", "1");
+                queue.Enqueue(connection, "default", "1");
 
                 var record = connection.Query("select * from HangFire.JobQueue").Single();
                 Assert.Equal("1", record.JobId.ToString());
@@ -301,9 +295,10 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static SqlServerJobQueue CreateJobQueue(IDbConnection connection)
+        private static SqlServerJobQueue CreateJobQueue(SqlConnection connection)
         {
-            return new SqlServerJobQueue(connection, new SqlServerStorageOptions());
+            var storage = new SqlServerStorage(connection);
+            return new SqlServerJobQueue(storage, new SqlServerStorageOptions());
         }
 
         private static void UseConnection(Action<SqlConnection> action)

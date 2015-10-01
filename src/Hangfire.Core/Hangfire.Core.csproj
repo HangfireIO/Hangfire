@@ -27,6 +27,7 @@
     <DocumentationFile>bin\Debug\Hangfire.Core.xml</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
     <NoWarn>1591</NoWarn>
+    <LangVersion>5</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -40,8 +41,13 @@
     <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CronExpressionDescriptor">
-      <HintPath>..\..\packages\CronExpressionDescriptor.1.10.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    <Reference Include="CronExpressionDescriptor, Version=1.13.0.0, Culture=neutral, PublicKeyToken=a2ab0e0f73f9b037, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\CronExpressionDescriptor.1.13.0\lib\net35\CronExpressionDescriptor.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="NCrontab">
       <HintPath>..\..\packages\ncrontab.1.0.0\lib\NCrontab.dll</HintPath>
@@ -58,9 +64,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.Owin">
-      <HintPath>..\..\packages\Microsoft.Owin.2.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
-    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
@@ -71,10 +74,15 @@
     </Compile>
     <Compile Include="AppBuilderExtensions.cs" />
     <Compile Include="App_Packages\LibLog.1.4\LibLog.cs" />
+    <Compile Include="AttemptsExceededAction.cs" />
+    <Compile Include="App_Packages\StackTraceFormatter\StackTraceFormatter.cs" />
+    <Compile Include="App_Packages\StackTraceParser\StackTraceParser.cs" />
     <Compile Include="AutomaticRetryAttribute.cs" />
+    <Compile Include="BackgroundJobClientException.cs" />
     <Compile Include="BackgroundJobServer.cs" />
     <Compile Include="BackgroundJobServerOptions.cs" />
-    <Compile Include="Client\IJobCreator.cs" />
+    <Compile Include="Client\CoreBackgroundJobFactory.cs" />
+    <Compile Include="Obsolete\Job.Obsolete.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="Dashboard\OwinRequestExtensions.cs" />
     <Compile Include="Dashboard\Pages\AwaitingJobsPage.generated.cs">
@@ -82,6 +90,18 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AwaitingJobsPage.cshtml</DependentUpon>
     </Compile>
+    <Compile Include="JobActivatorScope.cs" />
+    <Compile Include="Properties\NamespaceDoc.cs" />
+    <Compile Include="Server\BackgroundProcessContext.cs" />
+    <Compile Include="Obsolete\IServerProcess.cs" />
+    <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
+    <Compile Include="Server\CoreBackgroundJobPerformer.cs" />
+    <Compile Include="Server\IBackgroundProcess.cs" />
+    <Compile Include="Server\IBackgroundProcessWrapper.cs" />
+    <Compile Include="Server\InfiniteLoopProcess.cs" />
+    <Compile Include="Server\ServerProcessExtensions.cs" />
+    <Compile Include="Server\BackgroundProcessingServer.cs" />
+    <Compile Include="MoreLinq\MoreEnumerable.Pairwise.cs" />
     <Compile Include="States\AwaitingState.cs" />
     <Compile Include="ContinuationsSupportAttribute.cs" />
     <Compile Include="JobContinuationOptions.cs" />
@@ -262,21 +282,20 @@
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
-    <Compile Include="Server\AutomaticRetryServerComponentWrapper.cs" />
+    <Compile Include="Server\AutomaticRetryProcess.cs" />
     <Compile Include="Server\EveryMinuteThrottler.cs" />
     <Compile Include="Server\IScheduleInstant.cs" />
-    <Compile Include="Server\IScheduleInstantFactory.cs" />
     <Compile Include="Server\IThrottler.cs" />
     <Compile Include="Server\JobAbortedException.cs" />
     <Compile Include="JobCancellationToken.cs" />
-    <Compile Include="Client\IJobCreationProcess.cs" />
+    <Compile Include="Client\IBackgroundJobFactory.cs" />
     <Compile Include="BackgroundJobClientExtensions.cs" />
     <Compile Include="Common\CachedExpressionCompiler.cs" />
-    <Compile Include="Client\CreateJobFailedException.cs" />
+    <Compile Include="Obsolete\CreateJobFailedException.cs" />
     <Compile Include="IJobCancellationToken.cs" />
     <Compile Include="DisableConcurrentExecutionAttribute.cs" />
     <Compile Include="IBackgroundJobClient.cs" />
-    <Compile Include="Client\DefaultJobCreationProcess.cs" />
+    <Compile Include="Client\BackgroundJobFactory.cs" />
     <Compile Include="Client\CreateContext.cs" />
     <Compile Include="Common\Job.cs" />
     <Compile Include="Common\JobLoadException.cs" />
@@ -304,36 +323,34 @@
     <Compile Include="Common\JobFilterScope.cs" />
     <Compile Include="Common\ReflectedAttributeCache.cs" />
     <Compile Include="Client\ClientExceptionContext.cs" />
-    <Compile Include="Common\GlobalJobFilterCollection.cs" />
+    <Compile Include="Common\JobFilterCollection.cs" />
     <Compile Include="Client\IClientExceptionFilter.cs" />
     <Compile Include="Common\IJobFilterProvider.cs" />
     <Compile Include="Server\RecurringJobScheduler.cs" />
     <Compile Include="Server\ScheduleInstant.cs" />
-    <Compile Include="Server\ScheduleInstantFactory.cs" />
     <Compile Include="Server\ServerJobCancellationToken.cs" />
     <Compile Include="Obsolete\ServerOwinExtensions.cs" />
     <Compile Include="Obsolete\StartupConfiguration.cs" />
     <Compile Include="Obsolete\BootstrapperConfigurationExtensions.cs" />
+    <Compile Include="States\CoreStateMachine.cs" />
     <Compile Include="States\DeletedState.cs" />
     <Compile Include="States\IElectStateFilter.cs" />
     <Compile Include="Common\JobFilterAttribute.cs" />
     <Compile Include="Common\JobFilterAttributeFilterProvider.cs" />
     <Compile Include="Common\JobFilterInfo.cs" />
-    <Compile Include="States\IStateChangeProcess.cs" />
-    <Compile Include="States\IStateMachineFactory.cs" />
-    <Compile Include="States\DefaultStateChangeProcess.cs" />
+    <Compile Include="States\IStateMachine.cs" />
+    <Compile Include="States\StateMachine.cs" />
+    <Compile Include="States\StateChangeContext.cs" />
     <Compile Include="States\StateHandlerCollection.cs" />
-    <Compile Include="Server\SchedulePoller.cs" />
+    <Compile Include="Server\DelayedJobScheduler.cs" />
     <Compile Include="Server\ServerWatchdog.cs" />
-    <Compile Include="Server\ServerWatchdogOptions.cs" />
+    <Compile Include="Obsolete\ServerWatchdogOptions.cs" />
     <Compile Include="Server\IServerExceptionFilter.cs" />
     <Compile Include="Client\CreatedContext.cs" />
     <Compile Include="Client\CreatingContext.cs" />
-    <Compile Include="Server\IServerComponent.cs" />
-    <Compile Include="Server\IServerSupervisor.cs" />
+    <Compile Include="Obsolete\IServerComponent.cs" />
     <Compile Include="Server\JobPerformanceException.cs" />
-    <Compile Include="Server\ServerBootstrapper.cs" />
-    <Compile Include="Server\IJobPerformanceProcess.cs" />
+    <Compile Include="Server\IBackgroundJobPerformer.cs" />
     <Compile Include="Server\PerformContext.cs" />
     <Compile Include="Server\ServerExceptionContext.cs" />
     <Compile Include="Server\PerformedContext.cs" />
@@ -341,14 +358,11 @@
     <Compile Include="GlobalJobFilters.cs" />
     <Compile Include="States\IApplyStateFilter.cs" />
     <Compile Include="GlobalStateHandlers.cs" />
-    <Compile Include="Server\ServerSupervisor.cs" />
-    <Compile Include="Server\ServerSupervisorCollection.cs" />
-    <Compile Include="Server\ServerSupervisorOptions.cs" />
     <Compile Include="Server\ServerContext.cs" />
     <Compile Include="Server\ServerHeartbeat.cs" />
     <Compile Include="Server\Worker.cs" />
-    <Compile Include="States\IStateMachine.cs" />
-    <Compile Include="States\StateMachineFactory.cs" />
+    <Compile Include="States\IBackgroundJobStateChanger.cs" />
+    <Compile Include="Storage\DistributedLockTimeoutException.cs" />
     <Compile Include="Storage\InvocationData.cs" />
     <Compile Include="Storage\IMonitoringApi.cs" />
     <Compile Include="Storage\IFetchedJob.cs" />
@@ -367,7 +381,6 @@
     <Compile Include="Storage\Monitoring\StateHistoryDto.cs" />
     <Compile Include="Storage\Monitoring\StatisticsDto.cs" />
     <Compile Include="Storage\Monitoring\SucceededJobDto.cs" />
-    <Compile Include="Server\IJobPerformer.cs" />
     <Compile Include="JobStorage.cs" />
     <Compile Include="States\EnqueuedState.cs" />
     <Compile Include="States\FailedState.cs" />
@@ -379,18 +392,17 @@
     <Compile Include="BackgroundJob.cs" />
     <Compile Include="QueueAttribute.cs" />
     <Compile Include="JobActivator.cs" />
-    <Compile Include="Server\DefaultJobPerformanceProcess.cs" />
+    <Compile Include="Server\BackgroundJobPerformer.cs" />
     <Compile Include="BackgroundJobClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\JobHelper.cs" />
-    <Compile Include="Server\WorkerContext.cs" />
     <Compile Include="States\IStateHandler.cs" />
     <Compile Include="States\ProcessingState.cs" />
     <Compile Include="States\ScheduledState.cs" />
     <Compile Include="States\ApplyStateContext.cs" />
     <Compile Include="States\ElectStateContext.cs" />
-    <Compile Include="States\StateContext.cs" />
-    <Compile Include="States\StateMachine.cs" />
+    <Compile Include="Obsolete\StateContext.cs" />
+    <Compile Include="States\BackgroundJobStateChanger.cs" />
     <Compile Include="States\SucceededState.cs" />
     <Compile Include="StatisticsHistoryAttribute.cs" />
     <Compile Include="Storage\IWriteOnlyTransaction.cs" />
@@ -404,6 +416,8 @@
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.eot" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.ttf" />
     <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff" />
+    <EmbeddedResource Include="Dashboard\Content\fonts\glyphicons-halflings-regular.woff2" />
+    <Compile Include="BackgroundJob.Instance.cs" />
     <None Include="Dashboard\Pages\AwaitingJobsPage.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>AwaitingJobsPage.generated.cs</LastGenOutput>

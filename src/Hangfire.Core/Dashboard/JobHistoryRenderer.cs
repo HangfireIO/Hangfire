@@ -138,7 +138,7 @@ namespace Hangfire.Dashboard
 
             if (stateData.ContainsKey("PerformanceDuration"))
             {
-                var duration = TimeSpan.FromMilliseconds(int.Parse(stateData["PerformanceDuration"]));
+                var duration = TimeSpan.FromMilliseconds(long.Parse(stateData["PerformanceDuration"]));
                 builder.AppendFormat("<dt>Duration:</dt><dd>{0}</dd>", html.ToHumanDuration(duration, false));
 
                 itemsAdded = true;
@@ -180,7 +180,7 @@ namespace Hangfire.Dashboard
             if (stateData.ContainsKey("ServerId"))
             {
                 serverId = stateData["ServerId"];
-            } 
+            }
             else if (stateData.ContainsKey("ServerName"))
             {
                 serverId = stateData["ServerName"];
@@ -194,7 +194,12 @@ namespace Hangfire.Dashboard
                     serverId.ToUpperInvariant());
             }
 
-            if (stateData.ContainsKey("WorkerNumber"))
+            if (stateData.ContainsKey("WorkerId"))
+            {
+                builder.Append("<dt>Worker:</dt>");
+                builder.AppendFormat("<dd>{0}</dd>", stateData["WorkerId"].Substring(0, 8));
+            }
+            else if (stateData.ContainsKey("WorkerNumber"))
             {
                 builder.Append("<dt>Worker:</dt>");
                 builder.AppendFormat("<dd>#{0}</dd>", stateData["WorkerNumber"]);

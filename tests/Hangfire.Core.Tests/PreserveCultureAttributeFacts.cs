@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Threading;
 using Hangfire.Client;
-using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.States;
 using Hangfire.Storage;
@@ -22,17 +21,17 @@ namespace Hangfire.Core.Tests
         public PreserveCultureAttributeFacts()
         {
             _connection = new Mock<IStorageConnection>();
-            var job = Job.FromExpression(() => Sample());
+
+            var storage = new Mock<JobStorage>();
+            var backgroundJob = new BackgroundJobMock { Id = JobId };
             var state = new Mock<IState>();
 
             var createContext = new CreateContext(
-                _connection.Object, job, state.Object);
+                storage.Object, _connection.Object, backgroundJob.Job, state.Object);
             _creatingContext = new CreatingContext(createContext);
 
-            var workerContext = new WorkerContextMock();
-
             var performContext = new PerformContext(
-                workerContext.Object, _connection.Object, JobId, job, DateTime.UtcNow, new Mock<IJobCancellationToken>().Object);
+                _connection.Object, backgroundJob.Object, new Mock<IJobCancellationToken>().Object);
             _performingContext = new PerformingContext(performContext);
             _performedContext = new PerformedContext(performContext, null, false, null);
         }

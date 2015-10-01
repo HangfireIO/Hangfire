@@ -27,6 +27,9 @@ namespace Hangfire.Server
         private readonly TimeZoneInfo _timeZone;
         private readonly CrontabSchedule _schedule;
 
+        public static Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> Factory =
+            (schedule, timeZone) => new ScheduleInstant(DateTime.UtcNow, timeZone, schedule);
+
         public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CrontabSchedule schedule)
         {
             if (schedule == null) throw new ArgumentNullException("schedule");
@@ -39,9 +42,10 @@ namespace Hangfire.Server
             _schedule = schedule;
 
             NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
-            NextInstant = TimeZoneInfo.ConvertTimeToUtc(
-                _schedule.GetNextOccurrence(TimeZoneInfo.ConvertTimeFromUtc(NowInstant, _timeZone)),
-                _timeZone);
+            NextInstant = TimeZoneInfo.ConvertTime(
+                _schedule.GetNextOccurrence(TimeZoneInfo.ConvertTime(NowInstant, TimeZoneInfo.Utc, _timeZone)),
+                _timeZone,
+                TimeZoneInfo.Utc);
         }
 
         public DateTime NowInstant { get; private set; }

@@ -11,11 +11,12 @@ namespace Hangfire.Core.Tests.Server
 {
     public class ServerJobCancellationTokenFacts
     {
+        private const string ServerId = "some-server";
+        private const string WorkerId = "1";
         private const string JobId = "my-job";
         private readonly Mock<IStorageConnection> _connection;
-        private CancellationToken _shutdownToken;
-        private readonly WorkerContextMock _workerContextMock;
         private readonly StateData _stateData;
+        private readonly CancellationTokenSource _cts;
 
         public ServerJobCancellationTokenFacts()
         {
@@ -24,28 +25,15 @@ namespace Hangfire.Core.Tests.Server
                 Name = ProcessingState.StateName,
                 Data = new Dictionary<string, string>
                 {
-                    { "WorkerNumber", "1" },
-                    { "ServerId", "Server" },
+                    { "ServerId", ServerId },
+                    { "WorkerId", WorkerId },
                 }
             };
 
             _connection = new Mock<IStorageConnection>();
             _connection.Setup(x => x.GetStateData(JobId)).Returns(_stateData);
 
-            _workerContextMock = new WorkerContextMock { WorkerNumber = 1 };
-            _workerContextMock.ServerId = "Server";
-
-            _shutdownToken = new CancellationToken(false);
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenJobIsIsNull()
-        {
-            var exception = Assert.Throws<ArgumentNullException>(
-                () => new ServerJobCancellationToken(
-                    null, _connection.Object, _workerContextMock.Object, new CancellationToken()));
-
-            Assert.Equal("jobId", exception.ParamName);
+            _cts = new CancellationTokenSource();
         }
 
         [Fact]
@@ -53,26 +41,46 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ServerJobCancellationToken(
-                    JobId, null, _workerContextMock.Object, new CancellationToken()));
+                    null, JobId, ServerId, WorkerId, _cts.Token));
 
             Assert.Equal("connection", exception.ParamName);
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenWorkerContextIsNull()
+        public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new ServerJobCancellationToken(
-                    JobId, _connection.Object, null, new CancellationToken()));
+                    _connection.Object, null, ServerId, WorkerId, _cts.Token));
 
-            Assert.Equal("workerContext", exception.ParamName);
+            Assert.Equal("jobId", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenServerIdIsIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ServerJobCancellationToken(
+                    _connection.Object, JobId, null, WorkerId, _cts.Token));
+
+            Assert.Equal("serverId", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenWorkerIdIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new ServerJobCancellationToken(
+                    _connection.Object, JobId, ServerId, null, _cts.Token));
+
+            Assert.Equal("workerId", exception.ParamName);
         }
 
         [Fact]
         public void ShutdownTokenProperty_PointsToShutdownTokenValue()
         {
             var token = CreateToken();
-            Assert.Equal(_shutdownToken, token.ShutdownToken);
+            Assert.Equal(_cts.Token, token.ShutdownToken);
         }
 
         [Fact]
@@ -86,7 +94,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void ThrowIfCancellationRequested_ThrowsOperationCanceled_OnShutdownRequest()
         {
-            _shutdownToken = new CancellationToken(true);
+            _cts.Cancel();
             var token = CreateToken();
 
             Assert.Throws<OperationCanceledException>(
@@ -113,9 +121,9 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void ThrowIfCancellationRequested_ThrowsJobAborted_IfStateData_ContainsDifferentServerId()
+        public void ThrowIfCancellationRequested_ThrowsJobAborted_IfServerIdWasChanged()
         {
-            _stateData.Data["ServerId"] = "AnotherServer";
+            _stateData.Data["ServerId"] = "another-server";
             var token = CreateToken();
 
             Assert.Throws<JobAbortedException>(
@@ -123,9 +131,9 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void ThrowIfCancellationRequested_ThrowsJobAborted_IfWorkerNumberWasChanged()
+        public void ThrowIfCancellationRequested_ThrowsJobAborted_IfWorkerIdWasChanged()
         {
-            _stateData.Data["WorkerNumber"] = "999";
+            _stateData.Data["WorkerId"] = "999";
             var token = CreateToken();
 
             Assert.Throws<JobAbortedException>(
@@ -134,8 +142,7 @@ namespace Hangfire.Core.Tests.Server
 
         private IJobCancellationToken CreateToken()
         {
-            return new ServerJobCancellationToken(
-                JobId, _connection.Object, _workerContextMock.Object, _shutdownToken);
+            return new ServerJobCancellationToken(_connection.Object, JobId, ServerId, WorkerId, _cts.Token);
         }
     }
 }

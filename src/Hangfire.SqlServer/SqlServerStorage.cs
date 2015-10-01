@@ -17,15 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer
 {
@@ -78,7 +81,7 @@ namespace Hangfire.SqlServer
             {
                 using (var connection = CreateAndOpenConnection())
                 {
-                    SqlServerObjectsInstaller.Install(connection);
+                    SqlServerObjectsInstaller.Install(connection, options.SchemaName);
                 }
             }
 
@@ -101,17 +104,16 @@ namespace Hangfire.SqlServer
             InitializeQueueProviders();
         }
 
-        public PersistentJobQueueProviderCollection QueueProviders { get; private set; }
+        public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
         public override IMonitoringApi GetMonitoringApi()
         {
-            return new SqlServerMonitoringApi(_connectionString, QueueProviders);
+            return new SqlServerMonitoringApi(this, _options.DashboardJobListLimit);
         }
 
         public override IStorageConnection GetConnection()
         {
-            var connection = _existingConnection ?? CreateAndOpenConnection();
-            return new SqlServerConnection(connection, _options.TransactionIsolationLevel, QueueProviders, _existingConnection == null);
+            return new SqlServerConnection(this);
         }
 
         public override IEnumerable<IServerComponent> GetComponents()
@@ -124,7 +126,6 @@ namespace Hangfire.SqlServer
         {
             logger.Info("Using the following options for SQL Server job storage:");
             logger.InfoFormat("    Queue poll interval: {0}.", _options.QueuePollInterval);
-            logger.InfoFormat("    Invisibility timeout: {0}.", _options.InvisibilityTimeout);
         }
 
         public override string ToString()
@@ -170,17 +171,87 @@ namespace Hangfire.SqlServer
             }
         }
 
+        internal void UseConnection([InstantHandle] Action<SqlConnection> action)
+        {
+            UseConnection(connection =>
+            {
+                action(connection);
+                return true;
+            });
+        }
+
+        internal T UseConnection<T>([InstantHandle] Func<SqlConnection, T> func)
+        {
+            SqlConnection connection = null;
+
+            try
+            {
+                connection = CreateAndOpenConnection();
+                return func(connection);
+            }
+            finally
+            {
+                ReleaseConnection(connection);
+            }
+        }
+
+        internal void UseTransaction([InstantHandle] Action<SqlConnection> action)
+        {
+            UseTransaction(connection =>
+            {
+                action(connection);
+                return true;
+            }, null);
+        }
+
+        internal T UseTransaction<T>([InstantHandle] Func<SqlConnection, T> func, IsolationLevel? isolationLevel)
+        {
+            using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
+            {
+                var result = UseConnection(func);
+                transaction.Complete();
+
+                return result;
+            }
+        }
+
         internal SqlConnection CreateAndOpenConnection()
         {
+            if (_existingConnection != null)
+            {
+                return _existingConnection;
+            }
+
             var connection = new SqlConnection(_connectionString);
             connection.Open();
 
             return connection;
         }
 
+        internal void ReleaseConnection(IDbConnection connection)
+        {
+            if (connection != null && !ReferenceEquals(connection, _existingConnection))
+            {
+                connection.Dispose();
+            }
+        }
+
+        internal string GetSchemaName()
+        {
+            return _options.SchemaName;
+        }
+
+        private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
+        {
+            return isolationLevel != null
+                ? new TransactionScope(TransactionScopeOption.Required,
+                    new TransactionOptions { IsolationLevel = isolationLevel.Value, Timeout = _options.TransactionTimeout })
+                : new TransactionScope();
+        }
+
         private void InitializeQueueProviders()
         {
-            var defaultQueueProvider = new SqlServerJobQueueProvider(_options);
+            var defaultQueueProvider = new SqlServerJobQueueProvider(this, _options);
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
 
@@ -201,21 +272,21 @@ namespace Hangfire.SqlServer
             "Active Connections",
             page =>
             {
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var sqlConnection = connection as SqlServerConnection;
-                    if (sqlConnection == null) return new Metric("???");
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
 
+                return sqlStorage.UseConnection(connection =>
+                {
                     var sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
 
-                    var value = sqlConnection.Connection
-                        .Query<int>(sqlQuery, new { name = sqlConnection.Connection.Database })
+                    var value = connection
+                        .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
                     return new Metric(value.ToString("N0"));
-                }
+                });
             });
 
         public static readonly DashboardMetric TotalConnections = new DashboardMetric(
@@ -223,21 +294,21 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
             "Total Connections",
             page =>
             {
-                using (var connection = page.Storage.GetConnection())
-                {
-                    var sqlConnection = connection as SqlServerConnection;
-                    if (sqlConnection == null) return new Metric("???");
+                var sqlStorage = page.Storage as SqlServerStorage;
+                if (sqlStorage == null) return new Metric("???");
 
+                return sqlStorage.UseConnection(connection =>
+                {
                     var sqlQuery = @"
 select count(*) from sys.sysprocesses
 where dbid = db_id(@name) and status != 'background'";
 
-                    var value = sqlConnection.Connection
-                        .Query<int>(sqlQuery, new { name = sqlConnection.Connection.Database })
+                    var value = connection
+                        .Query<int>(sqlQuery, new { name = connection.Database })
                         .Single();
 
                     return new Metric(value.ToString("N0"));
-                }
+                });
             });
     }
 }

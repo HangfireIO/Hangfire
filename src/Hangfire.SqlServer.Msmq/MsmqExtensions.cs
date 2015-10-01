@@ -25,14 +25,24 @@ namespace Hangfire
     {
         public static IGlobalConfiguration<SqlServerStorage> UseMsmqQueues(
             this IGlobalConfiguration<SqlServerStorage> configuration,
-            string pathPattern, params string[] queues)
+            string pathPattern, 
+            params string[] queues)
+        {
+            return UseMsmqQueues(configuration, MsmqTransactionType.Internal, pathPattern, queues);
+        }
+
+        public static IGlobalConfiguration<SqlServerStorage> UseMsmqQueues(
+            this IGlobalConfiguration<SqlServerStorage> configuration,
+            MsmqTransactionType transactionType,
+            string pathPattern,
+            params string[] queues)
         {
             if (queues.Length == 0)
             {
                 queues = new[] { EnqueuedState.DefaultQueue };
             }
 
-            var provider = new MsmqJobQueueProvider(pathPattern, queues);
+            var provider = new MsmqJobQueueProvider(pathPattern, queues, transactionType);
             configuration.Entry.QueueProviders.Add(provider, queues);
 
             return configuration;

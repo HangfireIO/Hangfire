@@ -1,5 +1,4 @@
-﻿using System;
-using Hangfire.Common;
+﻿using Hangfire.Common;
 using Hangfire.Storage;
 using Xunit;
 
@@ -17,13 +16,13 @@ namespace Hangfire.Core.Tests.Storage
                 type.AssemblyQualifiedName,
                 methodInfo.Name,
                 JobHelper.ToJson(new [] { typeof(string) }),
-                JobHelper.ToJson(new [] { "Hello" }));
+                JobHelper.ToJson(new [] { JobHelper.ToJson("Hello") }));
 
             var job = serializedData.Deserialize();
 
             Assert.Equal(type, job.Type);
             Assert.Equal(methodInfo, job.Method);
-            Assert.Equal("Hello", job.Arguments[0]);
+            Assert.Equal("Hello", job.Args[0]);
         }
 
         [Fact]

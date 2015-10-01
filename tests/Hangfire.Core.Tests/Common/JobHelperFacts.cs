@@ -179,7 +179,7 @@ namespace Hangfire.Core.Tests.Common
                 });
 
                 var method = typeof (BackgroundJob).GetMethod("DoWork");
-                var args = new[] {"123", "Test"};
+                var args = new object[] { "123", "Test" };
                 var job = new Job(typeof(BackgroundJob), method, args);
 
                 var invocationData = InvocationData.Serialize(job);
@@ -187,7 +187,7 @@ namespace Hangfire.Core.Tests.Common
 
                 Assert.Equal(typeof(BackgroundJob), deserializedJob.Type);
                 Assert.Equal(method, deserializedJob.Method);
-                Assert.Equal(args, deserializedJob.Arguments);
+                Assert.Equal(args, deserializedJob.Args);
             }
             finally
             {

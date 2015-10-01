@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Server;
 using Moq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Common
@@ -69,7 +70,7 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.Same(_type, job.Type);
             Assert.Same(_method, job.Method);
-            Assert.Same(_arguments, job.Arguments);
+            Assert.True(_arguments.SequenceEqual(job.Arguments));
         }
 
         [Fact]
@@ -94,10 +95,8 @@ namespace Hangfire.Core.Tests.Common
         {
             var method = _type.GetMethod("GenericMethod");
 
-            var exception = Assert.Throws<ArgumentException>(
+            Assert.Throws<NotSupportedException>(
                 () => new Job(_type, method, new[] { "hello!" }));
-
-            Assert.Equal("method", exception.ParamName);
         }
 
         [Fact]
@@ -121,7 +120,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void FromStaticExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
-            Assert.Throws<NotSupportedException>(
+            Assert.Throws<ArgumentException>(
                 () => Job.FromExpression(() => new JobFacts()));
         }
 
@@ -180,7 +179,7 @@ namespace Hangfire.Core.Tests.Common
         [Fact]
         public void FromInstanceExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
-            Assert.Throws<NotSupportedException>(
+            Assert.Throws<ArgumentException>(
                 () => Job.FromExpression<JobFacts>(x => new JobFacts()));
         }
 
@@ -397,16 +396,13 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
+        public void Ctor_ThrowsJsonReaderException_OnArgumentsDeserializationFailure()
         {
 	        var type = typeof (JobFacts);
 	        var method = type.GetMethod("MethodWithDateTimeArgument");
-			var job = new Job(type, method, new []{ "sdfa" });
 
-            var exception = Assert.Throws<JobPerformanceException>(
-                () => job.Perform(_activator.Object, _token.Object));
-
-            Assert.NotNull(exception.InnerException);
+            Assert.Throws<JsonReaderException>(
+                () => new Job(type, method, new []{ JobHelper.ToJson("sdfa") }));
         }
 
         [Fact, StaticLock]
@@ -493,17 +489,6 @@ namespace Hangfire.Core.Tests.Common
 
             Assert.True(nonCachedAttributes[0] is TestMethodAttribute);
             Assert.True(cachedAttributes[0] is TestMethodAttribute);
-        }
-
-        [Fact]
-        public void Jobs_With_Generics_Have_Different_Ids()
-        {
-            var job1 = Job.FromExpression<JobClassWrapper<Instance>>(x => x.Dispose());
-            var job2 = Job.FromExpression<JobClassWrapper<BrokenDispose>>(x => x.Dispose());
-            var id1 = job1.ToString();
-            var id2 = job2.ToString();
-
-            Assert.NotEqual(id1, id2);
         }
 
         private static void PrivateMethod()

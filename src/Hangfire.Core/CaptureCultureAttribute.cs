@@ -30,9 +30,9 @@ namespace Hangfire
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
             filterContext.SetJobParameter(
-                "CurrentCulture", Thread.CurrentThread.CurrentCulture.Name);
+                "CurrentCulture", CultureInfo.CurrentCulture.Name);
             filterContext.SetJobParameter(
-                "CurrentUICulture", Thread.CurrentThread.CurrentUICulture.Name);
+                "CurrentUICulture", CultureInfo.CurrentUICulture.Name);
         }
 
         public void OnCreated(CreatedContext filterContext)
@@ -44,18 +44,16 @@ namespace Hangfire
             var cultureName = filterContext.GetJobParameter<string>("CurrentCulture");
             var uiCultureName = filterContext.GetJobParameter<string>("CurrentUICulture");
 
-            var thread = Thread.CurrentThread;
-            
             if (!String.IsNullOrEmpty(cultureName))
             {
-                filterContext.Items["PreviousCulture"] = thread.CurrentCulture;
-                thread.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+                filterContext.Items["PreviousCulture"] = CultureInfo.CurrentCulture;
+                Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
             }
 
             if (!String.IsNullOrEmpty(uiCultureName))
             {
-                filterContext.Items["PreviousUICulture"] = thread.CurrentUICulture;
-                thread.CurrentUICulture = CultureInfo.GetCultureInfo(uiCultureName);
+                filterContext.Items["PreviousUICulture"] = CultureInfo.CurrentUICulture;
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo(uiCultureName);
             }
         }
 
@@ -63,14 +61,13 @@ namespace Hangfire
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
-            var thread = Thread.CurrentThread;
             if (filterContext.Items.ContainsKey("PreviousCulture"))
             {
-                thread.CurrentCulture = (CultureInfo) filterContext.Items["PreviousCulture"];
+                Thread.CurrentThread.CurrentCulture = (CultureInfo)filterContext.Items["PreviousCulture"];
             }
             if (filterContext.Items.ContainsKey("PreviousUICulture"))
             {
-                thread.CurrentUICulture = (CultureInfo) filterContext.Items["PreviousUICulture"];
+                Thread.CurrentThread.CurrentUICulture = (CultureInfo)filterContext.Items["PreviousUICulture"];
             }
         }
     }

@@ -47,7 +47,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             Assert.Empty(fetchedJobIds);
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void GetEnqueuedAndFetchedCount_ReturnsCorrectCounters()
         {
             RabbitMqUtils.EnqueueJobId("my-queue", "1");
@@ -62,7 +62,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             Assert.Null(result.FetchedCount);
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void GetEnqueuedJobIds_ReturnsEmptyCollection_IfQueueIsEmpty()
         {
             var api = CreateMonitoringApi();
@@ -72,7 +72,7 @@ namespace Hangfire.SqlServer.RabbitMq.Tests
             Assert.Empty(result);
         }
 
-        [Fact, CleanRabbitMqQueue("my-queue")]
+        [FactWithTimeout, CleanRabbitMqQueue("my-queue")]
         public void GetEnqueuedJobIds_ReturnsCorrectResult()
         {
             for (var i = 1; i <= 10; i++)

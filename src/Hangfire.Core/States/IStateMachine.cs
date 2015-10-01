@@ -1,5 +1,5 @@
-// This file is part of Hangfire.
-// Copyright � 2013-2014 Sergey Odinokov.
+﻿// This file is part of Hangfire.
+// Copyright © 2013-2014 Sergey Odinokov.
 // 
 // Hangfire is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
@@ -14,29 +14,20 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading;
-using Hangfire.Client;
-
 namespace Hangfire.States
 {
-    public interface IStateMachine : IJobCreator
+    /// <summary>
+    /// Provides a mechanism for running state election and state applying processes.
+    /// </summary>
+    /// 
+    /// <seealso cref="StateMachine"/>
+    public interface IStateMachine
     {
-        IStateChangeProcess Process { get; }
-
-        bool ChangeState(string jobId, IState toState, string[] fromStates, CancellationToken cancellationToken);
-    }
-
-    public static class StateMachineExtensions
-    {
-        public static bool ChangeState(this IStateMachine stateMachine,
-            string jobId, IState toState, string[] fromStates)
-        {
-            using (var cts = new CancellationTokenSource())
-            {
-                cts.Cancel();
-                return stateMachine.ChangeState(jobId, toState, fromStates, cts.Token);    
-            }
-        }
+        /// <summary>
+        /// Performs the state applying process, where a current background job
+        /// will be moved to the elected state.
+        /// </summary>
+        /// <param name="context">The context of a state applying process.</param>
+        IState ApplyState(ApplyStateContext context);
     }
 }
