@@ -114,26 +114,7 @@ If you've discovered a bug, please report it to the [Hangfire GitHub Issues](htt
 Related Projects
 -----------------
 
-* [Hangfire.Dashboard.Authorization](https://github.com/HangfireIO/Hangfire.Dashboard.Authorization)
-
-**IoC Containers**
-* [Hangfire.Autofac](https://github.com/HangfireIO/Hangfire.Autofac)
-* [Hangfire.Funq](https://github.com/apilavakis/Hangfire.Funq) by [@apilavakis](https://github.com/apilavakis)
-* [Hangfire.Ninject](https://github.com/HangfireIO/Hangfire.Ninject)
-* [Hangfire.SimpleInjector](https://github.com/devmondo/Hangfire.SimpleInjector) by [@devmondo](https://github.com/devmondo)
-* [Hangfire.TinyIoC](https://github.com/richclement/HangFire.TinyIoC) by [@richclement](https://github.com/richclement)
-* [Hangfire.Windsor](https://github.com/BredStik/Hangfire.Windsor) by [@BredStik](https://github.com/BredStik)
-
-**Storages**
-* [Hangfire.Azure.ServiceBusQueue](https://github.com/HangfireIO/Hangfire.Azure.ServiceBusQueue)
-* [Hangfire.Azure.QueueStorage](https://github.com/HangfireIO/Hangfire.Azure.QueueStorage)
-* [Hangfire.CompositeC1](https://bitbucket.org/burningice/hangfire.compositec1) by [@burningice](https://bitbucket.org/burningice)
-* [Hangfire.Firebird](https://github.com/rsegerink/Hangfire.Firebird) by [@rsegerink](https://github.com/rsegerink)
-* [Hangfire.MemoryStorage](https://github.com/perrich/Hangfire.MemoryStorage) by [@perrich](https://github.com/perrich)
-* [Hangfire.Mongo](https://github.com/sergeyzwezdin/Hangfire.Mongo) by [@sergeyzwezdin](https://github.com/sergeyzwezdin)
-* [Hangfire.MySql](https://github.com/chrislove/Hangfire.MySql) by [@chrislove](https://github.com/chrislove)
-* [Hangfire.PostgreSql](https://github.com/frankhommers/Hangfire.PostgreSql) by [@frankhommers](https://github.com/frankhommers)
-* [Hangfire.SQLite](https://github.com/vip32/Hangfire.SQLite) by [@vip32](https://github.com/vip32)
+Please see the [Extensions](http://hangfire.io/extensions.html) page on official site.
 
 Building the sources
 ---------------------
