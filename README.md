@@ -129,6 +129,7 @@ Related Projects
 * [Hangfire.SQLite](https://github.com/vip32/Hangfire.SQLite) by [@vip32](https://github.com/vip32)
 * [Hangfire.MemoryStorage](https://github.com/perrich/Hangfire.MemoryStorage) by [@perrich](https://github.com/perrich)
 * [Hangfire.Funq](https://github.com/apilavakis/Hangfire.Funq) by [@apilavakis](https://github.com/apilavakis)
+* [Hangfire.MySql](https://github.com/chrislove/Hangfire.MySql) by [@chrislove](https://github.com/chrislove)
 
 Building the sources
 ---------------------
