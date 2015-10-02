@@ -169,24 +169,15 @@ namespace Hangfire.Storage
             }
             return value;
         }
-        private static IEnumerable<Type> GetAllInterfaces(Type interface_type)
-        {
-            yield return interface_type;
 
-            foreach (var parent in interface_type.GetInterfaces().SelectMany(GetAllInterfaces))
-            {
-                yield return parent;
-            }
-        }
-
-        private static IEnumerable<MethodInfo> GetMethods(Type type)
+        private static IEnumerable<MethodInfo> GetAllMethods(Type type)
         {
-            return type.IsInterface ? GetAllInterfaces(type).SelectMany(x => x.GetMethods()) : type.GetMethods();
+            return type.IsInterface ? type.GetInterfaces().SelectMany(x => x.GetMethods()) : type.GetMethods();
         }
         
         private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)
         {
-            var methodCandidates = GetMethods(type);
+            var methodCandidates = GetAllMethods(type);
 
             foreach (var methodCandidate in methodCandidates)
             {
