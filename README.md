@@ -67,7 +67,7 @@ BackgroundJob.Schedule(() => Console.WriteLine("Reliable!"), TimeSpan.FromDays(7
 
 [**Recurring tasks**](http://docs.hangfire.io/en/latest/users-guide/background-methods/performing-recurrent-tasks.html)
 
-Recurring jobs were never been simpler, just call the following method to perform any kind of recurring task using the [CRON expressions](http://en.wikipedia.org/wiki/Cron#CRON_expression).
+Recurring jobs have never been simpler, just call the following method to perform any kind of recurring task using the [CRON expressions](http://en.wikipedia.org/wiki/Cron#CRON_expression).
 
 ```csharp
 RecurringJob.AddOrUpdate(() => Console.WriteLine("Transparent!"), Cron.Daily);
