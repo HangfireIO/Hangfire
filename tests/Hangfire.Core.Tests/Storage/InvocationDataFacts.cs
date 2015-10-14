@@ -96,6 +96,20 @@ namespace Hangfire.Core.Tests.Storage
             Assert.False(job.Method.ContainsGenericParameters);
         }
 
+        [Fact]
+        public void Deserialize_HandlesMethodsDefinedInParentInterfaces()
+        {
+            var serializedData = new InvocationData(
+                typeof(IChild).AssemblyQualifiedName,
+                "Method",
+                JobHelper.ToJson(new string[0]),
+                JobHelper.ToJson(new string[0]));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(IChild), job.Type);
+        }
+
         public static void Sample(string arg)
         {
         }
@@ -104,6 +118,15 @@ namespace Hangfire.Core.Tests.Storage
         {
             public void Method() { }
             public void Method<T2>(T1 arg1, T2 arg2) { }
+        }
+
+        public interface IParent
+        {
+            void Method();
+        }
+
+        public interface IChild : IParent
+        {
         }
     }
 }
