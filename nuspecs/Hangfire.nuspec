@@ -18,6 +18,11 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.1
+* Fixed – `JobLoadException` during deserialization when a method defined in an inherited interface (by @triwire).
+* Fixed – Unable to see enqueued jobs in Dashboard UI when using SQL Server queues.
+* Fixed – Show alert box instead of an exception on Awaiting Jobs page.
+    
 1.5.0
 
 Hangfire.Core
