@@ -172,7 +172,14 @@ namespace Hangfire.Storage
 
         private static IEnumerable<MethodInfo> GetAllMethods(Type type)
         {
-            return type.IsInterface ? type.GetInterfaces().SelectMany(x => x.GetMethods()) : type.GetMethods();
+            var methods = new List<MethodInfo>(type.GetMethods());
+
+            if (type.IsInterface)
+            {
+                methods.AddRange(type.GetInterfaces().SelectMany(x => x.GetMethods()));
+            }
+
+            return methods;
         }
         
         private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)

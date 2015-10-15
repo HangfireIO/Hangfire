@@ -97,6 +97,20 @@ namespace Hangfire.Core.Tests.Storage
         }
 
         [Fact]
+        public void Deserialize_HandlesMethodsDefinedInInterfaces()
+        {
+            var serializedData = new InvocationData(
+                typeof(IParent).AssemblyQualifiedName,
+                "Method",
+                JobHelper.ToJson(new string[0]),
+                JobHelper.ToJson(new string[0]));
+
+            var job = serializedData.Deserialize();
+
+            Assert.Equal(typeof(IParent), job.Type);
+        }
+
+        [Fact]
         public void Deserialize_HandlesMethodsDefinedInParentInterfaces()
         {
             var serializedData = new InvocationData(
