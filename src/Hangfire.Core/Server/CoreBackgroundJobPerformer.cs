@@ -29,7 +29,8 @@ namespace Hangfire.Server
             = new Dictionary<Type, Func<PerformContext, object>>
             {
                 { typeof (IJobCancellationToken), x => x.CancellationToken },
-                { typeof (CancellationToken), x => x.CancellationToken.ShutdownToken }
+                { typeof (CancellationToken), x => x.CancellationToken.ShutdownToken },
+                { typeof (IJobContext), x => new JobContext(x.BackgroundJob.Id, x.Connection) },   
             };
 
         private readonly JobActivator _activator;
