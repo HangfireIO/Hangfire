@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.3
+* Fixed – "Cannot release the application lock" exception when using distributed locks.
+    
 1.5.1
 * Fixed – Unable to see enqueued jobs in Dashboard UI when using SQL Server queues.
     
