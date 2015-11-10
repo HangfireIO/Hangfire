@@ -4,7 +4,7 @@ any OWIN-based web application.
 
 To run Hangfire in your application, update the existing OWIN Startup class or
 create the file `Startup.cs` in the root folder of your application as shown
-below. Please see also http://docs.hangfire.io/en/latest/quickstart.html.
+below. Please see also http://docs.hangfire.io/en/latest/quick-start.html.
 
 !!! DASHBOARD REQUIRES AUTH CONFIGURATION !!!
 
