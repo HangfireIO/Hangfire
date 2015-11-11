@@ -287,8 +287,13 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             return _storage.UseConnection(connection =>
             {
+                var forceSeek = _storage.SqlServerSettings != null
+                    ? _storage.SqlServerSettings.WithForceSeekSql
+                    : " with (forceseek) ";
                 var result = connection.Query<SqlHash>(
-                    string.Format("select Field, Value from [{0}].Hash where [Key] = @key", _storage.GetSchemaName()),
+                    string.Format("select Field, Value from [{0}].Hash {1} where [Key] = @key", 
+                    _storage.GetSchemaName(),
+                    forceSeek),
                     new { key })
                     .ToDictionary(x => x.Field, x => x.Value);
 

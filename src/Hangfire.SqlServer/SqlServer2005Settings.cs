@@ -99,5 +99,7 @@ IF @@ROWCOUNT = 0
 INSERT INTO [{0}].Server (Id, Data, LastHeartbeat)
 VALUES(@id, @data, @heartbeat);
 COMMIT TRANSACTION;"; } }
+
+        public string WithForceSeekSql { get { return null; } }
     }
 }

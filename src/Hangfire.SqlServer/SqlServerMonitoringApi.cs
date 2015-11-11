@@ -489,14 +489,19 @@ where j.Id in @jobIds", _storage.GetSchemaName());
             string stateName,
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
+            var forceSeek = _storage.SqlServerSettings != null
+                ? _storage.SqlServerSettings.WithForceSeekSql
+                : " with (forceseek) ";
+
             string jobsSql = string.Format(@"
 select * from (
   select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
-  from [{0}].Job j 
+  from [{0}].Job j {1}
   left join [{0}].State s on j.StateId = s.Id
   where j.StateName = @stateName
 ) as j where j.row_num between @start and @end
-", _storage.GetSchemaName());
+", _storage.GetSchemaName(),
+forceSeek);
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,

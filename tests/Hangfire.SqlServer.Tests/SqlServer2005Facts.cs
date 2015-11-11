@@ -102,6 +102,19 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact]
+        public void WithForceSeekSql_BlankIn2005()
+        {
+            Assert.True(string.IsNullOrEmpty(new SqlServer2005Settings().WithForceSeekSql));
+        }
+
+        [Fact]
+        public void WithForceSeekSql_PresentInDefault()
+        {
+            Assert.False(string.IsNullOrEmpty(new SqlServerDefaultSettings().WithForceSeekSql));
+            Assert.True(new SqlServerDefaultSettings().WithForceSeekSql.Contains("forceseek"));
+        }
+
+        [Fact]
         public void AnnounceServerSql_BlankInDefault()
         {
             Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().AnnounceServerSql));

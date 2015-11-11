@@ -13,5 +13,6 @@
         public string AddToSetSql { get { return null; } }
         public string SetRangeInHashWriteOnlySql { get { return null; } }
         public string AnnounceServerSql { get { return null; } }
+        public string WithForceSeekSql { get { return " with (forceseek) "; } }
     }
 }
