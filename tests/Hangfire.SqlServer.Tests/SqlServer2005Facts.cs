@@ -39,14 +39,14 @@ namespace Hangfire.SqlServer.Tests
         [Fact]
         public void CountersAggregationQuery_BlankInDefault()
         {
-            Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().CountersAggregationQuery));
+            Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().CountersAggregationSql));
         }
 
         [Fact]
         public void CountersAggregationQuery_PresentIn2005()
         {
-            Assert.True(new SqlServer2005Settings().CountersAggregationQuery.Contains("UPDATE"));
-            Assert.False(new SqlServer2005Settings().CountersAggregationQuery.Contains("merge"));
+            Assert.True(new SqlServer2005Settings().CountersAggregationSql.Contains("UPDATE"));
+            Assert.False(new SqlServer2005Settings().CountersAggregationSql.Contains("merge"));
         }
 
         [Fact]
@@ -60,6 +60,19 @@ namespace Hangfire.SqlServer.Tests
         {
             Assert.True(new SqlServer2005Settings().SetJobParameterSql.Contains("UPDATE"));
             Assert.False(new SqlServer2005Settings().SetJobParameterSql.Contains("merge"));
+        }
+
+        [Fact]
+        public void SetRangeInHash_BlankInDefault()
+        {
+            Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().SetRangeInHashSql));
+        }
+
+        [Fact]
+        public void SetRangeInHash_PresentIn2005()
+        {
+            Assert.True(new SqlServer2005Settings().SetRangeInHashSql.Contains("UPDATE"));
+            Assert.False(new SqlServer2005Settings().SetRangeInHashSql.Contains("merge"));
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)

@@ -259,14 +259,18 @@ where j.Id = @jobId", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
-            string sql = string.Format(@"
-;UPDATE [{0}].Hash
-SET [Value] = @value
-WHERE [Key] = @key AND Field = @field;
+            var sql =
+                _storage.SqlServerSettings != null &&
+                !string.IsNullOrEmpty(_storage.SqlServerSettings.SetRangeInHashSql)
+                    ? _storage.SqlServerSettings.SetRangeInHashSql
+                    : @"
+;merge [{0}].Hash with (holdlock) as Target
+using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
+on Target.[Key] = Source.[Key] and Target.Field = Source.Field
+when matched then update set Value = Source.Value
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
-IF @@ROWCOUNT = 0
-INSERT INTO [{0}].Hash ([Key], Field, Value)
-VALUES(@key, @field, @value);", _storage.GetSchemaName());
+            sql = string.Format(sql, _storage.GetSchemaName());
 
             _storage.UseTransaction(connection =>
             {

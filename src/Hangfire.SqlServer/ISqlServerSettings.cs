@@ -5,5 +5,6 @@
         string TransformScript(string script);
         string CountersAggregationSql { get; }
         string SetJobParameterSql { get; }
+        string SetRangeInHashSql { get; }
     }
 }

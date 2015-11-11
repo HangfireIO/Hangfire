@@ -7,7 +7,8 @@
             return script;
         }
 
-        public string CountersAggregationQuery { get { return null; } }
+        public string CountersAggregationSql { get { return null; } }
         public string SetJobParameterSql { get { return null; } }
+        public string SetRangeInHashSql { get { return null; } }
     }
 }

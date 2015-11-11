@@ -9,7 +9,7 @@ namespace Hangfire.SqlServer
             return Regex.Replace(script, @"\[datetime2\]\([0-9]\)", "[datetime]");
         }
 
-        public string CountersAggregationQuery { get { return @"
+        public string CountersAggregationSql { get { return @"
 DECLARE @RecordsToAggregate TABLE
 (
 	[Key] NVARCHAR(100) NOT NULL,
@@ -52,5 +52,16 @@ COMMIT TRAN"; } }
                     + @"VALUES(@jobId, @name, @value); "
                     + @"COMMIT TRANSACTION;"; }
         }
+
+        public string SetRangeInHashSql { get { return @"
+;BEGIN TRANSACTION;
+UPDATE [{0}].Hash
+SET [Value] = @value
+WHERE [Key] = @key AND Field = @field;
+
+IF @@ROWCOUNT = 0
+INSERT INTO [{0}].Hash ([Key], Field, Value)
+VALUES(@key, @field, @value);
+COMMIT TRANSACTION;"; } }
     }
 }
