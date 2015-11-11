@@ -7,5 +7,6 @@
         string SetJobParameterSql { get; }
         string SetRangeInHashSql { get; }
         string AddToSetSql { get; }
+        string SetRangeInHashWriteOnlySql { get; }
     }
 }

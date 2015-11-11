@@ -43,14 +43,17 @@ COMMIT TRAN"; } }
 
         public string SetJobParameterSql
         {
-            get { return @";BEGIN TRANSACTION;" 
-                    + @"UPDATE [{0}].JobParameter "
-                    + @"SET [Value] = @value "
-                    + @"WHERE JobId = @jobId AND [Name] = @name; "
-                    + @"IF @@ROWCOUNT = 0 "
-                    + @"INSERT INTO [{0}].JobParameter (JobId, Name, Value) "
-                    + @"VALUES(@jobId, @name, @value); "
-                    + @"COMMIT TRANSACTION;"; }
+            get
+            {
+                return @";BEGIN TRANSACTION;"
+                  + @"UPDATE [{0}].JobParameter "
+                  + @"SET [Value] = @value "
+                  + @"WHERE JobId = @jobId AND [Name] = @name; "
+                  + @"IF @@ROWCOUNT = 0 "
+                  + @"INSERT INTO [{0}].JobParameter (JobId, Name, Value) "
+                  + @"VALUES(@jobId, @name, @value); "
+                  + @"COMMIT TRANSACTION;";
+            }
         }
 
         public string SetRangeInHashSql { get { return @"
@@ -73,6 +76,17 @@ WHERE [Key] = @key AND Value = @value;
 IF @@ROWCOUNT = 0
 INSERT INTO [{0}].[Set] ([Key], Score, Value)
 VALUES(@key, @score, @value);
+COMMIT TRANSACTION;"; } }
+
+        public string SetRangeInHashWriteOnlySql { get { return @"
+;BEGIN TRANSACTION;
+UPDATE [{0}].Hash
+SET [Value] = @value
+WHERE [Key] = @key AND Field = @field;
+
+IF @@ROWCOUNT = 0
+INSERT INTO [{0}].Hash ([Key], Field, Value)
+VALUES(@key, @field, @value);
 COMMIT TRANSACTION;"; } }
     }
 }

@@ -223,14 +223,18 @@ delete from cte where row_num not between @start and @end", _storage.GetSchemaNa
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
-            string sql = string.Format(@"
-;UPDATE [{0}].Hash
-SET [Value] = @value
-WHERE [Key] = @key AND Field = @field;
+            var sql =
+                _storage.SqlServerSettings != null &&
+                !string.IsNullOrEmpty(_storage.SqlServerSettings.SetRangeInHashWriteOnlySql)
+                    ? _storage.SqlServerSettings.SetRangeInHashWriteOnlySql
+                    : @"
+;merge [{0}].Hash with (holdlock) as Target
+using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
+on Target.[Key] = Source.[Key] and Target.Field = Source.Field
+when matched then update set Value = Source.Value
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
-IF @@ROWCOUNT = 0
-INSERT INTO [{0}].Hash ([Key], Field, Value)
-VALUES(@key, @field, @value);", _storage.GetSchemaName());
+            sql = string.Format(sql, _storage.GetSchemaName());
 
             AcquireHashLock();
             QueueCommand(x => x.Execute(
