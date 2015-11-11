@@ -6,5 +6,7 @@
         {
             return script;
         }
+
+        public string CountersAggregationQuery { get { return null; } }
     }
 }

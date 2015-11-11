@@ -36,6 +36,18 @@ namespace Hangfire.SqlServer.Tests
             Assert.False(new SqlServer2005Settings().TransformScript(script).Contains("datetime2"));
         }
 
+        [Fact]
+        public void CountersAggregationQuery_PresentIn2005()
+        {
+            Assert.True(new SqlServer2005Settings().CountersAggregationQuery.Contains("UPDATE"));
+        }
+
+        [Fact]
+        public void CountersAggregationQuery_BlankInDefault()
+        {
+            Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().CountersAggregationQuery));
+        }
+
         private static string GetStringResource(Assembly assembly, string resourceName)
         {
             using (var stream = assembly.GetManifestResourceStream(resourceName))

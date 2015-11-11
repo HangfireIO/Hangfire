@@ -31,13 +31,16 @@ namespace Hangfire.SqlServer
 
         private readonly SqlServerStorage _storage;
         private readonly TimeSpan _interval;
+        private readonly ISqlServerSettings _sqlServerSettings;
 
-        public CountersAggregator(SqlServerStorage storage, TimeSpan interval)
+        public CountersAggregator(SqlServerStorage storage, TimeSpan interval, 
+            ISqlServerSettings sqlServerSettings = null)
         {
             if (storage == null) throw new ArgumentNullException("storage");
 
             _storage = storage;
             _interval = interval;
+            _sqlServerSettings = sqlServerSettings;
         }
 
         public void Execute(CancellationToken cancellationToken)
@@ -70,9 +73,12 @@ namespace Hangfire.SqlServer
             return GetType().ToString();
         }
 
-        private static string GetAggregationQuery(SqlServerStorage storage)
+        private string GetAggregationQuery(SqlServerStorage storage)
         {
-            return string.Format(@"
+            var aggregationQuery = _sqlServerSettings != null &&
+                                   !string.IsNullOrEmpty(_sqlServerSettings.CountersAggregationQuery)
+                ? _sqlServerSettings.CountersAggregationQuery
+                : @"
 DECLARE @RecordsToAggregate TABLE
 (
 	[Key] NVARCHAR(100) NOT NULL,
@@ -88,21 +94,19 @@ OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggrega
 
 SET NOCOUNT ON
 
-UPDATE [{0}].[AggregatedCounter]
-SET 
-	[Value] = ac.[Value] + ra.[Value],
-	[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES (ac.ExpireAt), (ra.[ExpireAt])) AS MaxExpireAt([ExpireAt]))
-FROM [{0}].[AggregatedCounter] AS ac
-JOIN @RecordsToAggregate ra
-ON ac.[Key] = ra.[Key];
+;MERGE [{0}].[AggregatedCounter] AS [Target]
+USING (
+	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
+	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])
+ON [Target].[Key] = [Source].[Key]
+WHEN MATCHED THEN UPDATE SET 
+	[Target].[Value] = [Target].[Value] + [Source].[Value],
+	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
+WHEN NOT MATCHED THEN INSERT ([Key], [Value], [ExpireAt]) VALUES ([Source].[Key], [Source].[Value], [Source].[ExpireAt]);
 
-INSERT INTO [{0}].[AggregatedCounter]
-SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] 
-FROM @RecordsToAggregate 
-GROUP BY [Key]
-HAVING [Key] NOT IN (SELECT [Key] FROM [{0}].[AggregatedCounter]);
+COMMIT TRAN";
 
-COMMIT TRAN", storage.GetSchemaName());
+            return string.Format(aggregationQuery, storage.GetSchemaName());
         }
     }
 }
