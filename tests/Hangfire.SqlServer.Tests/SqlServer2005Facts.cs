@@ -37,15 +37,29 @@ namespace Hangfire.SqlServer.Tests
         }
 
         [Fact]
-        public void CountersAggregationQuery_PresentIn2005()
-        {
-            Assert.True(new SqlServer2005Settings().CountersAggregationQuery.Contains("UPDATE"));
-        }
-
-        [Fact]
         public void CountersAggregationQuery_BlankInDefault()
         {
             Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().CountersAggregationQuery));
+        }
+
+        [Fact]
+        public void CountersAggregationQuery_PresentIn2005()
+        {
+            Assert.True(new SqlServer2005Settings().CountersAggregationQuery.Contains("UPDATE"));
+            Assert.False(new SqlServer2005Settings().CountersAggregationQuery.Contains("merge"));
+        }
+
+        [Fact]
+        public void SetJobParameterSql_BlankInDefault()
+        {
+            Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().SetJobParameterSql));
+        }
+
+        [Fact]
+        public void SetJobParameterSql_PresentIn2005()
+        {
+            Assert.True(new SqlServer2005Settings().SetJobParameterSql.Contains("UPDATE"));
+            Assert.False(new SqlServer2005Settings().SetJobParameterSql.Contains("merge"));
         }
 
         private static string GetStringResource(Assembly assembly, string resourceName)

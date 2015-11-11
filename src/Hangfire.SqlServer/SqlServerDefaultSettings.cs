@@ -8,5 +8,6 @@
         }
 
         public string CountersAggregationQuery { get { return null; } }
+        public string SetJobParameterSql { get { return null; } }
     }
 }

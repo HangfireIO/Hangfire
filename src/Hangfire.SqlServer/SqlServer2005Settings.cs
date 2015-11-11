@@ -40,5 +40,17 @@ GROUP BY [Key]
 HAVING [Key] NOT IN (SELECT [Key] FROM [{0}].[AggregatedCounter]);
 
 COMMIT TRAN"; } }
+
+        public string SetJobParameterSql
+        {
+            get { return @";BEGIN TRANSACTION;" 
+                    + @"UPDATE [{0}].JobParameter "
+                    + @"SET [Value] = @value "
+                    + @"WHERE JobId = @jobId AND [Name] = @name; "
+                    + @"IF @@ROWCOUNT = 0 "
+                    + @"INSERT INTO [{0}].JobParameter (JobId, Name, Value) "
+                    + @"VALUES(@jobId, @name, @value); "
+                    + @"COMMIT TRANSACTION;"; }
+        }
     }
 }

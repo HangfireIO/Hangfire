@@ -3,6 +3,7 @@
     public interface ISqlServerSettings
     {
         string TransformScript(string script);
-        string CountersAggregationQuery { get; }
+        string CountersAggregationSql { get; }
+        string SetJobParameterSql { get; }
     }
 }
