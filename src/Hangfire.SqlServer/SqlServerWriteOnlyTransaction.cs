@@ -159,11 +159,13 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchemaName());
         public override void AddToSet(string key, string value, double score)
         {
             string addSql = string.Format(@"
-;merge [{0}].[Set] with (holdlock) as Target
-using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
-on Target.[Key] = Source.[Key] and Target.Value = Source.Value
-when matched then update set Score = Source.Score
-when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);", _storage.GetSchemaName());
+;UPDATE [{0}].[Set]
+SET Score = @score
+WHERE [Key] = @key AND Value = @value;
+
+IF @@ROWCOUNT = 0
+INSERT INTO [HangFire].[Set] ([Key], Score, Value)
+VALUES(@key, @score, @value);", _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(
