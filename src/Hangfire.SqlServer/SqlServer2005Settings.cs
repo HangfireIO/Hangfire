@@ -88,5 +88,16 @@ IF @@ROWCOUNT = 0
 INSERT INTO [{0}].Hash ([Key], Field, Value)
 VALUES(@key, @field, @value);
 COMMIT TRANSACTION;"; } }
+
+        public string AnnounceServerSql { get { return @"
+;BEGIN TRANSACTION;
+;UPDATE [{0}].Server
+SET Data = @data, LastHeartbeat = @heartbeat
+WHERE [Id] = @id;
+
+IF @@ROWCOUNT = 0
+INSERT INTO [{0}].Server (Id, Data, LastHeartbeat)
+VALUES(@id, @data, @heartbeat);
+COMMIT TRANSACTION;"; } }
     }
 }

@@ -8,5 +8,6 @@
         string SetRangeInHashSql { get; }
         string AddToSetSql { get; }
         string SetRangeInHashWriteOnlySql { get; }
+        string AnnounceServerSql { get; }
     }
 }

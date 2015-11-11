@@ -310,15 +310,20 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
             _storage.UseConnection(connection =>
             {
-                connection.Execute(
-                    string.Format(@";UPDATE [{0}].Server
-SET Data = @data, LastHeartbeat = @heartbeat
-WHERE [Id] = @id;
+                var sql =
+                    _storage.SqlServerSettings != null &&
+                    !string.IsNullOrEmpty(_storage.SqlServerSettings.SetRangeInHashSql)
+                        ? _storage.SqlServerSettings.SetRangeInHashSql
+                        : @";merge [{0}].Server with (holdlock) as Target "
+                    + @"using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat) "
+                    + @"on Target.Id = Source.Id "
+                    + @"when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat "
+                    +
+                    @"when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);";
 
-IF @@ROWCOUNT = 0
-INSERT INTO [{0}].Server (Id, Data, LastHeartbeat)
-VALUES(@id, @data, @heartbeat);", _storage.GetSchemaName()),
-                    new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
+                    connection.Execute(
+                        string.Format(sql, _storage.GetSchemaName()),
+                        new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
             });
         }
 

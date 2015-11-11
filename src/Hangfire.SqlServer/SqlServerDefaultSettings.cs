@@ -12,5 +12,6 @@
         public string SetRangeInHashSql { get { return null; } }
         public string AddToSetSql { get { return null; } }
         public string SetRangeInHashWriteOnlySql { get { return null; } }
+        public string AnnounceServerSql { get { return null; } }
     }
 }
