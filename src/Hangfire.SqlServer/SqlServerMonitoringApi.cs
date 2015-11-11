@@ -492,7 +492,7 @@ where j.Id in @jobIds", _storage.GetSchemaName());
             string jobsSql = string.Format(@"
 select * from (
   select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
-  from [{0}].Job j with (forceseek)
+  from [{0}].Job j 
   left join [{0}].State s on j.StateId = s.Id
   where j.StateName = @stateName
 ) as j where j.row_num between @start and @end

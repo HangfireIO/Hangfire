@@ -279,7 +279,7 @@ VALUES(@key, @field, @value);", _storage.GetSchemaName());
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<SqlHash>(
-                    string.Format("select Field, Value from [{0}].Hash with (forceseek) where [Key] = @key", _storage.GetSchemaName()),
+                    string.Format("select Field, Value from [{0}].Hash where [Key] = @key", _storage.GetSchemaName()),
                     new { key })
                     .ToDictionary(x => x.Field, x => x.Value);
 
