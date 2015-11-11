@@ -158,14 +158,18 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchemaName());
 
         public override void AddToSet(string key, string value, double score)
         {
-            string addSql = string.Format(@"
-;UPDATE [{0}].[Set]
-SET Score = @score
-WHERE [Key] = @key AND Value = @value;
+            var addSql =
+                _storage.SqlServerSettings != null &&
+                !string.IsNullOrEmpty(_storage.SqlServerSettings.AddToSetSql)
+                    ? _storage.SqlServerSettings.AddToSetSql
+                    : @"
+;merge [{0}].[Set] with (holdlock) as Target
+using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
+on Target.[Key] = Source.[Key] and Target.Value = Source.Value
+when matched then update set Score = Source.Score
+when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
 
-IF @@ROWCOUNT = 0
-INSERT INTO [{0}].[Set] ([Key], Score, Value)
-VALUES(@key, @score, @value);", _storage.GetSchemaName());
+            addSql = string.Format(addSql, _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(

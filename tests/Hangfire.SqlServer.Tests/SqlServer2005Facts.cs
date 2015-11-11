@@ -75,6 +75,19 @@ namespace Hangfire.SqlServer.Tests
             Assert.False(new SqlServer2005Settings().SetRangeInHashSql.Contains("merge"));
         }
 
+        [Fact]
+        public void AddToSetSql_BlankInDefault()
+        {
+            Assert.True(string.IsNullOrEmpty(new SqlServerDefaultSettings().AddToSetSql));
+        }
+
+        [Fact]
+        public void AddToSetSql_PresentIn2005()
+        {
+            Assert.True(new SqlServer2005Settings().AddToSetSql.Contains("UPDATE"));
+            Assert.False(new SqlServer2005Settings().AddToSetSql.Contains("merge"));
+        }
+
         private static string GetStringResource(Assembly assembly, string resourceName)
         {
             using (var stream = assembly.GetManifestResourceStream(resourceName))

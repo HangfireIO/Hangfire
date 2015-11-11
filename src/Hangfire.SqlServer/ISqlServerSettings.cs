@@ -6,5 +6,6 @@
         string CountersAggregationSql { get; }
         string SetJobParameterSql { get; }
         string SetRangeInHashSql { get; }
+        string AddToSetSql { get; }
     }
 }

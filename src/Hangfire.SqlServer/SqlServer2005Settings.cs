@@ -63,5 +63,16 @@ IF @@ROWCOUNT = 0
 INSERT INTO [{0}].Hash ([Key], Field, Value)
 VALUES(@key, @field, @value);
 COMMIT TRANSACTION;"; } }
+
+        public string AddToSetSql { get { return @"
+;BEGIN TRANSACTION;
+UPDATE [{0}].[Set]
+SET Score = @score
+WHERE [Key] = @key AND Value = @value;
+
+IF @@ROWCOUNT = 0
+INSERT INTO [{0}].[Set] ([Key], Score, Value)
+VALUES(@key, @score, @value);
+COMMIT TRANSACTION;"; } }
     }
 }
