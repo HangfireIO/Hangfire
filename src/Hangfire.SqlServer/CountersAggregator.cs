@@ -88,15 +88,19 @@ OUTPUT DELETED.[Key], DELETED.[Value], DELETED.[ExpireAt] INTO @RecordsToAggrega
 
 SET NOCOUNT ON
 
-;MERGE [{0}].[AggregatedCounter] AS [Target]
-USING (
-	SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] FROM @RecordsToAggregate
-	GROUP BY [Key]) AS [Source] ([Key], [Value], [ExpireAt])
-ON [Target].[Key] = [Source].[Key]
-WHEN MATCHED THEN UPDATE SET 
-	[Target].[Value] = [Target].[Value] + [Source].[Value],
-	[Target].[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES ([Source].ExpireAt), ([Target].[ExpireAt])) AS MaxExpireAt([ExpireAt]))
-WHEN NOT MATCHED THEN INSERT ([Key], [Value], [ExpireAt]) VALUES ([Source].[Key], [Source].[Value], [Source].[ExpireAt]);
+UPDATE [HangFire].[AggregatedCounter]
+SET 
+	[Value] = ac.[Value] + ra.[Value],
+	[ExpireAt] = (SELECT MAX([ExpireAt]) FROM (VALUES (ac.ExpireAt), (ra.[ExpireAt])) AS MaxExpireAt([ExpireAt]))
+FROM [HangFire].[AggregatedCounter] AS ac
+JOIN @RecordsToAggregate ra
+ON ac.[Key] = ra.[Key];
+
+INSERT INTO [{0}].[AggregatedCounter]
+SELECT [Key], SUM([Value]) as [Value], MAX([ExpireAt]) AS [ExpireAt] 
+FROM @RecordsToAggregate 
+GROUP BY [Key]
+HAVING [Key] NOT IN (SELECT [Key] FROM [HangFire].[AggregatedCounter]);
 
 COMMIT TRAN", storage.GetSchemaName());
         }
