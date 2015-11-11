@@ -72,7 +72,10 @@
     <Compile Include="IPersistentJobQueue.cs" />
     <Compile Include="IPersistentJobQueueMonitoringApi.cs" />
     <Compile Include="IPersistentJobQueueProvider.cs" />
+    <Compile Include="ISqlServerSettings.cs" />
     <Compile Include="PersistentJobQueueProviderCollection.cs" />
+    <Compile Include="SqlServer2005Settings.cs" />
+    <Compile Include="SqlServerDefaultSettings.cs" />
     <Compile Include="SqlServerJobQueue.cs" />
     <Compile Include="SqlServerFetchedJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

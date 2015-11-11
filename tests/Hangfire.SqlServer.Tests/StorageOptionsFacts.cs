@@ -14,6 +14,7 @@ namespace Hangfire.SqlServer.Tests
             Assert.True(options.InvisibilityTimeout > TimeSpan.Zero);
             Assert.True(options.JobExpirationCheckInterval > TimeSpan.Zero);
             Assert.True(options.PrepareSchemaIfNecessary);
+            Assert.False(options.SqlServer2005Compatibility);
         }
 
         [Fact]

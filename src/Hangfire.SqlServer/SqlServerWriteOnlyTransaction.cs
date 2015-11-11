@@ -158,12 +158,18 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchemaName());
 
         public override void AddToSet(string key, string value, double score)
         {
-            string addSql = string.Format(@"
+            var addSql =
+                _storage.SqlServerSettings != null &&
+                !string.IsNullOrEmpty(_storage.SqlServerSettings.AddToSetSql)
+                    ? _storage.SqlServerSettings.AddToSetSql
+                    : @"
 ;merge [{0}].[Set] with (holdlock) as Target
 using (VALUES (@key, @value, @score)) as Source ([Key], Value, Score)
 on Target.[Key] = Source.[Key] and Target.Value = Source.Value
 when matched then update set Score = Source.Score
-when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);", _storage.GetSchemaName());
+when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.Value, Source.Score);";
+
+            addSql = string.Format(addSql, _storage.GetSchemaName());
 
             AcquireSetLock();
             QueueCommand(x => x.Execute(
@@ -217,12 +223,18 @@ delete from cte where row_num not between @start and @end", _storage.GetSchemaNa
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
-            string sql = string.Format(@"
+            var sql =
+                _storage.SqlServerSettings != null &&
+                !string.IsNullOrEmpty(_storage.SqlServerSettings.SetRangeInHashWriteOnlySql)
+                    ? _storage.SqlServerSettings.SetRangeInHashWriteOnlySql
+                    : @"
 ;merge [{0}].Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);", _storage.GetSchemaName());
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
+
+            sql = string.Format(sql, _storage.GetSchemaName());
 
             AcquireHashLock();
             QueueCommand(x => x.Execute(
