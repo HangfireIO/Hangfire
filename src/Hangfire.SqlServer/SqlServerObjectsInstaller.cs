@@ -33,12 +33,7 @@ namespace Hangfire.SqlServer
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
-        public static void Install(SqlConnection connection)
-        {
-            Install(connection, null);
-        }
-
-        public static void Install(SqlConnection connection, string schema)
+        public static void Install(SqlConnection connection, string schema, ISqlServerSettings sqlServerSettings)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
@@ -56,6 +51,8 @@ namespace Hangfire.SqlServer
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 5;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
 
             script = script.Replace("$(HangFireSchema)", !string.IsNullOrWhiteSpace(schema) ? schema : Constants.DefaultSchema);
+
+            script = sqlServerSettings.TransformScript(script);
 
             for (var i = 0; i < RetryAttempts; i++)
             {

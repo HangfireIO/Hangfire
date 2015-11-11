@@ -62,6 +62,8 @@ namespace Hangfire.SqlServer
 
             _options = options;
 
+            SetSqlServerVersionSettings(options);
+
             if (IsConnectionString(nameOrConnectionString))
             {
                 _connectionString = nameOrConnectionString;
@@ -81,12 +83,22 @@ namespace Hangfire.SqlServer
             {
                 using (var connection = CreateAndOpenConnection())
                 {
-                    SqlServerObjectsInstaller.Install(connection, options.SchemaName);
+                    SqlServerObjectsInstaller.Install(connection, options.SchemaName, SqlServerSettings);
                 }
             }
 
             InitializeQueueProviders();
         }
+
+        private void SetSqlServerVersionSettings(SqlServerStorageOptions options)
+        {
+            SqlServerSettings = options.SqlServer2005Compatibility
+                ? (ISqlServerSettings)new SqlServer2005Settings()
+                : new SqlServerDefaultSettings();
+        }
+
+        internal ISqlServerSettings SqlServerSettings { get; private set; }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
