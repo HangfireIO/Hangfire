@@ -164,7 +164,7 @@ SET Score = @score
 WHERE [Key] = @key AND Value = @value;
 
 IF @@ROWCOUNT = 0
-INSERT INTO [HangFire].[Set] ([Key], Score, Value)
+INSERT INTO [{0}].[Set] ([Key], Score, Value)
 VALUES(@key, @score, @value);", _storage.GetSchemaName());
 
             AcquireSetLock();
@@ -225,7 +225,7 @@ SET [Value] = @value
 WHERE [Key] = @key AND Field = @field;
 
 IF @@ROWCOUNT = 0
-INSERT INTO [HangFire].Hash ([Key], Field, Value)
+INSERT INTO [{0}].Hash ([Key], Field, Value)
 VALUES(@key, @field, @value);", _storage.GetSchemaName());
 
             AcquireHashLock();
