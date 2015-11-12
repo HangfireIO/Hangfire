@@ -132,7 +132,8 @@ namespace Hangfire.States
                     return jobData;
                 }
 
-                if (context.CancellationToken.IsCancellationRequested)
+                if (context.CancellationToken.IsCancellationRequested ||
+                    context.CancellationToken == CancellationToken.None)
                 {
                     return null;
                 }
