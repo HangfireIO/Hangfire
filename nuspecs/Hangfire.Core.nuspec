@@ -14,6 +14,13 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.2
+* Fixed – `JobLoadException` when using interface method as a background job, appeared in 1.5.1.
+    
+1.5.1
+* Fixed – `JobLoadException` during deserialization when a method defined in an inherited interface.
+* Fixed – Show alert box instead of an exception on Awaiting Jobs page.
+    
 1.5.0
 * Added – `IBackgroundProcess` interface that allows to implement custom background processes.
 * Added – `BackgroundProcessingServer` class for creating a server instance with completely custom background processes.

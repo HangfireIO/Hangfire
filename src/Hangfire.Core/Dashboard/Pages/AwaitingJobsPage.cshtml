@@ -14,20 +14,18 @@
     int.TryParse(Query("from"), out from);
     int.TryParse(Query("count"), out perPage);
 
-    List<string> jobIds;
-    Pager pager;
+    List<string> jobIds = null;
+    Pager pager = null;
 
     using (var connection = Storage.GetConnection())
     {
         var storageConnection = connection as JobStorageConnection;
 
-        if (storageConnection == null)
+        if (storageConnection != null)
         {
-            throw new NotSupportedException("Continuations are not supported for your current job storage implementation.");
+            pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
+            jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
         }
-
-        pager = new Pager(from, perPage, storageConnection.GetSetCount("awaiting"));
-        jobIds = storageConnection.GetRangeFromSet("awaiting", pager.FromRecord, pager.FromRecord + pager.RecordsPerPage - 1);
     }
 }
 
@@ -38,7 +36,18 @@
     <div class="col-md-9">
         <h1 class="page-header">Awaiting Jobs</h1>
 
-        @if (jobIds.Count > 0)
+        @if (jobIds == null)
+        {
+            <div class="alert alert-warning">
+                <h4>Continuations are working, but this page can't be displayed</h4>
+                <p>
+                    Don't worry, continuations are working as expected. But your current job storage does not
+                    support some queries required to show this page. Please try to update your storage or wait
+                    until the full command set is implemented.
+                </p>
+            </div>
+        }
+        else if (jobIds.Count > 0)
         {
             <div class="js-jobs-list">
                 <div class="btn-toolbar btn-toolbar-top">

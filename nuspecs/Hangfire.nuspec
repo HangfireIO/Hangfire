@@ -18,6 +18,19 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.3
+
+Hangfire.SqlServer
+* Fixed – "Cannot release the application lock" exception when using distributed locks.
+    
+1.5.2
+* Fixed – `JobLoadException` when using interface method as a background job, appeared in 1.5.1.
+    
+1.5.1
+* Fixed – `JobLoadException` during deserialization when a method defined in an inherited interface.
+* Fixed – Unable to see enqueued jobs in Dashboard UI when using SQL Server queues.
+* Fixed – Show alert box instead of an exception on Awaiting Jobs page.
+    
 1.5.0
 
 Hangfire.Core

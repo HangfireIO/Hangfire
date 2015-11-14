@@ -64,8 +64,8 @@ namespace Hangfire.SqlServer
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
             string sqlQuery = string.Format(@"
-select r.Id from (
-  select jq.Id, row_number() over (order by jq.Id) as row_num 
+select r.JobId from (
+  select jq.JobId, row_number() over (order by jq.Id) as row_num 
   from [{0}].JobQueue jq
   where jq.Queue = @queue
 ) as r
@@ -77,7 +77,7 @@ where r.row_num between @start and @end", _storage.GetSchemaName());
                     sqlQuery,
                     new { queue = queue, start = from + 1, end = @from + perPage })
                     .ToList()
-                    .Select(x => x.Id)
+                    .Select(x => x.JobId)
                     .ToList();
             });
         }
@@ -108,10 +108,10 @@ select count(Id) from [{0}].JobQueue where [Queue] = @queue", _storage.GetSchema
             return _storage.UseTransaction(func, IsolationLevel.ReadUncommitted);
         }
 
-// ReSharper disable once ClassNeverInstantiated.Local
         private class JobIdDto
         {
-            public int Id { get; set; }
+            [UsedImplicitly]
+            public int JobId { get; set; }
         }
     }
 }
