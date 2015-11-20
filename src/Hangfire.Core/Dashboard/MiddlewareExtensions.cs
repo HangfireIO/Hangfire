@@ -85,6 +85,7 @@ namespace Hangfire.Dashboard
 
                     var dispatcherContext = new RequestDispatcherContext(
                         options.AppPath,
+                        options.StatsPollingInterval,
                         storage,
                         context.Environment,
                         dispatcher.Item2);

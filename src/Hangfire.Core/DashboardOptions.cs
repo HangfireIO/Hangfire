@@ -25,6 +25,7 @@ namespace Hangfire
         {
             AppPath = "/";
             AuthorizationFilters = new[] { new LocalRequestsOnlyAuthorizationFilter() };
+            StatsPollingInterval = 2000;
         }
 
         /// <summary>
@@ -33,5 +34,10 @@ namespace Hangfire
         public string AppPath { get; set; }
 
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
+
+        /// <summary>
+        /// The interval the /stats endpoint should be called with.
+        /// </summary>
+        public int StatsPollingInterval { get; set; }
     }
 }
