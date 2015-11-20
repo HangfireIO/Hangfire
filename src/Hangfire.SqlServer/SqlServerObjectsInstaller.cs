@@ -26,9 +26,9 @@ using Hangfire.Logging;
 namespace Hangfire.SqlServer
 {
     [ExcludeFromCodeCoverage]
-    internal static class SqlServerObjectsInstaller
+    public static class SqlServerObjectsInstaller
     {
-        private const int RequiredSchemaVersion = 5;
+        public static readonly int RequiredSchemaVersion = 5;
         private const int RetryAttempts = 3;
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
