@@ -16,7 +16,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Hangfire.Dashboard.Pages;
@@ -147,7 +146,7 @@ namespace Hangfire
             HomePage.Metrics.Add(metric);
 
             return configuration;
-        }
+        }        
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IGlobalConfiguration<T> Use<T>(

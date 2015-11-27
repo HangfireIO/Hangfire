@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Hangfire.Common;
 using Hangfire.Server;
 
@@ -29,27 +28,29 @@ namespace Hangfire.Storage
     public class InvocationData
     {
         public InvocationData(
-            string type, string method, string parameterTypes, string arguments)
+            string type, string method, string parameterTypes, string arguments, string path)
         {
             Type = type;
             Method = method;
             ParameterTypes = parameterTypes;
             Arguments = arguments;
+            Path = path;
         }
 
         public string Type { get; private set; }
         public string Method { get; private set; }
         public string ParameterTypes { get; private set; }
         public string Arguments { get; set; }
+        public string Path { get; set; }
 
         public Job Deserialize()
         {
             try
-            {
-                var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
+            {                        
+                var type = System.Type.GetType(Type, name => Assembly.LoadFrom(Path), null, true, true);
                 var parameterTypes = JobHelper.FromJson<Type[]>(ParameterTypes);
                 var method = GetNonOpenMatchingMethod(type, Method, parameterTypes);
-                
+
                 if (method == null)
                 {
                     throw new InvalidOperationException(String.Format(
@@ -62,7 +63,7 @@ namespace Hangfire.Storage
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
                 var arguments = DeserializeArguments(method, serializedArguments);
 
-                return new Job(type, method, arguments);
+                return new Job(type, method, Path, arguments);
             }
             catch (Exception ex)
             {
@@ -76,7 +77,8 @@ namespace Hangfire.Storage
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
                 JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.ToJson(SerializeArguments(job.Args)));
+                JobHelper.ToJson(SerializeArguments(job.Args)), 
+                job.Path);
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
@@ -148,7 +150,7 @@ namespace Hangfire.Storage
             }
             catch (Exception jsonException)
             {
-                if (type == typeof (object))
+                if (type == typeof(object))
                 {
                     // Special case for handling object types, because string can not
                     // be converted to object type.
@@ -181,7 +183,7 @@ namespace Hangfire.Storage
 
             return methods;
         }
-        
+
         private static MethodInfo GetNonOpenMatchingMethod(Type type, string name, Type[] parameterTypes)
         {
             var methodCandidates = GetAllMethods(type);
@@ -227,8 +229,8 @@ namespace Hangfire.Storage
                 if (!parameterTypesMatched) continue;
 
                 // Return first found method candidate with matching parameters.
-                return methodCandidate.ContainsGenericParameters 
-                    ? methodCandidate.MakeGenericMethod(genericArguments.ToArray()) 
+                return methodCandidate.ContainsGenericParameters
+                    ? methodCandidate.MakeGenericMethod(genericArguments.ToArray())
                     : methodCandidate;
             }
 

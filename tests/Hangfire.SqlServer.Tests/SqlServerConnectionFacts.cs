@@ -314,7 +314,7 @@ select scope_identity() as Id";
                     arrangeSql,
                     new
                     {
-                        invocationData = JobHelper.ToJson(new InvocationData(null, null, null, null)),
+                        invocationData = JobHelper.ToJson(new InvocationData(null, null, null, null, null)),
                         stateName = "Succeeded",
                         arguments = "['Arguments']"
                     }).Single();
