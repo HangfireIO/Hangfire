@@ -29,7 +29,7 @@ namespace Hangfire
     /// Represents a recurring job manager that allows to create, update
     /// or delete recurring jobs.
     /// </summary>
-    public class RecurringJobManager
+    public class RecurringJobManager : IRecurringJobManager
     {
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
