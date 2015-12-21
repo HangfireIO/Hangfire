@@ -93,6 +93,7 @@
     </Compile>
     <Compile Include="JobActivatorScope.cs" />
     <Compile Include="Properties\NamespaceDoc.cs" />
+    <Compile Include="RecurringJobOptions.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />

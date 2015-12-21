@@ -62,6 +62,17 @@ namespace Hangfire
         }
 
         public void AddOrUpdate(
+            [NotNull] string recurringJobId, 
+            [NotNull] Job job, 
+            [NotNull] string cronExpression, 
+            [NotNull] RecurringJobOptions options)
+        {
+            if (options == null) throw new ArgumentException("options");
+            
+            AddOrUpdate(recurringJobId, job, cronExpression, options.TimeZone, options.QueueName);
+        }
+
+        public void AddOrUpdate(
             [NotNull] string recurringJobId,
             [NotNull] Job job,
             [NotNull] string cronExpression,

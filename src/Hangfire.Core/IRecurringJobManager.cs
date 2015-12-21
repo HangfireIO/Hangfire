@@ -1,5 +1,4 @@
-﻿using System;
-using Hangfire.Common;
+﻿using Hangfire.Common;
 
 namespace Hangfire
 {
@@ -7,9 +6,7 @@ namespace Hangfire
     {
         void AddOrUpdate(string recurringJobId, Job job, string cronExpression);
 
-        void AddOrUpdate(string recurringJobId, Job job, string cronExpression, TimeZoneInfo timeZone);
-
-        void AddOrUpdate(string recurringJobId, Job job, string cronExpression, TimeZoneInfo timeZone, string queue);
+        void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options);
 
         void Trigger(string recurringJobId);
 
