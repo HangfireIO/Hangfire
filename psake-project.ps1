@@ -22,7 +22,6 @@ Task Test -Depends Compile -Description "Run unit and integration tests under Op
 
 Task Merge -Depends Test -Description "Run ILMerge /internalize to merge assemblies." {
     # Remove `*.pdb` file to be able to prepare NuGet symbol packages.
-    Remove-Item ((Get-SrcOutputDir "Hangfire.Core") + "\NCrontab.pdb")
     Remove-Item ((Get-SrcOutputDir "Hangfire.SqlServer") + "\Dapper.pdb")
     
     Merge-Assembly "Hangfire.Core" @("NCrontab", "CronExpressionDescriptor", "Microsoft.Owin")
