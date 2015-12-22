@@ -536,13 +536,13 @@
     <EmbeddedResource Include="Dashboard\Content\js\hangfire.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Dashboard\Content\js\jquery-1.10.2.min.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\js\moment.min.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Dashboard\Content\js\rickshaw.min.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Dashboard\Content\js\jquery-2.1.4.min.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
