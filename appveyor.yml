@@ -32,6 +32,8 @@ branches:
     - master
     - dev
 
+shallow_clone: true
+
 cache:
   - packages
   
