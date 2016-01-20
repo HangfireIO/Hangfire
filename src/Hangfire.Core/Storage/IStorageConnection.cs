@@ -44,6 +44,8 @@ namespace Hangfire.Storage
 
         [CanBeNull]
         StateData GetStateData([NotNull] string jobId);
+        [CanBeNull]
+        StateData GetStateData([NotNull] string jobId, [NotNull] string stateName);
 
         void AnnounceServer(string serverId, ServerContext context);
         void RemoveServer(string serverId);

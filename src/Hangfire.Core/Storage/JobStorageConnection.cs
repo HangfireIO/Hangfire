@@ -40,6 +40,7 @@ namespace Hangfire.Storage
         public abstract string GetJobParameter(string id, string name);
         public abstract JobData GetJobData(string jobId);
         public abstract StateData GetStateData(string jobId);
+        public abstract StateData GetStateData(string jobId, string stateName);
 
         // Servers
         public abstract void AnnounceServer(string serverId, ServerContext context);

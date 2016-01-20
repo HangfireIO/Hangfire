@@ -67,6 +67,16 @@ namespace Hangfire.States
                 {
                     return null;
                 }
+
+                var enqueuedState = context.NewState as EnqueuedState;
+                if (enqueuedState != null)
+                {
+                    var stateData = context.Connection.GetStateData(context.BackgroundJobId, EnqueuedState.StateName);
+                    if (stateData != null)
+                    {
+                        enqueuedState.Queue = stateData.Data["Queue"];
+                    }
+                }
                 
                 var appliedState = context.NewState;
 
