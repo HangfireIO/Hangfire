@@ -14,10 +14,6 @@ cache:
  - directories:
    - packages
 
-services:
-  - redis-server
-  - rabbitmq
-
 # Run the build script
 script:
  - xbuild /p:Configuration=Release /verbosity:minimal Hangfire.Mono.sln
