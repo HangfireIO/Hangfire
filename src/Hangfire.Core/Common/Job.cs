@@ -176,9 +176,9 @@ namespace Hangfire.Common
         [NotNull]
         public IReadOnlyList<object> Args { get; private set; }
         
-        public override string ToString()
-        {
-            return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
+        public override string ToString() {
+			var argString = string.Join(",", Args.Select(JobHelper.ToJson));
+			return String.Format("{0}.{1}({2})", Type.ToGenericTypeString(), Method.Name, argString);
         }
 
         internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
