@@ -36,7 +36,7 @@ namespace Hangfire
         public IEnumerable<IAuthorizationFilter> AuthorizationFilters { get; set; }
 
         /// <summary>
-        /// The interval the /stats endpoint should be called with.
+        /// The interval the /stats endpoint should be polled with.
         /// </summary>
         public int StatsPollingInterval { get; set; }
     }
