@@ -1,7 +1,7 @@
 License
 ========
 
-Copyright © 2013-2014 Sergey Odinokov.
+Copyright © 2013-2016 Sergey Odinokov.
 
 Hangfire is an Open Source project licensed under the terms of
 the LGPLv3 license.  Please see http://www.gnu.org/licenses/lgpl-3.0.html
