@@ -4,10 +4,11 @@
 @using CronExpressionDescriptor
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
 @using Hangfire.Storage
 @inherits RazorPage
 @{
-    Layout = new LayoutPage("Recurring jobs");
+    Layout = new LayoutPage(Strings.RecurringJobsPage_Title);
 	List<RecurringJobDto> recurringJobs;
     
     int from, perPage;
@@ -34,12 +35,12 @@
 
 <div class="row">
     <div class="col-md-12">
-        <h1 class="page-header">Recurring Jobs</h1>
+        <h1 class="page-header">@Strings.RecurringJobsPage_Title</h1>
 
         @if (recurringJobs.Count == 0)
         {
             <div class="alert alert-info">
-                No recurring jobs found.
+                @Strings.RecurringJobsPage_NoJobs
             </div>
         }
         else
@@ -48,19 +49,19 @@
                 <div class="btn-toolbar btn-toolbar-top">
                     <button class="js-jobs-list-command btn btn-sm btn-primary"
                             data-url="@Url.To("/recurring/trigger")"
-                            data-loading-text="Triggering..."
+                            data-loading-text="@Strings.RecurringJobsPage_Triggering"
                             disabled="disabled">
                         <span class="glyphicon glyphicon-play-circle"></span>
-                        Trigger now
+                        @Strings.RecurringJobsPage_TriggerNow
                     </button>
 
                     <button class="js-jobs-list-command btn btn-sm btn-default"
                             data-url="@Url.To("/recurring/remove")"
-                            data-loading-text="Removing..."
-                            data-confirm="Do you really want to REMOVE ALL selected jobs?"
+                            data-loading-text="@Strings.Common_Deleting"
+                            data-confirm="@Strings.Common_DeleteConfirm"
                             disabled="disabled">
                         <span class="glyphicon glyphicon-remove"></span>
-                        Remove
+                        @Strings.Common_Delete
                     </button>
 
                     @if (pager != null)
@@ -75,12 +76,12 @@
                         <th class="min-width">
                             <input type="checkbox" class="js-jobs-list-select-all"/>
                         </th>
-                        <th class="min-width">Id</th>
-                        <th class="min-width">Cron</th>
-                        <th>Time zone</th>
-                        <th>Job</th>
-                        <th class="align-right min-width">Next execution</th>
-                        <th class="align-right min-width">Last execution</th>
+                        <th class="min-width">@Strings.Common_Id</th>
+                        <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
+                        <th>@Strings.RecurringJobsPage_Table_TimeZone</th>
+                        <th>@Strings.Common_Job</th>
+                        <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
+                        <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -132,7 +133,7 @@
                                 }
                                 else
                                 {
-                                    <em>N/A</em>
+                                    <em>@Strings.Common_NotAvailable</em>
                                 }
                             </td>
                             <td class="align-right min-width">
@@ -149,14 +150,13 @@
                                     else
                                     {
                                         <em>
-                                            Canceled
-                                            @Html.RelativeTime(job.LastExecution.Value)
+                                            @string.Format(Strings.RecurringJobsPage_Canceled, Html.RelativeTime(job.LastExecution.Value))
                                         </em>
                                     }
                                 }
                                 else
                                 {
-                                    <em>N/A</em>
+                                    <em>@Strings.Common_NotAvailable</em>
                                 }
                             </td>
                         </tr>
