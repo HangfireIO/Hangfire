@@ -25,6 +25,7 @@ using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
+using Hangfire.Dashboard.Resources;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -269,7 +270,7 @@ namespace Hangfire.SqlServer
 
         public static readonly DashboardMetric ActiveConnections = new DashboardMetric(
             "connections:active",
-            "Active Connections",
+            Strings.Metrics_ActiveConnections,
             page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
@@ -291,7 +292,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
 
         public static readonly DashboardMetric TotalConnections = new DashboardMetric(
             "connections:total",
-            "Total Connections",
+            Strings.Metrics_TotalConnections,
             page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;

@@ -39,12 +39,18 @@ namespace Hangfire.Dashboard.Pages
     #line hidden
     
     #line 6 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
-    using Hangfire.States;
+    using Hangfire.Dashboard.Resources;
     
     #line default
     #line hidden
     
     #line 7 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+    using Hangfire.States;
+    
+    #line default
+    #line hidden
+    
+    #line 8 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
     using Hangfire.Storage;
     
     #line default
@@ -69,10 +75,11 @@ WriteLiteral("\r\n");
 
 
 
+
             
-            #line 9 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 10 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
   
-    Layout = new LayoutPage("Awaiting Jobs");
+    Layout = new LayoutPage(Strings.AwaitingJobsPage_Title);
 
     int from, perPage;
 
@@ -101,37 +108,58 @@ WriteLiteral("\r\n<div class=\"row\">\r\n    <div class=\"col-md-3\">\r\n       
 
 
             
-            #line 34 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 35 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
    Write(Html.JobsSidebar());
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 class=\"page-header\">Awaitin" +
-"g Jobs</h1>\r\n\r\n");
+WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        <h1 class=\"page-header\">");
 
 
             
-            #line 39 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 38 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                           Write(Strings.AwaitingJobsPage_Title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</h1>\r\n\r\n");
+
+
+            
+            #line 40 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
          if (jobIds == null)
         {
 
             
             #line default
             #line hidden
-WriteLiteral(@"            <div class=""alert alert-warning"">
-                <h4>Continuations are working, but this page can't be displayed</h4>
-                <p>
-                    Don't worry, continuations are working as expected. But your current job storage does not
-                    support some queries required to show this page. Please try to update your storage or wait
-                    until the full command set is implemented.
-                </p>
-            </div>
-");
+WriteLiteral("            <div class=\"alert alert-warning\">\r\n                <h4>");
 
 
             
-            #line 49 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 43 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+               Write(Strings.AwaitingJobsPage_ContinuationsWarning_Title);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</h4>\r\n                <p>");
+
+
+            
+            #line 44 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+              Write(Strings.AwaitingJobsPage_ContinuationsWarning_Text);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</p>\r\n            </div>\r\n");
+
+
+            
+            #line 46 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
         }
         else if (jobIds.Count > 0)
         {
@@ -145,41 +173,80 @@ WriteLiteral("            <div class=\"js-jobs-list\">\r\n                <div c
 
 
             
-            #line 55 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 52 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                  Write(Url.To("/jobs/awaiting/enqueue"));
 
             
             #line default
             #line hidden
-WriteLiteral(@"""
-                            data-loading-text=""Enqueueing..."">
-                        <span class=""glyphicon glyphicon-repeat""></span>
-                        Enqueue jobs
-                    </button>
-
-                    <button class=""js-jobs-list-command btn btn-sm btn-default""
-                            data-url=""");
+WriteLiteral("\"\r\n                            data-loading-text=\"");
 
 
             
-            #line 62 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 53 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                          Write(Strings.Common_Enqueueing);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                        <span class=\"glyphicon glyphicon-repeat\"></span>\r\n   " +
+"                     ");
+
+
+            
+            #line 55 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                   Write(Strings.Common_EnqueueButton_Text);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                    </button>\r\n\r\n                    <button class=\"js-jobs-lis" +
+"t-command btn btn-sm btn-default\"\r\n                            data-url=\"");
+
+
+            
+            #line 59 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                  Write(Url.To("/jobs/awaiting/delete"));
 
             
             #line default
             #line hidden
-WriteLiteral(@"""
-                            data-loading-text=""Deleting...""
-                            data-confirm=""Do you really want to DELETE ALL selected jobs?"">
-                        <span class=""glyphicon glyphicon-remove""></span>
-                        Delete selected
-                    </button>
-
-                    ");
+WriteLiteral("\"\r\n                            data-loading-text=\"");
 
 
             
-            #line 69 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 60 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                          Write(Strings.Common_Deleting);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                            data-confirm=\"");
+
+
+            
+            #line 61 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                     Write(Strings.Common_DeleteConfirm);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                        <span class=\"glyphicon glyphicon-remove\"></span>\r\n   " +
+"                     ");
+
+
+            
+            #line 63 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                   Write(Strings.Common_DeleteSelected);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                    </button>\r\n\r\n                    ");
+
+
+            
+            #line 66 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                Write(Html.PerPageSelector(pager));
 
             
@@ -194,19 +261,62 @@ WriteLiteral(@"
                             <th class=""min-width"">
                                 <input type=""checkbox"" class=""js-jobs-list-select-all"" />
                             </th>
-                            <th class=""min-width"">Id</th>
-                            <th>Job</th>
-                            <th class=""min-width"">Options</th>
-                            <th class=""min-width"">Parent</th>
-                            <th class=""align-right"">Created</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-");
+                            <th class=""min-width"">");
 
 
             
-            #line 86 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 75 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                             Write(Strings.Common_Id);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                            <th>");
+
+
+            
+            #line 76 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                           Write(Strings.Common_Job);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                            <th class=\"min-width\">");
+
+
+            
+            #line 77 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                             Write(Strings.AwaitingJobsPage_Table_Options);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                            <th class=\"min-width\">");
+
+
+            
+            #line 78 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                             Write(Strings.AwaitingJobsPage_Table_Parent);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                            <th class=\"align-right\">");
+
+
+            
+            #line 79 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                               Write(Strings.Common_Created);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                        </tr>\r\n                    </thead>\r\n             " +
+"       <tbody>\r\n");
+
+
+            
+            #line 83 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                          foreach (var jobId in jobIds)
                         {
                             JobData jobData;
@@ -232,7 +342,7 @@ WriteLiteral("                            <tr class=\"js-jobs-list-row ");
 
 
             
-            #line 103 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 100 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                                     Write(jobData != null ? "hover" : null);
 
             
@@ -243,7 +353,7 @@ WriteLiteral("\">\r\n                                <td>\r\n                   
 
 
             
-            #line 105 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 102 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                                                                                          Write(jobId);
 
             
@@ -254,7 +364,7 @@ WriteLiteral("\" />\r\n                                </td>\r\n                
 
 
             
-            #line 108 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 105 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                Write(Html.JobIdLink(jobId));
 
             
@@ -264,18 +374,28 @@ WriteLiteral("\r\n                                </td>\r\n");
 
 
             
-            #line 110 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 107 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                  if (jobData == null)
                                 {
 
             
             #line default
             #line hidden
-WriteLiteral("                                    <td colspan=\"2\"><em>Job expired.</em></td>\r\n");
+WriteLiteral("                                    <td colspan=\"2\"><em>");
 
 
             
-            #line 113 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 109 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                                   Write(Strings.Common_JobExpired);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</em></td>\r\n");
+
+
+            
+            #line 110 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                 }
                                 else
                                 {
@@ -288,7 +408,7 @@ WriteLiteral("                                    <td>\r\n                      
 
 
             
-            #line 117 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 114 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                    Write(Html.JobNameLink(jobId, jobData.Job));
 
             
@@ -302,7 +422,7 @@ WriteLiteral("                                    <td class=\"min-width\">\r\n")
 
 
             
-            #line 120 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 117 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                          if (stateData != null && stateData.Data.ContainsKey("Options") && !String.IsNullOrWhiteSpace(stateData.Data["Options"]))
                                         {
 
@@ -313,7 +433,7 @@ WriteLiteral("                                            <code>");
 
 
             
-            #line 122 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 119 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                              Write(stateData.Data["Options"]);
 
             
@@ -323,7 +443,7 @@ WriteLiteral("</code>\r\n");
 
 
             
-            #line 123 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 120 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                         }
                                         else
                                         {
@@ -331,11 +451,21 @@ WriteLiteral("</code>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                            <em>N/A</em>\r\n");
+WriteLiteral("                                            <em>");
 
 
             
-            #line 127 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 123 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                           Write(Strings.Common_NotAvailable);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</em>\r\n");
+
+
+            
+            #line 124 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                         }
 
             
@@ -349,7 +479,7 @@ WriteLiteral("                                    <td class=\"min-width\">\r\n")
 
 
             
-            #line 130 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 127 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                          if (parentStateData != null)
                                         {
 
@@ -360,7 +490,7 @@ WriteLiteral("                                            <a href=\"");
 
 
             
-            #line 132 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 129 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                                 Write(Url.JobDetails(stateData.Data["ParentId"]));
 
             
@@ -371,7 +501,7 @@ WriteLiteral("\">\r\n                                                <span class
 
 
             
-            #line 133 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 130 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                                                                                  Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)));
 
             
@@ -381,7 +511,7 @@ WriteLiteral("\">\r\n                                                    ");
 
 
             
-            #line 134 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 131 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                                Write(parentStateData.Name);
 
             
@@ -392,7 +522,7 @@ WriteLiteral("\r\n                                                </span>\r\n   
 
 
             
-            #line 137 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 134 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                         }
                                         else
                                         {
@@ -400,11 +530,21 @@ WriteLiteral("\r\n                                                </span>\r\n   
             
             #line default
             #line hidden
-WriteLiteral("                                            <em>N/A</em>\r\n");
+WriteLiteral("                                            <em>");
 
 
             
-            #line 141 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 137 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+                                           Write(Strings.Common_NotAvailable);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</em>\r\n");
+
+
+            
+            #line 138 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                         }
 
             
@@ -419,7 +559,7 @@ WriteLiteral("                                    <td class=\"min-width align-ri
 
 
             
-            #line 144 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 141 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                    Write(Html.RelativeTime(jobData.CreatedAt));
 
             
@@ -429,7 +569,7 @@ WriteLiteral("\r\n                                    </td>\r\n");
 
 
             
-            #line 146 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 143 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                                 }
 
             
@@ -439,7 +579,7 @@ WriteLiteral("                            </tr>\r\n");
 
 
             
-            #line 148 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 145 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
                         }
 
             
@@ -449,7 +589,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n      
 
 
             
-            #line 151 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 148 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
            Write(Html.Paginator(pager));
 
             
@@ -459,7 +599,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 153 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 150 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
         }
         else
         {
@@ -467,12 +607,21 @@ WriteLiteral("\r\n            </div>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("            <div class=\"alert alert-info\">\r\n                No jobs found in awai" +
-"ting state.\r\n            </div>\r\n");
+WriteLiteral("            <div class=\"alert alert-info\">\r\n                ");
 
 
             
-            #line 159 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+            #line 154 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
+           Write(Strings.AwaitingJobsPage_NoJobs);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n            </div>\r\n");
+
+
+            
+            #line 156 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
         }
 
             

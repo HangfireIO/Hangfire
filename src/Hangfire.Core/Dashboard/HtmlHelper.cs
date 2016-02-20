@@ -23,6 +23,7 @@ using Hangfire.Common;
 using System.ComponentModel;
 using Hangfire.Annotations;
 using Hangfire.Dashboard.Pages;
+using Hangfire.Dashboard.Resources;
 
 namespace Hangfire.Dashboard
 {
@@ -100,7 +101,7 @@ namespace Hangfire.Dashboard
         {
             if (job == null)
             {
-                return "Can not find the target method.";
+                return Strings.Common_CannotFindTargetMethod;
             }
 
             var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
@@ -125,7 +126,7 @@ namespace Hangfire.Dashboard
         {
             if (String.IsNullOrWhiteSpace(stateName))
             {
-                return Raw("<em>No state</em>");
+                return Raw("<em>" + Strings.Common_NoState + "</em>");
             }
 
             return Raw(String.Format(
@@ -229,7 +230,7 @@ namespace Hangfire.Dashboard
             }
             else
             {
-                label = "<span class=\"label label-queue label-danger\"><i>Unknown</i></span>";
+                label = "<span class=\"label label-queue label-danger\"><i>" + Strings.Common_Unknown + "</i></span>";
             }
 
             return new NonEscapedString(label);
