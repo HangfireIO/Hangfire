@@ -4,9 +4,10 @@
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
 @inherits RazorPage
 @{
-    Layout = new LayoutPage("Servers");
+    Layout = new LayoutPage(Strings.ServersPage_Title);
     
     var monitor = Storage.GetMonitoringApi();
     var servers = monitor.Servers();
@@ -14,12 +15,12 @@
 
 <div class="row">
     <div class="col-md-12">
-        <h1 class="page-header">Servers</h1>
+        <h1 class="page-header">@Strings.ServersPage_Title</h1>
 
         @if (servers.Count == 0)
         {
             <div class="alert alert-warning">
-                There are no active servers. Background tasks will not be processed.
+                @Strings.ServersPage_NoServers
             </div>
         }
         else
@@ -27,11 +28,11 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Workers</th>
-                    <th>Queues</th>
-                    <th>Started</th>
-                    <th>Heartbeat</th>
+                    <th>@Strings.ServersPage_Table_Name</th>
+                    <th>@Strings.ServersPage_Table_Workers</th>
+                    <th>@Strings.ServersPage_Table_Queues</th>
+                    <th>@Strings.ServersPage_Table_Started</th>
+                    <th>@Strings.ServersPage_Table_Heartbeat</th>
                 </tr>
                 </thead>
                 <tbody>
