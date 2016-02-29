@@ -1,4 +1,5 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True TrimLeadingUnderscores : true *@
+@using Hangfire.Dashboard.Resources;
 @inherits Hangfire.Dashboard.RazorPage
 
     <div class="btn-group pull-right paginator">
@@ -10,5 +11,5 @@
     </div>
     <div class="btn-toolbar-spacer pull-right"></div>
     <div class="btn-toolbar-label btn-toolbar-label-sm pull-right">
-        Items per page:
+        @Strings.PerPageSelector_ItemsPerPage:
     </div>

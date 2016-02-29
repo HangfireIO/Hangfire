@@ -1,8 +1,10 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
+@using System.Linq
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
+@using Hangfire.Dashboard.Resources
 @using Hangfire.States
 @inherits RazorPage
 @{
@@ -16,7 +18,7 @@
         title = job.Job != null ? Html.JobName(job.Job) : null;
     }
 
-    title = title ?? "Job";
+    title = title ?? Strings.Common_Job;
     Layout = new LayoutPage(title);
 }
 
@@ -29,7 +31,7 @@
 
         @if (job == null)
         {
-            @: The job with id '@JobId' has expired or could not be found on the server.
+            @: @string.Format(Strings.JobDetailsPage_JobExpired, JobId)
         }
         else
         {
@@ -40,20 +42,13 @@
                 if (server == null)
                 {
                     <div class="alert alert-danger">
-                        <strong>The job was aborted</strong> – it is processed by server
-                        <code>@currentState.Data["ServerId"]</code> which is not in the 
-                        <a href="@Url.To("/servers")">active servers</a> list for now.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.
+                        @string.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers"))
                     </div>
                 }
                 else if (server.Heartbeat.HasValue && server.Heartbeat < DateTime.UtcNow.AddMinutes(-1))
                 {
                     <div class="alert alert-warning">
-                        <strong>Looks like the job was aborted</strong> – it is processed by server
-                        <code>@server.Name</code>, which reported its heartbeat more than 1 minute ago.
-                        It will be retried automatically after invisibility timeout, but you can
-                        also re-queue or delete it manually.
+                        @string.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name)
                     </div>
                 }
             }
@@ -61,20 +56,19 @@
             if (job.ExpireAt.HasValue)
             {
                 <div class="alert alert-info">
-                    <strong>The job is finished</strong>.
-                    It will be removed automatically <em><abbr data-moment="@JobHelper.ToTimestamp(job.ExpireAt.Value)">@job.ExpireAt</abbr></em>.
+                    @string.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt)
                 </div>
             }
 
             <div class="job-snippet">
                 <div class="job-snippet-header">
                     <span class="job-snippet-tab">
-                        Job ID: <span class="job-snippet-id">@Html.JobId(JobId.ToString(), false)</span>
+                        @Strings.JobDetailsPage_JobId: <span class="job-snippet-id">@Html.JobId(JobId.ToString(), false)</span>
                     </span>
 
                     <span class="job-snippet-buttons pull-right">
-                        <button class="btn btn-xs btn-default" data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)" data-loading-text="Enqueueing...">Requeue</button>
-                        <button class="btn btn-xs btn-death" data-ajax="@Url.To("/jobs/actions/delete/" + JobId)" data-loading-text="Deleting..." data-confirm="Do you really want to delete this job?">Delete</button>
+                        <button class="btn btn-xs btn-default" data-ajax="@Url.To("/jobs/actions/requeue/" + JobId)" data-loading-text="@Strings.Common_Enqueueing">@Strings.JobDetailsPage_Requeue</button>
+                        <button class="btn btn-xs btn-death" data-ajax="@Url.To("/jobs/actions/delete/" + JobId)" data-loading-text="@Strings.Common_Deleting" data-confirm="@Strings.JobDetailsPage_DeleteConfirm">@Strings.Common_Delete</button>
                     </span>
 
                     <div class="clearfix"></div>
@@ -84,8 +78,7 @@
                         @if (job.CreatedAt.HasValue)
                         {
                             <div class="pull-right job-creation-date">
-                                Created
-                                @Html.RelativeTime(job.CreatedAt.Value)
+                                @Html.Raw(string.Format(Strings.JobDetailsPage_Created, Html.RelativeTime(job.CreatedAt.Value)))
                             </div>
                         }
                         @if (job != null)
@@ -114,7 +107,7 @@
 
             if (job.History.Count > 0)
             {
-                <h3>History</h3>
+                <h3>@Strings.JobDetailsPage_History</h3>
                 var index = 0;
 
                 DateTime[] entriesCreationTime = job.History.Select(x => x.CreatedAt).ToArray();

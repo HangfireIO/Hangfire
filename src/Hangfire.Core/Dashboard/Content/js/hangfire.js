@@ -197,7 +197,7 @@
                 config.pollUrl,
                 config.pollInterval);
 
-            this._initialize();
+            this._initialize(config.locale);
             this._createGraphs();
             this._poller.start();
         }
@@ -267,7 +267,8 @@
             return null;
         };
 
-        Page.prototype._initialize = function() {
+        Page.prototype._initialize = function (locale) {
+            moment.locale(locale);
             var updateRelativeDates = function () {
                 $('*[data-moment]').each(function () {
                     var $this = $(this);
