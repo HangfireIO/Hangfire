@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Server;
 
 namespace Hangfire
 {
@@ -42,14 +43,21 @@ namespace Hangfire
             }
         }
 
+        
         public virtual object ActivateJob(Type jobType)
         {
             return Activator.CreateInstance(jobType);
         }
 
+        [Obsolete("Please implement/use the BeginScope(JobActivatorContext) method instead. Will be removed in 2.0.0.")]
         public virtual JobActivatorScope BeginScope()
         {
             return new SimpleJobActivatorScope(this);
+        }
+
+        public virtual JobActivatorScope BeginScope(JobActivatorContext context)
+        {
+            return BeginScope();
         }
 
         class SimpleJobActivatorScope : JobActivatorScope

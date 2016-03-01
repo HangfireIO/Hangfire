@@ -35,7 +35,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_CanInvokeStaticMethods()
+        public void Perform_CanInvokeStaticMethods()
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression(() => StaticMethod());
@@ -47,7 +47,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_CanInvokeInstanceMethods()
+        public void Perform_CanInvokeInstanceMethods()
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
@@ -59,7 +59,18 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_DisposesDisposableInstance_AfterPerformance()
+        public void Perform_ActivatesJob_WithinAScope()
+        {
+            var performer = CreatePerformer();
+            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+
+            performer.Perform(_context.Object);
+
+            _activator.Verify(x => x.BeginScope(It.IsNotNull<JobActivatorContext>()), Times.Once);
+        }
+
+        [Fact, StaticLock]
+        public void Perform_DisposesDisposableInstance_AfterPerformance()
         {
             _disposed = false;
             _context.BackgroundJob.Job = Job.FromExpression<Disposable>(x => x.Method());
@@ -71,7 +82,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_PassesArguments_ToACallingMethod()
+        public void Perform_PassesArguments_ToACallingMethod()
         {
             // Arrange
             _methodInvoked = false;
@@ -86,7 +97,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
+        public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingTypeConverter()
         {
             // Arrange
             _methodInvoked = false;
@@ -107,7 +118,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_PassesCorrectDateTime_IfItWasSerialized_UsingOldFormat()
+        public void Perform_PassesCorrectDateTime_IfItWasSerialized_UsingOldFormat()
         {
             // Arrange
             _methodInvoked = false;
@@ -127,7 +138,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_PassesCorrectDateTimeArguments()
+        public void Perform_PassesCorrectDateTimeArguments()
         {
             // Arrange
             _methodInvoked = false;
@@ -142,7 +153,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_WorksCorrectly_WithNullValues()
+        public void Perform_WorksCorrectly_WithNullValues()
         {
             // Arrange
             _methodInvoked = false;
@@ -157,7 +168,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsException_WhenActivatorThrowsAnException()
+        public void Perform_ThrowsException_WhenActivatorThrowsAnException()
         {
             // Arrange
             var exception = new InvalidOperationException();
@@ -172,7 +183,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsPerformanceException_WhenActivatorReturnsNull()
+        public void Perform_ThrowsPerformanceException_WhenActivatorReturnsNull()
         {
             _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Returns(null);
             _context.BackgroundJob.Job = Job.FromExpression(() => InstanceMethod());
@@ -183,7 +194,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
+        public void Perform_ThrowsPerformanceException_OnArgumentsDeserializationFailure()
         {
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
@@ -197,7 +208,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact, StaticLock]
-        public void Run_ThrowsPerformanceException_OnDisposalFailure()
+        public void Perform_ThrowsPerformanceException_OnDisposalFailure()
         {
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
@@ -210,7 +221,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsPerformanceException_WithUnwrappedInnerException()
+        public void Perform_ThrowsPerformanceException_WithUnwrappedInnerException()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => ExceptionMethod());
             var performer = CreatePerformer();
@@ -223,7 +234,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
+        public void Perform_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
         {
             _context.BackgroundJob.Job = Job.FromExpression(() => TaskCanceledExceptionMethod());
             var performer = CreatePerformer();
@@ -235,7 +246,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
+        public void Perform_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
         {
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
@@ -248,7 +259,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_ReturnsValue_WhenCallingFunctionReturningValue()
+        public void Perform_ReturnsValue_WhenCallingFunctionReturningValue()
         {
             _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningValue());
             var performer = CreatePerformer();
