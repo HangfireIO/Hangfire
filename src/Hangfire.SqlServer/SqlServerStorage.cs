@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -35,7 +36,7 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
-        private readonly SqlConnection _existingConnection;
+        private readonly DbConnection _existingConnection;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
@@ -95,7 +96,7 @@ namespace Hangfire.SqlServer
         /// to query the data.
         /// </summary>
         /// <param name="existingConnection">Existing connection</param>
-        public SqlServerStorage([NotNull] SqlConnection existingConnection)
+        public SqlServerStorage([NotNull] DbConnection existingConnection)
         {
             if (existingConnection == null) throw new ArgumentNullException("existingConnection");
 
@@ -172,7 +173,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseConnection([InstantHandle] Action<SqlConnection> action)
+        internal void UseConnection([InstantHandle] Action<DbConnection> action)
         {
             UseConnection(connection =>
             {
@@ -181,9 +182,9 @@ namespace Hangfire.SqlServer
             });
         }
 
-        internal T UseConnection<T>([InstantHandle] Func<SqlConnection, T> func)
+        internal T UseConnection<T>([InstantHandle] Func<DbConnection, T> func)
         {
-            SqlConnection connection = null;
+            DbConnection connection = null;
 
             try
             {
@@ -196,7 +197,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseTransaction([InstantHandle] Action<SqlConnection> action)
+        internal void UseTransaction([InstantHandle] Action<DbConnection> action)
         {
             UseTransaction(connection =>
             {
@@ -205,7 +206,7 @@ namespace Hangfire.SqlServer
             }, null);
         }
 
-        internal T UseTransaction<T>([InstantHandle] Func<SqlConnection, T> func, IsolationLevel? isolationLevel)
+        internal T UseTransaction<T>([InstantHandle] Func<DbConnection, T> func, IsolationLevel? isolationLevel)
         {
             using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
             {
@@ -216,7 +217,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal SqlConnection CreateAndOpenConnection()
+        internal DbConnection CreateAndOpenConnection()
         {
             if (_existingConnection != null)
             {

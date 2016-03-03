@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
@@ -353,7 +354,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
         }
 
         private Dictionary<DateTime, long> GetHourlyTimelineStats(
-            SqlConnection connection,
+            DbConnection connection,
             string type)
         {
             var endDate = DateTime.UtcNow;
@@ -370,7 +371,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
         }
 
         private Dictionary<DateTime, long> GetTimelineStats(
-            SqlConnection connection,
+            DbConnection connection,
             string type)
         {
             var endDate = DateTime.UtcNow.Date;
@@ -386,7 +387,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
             return GetTimelineStats(connection, keyMaps);
         }
 
-        private Dictionary<DateTime, long> GetTimelineStats(SqlConnection connection,
+        private Dictionary<DateTime, long> GetTimelineStats(DbConnection connection,
             IDictionary<string, DateTime> keyMaps)
         {
             string sqlQuery = string.Format(@"
@@ -421,13 +422,13 @@ where [Key] in @keys", _storage.GetSchemaName());
             return monitoringApi;
         }
 
-        private T UseConnection<T>(Func<SqlConnection, T> action)
+        private T UseConnection<T>(Func<DbConnection, T> action)
         {
             return _storage.UseTransaction(action, IsolationLevel.ReadUncommitted);
         }
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(
-            SqlConnection connection,
+            DbConnection connection,
             IEnumerable<int> jobIds)
         {
             string enqueuedJobsSql = string.Format(@"
@@ -453,7 +454,7 @@ where j.Id in @jobIds", _storage.GetSchemaName());
                 });
         }
 
-        private long GetNumberOfJobsByStateName(SqlConnection connection, string stateName)
+        private long GetNumberOfJobsByStateName(DbConnection connection, string stateName)
         {
             var sqlQuery = _jobListLimit.HasValue
                 ? string.Format(@"select count(j.Id) from (select top (@limit) Id from [{0}].Job where StateName = @state) as j", _storage.GetSchemaName())
@@ -483,7 +484,7 @@ where j.Id in @jobIds", _storage.GetSchemaName());
         }
 
         private JobList<TDto> GetJobs<TDto>(
-            SqlConnection connection,
+            DbConnection connection,
             int from,
             int count,
             string stateName,
@@ -529,7 +530,7 @@ select * from (
         }
 
         private JobList<FetchedJobDto> FetchedJobs(
-            SqlConnection connection,
+            DbConnection connection,
             IEnumerable<int> jobIds)
         {
             string fetchedJobsSql = string.Format(@"
