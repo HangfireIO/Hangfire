@@ -6,6 +6,7 @@ using Hangfire.Core.Tests.Common;
 using Hangfire.Server;
 using Moq;
 using Xunit;
+using System.Threading;
 
 namespace Hangfire.Core.Tests.Server
 {
@@ -222,6 +223,21 @@ namespace Hangfire.Core.Tests.Server
             Assert.Equal("exception", thrownException.InnerException.Message);
         }
 
+#pragma warning disable 4014
+        [Fact]
+        public void Run_ThrowsPerformanceException_WithUnwrappedInnerException_ForTasks()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression(() => TaskExceptionMethod());
+            var performer = CreatePerformer();
+
+            var thrownException = Assert.Throws<JobPerformanceException>(
+                () => performer.Perform(_context.Object));
+
+            Assert.IsType<AggregateException>(thrownException.InnerException);
+            Assert.Equal("One or more errors occurred.", thrownException.InnerException.Message);
+        }
+#pragma warning restore 4014
+
         [Fact]
         public void Run_ThrowsPerformanceException_WhenMethodThrownTaskCanceledException()
         {
@@ -235,7 +251,7 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void Run_PassesCancellationToken_IfThereIsIJobCancellationTokenParameter()
+        public void Run_PassesHangfireJobCancellationToken_IfThereIsIJobCancellationTokenParameter()
         {
             // Arrange
             _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(JobCancellationToken.Null));
@@ -243,6 +259,21 @@ namespace Hangfire.Core.Tests.Server
             var performer = CreatePerformer();
 
             // Act & Assert
+            Assert.Throws<OperationCanceledException>(
+                () => performer.Perform(_context.Object));
+        }
+
+        [Fact]
+        public void Run_PassesStandardCancellationToken_IfThereIsCancellationTokenParameter()
+        {
+            // Arrange
+            _context.BackgroundJob.Job = Job.FromExpression(() => CancelableJob(default(CancellationToken)));
+            var source = new CancellationTokenSource();
+            _context.CancellationToken.Setup(x => x.ShutdownToken).Returns(source.Token);
+            var performer = CreatePerformer();
+
+            // Act & Assert
+            source.Cancel();
             Assert.Throws<OperationCanceledException>(
                 () => performer.Perform(_context.Object));
         }
@@ -257,6 +288,32 @@ namespace Hangfire.Core.Tests.Server
 
             Assert.Equal("Return value", result);
         }
+
+#pragma warning disable 4014
+        [Fact]
+        public void Run_DoesNotReturnValue_WhenCallingFunctionReturningPlainTask()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTask());
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal(null, result);
+        }
+#pragma warning restore 4014
+
+#pragma warning disable 4014
+        [Fact]
+        public void Run_ReturnsTaskResult_WhenCallingFunctionReturningGenericTask()
+        {
+            _context.BackgroundJob.Job = Job.FromExpression<JobFacts.Instance>(x => x.FunctionReturningTaskResultingInString());
+            var performer = CreatePerformer();
+
+            var result = performer.Perform(_context.Object);
+
+            Assert.Equal("Return value", result);
+        }
+#pragma warning restore 4014
 
         public void InstanceMethod()
         {
@@ -305,6 +362,11 @@ namespace Hangfire.Core.Tests.Server
             token.ThrowIfCancellationRequested();
         }
 
+        public static void CancelableJob(CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+        }
+
         public void MethodWithDateTimeArgument(DateTime argument)
         {
             _methodInvoked = true;
@@ -327,6 +389,13 @@ namespace Hangfire.Core.Tests.Server
 
         public static void ExceptionMethod()
         {
+            throw new InvalidOperationException("exception");
+        }
+
+        public static async Task TaskExceptionMethod()
+        {
+            await Task.Yield();
+
             throw new InvalidOperationException("exception");
         }
 

@@ -331,11 +331,6 @@ namespace Hangfire.Common
                     typeParameterName);
             }
 
-            if (typeof(Task).IsAssignableFrom(method.ReturnType))
-            {
-                throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
-            }
-
             var parameters = method.GetParameters();
 
             if (parameters.Length != argumentCount)
