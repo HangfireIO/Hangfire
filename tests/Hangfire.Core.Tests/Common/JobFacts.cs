@@ -100,15 +100,6 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenMethodReturns_Task()
-        {
-            var method = _type.GetMethod("AsyncMethod");
-
-            Assert.Throws<NotSupportedException>(
-                () => new Job(_type, method, new string[0]));
-        }
-
-        [Fact]
         public void FromStaticExpression_ShouldThrowException_WhenNullExpressionProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -588,6 +579,18 @@ namespace Hangfire.Core.Tests.Common
             public string FunctionReturningValue()
             {
                 return "Return value";
+            }
+
+            public async Task FunctionReturningTask()
+            {
+                await Task.Yield();
+            }
+
+            public async Task<string> FunctionReturningTaskResultingInString()
+            {
+                await Task.Yield();
+
+                return FunctionReturningValue();
             }
         }
 
