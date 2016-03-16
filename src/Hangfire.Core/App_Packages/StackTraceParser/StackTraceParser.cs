@@ -32,16 +32,17 @@ namespace Hangfire
     partial class StackTraceParser
     {
         const string Space = @"[\x20\t]";
+        const string NotSpace = @"[^\x20\t]";
 
         static readonly Regex Regex = new Regex(@"
             ^
             " + Space + @"*
             \w+ " + Space + @"+
             (?<frame>
-                (?<type> .+ ) \.
-                (?<method> .+? ) " + Space + @"*
+                (?<type> " + NotSpace + @"+ ) \.
+                (?<method> " + NotSpace + @"+? ) " + Space + @"*
                 (?<params>  \( ( " + Space + @"* \)
-                               |        (?<pt> .+?) " + Space + @"+ (?<pn> .+?)
+                               |                    (?<pt> .+?) " + Space + @"+ (?<pn> .+?)
                                  (, " + Space + @"* (?<pt> .+?) " + Space + @"+ (?<pn> .+?) )* \) ) )
                 ( " + Space + @"+
                     ( # Microsoft .NET stack traces
@@ -63,7 +64,12 @@ namespace Hangfire
             | RegexOptions.ExplicitCapture
             | RegexOptions.CultureInvariant
             | RegexOptions.IgnorePatternWhitespace
-            | RegexOptions.Compiled);
+            | RegexOptions.Compiled,
+            // Cap the evaluation time to make it obvious should the expression
+            // fall into the "catastrophic backtracking" trap due to over
+            // generalization.
+            // https://github.com/atifaziz/StackTraceParser/issues/4
+            TimeSpan.FromSeconds(5));
 
         public static IEnumerable<T> Parse<T>(
             string text,
