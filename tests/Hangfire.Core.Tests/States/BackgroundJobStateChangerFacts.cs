@@ -172,7 +172,6 @@ namespace Hangfire.Core.Tests.States
         {
             // Arrange
             var results = new Queue<JobData>();
-            results.Enqueue(new JobData { Job = _job, State = null });
             results.Enqueue(new JobData { Job = _job, State = OldStateName });
 
             _connection.Setup(x => x.GetJobData(It.IsAny<string>()))

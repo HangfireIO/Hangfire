@@ -122,31 +122,13 @@ namespace Hangfire.States
 
         private static JobData GetJobData(StateChangeContext context)
         {
-            var firstAttempt = true;
-
-            while (true)
-            {
-                var jobData = context.Connection.GetJobData(context.BackgroundJobId);
-
-                if (jobData == null)
-                {
-                    return null;
-                }
-
-                if (jobData != null && !String.IsNullOrEmpty(jobData.State))
-                {
-                    return jobData;
-                }
-
-                if (context.CancellationToken.IsCancellationRequested ||
+            if (context.CancellationToken.IsCancellationRequested ||
                     context.CancellationToken == CancellationToken.None)
-                {
-                    return null;
-                }
-
-                Thread.Sleep(firstAttempt ? 0 : 100);
-                firstAttempt = false;
+            {
+                return null;
             }
+
+            return context.Connection.GetJobData(context.BackgroundJobId);
         }
     }
 }
