@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
@@ -58,7 +59,7 @@ namespace Hangfire.SqlServer
             _resource = resource;
             _connection = storage.CreateAndOpenConnection();
 
-            if (!AcquiredLocks.Value.ContainsKey(_resource))
+            if (!AcquiredLocks.Value.ContainsKey(_resource) || AcquiredLocks.Value[_resource] == 0)
             {
                 Acquire(_connection, _resource, timeout);
                 AcquiredLocks.Value[_resource] = 1;
@@ -83,8 +84,8 @@ namespace Hangfire.SqlServer
 
             try
             {
-                Release(_connection, _resource);
                 AcquiredLocks.Value.Remove(_resource);
+                Release(_connection, _resource);
             }
             finally
             {
