@@ -44,9 +44,6 @@ nuget:
 #       build configuration       #
 #---------------------------------#
 
-install:
-  - set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
-
 # to run your custom scripts instead of automatic MSBuild
 build_script: build.bat pack
 
