@@ -42,14 +42,22 @@ namespace Hangfire.Server
             _schedule = schedule;
 
             NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
-            NextInstant = TimeZoneInfo.ConvertTime(
-                _schedule.GetNextOccurrence(TimeZoneInfo.ConvertTime(NowInstant, TimeZoneInfo.Utc, _timeZone)),
-                _timeZone,
-                TimeZoneInfo.Utc);
+
+            var nextOccurrences = _schedule.GetNextOccurrences(
+                TimeZoneInfo.ConvertTime(NowInstant, TimeZoneInfo.Utc, _timeZone),
+                DateTime.MaxValue);
+
+            foreach (var nextOccurrence in nextOccurrences)
+            {
+                if (_timeZone.IsInvalidTime(nextOccurrence)) continue;
+
+                NextInstant = TimeZoneInfo.ConvertTime(nextOccurrence, _timeZone, TimeZoneInfo.Utc);
+                break;
+            }
         }
 
         public DateTime NowInstant { get; private set; }
-        public DateTime NextInstant { get; private set; }
+        public DateTime? NextInstant { get; private set; }
 
         public IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant)
         {
@@ -65,6 +73,7 @@ namespace Hangfire.Server
                 .GetNextOccurrences(
                     TimeZoneInfo.ConvertTimeFromUtc(baseTime, _timeZone),
                     TimeZoneInfo.ConvertTimeFromUtc(endTime, _timeZone))
+                .Where(x => !_timeZone.IsInvalidTime(x))
                 .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
                 .ToList();
         }

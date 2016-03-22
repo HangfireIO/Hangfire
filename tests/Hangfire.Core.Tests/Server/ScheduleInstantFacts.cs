@@ -8,8 +8,8 @@ namespace Hangfire.Core.Tests.Server
 {
     public class ScheduleInstantFacts
     {
-        private readonly CrontabSchedule _schedule;
-        private readonly TimeZoneInfo _timeZone;
+        private CrontabSchedule _schedule;
+        private TimeZoneInfo _timeZone;
         private DateTime _now;
 
         public ScheduleInstantFacts()
@@ -66,6 +66,42 @@ namespace Hangfire.Core.Tests.Server
             var value = instant.NextInstant;
 
             Assert.Equal(_schedule.GetNextOccurrence(_now), value);
+        }
+
+        [Fact]
+        public void NextInstant_DoesntThrow_NearDaylightSavings()
+        {
+            // Arrange
+            _timeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            _now = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone);
+            _schedule = CrontabSchedule.Parse("0 * * * *");
+            
+            var instant = CreateInstant();
+
+            // Act
+            var value = instant.NextInstant;
+
+            // Assert
+            Assert.Equal(_now.AddHours(1), value);
+        }
+
+        [Fact]
+        public void GetNextInstants_DoesntThrow_NearDaylightSavings()
+        {
+            // Arrange
+            _timeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            _now = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 3, 0, 0), _timeZone);
+            _schedule = CrontabSchedule.Parse("0 * * * *");
+
+            var instant = CreateInstant();
+
+            // Act
+            var last = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone);
+            var value = instant.GetNextInstants(last).ToList();
+
+            // Assert
+            Assert.Equal(1, value.Count);
+            Assert.Equal(last.AddHours(1), value[0]);
         }
 
         [Fact]
