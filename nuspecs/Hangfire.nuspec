@@ -18,6 +18,11 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.4
+* Fixed – Recurring jobs failing after moving clock forward for daylight saving time.
+* Fixed – Infinite loops when trying to change state of a background job that doesn't exist (by @mkravchuk7).
+* Fixed – Update StackTraceParser to 1.1 to prevent critical flaw (by @atifaziz and @lukerogers).
+    
 1.5.3
 
 Hangfire.SqlServer
