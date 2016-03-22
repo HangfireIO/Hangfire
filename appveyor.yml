@@ -9,8 +9,6 @@
 # Don't edit manually! Use `build.bat version` command instead!
 version: 1.5.4-build-0{build}
 
-os: Visual Studio 2015
-
 #---------------------------------#
 #    environment configuration    #
 #---------------------------------#
