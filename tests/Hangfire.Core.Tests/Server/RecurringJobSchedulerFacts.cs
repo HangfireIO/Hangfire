@@ -34,6 +34,7 @@ namespace Hangfire.Core.Tests.Server
             // Setting up the successful path
             _instant = new Mock<IScheduleInstant>();
             _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.NowInstant });
+            _instant.Setup(x => x.NextInstant).Returns(_instant.Object.NowInstant);
 
             var timeZone1 = TimeZoneInfo.Local;
 
@@ -157,7 +158,7 @@ namespace Hangfire.Core.Tests.Server
                 String.Format("recurring-job:{0}", RecurringJobId),
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NextInstant))));
+                        == JobHelper.SerializeDateTime(_instant.Object.NextInstant.Value))));
         }
 
         [Fact]
