@@ -142,7 +142,7 @@ Hangfire uses [psake](https://github.com/psake/psake) build automation tool. All
 License
 --------
 
-Copyright © 2013-2014 Sergey Odinokov.
+Copyright © 2013-2016 Sergey Odinokov.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
