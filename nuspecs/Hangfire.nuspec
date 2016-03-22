@@ -14,7 +14,7 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
