@@ -72,7 +72,7 @@ namespace Hangfire.Core.Tests.Server
         public void NextInstant_DoesntThrow_NearDaylightSavings()
         {
             // Arrange
-            _timeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            _timeZone = GetNewYorkTimeZone();
             _now = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 1, 0, 0), _timeZone);
             _schedule = CrontabSchedule.Parse("0 * * * *");
             
@@ -89,7 +89,7 @@ namespace Hangfire.Core.Tests.Server
         public void GetNextInstants_DoesntThrow_NearDaylightSavings()
         {
             // Arrange
-            _timeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            _timeZone = GetNewYorkTimeZone();
             _now = TimeZoneInfo.ConvertTimeToUtc(new DateTime(2016, 3, 13, 3, 0, 0), _timeZone);
             _schedule = CrontabSchedule.Parse("0 * * * *");
 
@@ -161,6 +161,14 @@ namespace Hangfire.Core.Tests.Server
         private ScheduleInstant CreateInstant(DateTime? localTime = null)
         {
             return new ScheduleInstant(localTime ?? _now, _timeZone, _schedule);
+        }
+
+        private static TimeZoneInfo GetNewYorkTimeZone()
+        {
+            var isRunningMono = Type.GetType("Mono.Runtime") != null;
+            var timeZoneId = isRunningMono ? "America/New_York" : "Eastern Standard Time";
+
+            return TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         }
     }
 }
