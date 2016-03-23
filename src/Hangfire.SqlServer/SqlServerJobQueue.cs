@@ -28,10 +28,14 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueue : IPersistentJobQueue
     {
+        // This is an optimization that helps to overcome the polling delay, when
+        // both client and server reside in the same process. Everything is working
+        // without this event, but it helps to reduce the delays in processing.
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
-		internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
-
+		
         public SqlServerJobQueue([NotNull] SqlServerStorage storage, SqlServerStorageOptions options)
         {
             if (storage == null) throw new ArgumentNullException("storage");
@@ -85,7 +89,7 @@ and Queue in @queues", _storage.GetSchemaName());
                     transaction.Dispose();
                     _storage.ReleaseConnection(connection);
 
-                    WaitHandle.WaitAny(new []{cancellationToken.WaitHandle, NewItemInQueueEvent},_options.QueuePollInterval);
+                    WaitHandle.WaitAny(new []{ cancellationToken.WaitHandle, NewItemInQueueEvent },_options.QueuePollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
             } while (fetchedJob == null);

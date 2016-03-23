@@ -61,7 +61,8 @@ namespace Hangfire.SqlServer
                     command(connection);
                 }
             });
-			SqlServerJobQueue.NewItemInQueueEvent.Set();
+
+            SqlServerJobQueue.NewItemInQueueEvent.Set();
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
