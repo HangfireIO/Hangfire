@@ -31,6 +31,7 @@ namespace Hangfire.SqlServer
     {
         private readonly Queue<Action<SqlConnection>> _commandQueue
             = new Queue<Action<SqlConnection>>();
+        private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>(); 
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
         private readonly SqlServerStorage _storage;
@@ -62,7 +63,10 @@ namespace Hangfire.SqlServer
                 }
             });
 
-            SqlServerJobQueue.NewItemInQueueEvent.Set();
+            foreach (var command in _afterCommitCommandQueue)
+            {
+                command();
+            }
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
@@ -123,6 +127,7 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchemaName());
             var persistentQueue = provider.GetJobQueue();
 
             QueueCommand(x => persistentQueue.Enqueue(x, queue, jobId));
+            _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());
         }
 
         public override void IncrementCounter(string key)
