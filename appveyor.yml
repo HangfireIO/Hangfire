@@ -10,7 +10,6 @@
 version: 1.6.0-build-0{build}
 
 os: Visual Studio 2015
->>>>>>> refs/remotes/origin/master
 
 #---------------------------------#
 #    environment configuration    #
