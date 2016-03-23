@@ -25,6 +25,7 @@ namespace Hangfire.Dashboard
     {
         public RequestDispatcherContext(
             string appPath,
+            int statsPollingInterval,
             [NotNull] JobStorage jobStorage,
             [NotNull] IDictionary<string, object> owinEnvironment, 
             [NotNull] Match uriMatch)
@@ -34,12 +35,14 @@ namespace Hangfire.Dashboard
             if (uriMatch == null) throw new ArgumentNullException("uriMatch");
 
             AppPath = appPath;
+            StatsPollingInterval = statsPollingInterval;
             JobStorage = jobStorage;
             OwinEnvironment = owinEnvironment;
             UriMatch = uriMatch;
         }
 
         public string AppPath { get; private set; }
+        public int StatsPollingInterval { get; private set; }
         public JobStorage JobStorage { get; private set; }
         public IDictionary<string, object> OwinEnvironment { get; private set; } 
         public Match UriMatch { get; private set; }
