@@ -30,6 +30,7 @@ namespace Hangfire.SqlServer
     {
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
+		internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
 
         public SqlServerJobQueue([NotNull] SqlServerStorage storage, SqlServerStorageOptions options)
         {
@@ -84,7 +85,7 @@ and Queue in @queues", _storage.GetSchemaName());
                     transaction.Dispose();
                     _storage.ReleaseConnection(connection);
 
-                    cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                    WaitHandle.WaitAny(new []{cancellationToken.WaitHandle, NewItemInQueueEvent},_options.QueuePollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
             } while (fetchedJob == null);
