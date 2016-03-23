@@ -2,7 +2,7 @@
 # see travis-ci.org for details
 
 language: csharp
-sudo: false
+sudo: required
 
 # Make sure build dependencies are installed.
 install:

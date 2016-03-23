@@ -201,7 +201,7 @@ namespace Hangfire.Server
                     changedFields.Add("LastJobId", jobId ?? String.Empty);
                 }
 
-                changedFields.Add("NextExecution", JobHelper.SerializeDateTime(instant.NextInstant));
+                changedFields.Add("NextExecution", instant.NextInstant.HasValue ? JobHelper.SerializeDateTime(instant.NextInstant.Value) : null);
 
                 connection.SetRangeInHash(
                     String.Format("recurring-job:{0}", recurringJobId),
