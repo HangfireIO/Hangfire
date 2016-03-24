@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using System.Runtime.CompilerServices;
 
 namespace Hangfire.Common
 {
@@ -329,6 +330,11 @@ namespace Hangfire.Common
                 throw new ArgumentException(
                     String.Format("The type `{0}` must be derived from the `{1}` type.", method.DeclaringType, type),
                     typeParameterName);
+            }
+
+            if (method.ReturnType == typeof(void) && method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
+            {
+                throw new NotSupportedException("Async void methods are not supported. Use async Task instead.");
             }
 
             var parameters = method.GetParameters();

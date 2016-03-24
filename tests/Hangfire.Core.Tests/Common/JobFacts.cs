@@ -159,6 +159,15 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodIsAsyncVoid()
+        {
+            var method = typeof(JobFacts).GetMethod(nameof(AsyncVoidMethod));
+
+            Assert.Throws<NotSupportedException>(
+                () => new Job(typeof(JobFacts), method, new string[0]));
+        }
+
+        [Fact]
         public void FromInstanceExpression_ShouldThrowException_WhenNullExpressionIsProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -560,6 +569,10 @@ namespace Hangfire.Core.Tests.Common
         {
             var source = new TaskCompletionSource<bool>();
             return source.Task;
+        }
+
+        public async void AsyncVoidMethod()
+        {
         }
 
         [TestType]
