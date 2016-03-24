@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -33,12 +34,12 @@ namespace Hangfire.SqlServer
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
-        public static void Install(SqlConnection connection)
+        public static void Install(DbConnection connection)
         {
             Install(connection, null);
         }
 
-        public static void Install(SqlConnection connection, string schema)
+        public static void Install(DbConnection connection, string schema)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
@@ -80,7 +81,7 @@ namespace Hangfire.SqlServer
             Log.Info("Hangfire SQL objects installed.");
         }
 
-        private static bool IsSqlEditionSupported(SqlConnection connection)
+        private static bool IsSqlEditionSupported(DbConnection connection)
         {
             var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;

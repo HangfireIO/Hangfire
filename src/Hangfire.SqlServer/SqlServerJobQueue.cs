@@ -16,6 +16,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
@@ -52,8 +53,8 @@ namespace Hangfire.SqlServer
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
 
             FetchedJob fetchedJob = null;
-            SqlConnection connection = null;
-            SqlTransaction transaction = null;
+            DbConnection connection = null;
+            DbTransaction transaction = null;
 
             string fetchJobSqlTemplate = string.Format(@"
 delete top (1) from [{0}].JobQueue with (readpast, updlock, rowlock)

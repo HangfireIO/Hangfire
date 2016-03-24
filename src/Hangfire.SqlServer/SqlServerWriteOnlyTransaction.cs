@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
@@ -29,8 +30,8 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerWriteOnlyTransaction : JobStorageTransaction
     {
-        private readonly Queue<Action<SqlConnection>> _commandQueue
-            = new Queue<Action<SqlConnection>>();
+        private readonly Queue<Action<DbConnection>> _commandQueue
+            = new Queue<Action<DbConnection>>();
         private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>(); 
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
@@ -336,7 +337,7 @@ update [{0}].[List] set ExpireAt = null where [Key] = @key", _storage.GetSchemaN
             QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
-        internal void QueueCommand(Action<SqlConnection> action)
+        internal void QueueCommand(Action<DbConnection> action)
         {
             _commandQueue.Enqueue(action);
         }
