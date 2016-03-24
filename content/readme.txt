@@ -10,7 +10,7 @@ below. Please see also http://docs.hangfire.io/en/latest/quick-start.html.
 
 By default, ONLY LOCAL requests are allowed to access the Dashboard. Please
 see the `Configuring Dashboard authorization` section in Hangfire documentation:
-http://docs.hangfire.io/en/latest/configuration/configuring-authorization.html
+http://docs.hangfire.io/en/latest/configuration/using-dashboard.html#configuring-authorization
 
 Sample OWIN Startup class
 --------------------------

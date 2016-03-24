@@ -23,7 +23,7 @@
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
-      <dependency id="Hangfire.SqlServer" version="1.2.2" />
+      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
     </dependencies>
   </metadata>
   <files>

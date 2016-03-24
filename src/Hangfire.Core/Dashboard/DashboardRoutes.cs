@@ -25,9 +25,10 @@ namespace Hangfire.Dashboard
     {
         private static readonly string[] Javascripts =
         {
-            "jquery-1.10.2.min.js", 
+            "jquery-2.1.4.min.js", 
             "bootstrap.min.js",
             "moment.min.js",
+            "moment-with-locales.min.js",
             "d3.min.js", 
             "d3.layout.min.js", 
             "rickshaw.min.js", 

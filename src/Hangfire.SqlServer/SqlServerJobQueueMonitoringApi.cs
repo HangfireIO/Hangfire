@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
@@ -103,7 +104,7 @@ select count(Id) from [{0}].JobQueue where [Queue] = @queue", _storage.GetSchema
             });
         }
 
-        private T UseTransaction<T>(Func<SqlConnection, T> func)
+        private T UseTransaction<T>(Func<DbConnection, T> func)
         {
             return _storage.UseTransaction(func, IsolationLevel.ReadUncommitted);
         }

@@ -16,6 +16,7 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
@@ -28,9 +29,14 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueue : IPersistentJobQueue
     {
+        // This is an optimization that helps to overcome the polling delay, when
+        // both client and server reside in the same process. Everything is working
+        // without this event, but it helps to reduce the delays in processing.
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+
         private readonly SqlServerStorage _storage;
         private readonly SqlServerStorageOptions _options;
-
+		
         public SqlServerJobQueue([NotNull] SqlServerStorage storage, SqlServerStorageOptions options)
         {
             if (storage == null) throw new ArgumentNullException("storage");
@@ -47,8 +53,8 @@ namespace Hangfire.SqlServer
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
 
             FetchedJob fetchedJob = null;
-            SqlConnection connection = null;
-            SqlTransaction transaction = null;
+            DbConnection connection = null;
+            DbTransaction transaction = null;
 
             string fetchJobSqlTemplate = string.Format(@"
 delete top (1) from [{0}].JobQueue with (readpast, updlock, rowlock)
@@ -84,7 +90,7 @@ and Queue in @queues", _storage.GetSchemaName());
                     transaction.Dispose();
                     _storage.ReleaseConnection(connection);
 
-                    cancellationToken.WaitHandle.WaitOne(_options.QueuePollInterval);
+                    WaitHandle.WaitAny(new []{ cancellationToken.WaitHandle, NewItemInQueueEvent },_options.QueuePollInterval);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
             } while (fetchedJob == null);

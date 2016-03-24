@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
@@ -29,8 +30,9 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerWriteOnlyTransaction : JobStorageTransaction
     {
-        private readonly Queue<Action<SqlConnection>> _commandQueue
-            = new Queue<Action<SqlConnection>>();
+        private readonly Queue<Action<DbConnection>> _commandQueue
+            = new Queue<Action<DbConnection>>();
+        private readonly Queue<Action> _afterCommitCommandQueue = new Queue<Action>(); 
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
         private readonly SqlServerStorage _storage;
@@ -61,6 +63,11 @@ namespace Hangfire.SqlServer
                     command(connection);
                 }
             });
+
+            foreach (var command in _afterCommitCommandQueue)
+            {
+                command();
+            }
         }
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
@@ -121,6 +128,7 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchemaName());
             var persistentQueue = provider.GetJobQueue();
 
             QueueCommand(x => persistentQueue.Enqueue(x, queue, jobId));
+            _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());
         }
 
         public override void IncrementCounter(string key)
@@ -329,7 +337,7 @@ update [{0}].[List] set ExpireAt = null where [Key] = @key", _storage.GetSchemaN
             QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
-        internal void QueueCommand(Action<SqlConnection> action)
+        internal void QueueCommand(Action<DbConnection> action)
         {
             _commandQueue.Enqueue(action);
         }
