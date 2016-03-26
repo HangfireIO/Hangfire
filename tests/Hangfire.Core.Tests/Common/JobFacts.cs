@@ -100,15 +100,6 @@ namespace Hangfire.Core.Tests.Common
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenMethodReturns_Task()
-        {
-            var method = _type.GetMethod("AsyncMethod");
-
-            Assert.Throws<NotSupportedException>(
-                () => new Job(_type, method, new string[0]));
-        }
-
-        [Fact]
         public void FromStaticExpression_ShouldThrowException_WhenNullExpressionProvided()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -165,6 +156,15 @@ namespace Hangfire.Core.Tests.Common
             var ruJob = Job.FromExpression(() => MethodWithDateTimeArgument(date));
 
             Assert.Equal(enJob.Arguments[0], ruJob.Arguments[0]);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenMethodIsAsyncVoid()
+        {
+            var method = typeof(JobFacts).GetMethod(nameof(AsyncVoidMethod));
+
+            Assert.Throws<NotSupportedException>(
+                () => new Job(typeof(JobFacts), method, new string[0]));
         }
 
         [Fact]
@@ -571,6 +571,10 @@ namespace Hangfire.Core.Tests.Common
             return source.Task;
         }
 
+        public async void AsyncVoidMethod()
+        {
+        }
+
         [TestType]
         public class Instance : IDisposable
         {
@@ -588,6 +592,18 @@ namespace Hangfire.Core.Tests.Common
             public string FunctionReturningValue()
             {
                 return "Return value";
+            }
+
+            public async Task FunctionReturningTask()
+            {
+                await Task.Yield();
+            }
+
+            public async Task<string> FunctionReturningTaskResultingInString()
+            {
+                await Task.Yield();
+
+                return FunctionReturningValue();
             }
         }
 

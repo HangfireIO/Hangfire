@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using System.Runtime.CompilerServices;
 
 namespace Hangfire.Common
 {
@@ -331,9 +332,9 @@ namespace Hangfire.Common
                     typeParameterName);
             }
 
-            if (typeof(Task).IsAssignableFrom(method.ReturnType))
+            if (method.ReturnType == typeof(void) && method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
             {
-                throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
+                throw new NotSupportedException("Async void methods are not supported. Use async Task instead.");
             }
 
             var parameters = method.GetParameters();

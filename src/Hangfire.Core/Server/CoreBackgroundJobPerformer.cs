@@ -69,9 +69,38 @@ namespace Hangfire.Server
         {
             try
             {
-                return methodInfo.Invoke(instance, arguments);
+                var result = methodInfo.Invoke(instance, arguments);
+
+                if (result != null)
+                {
+                    var task = result as Task;
+
+                    if (task != null)
+                    {
+                        task.Wait();
+
+                        if (methodInfo.ReturnType.IsGenericType)
+                        {
+                            var resultProperty = methodInfo.ReturnType.GetProperty("Result");
+
+                            result = resultProperty.GetValue(task);
+                        }
+                        else
+                        {
+                            result = null;
+                        }
+                    }
+                }
+
+                return result;
             }
             catch (ArgumentException ex)
+            {
+                throw new JobPerformanceException(
+                    "An exception occurred during performance of the job.",
+                    ex);
+            }
+            catch (AggregateException ex)
             {
                 throw new JobPerformanceException(
                     "An exception occurred during performance of the job.",
