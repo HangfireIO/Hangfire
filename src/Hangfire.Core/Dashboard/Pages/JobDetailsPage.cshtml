@@ -42,13 +42,13 @@
                 if (server == null)
                 {
                     <div class="alert alert-danger">
-                        @string.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers"))
+                        @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers")))
                     </div>
                 }
                 else if (server.Heartbeat.HasValue && server.Heartbeat < DateTime.UtcNow.AddMinutes(-1))
                 {
                     <div class="alert alert-warning">
-                        @string.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name)
+                        @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name))
                     </div>
                 }
             }
@@ -56,7 +56,7 @@
             if (job.ExpireAt.HasValue)
             {
                 <div class="alert alert-info">
-                    @string.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt)
+                    @Html.Raw(String.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt))
                 </div>
             }
 

@@ -114,7 +114,7 @@ WriteLiteral("    <div class=\"alert alert-warning\">\r\n        ");
 
             
             #line 35 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-   Write(string.Format(Strings.RetriesPage_Warning_Html, Url.To("/jobs/scheduled")));
+   Write(Html.Raw(String.Format(Strings.RetriesPage_Warning_Html, Url.To("/jobs/scheduled"))));
 
             
             #line default

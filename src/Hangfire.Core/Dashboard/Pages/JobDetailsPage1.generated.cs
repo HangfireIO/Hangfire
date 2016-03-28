@@ -162,7 +162,7 @@ WriteLiteral("                    <div class=\"alert alert-danger\">\r\n        
 
             
             #line 45 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                   Write(string.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers")));
+                   Write(Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers"))));
 
             
             #line default
@@ -184,7 +184,7 @@ WriteLiteral("                    <div class=\"alert alert-warning\">\r\n       
 
             
             #line 51 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                   Write(string.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name));
+                   Write(Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name)));
 
             
             #line default
@@ -208,7 +208,7 @@ WriteLiteral("                <div class=\"alert alert-info\">\r\n              
 
             
             #line 59 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-               Write(string.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt));
+               Write(Html.Raw(String.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt)));
 
             
             #line default

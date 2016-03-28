@@ -32,7 +32,7 @@
 @if (pager == null)
 {
     <div class="alert alert-warning">
-        @string.Format(Strings.RetriesPage_Warning_Html, Url.To("/jobs/scheduled"))
+        @Html.Raw(String.Format(Strings.RetriesPage_Warning_Html, Url.To("/jobs/scheduled")))
     </div>
 }
 else
