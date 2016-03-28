@@ -38,8 +38,9 @@
       <HintPath>..\..\packages\Moq.4.2.1510.2205\lib\net40\Moq.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Moq.Sequences">
-      <HintPath>..\..\packages\Moq.Sequences.1.0.1.0\lib\net40\Moq.Sequences.dll</HintPath>
+    <Reference Include="Moq.Sequences, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Moq.Sequences.NoNUnit.1.0.1\lib\Moq.Sequences.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="NCrontab, Version=3.1.19111.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\ncrontab.3.1.0\lib\net45\NCrontab.dll</HintPath>
@@ -48,15 +49,6 @@
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\packages\Newtonsoft.Json.5.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.mocks">
-      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\nunit.mocks.dll</HintPath>
-    </Reference>
-    <Reference Include="pnunit.framework">
-      <HintPath>..\..\packages\NUnit.2.5.7.10213\lib\pnunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -88,7 +80,7 @@
     <Compile Include="Common\JobFilterProviderCollectionFacts.cs" />
     <Compile Include="Common\JobHelperFacts.cs" />
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
-    <Compile Include="Common\TypeExtensionsFacts.cs" />	
+    <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
