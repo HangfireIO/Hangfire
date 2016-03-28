@@ -84,18 +84,29 @@ namespace Hangfire.Storage
             var serializedArguments = new List<string>(arguments.Count);
             foreach (var argument in arguments)
             {
-                string value = null;
+                string value;
 
                 if (argument != null)
                 {
                     if (argument is DateTime)
                     {
-                        value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
+                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                    }
+                    else if (argument is CancellationToken)
+                    {
+                        // CancellationToken type instances are substituted with ShutdownToken 
+                        // during the background job performance, so we don't need to store 
+                        // their values.
+                        value = null;
                     }
                     else
                     {
                         value = JobHelper.ToJson(argument);
                     }
+                }
+                else
+                {
+                    value = null;
                 }
 
                 // Logic, related to optional parameters and their default values, 
