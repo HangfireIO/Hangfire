@@ -108,7 +108,9 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.BackgroundJob.Job = new Job(type, method, convertedDate);
+#pragma warning disable CS0618 // Type or member is obsolete
+            _context.BackgroundJob.Job = new Job(type, method, new [] { convertedDate });
+#pragma warning restore CS0618 // Type or member is obsolete
             var performer = CreatePerformer();
 
             // Act
@@ -128,7 +130,9 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.BackgroundJob.Job = new Job(type, method, convertedDate);
+#pragma warning disable CS0618 // Type or member is obsolete
+            _context.BackgroundJob.Job = new Job(type, method, new [] { convertedDate });
+#pragma warning restore CS0618 // Type or member is obsolete
             var performer = CreatePerformer();
 
             // Act
