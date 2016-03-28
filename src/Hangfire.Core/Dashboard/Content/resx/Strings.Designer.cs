@@ -477,7 +477,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Created {0}.
+        ///   Looks up a localized string similar to Created.
         /// </summary>
         public static string JobDetailsPage_Created {
             get {
@@ -917,7 +917,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Canceled {0}.
+        ///   Looks up a localized string similar to Canceled.
         /// </summary>
         public static string RecurringJobsPage_Canceled {
             get {

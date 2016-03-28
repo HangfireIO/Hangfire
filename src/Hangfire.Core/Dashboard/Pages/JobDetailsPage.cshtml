@@ -78,7 +78,7 @@
                         @if (job.CreatedAt.HasValue)
                         {
                             <div class="pull-right job-creation-date">
-                                @Html.Raw(string.Format(Strings.JobDetailsPage_Created, Html.RelativeTime(job.CreatedAt.Value)))
+                                @Strings.JobDetailsPage_Created @Html.RelativeTime(job.CreatedAt.Value)
                             </div>
                         }
                         @if (job != null)

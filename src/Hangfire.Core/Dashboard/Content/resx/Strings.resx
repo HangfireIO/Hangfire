@@ -249,7 +249,7 @@
     <value>Dashboard</value>
   </data>
   <data name="JobDetailsPage_Created" xml:space="preserve">
-    <value>Created {0}</value>
+    <value>Created</value>
   </data>
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
     <value>Do you really want to delete this job?</value>
@@ -338,7 +338,7 @@
     <value>Queues</value>
   </data>
   <data name="RecurringJobsPage_Canceled" xml:space="preserve">
-    <value>Canceled {0}</value>
+    <value>Canceled</value>
   </data>
   <data name="RecurringJobsPage_NoJobs" xml:space="preserve">
     <value>No recurring jobs found.</value>

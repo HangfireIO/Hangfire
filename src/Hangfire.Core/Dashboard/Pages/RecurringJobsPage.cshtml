@@ -150,7 +150,7 @@
                                     else
                                     {
                                         <em>
-                                            @string.Format(Strings.RecurringJobsPage_Canceled, Html.RelativeTime(job.LastExecution.Value))
+                                            @Strings.RecurringJobsPage_Canceled @Html.RelativeTime(job.LastExecution.Value)
                                         </em>
                                     }
                                 }

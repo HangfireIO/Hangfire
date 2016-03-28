@@ -338,7 +338,17 @@ WriteLiteral("                            <div class=\"pull-right job-creation-d
 
             
             #line 81 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                           Write(Html.Raw(string.Format(Strings.JobDetailsPage_Created, Html.RelativeTime(job.CreatedAt.Value))));
+                           Write(Strings.JobDetailsPage_Created);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 81 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                                           Write(Html.RelativeTime(job.CreatedAt.Value));
 
             
             #line default

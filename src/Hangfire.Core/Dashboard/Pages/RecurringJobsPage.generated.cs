@@ -620,7 +620,17 @@ WriteLiteral("                                        <em>\r\n                  
 
             
             #line 153 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                       Write(string.Format(Strings.RecurringJobsPage_Canceled, Html.RelativeTime(job.LastExecution.Value)));
+                                       Write(Strings.RecurringJobsPage_Canceled);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(" ");
+
+
+            
+            #line 153 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
+                                                                           Write(Html.RelativeTime(job.LastExecution.Value));
 
             
             #line default

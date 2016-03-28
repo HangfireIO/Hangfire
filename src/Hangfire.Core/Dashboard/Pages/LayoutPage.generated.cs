@@ -242,7 +242,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
             
             #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(string.Format(Strings.LayoutPage_Footer_Time, DateTime.UtcNow));
+                   Write(String.Format(Strings.LayoutPage_Footer_Time, DateTime.UtcNow));
 
             
             #line default
@@ -252,7 +252,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
             
             #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                   Write(string.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
+                   Write(String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
 
             
             #line default
