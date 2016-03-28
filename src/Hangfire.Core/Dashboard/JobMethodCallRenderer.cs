@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using Hangfire.Common;
 
 namespace Hangfire.Dashboard
@@ -114,33 +115,26 @@ namespace Hangfire.Dashboard
                         isJson = false;
                     }
 
-                    if (argumentValue == null)
+                    if (enumerableArgument == null)
                     {
-                        renderedArgument = WrapKeyword("null");
+                        var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
+                        renderedArgument = argumentRenderer.Render(isJson, argumentValue?.ToString(), argument);
                     }
                     else
                     {
-                        if (enumerableArgument == null)
-                        {
-                            var argumentRenderer = ArgumentRenderer.GetRenderer(parameter.ParameterType);
-                            renderedArgument = argumentRenderer.Render(isJson, argumentValue.ToString(), argument);
-                        }
-                        else
-                        {
-                            var renderedItems = new List<string>();
+                        var renderedItems = new List<string>();
 
-                            foreach (var item in (IEnumerable) argumentValue)
-                            {
-                                var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
-                                renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
-                                    JobHelper.ToJson(item)));
-                            }
-
-                            renderedArgument = String.Format(
-                                WrapKeyword("new") + "{0} {{ {1} }}",
-                                parameter.ParameterType.IsArray ? " []" : "",
-                                String.Join(", ", renderedItems));
+                        foreach (var item in (IEnumerable)argumentValue)
+                        {
+                            var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
+                            renderedItems.Add(argumentRenderer.Render(isJson, item.ToString(),
+                                JobHelper.ToJson(item)));
                         }
+
+                        renderedArgument = String.Format(
+                            WrapKeyword("new") + "{0} {{ {1} }}",
+                            parameter.ParameterType.IsArray ? " []" : "",
+                            String.Join(", ", renderedItems));
                     }
 
                     renderedArguments.Add(renderedArgument);
@@ -248,16 +242,11 @@ namespace Hangfire.Dashboard
             private ArgumentRenderer()
             {
                 _enclosingString = "\"";
-                _valueRenderer = WrapString;
+                _valueRenderer = value => value == null ? WrapKeyword("null") : WrapString(value);
             }
 
             public string Render(bool isJson, string deserializedValue, string rawValue)
             {
-                if (deserializedValue == null)
-                {
-                    return WrapKeyword("null");
-                }
-
                 var builder = new StringBuilder();
                 if (_deserializationType != null)
                 {
@@ -273,7 +262,17 @@ namespace Hangfire.Dashboard
                 }
                 else
                 {
-                    builder.Append(_valueRenderer(Encode(_enclosingString + deserializedValue + _enclosingString)));    
+                    if (deserializedValue != null)
+                    {
+                        builder.Append(_enclosingString);
+                    }
+
+                    builder.Append(_valueRenderer(Encode(deserializedValue)));
+
+                    if (deserializedValue != null)
+                    {
+                        builder.Append(_enclosingString);
+                    }
                 }
 
                 if (_deserializationType != null)
@@ -325,7 +324,7 @@ namespace Hangfire.Dashboard
                 {
                     return new ArgumentRenderer
                     {
-                        _enclosingString = "\"",
+                        _enclosingString = "\""
                     };
                 }
 
@@ -335,6 +334,15 @@ namespace Hangfire.Dashboard
                     {
                         _enclosingString = String.Empty,
                         _valueRenderer = value => $"{WrapType(type.Name)}.Parse({WrapString($"\"{value}\"")})"
+                    };
+                }
+
+                if (type == typeof (CancellationToken))
+                {
+                    return new ArgumentRenderer
+                    {
+                        _enclosingString = String.Empty,
+                        _valueRenderer = value => $"{WrapType(nameof(CancellationToken))}.None"
                     };
                 }
 
