@@ -22,7 +22,9 @@ using Hangfire.Server;
 
 namespace Hangfire.SqlServer
 {
+#pragma warning disable 618
     internal class CountersAggregator : IServerComponent
+#pragma warning restore 618
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
@@ -34,7 +36,7 @@ namespace Hangfire.SqlServer
 
         public CountersAggregator(SqlServerStorage storage, TimeSpan interval)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             _storage = storage;
             _interval = interval;
@@ -60,6 +62,7 @@ namespace Hangfire.SqlServer
                     cancellationToken.WaitHandle.WaitOne(DelayBetweenPasses);
                     cancellationToken.ThrowIfCancellationRequested();
                 }
+                // ReSharper disable once LoopVariableIsNeverChangedInsideLoop
             } while (removedCount >= NumberOfRecordsInSinglePass);
 
             cancellationToken.WaitHandle.WaitOne(_interval);

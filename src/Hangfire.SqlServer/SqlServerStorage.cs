@@ -59,8 +59,8 @@ namespace Hangfire.SqlServer
         /// config file.</exception>
         public SqlServerStorage(string nameOrConnectionString, SqlServerStorageOptions options)
         {
-            if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
-            if (options == null) throw new ArgumentNullException("options");
+            if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
+            if (options == null) throw new ArgumentNullException(nameof(options));
 
             _options = options;
 
@@ -75,8 +75,7 @@ namespace Hangfire.SqlServer
             else
             {
                 throw new ArgumentException(
-                    string.Format("Could not find connection string with name '{0}' in application config file",
-                                  nameOrConnectionString));
+                    $"Could not find connection string with name '{nameOrConnectionString}' in application config file");
             }
 
             if (options.PrepareSchemaIfNecessary)
@@ -98,7 +97,7 @@ namespace Hangfire.SqlServer
         /// <param name="existingConnection">Existing connection</param>
         public SqlServerStorage([NotNull] DbConnection existingConnection)
         {
-            if (existingConnection == null) throw new ArgumentNullException("existingConnection");
+            if (existingConnection == null) throw new ArgumentNullException(nameof(existingConnection));
 
             _existingConnection = existingConnection;
             _options = new SqlServerStorageOptions();
@@ -118,7 +117,9 @@ namespace Hangfire.SqlServer
             return new SqlServerConnection(this);
         }
 
+#pragma warning disable 618
         public override IEnumerable<IServerComponent> GetComponents()
+#pragma warning restore 618
         {
             yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
             yield return new CountersAggregator(this, _options.CountersAggregateInterval);
@@ -164,7 +165,7 @@ namespace Hangfire.SqlServer
                 }
 
                 return builder.Length != 0
-                    ? String.Format("SQL Server: {0}", builder)
+                    ? $"SQL Server: {builder}"
                     : canNotParseMessage;
             }
             catch (Exception)

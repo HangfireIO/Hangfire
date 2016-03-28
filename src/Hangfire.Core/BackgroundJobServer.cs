@@ -78,9 +78,9 @@ namespace Hangfire
             [NotNull] JobStorage storage,
             [NotNull] IEnumerable<IBackgroundProcess> additionalProcesses)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (options == null) throw new ArgumentNullException("options");
-            if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             _options = options;
 
@@ -145,12 +145,10 @@ namespace Hangfire
             {
                 ShutdownTimeout = _options.ShutdownTimeout,
                 HeartbeatInterval = _options.HeartbeatInterval,
-                ServerCheckInterval = _options.ServerWatchdogOptions != null
-                    ? _options.ServerWatchdogOptions.CheckInterval
-                    : _options.ServerCheckInterval,
-                ServerTimeout = _options.ServerWatchdogOptions != null
-                    ? _options.ServerWatchdogOptions.ServerTimeout
-                    : _options.ServerTimeout
+#pragma warning disable 618
+                ServerCheckInterval = _options.ServerWatchdogOptions?.CheckInterval ?? _options.ServerCheckInterval,
+                ServerTimeout = _options.ServerWatchdogOptions?.ServerTimeout ?? _options.ServerTimeout
+#pragma warning restore 618
             };
         }
 

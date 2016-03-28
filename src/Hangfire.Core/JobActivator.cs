@@ -57,7 +57,9 @@ namespace Hangfire
 
         public virtual JobActivatorScope BeginScope(JobActivatorContext context)
         {
+#pragma warning disable 618
             return BeginScope();
+#pragma warning restore 618
         }
 
         class SimpleJobActivatorScope : JobActivatorScope

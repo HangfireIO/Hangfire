@@ -16,8 +16,10 @@
 
 namespace Hangfire.Server
 {
-    interface IBackgroundProcessWrapper : IBackgroundProcess
+    internal interface IBackgroundProcessWrapper : IBackgroundProcess
     {
+#pragma warning disable 618
         IServerProcess InnerProcess { get; }
+#pragma warning restore 618
     }
 }

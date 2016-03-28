@@ -4,6 +4,8 @@ using Hangfire.Server;
 using Moq;
 using Xunit;
 
+#pragma warning disable 618
+
 namespace Hangfire.Core.Tests.Server
 {
     public class InfiniteLoopComponentFacts

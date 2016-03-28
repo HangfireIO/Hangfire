@@ -211,10 +211,7 @@ namespace Hangfire.Dashboard
 
         private static string Span(string @class, string value)
         {
-            return String.Format(
-                "<span class=\"{0}\">{1}</span>", 
-                @class, 
-                value);
+            return $"<span class=\"{@class}\">{value}</span>";
         }
 
         private static string Encode(string value)
@@ -292,10 +289,7 @@ namespace Hangfire.Dashboard
                     return new ArgumentRenderer
                     {
                         _enclosingString = String.Empty,
-                        _valueRenderer = value => String.Format(
-                            "{0}.{1}",
-                            WrapType(type.Name),
-                            value)
+                        _valueRenderer = value => $"{WrapType(type.Name)}.{value}"
                     };
                 }
 
@@ -338,10 +332,7 @@ namespace Hangfire.Dashboard
                     return new ArgumentRenderer
                     {
                         _enclosingString = String.Empty,
-                        _valueRenderer = value => String.Format(
-                            "{0}.Parse({1})",
-                            WrapType(type.Name),
-                            WrapString(string.Format("\"{0}\"", value)))
+                        _valueRenderer = value => $"{WrapType(type.Name)}.Parse({WrapString($"\"{value}\"")})"
                     };
                 }
 

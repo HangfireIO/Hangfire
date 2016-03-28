@@ -23,17 +23,18 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+#pragma warning disable 618
     public class ElectStateContext : StateContext
+#pragma warning restore 618
     {
         private readonly IList<IState> _traversedStates = new List<IState>();
-        private readonly BackgroundJob _backgroundJob;
         private IState _candidateState;
 
         internal ElectStateContext([NotNull] ApplyStateContext applyContext)
         {
-            if (applyContext == null) throw new ArgumentNullException("applyContext");
+            if (applyContext == null) throw new ArgumentNullException(nameof(applyContext));
             
-            _backgroundJob = applyContext.BackgroundJob;
+            BackgroundJob = applyContext.BackgroundJob;
             _candidateState = applyContext.NewState;
 
             Storage = applyContext.Storage;
@@ -43,16 +44,13 @@ namespace Hangfire.States
         }
 
         [NotNull]
-        public override BackgroundJob BackgroundJob
-        {
-            get { return _backgroundJob; }
-        }
+        public override BackgroundJob BackgroundJob { get; }
 
         [NotNull]
         public JobStorage Storage { get; private set; }
 
         [NotNull]
-        public IStorageConnection Connection { get; private set; }
+        public IStorageConnection Connection { get; }
 
         [NotNull]
         public IWriteOnlyTransaction Transaction { get; private set; }
@@ -65,7 +63,7 @@ namespace Hangfire.States
             {
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value", "The CandidateState property can not be set to null.");
+                    throw new ArgumentNullException(nameof(value), "The CandidateState property can not be set to null.");
                 }
 
                 if (_candidateState != value)
@@ -80,7 +78,7 @@ namespace Hangfire.States
         public string CurrentState { get; private set; }
 
         [NotNull]
-        public IState[] TraversedStates { get { return _traversedStates.ToArray(); } }
+        public IState[] TraversedStates => _traversedStates.ToArray();
 
         public void SetJobParameter<T>(string name, T value)
         {

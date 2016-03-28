@@ -73,7 +73,9 @@ and Queue in @queues", _storage.GetSchemaName());
                 {
                     fetchedJob = connection.Query<FetchedJob>(
                                fetchJobSqlTemplate,
+#pragma warning disable 618
                                new { queues = queues, timeout = _options.InvisibilityTimeout.Negate().TotalSeconds },
+#pragma warning restore 618
                                transaction)
                                .SingleOrDefault();
                 }

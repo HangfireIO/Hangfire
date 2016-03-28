@@ -11,6 +11,8 @@ using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
+#pragma warning disable 618
+
 namespace Hangfire.Core.Tests.Common
 {
     public class JobFacts
@@ -39,6 +41,7 @@ namespace Hangfire.Core.Tests.Common
         public void Ctor_ThrowsAnException_WhenTheTypeIsNull()
         {
             Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(null, _method, _arguments));
         }
 
@@ -46,6 +49,7 @@ namespace Hangfire.Core.Tests.Common
         public void Ctor_ThrowsAnException_WhenTheMethodIsNull()
         {
             Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(_type, null, _arguments));
         }
 
@@ -60,6 +64,7 @@ namespace Hangfire.Core.Tests.Common
         public void Ctor_ShouldThrowAnException_WhenArgumentsArrayIsNull()
         {
             Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => new Job(_type, _method, null));
         }
 
@@ -112,6 +117,7 @@ namespace Hangfire.Core.Tests.Common
         public void FromStaticExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
             Assert.Throws<ArgumentException>(
+                // ReSharper disable once ObjectCreationAsStatement
                 () => Job.FromExpression(() => new JobFacts()));
         }
 
@@ -180,6 +186,7 @@ namespace Hangfire.Core.Tests.Common
         public void FromInstanceExpression_ThrowsAnException_WhenNewExpressionIsGiven()
         {
             Assert.Throws<ArgumentException>(
+                // ReSharper disable once ObjectCreationAsStatement
                 () => Job.FromExpression<JobFacts>(x => new JobFacts()));
         }
 
@@ -573,6 +580,7 @@ namespace Hangfire.Core.Tests.Common
 
         public async void AsyncVoidMethod()
         {
+            await Task.Yield();
         }
 
         [TestType]
@@ -620,6 +628,7 @@ namespace Hangfire.Core.Tests.Common
             }
         }
 
+        // ReSharper disable once UnusedTypeParameter
         public class JobClassWrapper<T> : IDisposable where T : IDisposable
         {
             public void Dispose()

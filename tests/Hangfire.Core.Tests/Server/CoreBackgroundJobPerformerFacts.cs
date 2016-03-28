@@ -108,7 +108,7 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
+            _context.BackgroundJob.Job = new Job(type, method, convertedDate);
             var performer = CreatePerformer();
 
             // Act
@@ -128,7 +128,7 @@ namespace Hangfire.Core.Tests.Server
             var type = typeof(CoreBackgroundJobPerformerFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
 
-            _context.BackgroundJob.Job = new Job(type, method, new[] { convertedDate });
+            _context.BackgroundJob.Job = new Job(type, method, convertedDate);
             var performer = CreatePerformer();
 
             // Act
@@ -199,7 +199,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var type = typeof(JobFacts);
             var method = type.GetMethod("MethodWithDateTimeArgument");
-            _context.BackgroundJob.Job = new Job(type, method, new object[] { "sdfa" });
+            _context.BackgroundJob.Job = new Job(type, method, "sdfa");
             var performer = CreatePerformer();
 
             var exception = Assert.Throws<JobPerformanceException>(

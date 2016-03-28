@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Logging;
 
+#pragma warning disable 618
+
 namespace Hangfire.Server
 {
     internal static class ServerProcessExtensions
@@ -28,7 +30,7 @@ namespace Hangfire.Server
         {
             if (!(process is IServerComponent || process is IBackgroundProcess))
             {
-                throw new ArgumentOutOfRangeException("process", "Long-running process must be of type IServerComponent or IBackgroundProcess.");
+                throw new ArgumentOutOfRangeException(nameof(process), "Long-running process must be of type IServerComponent or IBackgroundProcess.");
             }
 
             var backgroundProcess = process as IBackgroundProcess;
@@ -38,21 +40,18 @@ namespace Hangfire.Server
             }
             else
             {
-                var component = process as IServerComponent;
-                if (component != null)
-                {
-                    component.Execute(context.CancellationToken);
-                }
+                var component = (IServerComponent) process;
+                component.Execute(context.CancellationToken);
             }
         }
 
         public static Task CreateTask([NotNull] this IServerProcess process, BackgroundProcessContext context)
         {
-            if (process == null) throw new ArgumentNullException("process");
+            if (process == null) throw new ArgumentNullException(nameof(process));
 
             if (!(process is IServerComponent || process is IBackgroundProcess))
             {
-                throw new ArgumentOutOfRangeException("process", "Long-running process must be of type IServerComponent or IBackgroundProcess.");
+                throw new ArgumentOutOfRangeException(nameof(process), "Long-running process must be of type IServerComponent or IBackgroundProcess.");
             }
 
             return Task.Factory.StartNew(
@@ -62,7 +61,7 @@ namespace Hangfire.Server
 
         public static Type GetProcessType([NotNull] this IServerProcess process)
         {
-            if (process == null) throw new ArgumentNullException("process");
+            if (process == null) throw new ArgumentNullException(nameof(process));
 
             var nextProcess = process;
 
@@ -96,9 +95,7 @@ namespace Hangfire.Server
             catch (Exception ex)
             {
                 logger.FatalException(
-                    String.Format(
-                        "Fatal error occurred during execution of '{0}' process. It will be stopped. See the exception for details.",
-                        process),
+                    $"Fatal error occurred during execution of '{process}' process. It will be stopped. See the exception for details.",
                     ex);
             }
 

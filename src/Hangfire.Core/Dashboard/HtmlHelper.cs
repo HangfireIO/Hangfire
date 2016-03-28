@@ -33,13 +33,13 @@ namespace Hangfire.Dashboard
 
         public HtmlHelper([NotNull] RazorPage page)
         {
-            if (page == null) throw new ArgumentNullException("page");
+            if (page == null) throw new ArgumentNullException(nameof(page));
             _page = page;
         }
 
         public NonEscapedString Breadcrumbs(string title, [NotNull] IDictionary<string, string> items)
         {
-            if (items == null) throw new ArgumentNullException("items");
+            if (items == null) throw new ArgumentNullException(nameof(items));
             return RenderPartial(new Breadcrumbs(title, items));
         }
 
@@ -50,31 +50,31 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString SidebarMenu([NotNull] IEnumerable<Func<RazorPage, MenuItem>> items)
         {
-            if (items == null) throw new ArgumentNullException("items");
+            if (items == null) throw new ArgumentNullException(nameof(items));
             return RenderPartial(new SidebarMenu(items));
         }
 
         public NonEscapedString BlockMetric([NotNull] DashboardMetric metric)
         {
-            if (metric == null) throw new ArgumentNullException("metric");
+            if (metric == null) throw new ArgumentNullException(nameof(metric));
             return RenderPartial(new BlockMetric(metric));
         }
 
         public NonEscapedString InlineMetric([NotNull] DashboardMetric metric)
         {
-            if (metric == null) throw new ArgumentNullException("metric");
+            if (metric == null) throw new ArgumentNullException(nameof(metric));
             return RenderPartial(new InlineMetric(metric));
         }
 
         public NonEscapedString Paginator([NotNull] Pager pager)
         {
-            if (pager == null) throw new ArgumentNullException("pager");
+            if (pager == null) throw new ArgumentNullException(nameof(pager));
             return RenderPartial(new Paginator(pager));
         }
 
         public NonEscapedString PerPageSelector([NotNull] Pager pager)
         {
-            if (pager == null) throw new ArgumentNullException("pager");
+            if (pager == null) throw new ArgumentNullException(nameof(pager));
             return RenderPartial(new PerPageSelector(pager));
         }
 
@@ -106,15 +106,14 @@ namespace Hangfire.Dashboard
 
             var displayNameAttribute = Attribute.GetCustomAttribute(job.Method, typeof(DisplayNameAttribute), true) as DisplayNameAttribute;
 
-            if (displayNameAttribute == null || displayNameAttribute.DisplayName == null)
+            if (displayNameAttribute?.DisplayName == null)
             {
                 return job.ToString();
             }
 
             try
             {
-                var arguments = job.Arguments.Cast<object>().ToArray();
-                return String.Format(displayNameAttribute.DisplayName, arguments);
+                return String.Format(displayNameAttribute.DisplayName, job.Args.ToArray());
             }
             catch (FormatException)
             {
@@ -129,33 +128,22 @@ namespace Hangfire.Dashboard
                 return Raw("<em>" + Strings.Common_NoState + "</em>");
             }
 
-            return Raw(String.Format(
-                "<span class=\"label label-default\" style=\"background-color: {0};\">{1}</span>",
-                JobHistoryRenderer.GetForegroundStateColor(stateName),
-                stateName));
+            return Raw($"<span class=\"label label-default\" style=\"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};\">{stateName}</span>");
         }
 
         public NonEscapedString JobIdLink(string jobId)
         {
-            return Raw(String.Format("<a href=\"{0}\">{1}</a>", 
-                _page.Url.JobDetails(jobId), 
-                JobId(jobId)));
+            return Raw($"<a href=\"{_page.Url.JobDetails(jobId)}\">{JobId(jobId)}</a>");
         }
 
         public NonEscapedString JobNameLink(string jobId, Job job)
         {
-            return Raw(String.Format(
-                "<a class=\"job-method\" href=\"{0}\">{1}</a>",
-                _page.Url.JobDetails(jobId),
-                 HtmlEncode(JobName(job))));
+            return Raw($"<a class=\"job-method\" href=\"{_page.Url.JobDetails(jobId)}\">{HtmlEncode(JobName(job))}</a>");
         }
 
         public NonEscapedString RelativeTime(DateTime value)
         {
-            return Raw(String.Format(
-                "<span data-moment=\"{0}\">{1}</span>",
-                JobHelper.ToTimestamp(value),
-                value));
+            return Raw($"<span data-moment=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
         }
 
         public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
@@ -218,7 +206,7 @@ namespace Hangfire.Dashboard
 
         public string FormatProperties(IDictionary<string, string> properties)
         {
-            return @String.Join(", ", properties.Select(x => String.Format("{0}: \"{1}\"", x.Key, x.Value)));
+            return String.Join(", ", properties.Select(x => $"{x.Key}: \"{x.Value}\""));
         }
 
         public NonEscapedString QueueLabel(string queue)
@@ -236,7 +224,7 @@ namespace Hangfire.Dashboard
             return new NonEscapedString(label);
         }
 
-        static readonly StackTraceHtmlFragments StackTraceHtmlFragments = new StackTraceHtmlFragments
+        private static readonly StackTraceHtmlFragments StackTraceHtmlFragments = new StackTraceHtmlFragments
         {
             BeforeFrame         = "<span class='st-frame'>"                            , AfterFrame         = "</span>",
             BeforeType          = "<span class='st-type'>"                             , AfterType          = "</span>",

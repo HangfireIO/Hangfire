@@ -20,10 +20,10 @@ using Hangfire.Storage;
 
 namespace Hangfire.States
 {
+#pragma warning disable 618
     public class ApplyStateContext : StateContext
+#pragma warning restore 618
     {
-        private readonly BackgroundJob _backgroundJob;
-        
         internal ApplyStateContext(
             [NotNull] IWriteOnlyTransaction transaction, 
             [NotNull] ElectStateContext context)
@@ -39,13 +39,13 @@ namespace Hangfire.States
             [NotNull] IState newState, 
             [CanBeNull] string oldStateName)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
-            if (newState == null) throw new ArgumentNullException("newState");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
+            if (newState == null) throw new ArgumentNullException(nameof(newState));
             
-            _backgroundJob = backgroundJob;
+            BackgroundJob = backgroundJob;
 
             Storage = storage;
             Connection = connection;
@@ -65,7 +65,7 @@ namespace Hangfire.States
         public IWriteOnlyTransaction Transaction { get; private set; }
 
         [NotNull]
-        public override BackgroundJob BackgroundJob { get { return _backgroundJob; } }
+        public override BackgroundJob BackgroundJob { get; }
 
         [CanBeNull]
         public string OldStateName { get; private set; }

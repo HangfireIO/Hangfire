@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Server;
 using Moq;
 using Xunit;
+
+#pragma warning disable 618
 
 namespace Hangfire.Core.Tests.Server
 {
@@ -20,6 +21,7 @@ namespace Hangfire.Core.Tests.Server
         public void CreateTask_ThrowsAnException_WhenProcessIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
                 () => ServerProcessExtensions.CreateTask(null, _context.Object));
 
             Assert.Equal("process", exception.ParamName);
@@ -76,7 +78,9 @@ namespace Hangfire.Core.Tests.Server
         }
 
         private Mock<T> CreateProcess<T>()
+#pragma warning disable 618
             where T : class, IServerProcess
+#pragma warning restore 618
         {
             return new Mock<T>();
         }
