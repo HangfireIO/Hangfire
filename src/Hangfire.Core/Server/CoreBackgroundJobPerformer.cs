@@ -104,7 +104,7 @@ namespace Hangfire.Server
             {
                 throw new JobPerformanceException(
                     "An exception occurred during performance of the job.",
-                    ex);
+                    ex.InnerException);
             }
             catch (TargetInvocationException ex)
             {

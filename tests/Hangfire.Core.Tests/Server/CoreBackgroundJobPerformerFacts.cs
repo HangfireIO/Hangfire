@@ -248,8 +248,8 @@ namespace Hangfire.Core.Tests.Server
             var thrownException = Assert.Throws<JobPerformanceException>(
                 () => performer.Perform(_context.Object));
 
-            Assert.IsType<AggregateException>(thrownException.InnerException);
-            Assert.Equal("One or more errors occurred.", thrownException.InnerException.Message);
+            Assert.IsType<InvalidOperationException>(thrownException.InnerException);
+            Assert.Equal("exception", thrownException.InnerException.Message);
         }
 #pragma warning restore 4014
 
