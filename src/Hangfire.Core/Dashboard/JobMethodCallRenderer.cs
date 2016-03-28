@@ -90,9 +90,11 @@ namespace Hangfire.Dashboard
             {
                 var parameter = parameters[i];
 
+#pragma warning disable 618
                 if (i < job.Arguments.Length)
                 {
                     var argument = job.Arguments[i]; // TODO: check bounds
+#pragma warning restore 618
                     string renderedArgument;
 
                     var enumerableArgument = GetIEnumerableGenericArgument(parameter.ParameterType);
