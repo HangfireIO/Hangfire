@@ -101,15 +101,15 @@
 
             if (continuations.Count > 0)
             {
-                <h3>Continuations</h3>
+                <h3>@Strings.Common_Continuations</h3>
                 <table class="table">
                     <thead>
                     <tr>
-                        <th class="min-width">Id</th>
-                        <th class="min-width">Condition</th>
-                        <th class="min-width">State</th>
-                        <th>Job</th>
-                        <th class="align-right">Created</th>
+                        <th class="min-width">@Strings.Common_Id</th>
+                        <th class="min-width">@Strings.Common_Condition</th>
+                        <th class="min-width">@Strings.Common_State</th>
+                        <th>@Strings.Common_Job</th>
+                        <th class="align-right">@Strings.Common_Created</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -125,7 +125,7 @@
                         <tr>
                             @if (jobData == null)
                             {
-                                <td colspan="5"><em>Job "@continuation.JobId" has already expired.</em></td>
+                                <td colspan="5"><em>@String.Format(Strings.JobDetailsPage_JobExpired, continuation.JobId)</em></td>
                             }
                             else
                             {

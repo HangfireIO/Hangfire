@@ -124,6 +124,24 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Condition.
+        /// </summary>
+        public static string Common_Condition {
+            get {
+                return ResourceManager.GetString("Common_Condition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Continuations.
+        /// </summary>
+        public static string Common_Continuations {
+            get {
+                return ResourceManager.GetString("Common_Continuations", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Created.
         /// </summary>
         public static string Common_Created {

@@ -404,22 +404,73 @@ WriteLiteral("            </div>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                <h3>Continuations</h3>\r\n");
+WriteLiteral("                <h3>");
+
+
+            
+            #line 104 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+               Write(Strings.Common_Continuations);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</h3>\r\n");
 
 
 
-WriteLiteral(@"                <table class=""table"">
-                    <thead>
-                    <tr>
-                        <th class=""min-width"">Id</th>
-                        <th class=""min-width"">Condition</th>
-                        <th class=""min-width"">State</th>
-                        <th>Job</th>
-                        <th class=""align-right"">Created</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-");
+WriteLiteral("                <table class=\"table\">\r\n                    <thead>\r\n             " +
+"       <tr>\r\n                        <th class=\"min-width\">");
+
+
+            
+            #line 108 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                         Write(Strings.Common_Id);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                        <th class=\"min-width\">");
+
+
+            
+            #line 109 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                         Write(Strings.Common_Condition);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                        <th class=\"min-width\">");
+
+
+            
+            #line 110 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                         Write(Strings.Common_State);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                        <th>");
+
+
+            
+            #line 111 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                       Write(Strings.Common_Job);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                        <th class=\"align-right\">");
+
+
+            
+            #line 112 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                           Write(Strings.Common_Created);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</th>\r\n                    </tr>\r\n                    </thead>\r\n                 " +
+"   <tbody>\r\n");
 
 
             
@@ -448,17 +499,17 @@ WriteLiteral("                        <tr>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                <td colspan=\"5\"><em>Job \"");
+WriteLiteral("                                <td colspan=\"5\"><em>");
 
 
             
             #line 128 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                    Write(continuation.JobId);
+                                               Write(String.Format(Strings.JobDetailsPage_JobExpired, continuation.JobId));
 
             
             #line default
             #line hidden
-WriteLiteral("\" has already expired.</em></td>\r\n");
+WriteLiteral("</em></td>\r\n");
 
 
             

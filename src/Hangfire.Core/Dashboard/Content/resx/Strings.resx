@@ -502,4 +502,10 @@
   <data name="Metrics_TotalConnections" xml:space="preserve">
     <value>Total Connections</value>
   </data>
+  <data name="Common_Condition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="Common_Continuations" xml:space="preserve">
+    <value>Continuations</value>
+  </data>
 </root>
