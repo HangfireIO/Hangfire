@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Hangfire;
 
 namespace ConsoleSample
@@ -13,6 +14,12 @@ namespace ConsoleSample
 
         public void EmptyDefault()
         {
+        }
+
+        public async Task Async(CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            await Task.Delay(TimeSpan.FromDays(1), cancellationToken);
         }
 
         [Queue("critical")]

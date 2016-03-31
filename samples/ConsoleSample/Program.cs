@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 
@@ -48,6 +49,23 @@ namespace ConsoleSample
                             {
                                 var number = i;
                                 BackgroundJob.Enqueue<Services>(x => x.Random(number));
+                            }
+                            Console.WriteLine("Jobs enqueued.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+
+                    if (command.StartsWith("async", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var workCount = int.Parse(command.Substring(6));
+                            for (var i = 0; i < workCount; i++)
+                            {
+                                BackgroundJob.Enqueue<Services>(x => x.Async(CancellationToken.None));
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
