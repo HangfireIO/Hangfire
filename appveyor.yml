@@ -80,6 +80,7 @@ deploy:
       appveyor_repo_tag: true
 
   - provider: NuGet
+    skip_symbols: true
     api_key: 
       secure: 8BQmcR1hP9MoxvrmXJKMtlRyX6LI36H9ZTU8fSEetvzMGCl1PUlXKZRUGq+GVMja
     on:
