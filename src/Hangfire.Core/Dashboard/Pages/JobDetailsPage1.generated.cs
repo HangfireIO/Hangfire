@@ -587,12 +587,12 @@ WriteLiteral("</span>\r\n                        </h4>\r\n\r\n\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                            <p class=\"text-muted\">");
+WriteLiteral("                            <p class=\"state-card-text text-muted\">");
 
 
             
             #line 136 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                             Write(entry.Reason);
+                                                             Write(entry.Reason);
 
             
             #line default
@@ -607,104 +607,64 @@ WriteLiteral("</p>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("\r\n                        <div class=\"job-history-body\" style=\"");
+WriteLiteral("\r\n");
 
 
             
             #line 139 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                         Write(index == 0 ? $"background-color: {backgroundColor}" : null);
+                          
+                            var rendered = Html.RenderHistory(entry.StateName, entry.Data);
+                        
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n");
+WriteLiteral("\r\n");
 
 
             
-            #line 140 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                             if (JobHistoryRenderer.Exists(entry.StateName))
-                            {
-                                
-            
-            #line default
-            #line hidden
-            
-            #line 142 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                           Write(Html.RenderHistory(entry.StateName, entry.Data));
+            #line 143 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                         if (rendered != null)
+                        {
 
             
             #line default
             #line hidden
-            
-            #line 142 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                                                                
-                            }
-                            else
-                            {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                <dl class=\"dl-horizontal\">\r\n");
+WriteLiteral("                            <div class=\"job-history-body\" style=\"");
 
 
             
-            #line 147 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                     foreach (var item in entry.Data)
-                                    {
+            #line 145 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                                                             Write(index == 0 ? $"background-color: {backgroundColor}" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("                                        <dt>");
+WriteLiteral("\">\r\n                                ");
 
 
             
-            #line 149 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                       Write(item.Key);
+            #line 146 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                           Write(rendered);
 
             
             #line default
             #line hidden
-WriteLiteral(":</dt>\r\n");
+WriteLiteral("\r\n                            </div>\r\n");
 
 
+            
+            #line 148 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
+                        }
 
-WriteLiteral("                                        <dd>");
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </div>\r\n");
 
 
             
             #line 150 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                       Write(item.Value);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</dd>\r\n");
-
-
-            
-            #line 151 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                                    }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                </dl>\r\n");
-
-
-            
-            #line 153 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-                            }
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                        </div>\r\n                    </div>\r\n");
-
-
-            
-            #line 156 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
 
                     index++;
                 }

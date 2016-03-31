@@ -102,6 +102,14 @@ namespace Hangfire.Server
             }
             catch (AggregateException ex)
             {
+                if (ex.InnerException is OperationCanceledException)
+                {
+                    // `OperationCanceledException` and its descendants are used
+                    // to notify a worker that job performance was canceled,
+                    // so we should not wrap this exception and throw it as-is.
+                    throw ex.InnerException;
+                }
+
                 throw new JobPerformanceException(
                     "An exception occurred during performance of the job.",
                     ex.InnerException);

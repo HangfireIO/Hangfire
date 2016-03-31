@@ -133,25 +133,19 @@
 
                         @if (!String.IsNullOrWhiteSpace(entry.Reason))
                         {
-                            <p class="text-muted">@entry.Reason</p>
+                            <p class="state-card-text text-muted">@entry.Reason</p>
                         }
 
-                        <div class="job-history-body" style="@(index == 0 ? $"background-color: {backgroundColor}" : null)">
-                            @if (JobHistoryRenderer.Exists(entry.StateName))
-                            {
-                                @Html.RenderHistory(entry.StateName, entry.Data)
-                            }
-                            else
-                            {
-                                <dl class="dl-horizontal">
-                                    @foreach (var item in entry.Data)
-                                    {
-                                        <dt>@item.Key:</dt>
-                                        <dd>@item.Value</dd>
-                                    }
-                                </dl>
-                            }
-                        </div>
+                        @{
+                            var rendered = Html.RenderHistory(entry.StateName, entry.Data);
+                        }
+
+                        @if (rendered != null)
+                        {
+                            <div class="job-history-body" style="@(index == 0 ? $"background-color: {backgroundColor}" : null)">
+                                @rendered
+                            </div>
+                        }
                     </div>
 
                     index++;

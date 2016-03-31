@@ -112,12 +112,32 @@ namespace Hangfire.Dashboard
             this HtmlHelper helper,
             string state, IDictionary<string, string> properties)
         {
-            return Renderers[state](helper, properties);
+            var renderer = Renderers.ContainsKey(state)
+                ? Renderers[state]
+                : DefaultRenderer;
+
+            return renderer?.Invoke(helper, properties);
         }
 
         public static NonEscapedString NullRenderer(HtmlHelper helper, IDictionary<string, string> properties)
         {
             return null;
+        }
+
+        public static NonEscapedString DefaultRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
+        {
+            var builder = new StringBuilder();
+            builder.Append("<dl class=\"dl-horizontal\">");
+
+            foreach (var item in stateData)
+            {
+                builder.Append($"<dt>{item.Key}</dt>");
+                builder.Append($"<dd>{item.Value}</dd>");
+            }
+
+            builder.Append("</dl>");
+
+            return new NonEscapedString(builder.ToString());
         }
 
         public static NonEscapedString SucceededRenderer(HtmlHelper html, IDictionary<string, string> stateData)
