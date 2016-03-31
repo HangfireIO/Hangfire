@@ -170,7 +170,7 @@ namespace Hangfire.Dashboard
                 }
 
                 builder.AppendFormat(
-                    "<span title=\"{0}:\" data-placement=\"{1}\">",
+                    "<span title=\"{0}\" data-placement=\"{1}\">",
                     parameter.Name,
                     tooltipPosition);
 
