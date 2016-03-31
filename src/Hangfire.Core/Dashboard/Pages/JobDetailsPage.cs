@@ -8,5 +8,11 @@
         }
 
         public string JobId { get; private set; }
+
+        private struct Continuation
+        {
+            public string JobId { get; set; }
+            public JobContinuationOptions Options { get; set; }
+        }
     }
 }

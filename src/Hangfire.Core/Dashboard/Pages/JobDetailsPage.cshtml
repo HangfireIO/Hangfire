@@ -1,26 +1,29 @@
 ﻿@* Generator: Template TypeVisibility: Internal GeneratePrettyNames: True *@
 @using System
+@using System.Collections.Generic
 @using System.Linq
+@using Hangfire
 @using Hangfire.Common
 @using Hangfire.Dashboard
 @using Hangfire.Dashboard.Pages
 @using Hangfire.Dashboard.Resources
 @using Hangfire.States
+@using Hangfire.Storage
 @inherits RazorPage
 @{
-    var monitor = Storage.GetMonitoringApi();
-    var job = monitor.JobDetails(JobId.ToString());
+        var monitor = Storage.GetMonitoringApi();
+        var job = monitor.JobDetails(JobId);
 
-    string title = null;
+        string title = null;
 
-    if (job != null)
-    {
-        title = job.Job != null ? Html.JobName(job.Job) : null;
+        if (job != null)
+        {
+            title = job.Job != null ? Html.JobName(job.Job) : null;
+        }
+
+        title = title ?? Strings.Common_Job;
+        Layout = new LayoutPage(title);
     }
-
-    title = title ?? Strings.Common_Job;
-    Layout = new LayoutPage(title);
-}
 
 <div class="row">
     <div class="col-md-3">
@@ -35,6 +38,31 @@
         }
         else
         {
+            var currentState = job.History.Count > 0 ? job.History[0] : null;
+            if (currentState != null && currentState.StateName == ProcessingState.StateName)
+            {
+                var server = monitor.Servers().FirstOrDefault(x => x.Name == currentState.Data["ServerId"]);
+                if (server == null)
+                {
+                    <div class="alert alert-danger">
+                        @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers")))
+                    </div>
+                }
+                else if (server.Heartbeat.HasValue && server.Heartbeat < DateTime.UtcNow.AddMinutes(-1))
+                {
+                    <div class="alert alert-warning">
+                        @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name))
+                    </div>
+                }
+            }
+
+            if (job.ExpireAt.HasValue)
+            {
+                <div class="alert alert-info">
+                    @Html.Raw(String.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt))
+                </div>
+            }
+
             <div class="job-snippet">
                 <div class="job-snippet-code">
                     @if (job.CreatedAt.HasValue)
@@ -53,7 +81,7 @@
                 {
                     <div class="job-snippet-properties">
                         <dl>
-                            @foreach (var property in job.Properties)
+                            @foreach (var property in job.Properties.Where(x => x.Key != "Continuations"))
                             {
                                 <dt>@property.Key</dt>
                                 <dd><pre><code>@property.Value</code></pre></dd>
@@ -62,6 +90,66 @@
                     </div>
                 }
             </div>
+
+            List<Continuation> continuations;
+
+            using (var connection = Storage.GetConnection())
+            {
+                continuations = JobHelper.FromJson<List<Continuation>>(connection.GetJobParameter(
+                    JobId, "Continuations")) ?? new List<Continuation>();
+            }
+
+            if (continuations.Count > 0)
+            {
+                <h3>Continuations</h3>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th class="min-width">Id</th>
+                        <th class="min-width">Condition</th>
+                        <th class="min-width">State</th>
+                        <th>Job</th>
+                        <th class="align-right">Created</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var continuation in continuations)
+                    {
+                        JobData jobData;
+
+                        using (var connection = Storage.GetConnection())
+                        {
+                            jobData = connection.GetJobData(continuation.JobId);
+                        }
+
+                        <tr>
+                            @if (jobData == null)
+                            {
+                                <td colspan="5"><em>Job "@continuation.JobId" has already expired.</em></td>
+                            }
+                            else
+                            {
+                                <td class="min-width">
+                                    @Html.JobIdLink(continuation.JobId)
+                                </td>
+                                <td class="min-width">
+                                    <code>@continuation.Options.ToString("G")</code>
+                                </td>
+                                <td class="min-width">
+                                    @Html.StateLabel(jobData.State)
+                                </td>
+                                <td>
+                                    @Html.JobNameLink(continuation.JobId, jobData.Job)
+                                </td>
+                                <td class="align-right">
+                                    @Html.RelativeTime(jobData.CreatedAt)
+                                </td>
+                            }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
 
             if (job.History.Count > 0)
             {
@@ -73,31 +161,6 @@
 
                     @Strings.JobDetailsPage_State
                 </h3>
-
-                var currentState = job.History.Count > 0 ? job.History[0] : null;
-                if (currentState != null && currentState.StateName == ProcessingState.StateName)
-                {
-                    var server = monitor.Servers().FirstOrDefault(x => x.Name == currentState.Data["ServerId"]);
-                    if (server == null)
-                    {
-                        <div class="alert alert-danger">
-                            @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedNotActive_Warning_Html, currentState.Data["ServerId"], Url.To("/servers")))
-                        </div>
-                    }
-                    else if (server.Heartbeat.HasValue && server.Heartbeat < DateTime.UtcNow.AddMinutes(-1))
-                    {
-                        <div class="alert alert-warning">
-                            @Html.Raw(String.Format(Strings.JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html, server.Name))
-                        </div>
-                    }
-                }
-
-                if (job.ExpireAt.HasValue)
-                {
-                    <div class="alert alert-info">
-                        @Html.Raw(String.Format(Strings.JobDetailsPage_JobFinished_Warning_Html, JobHelper.ToTimestamp(job.ExpireAt.Value), job.ExpireAt))
-                    </div>
-                }
 
                 var index = 0;
 
