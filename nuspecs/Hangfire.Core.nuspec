@@ -14,6 +14,17 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.0-beta1
+* Added – Ability to create jobs based on `async` methods, they are awaited by a worker.
+* Added – Multilanguage support in Dashboard via resource files.
+* Added – Show background job continuations on Job Details page.
+* Added – Access to background job context from the `JobActivator.BeginScope` method.
+* Changed – Job Details page was redesigned to be more clean with less colors.
+* Changed – Update jQuery to 2.1.4 and rickshaw.js to 1.5.1.
+* Changed – Update NCrontab to 3.1.0.
+* Changed – Update CronExpressionDescriptor to 1.17.
+* Fixed – ToGenericTypeString method now supports nested classes.
+    
 1.5.4
 * Changed – C# 6.0 is now required to compile the solution.
 * Fixed – Recurring jobs failing after moving clock forward for daylight saving time.
