@@ -495,15 +495,6 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to History.
-        /// </summary>
-        public static string JobDetailsPage_History {
-            get {
-                return ResourceManager.GetString("JobDetailsPage_History", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
         ///                        &lt;code&gt;{0}&lt;/code&gt; which is not in the 
         ///                        &lt;a href=&quot;{1}&quot;&gt;active servers&lt;/a&gt; list for now.
@@ -562,6 +553,15 @@ namespace Hangfire.Dashboard.Resources {
         public static string JobDetailsPage_Requeue {
             get {
                 return ResourceManager.GetString("JobDetailsPage_Requeue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State.
+        /// </summary>
+        public static string JobDetailsPage_State {
+            get {
+                return ResourceManager.GetString("JobDetailsPage_State", resourceCulture);
             }
         }
         

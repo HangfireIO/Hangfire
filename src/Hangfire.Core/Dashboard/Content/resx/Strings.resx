@@ -254,8 +254,8 @@
   <data name="JobDetailsPage_DeleteConfirm" xml:space="preserve">
     <value>Do you really want to delete this job?</value>
   </data>
-  <data name="JobDetailsPage_History" xml:space="preserve">
-    <value>History</value>
+  <data name="JobDetailsPage_State" xml:space="preserve">
+    <value>State</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;The job was aborted&lt;/strong&gt; – it is processed by server
