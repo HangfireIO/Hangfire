@@ -164,7 +164,7 @@ namespace Hangfire.Dashboard
         {
             var stackTrace = html.StackTrace(stateData["ExceptionDetails"]).ToString();
             return new NonEscapedString(String.Format(
-                "<h4 class=\"exception-type\">{0}</h4><p>{1}</p>{2}",
+                "<h4 class=\"exception-type\">{0}</h4><p class=\"text-muted\">{1}</p>{2}",
                 stateData["ExceptionType"],
                 stateData["ExceptionMessage"],
                 stackTrace != null ? "<pre class=\"stack-trace\">" + stackTrace + "</pre>" : null));

@@ -302,10 +302,9 @@ WriteLiteral("\r\n                                </em>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("                                <table class=\"table table-condensed table-bordere" +
-"d table-inner\">\r\n                                    <thead>\r\n                  " +
-"                  <tr>\r\n                                        <th class=\"min-w" +
-"idth\">");
+WriteLiteral("                                <table class=\"table table-condensed table-inner\">" +
+"\r\n                                    <thead>\r\n                                 " +
+"   <tr>\r\n                                        <th class=\"min-width\">");
 
 
             

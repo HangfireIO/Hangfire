@@ -518,8 +518,8 @@ WriteLiteral("\">\r\n                                        <h4>");
             
             #line default
             #line hidden
-WriteLiteral("</h4>\r\n                                        <p>\r\n                             " +
-"               ");
+WriteLiteral("</h4>\r\n                                        <p class=\"text-muted\">\r\n          " +
+"                                  ");
 
 
             
