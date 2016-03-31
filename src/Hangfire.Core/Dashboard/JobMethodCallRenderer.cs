@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using Hangfire.Common;
@@ -41,9 +42,11 @@ namespace Hangfire.Dashboard
             builder.AppendLine();
             builder.AppendLine();
 
+            string serviceName = null;
+
             if (!job.Method.IsStatic)
             {
-                var serviceName = GetNameWithoutGenericArity(job.Type);
+                serviceName = GetNameWithoutGenericArity(job.Type);
 
                 if (job.Type.GetTypeInfo().IsInterface && serviceName[0] == 'I' && Char.IsUpper(serviceName[1]))
                 {
@@ -52,20 +55,21 @@ namespace Hangfire.Dashboard
 
                 serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
 
-                builder.Append(WrapType(job.Type.ToGenericTypeString()));
+                builder.Append(WrapKeyword("var"));
                 builder.AppendFormat(
                     " {0} = Activate&lt;{1}&gt;();",
                     Encode(serviceName),
                     WrapType(Encode(job.Type.ToGenericTypeString())));
 
                 builder.AppendLine();
-
-                builder.Append(Encode(serviceName));
             }
-            else
+            
+            if (job.Method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
             {
-                builder.Append(WrapType(Encode(job.Type.ToGenericTypeString())));
+                builder.Append($"{WrapKeyword("await")} ");
             }
+
+            builder.Append(!job.Method.IsStatic ? Encode(serviceName) : WrapType(Encode(job.Type.ToGenericTypeString())));
 
             builder.Append(".");
             builder.Append(Encode(job.Method.Name));
