@@ -259,7 +259,17 @@ WriteLiteral("</li>\r\n                    <li>");
             #line hidden
 WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </div>\r\n        \r\n     " +
 "   <script>\r\n            (function (hangFire) {\r\n                hangFire.config" +
-" = {\r\n                    pollInterval: 2000,\r\n                    pollUrl: \'");
+" = {\r\n                    pollInterval: ");
+
+
+            
+            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                             Write(StatsPollingInterval);
+
+            
+            #line default
+            #line hidden
+WriteLiteral(",\r\n                    pollUrl: \'");
 
 
             
