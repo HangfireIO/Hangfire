@@ -29,7 +29,7 @@ namespace Hangfire
     /// Represents a recurring job manager that allows to create, update
     /// or delete recurring jobs.
     /// </summary>
-    public class RecurringJobManager
+    public class RecurringJobManager : IRecurringJobManager
     {
         private readonly JobStorage _storage;
         private readonly IBackgroundJobFactory _factory;
@@ -59,6 +59,17 @@ namespace Hangfire
             [NotNull] string cronExpression)
         {
             AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
+        }
+
+        public void AddOrUpdate(
+            [NotNull] string recurringJobId, 
+            [NotNull] Job job, 
+            [NotNull] string cronExpression, 
+            [NotNull] RecurringJobOptions options)
+        {
+            if (options == null) throw new ArgumentException("options");
+            
+            AddOrUpdate(recurringJobId, job, cronExpression, options.TimeZone, options.QueueName);
         }
 
         public void AddOrUpdate(

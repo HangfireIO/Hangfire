@@ -83,6 +83,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <Compile Include="JobActivatorContext.cs" />
+    <Compile Include="IRecurringJobManager.cs" />
     <Compile Include="Obsolete\Job.Obsolete.cs" />
     <Compile Include="Common\TypeExtensions.cs" />
     <Compile Include="Dashboard\OwinRequestExtensions.cs" />
@@ -93,6 +94,7 @@
     </Compile>
     <Compile Include="JobActivatorScope.cs" />
     <Compile Include="Properties\NamespaceDoc.cs" />
+    <Compile Include="RecurringJobOptions.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
