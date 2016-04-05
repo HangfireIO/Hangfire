@@ -72,7 +72,7 @@
         <script>
             (function (hangFire) {
                 hangFire.config = {
-                    pollInterval: 2000,
+                    pollInterval: @StatsPollingInterval,
                     pollUrl: '@(Url.To("/stats"))',
                     locale: '@Thread.CurrentThread.CurrentUICulture'
                 };
