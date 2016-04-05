@@ -216,6 +216,42 @@ namespace Hangfire
         }
 
         /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; minutes.
+        /// </summary>
+        /// <param name="interval">The number of minutes to wait between every activation.</param>
+        public static string MinuteInterval(int interval)
+        {
+            return String.Format("*/{0} * * * *", interval);
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; hours.
+        /// </summary>
+        /// <param name="interval">The number of hours to wait between every activation.</param>
+        public static string HourInterval(int interval)
+        {
+            return String.Format("* */{0} * * *", interval);
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; days.
+        /// </summary>
+        /// <param name="interval">The number of days to wait between every activation.</param>
+        public static string DayInterval(int interval)
+        {
+            return String.Format("* * */{0} * *", interval);
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; months.
+        /// </summary>
+        /// <param name="interval">The number of months to wait between every activation.</param>
+        public static string MonthInterval(int interval)
+        {
+            return String.Format("* * * */{0} *", interval);
+        }
+
+        /// <summary>
         /// Converts a Cron expression string into a description.
         /// </summary>
         /// <param name="cronExpression">A Cron expression string.</param>
@@ -230,7 +266,7 @@ namespace Hangfire
                 throw new InvalidCastException("Invalid Cron Expression");
             }
 
-            foreach(string expressionPart in expressionParts)
+            foreach (string expressionPart in expressionParts)
             {
                 int num;
                 if (!Int32.TryParse(expressionPart, out num) && expressionPart != "*")
@@ -238,7 +274,7 @@ namespace Hangfire
                     throw new InvalidCastException("Invalid Cron Expression");
                 }
             }
-            
+
             return ExpressionDescriptor.GetDescription(cronExpression);
         }
     }
