@@ -15,19 +15,44 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Hangfire.Annotations;
 using Hangfire.States;
 
 namespace Hangfire
 {
     public class RecurringJobOptions
     {
+        private TimeZoneInfo _timeZone;
+        private string _queueName;
+
         public RecurringJobOptions()
         {
             TimeZone = TimeZoneInfo.Utc;
             QueueName = EnqueuedState.DefaultQueue;
         }
 
-        public TimeZoneInfo TimeZone { get; set; }
-        public string QueueName { get; set; }
+        [NotNull]
+        public TimeZoneInfo TimeZone
+        {
+            get { return _timeZone; }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+
+                _timeZone = value;
+            }
+        }
+
+        [NotNull]
+        public string QueueName
+        {
+            get { return _queueName; }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+
+                _queueName = value;
+            }
+        }
     }
 }

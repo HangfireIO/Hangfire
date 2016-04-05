@@ -46,52 +46,19 @@ namespace Hangfire
 
         public RecurringJobManager([NotNull] JobStorage storage, [NotNull] IBackgroundJobFactory factory)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (factory == null) throw new ArgumentNullException("factory");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (factory == null) throw new ArgumentNullException(nameof(factory));
 
             _storage = storage;
             _factory = factory;
         }
 
-        public void AddOrUpdate(
-            [NotNull] string recurringJobId,
-            [NotNull] Job job,
-            [NotNull] string cronExpression)
+        public void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options)
         {
-            AddOrUpdate(recurringJobId, job, cronExpression, TimeZoneInfo.Utc);
-        }
-
-        public void AddOrUpdate(
-            [NotNull] string recurringJobId, 
-            [NotNull] Job job, 
-            [NotNull] string cronExpression, 
-            [NotNull] RecurringJobOptions options)
-        {
-            if (options == null) throw new ArgumentException("options");
-            
-            AddOrUpdate(recurringJobId, job, cronExpression, options.TimeZone, options.QueueName);
-        }
-
-        public void AddOrUpdate(
-            [NotNull] string recurringJobId,
-            [NotNull] Job job,
-            [NotNull] string cronExpression,
-            [NotNull] TimeZoneInfo timeZone)
-        {
-            AddOrUpdate(recurringJobId, job, cronExpression, timeZone, EnqueuedState.DefaultQueue);
-        }
-
-        public void AddOrUpdate(
-            [NotNull] string recurringJobId,
-            [NotNull] Job job,
-            [NotNull] string cronExpression,
-            [NotNull] TimeZoneInfo timeZone,
-            [NotNull] string queue)
-        {
-            if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
-            if (job == null) throw new ArgumentNullException("job");
-            if (cronExpression == null) throw new ArgumentNullException("cronExpression");
-            if (timeZone == null) throw new ArgumentNullException("timeZone");
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
+            if (job == null) throw new ArgumentNullException(nameof(job));
+            if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
+            if (options == null) throw new ArgumentNullException(nameof(options));
 
             ValidateCronExpression(cronExpression);
 
@@ -102,13 +69,13 @@ namespace Hangfire
 
                 recurringJob["Job"] = JobHelper.ToJson(invocationData);
                 recurringJob["Cron"] = cronExpression;
-                recurringJob["TimeZoneId"] = timeZone.Id;
-                recurringJob["Queue"] = queue;
+                recurringJob["TimeZoneId"] = options.TimeZone.Id;
+                recurringJob["Queue"] = options.QueueName;
 
                 using (var transaction = connection.CreateWriteTransaction())
                 {
                     transaction.SetRangeInHash(
-                        String.Format("recurring-job:{0}", recurringJobId),
+                        $"recurring-job:{recurringJobId}",
                         recurringJob);
 
                     transaction.AddToSet("recurring-jobs", recurringJobId);
@@ -118,13 +85,13 @@ namespace Hangfire
             }
         }
 
-        public void Trigger([NotNull] string recurringJobId)
+        public void Trigger(string recurringJobId)
         {
-            if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
             using (var connection = _storage.GetConnection())
             {
-                var hash = connection.GetAllEntriesFromHash(String.Format("recurring-job:{0}", recurringJobId));
+                var hash = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
                 if (hash == null)
                 {
                     return;
@@ -142,14 +109,14 @@ namespace Hangfire
             }
         }
 
-        public void RemoveIfExists([NotNull] string recurringJobId)
+        public void RemoveIfExists(string recurringJobId)
         {
-            if (recurringJobId == null) throw new ArgumentNullException("recurringJobId");
+            if (recurringJobId == null) throw new ArgumentNullException(nameof(recurringJobId));
 
             using (var connection = _storage.GetConnection())
             using (var transaction = connection.CreateWriteTransaction())
             {
-                transaction.RemoveHash(String.Format("recurring-job:{0}", recurringJobId));
+                transaction.RemoveHash($"recurring-job:{recurringJobId}");
                 transaction.RemoveFromSet("recurring-jobs", recurringJobId);
 
                 transaction.Commit();
@@ -165,7 +132,7 @@ namespace Hangfire
             }
             catch (Exception ex)
             {
-                throw new ArgumentException("CRON expression is invalid. Please see the inner exception for details.", "cronExpression", ex);
+                throw new ArgumentException("CRON expression is invalid. Please see the inner exception for details.", nameof(cronExpression), ex);
             }
         }
     }

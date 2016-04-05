@@ -14,14 +14,20 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
+using Hangfire.Annotations;
 using Hangfire.Common;
 
 namespace Hangfire
 {
     public interface IRecurringJobManager
     {
-        void AddOrUpdate(string recurringJobId, Job job, string cronExpression, RecurringJobOptions options);
-        void Trigger(string recurringJobId);
-        void RemoveIfExists(string recurringJobId);
+        void AddOrUpdate(
+            [NotNull] string recurringJobId, 
+            [NotNull] Job job, 
+            [NotNull] string cronExpression, 
+            [NotNull] RecurringJobOptions options);
+
+        void Trigger([NotNull] string recurringJobId);
+        void RemoveIfExists([NotNull] string recurringJobId);
     }
 }
