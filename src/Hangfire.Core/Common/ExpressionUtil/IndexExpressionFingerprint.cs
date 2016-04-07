@@ -32,8 +32,8 @@ namespace Hangfire.Common.ExpressionUtil
         {
             IndexExpressionFingerprint other = obj as IndexExpressionFingerprint;
             return (other != null)
-                   && Equals(this.Indexer, other.Indexer)
-                   && this.Equals(other);
+                   && Equals(Indexer, other.Indexer)
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

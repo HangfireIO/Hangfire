@@ -28,8 +28,8 @@ namespace Hangfire.Common.ExpressionUtil
         {
             ParameterExpressionFingerprint other = obj as ParameterExpressionFingerprint;
             return (other != null)
-                   && (this.ParameterIndex == other.ParameterIndex)
-                   && this.Equals(other);
+                   && (ParameterIndex == other.ParameterIndex)
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

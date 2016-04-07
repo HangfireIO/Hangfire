@@ -1441,7 +1441,7 @@ namespace Hangfire.Logging.LogProviders
 
             protected void Write(LogLevel logLevel, string message, Exception e = null)
             {
-                var formattedMessage = MessageFormatter(this._name, logLevel, message, e);
+                var formattedMessage = MessageFormatter(_name, logLevel, message, e);
                 ConsoleColor color;
 
                 if (Colors.TryGetValue(logLevel, out color))

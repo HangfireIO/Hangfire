@@ -53,7 +53,7 @@ namespace Hangfire.Dashboard
         {
             if (page < 1 || page > TotalPageCount) return "#";
 
-            return BasePageUrl + "?from=" + ((page - 1) * RecordsPerPage) + "&count=" + RecordsPerPage;
+            return BasePageUrl + "?from=" + (page - 1) * RecordsPerPage + "&count=" + RecordsPerPage;
         }
 
         public string RecordsPerPageUrl(int perPage)
@@ -65,7 +65,7 @@ namespace Hangfire.Dashboard
         private ICollection<Item> GenerateItems()
         {
             // start page index
-            _startPageIndex = CurrentPage - (PageItemsCount / 2);
+            _startPageIndex = CurrentPage - PageItemsCount / 2;
             if (_startPageIndex + PageItemsCount > TotalPageCount)
                 _startPageIndex = TotalPageCount + 1 - PageItemsCount;
             if (_startPageIndex < 1)

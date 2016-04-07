@@ -39,7 +39,7 @@ namespace Hangfire.Core.Tests.Client
                 _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
             
             _innerFactory = new Mock<IBackgroundJobFactory>();
-            _innerFactory.Setup(x => x.Create((_context.Object))).Returns(_backgroundJob.Object);
+            _innerFactory.Setup(x => x.Create(_context.Object)).Returns(_backgroundJob.Object);
         }
 
         [Fact]

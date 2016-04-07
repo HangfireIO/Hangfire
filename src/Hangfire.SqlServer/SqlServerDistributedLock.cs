@@ -52,7 +52,7 @@ namespace Hangfire.SqlServer
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException(nameof(resource));
-            if ((timeout.TotalSeconds + CommandTimeoutAdditionSeconds) > Int32.MaxValue) throw new ArgumentException(
+            if (timeout.TotalSeconds + CommandTimeoutAdditionSeconds > Int32.MaxValue) throw new ArgumentException(
                 $"The timeout specified is too large. Please supply a timeout equal to or less than {Int32.MaxValue - CommandTimeoutAdditionSeconds} seconds", nameof(timeout));
 
             _storage = storage;

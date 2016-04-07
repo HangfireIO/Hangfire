@@ -33,8 +33,8 @@ namespace Hangfire.Common.ExpressionUtil
         protected bool Equals(ExpressionFingerprint other)
         {
             return (other != null)
-                   && (this.NodeType == other.NodeType)
-                   && Equals(this.Type, other.Type);
+                   && (NodeType == other.NodeType)
+                   && Type == other.Type;
         }
 
         public override bool Equals(object obj)

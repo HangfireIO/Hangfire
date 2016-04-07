@@ -32,8 +32,8 @@ namespace Hangfire.Common.ExpressionUtil
         {
             UnaryExpressionFingerprint other = obj as UnaryExpressionFingerprint;
             return (other != null)
-                   && Equals(this.Method, other.Method)
-                   && this.Equals(other);
+                   && Equals(Method, other.Method)
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

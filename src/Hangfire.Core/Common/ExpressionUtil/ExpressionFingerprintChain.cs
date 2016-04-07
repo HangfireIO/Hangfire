@@ -54,14 +54,14 @@ namespace Hangfire.Common.ExpressionUtil
             // Two chains are considered equal if two elements appearing in the same index in
             // each chain are equal (value equality, not referential equality).
 
-            if (this.Elements.Count != other?.Elements.Count)
+            if (Elements.Count != other?.Elements.Count)
             {
                 return false;
             }
 
-            for (int i = 0; i < this.Elements.Count; i++)
+            for (int i = 0; i < Elements.Count; i++)
             {
-                if (!Equals(this.Elements[i], other.Elements[i]))
+                if (!Equals(Elements[i], other.Elements[i]))
                 {
                     return false;
                 }

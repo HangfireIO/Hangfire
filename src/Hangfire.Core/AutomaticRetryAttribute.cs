@@ -249,7 +249,7 @@ namespace Hangfire
         {
             var random = new Random();
             return (int)Math.Round(
-                Math.Pow(retryCount - 1, 4) + 15 + (random.Next(30) * (retryCount)));
+                Math.Pow(retryCount - 1, 4) + 15 + random.Next(30) * retryCount);
         }
     }
 }

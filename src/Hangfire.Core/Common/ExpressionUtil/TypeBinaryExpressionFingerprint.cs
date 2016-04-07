@@ -28,8 +28,8 @@ namespace Hangfire.Common.ExpressionUtil
         {
             TypeBinaryExpressionFingerprint other = obj as TypeBinaryExpressionFingerprint;
             return (other != null)
-                   && Equals(this.TypeOperand, other.TypeOperand)
-                   && this.Equals(other);
+                   && TypeOperand == other.TypeOperand
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
