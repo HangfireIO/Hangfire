@@ -22,7 +22,7 @@ namespace Hangfire
     /// <summary>
     /// Helper class that provides common values for the cron expressions.
     /// </summary>
-    public class Cron
+    public static class Cron
     {
         /// <summary>
         /// Returns cron expression that fires every minute.
