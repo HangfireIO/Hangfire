@@ -23,11 +23,10 @@ namespace Hangfire.Common
     {
         static JobFilterProviders()
         {
-            Providers = new JobFilterProviderCollection
-            {
-                GlobalJobFilters.Filters,
-                new JobFilterAttributeFilterProvider()
-            };
+            // ReSharper disable once UseObjectOrCollectionInitializer
+            Providers = new JobFilterProviderCollection();
+            Providers.Add(GlobalJobFilters.Filters);
+            Providers.Add(new JobFilterAttributeFilterProvider());
         }
 
         /// <summary>
