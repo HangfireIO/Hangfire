@@ -28,6 +28,6 @@ namespace Hangfire.Dashboard.Pages
             Items = items;
         }
 
-        public IEnumerable<Func<RazorPage, MenuItem>> Items { get; private set; }
+        public IEnumerable<Func<RazorPage, MenuItem>> Items { get; }
     }
 }

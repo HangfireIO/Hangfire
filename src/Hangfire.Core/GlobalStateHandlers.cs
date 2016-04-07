@@ -31,6 +31,6 @@ namespace Hangfire
             Handlers.Add(new AwaitingState.Handler());
         }
 
-        public static ICollection<IStateHandler> Handlers { get; private set; }
+        public static ICollection<IStateHandler> Handlers { get; }
     }
 }

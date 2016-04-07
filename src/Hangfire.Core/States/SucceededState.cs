@@ -61,23 +61,23 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime SucceededAt { get; private set; }
+        public DateTime SucceededAt { get; }
 
         /// <summary>
         /// Gets the value returned by a job method.
         /// </summary>
-        public object Result { get; private set; }
+        public object Result { get; }
         
         /// <summary>
         /// Gets the total number of milliseconds passed from a job
         /// creation time till the start of the performance.
         /// </summary>
-        public long Latency { get; private set; }
+        public long Latency { get; }
 
         /// <summary>
         /// Gets the total milliseconds elapsed from a processing start.
         /// </summary>
-        public long PerformanceDuration { get; private set; }
+        public long PerformanceDuration { get; }
 
         /// <inheritdoc />
         /// <remarks>

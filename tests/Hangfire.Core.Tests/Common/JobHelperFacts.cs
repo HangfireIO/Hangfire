@@ -225,7 +225,7 @@ namespace Hangfire.Core.Tests.Common
                 PropertyA = propertyA;
             }
 
-            public string PropertyA { get; private set; }
+            public string PropertyA { get; }
         }
 
         private class BackgroundJob

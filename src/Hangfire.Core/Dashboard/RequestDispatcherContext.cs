@@ -41,10 +41,10 @@ namespace Hangfire.Dashboard
             UriMatch = uriMatch;
         }
 
-        public string AppPath { get; private set; }
-        public int StatsPollingInterval { get; private set; }
-        public JobStorage JobStorage { get; private set; }
-        public IDictionary<string, object> OwinEnvironment { get; private set; } 
-        public Match UriMatch { get; private set; }
+        public string AppPath { get; }
+        public int StatsPollingInterval { get; }
+        public JobStorage JobStorage { get; }
+        public IDictionary<string, object> OwinEnvironment { get; } 
+        public Match UriMatch { get; }
     }
 }

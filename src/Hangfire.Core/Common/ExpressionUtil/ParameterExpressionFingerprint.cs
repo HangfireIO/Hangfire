@@ -22,7 +22,7 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // Parameter position within the overall expression, used to maintain alpha equivalence.
-        public int ParameterIndex { get; private set; }
+        public int ParameterIndex { get; }
 
         public override bool Equals(object obj)
         {

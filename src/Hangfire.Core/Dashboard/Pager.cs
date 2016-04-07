@@ -40,14 +40,14 @@ namespace Hangfire.Dashboard
 
         public string BasePageUrl { get; set; }
 
-        public int FromRecord { get; private set; }
-        public int RecordsPerPage { get; private set; }
-        public int CurrentPage { get; private set; }
+        public int FromRecord { get; }
+        public int RecordsPerPage { get; }
+        public int CurrentPage { get; }
 
-        public int TotalPageCount { get; private set; }
-        public long TotalRecordCount { get; private set; }
+        public int TotalPageCount { get; }
+        public long TotalRecordCount { get; }
 
-        internal ICollection<Item> PagerItems { get; private set; }
+        internal ICollection<Item> PagerItems { get; }
 
         public string PageUrl(int page)
         {
@@ -156,9 +156,9 @@ namespace Hangfire.Dashboard
                 Type = type;
             }
 
-            public int PageIndex { get; private set; }
-            public bool Disabled { get; private set; }
-            public ItemType Type { get; private set; }
+            public int PageIndex { get; }
+            public bool Disabled { get; }
+            public ItemType Type { get; }
         }
 
         internal enum ItemType

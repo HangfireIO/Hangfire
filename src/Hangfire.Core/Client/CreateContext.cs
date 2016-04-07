@@ -55,10 +55,10 @@ namespace Hangfire.Client
         }
 
         [NotNull]
-        public JobStorage Storage { get; private set; }
+        public JobStorage Storage { get; }
 
         [NotNull]
-        public IStorageConnection Connection { get; private set; }
+        public IStorageConnection Connection { get; }
 
         /// <summary>
         /// Gets an instance of the key-value storage. You can use it
@@ -66,13 +66,13 @@ namespace Hangfire.Client
         /// or just between different methods.
         /// </summary>
         [NotNull]
-        public IDictionary<string, object> Items { get; private set; }
+        public IDictionary<string, object> Items { get; }
 
         [NotNull]
-        public virtual IDictionary<string, object> Parameters { get; private set; }
+        public virtual IDictionary<string, object> Parameters { get; }
             
         [NotNull]
-        public Job Job { get; private set; }
+        public Job Job { get; }
 
         /// <summary>
         /// Gets the initial state of the creating job. Note, that
@@ -81,6 +81,6 @@ namespace Hangfire.Client
         /// class are doing their job.
         /// </summary>
         [CanBeNull]
-        public IState InitialState { get; private set; }
+        public IState InitialState { get; }
     }
 }

@@ -7,7 +7,7 @@
             JobId = jobId;
         }
 
-        public string JobId { get; private set; }
+        public string JobId { get; }
 
         private struct Continuation
         {

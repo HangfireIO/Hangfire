@@ -44,7 +44,7 @@ namespace Hangfire.Client
         public string JobId { get { return BackgroundJob != null ? BackgroundJob.Id : null; } }
 
         [CanBeNull]
-        public BackgroundJob BackgroundJob { get; private set; }
+        public BackgroundJob BackgroundJob { get; }
         
         public override IDictionary<string, object> Parameters
         {
@@ -58,13 +58,13 @@ namespace Hangfire.Client
         /// Gets an exception that occurred during the creation of the job.
         /// </summary>
         [CanBeNull]
-        public Exception Exception { get; private set; }
+        public Exception Exception { get; }
 
         /// <summary>
         /// Gets a value that indicates that this <see cref="CreatedContext"/>
         /// object was canceled.
         /// </summary>
-        public bool Canceled { get; private set; }
+        public bool Canceled { get; }
 
         /// <summary>
         /// Gets or sets a value that indicates that this <see cref="CreatedContext"/>

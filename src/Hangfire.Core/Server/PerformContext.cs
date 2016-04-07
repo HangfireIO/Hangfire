@@ -56,10 +56,10 @@ namespace Hangfire.Server
         /// or just between different methods.
         /// </summary>
         [NotNull]
-        public IDictionary<string, object> Items { get; private set; }
+        public IDictionary<string, object> Items { get; }
 
         [NotNull]
-        public BackgroundJob BackgroundJob { get; private set; }
+        public BackgroundJob BackgroundJob { get; }
 
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
         public string JobId { get { return BackgroundJob.Id; } }
@@ -69,10 +69,10 @@ namespace Hangfire.Server
         public DateTime CreatedAt { get { return BackgroundJob.CreatedAt; } }
 
         [NotNull]
-        public IJobCancellationToken CancellationToken { get; private set; }
+        public IJobCancellationToken CancellationToken { get; }
 
         [NotNull]
-        public IStorageConnection Connection { get; private set; }
+        public IStorageConnection Connection { get; }
         
         public void SetJobParameter(string name, object value)
         {

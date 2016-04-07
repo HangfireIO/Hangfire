@@ -7,6 +7,6 @@
             DashboardMetric = dashboardMetric;
         }
 
-        public DashboardMetric DashboardMetric { get; private set; }
+        public DashboardMetric DashboardMetric { get; }
     }
 }

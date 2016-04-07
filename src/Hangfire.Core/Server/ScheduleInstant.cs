@@ -56,8 +56,8 @@ namespace Hangfire.Server
             }
         }
 
-        public DateTime NowInstant { get; private set; }
-        public DateTime? NextInstant { get; private set; }
+        public DateTime NowInstant { get; }
+        public DateTime? NextInstant { get; }
 
         public IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant)
         {

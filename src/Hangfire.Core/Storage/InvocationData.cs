@@ -37,9 +37,9 @@ namespace Hangfire.Storage
             Arguments = arguments;
         }
 
-        public string Type { get; private set; }
-        public string Method { get; private set; }
-        public string ParameterTypes { get; private set; }
+        public string Type { get; }
+        public string Method { get; }
+        public string ParameterTypes { get; }
         public string Arguments { get; set; }
 
         public Job Deserialize()

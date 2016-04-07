@@ -89,12 +89,12 @@ namespace Hangfire.States
         /// Gets a date/time when a background job should be <i>enqueued</i>.
         /// </summary>
         /// <value>Any date/time in <see cref="DateTimeKind.Utc"/> format.</value>
-        public DateTime EnqueueAt { get; private set; }
+        public DateTime EnqueueAt { get; }
 
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime ScheduledAt { get; private set; }
+        public DateTime ScheduledAt { get; }
 
         /// <inheritdoc />
         /// <remarks>

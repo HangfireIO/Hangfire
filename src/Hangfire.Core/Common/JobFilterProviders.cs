@@ -31,6 +31,6 @@ namespace Hangfire.Common
         /// <summary>
         /// Provides a registration point for filters.
         /// </summary>
-        public static JobFilterProviderCollection Providers { get; private set; }
+        public static JobFilterProviderCollection Providers { get; }
     }
 }

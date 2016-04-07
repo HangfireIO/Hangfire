@@ -26,7 +26,7 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.binaryexpression.method.aspx
-        public MethodInfo Method { get; private set; }
+        public MethodInfo Method { get; }
 
         public override bool Equals(object obj)
         {

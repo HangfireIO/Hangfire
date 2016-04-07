@@ -84,12 +84,12 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime FailedAt { get; private set; }
+        public DateTime FailedAt { get; }
 
         /// <summary>
         /// Gets the exception that occurred during the background job processing.
         /// </summary>
-        public Exception Exception { get; private set; }
+        public Exception Exception { get; }
 
         /// <inheritdoc />
         /// <remarks>

@@ -35,6 +35,6 @@ namespace Hangfire
         /// <summary>
         /// Gets the global filter collection.
         /// </summary>
-        public static JobFilterCollection Filters { get; private set; }
+        public static JobFilterCollection Filters { get; }
     }
 }

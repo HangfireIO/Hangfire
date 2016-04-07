@@ -29,7 +29,7 @@ namespace Hangfire
             ShutdownToken = new CancellationToken(canceled);
         }
 
-        public CancellationToken ShutdownToken { get; private set; }
+        public CancellationToken ShutdownToken { get; }
 
         public static IJobCancellationToken Null { get { return null; } }
 

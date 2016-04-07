@@ -40,15 +40,15 @@ namespace Hangfire.Server
         }
         
         [NotNull]
-        public string ServerId { get; private set; }
+        public string ServerId { get; }
 
         [NotNull]
-        public IReadOnlyDictionary<string, object> Properties { get; private set; }
+        public IReadOnlyDictionary<string, object> Properties { get; }
 
         [NotNull]
-        public JobStorage Storage { get; private set; }
+        public JobStorage Storage { get; }
 
-        public CancellationToken CancellationToken { get; private set; }
+        public CancellationToken CancellationToken { get; }
 
         public bool IsShutdownRequested
         {

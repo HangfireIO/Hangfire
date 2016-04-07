@@ -108,7 +108,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime DeletedAt { get; private set; }
+        public DateTime DeletedAt { get; }
 
         /// <inheritdoc />
         /// <remarks>

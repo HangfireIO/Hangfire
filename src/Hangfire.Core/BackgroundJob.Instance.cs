@@ -34,13 +34,13 @@ namespace Hangfire
 
         /// <exclude />
         [NotNull]
-        public string Id { get; private set; }
+        public string Id { get; }
 
         /// <exclude />
         [CanBeNull]
-        public Job Job { get; private set; }
+        public Job Job { get; }
 
         /// <exclude />
-        public DateTime CreatedAt { get; private set; }
+        public DateTime CreatedAt { get; }
     }
 }

@@ -48,8 +48,8 @@ namespace Hangfire.SqlServer
             Queue = queue;
         }
 
-        public string JobId { get; private set; }
-        public string Queue { get; private set; }
+        public string JobId { get; }
+        public string Queue { get; }
 
         public void RemoveFromQueue()
         {

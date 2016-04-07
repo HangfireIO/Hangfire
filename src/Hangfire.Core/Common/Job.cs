@@ -160,21 +160,21 @@ namespace Hangfire.Common
         /// invoked during the performance.
         /// </summary>
         [NotNull]
-        public Type Type { get; private set; }
+        public Type Type { get; }
 
         /// <summary>
         /// Gets the metadata of a method that should be invoked during the 
         /// performance.
         /// </summary>
         [NotNull]
-        public MethodInfo Method { get; private set; }
+        public MethodInfo Method { get; }
 
         /// <summary>
         /// Gets a read-only collection of arguments that Should be passed to a 
         /// method invocation during the performance.
         /// </summary>
         [NotNull]
-        public IReadOnlyList<object> Args { get; private set; }
+        public IReadOnlyList<object> Args { get; }
         
         public override string ToString()
         {

@@ -151,7 +151,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime EnqueuedAt { get; private set; }
+        public DateTime EnqueuedAt { get; }
 
         /// <inheritdoc />
         /// <remarks>

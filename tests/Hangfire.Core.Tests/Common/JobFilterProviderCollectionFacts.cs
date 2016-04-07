@@ -124,7 +124,7 @@ namespace Hangfire.Core.Tests.Common
                 AllowMultiple = allowMultiple;
             }
 
-            public bool AllowMultiple { get; private set; }
+            public bool AllowMultiple { get; }
             public int Order { get { return -1; } }
         }
 

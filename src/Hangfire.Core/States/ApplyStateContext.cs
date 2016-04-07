@@ -56,22 +56,22 @@ namespace Hangfire.States
         }
 
         [NotNull]
-        public JobStorage Storage { get; private set; }
+        public JobStorage Storage { get; }
 
         [NotNull]
-        public IStorageConnection Connection { get; private set; }
+        public IStorageConnection Connection { get; }
 
         [NotNull]
-        public IWriteOnlyTransaction Transaction { get; private set; }
+        public IWriteOnlyTransaction Transaction { get; }
 
         [NotNull]
         public override BackgroundJob BackgroundJob { get; }
 
         [CanBeNull]
-        public string OldStateName { get; private set; }
+        public string OldStateName { get; }
 
         [NotNull]
-        public IState NewState { get; private set; }
+        public IState NewState { get; }
         
         public TimeSpan JobExpirationTimeout { get; set; }
     }

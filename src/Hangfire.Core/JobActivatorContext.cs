@@ -15,11 +15,8 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.Server;
 using Hangfire.Storage;
 
 namespace Hangfire
@@ -41,13 +38,13 @@ namespace Hangfire
         }
 
         [NotNull]
-        public BackgroundJob BackgroundJob { get; private set; }
+        public BackgroundJob BackgroundJob { get; }
 
         [NotNull]
-        public IJobCancellationToken CancellationToken { get; private set; }
+        public IJobCancellationToken CancellationToken { get; }
 
         [NotNull]
-        public IStorageConnection Connection { get; private set; }
+        public IStorageConnection Connection { get; }
 
         public void SetJobParameter(string name, object value)
         {

@@ -47,13 +47,13 @@ namespace Hangfire.States
         public override BackgroundJob BackgroundJob { get; }
 
         [NotNull]
-        public JobStorage Storage { get; private set; }
+        public JobStorage Storage { get; }
 
         [NotNull]
         public IStorageConnection Connection { get; }
 
         [NotNull]
-        public IWriteOnlyTransaction Transaction { get; private set; }
+        public IWriteOnlyTransaction Transaction { get; }
 
         [NotNull]
         public IState CandidateState

@@ -49,7 +49,7 @@ namespace Hangfire.States
         /// <summary>
         /// Gets a date/time when the current state instance was created.
         /// </summary>
-        public DateTime StartedAt { get; private set; }
+        public DateTime StartedAt { get; }
 
         /// <summary>
         /// Gets the <i>instance id</i> of an instance of the <see cref="BackgroundProcessingServer"/>
@@ -57,13 +57,13 @@ namespace Hangfire.States
         /// <i>enqueued</i> background job.
         /// </summary>
         /// <value>Usually the string representation of a GUID value, may vary in future versions.</value>
-        public string ServerId { get; private set; }
+        public string ServerId { get; }
 
         /// <summary>
         /// Gets the identifier of a <see cref="Server.Worker"/> that started to
         /// process an <i>enqueued</i> background job.
         /// </summary>
-        public string WorkerId { get; private set; }
+        public string WorkerId { get; }
 
         /// <inheritdoc />
         /// <remarks>

@@ -182,7 +182,7 @@ namespace Hangfire.Dashboard
             #endregion
         }
 
-        public static RouteCollection Routes { get; private set; }
+        public static RouteCollection Routes { get; }
 
         internal static string GetContentFolderNamespace(string contentFolder)
         {

@@ -111,23 +111,23 @@ namespace Hangfire.States
         /// Gets the identifier of a parent background job.
         /// </summary>
         [NotNull]
-        public string ParentId { get; private set; }
+        public string ParentId { get; }
 
         /// <summary>
         /// Gets the next state, to which a background job will be moved.
         /// </summary>
         [NotNull]
-        public IState NextState { get; private set; }
+        public IState NextState { get; }
 
         /// <summary>
         /// Gets the continuation options associated with the current state.
         /// </summary>
-        public JobContinuationOptions Options { get; private set; }
+        public JobContinuationOptions Options { get; }
 
         /// <summary>
         /// Gets the expiration time of a background job continuation.
         /// </summary>
-        public TimeSpan Expiration { get; private set; }
+        public TimeSpan Expiration { get; }
 
         /// <inheritdoc />
         /// <remarks>
