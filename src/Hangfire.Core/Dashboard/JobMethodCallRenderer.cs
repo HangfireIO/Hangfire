@@ -126,6 +126,7 @@ namespace Hangfire.Dashboard
                     {
                         var renderedItems = new List<string>();
 
+                        // ReSharper disable once LoopCanBeConvertedToQuery
                         foreach (var item in (IEnumerable)argumentValue)
                         {
                             var argumentRenderer = ArgumentRenderer.GetRenderer(enumerableArgument);
@@ -133,6 +134,7 @@ namespace Hangfire.Dashboard
                                 JobHelper.ToJson(item)));
                         }
 
+                        // ReSharper disable once UseStringInterpolation
                         renderedArgument = String.Format(
                             "{0}{1} {{ {2} }}",
                             WrapKeyword("new"),

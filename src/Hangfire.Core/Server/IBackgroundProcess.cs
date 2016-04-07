@@ -17,6 +17,8 @@
 using System;
 using Hangfire.Annotations;
 
+#pragma warning disable 618 // Obsolete member
+
 namespace Hangfire.Server
 {
     /// <summary>
@@ -31,9 +33,7 @@ namespace Hangfire.Server
     /// </remarks>
     /// 
     /// <seealso cref="BackgroundProcessingServer"/>
-#pragma warning disable 618
     public interface IBackgroundProcess : IServerProcess
-#pragma warning restore 618
     {
         /// <summary>
         /// 

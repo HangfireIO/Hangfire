@@ -15,7 +15,6 @@ namespace Hangfire.Core.Tests.States
     public class StateMachineFacts
     {
         private const string OldStateName = "OldState";
-        private const string StateName = "State";
         private const string JobId = "job";
 
         private readonly List<object> _filters = new List<object>();

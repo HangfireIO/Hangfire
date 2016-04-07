@@ -304,6 +304,7 @@ namespace Hangfire.Common
             Type type, 
             [InvokerParameterName] string typeParameterName,
             MethodInfo method, 
+            // ReSharper disable once UnusedParameter.Local
             [InvokerParameterName] string methodParameterName,
             // ReSharper disable once UnusedParameter.Local
             int argumentCount,

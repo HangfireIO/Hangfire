@@ -1,4 +1,6 @@
-﻿namespace Hangfire.Dashboard.Pages
+﻿using Hangfire.Annotations;
+
+namespace Hangfire.Dashboard.Pages
 {
     partial class JobDetailsPage
     {
@@ -11,8 +13,8 @@
 
         private struct Continuation
         {
-            public string JobId { get; set; }
-            public JobContinuationOptions Options { get; set; }
+            public string JobId { get; [UsedImplicitly] set; }
+            public JobContinuationOptions Options { get; [UsedImplicitly] set; }
         }
     }
 }

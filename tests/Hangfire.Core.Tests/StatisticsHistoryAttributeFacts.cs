@@ -22,10 +22,15 @@ namespace Hangfire.Core.Tests
 
             _filter = new StatisticsHistoryAttribute();
 
-            _context = new ElectStateContextMock();
-            _context.ApplyContext.Connection = _connection;
-            _context.ApplyContext.NewStateObject = new SucceededState(null, 11, 123);
-            _context.ApplyContext.Transaction = _transaction;
+            _context = new ElectStateContextMock
+            {
+                ApplyContext =
+                {
+                    Connection = _connection,
+                    NewStateObject = new SucceededState(null, 11, 123),
+                    Transaction = _transaction
+                }
+            };
         }
 
         [Fact]

@@ -47,6 +47,11 @@ namespace Hangfire.Server
             {
                 object instance = null;
 
+                if (context.BackgroundJob.Job == null)
+                {
+                    throw new InvalidOperationException("Can't perform a background job with a null job.");
+                }
+                
                 if (!context.BackgroundJob.Job.Method.IsStatic)
                 {
                     instance = scope.Resolve(context.BackgroundJob.Job.Type);
@@ -129,6 +134,11 @@ namespace Hangfire.Server
 
         private static object[] SubstituteArguments(PerformContext context)
         {
+            if (context.BackgroundJob.Job == null)
+            {
+                return null;
+            }
+
             var parameters = context.BackgroundJob.Job.Method.GetParameters();
             var result = new List<object>(context.BackgroundJob.Job.Args.Count);
 

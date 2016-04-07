@@ -255,7 +255,7 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage)
         {
-            return builder.UseHangfireServer(storage, options, new IBackgroundProcess[0]);
+            return builder.UseHangfireServer(storage, options);
         }
 
         /// <summary>

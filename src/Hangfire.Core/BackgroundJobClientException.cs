@@ -17,6 +17,8 @@
 using System;
 using Hangfire.Client;
 
+#pragma warning disable 618 // Obsolete member
+
 namespace Hangfire
 {
     /// <summary>
@@ -24,9 +26,7 @@ namespace Hangfire
     /// implements the <see cref="IBackgroundJobClient"/> interface is unable
     /// to perform an operation due to an error.
     /// </summary>
-#pragma warning disable 618
     public class BackgroundJobClientException : CreateJobFailedException
-#pragma warning restore 618
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BackgroundJobClientException"/>

@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+// ReSharper disable All
+
 namespace Hangfire.Common.ExpressionUtil
 {
     // This is a visitor which rewrites constant expressions as parameter lookups. It's meant

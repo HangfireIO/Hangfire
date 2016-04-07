@@ -27,6 +27,8 @@ using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
 
+// ReSharper disable RedundantAnonymousTypePropertyName
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerMonitoringApi : IMonitoringApi
@@ -126,6 +128,7 @@ namespace Hangfire.SqlServer
 
                 var result = new List<ServerDto>();
 
+                // ReSharper disable once LoopCanBeConvertedToQuery
                 foreach (var server in servers)
                 {
                     var data = JobHelper.FromJson<ServerData>(server.Data);
@@ -203,6 +206,7 @@ namespace Hangfire.SqlServer
 
             var result = new List<QueueWithTopEnqueuedJobsDto>(tuples.Length);
 
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var tuple in tuples)
             {
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
@@ -511,6 +515,7 @@ $@"select * from (
         {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
 
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var job in jobs)
             {
                 var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
@@ -544,6 +549,7 @@ where j.Id in @jobIds";
 
             var result = new List<KeyValuePair<string, FetchedJobDto>>(jobs.Count);
 
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var job in jobs)
             {
                 result.Add(new KeyValuePair<string, FetchedJobDto>(

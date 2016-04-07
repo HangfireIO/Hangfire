@@ -22,6 +22,8 @@ using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 
+// ReSharper disable RedundantAnonymousTypePropertyName
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueueMonitoringApi : IPersistentJobQueueMonitoringApi

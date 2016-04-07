@@ -32,7 +32,7 @@ namespace Hangfire.Core.Tests.Server
         {
             var process = CreateProcess<IServerProcess>();
             var exception = Assert.Throws<ArgumentOutOfRangeException>(
-                () => ServerProcessExtensions.CreateTask(process.Object, _context.Object));
+                () => process.Object.CreateTask(_context.Object));
 
             Assert.Equal("process", exception.ParamName);
         }

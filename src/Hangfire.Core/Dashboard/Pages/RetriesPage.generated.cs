@@ -445,7 +445,7 @@ WriteLiteral("                                        <td>\r\n                  
 
             
             #line 119 "..\..\Dashboard\Pages\RetriesPage.cshtml"
-                                        Write(stateData != null ? stateData.Reason : null);
+                                        Write(stateData?.Reason);
 
             
             #line default

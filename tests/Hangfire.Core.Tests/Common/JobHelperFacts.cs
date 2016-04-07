@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization.Formatters;
+using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
 using Newtonsoft.Json;
@@ -232,6 +233,7 @@ namespace Hangfire.Core.Tests.Common
 
         private class BackgroundJob
         {
+            [UsedImplicitly]
             public void DoWork(string workId, string message)
             {
             }

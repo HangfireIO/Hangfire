@@ -25,6 +25,8 @@ using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantAnonymousTypePropertyName
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerWriteOnlyTransaction : JobStorageTransaction

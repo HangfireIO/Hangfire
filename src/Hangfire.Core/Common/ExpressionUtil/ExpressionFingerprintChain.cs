@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
+// ReSharper disable All
+
 namespace Hangfire.Common.ExpressionUtil
 {
     // Expression fingerprint chain class

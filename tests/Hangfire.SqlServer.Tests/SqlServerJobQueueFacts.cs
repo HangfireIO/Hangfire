@@ -97,6 +97,7 @@ select scope_identity() as Id;";
             // Arrange
             UseConnection(connection =>
             {
+                // ReSharper disable once UnusedVariable
                 var id = (int)connection.Query(
                     arrangeSql,
                     new { jobId = 1, queue = "default" }).Single().Id;

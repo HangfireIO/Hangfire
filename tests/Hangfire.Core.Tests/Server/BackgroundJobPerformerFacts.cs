@@ -91,6 +91,7 @@ namespace Hangfire.Core.Tests.Server
         public void Run_ReturnsValueReturnedByJob()
         {
             // Arrange
+            // ReSharper disable once UnusedVariable
             var filter = CreateFilter<IServerFilter>();
             var performer = CreatePerformer();
 
@@ -310,6 +311,7 @@ namespace Hangfire.Core.Tests.Server
         {
             // Arrange
             var outerFilter = CreateFilter<IServerFilter>();
+            // ReSharper disable once UnusedVariable
             var innerFilter = CreateFilter<IServerFilter>();
 
             var exception = new InvalidOperationException();

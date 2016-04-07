@@ -42,8 +42,7 @@ namespace Hangfire.States
             Transaction = applyContext.Transaction;
             CurrentState = applyContext.OldStateName;
         }
-
-        [NotNull]
+        
         public override BackgroundJob BackgroundJob { get; }
 
         [NotNull]

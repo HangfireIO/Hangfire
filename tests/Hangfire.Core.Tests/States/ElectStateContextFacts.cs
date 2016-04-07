@@ -14,8 +14,7 @@ namespace Hangfire.Core.Tests.States
 
         public ElectStateContextFacts()
         {
-            _applyContext = new ApplyStateContextMock();
-            _applyContext.OldStateName = "State";
+            _applyContext = new ApplyStateContextMock { OldStateName = "State" };
         }
 
         [Fact]

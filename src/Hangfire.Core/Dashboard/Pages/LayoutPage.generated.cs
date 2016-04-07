@@ -67,7 +67,7 @@ WriteLiteral("<!DOCTYPE html>\r\n<html lang=\"");
 
             
             #line 9 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-       Write(System.Threading.Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName);
+       Write(Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName);
 
             
             #line default

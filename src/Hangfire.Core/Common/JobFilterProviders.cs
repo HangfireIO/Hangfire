@@ -23,9 +23,11 @@ namespace Hangfire.Common
     {
         static JobFilterProviders()
         {
-            Providers = new JobFilterProviderCollection();
-            Providers.Add(GlobalJobFilters.Filters);
-            Providers.Add(new JobFilterAttributeFilterProvider());
+            Providers = new JobFilterProviderCollection
+            {
+                GlobalJobFilters.Filters,
+                new JobFilterAttributeFilterProvider()
+            };
         }
 
         /// <summary>

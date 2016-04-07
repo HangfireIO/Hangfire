@@ -5,6 +5,8 @@ using System.Threading;
 using Moq;
 using Xunit;
 
+// ReSharper disable PossibleNullReferenceException
+
 namespace Hangfire.SqlServer.Msmq.Tests
 {
     public class MsmqJobQueueFacts

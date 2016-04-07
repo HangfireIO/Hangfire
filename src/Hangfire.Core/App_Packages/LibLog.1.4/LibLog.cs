@@ -27,6 +27,8 @@
 using System.Reflection;
 using Hangfire.Logging.LogProviders;
 
+// ReSharper disable All
+
 namespace Hangfire.Logging
 {
     using System.Collections.Generic;

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Messaging;
 
+// ReSharper disable PossibleNullReferenceException
+
 namespace Hangfire.SqlServer.Msmq.Tests
 {
     internal class MsmqUtils

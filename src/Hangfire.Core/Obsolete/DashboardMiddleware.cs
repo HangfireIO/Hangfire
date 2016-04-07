@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.Owin;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
     internal class DashboardMiddleware : OwinMiddleware
@@ -60,6 +61,7 @@ namespace Hangfire.Dashboard
                 return Next.Invoke(context);
             }
 
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var filter in _authorizationFilters)
             {
                 if (!filter.Authorize(context.Environment))

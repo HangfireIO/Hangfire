@@ -116,7 +116,7 @@ else
                                             @Html.JobNameLink(jobId, jobData.Job)
                                         </td>
                                         <td>
-                                            @(stateData != null ? stateData.Reason : null)
+                                            @(stateData?.Reason)
                                         </td>
                                         <td class="align-right">
                                             @if (stateData != null && stateData.Data.ContainsKey("EnqueueAt"))

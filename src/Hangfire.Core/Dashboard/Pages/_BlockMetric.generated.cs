@@ -82,7 +82,7 @@ WriteLiteral("\">\r\n        ");
 
             
             #line 11 "..\..\Dashboard\Pages\_BlockMetric.cshtml"
-    Write(metric != null ? metric.Value : null);
+    Write(metric?.Value);
 
             
             #line default

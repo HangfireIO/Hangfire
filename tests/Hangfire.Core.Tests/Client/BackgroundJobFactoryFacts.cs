@@ -9,6 +9,7 @@ using Moq;
 using Moq.Sequences;
 using Xunit;
 
+// ReSharper disable PossibleNullReferenceException
 // ReSharper disable AssignNullToNotNullAttribute
 
 namespace Hangfire.Core.Tests.Client

@@ -58,6 +58,7 @@ namespace Hangfire.SqlServer.Msmq
                     if (current >= @from && current < end)
                     {
                         var message = enumerator.Current;
+                        if (message == null) continue;
 
                         message.Formatter = formatter;
                         result.Add(int.Parse((string)message.Body));

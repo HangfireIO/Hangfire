@@ -28,6 +28,7 @@ namespace Hangfire.Common
             }
 
             const int dotLength = 1;
+            // ReSharper disable once PossibleNullReferenceException
             return type.FullName.Substring(type.Namespace.Length + dotLength);
         }
 

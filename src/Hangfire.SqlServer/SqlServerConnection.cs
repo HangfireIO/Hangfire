@@ -25,6 +25,8 @@ using Hangfire.Server;
 using Hangfire.SqlServer.Entities;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantAnonymousTypePropertyName
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerConnection : JobStorageConnection

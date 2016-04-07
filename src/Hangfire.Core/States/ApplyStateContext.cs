@@ -63,8 +63,7 @@ namespace Hangfire.States
 
         [NotNull]
         public IWriteOnlyTransaction Transaction { get; }
-
-        [NotNull]
+        
         public override BackgroundJob BackgroundJob { get; }
 
         [CanBeNull]

@@ -112,6 +112,7 @@ namespace Hangfire.Common
             return GetEnumerator();
         }
 
+        // ReSharper disable once UnusedParameter.Local
         private static void ValidateFilterInstance(object instance)
         {
             if (instance != null &&

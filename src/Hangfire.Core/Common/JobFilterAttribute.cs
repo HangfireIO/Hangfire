@@ -23,7 +23,7 @@ namespace Hangfire.Common
     /// <summary>
     /// Represents the base class for job filter attributes.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Method)]
     public abstract class JobFilterAttribute : Attribute, IJobFilter
     {
         private static readonly ConcurrentDictionary<Type, bool> MultiuseAttributeCache = new ConcurrentDictionary<Type, bool>();

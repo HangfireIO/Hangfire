@@ -21,6 +21,7 @@ namespace Hangfire
 {
     public abstract class JobActivatorScope : IDisposable
     {
+        // ReSharper disable once InconsistentNaming
         private static readonly ThreadLocal<JobActivatorScope> _current
             = new ThreadLocal<JobActivatorScope>(trackAllValues: false);
 
@@ -29,10 +30,7 @@ namespace Hangfire
             _current.Value = this;
         }
 
-        public static JobActivatorScope Current
-        {
-            get { return _current.Value; }
-        }
+        public static JobActivatorScope Current => _current.Value;
 
         public object InnerScope { get; set; }
 

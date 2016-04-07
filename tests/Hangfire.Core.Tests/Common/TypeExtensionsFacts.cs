@@ -2,6 +2,8 @@
 using Hangfire.Common;
 using Xunit;
 
+// ReSharper disable UnusedTypeParameter
+
 namespace Hangfire.Core.Tests.Common
 {
 	public class TypeExtensionsFacts
@@ -32,7 +34,7 @@ namespace Hangfire.Core.Tests.Common
             Assert.Equal(typeof(GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert, List<Assert>, Stack<Assert>>).ToGenericTypeString(), "GenericClass<List<GenericClass<List<Assert>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>>>.NestedNonGenericClass.DoubleNestedGenericClass<Assert,List<Assert>,Stack<Assert>>");        
 	    }
 	}
-
+    
     public class GenericClass<T0>
     {
         public class NestedNonGenericClass

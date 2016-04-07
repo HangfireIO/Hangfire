@@ -25,11 +25,13 @@ namespace Hangfire
     {
         static GlobalJobFilters()
         {
-            Filters = new JobFilterCollection();
-            Filters.Add(new CaptureCultureAttribute());
-            Filters.Add(new AutomaticRetryAttribute());
-            Filters.Add(new StatisticsHistoryAttribute());
-            Filters.Add(new ContinuationsSupportAttribute());
+            Filters = new JobFilterCollection
+            {
+                new CaptureCultureAttribute(),
+                new AutomaticRetryAttribute(),
+                new StatisticsHistoryAttribute(),
+                new ContinuationsSupportAttribute()
+            };
         }
 
         /// <summary>

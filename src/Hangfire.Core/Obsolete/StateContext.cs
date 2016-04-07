@@ -18,6 +18,7 @@ using System;
 using Hangfire.Annotations;
 using Hangfire.Common;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.States
 {
     /// <exclude />

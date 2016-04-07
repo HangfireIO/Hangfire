@@ -15,8 +15,10 @@ namespace Hangfire.Core.Tests.States
 
         public EnqueuedStateHandlerFacts()
         {
-            _context = new ApplyStateContextMock();
-            _context.NewStateObject = new EnqueuedState { Queue = Queue };
+            _context = new ApplyStateContextMock
+            {
+                NewStateObject = new EnqueuedState { Queue = Queue }
+            };
 
             _transaction = new Mock<IWriteOnlyTransaction>();
         }

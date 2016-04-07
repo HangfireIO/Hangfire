@@ -25,6 +25,8 @@ using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
+// ReSharper disable RedundantAnonymousTypePropertyName
+
 namespace Hangfire.SqlServer
 {
     internal class SqlServerJobQueue : IPersistentJobQueue
@@ -52,9 +54,9 @@ namespace Hangfire.SqlServer
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", nameof(queues));
 
-            FetchedJob fetchedJob = null;
-            DbConnection connection = null;
-            DbTransaction transaction = null;
+            FetchedJob fetchedJob;
+            DbConnection connection;
+            DbTransaction transaction;
 
             string fetchJobSqlTemplate =
 $@"delete top (1) from [{_storage.SchemaName}].JobQueue with (readpast, updlock, rowlock)

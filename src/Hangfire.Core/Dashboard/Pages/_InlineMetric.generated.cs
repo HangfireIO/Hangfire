@@ -82,7 +82,7 @@ WriteLiteral("\">");
 
             
             #line 9 "..\..\Dashboard\Pages\_InlineMetric.cshtml"
-                                                                             Write(metric != null ? metric.Value : null);
+                                                                             Write(metric?.Value);
 
             
             #line default
