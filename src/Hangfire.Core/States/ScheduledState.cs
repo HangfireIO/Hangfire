@@ -166,9 +166,8 @@ namespace Hangfire.States
                 var scheduledState = context.NewState as ScheduledState;
                 if (scheduledState == null)
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "`{0}` state handler can be registered only for the Scheduled state.",
-                        typeof(Handler).FullName));
+                    throw new InvalidOperationException(
+                        $"`{typeof (Handler).FullName}` state handler can be registered only for the Scheduled state.");
                 }
 
                 var timestamp = JobHelper.ToTimestamp(scheduledState.EnqueueAt);

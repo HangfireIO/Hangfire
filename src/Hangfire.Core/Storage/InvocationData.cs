@@ -52,11 +52,8 @@ namespace Hangfire.Storage
                 
                 if (method == null)
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "The type `{0}` does not contain a method with signature `{1}({2})`",
-                        type.FullName,
-                        Method,
-                        String.Join(", ", parameterTypes.Select(x => x.Name))));
+                    throw new InvalidOperationException(
+                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
                 }
 
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);

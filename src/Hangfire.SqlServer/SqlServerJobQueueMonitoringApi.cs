@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 using Dapper;
@@ -43,7 +42,7 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<string> GetQueues()
         {
-            string sqlQuery = string.Format(@"select distinct(Queue) from [{0}].JobQueue", _storage.GetSchemaName());
+            string sqlQuery = $@"select distinct(Queue) from [{_storage.SchemaName}].JobQueue";
 
             lock (_cacheLock)
             {
@@ -64,13 +63,13 @@ namespace Hangfire.SqlServer
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
-            string sqlQuery = string.Format(@"
-select r.JobId from (
+            string sqlQuery =
+$@"select r.JobId from (
   select jq.JobId, row_number() over (order by jq.Id) as row_num 
-  from [{0}].JobQueue jq
+  from [{_storage.SchemaName}].JobQueue jq
   where jq.Queue = @queue
 ) as r
-where r.row_num between @start and @end", _storage.GetSchemaName());
+where r.row_num between @start and @end";
 
             return UseTransaction(connection =>
             {
@@ -90,8 +89,8 @@ where r.row_num between @start and @end", _storage.GetSchemaName());
 
         public EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue)
         {
-            string sqlQuery = string.Format(@"
-select count(Id) from [{0}].JobQueue where [Queue] = @queue", _storage.GetSchemaName());
+            string sqlQuery = $@"
+select count(Id) from [{_storage.SchemaName}].JobQueue where [Queue] = @queue";
 
             return UseTransaction(connection =>
             {

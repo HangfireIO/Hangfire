@@ -122,7 +122,7 @@ namespace Hangfire.Server
                 foreach (var recurringJobId in recurringJobIds)
                 {
                     var recurringJob = connection.GetAllEntriesFromHash(
-                        String.Format("recurring-job:{0}", recurringJobId));
+                        $"recurring-job:{recurringJobId}");
 
                     if (recurringJob == null)
                     {
@@ -136,9 +136,7 @@ namespace Hangfire.Server
                     catch (JobLoadException ex)
                     {
                         Logger.WarnException(
-                            String.Format(
-                                "Recurring job '{0}' can not be scheduled due to job load exception.",
-                                recurringJobId),
+                            $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
                             ex);
                     }
                 }
@@ -191,10 +189,7 @@ namespace Hangfire.Server
 
                     if (String.IsNullOrEmpty(jobId))
                     {
-                        Logger.DebugFormat(
-                            "Recurring job '{0}' execution at '{1}' has been canceled.",
-                            recurringJobId,
-                            instant.NowInstant);
+                        Logger.Debug($"Recurring job '{recurringJobId}' execution at '{instant.NowInstant}' has been canceled.");
                     }
 
                     changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.NowInstant));
@@ -204,13 +199,13 @@ namespace Hangfire.Server
                 changedFields.Add("NextExecution", instant.NextInstant.HasValue ? JobHelper.SerializeDateTime(instant.NextInstant.Value) : null);
 
                 connection.SetRangeInHash(
-                    String.Format("recurring-job:{0}", recurringJobId),
+                    $"recurring-job:{recurringJobId}",
                     changedFields);
             }
             catch (TimeZoneNotFoundException ex)
             {
                 Logger.ErrorException(
-                    String.Format("Recurring job '{0}' was not triggered: {1}.", recurringJobId, ex.Message),
+                    $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
                     ex);
             }
         }

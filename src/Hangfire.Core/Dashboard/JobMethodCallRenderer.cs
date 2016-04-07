@@ -56,10 +56,8 @@ namespace Hangfire.Dashboard
                 serviceName = Char.ToLower(serviceName[0]) + serviceName.Substring(1);
 
                 builder.Append(WrapKeyword("var"));
-                builder.AppendFormat(
-                    " {0} = Activate&lt;{1}&gt;();",
-                    Encode(serviceName),
-                    WrapType(Encode(job.Type.ToGenericTypeString())));
+                builder.Append(
+                    $" {Encode(serviceName)} = Activate&lt;{WrapType(Encode(job.Type.ToGenericTypeString()))}&gt;();");
 
                 builder.AppendLine();
             }
@@ -80,7 +78,7 @@ namespace Hangfire.Dashboard
                     .Select(x => WrapType(x.Name))
                     .ToArray();
 
-                builder.AppendFormat("&lt;{0}&gt;", String.Join(", ", genericArgumentTypes));
+                builder.Append($"&lt;{String.Join(", ", genericArgumentTypes)}&gt;");
             }
 
             builder.Append("(");
@@ -136,7 +134,8 @@ namespace Hangfire.Dashboard
                         }
 
                         renderedArgument = String.Format(
-                            WrapKeyword("new") + "{0} {{ {1} }}",
+                            "{0}{1} {{ {2} }}",
+                            WrapKeyword("new"),
                             parameter.ParameterType.IsArray ? " []" : "",
                             String.Join(", ", renderedItems));
                     }
@@ -169,13 +168,8 @@ namespace Hangfire.Dashboard
                     builder.Append(" ");
                 }
 
-                builder.AppendFormat(
-                    "<span title=\"{0}\" data-placement=\"{1}\">",
-                    parameter.Name,
-                    tooltipPosition);
-
+                builder.Append($"<span title=\"{parameter.Name}\" data-placement=\"{tooltipPosition}\">");
                 builder.Append(renderedArgument);
-
                 builder.Append("</span>");
 
                 if (i < renderedArguments.Count - 1)

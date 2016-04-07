@@ -94,7 +94,7 @@ namespace Hangfire.Dashboard
             Guid guid;
             return new NonEscapedString(Guid.TryParse(jobId, out guid)
                 ? (shorten ? jobId.Substring(0, 8) + "…" : jobId)
-                : "#" + jobId);
+                : $"#{jobId}");
         }
 
         public string JobName(Job job)
@@ -125,7 +125,7 @@ namespace Hangfire.Dashboard
         {
             if (String.IsNullOrWhiteSpace(stateName))
             {
-                return Raw("<em>" + Strings.Common_NoState + "</em>");
+                return Raw($"<em>{Strings.Common_NoState}</em>");
             }
 
             return Raw($"<span class=\"label label-default\" style=\"background-color: {JobHistoryRenderer.GetForegroundStateColor(stateName)};\">{stateName}</span>");
@@ -160,17 +160,17 @@ namespace Hangfire.Dashboard
 
             if (duration.Value.Days > 0)
             {
-                builder.AppendFormat("{0}d ", duration.Value.Days);
+                builder.Append($"{duration.Value.Days}d ");
             }
 
             if (duration.Value.Hours > 0)
             {
-                builder.AppendFormat("{0}h ", duration.Value.Hours);
+                builder.Append($"{duration.Value.Hours}h ");
             }
 
             if (duration.Value.Minutes > 0)
             {
-                builder.AppendFormat("{0}m ", duration.Value.Minutes);
+                builder.Append($"{duration.Value.Minutes}m ");
             }
 
             if (duration.Value.TotalHours < 1)
@@ -180,7 +180,7 @@ namespace Hangfire.Dashboard
                     builder.Append(duration.Value.Seconds);
                     if (duration.Value.Milliseconds > 0)
                     {
-                        builder.AppendFormat(".{0}", duration.Value.Milliseconds);
+                        builder.Append($".{duration.Value.Milliseconds}");
                     }
 
                     builder.Append("s ");
@@ -189,7 +189,7 @@ namespace Hangfire.Dashboard
                 {
                     if (duration.Value.Milliseconds > 0)
                     {
-                        builder.AppendFormat("{0}ms ", duration.Value.Milliseconds);
+                        builder.Append($"{duration.Value.Milliseconds}ms ");
                     }
                 }
             }
@@ -211,15 +211,9 @@ namespace Hangfire.Dashboard
 
         public NonEscapedString QueueLabel(string queue)
         {
-            string label;
-            if (queue != null)
-            {
-                label = "<span class=\"label label-queue label-primary\">" + queue + "</span>";
-            }
-            else
-            {
-                label = "<span class=\"label label-queue label-danger\"><i>" + Strings.Common_Unknown + "</i></span>";
-            }
+            var label = queue != null 
+                ? $"<span class=\"label label-queue label-primary\">{queue}</span>" 
+                : $"<span class=\"label label-queue label-danger\"><i>{Strings.Common_Unknown}</i></span>";
 
             return new NonEscapedString(label);
         }

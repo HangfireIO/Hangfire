@@ -75,9 +75,8 @@ namespace Hangfire.Client
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(String.Format(
-                    "Could not get a value of the job parameter `{0}`. See inner exception for details.",
-                    name), ex);
+                throw new InvalidOperationException(
+                    $"Could not get a value of the job parameter `{name}`. See inner exception for details.", ex);
             }
         }
     }

@@ -44,7 +44,7 @@ namespace Hangfire.Dashboard
                 WriteResource(
                     response,
                     _assembly,
-                    string.Format("{0}.{1}", _baseNamespace, resourceName));
+                    $"{_baseNamespace}.{resourceName}");
             }
         }
     }

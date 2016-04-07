@@ -54,7 +54,7 @@ namespace Hangfire.Server
                     if (instance == null)
                     {
                         throw new InvalidOperationException(
-                            String.Format("JobActivator returned NULL instance of the '{0}' type.", context.BackgroundJob.Job.Type));
+                            $"JobActivator returned NULL instance of the '{context.BackgroundJob.Job.Type}' type.");
                     }
                 }
 

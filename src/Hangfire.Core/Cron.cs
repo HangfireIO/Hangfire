@@ -46,7 +46,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Hourly(int minute)
         {
-            return String.Format("{0} * * * *", minute);
+            return $"{minute} * * * *";
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Daily(int hour, int minute)
         {
-            return String.Format("{0} {1} * * *", minute, hour);
+            return $"{minute} {hour} * * *";
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Weekly(DayOfWeek dayOfWeek, int hour, int minute)
         {
-            return String.Format("{0} {1} * * {2}", minute, hour, (int) dayOfWeek);
+            return $"{minute} {hour} * * {(int) dayOfWeek}";
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Monthly(int day, int hour, int minute)
         {
-            return String.Format("{0} {1} {2} * *", minute, hour, day);
+            return $"{minute} {hour} {day} * *";
         }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Yearly(int month, int day, int hour, int minute)
         {
-            return String.Format("{0} {1} {2} {3} *", minute, hour, day, month);
+            return $"{minute} {hour} {day} {month} *";
         }
 
         /// <summary>
@@ -221,7 +221,7 @@ namespace Hangfire
         /// <param name="interval">The number of minutes to wait between every activation.</param>
         public static string MinuteInterval(int interval)
         {
-            return String.Format("*/{0} * * * *", interval);
+            return $"*/{interval} * * * *";
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Hangfire
         /// <param name="interval">The number of hours to wait between every activation.</param>
         public static string HourInterval(int interval)
         {
-            return String.Format("* */{0} * * *", interval);
+            return $"* */{interval} * * *";
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Hangfire
         /// <param name="interval">The number of days to wait between every activation.</param>
         public static string DayInterval(int interval)
         {
-            return String.Format("* * */{0} * *", interval);
+            return $"* * */{interval} * *";
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace Hangfire
         /// <param name="interval">The number of months to wait between every activation.</param>
         public static string MonthInterval(int interval)
         {
-            return String.Format("* * * */{0} *", interval);
+            return $"* * * */{interval} *";
         }
 
         /// <summary>

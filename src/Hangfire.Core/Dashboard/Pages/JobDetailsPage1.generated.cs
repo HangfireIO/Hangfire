@@ -154,7 +154,7 @@ WriteLiteral(" ");
 
             
             #line 37 "..\..\Dashboard\Pages\JobDetailsPage.cshtml"
-          Write(string.Format(Strings.JobDetailsPage_JobExpired, JobId));
+          Write(String.Format(Strings.JobDetailsPage_JobExpired, JobId));
 
             
             #line default

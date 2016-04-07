@@ -159,7 +159,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public override string ToString()
         {
-            return String.Format("{0} #{1}", GetType().Name, _workerId.Substring(0, 8));
+            return $"{GetType().Name} #{_workerId.Substring(0, 8)}";
         }
 
         private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)

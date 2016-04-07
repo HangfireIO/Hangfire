@@ -85,9 +85,7 @@ namespace Hangfire.States
                     {
                         appliedState = new FailedState(ex.InnerException)
                         {
-                            Reason = String.Format(
-                                "Can not change the state to '{0}': target method was not found.",
-                                appliedState.Name)
+                            Reason = $"Can not change the state to '{appliedState.Name}': target method was not found."
                         };
                     }
                 }

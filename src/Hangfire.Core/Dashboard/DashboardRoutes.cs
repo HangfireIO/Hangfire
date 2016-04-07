@@ -186,12 +186,12 @@ namespace Hangfire.Dashboard
 
         internal static string GetContentFolderNamespace(string contentFolder)
         {
-            return String.Format("{0}.Content.{1}", typeof(DashboardRoutes).Namespace, contentFolder);
+            return $"{typeof (DashboardRoutes).Namespace}.Content.{contentFolder}";
         }
 
         internal static string GetContentResourceName(string contentFolder, string resourceName)
         {
-            return String.Format("{0}.{1}", GetContentFolderNamespace(contentFolder), resourceName);
+            return $"{GetContentFolderNamespace(contentFolder)}.{resourceName}";
         }
 
         private static Assembly GetExecutingAssembly()

@@ -59,7 +59,8 @@
                             @{
                                 var version = GetType().Assembly.GetName().Version;
                             }
-                            @String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build)
+
+                            @($"{version.Major}.{version.Minor}.{version.Build}")
                         </a>
                     </li>
                     <li>@Storage</li>

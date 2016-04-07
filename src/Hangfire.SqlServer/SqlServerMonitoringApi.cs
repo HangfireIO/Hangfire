@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Transactions;
 using Dapper;
@@ -122,7 +121,7 @@ namespace Hangfire.SqlServer
             return UseConnection<IList<ServerDto>>(connection =>
             {
                 var servers = connection.Query<Entities.Server>(
-                    string.Format(@"select * from [{0}].Server", _storage.GetSchemaName()))
+                    $@"select * from [{_storage.SchemaName}].Server")
                     .ToList();
 
                 var result = new List<ServerDto>();
@@ -256,10 +255,10 @@ namespace Hangfire.SqlServer
             return UseConnection(connection =>
             {
 
-                string sql = string.Format(@"
-select * from [{0}].Job where Id = @id
-select * from [{0}].JobParameter where JobId = @id
-select * from [{0}].State where JobId = @id order by Id desc", _storage.GetSchemaName());
+                string sql = $@"
+select * from [{_storage.SchemaName}].Job where Id = @id
+select * from [{_storage.SchemaName}].JobParameter where JobId = @id
+select * from [{_storage.SchemaName}].State where JobId = @id order by Id desc";
 
                 using (var multi = connection.QueryMultiple(sql, new { id = jobId }))
                 {
@@ -307,7 +306,7 @@ select * from [{0}].State where JobId = @id order by Id desc", _storage.GetSchem
 
         public StatisticsDto GetStatistics()
         {
-            string sql = string.Format(@"
+            string sql = String.Format(@"
 select count(Id) from [{0}].Job where StateName = N'Enqueued';
 select count(Id) from [{0}].Job where StateName = N'Failed';
 select count(Id) from [{0}].Job where StateName = N'Processing';
@@ -324,7 +323,7 @@ select sum(s.[Value]) from (
     select [Value] from [{0}].AggregatedCounter where [Key] = N'stats:deleted'
 ) as s;
 select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
-", _storage.GetSchemaName());
+", _storage.SchemaName);
 
             var statistics = UseConnection(connection =>
             {
@@ -365,7 +364,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
                 endDate = endDate.AddHours(-1);
             }
 
-            var keyMaps = dates.ToDictionary(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd-HH")), x => x);
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd-HH")}", x => x);
 
             return GetTimelineStats(connection, keyMaps);
         }
@@ -382,7 +381,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
                 endDate = endDate.AddDays(-1);
             }
 
-            var keyMaps = dates.ToDictionary(x => String.Format("stats:{0}:{1}", type, x.ToString("yyyy-MM-dd")), x => x);
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd")}", x => x);
 
             return GetTimelineStats(connection, keyMaps);
         }
@@ -390,9 +389,9 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
         private Dictionary<DateTime, long> GetTimelineStats(DbConnection connection,
             IDictionary<string, DateTime> keyMaps)
         {
-            string sqlQuery = string.Format(@"
-select [Key], [Value] as [Count] from [{0}].AggregatedCounter
-where [Key] in @keys", _storage.GetSchemaName());
+            string sqlQuery =
+$@"select [Key], [Value] as [Count] from [{_storage.SchemaName}].AggregatedCounter
+where [Key] in @keys";
 
             var valuesMap = connection.Query(
                 sqlQuery,
@@ -431,11 +430,11 @@ where [Key] in @keys", _storage.GetSchemaName());
             DbConnection connection,
             IEnumerable<int> jobIds)
         {
-            string enqueuedJobsSql = string.Format(@"
-select j.*, s.Reason as StateReason, s.Data as StateData 
-from [{0}].Job j
-left join [{0}].State s on s.Id = j.StateId
-where j.Id in @jobIds", _storage.GetSchemaName());
+            string enqueuedJobsSql = 
+$@"select j.*, s.Reason as StateReason, s.Data as StateData 
+from [{_storage.SchemaName}].Job j
+left join [{_storage.SchemaName}].State s on s.Id = j.StateId
+where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
                 enqueuedJobsSql,
@@ -457,8 +456,8 @@ where j.Id in @jobIds", _storage.GetSchemaName());
         private long GetNumberOfJobsByStateName(DbConnection connection, string stateName)
         {
             var sqlQuery = _jobListLimit.HasValue
-                ? string.Format(@"select count(j.Id) from (select top (@limit) Id from [{0}].Job where StateName = @state) as j", _storage.GetSchemaName())
-                : string.Format(@"select count(Id) from [{0}].Job where StateName = @state", _storage.GetSchemaName());
+                ? $@"select count(j.Id) from (select top (@limit) Id from [{_storage.SchemaName}].Job where StateName = @state) as j"
+                : $@"select count(Id) from [{_storage.SchemaName}].Job where StateName = @state";
 
             var count = connection.Query<int>(
                  sqlQuery,
@@ -490,14 +489,13 @@ where j.Id in @jobIds", _storage.GetSchemaName());
             string stateName,
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
-            string jobsSql = string.Format(@"
-select * from (
+            string jobsSql = 
+$@"select * from (
   select j.*, s.Reason as StateReason, s.Data as StateData, row_number() over (order by j.Id desc) as row_num
-  from [{0}].Job j with (forceseek)
-  left join [{0}].State s on j.StateId = s.Id
+  from [{_storage.SchemaName}].Job j with (forceseek)
+  left join [{_storage.SchemaName}].State s on j.StateId = s.Id
   where j.StateName = @stateName
-) as j where j.row_num between @start and @end
-", _storage.GetSchemaName());
+) as j where j.row_num between @start and @end";
 
             var jobs = connection.Query<SqlJob>(
                         jobsSql,
@@ -533,11 +531,11 @@ select * from (
             DbConnection connection,
             IEnumerable<int> jobIds)
         {
-            string fetchedJobsSql = string.Format(@"
-select j.*, s.Reason as StateReason, s.Data as StateData 
-from [{0}].Job j
-left join [{0}].State s on s.Id = j.StateId
-where j.Id in @jobIds", _storage.GetSchemaName());
+            string fetchedJobsSql = 
+$@"select j.*, s.Reason as StateReason, s.Data as StateData 
+from [{_storage.SchemaName}].Job j
+left join [{_storage.SchemaName}].State s on s.Id = j.StateId
+where j.Id in @jobIds";
 
             var jobs = connection.Query<SqlJob>(
                 fetchedJobsSql,

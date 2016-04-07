@@ -119,7 +119,7 @@ namespace Hangfire.Server
 
             if (!_bootstrapTask.Wait(_options.ShutdownTimeout))
             {
-                Logger.WarnFormat("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
+                Logger.Warn("Processing server takes too long to shutdown. Performing ungraceful shutdown.");
             }
         }
 

@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
 
@@ -179,7 +178,7 @@ namespace Hangfire.Common
         
         public override string ToString()
         {
-            return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
+            return $"{Type.ToGenericTypeString()}.{Method.Name}";
         }
 
         internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
@@ -328,7 +327,7 @@ namespace Hangfire.Common
             if (!method.DeclaringType.IsAssignableFrom(type))
             {
                 throw new ArgumentException(
-                    String.Format("The type `{0}` must be derived from the `{1}` type.", method.DeclaringType, type),
+                    $"The type `{method.DeclaringType}` must be derived from the `{type}` type.",
                     typeParameterName);
             }
 

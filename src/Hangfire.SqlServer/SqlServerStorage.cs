@@ -107,6 +107,8 @@ namespace Hangfire.SqlServer
 
         public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
 
+        internal string SchemaName => _options.SchemaName;
+
         public override IMonitoringApi GetMonitoringApi()
         {
             return new SqlServerMonitoringApi(this, _options.DashboardJobListLimit);
@@ -128,7 +130,7 @@ namespace Hangfire.SqlServer
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info("Using the following options for SQL Server job storage:");
-            logger.InfoFormat("    Queue poll interval: {0}.", _options.QueuePollInterval);
+            logger.Info($"    Queue poll interval: {_options.QueuePollInterval}.");
         }
 
         public override string ToString()
@@ -238,12 +240,7 @@ namespace Hangfire.SqlServer
                 connection.Dispose();
             }
         }
-
-        internal string GetSchemaName()
-        {
-            return _options.SchemaName;
-        }
-
+        
         private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
         {
             return isolationLevel != null

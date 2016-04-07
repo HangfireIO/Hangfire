@@ -83,7 +83,7 @@ namespace Hangfire.Server
             // LogProvider.GetLogger does not throw any exception, that is why we are not
             // using the `try` statement here. It does not return `null` value as well.
             var logger = LogProvider.GetLogger(process.GetProcessType());
-            logger.DebugFormat("Background process '{0}' started.", process);
+            logger.Debug($"Background process '{process}' started.");
 
             try
             {
@@ -99,7 +99,7 @@ namespace Hangfire.Server
                     ex);
             }
 
-            logger.DebugFormat("Background process '{0}' stopped.", process);
+            logger.Debug($"Background process '{process}' stopped.");
         }
 
         private static void TrySetThreadName(string name)

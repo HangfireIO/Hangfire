@@ -44,10 +44,7 @@ namespace Hangfire.SqlServer
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
-            return new SqlServerDistributedLock(
-                _storage,
-                String.Format("{0}:{1}", _storage.GetSchemaName(), resource),
-                timeout);
+            return new SqlServerDistributedLock(_storage, $"{_storage.SchemaName}:{resource}", timeout);
         }
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
@@ -61,9 +58,8 @@ namespace Hangfire.SqlServer
 
             if (providers.Length != 1)
             {
-                throw new InvalidOperationException(String.Format(
-                    "Multiple provider instances registered for queues: {0}. You should choose only one type of persistent queues per server instance.",
-                    String.Join(", ", queues)));
+                throw new InvalidOperationException(
+                    $"Multiple provider instances registered for queues: {String.Join(", ", queues)}. You should choose only one type of persistent queues per server instance.");
             }
             
             var persistentQueue = providers[0].GetJobQueue();
@@ -79,10 +75,10 @@ namespace Hangfire.SqlServer
             if (job == null) throw new ArgumentNullException("job");
             if (parameters == null) throw new ArgumentNullException("parameters");
 
-            string createJobSql = string.Format(@"
-insert into [{0}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
+            string createJobSql =
+$@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 values (@invocationData, @arguments, @createdAt, @expireAt);
-SELECT CAST(SCOPE_IDENTITY() as int)", _storage.GetSchemaName());
+SELECT CAST(SCOPE_IDENTITY() as int)";
 
             var invocationData = InvocationData.Serialize(job);
 
@@ -112,9 +108,9 @@ SELECT CAST(SCOPE_IDENTITY() as int)", _storage.GetSchemaName());
                         };
                     }
 
-                    string insertParameterSql = string.Format(@"
-insert into [{0}].JobParameter (JobId, Name, Value)
-values (@jobId, @name, @value)", _storage.GetSchemaName());
+                    string insertParameterSql =
+$@"insert into [{_storage.SchemaName}].JobParameter (JobId, Name, Value)
+values (@jobId, @name, @value)";
 
                     connection.Execute(insertParameterSql, parameterArray);
                 }
@@ -128,7 +124,7 @@ values (@jobId, @name, @value)", _storage.GetSchemaName());
             if (id == null) throw new ArgumentNullException("id");
 
             string sql =
-                string.Format(@"select InvocationData, StateName, Arguments, CreatedAt from [{0}].Job where Id = @id", _storage.GetSchemaName());
+$@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job where Id = @id";
 
             return _storage.UseConnection(connection =>
             {
@@ -167,11 +163,11 @@ values (@jobId, @name, @value)", _storage.GetSchemaName());
         {
             if (jobId == null) throw new ArgumentNullException("jobId");
 
-            string sql = string.Format(@"
-select s.Name, s.Reason, s.Data
-from [{0}].State s
-inner join [{0}].Job j on j.StateId = s.Id
-where j.Id = @jobId", _storage.GetSchemaName());
+            string sql = 
+$@"select s.Name, s.Reason, s.Data
+from [{_storage.SchemaName}].State s
+inner join [{_storage.SchemaName}].Job j on j.StateId = s.Id
+where j.Id = @jobId";
 
             return _storage.UseConnection(connection =>
             {
@@ -202,12 +198,11 @@ where j.Id = @jobId", _storage.GetSchemaName());
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    string.Format(@";merge [{0}].JobParameter with (holdlock) as Target "
-                    + @"using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) "
-                    + @"on Target.JobId = Source.JobId AND Target.Name = Source.Name "
-                    + @"when matched then update set Value = Source.Value "
-                    +
-                    @"when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);", _storage.GetSchemaName()),
+$@";merge [{_storage.SchemaName}].JobParameter with (holdlock) as Target
+using (VALUES (@jobId, @name, @value)) as Source (JobId, Name, Value) 
+on Target.JobId = Source.JobId AND Target.Name = Source.Name
+when matched then update set Value = Source.Value
+when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.Name, Source.Value);",
                     new { jobId = id, name, value });
             });
         }
@@ -218,7 +213,7 @@ where j.Id = @jobId", _storage.GetSchemaName());
             if (name == null) throw new ArgumentNullException("name");
 
             return _storage.UseConnection(connection => connection.Query<string>(
-                string.Format(@"select Value from [{0}].JobParameter where JobId = @id and Name = @name", _storage.GetSchemaName()),
+                $@"select Value from [{_storage.SchemaName}].JobParameter where JobId = @id and Name = @name",
                 new { id = id, name = name })
                 .SingleOrDefault());
         }
@@ -230,7 +225,7 @@ where j.Id = @jobId", _storage.GetSchemaName());
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<string>(
-                    string.Format(@"select Value from [{0}].[Set] where [Key] = @key", _storage.GetSchemaName()),
+                    $@"select Value from [{_storage.SchemaName}].[Set] where [Key] = @key",
                     new { key });
 
                 return new HashSet<string>(result);
@@ -243,7 +238,7 @@ where j.Id = @jobId", _storage.GetSchemaName());
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
 
             return _storage.UseConnection(connection => connection.Query<string>(
-                string.Format(@"select top 1 Value from [{0}].[Set] where [Key] = @key and Score between @from and @to order by Score", _storage.GetSchemaName()),
+                $@"select top 1 Value from [{_storage.SchemaName}].[Set] where [Key] = @key and Score between @from and @to order by Score",
                 new { key, from = fromScore, to = toScore })
                 .SingleOrDefault());
         }
@@ -253,12 +248,12 @@ where j.Id = @jobId", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
             if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
 
-            string sql = string.Format(@"
-;merge [{0}].Hash with (holdlock) as Target
+            string sql =
+$@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
 using (VALUES (@key, @field, @value)) as Source ([Key], Field, Value)
 on Target.[Key] = Source.[Key] and Target.Field = Source.Field
 when matched then update set Value = Source.Value
-when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);", _storage.GetSchemaName());
+when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.Field, Source.Value);";
 
             _storage.UseTransaction(connection =>
             {
@@ -276,7 +271,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             return _storage.UseConnection(connection =>
             {
                 var result = connection.Query<SqlHash>(
-                    string.Format("select Field, Value from [{0}].Hash with (forceseek) where [Key] = @key", _storage.GetSchemaName()),
+                    $"select Field, Value from [{_storage.SchemaName}].Hash with (forceseek) where [Key] = @key",
                     new { key })
                     .ToDictionary(x => x.Field, x => x.Value);
 
@@ -299,12 +294,11 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    string.Format(@";merge [{0}].Server with (holdlock) as Target "
-                    + @"using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat) "
-                    + @"on Target.Id = Source.Id "
-                    + @"when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat "
-                    +
-                    @"when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);", _storage.GetSchemaName()),
+$@";merge [{_storage.SchemaName}].Server with (holdlock) as Target
+using (VALUES (@id, @data, @heartbeat)) as Source (Id, Data, Heartbeat)
+on Target.Id = Source.Id
+when matched then update set Data = Source.Data, LastHeartbeat = Source.Heartbeat
+when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source.Data, Source.Heartbeat);",
                     new { id = serverId, data = JobHelper.ToJson(data), heartbeat = DateTime.UtcNow });
             });
         }
@@ -316,7 +310,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    string.Format(@"delete from [{0}].Server where Id = @id", _storage.GetSchemaName()),
+                    $@"delete from [{_storage.SchemaName}].Server where Id = @id",
                     new { id = serverId });
             });
         }
@@ -328,7 +322,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             _storage.UseConnection(connection =>
             {
                 connection.Execute(
-                    string.Format(@"update [{0}].Server set LastHeartbeat = @now where Id = @id", _storage.GetSchemaName()),
+                    $@"update [{_storage.SchemaName}].Server set LastHeartbeat = @now where Id = @id",
                     new { now = DateTime.UtcNow, id = serverId });
             });
         }
@@ -341,7 +335,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             }
 
             return _storage.UseConnection(connection => connection.Execute(
-                string.Format(@"delete from [{0}].Server where LastHeartbeat < @timeOutAt", _storage.GetSchemaName()),
+                $@"delete from [{_storage.SchemaName}].Server where LastHeartbeat < @timeOutAt",
                 new { timeOutAt = DateTime.UtcNow.Add(timeOut.Negate()) }));
         }
 
@@ -350,7 +344,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
             if (key == null) throw new ArgumentNullException("key");
 
             return _storage.UseConnection(connection => connection.Query<int>(
-                string.Format("select count([Key]) from [{0}].[Set] where [Key] = @key", _storage.GetSchemaName()),
+                $"select count([Key]) from [{_storage.SchemaName}].[Set] where [Key] = @key",
                 new { key = key }).First());
         }
 
@@ -358,12 +352,12 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select [Value] from (
+            string query =
+$@"select [Value] from (
 	select [Value], row_number() over (order by [Id] ASC) as row_num 
-	from [{0}].[Set]
+	from [{_storage.SchemaName}].[Set]
 	where [Key] = @key 
-) as s where s.row_num between @startingFrom and @endingAt", _storage.GetSchemaName());
+) as s where s.row_num between @startingFrom and @endingAt";
 
             return _storage.UseConnection(connection => connection
                 .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 })
@@ -374,9 +368,7 @@ select [Value] from (
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select min([ExpireAt]) from [{0}].[Set]
-where [Key] = @key", _storage.GetSchemaName());
+            string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].[Set] where [Key] = @key";
 
             return _storage.UseConnection(connection =>
             {
@@ -391,12 +383,12 @@ where [Key] = @key", _storage.GetSchemaName());
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select sum(s.[Value]) from (select sum([Value]) as [Value] from [{0}].Counter
+            string query = 
+$@"select sum(s.[Value]) from (select sum([Value]) as [Value] from [{_storage.SchemaName}].Counter
 where [Key] = @key
 union all
-select [Value] from [{0}].AggregatedCounter
-where [Key] = @key) as s", _storage.GetSchemaName());
+select [Value] from [{_storage.SchemaName}].AggregatedCounter
+where [Key] = @key) as s";
 
             return _storage.UseConnection(connection => 
                 connection.Query<long?>(query, new { key = key }).Single() ?? 0);
@@ -406,9 +398,7 @@ where [Key] = @key) as s", _storage.GetSchemaName());
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select count([Id]) from [{0}].Hash
-where [Key] = @key", _storage.GetSchemaName());
+            string query = $@"select count([Id]) from [{_storage.SchemaName}].Hash where [Key] = @key";
 
             return _storage.UseConnection(connection => connection.Query<long>(query, new { key = key }).Single());
         }
@@ -417,9 +407,7 @@ where [Key] = @key", _storage.GetSchemaName());
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select min([ExpireAt]) from [{0}].Hash
-where [Key] = @key", _storage.GetSchemaName());
+            string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].Hash where [Key] = @key";
 
             return _storage.UseConnection(connection =>
             {
@@ -435,9 +423,9 @@ where [Key] = @key", _storage.GetSchemaName());
             if (key == null) throw new ArgumentNullException("key");
             if (name == null) throw new ArgumentNullException("name");
 
-            string query = string.Format(@"
-select [Value] from [{0}].Hash
-where [Key] = @key and [Field] = @field", _storage.GetSchemaName());
+            string query =
+$@"select [Value] from [{_storage.SchemaName}].Hash
+where [Key] = @key and [Field] = @field";
 
             return _storage.UseConnection(connection => connection
                 .Query<string>(query, new { key = key, field = name }).SingleOrDefault());
@@ -447,9 +435,9 @@ where [Key] = @key and [Field] = @field", _storage.GetSchemaName());
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select count([Id]) from [{0}].List
-where [Key] = @key", _storage.GetSchemaName());
+            string query = 
+$@"select count([Id]) from [{_storage.SchemaName}].List
+where [Key] = @key";
 
             return _storage.UseConnection(connection => connection.Query<long>(query, new { key = key }).Single());
         }
@@ -458,9 +446,9 @@ where [Key] = @key", _storage.GetSchemaName());
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select min([ExpireAt]) from [{0}].List
-where [Key] = @key", _storage.GetSchemaName());
+            string query = 
+$@"select min([ExpireAt]) from [{_storage.SchemaName}].List
+where [Key] = @key";
 
             return _storage.UseConnection(connection =>
             {
@@ -475,12 +463,12 @@ where [Key] = @key", _storage.GetSchemaName());
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select [Value] from (
+            string query =
+$@"select [Value] from (
 	select [Value], row_number() over (order by [Id] desc) as row_num 
-	from [{0}].List
+	from [{_storage.SchemaName}].List
 	where [Key] = @key 
-) as s where s.row_num between @startingFrom and @endingAt", _storage.GetSchemaName());
+) as s where s.row_num between @startingFrom and @endingAt";
 
             return _storage.UseConnection(connection => connection
                 .Query<string>(query, new { key = key, startingFrom = startingFrom + 1, endingAt = endingAt + 1 })
@@ -491,10 +479,10 @@ select [Value] from (
         {
             if (key == null) throw new ArgumentNullException("key");
 
-            string query = string.Format(@"
-select [Value] from [{0}].List
+            string query =
+$@"select [Value] from [{_storage.SchemaName}].List
 where [Key] = @key
-order by [Id] desc", _storage.GetSchemaName());
+order by [Id] desc";
 
             return _storage.UseConnection(connection => connection.Query<string>(query, new { key = key }).ToList());
         }

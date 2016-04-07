@@ -95,15 +95,15 @@ namespace Hangfire
             };
 
             Logger.Info("Starting Hangfire Server");
-            Logger.InfoFormat("Using job storage: '{0}'.", storage);
+            Logger.Info($"Using job storage: '{storage}'");
 
             storage.WriteOptionsToLog(Logger);
 
             Logger.Info("Using the following options for Hangfire Server:");
-            Logger.InfoFormat("    Worker count: {0}.", options.WorkerCount);
-            Logger.InfoFormat("    Listening queues: {0}.", String.Join(", ", options.Queues.Select(x => "'" + x + "'")));
-            Logger.InfoFormat("    Shutdown timeout: {0}.", options.ShutdownTimeout);
-            Logger.InfoFormat("    Schedule polling interval: {0}.", options.SchedulePollingInterval);
+            Logger.Info($"    Worker count: {options.WorkerCount}");
+            Logger.Info($"    Listening queues: {String.Join(", ", options.Queues.Select(x => "'" + x + "'"))}");
+            Logger.Info($"    Shutdown timeout: {options.ShutdownTimeout}");
+            Logger.Info($"    Schedule polling interval: {options.SchedulePollingInterval}");
             
             _processingServer = new BackgroundProcessingServer(
                 storage, 

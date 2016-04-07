@@ -33,29 +33,21 @@ namespace Hangfire
             if (context.CandidateState.Name == SucceededState.StateName)
             {
                 context.Transaction.IncrementCounter(
-                    String.Format(
-                        "stats:succeeded:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                    $"stats:succeeded:{DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}",
                     DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                 context.Transaction.IncrementCounter(
-                    String.Format(
-                        "stats:succeeded:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
+                    $"stats:succeeded:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
                     TimeSpan.FromDays(1));
             }
             else if (context.CandidateState.Name == FailedState.StateName)
             {
                 context.Transaction.IncrementCounter(
-                    String.Format(
-                        "stats:failed:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd")),
+                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd")}",
                     DateTime.UtcNow.AddMonths(1) - DateTime.UtcNow);
 
                 context.Transaction.IncrementCounter(
-                    String.Format(
-                        "stats:failed:{0}",
-                        DateTime.UtcNow.ToString("yyyy-MM-dd-HH")),
+                    $"stats:failed:{DateTime.UtcNow.ToString("yyyy-MM-dd-HH")}",
                     TimeSpan.FromDays(1));
             }
         }

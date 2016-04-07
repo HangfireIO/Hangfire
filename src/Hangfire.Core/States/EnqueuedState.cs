@@ -226,9 +226,7 @@ namespace Hangfire.States
             if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
             {
                 throw new ArgumentException(
-                    String.Format(
-                        "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'.",
-                        value),
+                    $"The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{value}'.",
                     parameterName);
             }
         }
@@ -240,9 +238,8 @@ namespace Hangfire.States
                 var enqueuedState = context.NewState as EnqueuedState;
                 if (enqueuedState == null)
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "`{0}` state handler can be registered only for the Enqueued state.",
-                        typeof(Handler).FullName));
+                    throw new InvalidOperationException(
+                        $"`{typeof (Handler).FullName}` state handler can be registered only for the Enqueued state.");
                 }
 
                 transaction.AddToQueue(enqueuedState.Queue, context.BackgroundJob.Id);

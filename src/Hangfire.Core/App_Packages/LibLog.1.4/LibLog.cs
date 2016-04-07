@@ -1520,9 +1520,8 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetHttpContextType()
         {
-            return Type.GetType(String.Format(
-                "System.Web.HttpContext, System.Web, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
-                Environment.Version));
+            return Type.GetType(
+                $"System.Web.HttpContext, System.Web, Version={Environment.Version}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
         }
 
         private static Type GetErrorType()

@@ -112,7 +112,7 @@ namespace MQTools
         private static long GetQueueCount(string computerName, string queueType, string queue)
         {
             if (string.IsNullOrEmpty(computerName)) computerName = null;
-            string queuePath = string.Format("queue=Direct=OS:{0}\\{1}\\{2}", computerName ?? ".", queueType, queue);
+            string queuePath = $"queue=Direct=OS:{computerName ?? "."}\\{queueType}\\{queue}";
             return GetCount(computerName, queuePath);
         }
 

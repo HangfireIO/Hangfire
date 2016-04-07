@@ -216,12 +216,12 @@ WriteLiteral(@"
             
             #line default
             #line hidden
-WriteLiteral("                            ");
+WriteLiteral("\r\n                            ");
 
 
             
-            #line 62 "..\..\Dashboard\Pages\LayoutPage.cshtml"
-                       Write(String.Format("{0}.{1}.{2}", version.Major, version.Minor, version.Build));
+            #line 63 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+                        Write($"{version.Major}.{version.Minor}.{version.Build}");
 
             
             #line default
@@ -231,7 +231,7 @@ WriteLiteral("\r\n                        </a>\r\n                    </li>\r\n 
 
 
             
-            #line 65 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(Storage);
 
             
@@ -241,7 +241,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
 
             
-            #line 66 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Time, DateTime.UtcNow));
 
             
@@ -251,7 +251,7 @@ WriteLiteral("</li>\r\n                    <li>");
 
 
             
-            #line 67 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                    Write(String.Format(Strings.LayoutPage_Footer_Generatedms, GenerationTime.Elapsed.TotalMilliseconds.ToString("N")));
 
             
@@ -263,7 +263,7 @@ WriteLiteral("</li>\r\n                </ul>\r\n            </div>\r\n        </
 
 
             
-            #line 75 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                              Write(StatsPollingInterval);
 
             
@@ -273,7 +273,7 @@ WriteLiteral(",\r\n                    pollUrl: \'");
 
 
             
-            #line 76 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 77 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                           Write(Url.To("/stats"));
 
             
@@ -283,7 +283,7 @@ WriteLiteral("\',\r\n                    locale: \'");
 
 
             
-            #line 77 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 78 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                         Write(Thread.CurrentThread.CurrentUICulture);
 
             
@@ -294,7 +294,7 @@ WriteLiteral("\'\r\n                };\r\n            })(window.Hangfire = windo
 
 
             
-            #line 81 "..\..\Dashboard\Pages\LayoutPage.cshtml"
+            #line 82 "..\..\Dashboard\Pages\LayoutPage.cshtml"
                 Write(Url.To("/js"));
 
             

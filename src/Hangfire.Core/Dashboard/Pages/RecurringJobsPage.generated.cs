@@ -586,7 +586,7 @@ WriteLiteral("\">\r\n                                            <span class=\"l
 
             
             #line 145 "..\..\Dashboard\Pages\RecurringJobsPage.cshtml"
-                                                                                            Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(job.LastJobState)));
+                                                                                             Write($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState)};");
 
             
             #line default

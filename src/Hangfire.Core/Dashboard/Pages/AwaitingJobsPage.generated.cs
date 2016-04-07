@@ -502,7 +502,7 @@ WriteLiteral("\">\r\n                                                <span class
 
             
             #line 130 "..\..\Dashboard\Pages\AwaitingJobsPage.cshtml"
-                                                                                                 Write(String.Format("background-color: {0};", JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)));
+                                                                                                 Write($"background-color: {JobHistoryRenderer.GetForegroundStateColor(parentStateData.Name)};");
 
             
             #line default

@@ -33,7 +33,7 @@ namespace Hangfire.Storage
             if (jobId == null) throw new ArgumentNullException("jobId");
 
             return connection.AcquireDistributedLock(
-                String.Format("job:{0}:state-lock", jobId),
+                $"job:{jobId}:state-lock",
                 timeout);
         }
 
@@ -67,7 +67,7 @@ namespace Hangfire.Storage
             var result = new List<RecurringJobDto>();
             foreach (var id in ids)
             {
-                var hash = connection.GetAllEntriesFromHash(String.Format("recurring-job:{0}", id));
+                var hash = connection.GetAllEntriesFromHash($"recurring-job:{id}");
 
                 if (hash == null)
                 {

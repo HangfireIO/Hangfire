@@ -53,7 +53,7 @@ namespace Hangfire.Core.Tests.States
 
             _distributedLock = new Mock<IDisposable>();
             _connection
-                .Setup(x => x.AcquireDistributedLock(String.Format("job:{0}:state-lock", JobId), It.IsAny<TimeSpan>()))
+                .Setup(x => x.AcquireDistributedLock($"job:{JobId}:state-lock", It.IsAny<TimeSpan>()))
                 .Returns(_distributedLock.Object);
 
             _cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));

@@ -129,7 +129,7 @@ namespace Hangfire.Server
 
             if (jobsEnqueued != 0)
             {
-                Logger.InfoFormat("{0} scheduled job(s) enqueued.", jobsEnqueued);
+                Logger.Info($"{jobsEnqueued} scheduled job(s) enqueued.");
             }
 
             context.Wait(_pollingDelay);
@@ -161,7 +161,7 @@ namespace Hangfire.Server
                     context.Storage,
                     connection,
                     jobId,
-                    new EnqueuedState { Reason = String.Format("Triggered by {0}", ToString()) }, 
+                    new EnqueuedState { Reason = $"Triggered by {ToString()}" }, 
                     ScheduledState.StateName));
 
                 if (appliedState == null)

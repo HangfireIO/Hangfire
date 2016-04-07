@@ -119,13 +119,13 @@ namespace Hangfire.Dashboard
                     Style = MetricStyle.Danger,
                     Highlighted = true,
                     Title =
-                        String.Format("{0} failed job(s) found. Retry or delete them manually.", page.Statistics.Failed)
+                        $"{page.Statistics.Failed} failed job(s) found. Retry or delete them manually."
                 }
                 : null);
 
         public static readonly DashboardMetric EnqueuedAndQueueCount = new DashboardMetric(
             "enqueued-queues:count",
-            page => new Metric(String.Format("{0:N0} / {1:N0}", page.Statistics.Enqueued, page.Statistics.Queues))
+            page => new Metric($"{page.Statistics.Enqueued:N0} / {page.Statistics.Queues:N0}")
             {
                 Style = page.Statistics.Enqueued > 0 ? MetricStyle.Info : MetricStyle.Default,
                 Highlighted = page.Statistics.Enqueued > 0

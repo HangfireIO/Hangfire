@@ -166,9 +166,7 @@ namespace Hangfire
                 if (LogEvents)
                 {
                     Logger.ErrorException(
-                        String.Format(
-                            "Failed to process the job '{0}': an exception occurred.",
-                            context.BackgroundJob.Id),
+                        $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred.",
                         failedState.Exception);
                 }
             }
@@ -207,30 +205,21 @@ namespace Hangfire
             var delay = TimeSpan.FromSeconds(SecondsToDelay(retryAttempt));
 
             const int maxMessageLength = 50;
-            var exceptionMessage = failedState.Exception.Message;
+            var exceptionMessage = failedState.Exception.Message.Length > maxMessageLength
+                ? failedState.Exception.Message.Substring(0, maxMessageLength - 1) + "…" 
+                : failedState.Exception.Message;
 
             // If attempt number is less than max attempts, we should
             // schedule the job to run again later.
             context.CandidateState = new ScheduledState(delay)
             {
-                Reason = String.Format(
-                    "Retry attempt {0} of {1}: {2}", 
-                    retryAttempt, 
-                    Attempts,
-                    exceptionMessage.Length > maxMessageLength
-                    ? exceptionMessage.Substring(0, maxMessageLength - 1) + "…"
-                    : exceptionMessage)
+                Reason = $"Retry attempt {retryAttempt} of {Attempts}: {exceptionMessage}"
             };
 
             if (LogEvents)
             {
                 Logger.WarnException(
-                    String.Format(
-                        "Failed to process the job '{0}': an exception occurred. Retry attempt {1} of {2} will be performed in {3}.",
-                        context.BackgroundJob.Id,
-                        retryAttempt,
-                        Attempts,
-                        delay),
+                    $"Failed to process the job '{context.BackgroundJob.Id}': an exception occurred. Retry attempt {retryAttempt} of {Attempts} will be performed in {delay}.",
                     failedState.Exception);
             }
         }
@@ -250,10 +239,7 @@ namespace Hangfire
             if (LogEvents)
             {
                 Logger.WarnException(
-                    String.Format(
-                        "Failed to process the job '{0}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {1}.",
-                        context.BackgroundJob.Id,
-                        Attempts),
+                    $"Failed to process the job '{context.BackgroundJob.Id}': an exception occured. Job was automatically deleted because the retry attempt count exceeded {Attempts}.",
                     failedState.Exception);
             }
         }

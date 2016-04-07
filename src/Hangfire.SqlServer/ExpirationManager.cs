@@ -62,7 +62,7 @@ namespace Hangfire.SqlServer
         {
             foreach (var table in ProcessedTables)
             {
-                Logger.DebugFormat("Removing outdated records from table '{0}'...", table);
+                Logger.Debug($"Removing outdated records from table '{table}'...");
 
                 int removedCount = 0;
 
@@ -75,9 +75,8 @@ namespace Hangfire.SqlServer
                         try
                         {
                             removedCount = connection.Execute(
-                                $@"
-set transaction isolation level read committed;
-delete top (@count) from [{_storage.GetSchemaName()}].[{table}] with (readpast) where ExpireAt < @now;",
+$@"set transaction isolation level read committed;
+delete top (@count) from [{_storage.SchemaName}].[{table}] with (readpast) where ExpireAt < @now;",
                                 new { now = DateTime.UtcNow, count = NumberOfRecordsInSinglePass });
                         }
                         finally
