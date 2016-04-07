@@ -11,10 +11,7 @@ namespace Hangfire.Common.ExpressionUtil
     {
         private long _combinedHash64 = 0x1505L;
 
-        public int CombinedHash
-        {
-            get { return _combinedHash64.GetHashCode(); }
-        }
+        public int CombinedHash => _combinedHash64.GetHashCode();
 
         public void AddFingerprint(ExpressionFingerprint fingerprint)
         {
@@ -53,7 +50,7 @@ namespace Hangfire.Common.ExpressionUtil
 
         public void AddObject(object o)
         {
-            int hashCode = (o != null) ? o.GetHashCode() : 0;
+            int hashCode = o?.GetHashCode() ?? 0;
             AddInt32(hashCode);
         }
     }

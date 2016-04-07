@@ -50,10 +50,7 @@ namespace Hangfire.Server
 
         public CancellationToken CancellationToken { get; }
 
-        public bool IsShutdownRequested
-        {
-            get { return CancellationToken.IsCancellationRequested; }
-        }
+        public bool IsShutdownRequested => CancellationToken.IsCancellationRequested;
 
         public void Wait(TimeSpan timeout)
         {

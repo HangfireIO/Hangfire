@@ -162,17 +162,12 @@ namespace Hangfire
 
         private class ConfigurationEntry<T> : IGlobalConfiguration<T>
         {
-            private readonly T _entry;
-
             public ConfigurationEntry(T entry)
             {
-                _entry = entry;
+                Entry = entry;
             }
 
-            public T Entry
-            {
-                get { return _entry; }
-            }
+            public T Entry { get; }
         }
     }
 }

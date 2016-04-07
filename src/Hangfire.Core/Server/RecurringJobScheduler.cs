@@ -185,7 +185,7 @@ namespace Hangfire.Server
                     }
 
                     var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state));
-                    var jobId = backgroundJob != null ? backgroundJob.Id : null;
+                    var jobId = backgroundJob?.Id;
 
                     if (String.IsNullOrEmpty(jobId))
                     {

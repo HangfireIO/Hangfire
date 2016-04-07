@@ -37,9 +37,6 @@ namespace Hangfire.Core.Tests
         public IEnumerable<string> ExpectedStates { get; set; } 
         public CancellationToken CancellationToken { get; set; }
         
-        public StateChangeContext Object
-        {
-            get { return _context.Value; }
-        }
+        public StateChangeContext Object => _context.Value;
     }
 }

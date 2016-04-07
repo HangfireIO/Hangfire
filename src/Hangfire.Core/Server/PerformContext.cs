@@ -62,11 +62,13 @@ namespace Hangfire.Server
         public BackgroundJob BackgroundJob { get; }
 
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public string JobId { get { return BackgroundJob.Id; } }
+        public string JobId => BackgroundJob.Id;
+
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public Job Job { get { return BackgroundJob.Job; } }
+        public Job Job => BackgroundJob.Job;
+
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public DateTime CreatedAt { get { return BackgroundJob.CreatedAt; } }
+        public DateTime CreatedAt => BackgroundJob.CreatedAt;
 
         [NotNull]
         public IJobCancellationToken CancellationToken { get; }

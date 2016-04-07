@@ -29,10 +29,7 @@ namespace Hangfire.Common
         private static readonly ConcurrentDictionary<Type, bool> MultiuseAttributeCache = new ConcurrentDictionary<Type, bool>();
         private int _order = JobFilter.DefaultOrder;
 
-        public bool AllowMultiple
-        {
-            get { return AllowsMultiple(GetType()); }
-        }
+        public bool AllowMultiple => AllowsMultiple(GetType());
 
         public int Order
         {

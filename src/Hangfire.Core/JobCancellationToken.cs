@@ -31,7 +31,7 @@ namespace Hangfire
 
         public CancellationToken ShutdownToken { get; }
 
-        public static IJobCancellationToken Null { get { return null; } }
+        public static IJobCancellationToken Null => null;
 
         public void ThrowIfCancellationRequested()
         {

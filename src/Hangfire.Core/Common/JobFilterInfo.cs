@@ -59,10 +59,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client filters.
         /// </returns>
-        public IList<IClientFilter> ClientFilters
-        {
-            get { return _clientFilters; }
-        }
+        public IList<IClientFilter> ClientFilters => _clientFilters;
 
         /// <summary>
         /// Gets all the server filters in the application.
@@ -71,10 +68,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The server filters.
         /// </returns>
-        public IList<IServerFilter> ServerFilters
-        {
-            get { return _serverFilters; }
-        }
+        public IList<IServerFilter> ServerFilters => _serverFilters;
 
         /// <summary>
         /// Gets all the stat changing filters in the application.
@@ -83,10 +77,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changing filters.
         /// </returns>
-        public IList<IElectStateFilter> ElectStateFilters
-        {
-            get { return _electStateFilters; }
-        }
+        public IList<IElectStateFilter> ElectStateFilters => _electStateFilters;
 
         /// <summary>
         /// Gets all the state changed filters in the application.
@@ -95,10 +86,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The state changed filters.
         /// </returns>
-        public IList<IApplyStateFilter> ApplyStateFilters
-        {
-            get { return _applyStateFilters; }
-        }
+        public IList<IApplyStateFilter> ApplyStateFilters => _applyStateFilters;
 
         /// <summary>
         /// Gets all the client exception filters in the application.
@@ -107,10 +95,7 @@ namespace Hangfire.Common
         /// <returns>
         /// The client exception filters.
         /// </returns>
-        public IList<IClientExceptionFilter> ClientExceptionFilters
-        {
-            get { return _clientExceptionFilters; }
-        }
+        public IList<IClientExceptionFilter> ClientExceptionFilters => _clientExceptionFilters;
 
         /// <summary>
         /// Gets all the server exception filters in the application.
@@ -119,9 +104,6 @@ namespace Hangfire.Common
         /// <returns>
         /// The server exception filters.
         /// </returns>
-        public IList<IServerExceptionFilter> ServerExceptionFilters
-        {
-            get { return _serverExceptionFilters; }
-        }
+        public IList<IServerExceptionFilter> ServerExceptionFilters => _serverExceptionFilters;
     }
 }

@@ -15,18 +15,12 @@ namespace Hangfire.Core.Tests.Common
         private readonly JobFilterCollection _collection = new JobFilterCollection();
         private readonly object _filterInstance = GetFilterInstance<IClientFilter>();
 
-        public static IEnumerable<object[]> AddRejectsNonFilterInstancesData
+        public static IEnumerable<object[]> AddRejectsNonFilterInstancesData => new List<object[]>
         {
-            get
-            {
-                return new List<object[]>
-                {
-                    new object[] { "string" },
-                    new object[] { 42 },
-                    new object[] { new JobFilterCollectionFacts() },
-                };
-            }
-        }
+            new object[] { "string" },
+            new object[] { 42 },
+            new object[] { new JobFilterCollectionFacts() },
+        };
 
         [Fact]
         public void AddRejectsNonFilterInstances()

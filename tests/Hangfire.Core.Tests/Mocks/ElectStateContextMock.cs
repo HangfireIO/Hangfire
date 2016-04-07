@@ -17,9 +17,6 @@ namespace Hangfire.Core.Tests
 
         public ApplyStateContextMock ApplyContext { get; set; }
 
-        public ElectStateContext Object
-        {
-            get { return _context.Value; }
-        }
+        public ElectStateContext Object => _context.Value;
     }
 }

@@ -97,7 +97,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
-        public string Name { get { return StateName; } }
+        public string Name => StateName;
 
         /// <inheritdoc />
         public string Reason { get; set; }
@@ -108,7 +108,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
-        public bool IsFinal { get { return false; } }
+        public bool IsFinal => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -117,7 +117,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
-        public bool IgnoreJobLoadException { get { return false; } }
+        public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />
         /// <remarks>

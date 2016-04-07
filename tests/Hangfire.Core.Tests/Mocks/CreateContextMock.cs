@@ -31,10 +31,7 @@ namespace Hangfire.Core.Tests
         public Job Job { get; set; }
         public Mock<IState> InitialState { get; set; } 
 
-        public CreateContext Object
-        {
-            get { return _context.Value; }
-        }
+        public CreateContext Object => _context.Value;
 
         public static void Method() { }
     }

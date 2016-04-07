@@ -134,7 +134,7 @@ namespace Hangfire.SqlServer
                         Name = server.Id,
                         Heartbeat = server.LastHeartbeat,
                         Queues = data.Queues,
-                        StartedAt = data.StartedAt.HasValue ? data.StartedAt.Value : DateTime.MinValue,
+                        StartedAt = data.StartedAt ?? DateTime.MinValue,
                         WorkersCount = data.WorkerCount
                     });
                 }

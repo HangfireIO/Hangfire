@@ -41,9 +41,6 @@ namespace Hangfire.Core.Tests
         public string OldStateName { get; set; }
         public TimeSpan JobExpirationTimeout { get; set; } 
 
-        public ApplyStateContext Object
-        {
-            get { return _context.Value; }
-        }
+        public ApplyStateContext Object => _context.Value;
     }
 }

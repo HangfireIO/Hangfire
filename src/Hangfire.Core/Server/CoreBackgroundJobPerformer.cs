@@ -71,24 +71,21 @@ namespace Hangfire.Server
             {
                 var result = methodInfo.Invoke(instance, arguments);
 
-                if (result != null)
+                var task = result as Task;
+
+                if (task != null)
                 {
-                    var task = result as Task;
+                    task.Wait();
 
-                    if (task != null)
+                    if (methodInfo.ReturnType.IsGenericType)
                     {
-                        task.Wait();
+                        var resultProperty = methodInfo.ReturnType.GetProperty("Result");
 
-                        if (methodInfo.ReturnType.IsGenericType)
-                        {
-                            var resultProperty = methodInfo.ReturnType.GetProperty("Result");
-
-                            result = resultProperty.GetValue(task);
-                        }
-                        else
-                        {
-                            result = null;
-                        }
+                        result = resultProperty.GetValue(task);
+                    }
+                    else
+                    {
+                        result = null;
                     }
                 }
 

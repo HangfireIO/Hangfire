@@ -49,10 +49,7 @@ namespace Hangfire.Server
             _shutdownToken = shutdownToken;
         }
 
-        public CancellationToken ShutdownToken
-        {
-            get { return _shutdownToken; }
-        }
+        public CancellationToken ShutdownToken => _shutdownToken;
 
         public void ThrowIfCancellationRequested()
         {

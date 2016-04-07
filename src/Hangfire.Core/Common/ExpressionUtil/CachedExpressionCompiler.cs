@@ -65,12 +65,7 @@ namespace Hangfire.Common.ExpressionUtil
                     // model => model
 
                     // don't need to lock, as all identity funcs are identical
-                    if (_identityFunc == null)
-                    {
-                        _identityFunc = expr.Compile();
-                    }
-
-                    return _identityFunc;
+                    return _identityFunc ?? (_identityFunc = expr.Compile());
                 }
 
                 return null;

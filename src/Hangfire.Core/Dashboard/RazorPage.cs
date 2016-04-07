@@ -57,10 +57,7 @@ namespace Hangfire.Dashboard
         internal IOwinRequest Request { private get; set; }
         internal IOwinResponse Response { private get; set; }
 
-        public string RequestPath
-        {
-            get { return Request.Path.Value; }
-        }
+        public string RequestPath => Request.Path.Value;
 
         /// <exclude />
         public abstract void Execute();
@@ -121,7 +118,7 @@ namespace Hangfire.Dashboard
             if (value == null)
                 return;
             var html = value as NonEscapedString;
-            WriteLiteral(html != null ? html.ToString() : Encode(value.ToString()));
+            WriteLiteral(html?.ToString() ?? Encode(value.ToString()));
         }
 
         protected virtual object RenderBody()

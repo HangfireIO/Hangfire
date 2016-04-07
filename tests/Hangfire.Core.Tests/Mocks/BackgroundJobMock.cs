@@ -21,10 +21,7 @@ namespace Hangfire.Core.Tests
         public Job Job { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        public BackgroundJob Object
-        {
-            get { return _object.Value; }
-        }
+        public BackgroundJob Object => _object.Value;
 
         public static void SomeMethod() { }
     }

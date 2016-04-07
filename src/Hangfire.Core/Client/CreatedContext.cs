@@ -41,18 +41,12 @@ namespace Hangfire.Client
 
         [CanBeNull]
         [Obsolete("Please use `BackgroundJob` property instead. Will be removed in 2.0.0.")]
-        public string JobId { get { return BackgroundJob != null ? BackgroundJob.Id : null; } }
+        public string JobId => BackgroundJob?.Id;
 
         [CanBeNull]
         public BackgroundJob BackgroundJob { get; }
         
-        public override IDictionary<string, object> Parameters
-        {
-            get
-            {
-                return new ReadOnlyDictionary<string, object>(base.Parameters);
-            }
-        }
+        public override IDictionary<string, object> Parameters => new ReadOnlyDictionary<string, object>(base.Parameters);
 
         /// <summary>
         /// Gets an exception that occurred during the creation of the job.

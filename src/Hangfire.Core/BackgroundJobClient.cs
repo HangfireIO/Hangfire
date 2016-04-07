@@ -116,7 +116,7 @@ namespace Hangfire
                     var context = new CreateContext(_storage, connection, job, state);
                     var backroundJob = _factory.Create(context);
 
-                    return backroundJob != null ? backroundJob.Id : null;
+                    return backroundJob?.Id;
                 }
             }
             catch (Exception ex)

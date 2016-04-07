@@ -74,8 +74,11 @@ namespace Hangfire.Storage
                     continue;
                 }
 
-                var dto = new RecurringJobDto { Id = id };
-                dto.Cron = hash["Cron"];
+                var dto = new RecurringJobDto
+                {
+                    Id = id,
+                    Cron = hash["Cron"]
+                };
 
                 try
                 {
