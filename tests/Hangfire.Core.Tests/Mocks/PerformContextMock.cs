@@ -1,5 +1,4 @@
 ﻿using System;
-using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;

@@ -2,7 +2,6 @@
 using System.Linq;
 using Hangfire.SqlServer;
 using Hangfire.SqlServer.Msmq;
-using Hangfire.States;
 using Xunit;
 
 namespace Hangfire.Msmq.Tests

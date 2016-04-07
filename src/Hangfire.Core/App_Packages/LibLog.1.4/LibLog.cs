@@ -470,7 +470,6 @@ namespace Hangfire.Logging.LogProviders
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Text;
-    using System.Threading;
 
     public class NLogLogProvider : ILogProvider
     {

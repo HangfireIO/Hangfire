@@ -1,7 +1,5 @@
 ﻿using System;
 using Hangfire.States;
-using Hangfire.Storage;
-using Moq;
 
 namespace Hangfire.Core.Tests
 {
