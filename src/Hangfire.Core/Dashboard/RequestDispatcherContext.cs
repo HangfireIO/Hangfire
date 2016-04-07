@@ -30,9 +30,9 @@ namespace Hangfire.Dashboard
             [NotNull] IDictionary<string, object> owinEnvironment, 
             [NotNull] Match uriMatch)
         {
-            if (jobStorage == null) throw new ArgumentNullException("jobStorage");
-            if (owinEnvironment == null) throw new ArgumentNullException("owinEnvironment");
-            if (uriMatch == null) throw new ArgumentNullException("uriMatch");
+            if (jobStorage == null) throw new ArgumentNullException(nameof(jobStorage));
+            if (owinEnvironment == null) throw new ArgumentNullException(nameof(owinEnvironment));
+            if (uriMatch == null) throw new ArgumentNullException(nameof(uriMatch));
 
             AppPath = appPath;
             StatsPollingInterval = statsPollingInterval;

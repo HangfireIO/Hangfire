@@ -75,7 +75,7 @@ namespace Hangfire.States
         /// argument is <see langword="null" /></exception>
         public FailedState(Exception exception)
         {
-            if (exception == null) throw new ArgumentNullException("exception");
+            if (exception == null) throw new ArgumentNullException(nameof(exception));
 
             FailedAt = DateTime.UtcNow;
             Exception = exception;

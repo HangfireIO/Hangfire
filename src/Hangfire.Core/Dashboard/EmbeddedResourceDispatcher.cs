@@ -33,8 +33,8 @@ namespace Hangfire.Dashboard
             [NotNull] Assembly assembly, 
             string resourceName)
         {
-            if (contentType == null) throw new ArgumentNullException("contentType");
-            if (assembly == null) throw new ArgumentNullException("assembly");
+            if (contentType == null) throw new ArgumentNullException(nameof(contentType));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
             
             _assembly = assembly;
             _resourceName = resourceName;

@@ -29,9 +29,9 @@ namespace Hangfire.Server
             [NotNull] IDictionary<string, object> properties, 
             CancellationToken cancellationToken)
         {
-            if (serverId == null) throw new ArgumentNullException("serverId");
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (properties == null) throw new ArgumentNullException("properties");
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (properties == null) throw new ArgumentNullException(nameof(properties));
 
             ServerId = serverId;
             Storage = storage;

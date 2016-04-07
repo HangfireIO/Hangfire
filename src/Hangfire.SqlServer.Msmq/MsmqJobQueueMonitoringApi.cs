@@ -29,8 +29,8 @@ namespace Hangfire.SqlServer.Msmq
 
         public MsmqJobQueueMonitoringApi(string pathPattern, IEnumerable<string> queues)
         {
-            if (pathPattern == null) throw new ArgumentNullException("pathPattern");
-            if (queues == null) throw new ArgumentNullException("queues");
+            if (pathPattern == null) throw new ArgumentNullException(nameof(pathPattern));
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
 
             _pathPattern = pathPattern;
             _queues = queues;

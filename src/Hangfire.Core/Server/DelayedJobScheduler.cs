@@ -104,7 +104,7 @@ namespace Hangfire.Server
         /// <exception cref="ArgumentNullException"><paramref name="stateChanger"/> is null.</exception>
         public DelayedJobScheduler(TimeSpan pollingDelay, [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
+            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
 
             _stateChanger = stateChanger;
             _pollingDelay = pollingDelay;
@@ -113,7 +113,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             var jobsEnqueued = 0;
 

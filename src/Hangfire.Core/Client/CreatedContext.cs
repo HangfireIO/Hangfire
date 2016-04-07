@@ -74,7 +74,7 @@ namespace Hangfire.Client
 
         public void SetJobParameter([NotNull] string name, object value)
         {
-            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
 
             throw new InvalidOperationException("Could not set parameter for a created job.");
         }

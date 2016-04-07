@@ -31,9 +31,9 @@ namespace Hangfire
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
-            if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
+            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
 
             Connection = connection;
             BackgroundJob = backgroundJob;
@@ -51,14 +51,14 @@ namespace Hangfire
 
         public void SetJobParameter(string name, object value)
         {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {

@@ -50,8 +50,8 @@ namespace Hangfire
             [NotNull] HashSet<string> knownFinalStates, 
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (knownFinalStates == null) throw new ArgumentNullException("knownFinalStates");
-            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
+            if (knownFinalStates == null) throw new ArgumentNullException(nameof(knownFinalStates));
+            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
 
             _knownFinalStates = knownFinalStates;
             _stateChanger = stateChanger;

@@ -24,7 +24,7 @@ namespace Hangfire.Dashboard.Pages
     {
         public SidebarMenu([NotNull] IEnumerable<Func<RazorPage, MenuItem>> items)
         {
-            if (items == null) throw new ArgumentNullException("items");
+            if (items == null) throw new ArgumentNullException(nameof(items));
             Items = items;
         }
 

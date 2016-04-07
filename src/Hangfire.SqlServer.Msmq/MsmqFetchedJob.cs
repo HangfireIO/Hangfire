@@ -27,8 +27,8 @@ namespace Hangfire.SqlServer.Msmq
 
         public MsmqFetchedJob([NotNull] IMsmqTransaction transaction, [NotNull] string jobId)
         {
-            if (transaction == null) throw new ArgumentNullException("transaction");
-            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
             _transaction = transaction;
 

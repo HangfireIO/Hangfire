@@ -36,7 +36,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerJobQueueMonitoringApi([NotNull] SqlServerStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
             _storage = storage;
         }
 

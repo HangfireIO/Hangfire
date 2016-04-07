@@ -33,7 +33,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerConnection([NotNull] SqlServerStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
             _storage = storage;
         }
 
@@ -49,7 +49,7 @@ namespace Hangfire.SqlServer
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            if (queues == null || queues.Length == 0) throw new ArgumentNullException("queues");
+            if (queues == null || queues.Length == 0) throw new ArgumentNullException(nameof(queues));
 
             var providers = queues
                 .Select(queue => _storage.QueueProviders.GetProvider(queue))
@@ -72,8 +72,8 @@ namespace Hangfire.SqlServer
             DateTime createdAt,
             TimeSpan expireIn)
         {
-            if (job == null) throw new ArgumentNullException("job");
-            if (parameters == null) throw new ArgumentNullException("parameters");
+            if (job == null) throw new ArgumentNullException(nameof(job));
+            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
 
             string createJobSql =
 $@"insert into [{_storage.SchemaName}].Job (InvocationData, Arguments, CreatedAt, ExpireAt)
@@ -121,7 +121,7 @@ values (@jobId, @name, @value)";
 
         public override JobData GetJobData(string id)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
 
             string sql =
 $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.SchemaName}].Job where Id = @id";
@@ -161,7 +161,7 @@ $@"select InvocationData, StateName, Arguments, CreatedAt from [{_storage.Schema
 
         public override StateData GetStateData(string jobId)
         {
-            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
             string sql = 
 $@"select s.Name, s.Reason, s.Data
@@ -192,8 +192,8 @@ where j.Id = @jobId";
 
         public override void SetJobParameter(string id, string name, string value)
         {
-            if (id == null) throw new ArgumentNullException("id");
-            if (name == null) throw new ArgumentNullException("name");
+            if (id == null) throw new ArgumentNullException(nameof(id));
+            if (name == null) throw new ArgumentNullException(nameof(name));
 
             _storage.UseConnection(connection =>
             {
@@ -209,8 +209,8 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
         public override string GetJobParameter(string id, string name)
         {
-            if (id == null) throw new ArgumentNullException("id");
-            if (name == null) throw new ArgumentNullException("name");
+            if (id == null) throw new ArgumentNullException(nameof(id));
+            if (name == null) throw new ArgumentNullException(nameof(name));
 
             return _storage.UseConnection(connection => connection.Query<string>(
                 $@"select Value from [{_storage.SchemaName}].JobParameter where JobId = @id and Name = @name",
@@ -220,7 +220,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
         public override HashSet<string> GetAllItemsFromSet(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             return _storage.UseConnection(connection =>
             {
@@ -234,7 +234,7 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
             if (toScore < fromScore) throw new ArgumentException("The `toScore` value must be higher or equal to the `fromScore` value.");
 
             return _storage.UseConnection(connection => connection.Query<string>(
@@ -245,8 +245,8 @@ when not matched then insert (JobId, Name, Value) values (Source.JobId, Source.N
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             string sql =
 $@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
@@ -266,7 +266,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
         public override Dictionary<string, string> GetAllEntriesFromHash(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             return _storage.UseConnection(connection =>
             {
@@ -281,8 +281,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
         public override void AnnounceServer(string serverId, ServerContext context)
         {
-            if (serverId == null) throw new ArgumentNullException("serverId");
-            if (context == null) throw new ArgumentNullException("context");
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             var data = new ServerData
             {
@@ -305,7 +305,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
         public override void RemoveServer(string serverId)
         {
-            if (serverId == null) throw new ArgumentNullException("serverId");
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
             _storage.UseConnection(connection =>
             {
@@ -317,7 +317,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
         public override void Heartbeat(string serverId)
         {
-            if (serverId == null) throw new ArgumentNullException("serverId");
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
             _storage.UseConnection(connection =>
             {
@@ -331,7 +331,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
         {
             if (timeOut.Duration() != timeOut)
             {
-                throw new ArgumentException("The `timeOut` value must be positive.", "timeOut");
+                throw new ArgumentException("The `timeOut` value must be positive.", nameof(timeOut));
             }
 
             return _storage.UseConnection(connection => connection.Execute(
@@ -341,7 +341,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
         public override long GetSetCount(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             return _storage.UseConnection(connection => connection.Query<int>(
                 $"select count([Key]) from [{_storage.SchemaName}].[Set] where [Key] = @key",
@@ -350,7 +350,7 @@ when not matched then insert (Id, Data, LastHeartbeat) values (Source.Id, Source
 
         public override List<string> GetRangeFromSet(string key, int startingFrom, int endingAt)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query =
 $@"select [Value] from (
@@ -366,7 +366,7 @@ $@"select [Value] from (
 
         public override TimeSpan GetSetTtl(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].[Set] where [Key] = @key";
 
@@ -381,7 +381,7 @@ $@"select [Value] from (
 
         public override long GetCounter(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = 
 $@"select sum(s.[Value]) from (select sum([Value]) as [Value] from [{_storage.SchemaName}].Counter
@@ -396,7 +396,7 @@ where [Key] = @key) as s";
 
         public override long GetHashCount(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"select count([Id]) from [{_storage.SchemaName}].Hash where [Key] = @key";
 
@@ -405,7 +405,7 @@ where [Key] = @key) as s";
 
         public override TimeSpan GetHashTtl(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"select min([ExpireAt]) from [{_storage.SchemaName}].Hash where [Key] = @key";
 
@@ -420,8 +420,8 @@ where [Key] = @key) as s";
 
         public override string GetValueFromHash(string key, string name)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (name == null) throw new ArgumentNullException("name");
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (name == null) throw new ArgumentNullException(nameof(name));
 
             string query =
 $@"select [Value] from [{_storage.SchemaName}].Hash
@@ -433,7 +433,7 @@ where [Key] = @key and [Field] = @field";
 
         public override long GetListCount(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = 
 $@"select count([Id]) from [{_storage.SchemaName}].List
@@ -444,7 +444,7 @@ where [Key] = @key";
 
         public override TimeSpan GetListTtl(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = 
 $@"select min([ExpireAt]) from [{_storage.SchemaName}].List
@@ -461,7 +461,7 @@ where [Key] = @key";
 
         public override List<string> GetRangeFromList(string key, int startingFrom, int endingAt)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query =
 $@"select [Value] from (
@@ -477,7 +477,7 @@ $@"select [Value] from (
 
         public override List<string> GetAllItemsFromList(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query =
 $@"select [Value] from [{_storage.SchemaName}].List

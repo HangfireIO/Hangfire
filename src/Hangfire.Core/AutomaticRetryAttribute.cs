@@ -112,7 +112,7 @@ namespace Hangfire
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException("value", "Attempts value must be equal or greater than zero.");
+                    throw new ArgumentOutOfRangeException(nameof(value), "Attempts value must be equal or greater than zero.");
                 }
 
                 lock (_lockObject)

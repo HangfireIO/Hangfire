@@ -43,7 +43,7 @@ namespace Hangfire.SqlServer.Msmq
             [NotNull] string pathPattern, 
             params string[] queues)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             if (queues.Length == 0)
             {

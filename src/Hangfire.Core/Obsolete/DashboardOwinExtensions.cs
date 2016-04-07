@@ -115,7 +115,7 @@ namespace Hangfire.Dashboard
             IEnumerable<IAuthorizationFilter> authorizationFilters,
             JobStorage storage)
         {
-            if (app == null) throw new ArgumentNullException("app");
+            if (app == null) throw new ArgumentNullException(nameof(app));
 
             SignatureConversions.AddConversions(app);
 

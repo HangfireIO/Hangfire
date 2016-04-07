@@ -47,7 +47,7 @@ namespace Hangfire.Client
         /// <exception cref="ArgumentNullException">The <paramref name="name"/> is null or empty.</exception>
         public void SetJobParameter(string name, object value)
         {
-            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
             Parameters[name] = value;
         }
 
@@ -65,7 +65,7 @@ namespace Hangfire.Client
         /// <exception cref="InvalidOperationException">Could not deserialize the parameter value to the type <typeparamref name="T"/>.</exception>
         public T GetJobParameter<T>(string name)
         {
-            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {

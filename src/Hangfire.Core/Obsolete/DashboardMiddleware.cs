@@ -40,9 +40,9 @@ namespace Hangfire.Dashboard
             [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters)
             : base(next)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (routes == null) throw new ArgumentNullException("routes");
-            if (authorizationFilters == null) throw new ArgumentNullException("authorizationFilters");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+            if (authorizationFilters == null) throw new ArgumentNullException(nameof(authorizationFilters));
 
             _appPath = appPath;
             _statsPollingInterval = statsPollingInterval;

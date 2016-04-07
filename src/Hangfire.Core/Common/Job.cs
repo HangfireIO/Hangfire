@@ -144,11 +144,11 @@ namespace Hangfire.Common
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] params object[] args)
         {
-            if (type == null) throw new ArgumentNullException("type");
-            if (method == null) throw new ArgumentNullException("method");
-            if (args == null) throw new ArgumentNullException("args");
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (method == null) throw new ArgumentNullException(nameof(method));
+            if (args == null) throw new ArgumentNullException(nameof(args));
             
-            Validate(type, "type", method, "method", args.Length, "args");
+            Validate(type, nameof(type), method, nameof(method), args.Length, nameof(args));
 
             Type = type;
             Method = method;
@@ -232,12 +232,12 @@ namespace Hangfire.Common
         /// </remarks>
         public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
         {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
+            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
+                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
             Type type;
@@ -286,12 +286,12 @@ namespace Hangfire.Common
         /// </remarks>
         public static Job FromExpression<TType>([InstantHandle] Expression<Action<TType>> methodCall)
         {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
+            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
+                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
             return new Job(

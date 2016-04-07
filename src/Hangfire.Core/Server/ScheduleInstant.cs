@@ -32,10 +32,10 @@ namespace Hangfire.Server
 
         public ScheduleInstant(DateTime nowInstant, TimeZoneInfo timeZone, [NotNull] CrontabSchedule schedule)
         {
-            if (schedule == null) throw new ArgumentNullException("schedule");
+            if (schedule == null) throw new ArgumentNullException(nameof(schedule));
             if (nowInstant.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "nowInstant");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(nowInstant));
             }
 
             _timeZone = timeZone;
@@ -63,7 +63,7 @@ namespace Hangfire.Server
         {
             if (lastInstant.HasValue && lastInstant.Value.Kind != DateTimeKind.Utc)
             {
-                throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastInstant");
+                throw new ArgumentException("Only DateTime values in UTC should be passed.", nameof(lastInstant));
             }
 
             var baseTime = lastInstant ?? NowInstant.AddSeconds(-1);

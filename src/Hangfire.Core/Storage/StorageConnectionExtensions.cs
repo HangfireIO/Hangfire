@@ -29,8 +29,8 @@ namespace Hangfire.Storage
             [NotNull] string jobId, 
             TimeSpan timeout)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (jobId == null) throw new ArgumentNullException("jobId");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
             return connection.AcquireDistributedLock(
                 $"job:{jobId}:state-lock",
@@ -39,7 +39,7 @@ namespace Hangfire.Storage
 
         public static long GetRecurringJobCount([NotNull] this JobStorageConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
             return connection.GetSetCount("recurring-jobs");
         }
 
@@ -48,7 +48,7 @@ namespace Hangfire.Storage
             int startingFrom,
             int endingAt)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             var ids = connection.GetRangeFromSet("recurring-jobs", startingFrom, endingAt);
             return GetRecurringJobDtos(connection, ids);
@@ -56,7 +56,7 @@ namespace Hangfire.Storage
 
         public static List<RecurringJobDto> GetRecurringJobs([NotNull] this IStorageConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             var ids = connection.GetAllItemsFromSet("recurring-jobs");
             return GetRecurringJobDtos(connection, ids);

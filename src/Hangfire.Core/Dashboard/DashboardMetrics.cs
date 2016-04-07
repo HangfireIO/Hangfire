@@ -45,7 +45,7 @@ namespace Hangfire.Dashboard
 
         public static void AddMetric([NotNull] DashboardMetric metric)
         {
-            if (metric == null) throw new ArgumentNullException("metric");
+            if (metric == null) throw new ArgumentNullException(nameof(metric));
 
             lock (Metrics)
             {

@@ -39,7 +39,7 @@ namespace Hangfire.States
 
         internal ProcessingState(string serverId, string workerId)
         {
-            if (String.IsNullOrWhiteSpace(serverId)) throw new ArgumentNullException("serverId");
+            if (String.IsNullOrWhiteSpace(serverId)) throw new ArgumentNullException(nameof(serverId));
 
             ServerId = serverId;
             StartedAt = DateTime.UtcNow;

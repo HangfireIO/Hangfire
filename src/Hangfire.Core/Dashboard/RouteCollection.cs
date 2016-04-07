@@ -28,8 +28,8 @@ namespace Hangfire.Dashboard
 
         public void Add([NotNull] string pathTemplate, [NotNull] IRequestDispatcher dispatcher)
         {
-            if (pathTemplate == null) throw new ArgumentNullException("pathTemplate");
-            if (dispatcher == null) throw new ArgumentNullException("dispatcher");
+            if (pathTemplate == null) throw new ArgumentNullException(nameof(pathTemplate));
+            if (dispatcher == null) throw new ArgumentNullException(nameof(dispatcher));
 
             _dispatchers.Add(new Tuple<string, IRequestDispatcher>(pathTemplate, dispatcher));
         }

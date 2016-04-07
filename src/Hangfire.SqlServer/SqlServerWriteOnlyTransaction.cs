@@ -38,7 +38,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerWriteOnlyTransaction([NotNull] SqlServerStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             _storage = storage;
         }
@@ -221,8 +221,8 @@ delete from cte where row_num not between @start and @end";
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (keyValuePairs == null) throw new ArgumentNullException("keyValuePairs");
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
             string sql =
 $@";merge [{_storage.SchemaName}].Hash with (holdlock) as Target
@@ -239,7 +239,7 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
         public override void RemoveHash(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"delete from [{_storage.SchemaName}].Hash where [Key] = @key";
 
@@ -249,8 +249,8 @@ when not matched then insert ([Key], Field, Value) values (Source.[Key], Source.
 
         public override void AddRangeToSet(string key, IList<string> items)
         {
-            if (key == null) throw new ArgumentNullException("key");
-            if (items == null) throw new ArgumentNullException("items");
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (items == null) throw new ArgumentNullException(nameof(items));
 
             string query =
                 $@"
@@ -263,7 +263,7 @@ values (@key, @value, 0.0)";
 
         public override void RemoveSet(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"delete from [{_storage.SchemaName}].[Set] where [Key] = @key";
 
@@ -273,7 +273,7 @@ values (@key, @value, 0.0)";
 
         public override void ExpireHash(string key, TimeSpan expireIn)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
              string query = $@"
 update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @key";
@@ -284,7 +284,7 @@ update [{_storage.SchemaName}].[Hash] set ExpireAt = @expireAt where [Key] = @ke
 
         public override void ExpireSet(string key, TimeSpan expireIn)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
 update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key";
@@ -295,7 +295,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = @expireAt where [Key] = @key
 
         public override void ExpireList(string key, TimeSpan expireIn)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
 update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @key";
@@ -306,7 +306,7 @@ update [{_storage.SchemaName}].[List] set ExpireAt = @expireAt where [Key] = @ke
 
         public override void PersistHash(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
 update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
@@ -317,7 +317,7 @@ update [{_storage.SchemaName}].Hash set ExpireAt = null where [Key] = @key";
 
         public override void PersistSet(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
 update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
@@ -328,7 +328,7 @@ update [{_storage.SchemaName}].[Set] set ExpireAt = null where [Key] = @key";
 
         public override void PersistList(string key)
         {
-            if (key == null) throw new ArgumentNullException("key");
+            if (key == null) throw new ArgumentNullException(nameof(key));
 
             string query = $@"
 update [{_storage.SchemaName}].[List] set ExpireAt = null where [Key] = @key";

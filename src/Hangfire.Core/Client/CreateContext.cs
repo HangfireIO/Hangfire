@@ -41,9 +41,9 @@ namespace Hangfire.Client
             [NotNull] Job job, 
             [CanBeNull] IState initialState)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (job == null) throw new ArgumentNullException("job");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (job == null) throw new ArgumentNullException(nameof(job));
 
             Storage = storage;
             Connection = connection;

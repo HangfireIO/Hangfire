@@ -33,8 +33,8 @@ namespace Hangfire
             [NotNull] TStorage storage)
             where TStorage : JobStorage
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             return configuration.Use(storage, x => JobStorage.Current = x);
         }
@@ -44,8 +44,8 @@ namespace Hangfire
             [NotNull] TActivator activator)
             where TActivator : JobActivator
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-            if (activator == null) throw new ArgumentNullException("activator");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (activator == null) throw new ArgumentNullException(nameof(activator));
 
             return configuration.Use(activator, x => JobActivator.Current = x);
         }
@@ -55,8 +55,8 @@ namespace Hangfire
             [NotNull] TLogProvider provider)
             where TLogProvider : ILogProvider
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-            if (provider == null) throw new ArgumentNullException("provider");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (provider == null) throw new ArgumentNullException(nameof(provider));
             
             return configuration.Use(provider, x => LogProvider.SetCurrentLogProvider(x));
         }
@@ -64,7 +64,7 @@ namespace Hangfire
         public static IGlobalConfiguration<NLogLogProvider> UseNLogLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new NLogLogProvider());
         }
@@ -72,7 +72,7 @@ namespace Hangfire
         public static IGlobalConfiguration<ColouredConsoleLogProvider> UseColouredConsoleLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new ColouredConsoleLogProvider());
         }
@@ -80,7 +80,7 @@ namespace Hangfire
         public static IGlobalConfiguration<Log4NetLogProvider> UseLog4NetLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new Log4NetLogProvider());
         }
@@ -88,7 +88,7 @@ namespace Hangfire
         public static IGlobalConfiguration<ElmahLogProvider> UseElmahLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new ElmahLogProvider());
         }
@@ -97,7 +97,7 @@ namespace Hangfire
             [NotNull] this IGlobalConfiguration configuration,
             LogLevel minLevel)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new ElmahLogProvider(minLevel));
         }
@@ -105,7 +105,7 @@ namespace Hangfire
         public static IGlobalConfiguration<EntLibLogProvider> UseEntLibLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new EntLibLogProvider());
         }
@@ -113,7 +113,7 @@ namespace Hangfire
         public static IGlobalConfiguration<SerilogLogProvider> UseSerilogLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new SerilogLogProvider());
         }
@@ -121,7 +121,7 @@ namespace Hangfire
         public static IGlobalConfiguration<LoupeLogProvider> UseLoupeLogProvider(
             [NotNull] this IGlobalConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             return configuration.UseLogProvider(new LoupeLogProvider());
         }
@@ -130,8 +130,8 @@ namespace Hangfire
             [NotNull] this IGlobalConfiguration configuration, 
             [NotNull] TFilter filter)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-            if (filter == null) throw new ArgumentNullException("filter");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (filter == null) throw new ArgumentNullException(nameof(filter));
 
             return configuration.Use(filter, x => GlobalJobFilters.Filters.Add(x));
         }
@@ -140,8 +140,8 @@ namespace Hangfire
             [NotNull] this IGlobalConfiguration configuration,
             [NotNull] DashboardMetric metric)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
-            if (metric == null) throw new ArgumentNullException("metric");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            if (metric == null) throw new ArgumentNullException(nameof(metric));
 
             DashboardMetrics.AddMetric(metric);
             HomePage.Metrics.Add(metric);
@@ -154,7 +154,7 @@ namespace Hangfire
             [NotNull] this IGlobalConfiguration configuration, T entry,
             [NotNull] Action<T> entryAction)
         {
-            if (configuration == null) throw new ArgumentNullException("configuration");
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
 
             entryAction(entry);
 

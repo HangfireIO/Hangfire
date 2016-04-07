@@ -36,7 +36,7 @@ namespace Hangfire.Server
 
         public CoreBackgroundJobPerformer([NotNull] JobActivator activator)
         {
-            if (activator == null) throw new ArgumentNullException("activator");
+            if (activator == null) throw new ArgumentNullException(nameof(activator));
             _activator = activator;
         }
 

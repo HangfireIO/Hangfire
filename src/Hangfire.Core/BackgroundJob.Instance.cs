@@ -25,7 +25,7 @@ namespace Hangfire
         /// <exclude />
         public BackgroundJob([NotNull] string id, [CanBeNull] Job job, DateTime createdAt)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
 
             Id = id;
             Job = job;

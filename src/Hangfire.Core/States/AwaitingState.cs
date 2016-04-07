@@ -97,8 +97,8 @@ namespace Hangfire.States
             JobContinuationOptions options,
             TimeSpan expiration)
         {
-            if (parentId == null) throw new ArgumentNullException("parentId");
-            if (nextState == null) throw new ArgumentNullException("nextState");
+            if (parentId == null) throw new ArgumentNullException(nameof(parentId));
+            if (nextState == null) throw new ArgumentNullException(nameof(nextState));
 
             ParentId = parentId;
             NextState = nextState;

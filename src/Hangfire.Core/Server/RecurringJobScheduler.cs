@@ -98,9 +98,9 @@ namespace Hangfire.Server
             [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
             [NotNull] IThrottler throttler)
         {
-            if (factory == null) throw new ArgumentNullException("factory");
-            if (instantFactory == null) throw new ArgumentNullException("instantFactory");
-            if (throttler == null) throw new ArgumentNullException("throttler");
+            if (factory == null) throw new ArgumentNullException(nameof(factory));
+            if (instantFactory == null) throw new ArgumentNullException(nameof(instantFactory));
+            if (throttler == null) throw new ArgumentNullException(nameof(throttler));
             
             _factory = factory;
             _instantFactory = instantFactory;
@@ -110,7 +110,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             _throttler.Throttle(context.CancellationToken);
 

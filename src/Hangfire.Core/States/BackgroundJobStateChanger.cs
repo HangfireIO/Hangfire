@@ -40,7 +40,7 @@ namespace Hangfire.States
 
         internal BackgroundJobStateChanger([NotNull] IStateMachine stateMachine)
         {
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
+            if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
             _stateMachine = stateMachine;
         }
         

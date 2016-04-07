@@ -36,7 +36,7 @@ namespace Hangfire.SqlServer
 
         public SqlServerMonitoringApi([NotNull] SqlServerStorage storage, int? jobListLimit)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             _storage = storage;
             _jobListLimit = jobListLimit;

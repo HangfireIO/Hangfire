@@ -288,7 +288,7 @@ namespace Hangfire.Logging
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
         }
 
@@ -1331,7 +1331,7 @@ namespace Hangfire.Logging.LogProviders
                     case LogLevel.Fatal:
                         return TraceEventType.Critical;
                     default:
-                        throw new ArgumentOutOfRangeException("logLevel");
+                        throw new ArgumentOutOfRangeException(nameof(logLevel));
                 }
             }
         }

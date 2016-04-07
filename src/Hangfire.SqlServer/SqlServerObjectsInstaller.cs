@@ -41,7 +41,7 @@ namespace Hangfire.SqlServer
 
         public static void Install(DbConnection connection, string schema)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             Log.Info("Start installing Hangfire SQL objects...");
 

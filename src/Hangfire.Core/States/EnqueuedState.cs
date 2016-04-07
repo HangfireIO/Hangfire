@@ -107,7 +107,7 @@ namespace Hangfire.States
         /// </exception>
         public EnqueuedState([NotNull] string queue)
         {
-            ValidateQueueName("queue", queue);
+            ValidateQueueName(nameof(queue), queue);
 
             _queue = queue;
             EnqueuedAt = DateTime.UtcNow;
@@ -143,7 +143,7 @@ namespace Hangfire.States
             get { return _queue; }
             set
             {
-                ValidateQueueName("value", value);
+                ValidateQueueName(nameof(value), value);
                 _queue = value;
             }
         }
