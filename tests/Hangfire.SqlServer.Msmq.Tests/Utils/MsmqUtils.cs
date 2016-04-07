@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Messaging;
 
-namespace Hangfire.Msmq.Tests
+namespace Hangfire.SqlServer.Msmq.Tests
 {
     internal class MsmqUtils
     {

@@ -5,6 +5,8 @@ using System.Threading;
 using Dapper;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerJobQueueFacts

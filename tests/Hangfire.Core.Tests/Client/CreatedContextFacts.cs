@@ -6,6 +6,8 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 #pragma warning disable 618
 
 namespace Hangfire.Core.Tests.Client

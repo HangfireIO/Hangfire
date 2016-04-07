@@ -7,6 +7,8 @@ using Hangfire.Storage;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.States
 {
     public class BackgroundJobStateChangerFacts

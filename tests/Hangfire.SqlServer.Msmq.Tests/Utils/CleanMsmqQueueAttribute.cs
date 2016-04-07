@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Threading;
 using Xunit;
 
-namespace Hangfire.Msmq.Tests
+namespace Hangfire.SqlServer.Msmq.Tests
 {
     public class CleanMsmqQueueAttribute : BeforeAfterTestAttribute
     {

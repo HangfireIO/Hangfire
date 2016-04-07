@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.Common
 {
     public class JobHelperFacts

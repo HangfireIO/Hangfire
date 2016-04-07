@@ -7,6 +7,8 @@ using Dapper;
 using Hangfire.Storage;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerDistributedLockFacts

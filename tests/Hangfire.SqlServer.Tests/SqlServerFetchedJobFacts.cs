@@ -3,6 +3,8 @@ using System.Data;
 using Moq;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.SqlServer.Tests
 {
     public class SqlServerFetchedJobFacts

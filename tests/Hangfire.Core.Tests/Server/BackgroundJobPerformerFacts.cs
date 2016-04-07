@@ -7,6 +7,8 @@ using Moq;
 using Moq.Sequences;
 using Xunit;
 
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.Server
 {
     public class BackgroundJobPerformerFacts
