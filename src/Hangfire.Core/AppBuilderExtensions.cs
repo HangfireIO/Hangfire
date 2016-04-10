@@ -255,7 +255,7 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options,
             [NotNull] JobStorage storage)
         {
-            return builder.UseHangfireServer(storage, options, new IBackgroundProcess[0]);
+            return builder.UseHangfireServer(storage, options);
         }
 
         /// <summary>
@@ -285,10 +285,10 @@ namespace Hangfire
             [NotNull] BackgroundJobServerOptions options, 
             [NotNull] params IBackgroundProcess[] additionalProcesses)
         {
-            if (builder == null) throw new ArgumentNullException("builder");
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (options == null) throw new ArgumentNullException("options");
-            if (additionalProcesses == null) throw new ArgumentNullException("additionalProcesses");
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (additionalProcesses == null) throw new ArgumentNullException(nameof(additionalProcesses));
 
             var server = new BackgroundJobServer(options, storage, additionalProcesses);
             Servers.Add(server);
@@ -396,10 +396,10 @@ namespace Hangfire
             [NotNull] DashboardOptions options,
             [NotNull] JobStorage storage)
         {
-            if (builder == null) throw new ArgumentNullException("builder");
-            if (pathMatch == null) throw new ArgumentNullException("pathMatch");
-            if (options == null) throw new ArgumentNullException("options");
-            if (storage == null) throw new ArgumentNullException("storage");
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (pathMatch == null) throw new ArgumentNullException(nameof(pathMatch));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
             SignatureConversions.AddConversions(builder);
 

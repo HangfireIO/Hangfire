@@ -33,8 +33,8 @@ namespace Hangfire.Dashboard
             [NotNull] Assembly assembly, 
             string resourceName)
         {
-            if (contentType == null) throw new ArgumentNullException("contentType");
-            if (assembly == null) throw new ArgumentNullException("assembly");
+            if (contentType == null) throw new ArgumentNullException(nameof(contentType));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
             
             _assembly = assembly;
             _resourceName = resourceName;
@@ -64,9 +64,7 @@ namespace Hangfire.Dashboard
             {
                 if (inputStream == null)
                 {
-                    throw new ArgumentException(string.Format(
-                        @"Resource with name {0} not found in assembly {1}.",
-                        resourceName, assembly));
+                    throw new ArgumentException($@"Resource with name {resourceName} not found in assembly {assembly}.");
                 }
 
                 inputStream.CopyTo(response.Body);

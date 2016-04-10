@@ -11,10 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9FC4F973
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.Core.Tests", "tests\Hangfire.Core.Tests\Hangfire.Core.Tests.csproj", "{E13C3543-39A3-475C-BB43-2E311E634843}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq", "src\Hangfire.SqlServer.RabbitMq\Hangfire.SqlServer.RabbitMq.csproj", "{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hangfire.SqlServer.RabbitMq.Tests", "tests\Hangfire.SqlServer.RabbitMq.Tests\Hangfire.SqlServer.RabbitMq.Tests.csproj", "{2654D751-33D5-411D-A187-D057FED9CD25}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,19 +33,12 @@ Global
 		{E13C3543-39A3-475C-BB43-2E311E634843}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E13C3543-39A3-475C-BB43-2E311E634843}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E13C3543-39A3-475C-BB43-2E311E634843}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4CC51F69-0311-4485-B7DE-9ECAB3A1B5E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2654D751-33D5-411D-A187-D057FED9CD25}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E13C3543-39A3-475C-BB43-2E311E634843} = {9FC4F973-0AA1-4E6E-AF9A-561629BE50EC}
-		{25909EE6-2A56-4EAC-9D0E-436FF2435E88} = {9FC4F973-0AA1-4E6E-AF9A-561629BE50EC}
-		{2654D751-33D5-411D-A187-D057FED9CD25} = {9FC4F973-0AA1-4E6E-AF9A-561629BE50EC}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = src\Hangfire.Core\Hangfire.Core.csproj

@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Threading;
 using Dapper;
 using Hangfire.Annotations;
@@ -51,9 +50,10 @@ namespace Hangfire.SqlServer
 
         public SqlServerDistributedLock([NotNull] SqlServerStorage storage, [NotNull] string resource, TimeSpan timeout)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
-            if ((timeout.TotalSeconds + CommandTimeoutAdditionSeconds) > Int32.MaxValue) throw new ArgumentException(string.Format("The timeout specified is too large. Please supply a timeout equal to or less than {0} seconds", Int32.MaxValue - CommandTimeoutAdditionSeconds), "timeout");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException(nameof(resource));
+            if (timeout.TotalSeconds + CommandTimeoutAdditionSeconds > Int32.MaxValue) throw new ArgumentException(
+                $"The timeout specified is too large. Please supply a timeout equal to or less than {Int32.MaxValue - CommandTimeoutAdditionSeconds} seconds", nameof(timeout));
 
             _storage = storage;
             _resource = resource;
@@ -122,12 +122,7 @@ namespace Hangfire.SqlServer
                 }
 
                 throw new SqlServerDistributedLockException(
-                    String.Format(
-                    "Could not place a lock on the resource '{0}': {1}.",
-                    resource,
-                    LockErrorMessages.ContainsKey(lockResult)
-                        ? LockErrorMessages[lockResult]
-                        : String.Format("Server returned the '{0}' error.", lockResult)));
+                    $"Could not place a lock on the resource '{resource}': {(LockErrorMessages.ContainsKey(lockResult) ? LockErrorMessages[lockResult] : $"Server returned the '{lockResult}' error.")}.");
             }
         }
 
@@ -148,10 +143,7 @@ namespace Hangfire.SqlServer
             if (releaseResult < 0)
             {
                 throw new SqlServerDistributedLockException(
-                    String.Format(
-                        "Could not release a lock on the resource '{0}': Server returned the '{1}' error.",
-                        resource,
-                        releaseResult));
+                    $"Could not release a lock on the resource '{resource}': Server returned the '{releaseResult}' error.");
             }
         }
     }

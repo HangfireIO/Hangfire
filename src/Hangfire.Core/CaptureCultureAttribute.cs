@@ -27,7 +27,7 @@ namespace Hangfire
     {
         public void OnCreating(CreatingContext filterContext)
         {
-            if (filterContext == null) throw new ArgumentNullException("filterContext");
+            if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
 
             filterContext.SetJobParameter(
                 "CurrentCulture", CultureInfo.CurrentCulture.Name);
@@ -59,7 +59,7 @@ namespace Hangfire
 
         public void OnPerformed(PerformedContext filterContext)
         {
-            if (filterContext == null) throw new ArgumentNullException("filterContext");
+            if (filterContext == null) throw new ArgumentNullException(nameof(filterContext));
 
             if (filterContext.Items.ContainsKey("PreviousCulture"))
             {

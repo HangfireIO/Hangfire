@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hangfire.Dashboard.Resources;
 
 namespace Hangfire.Dashboard
 {
@@ -26,43 +27,43 @@ namespace Hangfire.Dashboard
 
         static JobsSidebarMenu()
         {
-            Items.Add(page => new MenuItem("Enqueued", page.Url.LinkToQueues())
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Enqueued, page.Url.LinkToQueues())
             {
                 Active = page.RequestPath.StartsWith("/jobs/enqueued"),
                 Metric = DashboardMetrics.EnqueuedAndQueueCount
             });
 
-            Items.Add(page => new MenuItem("Scheduled", page.Url.To("/jobs/scheduled"))
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Scheduled, page.Url.To("/jobs/scheduled"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/scheduled"),
                 Metric = DashboardMetrics.ScheduledCount
             });
 
-            Items.Add(page => new MenuItem("Processing", page.Url.To("/jobs/processing"))
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Processing, page.Url.To("/jobs/processing"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/processing"),
                 Metric = DashboardMetrics.ProcessingCount
             });
 
-            Items.Add(page => new MenuItem("Succeeded", page.Url.To("/jobs/succeeded"))
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Succeeded, page.Url.To("/jobs/succeeded"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/succeeded"),
                 Metric = DashboardMetrics.SucceededCount
             });
 
-            Items.Add(page => new MenuItem("Failed", page.Url.To("/jobs/failed"))
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Failed, page.Url.To("/jobs/failed"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/failed"),
                 Metric = DashboardMetrics.FailedCount
             });
 
-            Items.Add(page => new MenuItem("Deleted", page.Url.To("/jobs/deleted"))
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Deleted, page.Url.To("/jobs/deleted"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/deleted"),
                 Metric = DashboardMetrics.DeletedCount
             });
 
-            Items.Add(page => new MenuItem("Awaiting", page.Url.To("/jobs/awaiting"))
+            Items.Add(page => new MenuItem(Strings.JobsSidebarMenu_Awaiting, page.Url.To("/jobs/awaiting"))
             {
                 Active = page.RequestPath.StartsWith("/jobs/awaiting"),
                 Metric = DashboardMetrics.AwaitingCount

@@ -29,9 +29,9 @@ namespace Hangfire.Server
             [NotNull] IDictionary<string, object> properties, 
             CancellationToken cancellationToken)
         {
-            if (serverId == null) throw new ArgumentNullException("serverId");
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (properties == null) throw new ArgumentNullException("properties");
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (properties == null) throw new ArgumentNullException(nameof(properties));
 
             ServerId = serverId;
             Storage = storage;
@@ -40,20 +40,17 @@ namespace Hangfire.Server
         }
         
         [NotNull]
-        public string ServerId { get; private set; }
+        public string ServerId { get; }
 
         [NotNull]
-        public IReadOnlyDictionary<string, object> Properties { get; private set; }
+        public IReadOnlyDictionary<string, object> Properties { get; }
 
         [NotNull]
-        public JobStorage Storage { get; private set; }
+        public JobStorage Storage { get; }
 
-        public CancellationToken CancellationToken { get; private set; }
+        public CancellationToken CancellationToken { get; }
 
-        public bool IsShutdownRequested
-        {
-            get { return CancellationToken.IsCancellationRequested; }
-        }
+        public bool IsShutdownRequested => CancellationToken.IsCancellationRequested;
 
         public void Wait(TimeSpan timeout)
         {

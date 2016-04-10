@@ -63,9 +63,9 @@ namespace Hangfire.Server
             [NotNull] IBackgroundJobPerformer performer, 
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (queues == null) throw new ArgumentNullException("queues");
-            if (performer == null) throw new ArgumentNullException("performer");
-            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
+            if (performer == null) throw new ArgumentNullException(nameof(performer));
+            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             
             _queues = queues.ToArray();
             _performer = performer;
@@ -76,7 +76,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             using (var connection = context.Storage.GetConnection())
             using (var fetchedJob = connection.FetchNextJob(_queues, context.CancellationToken))
@@ -159,7 +159,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public override string ToString()
         {
-            return String.Format("{0} #{1}", GetType().Name, _workerId.Substring(0, 8));
+            return $"{GetType().Name} #{_workerId.Substring(0, 8)}";
         }
 
         private IState PerformJob(BackgroundProcessContext context, IStorageConnection connection, string jobId)

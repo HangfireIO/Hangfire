@@ -21,11 +21,13 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Microsoft.Owin;
 
+// ReSharper disable once CheckNamespace
 namespace Hangfire.Dashboard
 {
     internal class DashboardMiddleware : OwinMiddleware
     {
         private readonly string _appPath;
+        private readonly int _statsPollingInterval;
         private readonly JobStorage _storage;
         private readonly RouteCollection _routes;
         private readonly IEnumerable<IAuthorizationFilter> _authorizationFilters;
@@ -33,16 +35,18 @@ namespace Hangfire.Dashboard
         public DashboardMiddleware(
             OwinMiddleware next,
             string appPath,
+            int statsPollingInterval,
             [NotNull] JobStorage storage,
             [NotNull] RouteCollection routes, 
             [NotNull] IEnumerable<IAuthorizationFilter> authorizationFilters)
             : base(next)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (routes == null) throw new ArgumentNullException("routes");
-            if (authorizationFilters == null) throw new ArgumentNullException("authorizationFilters");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
+            if (authorizationFilters == null) throw new ArgumentNullException(nameof(authorizationFilters));
 
             _appPath = appPath;
+            _statsPollingInterval = statsPollingInterval;
             _storage = storage;
             _routes = routes;
             _authorizationFilters = authorizationFilters;
@@ -57,6 +61,7 @@ namespace Hangfire.Dashboard
                 return Next.Invoke(context);
             }
 
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var filter in _authorizationFilters)
             {
                 if (!filter.Authorize(context.Environment))
@@ -68,6 +73,7 @@ namespace Hangfire.Dashboard
 
             var dispatcherContext = new RequestDispatcherContext(
                 _appPath,
+                _statsPollingInterval,
                 _storage,
                 context.Environment,
                 dispatcher.Item2);

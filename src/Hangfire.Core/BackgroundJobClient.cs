@@ -94,9 +94,9 @@ namespace Hangfire
             [NotNull] IBackgroundJobFactory factory,
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (factory == null) throw new ArgumentNullException("factory");
-            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (factory == null) throw new ArgumentNullException(nameof(factory));
+            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
             
             _storage = storage;
             _stateChanger = stateChanger;
@@ -106,8 +106,8 @@ namespace Hangfire
         /// <inheritdoc />
         public string Create(Job job, IState state)
         {
-            if (job == null) throw new ArgumentNullException("job");
-            if (state == null) throw new ArgumentNullException("state");
+            if (job == null) throw new ArgumentNullException(nameof(job));
+            if (state == null) throw new ArgumentNullException(nameof(state));
 
             try
             {
@@ -116,7 +116,7 @@ namespace Hangfire
                     var context = new CreateContext(_storage, connection, job, state);
                     var backroundJob = _factory.Create(context);
 
-                    return backroundJob != null ? backroundJob.Id : null;
+                    return backroundJob?.Id;
                 }
             }
             catch (Exception ex)
@@ -128,8 +128,8 @@ namespace Hangfire
         /// <inheritdoc />
         public bool ChangeState(string jobId, IState state, string expectedState)
         {
-            if (jobId == null) throw new ArgumentNullException("jobId");
-            if (state == null) throw new ArgumentNullException("state");
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (state == null) throw new ArgumentNullException(nameof(state));
 
             try
             {

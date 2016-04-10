@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,7 @@ using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
+using Hangfire.Dashboard.Resources;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
@@ -34,7 +36,7 @@ namespace Hangfire.SqlServer
 {
     public class SqlServerStorage : JobStorage
     {
-        private readonly SqlConnection _existingConnection;
+        private readonly DbConnection _existingConnection;
         private readonly SqlServerStorageOptions _options;
         private readonly string _connectionString;
 
@@ -57,8 +59,8 @@ namespace Hangfire.SqlServer
         /// config file.</exception>
         public SqlServerStorage(string nameOrConnectionString, SqlServerStorageOptions options)
         {
-            if (nameOrConnectionString == null) throw new ArgumentNullException("nameOrConnectionString");
-            if (options == null) throw new ArgumentNullException("options");
+            if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
+            if (options == null) throw new ArgumentNullException(nameof(options));
 
             _options = options;
 
@@ -73,8 +75,7 @@ namespace Hangfire.SqlServer
             else
             {
                 throw new ArgumentException(
-                    string.Format("Could not find connection string with name '{0}' in application config file",
-                                  nameOrConnectionString));
+                    $"Could not find connection string with name '{nameOrConnectionString}' in application config file");
             }
 
             if (options.PrepareSchemaIfNecessary)
@@ -94,9 +95,9 @@ namespace Hangfire.SqlServer
         /// to query the data.
         /// </summary>
         /// <param name="existingConnection">Existing connection</param>
-        public SqlServerStorage([NotNull] SqlConnection existingConnection)
+        public SqlServerStorage([NotNull] DbConnection existingConnection)
         {
-            if (existingConnection == null) throw new ArgumentNullException("existingConnection");
+            if (existingConnection == null) throw new ArgumentNullException(nameof(existingConnection));
 
             _existingConnection = existingConnection;
             _options = new SqlServerStorageOptions();
@@ -105,6 +106,8 @@ namespace Hangfire.SqlServer
         }
 
         public virtual PersistentJobQueueProviderCollection QueueProviders { get; private set; }
+
+        internal string SchemaName => _options.SchemaName;
 
         public override IMonitoringApi GetMonitoringApi()
         {
@@ -116,7 +119,9 @@ namespace Hangfire.SqlServer
             return new SqlServerConnection(this);
         }
 
+#pragma warning disable 618
         public override IEnumerable<IServerComponent> GetComponents()
+#pragma warning restore 618
         {
             yield return new ExpirationManager(this, _options.JobExpirationCheckInterval);
             yield return new CountersAggregator(this, _options.CountersAggregateInterval);
@@ -125,7 +130,7 @@ namespace Hangfire.SqlServer
         public override void WriteOptionsToLog(ILog logger)
         {
             logger.Info("Using the following options for SQL Server job storage:");
-            logger.InfoFormat("    Queue poll interval: {0}.", _options.QueuePollInterval);
+            logger.Info($"    Queue poll interval: {_options.QueuePollInterval}.");
         }
 
         public override string ToString()
@@ -162,7 +167,7 @@ namespace Hangfire.SqlServer
                 }
 
                 return builder.Length != 0
-                    ? String.Format("SQL Server: {0}", builder)
+                    ? $"SQL Server: {builder}"
                     : canNotParseMessage;
             }
             catch (Exception)
@@ -171,7 +176,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseConnection([InstantHandle] Action<SqlConnection> action)
+        internal void UseConnection([InstantHandle] Action<DbConnection> action)
         {
             UseConnection(connection =>
             {
@@ -180,9 +185,9 @@ namespace Hangfire.SqlServer
             });
         }
 
-        internal T UseConnection<T>([InstantHandle] Func<SqlConnection, T> func)
+        internal T UseConnection<T>([InstantHandle] Func<DbConnection, T> func)
         {
-            SqlConnection connection = null;
+            DbConnection connection = null;
 
             try
             {
@@ -195,7 +200,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal void UseTransaction([InstantHandle] Action<SqlConnection> action)
+        internal void UseTransaction([InstantHandle] Action<DbConnection> action)
         {
             UseTransaction(connection =>
             {
@@ -204,7 +209,7 @@ namespace Hangfire.SqlServer
             }, null);
         }
 
-        internal T UseTransaction<T>([InstantHandle] Func<SqlConnection, T> func, IsolationLevel? isolationLevel)
+        internal T UseTransaction<T>([InstantHandle] Func<DbConnection, T> func, IsolationLevel? isolationLevel)
         {
             using (var transaction = CreateTransaction(isolationLevel ?? _options.TransactionIsolationLevel))
             {
@@ -215,7 +220,7 @@ namespace Hangfire.SqlServer
             }
         }
 
-        internal SqlConnection CreateAndOpenConnection()
+        internal DbConnection CreateAndOpenConnection()
         {
             if (_existingConnection != null)
             {
@@ -235,12 +240,7 @@ namespace Hangfire.SqlServer
                 connection.Dispose();
             }
         }
-
-        internal string GetSchemaName()
-        {
-            return _options.SchemaName;
-        }
-
+        
         private TransactionScope CreateTransaction(IsolationLevel? isolationLevel)
         {
             return isolationLevel != null
@@ -269,7 +269,7 @@ namespace Hangfire.SqlServer
 
         public static readonly DashboardMetric ActiveConnections = new DashboardMetric(
             "connections:active",
-            "Active Connections",
+            Strings.Metrics_ActiveConnections,
             page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;
@@ -291,7 +291,7 @@ where dbid = db_id(@name) and status != 'background' and status != 'sleeping'";
 
         public static readonly DashboardMetric TotalConnections = new DashboardMetric(
             "connections:total",
-            "Total Connections",
+            Strings.Metrics_TotalConnections,
             page =>
             {
                 var sqlStorage = page.Storage as SqlServerStorage;

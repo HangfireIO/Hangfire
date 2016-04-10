@@ -19,10 +19,10 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // the type of expression node, e.g. OP_ADD, MEMBER_ACCESS, etc.
-        public ExpressionType NodeType { get; private set; }
+        public ExpressionType NodeType { get; }
 
         // the CLR type resulting from this expression, e.g. int, string, etc.
-        public Type Type { get; private set; }
+        public Type Type { get; }
 
         internal virtual void AddToHashCodeCombiner(HashCodeCombiner combiner)
         {
@@ -33,8 +33,8 @@ namespace Hangfire.Common.ExpressionUtil
         protected bool Equals(ExpressionFingerprint other)
         {
             return (other != null)
-                   && (this.NodeType == other.NodeType)
-                   && Equals(this.Type, other.Type);
+                   && (NodeType == other.NodeType)
+                   && Type == other.Type;
         }
 
         public override bool Equals(object obj)

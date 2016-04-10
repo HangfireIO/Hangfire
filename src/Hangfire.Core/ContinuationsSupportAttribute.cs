@@ -50,8 +50,8 @@ namespace Hangfire
             [NotNull] HashSet<string> knownFinalStates, 
             [NotNull] IBackgroundJobStateChanger stateChanger)
         {
-            if (knownFinalStates == null) throw new ArgumentNullException("knownFinalStates");
-            if (stateChanger == null) throw new ArgumentNullException("stateChanger");
+            if (knownFinalStates == null) throw new ArgumentNullException(nameof(knownFinalStates));
+            if (stateChanger == null) throw new ArgumentNullException(nameof(stateChanger));
 
             _knownFinalStates = knownFinalStates;
             _stateChanger = stateChanger;
@@ -106,7 +106,7 @@ namespace Hangfire
                     // the system should throw an exception instead of creating
                     // corrupted state.
                     throw new InvalidOperationException(
-                        String.Format("Can not add a continuation: parent background job '{0}' does not exist.", parentId));
+                        $"Can not add a continuation: parent background job '{parentId}' does not exist.");
                 }
 
                 var currentState = connection.GetStateData(parentId);
@@ -200,10 +200,8 @@ namespace Hangfire
                 var continuationData = context.Connection.GetJobData(continuationJobId);
                 if (continuationData == null)
                 {
-                    Logger.Warn(String.Format(
-                        "Can not start continuation '{0}' for background job '{1}': continuation does not exist.",
-                        continuationJobId,
-                        context.BackgroundJob.Id));
+                    Logger.Warn(
+                        $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': continuation does not exist.");
 
                     break;
                 }
@@ -216,10 +214,8 @@ namespace Hangfire
 
                 if (DateTime.UtcNow >= started.Add(timeout))
                 {
-                    throw new TimeoutException(String.Format(
-                        "Can not start continuation '{0}' for background job '{1}': timeout expired while trying to fetch continuation state.",
-                        continuationJobId,
-                        context.BackgroundJob.Id));
+                    throw new TimeoutException(
+                        $"Can not start continuation '{continuationJobId}' for background job '{context.BackgroundJob.Id}': timeout expired while trying to fetch continuation state.");
                 }
 
                 Thread.Sleep(firstAttempt ? 0 : 1);

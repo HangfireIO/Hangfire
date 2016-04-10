@@ -80,6 +80,7 @@ namespace MQTools
         private const int MQ_ERROR_ILLEGAL_PROPERTY_VT = unchecked((int)0xC00E0019); // An invalid type indicator was supplied for one of the properties specified in pMgmtProps.
         private const int MQ_ERROR_QUEUE_NOT_ACTIVE = unchecked((int)0xC00E0004); // The queue is not open or may not exist.
         private const int MQ_ERROR_SERVICE_NOT_AVAILABLE = unchecked((int)0xC00E000B); // The Message Queuing service is not available.
+        // ReSharper disable once RedundantOverflowCheckingContext
         private const int MQ_INFORMATION_UNSUPPORTED_PROPERTY = unchecked((int)0x400E0004); // An unsupported property identifier was specified in pMgmtProps
 
         const string QueueRegex = @"^.*\:(?<computerName>.*)\\(?<queueType>.*)\\(?<queue>.*)$";
@@ -112,7 +113,7 @@ namespace MQTools
         private static long GetQueueCount(string computerName, string queueType, string queue)
         {
             if (string.IsNullOrEmpty(computerName)) computerName = null;
-            string queuePath = string.Format("queue=Direct=OS:{0}\\{1}\\{2}", computerName ?? ".", queueType, queue);
+            string queuePath = $"queue=Direct=OS:{computerName ?? "."}\\{queueType}\\{queue}";
             return GetCount(computerName, queuePath);
         }
 

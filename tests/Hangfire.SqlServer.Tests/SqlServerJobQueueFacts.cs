@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using Dapper;
 using Xunit;
+
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -96,6 +97,7 @@ select scope_identity() as Id;";
             // Arrange
             UseConnection(connection =>
             {
+                // ReSharper disable once UnusedVariable
                 var id = (int)connection.Query(
                     arrangeSql,
                     new { jobId = 1, queue = "default" }).Single().Id;

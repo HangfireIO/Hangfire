@@ -75,7 +75,7 @@ namespace Hangfire
             string text,
             Func<string, string, string, string, IEnumerable<KeyValuePair<string, string>>, string, string, T> selector)
         {
-            if (selector == null) throw new ArgumentNullException("selector");
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
 
             return Parse(text, (idx, len, txt) => txt,
                                (t, m) => new { Type = t, Method = m },
@@ -95,12 +95,12 @@ namespace Hangfire
             Func<TToken, TToken, TSourceLocation> sourceLocationSelector,
             Func<TToken, TMethod, TParameters, TSourceLocation, TFrame> selector)
         {
-            if (tokenSelector == null) throw new ArgumentNullException("tokenSelector");
-            if (methodSelector == null) throw new ArgumentNullException("methodSelector");
-            if (parameterSelector == null) throw new ArgumentNullException("parameterSelector");
-            if (parametersSelector == null) throw new ArgumentNullException("parametersSelector");
-            if (sourceLocationSelector == null) throw new ArgumentNullException("sourceLocationSelector");
-            if (selector == null) throw new ArgumentNullException("selector");
+            if (tokenSelector == null) throw new ArgumentNullException(nameof(tokenSelector));
+            if (methodSelector == null) throw new ArgumentNullException(nameof(methodSelector));
+            if (parameterSelector == null) throw new ArgumentNullException(nameof(parameterSelector));
+            if (parametersSelector == null) throw new ArgumentNullException(nameof(parametersSelector));
+            if (sourceLocationSelector == null) throw new ArgumentNullException(nameof(sourceLocationSelector));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
 
             return from Match m in Regex.Matches(text)
                    select m.Groups into groups

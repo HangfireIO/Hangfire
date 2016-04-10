@@ -27,6 +27,8 @@
 using System.Reflection;
 using Hangfire.Logging.LogProviders;
 
+// ReSharper disable All
+
 namespace Hangfire.Logging
 {
     using System.Collections.Generic;
@@ -288,7 +290,7 @@ namespace Hangfire.Logging
         {
             if (logger == null)
             {
-                throw new ArgumentNullException("logger");
+                throw new ArgumentNullException(nameof(logger));
             }
         }
 
@@ -470,7 +472,6 @@ namespace Hangfire.Logging.LogProviders
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Text;
-    using System.Threading;
 
     public class NLogLogProvider : ILogProvider
     {
@@ -1331,7 +1332,7 @@ namespace Hangfire.Logging.LogProviders
                     case LogLevel.Fatal:
                         return TraceEventType.Critical;
                     default:
-                        throw new ArgumentOutOfRangeException("logLevel");
+                        throw new ArgumentOutOfRangeException(nameof(logLevel));
                 }
             }
         }
@@ -1442,7 +1443,7 @@ namespace Hangfire.Logging.LogProviders
 
             protected void Write(LogLevel logLevel, string message, Exception e = null)
             {
-                var formattedMessage = MessageFormatter(this._name, logLevel, message, e);
+                var formattedMessage = MessageFormatter(_name, logLevel, message, e);
                 ConsoleColor color;
 
                 if (Colors.TryGetValue(logLevel, out color))
@@ -1520,9 +1521,8 @@ namespace Hangfire.Logging.LogProviders
 
         private static Type GetHttpContextType()
         {
-            return Type.GetType(String.Format(
-                "System.Web.HttpContext, System.Web, Version={0}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
-                Environment.Version));
+            return Type.GetType(
+                $"System.Web.HttpContext, System.Web, Version={Environment.Version}, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
         }
 
         private static Type GetErrorType()

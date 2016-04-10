@@ -30,7 +30,7 @@ namespace Hangfire.States
 
         internal CoreStateMachine([NotNull] Func<JobStorage, StateHandlerCollection> stateHandlersThunk)
         {
-            if (stateHandlersThunk == null) throw new ArgumentNullException("stateHandlersThunk");
+            if (stateHandlersThunk == null) throw new ArgumentNullException(nameof(stateHandlersThunk));
             _stateHandlersThunk = stateHandlersThunk;
         }
 

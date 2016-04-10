@@ -37,9 +37,9 @@ namespace Hangfire.Storage
             Arguments = arguments;
         }
 
-        public string Type { get; private set; }
-        public string Method { get; private set; }
-        public string ParameterTypes { get; private set; }
+        public string Type { get; }
+        public string Method { get; }
+        public string ParameterTypes { get; }
         public string Arguments { get; set; }
 
         public Job Deserialize()
@@ -52,11 +52,8 @@ namespace Hangfire.Storage
                 
                 if (method == null)
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "The type `{0}` does not contain a method with signature `{1}({2})`",
-                        type.FullName,
-                        Method,
-                        String.Join(", ", parameterTypes.Select(x => x.Name))));
+                    throw new InvalidOperationException(
+                        $"The type `{type.FullName}` does not contain a method with signature `{Method}({String.Join(", ", parameterTypes.Select(x => x.Name))})`");
                 }
 
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
@@ -84,18 +81,29 @@ namespace Hangfire.Storage
             var serializedArguments = new List<string>(arguments.Count);
             foreach (var argument in arguments)
             {
-                string value = null;
+                string value;
 
                 if (argument != null)
                 {
                     if (argument is DateTime)
                     {
-                        value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
+                        value = ((DateTime) argument).ToString("o", CultureInfo.InvariantCulture);
+                    }
+                    else if (argument is CancellationToken)
+                    {
+                        // CancellationToken type instances are substituted with ShutdownToken 
+                        // during the background job performance, so we don't need to store 
+                        // their values.
+                        value = null;
                     }
                     else
                     {
                         value = JobHelper.ToJson(argument);
                     }
+                }
+                else
+                {
+                    value = null;
                 }
 
                 // Logic, related to optional parameters and their default values, 

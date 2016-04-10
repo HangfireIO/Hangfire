@@ -42,8 +42,8 @@ namespace Hangfire.Client
             [NotNull] IJobFilterProvider filterProvider, 
             [NotNull] IBackgroundJobFactory innerFactory)
         {
-            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
-            if (innerFactory == null) throw new ArgumentNullException("innerFactory");
+            if (filterProvider == null) throw new ArgumentNullException(nameof(filterProvider));
+            if (innerFactory == null) throw new ArgumentNullException(nameof(innerFactory));
 
             _filterProvider = filterProvider;
             _innerFactory = innerFactory;
@@ -51,7 +51,7 @@ namespace Hangfire.Client
 
         public BackgroundJob Create(CreateContext context)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             var filterInfo = GetFilters(context.Job);
 

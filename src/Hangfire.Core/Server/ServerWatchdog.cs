@@ -42,9 +42,7 @@ namespace Hangfire.Server
                 var serversRemoved = connection.RemoveTimedOutServers(_serverTimeout);
                 if (serversRemoved != 0)
                 {
-                    Logger.Info(String.Format(
-                        "{0} servers were removed due to timeout", 
-                        serversRemoved));
+                    Logger.Info($"{serversRemoved} servers were removed due to timeout");
                 }
             }
 

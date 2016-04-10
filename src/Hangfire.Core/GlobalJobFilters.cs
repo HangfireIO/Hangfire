@@ -25,16 +25,18 @@ namespace Hangfire
     {
         static GlobalJobFilters()
         {
-            Filters = new JobFilterCollection();
-            Filters.Add(new CaptureCultureAttribute());
-            Filters.Add(new AutomaticRetryAttribute());
-            Filters.Add(new StatisticsHistoryAttribute());
-            Filters.Add(new ContinuationsSupportAttribute());
+            Filters = new JobFilterCollection
+            {
+                new CaptureCultureAttribute(),
+                new AutomaticRetryAttribute(),
+                new StatisticsHistoryAttribute(),
+                new ContinuationsSupportAttribute()
+            };
         }
 
         /// <summary>
         /// Gets the global filter collection.
         /// </summary>
-        public static JobFilterCollection Filters { get; private set; }
+        public static JobFilterCollection Filters { get; }
     }
 }

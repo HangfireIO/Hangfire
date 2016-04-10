@@ -40,7 +40,7 @@ namespace Hangfire.States
 
         internal BackgroundJobStateChanger([NotNull] IStateMachine stateMachine)
         {
-            if (stateMachine == null) throw new ArgumentNullException("stateMachine");
+            if (stateMachine == null) throw new ArgumentNullException(nameof(stateMachine));
             _stateMachine = stateMachine;
         }
         
@@ -85,9 +85,7 @@ namespace Hangfire.States
                     {
                         appliedState = new FailedState(ex.InnerException)
                         {
-                            Reason = String.Format(
-                                "Can not change the state to '{0}': target method was not found.",
-                                appliedState.Name)
+                            Reason = $"Can not change the state to '{appliedState.Name}': target method was not found."
                         };
                     }
                 }
@@ -127,7 +125,7 @@ namespace Hangfire.States
             while (true)
             {
                 var jobData = context.Connection.GetJobData(context.BackgroundJobId);
-                if (jobData != null && !String.IsNullOrEmpty(jobData.State))
+                if (!String.IsNullOrEmpty(jobData?.State))
                 {
                     return jobData;
                 }

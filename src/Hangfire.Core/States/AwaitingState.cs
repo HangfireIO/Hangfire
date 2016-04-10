@@ -97,8 +97,8 @@ namespace Hangfire.States
             JobContinuationOptions options,
             TimeSpan expiration)
         {
-            if (parentId == null) throw new ArgumentNullException("parentId");
-            if (nextState == null) throw new ArgumentNullException("nextState");
+            if (parentId == null) throw new ArgumentNullException(nameof(parentId));
+            if (nextState == null) throw new ArgumentNullException(nameof(nextState));
 
             ParentId = parentId;
             NextState = nextState;
@@ -111,23 +111,23 @@ namespace Hangfire.States
         /// Gets the identifier of a parent background job.
         /// </summary>
         [NotNull]
-        public string ParentId { get; private set; }
+        public string ParentId { get; }
 
         /// <summary>
         /// Gets the next state, to which a background job will be moved.
         /// </summary>
         [NotNull]
-        public IState NextState { get; private set; }
+        public IState NextState { get; }
 
         /// <summary>
         /// Gets the continuation options associated with the current state.
         /// </summary>
-        public JobContinuationOptions Options { get; private set; }
+        public JobContinuationOptions Options { get; }
 
         /// <summary>
         /// Gets the expiration time of a background job continuation.
         /// </summary>
-        public TimeSpan Expiration { get; private set; }
+        public TimeSpan Expiration { get; }
 
         /// <inheritdoc />
         /// <remarks>
@@ -135,7 +135,7 @@ namespace Hangfire.States
         /// Please see the remarks section of the <see cref="IState.Name">IState.Name</see>
         /// article for the details.
         /// </remarks>
-        public string Name { get { return StateName; } }
+        public string Name => StateName;
 
         /// <inheritdoc />
         public string Reason { get; set; }
@@ -146,7 +146,7 @@ namespace Hangfire.States
         /// Please refer to the <see cref="IState.IsFinal">IState.IsFinal</see> documentation
         /// for the details.
         /// </remarks>
-        public bool IsFinal { get { return false; } }
+        public bool IsFinal => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -155,7 +155,7 @@ namespace Hangfire.States
         /// <see cref="IState.IgnoreJobLoadException">IState.IgnoreJobLoadException</see>
         /// article.
         /// </remarks>
-        public bool IgnoreJobLoadException { get { return false; } }
+        public bool IgnoreJobLoadException => false;
 
         /// <inheritdoc />
         /// <remarks>
@@ -218,10 +218,7 @@ namespace Hangfire.States
             }
 
             // ReSharper disable once MemberHidesStaticFromOuterClass
-            public string StateName
-            {
-                get { return AwaitingState.StateName; }
-            }
+            public string StateName => AwaitingState.StateName;
         }
     }
 }

@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using Hangfire.Common;
 using Hangfire.States;
 
@@ -60,7 +59,7 @@ namespace Hangfire
         /// <summary>
         /// Gets the queue name that will be used for background jobs.
         /// </summary>
-        public string Queue { get; private set; }
+        public string Queue { get; }
 
         public void OnStateElection(ElectStateContext context)
         {

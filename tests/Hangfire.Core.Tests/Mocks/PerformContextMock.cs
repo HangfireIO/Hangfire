@@ -1,5 +1,4 @@
 ﻿using System;
-using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
@@ -24,10 +23,7 @@ namespace Hangfire.Core.Tests
         public BackgroundJobMock BackgroundJob { get; set; }
         public Mock<IJobCancellationToken> CancellationToken { get; set; } 
 
-        public PerformContext Object
-        {
-            get { return _context.Value; }
-        }
+        public PerformContext Object => _context.Value;
 
         public static void SomeMethod()
         {

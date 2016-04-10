@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Hangfire.SqlServer.Msmq;
 using Xunit;
 
-namespace Hangfire.Msmq.Tests
+namespace Hangfire.SqlServer.Msmq.Tests
 {
     public class MsmqJobQueueMonitoringApiFacts
     {

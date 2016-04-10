@@ -25,7 +25,7 @@ namespace Hangfire
         /// <exclude />
         public BackgroundJob([NotNull] string id, [CanBeNull] Job job, DateTime createdAt)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
 
             Id = id;
             Job = job;
@@ -34,13 +34,13 @@ namespace Hangfire
 
         /// <exclude />
         [NotNull]
-        public string Id { get; private set; }
+        public string Id { get; }
 
         /// <exclude />
         [CanBeNull]
-        public Job Job { get; private set; }
+        public Job Job { get; }
 
         /// <exclude />
-        public DateTime CreatedAt { get; private set; }
+        public DateTime CreatedAt { get; }
     }
 }

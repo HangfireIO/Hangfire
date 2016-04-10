@@ -98,9 +98,9 @@ namespace Hangfire.Server
             [NotNull] Func<CrontabSchedule, TimeZoneInfo, IScheduleInstant> instantFactory,
             [NotNull] IThrottler throttler)
         {
-            if (factory == null) throw new ArgumentNullException("factory");
-            if (instantFactory == null) throw new ArgumentNullException("instantFactory");
-            if (throttler == null) throw new ArgumentNullException("throttler");
+            if (factory == null) throw new ArgumentNullException(nameof(factory));
+            if (instantFactory == null) throw new ArgumentNullException(nameof(instantFactory));
+            if (throttler == null) throw new ArgumentNullException(nameof(throttler));
             
             _factory = factory;
             _instantFactory = instantFactory;
@@ -110,7 +110,7 @@ namespace Hangfire.Server
         /// <inheritdoc />
         public void Execute(BackgroundProcessContext context)
         {
-            if (context == null) throw new ArgumentNullException("context");
+            if (context == null) throw new ArgumentNullException(nameof(context));
 
             _throttler.Throttle(context.CancellationToken);
 
@@ -122,7 +122,7 @@ namespace Hangfire.Server
                 foreach (var recurringJobId in recurringJobIds)
                 {
                     var recurringJob = connection.GetAllEntriesFromHash(
-                        String.Format("recurring-job:{0}", recurringJobId));
+                        $"recurring-job:{recurringJobId}");
 
                     if (recurringJob == null)
                     {
@@ -136,9 +136,7 @@ namespace Hangfire.Server
                     catch (JobLoadException ex)
                     {
                         Logger.WarnException(
-                            String.Format(
-                                "Recurring job '{0}' can not be scheduled due to job load exception.",
-                                recurringJobId),
+                            $"Recurring job '{recurringJobId}' can not be scheduled due to job load exception.",
                             ex);
                     }
                 }
@@ -187,14 +185,11 @@ namespace Hangfire.Server
                     }
 
                     var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state));
-                    var jobId = backgroundJob != null ? backgroundJob.Id : null;
+                    var jobId = backgroundJob?.Id;
 
                     if (String.IsNullOrEmpty(jobId))
                     {
-                        Logger.DebugFormat(
-                            "Recurring job '{0}' execution at '{1}' has been canceled.",
-                            recurringJobId,
-                            instant.NowInstant);
+                        Logger.Debug($"Recurring job '{recurringJobId}' execution at '{instant.NowInstant}' has been canceled.");
                     }
 
                     changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.NowInstant));
@@ -204,13 +199,13 @@ namespace Hangfire.Server
                 changedFields.Add("NextExecution", instant.NextInstant.HasValue ? JobHelper.SerializeDateTime(instant.NextInstant.Value) : null);
 
                 connection.SetRangeInHash(
-                    String.Format("recurring-job:{0}", recurringJobId),
+                    $"recurring-job:{recurringJobId}",
                     changedFields);
             }
             catch (TimeZoneNotFoundException ex)
             {
                 Logger.ErrorException(
-                    String.Format("Recurring job '{0}' was not triggered: {1}.", recurringJobId, ex.Message),
+                    $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
                     ex);
             }
         }

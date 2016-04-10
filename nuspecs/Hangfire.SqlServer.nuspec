@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.0-beta1
+* Added – Zero latency processing when client and server reside in the same process.
+* Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances.
+    
 1.5.3
 * Fixed – "Cannot release the application lock" exception when using distributed locks.
     

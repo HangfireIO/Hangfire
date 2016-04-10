@@ -3,7 +3,6 @@ using System.Threading;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
-using Xunit;
 
 namespace Hangfire.Core.Tests.Server
 {

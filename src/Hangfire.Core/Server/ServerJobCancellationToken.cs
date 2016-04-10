@@ -37,10 +37,10 @@ namespace Hangfire.Server
             [NotNull] string workerId,
             CancellationToken shutdownToken)
         {
-            if (jobId == null) throw new ArgumentNullException("jobId");
-            if (serverId == null) throw new ArgumentNullException("serverId");
-            if (workerId == null) throw new ArgumentNullException("workerId");
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (workerId == null) throw new ArgumentNullException(nameof(workerId));
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             _jobId = jobId;
             _serverId = serverId;
@@ -49,10 +49,7 @@ namespace Hangfire.Server
             _shutdownToken = shutdownToken;
         }
 
-        public CancellationToken ShutdownToken
-        {
-            get { return _shutdownToken; }
-        }
+        public CancellationToken ShutdownToken => _shutdownToken;
 
         public void ThrowIfCancellationRequested()
         {

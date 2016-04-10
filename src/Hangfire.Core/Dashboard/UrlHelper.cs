@@ -27,7 +27,7 @@ namespace Hangfire.Dashboard
 
         public UrlHelper([NotNull] IDictionary<string, object> owinContext)
         {
-            if (owinContext == null) throw new ArgumentNullException("owinContext");
+            if (owinContext == null) throw new ArgumentNullException(nameof(owinContext));
             _context = new OwinContext(owinContext);
         }
 

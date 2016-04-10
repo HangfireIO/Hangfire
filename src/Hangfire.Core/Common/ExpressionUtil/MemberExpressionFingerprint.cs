@@ -23,14 +23,14 @@ namespace Hangfire.Common.ExpressionUtil
         }
 
         // http://msdn.microsoft.com/en-us/library/system.linq.expressions.memberexpression.member.aspx
-        public MemberInfo Member { get; private set; }
+        public MemberInfo Member { get; }
 
         public override bool Equals(object obj)
         {
             MemberExpressionFingerprint other = obj as MemberExpressionFingerprint;
             return (other != null)
-                   && Equals(this.Member, other.Member)
-                   && this.Equals(other);
+                   && Equals(Member, other.Member)
+                   && Equals(other);
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)

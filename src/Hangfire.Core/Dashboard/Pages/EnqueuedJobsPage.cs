@@ -7,6 +7,6 @@
             Queue = queue;
         }
 
-        public string Queue { get; private set; }
+        public string Queue { get; }
     }
 }

@@ -6,7 +6,7 @@ namespace ConsoleSample
     {
         public void Method<TMethod>(TType arg1, TMethod arg2)
         {
-            Console.WriteLine("Arg1: {0}, Arg2: {1}", arg1, arg2);
+            Console.WriteLine($"Arg1: {arg1}, Arg2: {arg2}");
         }
     }
 }

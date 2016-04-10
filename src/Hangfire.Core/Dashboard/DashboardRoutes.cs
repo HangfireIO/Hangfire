@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU Lesser General Public 
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Reflection;
 using Hangfire.Dashboard.Pages;
 using Hangfire.States;
@@ -25,9 +24,10 @@ namespace Hangfire.Dashboard
     {
         private static readonly string[] Javascripts =
         {
-            "jquery-1.10.2.min.js", 
+            "jquery-2.1.4.min.js", 
             "bootstrap.min.js",
             "moment.min.js",
+            "moment-with-locales.min.js",
             "d3.min.js", 
             "d3.layout.min.js", 
             "rickshaw.min.js", 
@@ -181,16 +181,16 @@ namespace Hangfire.Dashboard
             #endregion
         }
 
-        public static RouteCollection Routes { get; private set; }
+        public static RouteCollection Routes { get; }
 
         internal static string GetContentFolderNamespace(string contentFolder)
         {
-            return String.Format("{0}.Content.{1}", typeof(DashboardRoutes).Namespace, contentFolder);
+            return $"{typeof (DashboardRoutes).Namespace}.Content.{contentFolder}";
         }
 
         internal static string GetContentResourceName(string contentFolder, string resourceName)
         {
-            return String.Format("{0}.{1}", GetContentFolderNamespace(contentFolder), resourceName);
+            return $"{GetContentFolderNamespace(contentFolder)}.{resourceName}";
         }
 
         private static Assembly GetExecutingAssembly()

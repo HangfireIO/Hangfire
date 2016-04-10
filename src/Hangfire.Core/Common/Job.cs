@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using Hangfire.Annotations;
+using System.Runtime.CompilerServices;
 
 namespace Hangfire.Common
 {
@@ -144,11 +144,11 @@ namespace Hangfire.Common
         /// <exception cref="NotSupportedException"><paramref name="method"/> is not supported.</exception>
         public Job([NotNull] Type type, [NotNull] MethodInfo method, [NotNull] params object[] args)
         {
-            if (type == null) throw new ArgumentNullException("type");
-            if (method == null) throw new ArgumentNullException("method");
-            if (args == null) throw new ArgumentNullException("args");
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (method == null) throw new ArgumentNullException(nameof(method));
+            if (args == null) throw new ArgumentNullException(nameof(args));
             
-            Validate(type, "type", method, "method", args.Length, "args");
+            Validate(type, nameof(type), method, nameof(method), args.Length, nameof(args));
 
             Type = type;
             Method = method;
@@ -160,25 +160,25 @@ namespace Hangfire.Common
         /// invoked during the performance.
         /// </summary>
         [NotNull]
-        public Type Type { get; private set; }
+        public Type Type { get; }
 
         /// <summary>
         /// Gets the metadata of a method that should be invoked during the 
         /// performance.
         /// </summary>
         [NotNull]
-        public MethodInfo Method { get; private set; }
+        public MethodInfo Method { get; }
 
         /// <summary>
         /// Gets a read-only collection of arguments that Should be passed to a 
         /// method invocation during the performance.
         /// </summary>
         [NotNull]
-        public IReadOnlyList<object> Args { get; private set; }
+        public IReadOnlyList<object> Args { get; }
         
         public override string ToString()
         {
-            return String.Format("{0}.{1}", Type.ToGenericTypeString(), Method.Name);
+            return $"{Type.ToGenericTypeString()}.{Method.Name}";
         }
 
         internal IEnumerable<JobFilterAttribute> GetTypeFilterAttributes(bool useCache)
@@ -232,12 +232,12 @@ namespace Hangfire.Common
         /// </remarks>
         public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
         {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
+            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
+                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
             Type type;
@@ -286,12 +286,12 @@ namespace Hangfire.Common
         /// </remarks>
         public static Job FromExpression<TType>([InstantHandle] Expression<Action<TType>> methodCall)
         {
-            if (methodCall == null) throw new ArgumentNullException("methodCall");
+            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
             var callExpression = methodCall.Body as MethodCallExpression;
             if (callExpression == null)
             {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", "methodCall");
+                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
             return new Job(
@@ -304,6 +304,7 @@ namespace Hangfire.Common
             Type type, 
             [InvokerParameterName] string typeParameterName,
             MethodInfo method, 
+            // ReSharper disable once UnusedParameter.Local
             [InvokerParameterName] string methodParameterName,
             // ReSharper disable once UnusedParameter.Local
             int argumentCount,
@@ -327,13 +328,13 @@ namespace Hangfire.Common
             if (!method.DeclaringType.IsAssignableFrom(type))
             {
                 throw new ArgumentException(
-                    String.Format("The type `{0}` must be derived from the `{1}` type.", method.DeclaringType, type),
+                    $"The type `{method.DeclaringType}` must be derived from the `{type}` type.",
                     typeParameterName);
             }
 
-            if (typeof(Task).IsAssignableFrom(method.ReturnType))
+            if (method.ReturnType == typeof(void) && method.GetCustomAttribute<AsyncStateMachineAttribute>() != null)
             {
-                throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
+                throw new NotSupportedException("Async void methods are not supported. Use async Task instead.");
             }
 
             var parameters = method.GetParameters();

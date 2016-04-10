@@ -13,6 +13,9 @@
     <copyright>Copyright © 2014-2016 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>http://hangfire.io/blog/
+   
+1.6.0-beta1
+* Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
     
 1.5.0
 * Added – Support for remote MSMQ queues through DTC transactions.
@@ -23,7 +26,7 @@
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />
-      <dependency id="Hangfire.SqlServer" version="1.2.2" />
+      <dependency id="Hangfire.SqlServer" version="[0.0.0]" />
     </dependencies>
   </metadata>
   <files>

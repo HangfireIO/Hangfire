@@ -2,9 +2,10 @@
 using System.Data;
 using System.Messaging;
 using System.Threading;
-using Hangfire.Msmq.Tests;
 using Moq;
 using Xunit;
+
+// ReSharper disable PossibleNullReferenceException
 
 namespace Hangfire.SqlServer.Msmq.Tests
 {

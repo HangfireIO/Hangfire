@@ -45,10 +45,7 @@ namespace Hangfire.SqlServer.Tests
         {
             try
             {
-                if (_transaction != null)
-                {
-                    _transaction.Dispose();
-                }
+                _transaction?.Dispose();
             }
             finally
             {

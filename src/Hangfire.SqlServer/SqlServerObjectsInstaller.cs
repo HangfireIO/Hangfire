@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -26,21 +27,21 @@ using Hangfire.Logging;
 namespace Hangfire.SqlServer
 {
     [ExcludeFromCodeCoverage]
-    internal static class SqlServerObjectsInstaller
+    public static class SqlServerObjectsInstaller
     {
-        private const int RequiredSchemaVersion = 5;
+        public static readonly int RequiredSchemaVersion = 5;
         private const int RetryAttempts = 3;
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
-        public static void Install(SqlConnection connection)
+        public static void Install(DbConnection connection)
         {
             Install(connection, null);
         }
 
-        public static void Install(SqlConnection connection, string schema)
+        public static void Install(DbConnection connection, string schema)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
 
             Log.Info("Start installing Hangfire SQL objects...");
 
@@ -80,7 +81,7 @@ namespace Hangfire.SqlServer
             Log.Info("Hangfire SQL objects installed.");
         }
 
-        private static bool IsSqlEditionSupported(SqlConnection connection)
+        private static bool IsSqlEditionSupported(DbConnection connection)
         {
             var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
@@ -92,10 +93,8 @@ namespace Hangfire.SqlServer
             {
                 if (stream == null) 
                 {
-                    throw new InvalidOperationException(String.Format(
-                        "Requested resource `{0}` was not found in the assembly `{1}`.",
-                        resourceName,
-                        assembly));
+                    throw new InvalidOperationException(
+                        $"Requested resource `{resourceName}` was not found in the assembly `{assembly}`.");
                 }
 
                 using (var reader = new StreamReader(stream))

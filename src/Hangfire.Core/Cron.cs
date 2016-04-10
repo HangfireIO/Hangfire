@@ -22,7 +22,7 @@ namespace Hangfire
     /// <summary>
     /// Helper class that provides common values for the cron expressions.
     /// </summary>
-    public class Cron
+    public static class Cron
     {
         /// <summary>
         /// Returns cron expression that fires every minute.
@@ -46,7 +46,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Hourly(int minute)
         {
-            return String.Format("{0} * * * *", minute);
+            return $"{minute} * * * *";
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Daily(int hour, int minute)
         {
-            return String.Format("{0} {1} * * *", minute, hour);
+            return $"{minute} {hour} * * *";
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Weekly(DayOfWeek dayOfWeek, int hour, int minute)
         {
-            return String.Format("{0} {1} * * {2}", minute, hour, (int) dayOfWeek);
+            return $"{minute} {hour} * * {(int) dayOfWeek}";
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Monthly(int day, int hour, int minute)
         {
-            return String.Format("{0} {1} {2} * *", minute, hour, day);
+            return $"{minute} {hour} {day} * *";
         }
 
         /// <summary>
@@ -212,7 +212,43 @@ namespace Hangfire
         /// <param name="minute">The minute in which the schedule will be activated (0-59).</param>
         public static string Yearly(int month, int day, int hour, int minute)
         {
-            return String.Format("{0} {1} {2} {3} *", minute, hour, day, month);
+            return $"{minute} {hour} {day} {month} *";
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; minutes.
+        /// </summary>
+        /// <param name="interval">The number of minutes to wait between every activation.</param>
+        public static string MinuteInterval(int interval)
+        {
+            return $"*/{interval} * * * *";
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; hours.
+        /// </summary>
+        /// <param name="interval">The number of hours to wait between every activation.</param>
+        public static string HourInterval(int interval)
+        {
+            return $"* */{interval} * * *";
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; days.
+        /// </summary>
+        /// <param name="interval">The number of days to wait between every activation.</param>
+        public static string DayInterval(int interval)
+        {
+            return $"* * */{interval} * *";
+        }
+
+        /// <summary>
+        /// Returns cron expression that fires every &lt;<paramref name="interval"></paramref>&gt; months.
+        /// </summary>
+        /// <param name="interval">The number of months to wait between every activation.</param>
+        public static string MonthInterval(int interval)
+        {
+            return $"* * * */{interval} *";
         }
 
         /// <summary>
@@ -230,7 +266,7 @@ namespace Hangfire
                 throw new InvalidCastException("Invalid Cron Expression");
             }
 
-            foreach(string expressionPart in expressionParts)
+            foreach (string expressionPart in expressionParts)
             {
                 int num;
                 if (!Int32.TryParse(expressionPart, out num) && expressionPart != "*")
@@ -238,7 +274,7 @@ namespace Hangfire
                     throw new InvalidCastException("Invalid Cron Expression");
                 }
             }
-            
+
             return ExpressionDescriptor.GetDescription(cronExpression);
         }
     }

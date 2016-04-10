@@ -9,6 +9,9 @@ using Moq;
 using Moq.Sequences;
 using Xunit;
 
+// ReSharper disable PossibleNullReferenceException
+// ReSharper disable AssignNullToNotNullAttribute
+
 namespace Hangfire.Core.Tests.Client
 {
     public class BackgroundJobFactoryFacts
@@ -37,7 +40,7 @@ namespace Hangfire.Core.Tests.Client
                 _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
             
             _innerFactory = new Mock<IBackgroundJobFactory>();
-            _innerFactory.Setup(x => x.Create((_context.Object))).Returns(_backgroundJob.Object);
+            _innerFactory.Setup(x => x.Create(_context.Object)).Returns(_backgroundJob.Object);
         }
 
         [Fact]

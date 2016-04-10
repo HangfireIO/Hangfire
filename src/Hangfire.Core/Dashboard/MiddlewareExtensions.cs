@@ -46,10 +46,10 @@ namespace Hangfire.Dashboard
             [NotNull] JobStorage storage, 
             [NotNull] RouteCollection routes)
         {
-            if (builder == null) throw new ArgumentNullException("builder");
-            if (options == null) throw new ArgumentNullException("options");
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (routes == null) throw new ArgumentNullException("routes");
+            if (builder == null) throw new ArgumentNullException(nameof(builder));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
 
             builder(_ => UseHangfireDashboard(options, storage, routes));
 
@@ -61,9 +61,9 @@ namespace Hangfire.Dashboard
             [NotNull] JobStorage storage, 
             [NotNull] RouteCollection routes)
         {
-            if (options == null) throw new ArgumentNullException("options");
-            if (storage == null) throw new ArgumentNullException("storage");
-            if (routes == null) throw new ArgumentNullException("routes");
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (routes == null) throw new ArgumentNullException(nameof(routes));
 
             return
                 next =>
@@ -85,6 +85,7 @@ namespace Hangfire.Dashboard
 
                     var dispatcherContext = new RequestDispatcherContext(
                         options.AppPath,
+                        options.StatsPollingInterval,
                         storage,
                         context.Environment,
                         dispatcher.Item2);

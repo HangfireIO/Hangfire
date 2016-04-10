@@ -38,8 +38,8 @@ namespace Hangfire
             [NotNull] this IAppBuilder app,
             [NotNull] Action<IBootstrapperConfiguration> configurationAction)
         {
-            if (app == null) throw new ArgumentNullException("app");
-            if (configurationAction == null) throw new ArgumentNullException("configurationAction");
+            if (app == null) throw new ArgumentNullException(nameof(app));
+            if (configurationAction == null) throw new ArgumentNullException(nameof(configurationAction));
 
             var configuration = new BootstrapperConfiguration();
             configurationAction(configuration);

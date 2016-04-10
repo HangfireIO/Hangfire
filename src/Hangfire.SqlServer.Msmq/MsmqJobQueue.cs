@@ -32,7 +32,7 @@ namespace Hangfire.SqlServer.Msmq
 
         public MsmqJobQueue(string pathPattern, MsmqTransactionType transactionType)
         {
-            if (pathPattern == null) throw new ArgumentNullException("pathPattern");
+            if (pathPattern == null) throw new ArgumentNullException(nameof(pathPattern));
 
             _pathPattern = pathPattern;
             _transactionType = transactionType;

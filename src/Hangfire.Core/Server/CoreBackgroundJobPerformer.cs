@@ -36,16 +36,22 @@ namespace Hangfire.Server
 
         public CoreBackgroundJobPerformer([NotNull] JobActivator activator)
         {
-            if (activator == null) throw new ArgumentNullException("activator");
+            if (activator == null) throw new ArgumentNullException(nameof(activator));
             _activator = activator;
         }
 
         public object Perform(PerformContext context)
         {
-            using (var scope = _activator.BeginScope())
+            using (var scope = _activator.BeginScope(
+                new JobActivatorContext(context.Connection, context.BackgroundJob, context.CancellationToken)))
             {
                 object instance = null;
 
+                if (context.BackgroundJob.Job == null)
+                {
+                    throw new InvalidOperationException("Can't perform a background job with a null job.");
+                }
+                
                 if (!context.BackgroundJob.Job.Method.IsStatic)
                 {
                     instance = scope.Resolve(context.BackgroundJob.Job.Type);
@@ -53,7 +59,7 @@ namespace Hangfire.Server
                     if (instance == null)
                     {
                         throw new InvalidOperationException(
-                            String.Format("JobActivator returned NULL instance of the '{0}' type.", context.BackgroundJob.Job.Type));
+                            $"JobActivator returned NULL instance of the '{context.BackgroundJob.Job.Type}' type.");
                     }
                 }
 
@@ -68,13 +74,47 @@ namespace Hangfire.Server
         {
             try
             {
-                return methodInfo.Invoke(instance, arguments);
+                var result = methodInfo.Invoke(instance, arguments);
+
+                var task = result as Task;
+
+                if (task != null)
+                {
+                    task.Wait();
+
+                    if (methodInfo.ReturnType.IsGenericType)
+                    {
+                        var resultProperty = methodInfo.ReturnType.GetProperty("Result");
+
+                        result = resultProperty.GetValue(task);
+                    }
+                    else
+                    {
+                        result = null;
+                    }
+                }
+
+                return result;
             }
             catch (ArgumentException ex)
             {
                 throw new JobPerformanceException(
                     "An exception occurred during performance of the job.",
                     ex);
+            }
+            catch (AggregateException ex)
+            {
+                if (ex.InnerException is OperationCanceledException)
+                {
+                    // `OperationCanceledException` and its descendants are used
+                    // to notify a worker that job performance was canceled,
+                    // so we should not wrap this exception and throw it as-is.
+                    throw ex.InnerException;
+                }
+
+                throw new JobPerformanceException(
+                    "An exception occurred during performance of the job.",
+                    ex.InnerException);
             }
             catch (TargetInvocationException ex)
             {
@@ -94,6 +134,11 @@ namespace Hangfire.Server
 
         private static object[] SubstituteArguments(PerformContext context)
         {
+            if (context.BackgroundJob.Job == null)
+            {
+                return null;
+            }
+
             var parameters = context.BackgroundJob.Job.Method.GetParameters();
             var result = new List<object>(context.BackgroundJob.Job.Args.Count);
 

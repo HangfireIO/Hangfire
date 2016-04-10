@@ -39,9 +39,9 @@ namespace Hangfire.Server
             [NotNull] BackgroundJob backgroundJob,
             [NotNull] IJobCancellationToken cancellationToken)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
-            if (backgroundJob == null) throw new ArgumentNullException("backgroundJob");
-            if (cancellationToken == null) throw new ArgumentNullException("cancellationToken");
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+            if (backgroundJob == null) throw new ArgumentNullException(nameof(backgroundJob));
+            if (cancellationToken == null) throw new ArgumentNullException(nameof(cancellationToken));
 
             Connection = connection;
             BackgroundJob = backgroundJob;
@@ -56,34 +56,36 @@ namespace Hangfire.Server
         /// or just between different methods.
         /// </summary>
         [NotNull]
-        public IDictionary<string, object> Items { get; private set; }
+        public IDictionary<string, object> Items { get; }
 
         [NotNull]
-        public BackgroundJob BackgroundJob { get; private set; }
+        public BackgroundJob BackgroundJob { get; }
 
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public string JobId { get { return BackgroundJob.Id; } }
+        public string JobId => BackgroundJob.Id;
+
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public Job Job { get { return BackgroundJob.Job; } }
+        public Job Job => BackgroundJob.Job;
+
         [Obsolete("Please use BackgroundJob property instead. Will be removed in 2.0.0.")]
-        public DateTime CreatedAt { get { return BackgroundJob.CreatedAt; } }
+        public DateTime CreatedAt => BackgroundJob.CreatedAt;
 
         [NotNull]
-        public IJobCancellationToken CancellationToken { get; private set; }
+        public IJobCancellationToken CancellationToken { get; }
 
         [NotNull]
-        public IStorageConnection Connection { get; private set; }
+        public IStorageConnection Connection { get; }
         
         public void SetJobParameter(string name, object value)
         {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Connection.SetJobParameter(BackgroundJob.Id, name, JobHelper.ToJson(value));
         }
 
         public T GetJobParameter<T>(string name)
         {
-            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
+            if (String.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             try
             {
@@ -91,9 +93,8 @@ namespace Hangfire.Server
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException(String.Format(
-                    "Could not get a value of the job parameter `{0}`. See inner exception for details.",
-                    name), ex);
+                throw new InvalidOperationException(
+                    $"Could not get a value of the job parameter `{name}`. See inner exception for details.", ex);
             }
         }
     }

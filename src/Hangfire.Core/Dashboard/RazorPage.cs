@@ -42,6 +42,7 @@ namespace Hangfire.Dashboard
 
         public JobStorage Storage { get; internal set; }
         public string AppPath { get; internal set; }
+        public int StatsPollingInterval { get; internal set; }
         public Stopwatch GenerationTime { get; private set; }
 
         public StatisticsDto Statistics
@@ -56,10 +57,7 @@ namespace Hangfire.Dashboard
         internal IOwinRequest Request { private get; set; }
         internal IOwinResponse Response { private get; set; }
 
-        public string RequestPath
-        {
-            get { return Request.Path.Value; }
-        }
+        public string RequestPath => Request.Path.Value;
 
         /// <exclude />
         public abstract void Execute();
@@ -81,6 +79,7 @@ namespace Hangfire.Dashboard
             Response = parentPage.Response;
             Storage = parentPage.Storage;
             AppPath = parentPage.AppPath;
+            StatsPollingInterval = parentPage.StatsPollingInterval;
             Url = parentPage.Url;
 
             GenerationTime = parentPage.GenerationTime;
@@ -95,6 +94,7 @@ namespace Hangfire.Dashboard
             Response = owinContext.Response;
             Storage = context.JobStorage;
             AppPath = context.AppPath;
+            StatsPollingInterval = context.StatsPollingInterval;
             Url = new UrlHelper(context.OwinEnvironment);
 
             _statisticsLazy = new Lazy<StatisticsDto>(() =>
@@ -118,7 +118,7 @@ namespace Hangfire.Dashboard
             if (value == null)
                 return;
             var html = value as NonEscapedString;
-            WriteLiteral(html != null ? html.ToString() : Encode(value.ToString()));
+            WriteLiteral(html?.ToString() ?? Encode(value.ToString()));
         }
 
         protected virtual object RenderBody()

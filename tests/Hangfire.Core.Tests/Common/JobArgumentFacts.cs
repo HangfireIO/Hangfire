@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -7,6 +6,8 @@ using Hangfire.Common;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
+
+#pragma warning disable 618
 
 namespace Hangfire.Core.Tests.Common
 {
