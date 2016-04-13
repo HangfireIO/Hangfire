@@ -29,17 +29,20 @@ namespace Hangfire.Storage
     public class InvocationData
     {
         public InvocationData(
-            string type, string method, string parameterTypes, string arguments)
+            string type, string method, string parameterTypes, string arguments, string displayName)
         {
             Type = type;
             Method = method;
             ParameterTypes = parameterTypes;
             Arguments = arguments;
+            DisplayName = displayName;
         }
+
 
         public string Type { get; private set; }
         public string Method { get; private set; }
         public string ParameterTypes { get; private set; }
+        public string DisplayName { get; private set; }
         public string Arguments { get; set; }
 
         public Job Deserialize()
@@ -62,7 +65,10 @@ namespace Hangfire.Storage
                 var serializedArguments = JobHelper.FromJson<string[]>(Arguments);
                 var arguments = DeserializeArguments(method, serializedArguments);
 
-                return new Job(type, method, arguments);
+                return new Job(type, method, arguments)
+                {
+                    DisplayName = DisplayName
+                };
             }
             catch (Exception ex)
             {
@@ -76,7 +82,8 @@ namespace Hangfire.Storage
                 job.Type.AssemblyQualifiedName,
                 job.Method.Name,
                 JobHelper.ToJson(job.Method.GetParameters().Select(x => x.ParameterType).ToArray()),
-                JobHelper.ToJson(SerializeArguments(job.Args)));
+                JobHelper.ToJson(SerializeArguments(job.Args)), 
+                job.DisplayName);
         }
 
         internal static string[] SerializeArguments(IReadOnlyCollection<object> arguments)
