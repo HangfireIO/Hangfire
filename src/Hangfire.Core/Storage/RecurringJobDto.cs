@@ -29,6 +29,7 @@ namespace Hangfire.Storage
         public string LastJobId { get; set; }
         public string LastJobState { get; set; }
         public DateTime? LastExecution { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public bool Removed { get; set; }
         public string TimeZoneId { get; set; }
     }

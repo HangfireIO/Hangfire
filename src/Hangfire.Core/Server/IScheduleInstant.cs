@@ -23,6 +23,6 @@ namespace Hangfire.Server
     {
         DateTime NowInstant { get; }
         DateTime? NextInstant { get; }
-        IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant);
+        IEnumerable<DateTime> GetNextInstants(DateTime lastInstant);
     }
 }

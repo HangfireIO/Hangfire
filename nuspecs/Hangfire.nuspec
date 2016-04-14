@@ -17,7 +17,7 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
-    
+
 1.6.0-beta1
 
 Hangfire.Core
@@ -37,66 +37,6 @@ Hangfire.SqlServer
 
 Hangfire.SqlServer.Msmq
 * Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
-    
-1.5.4
-* Changed – C# 6.0 is now required to compile the solution.
-* Fixed – Recurring jobs failing after moving clock forward for daylight saving time.
-* Fixed – Infinite loops when trying to change state of a background job that doesn't exist (by @mkravchuk7).
-* Fixed – Update StackTraceParser and StackTraceFormatter to prevent critical flaw (by @atifaziz and @lukerogers).
-    
-1.5.3
-
-Hangfire.SqlServer
-* Fixed – "Cannot release the application lock" exception when using distributed locks.
-    
-1.5.2
-* Fixed – `JobLoadException` when using interface method as a background job, appeared in 1.5.1.
-    
-1.5.1
-* Fixed – `JobLoadException` during deserialization when a method defined in an inherited interface.
-* Fixed – Unable to see enqueued jobs in Dashboard UI when using SQL Server queues.
-* Fixed – Show alert box instead of an exception on Awaiting Jobs page.
-    
-1.5.0
-
-Hangfire.Core
-* Added – `IBackgroundProcess` interface that allows to implement custom background processes.
-* Added – `BackgroundProcessingServer` class for creating a server instance with completely custom background processes.
-* Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain without explicit server names.
-* Added – `JobActivatorScope` class to support custom IoC scopes/lifetimes.
-* Added – Allow to specify a custom queue for recurring jobs (by @maleet).
-* Added – Allow to use CancellationToken type as a job method parameter.
-* Added – It is now possible to query the storage in state applying filters.
-* Added – Allow to pass custom filters to `BackgroundJobServer` via options.
-* Added – Option to hide the "Back to site" link (by @dradovic).
-* Changed – Server components and background processes now use `Task` with `TaskCreationOptions.LongRunning`.
-* Changed – ServerIds are now generated without ServerName, server names are deprecated.
-* Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
-* Changed – Minor improvements for Dashboard navigation (by @pwelter34).
-* Changed – Worker does not process a job when a transition to the Processing state failed (by @yngndrw).
-* Changed – `BackgroundJobClientException` is thrown instead of `CreateJobFailedException`.
-* Changed – WorkerId is now auto-generated and based on a GUID.
-* Changed – Use StackTraceFormatter package for marking-up stack traces (by @atifaziz).
-* Changed – Updated Dashboard CSS to Twitter Bootstrap 3.3.5.
-* Fixed – Prevent worker from fetching and processing a job on shutdown.
-* Fixed – `TaskCanceledException` thrown from a job method leads to failed job as expected.
-* Fixed – Make `DelayedJobScheduler` resilient to empty background job ids.
-* Fixed – Logical error in SqlServerDistributedLockTimeout value check (by @Tom-Kelly).
-* Fixed – `OverflowException` in Dashboard when job duration exceeds int.MaxValue (by @mavenius).
-* Fixed – "More details" button in Dashboard changes to "Less details" when collapsed (by @pascalberger).
-
-Hangfire.SqlServer
-* Added – Ability to specify the schema for SQL Server job storage (by @ryanmwright).
-* Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
-* Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
-* Changed – `SqlServerDistributedLock` class is now public.
-* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
-* Changed – Dramatically improved page load times in Dashboard.
-* Changed – Instant re-queue for background jobs even after ungraceful shutdown.
-* Changed – `JobQueue.Queue` and `Server.Id` column length increased to 50 and 100 respectively (by @maleet).
-
-Hangfire.SqlServer.Msmq
-* Added – Support for remote MSMQ queues through DTC transactions.
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />

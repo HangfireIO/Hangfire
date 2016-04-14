@@ -82,6 +82,7 @@
                         <th>@Strings.Common_Job</th>
                         <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
                         <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
+                        <th class="align-right min-width">@Strings.Common_Created</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -157,6 +158,16 @@
                                 else
                                 {
                                     <em>@Strings.Common_NotAvailable</em>
+                                }
+                            </td>
+                            <td class="align-right min-width">
+                                @if (job.CreatedAt != null)
+                                {
+                                    @Html.RelativeTime(job.CreatedAt.Value)
+                                }
+                                else
+                                {
+                                    <em>N/A</em>
                                 }
                             </td>
                         </tr>

@@ -72,6 +72,12 @@ namespace Hangfire
                 recurringJob["TimeZoneId"] = options.TimeZone.Id;
                 recurringJob["Queue"] = options.QueueName;
 
+                var existingJob = connection.GetAllEntriesFromHash($"recurring-job:{recurringJobId}");
+                if (existingJob == null)
+                {
+                    recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(DateTime.UtcNow);
+                }
+
                 using (var transaction = connection.CreateWriteTransaction())
                 {
                     transaction.SetRangeInHash(

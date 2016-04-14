@@ -116,6 +116,11 @@ namespace Hangfire.Storage
                     dto.TimeZoneId = hash["TimeZoneId"];
                 }
 
+                if (hash.ContainsKey("CreatedAt"))
+                {
+                    dto.CreatedAt = JobHelper.DeserializeDateTime(hash["CreatedAt"]);
+                }
+
                 result.Add(dto);
             }
 

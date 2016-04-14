@@ -13,7 +13,7 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
-    
+
 1.6.0-beta1
 * Added – Ability to create jobs based on `async` methods, they are awaited by a worker.
 * Added – Multilanguage support in Dashboard via resource files.
@@ -24,45 +24,6 @@
 * Changed – Update NCrontab to 3.1.0.
 * Changed – Update CronExpressionDescriptor to 1.17.
 * Fixed – ToGenericTypeString method now supports nested classes.
-    
-1.5.4
-* Changed – C# 6.0 is now required to compile the solution.
-* Fixed – Recurring jobs failing after moving clock forward for daylight saving time.
-* Fixed – Infinite loops when trying to change state of a background job that doesn't exist (by @mkravchuk7).
-* Fixed – Update StackTraceParser and StackTraceFormatter to prevent critical flaw (by @atifaziz and @lukerogers).
-    
-1.5.2
-* Fixed – `JobLoadException` when using interface method as a background job, appeared in 1.5.1.
-    
-1.5.1
-* Fixed – `JobLoadException` during deserialization when a method defined in an inherited interface.
-* Fixed – Show alert box instead of an exception on Awaiting Jobs page.
-    
-1.5.0
-* Added – `IBackgroundProcess` interface that allows to implement custom background processes.
-* Added – `BackgroundProcessingServer` class for creating a server instance with completely custom background processes.
-* Added – Support for running multiple `BackgroundJobServer` instances in the same AppDomain without explicit server names.
-* Added – `JobActivatorScope` class to support custom IoC scopes/lifetimes.
-* Added – Allow to specify a custom queue for recurring jobs (by @maleet).
-* Added – Allow to use CancellationToken type as a job method parameter.
-* Added – It is now possible to query the storage in state applying filters.
-* Added – Allow to pass custom filters to `BackgroundJobServer` via options.
-* Added – Option to hide the "Back to site" link (by @dradovic).
-* Changed – Server components and background processes now use `Task` with `TaskCreationOptions.LongRunning`.
-* Changed – ServerIds are now generated without ServerName, server names are deprecated.
-* Changed – Arguments Renderer now supports TimeSpan and DateTime (by @yngndrw).
-* Changed – Minor improvements for Dashboard navigation (by @pwelter34).
-* Changed – Worker does not process a job when a transition to the Processing state failed (by @yngndrw).
-* Changed – `BackgroundJobClientException` is thrown instead of `CreateJobFailedException`.
-* Changed – WorkerId is now auto-generated and based on a GUID.
-* Changed – Use StackTraceFormatter package for marking-up stack traces (by @atifaziz).
-* Changed – Updated Dashboard CSS to Twitter Bootstrap 3.3.5.
-* Fixed – Prevent worker from fetching and processing a job on shutdown.
-* Fixed – `TaskCanceledException` thrown from a job method leads to failed job as expected.
-* Fixed – Make `DelayedJobScheduler` resilient to empty background job ids.
-* Fixed – Logical error in SqlServerDistributedLockTimeout value check (by @Tom-Kelly).
-* Fixed – `OverflowException` in Dashboard when job duration exceeds int.MaxValue (by @mavenius).
-* Fixed – "More details" button in Dashboard changes to "Less details" when collapsed (by @pascalberger).
     </releaseNotes>
     <dependencies>
       <dependency id="Owin" version="1.0" />
