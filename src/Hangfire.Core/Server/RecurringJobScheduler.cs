@@ -170,15 +170,12 @@ namespace Hangfire.Server
                     ? TimeZoneInfo.FindSystemTimeZoneById(recurringJob["TimeZoneId"])
                     : TimeZoneInfo.Utc;
 
-                var instant = _instantFactory(cronSchedule, timeZone);
-
-                var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
-                    ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
-                    : (DateTime?)null;
-
+                var nowInstant = _instantFactory(cronSchedule, timeZone);
                 var changedFields = new Dictionary<string, string>();
 
-                if (instant.GetNextInstants(lastExecutionTime).Any())
+                var lastInstant = GetLastInstant(recurringJob, nowInstant);
+                
+                if (nowInstant.GetNextInstants(lastInstant).Any())
                 {
                     var state = new EnqueuedState { Reason = "Triggered by recurring job scheduler" };
                     if (recurringJob.ContainsKey("Queue") && !String.IsNullOrEmpty(recurringJob["Queue"]))
@@ -194,14 +191,20 @@ namespace Hangfire.Server
                         Logger.DebugFormat(
                             "Recurring job '{0}' execution at '{1}' has been canceled.",
                             recurringJobId,
-                            instant.NowInstant);
+                            nowInstant.NowInstant);
                     }
 
-                    changedFields.Add("LastExecution", JobHelper.SerializeDateTime(instant.NowInstant));
+                    changedFields.Add("LastExecution", JobHelper.SerializeDateTime(nowInstant.NowInstant));
                     changedFields.Add("LastJobId", jobId ?? String.Empty);
                 }
-
-                changedFields.Add("NextExecution", instant.NextInstant.HasValue ? JobHelper.SerializeDateTime(instant.NextInstant.Value) : null);
+                
+                // Fixing old recurring jobs that doesn't have the CreatedAt field
+                if (!recurringJob.ContainsKey("CreatedAt"))
+                {
+                    changedFields.Add("CreatedAt", JobHelper.SerializeDateTime(nowInstant.NowInstant));
+                }
+                    
+                changedFields.Add("NextExecution", nowInstant.NextInstant.HasValue ? JobHelper.SerializeDateTime(nowInstant.NextInstant.Value) : null);
 
                 connection.SetRangeInHash(
                     String.Format("recurring-job:{0}", recurringJobId),
@@ -213,6 +216,31 @@ namespace Hangfire.Server
                     String.Format("Recurring job '{0}' was not triggered: {1}.", recurringJobId, ex.Message),
                     ex);
             }
+        }
+
+        private static DateTime GetLastInstant(IReadOnlyDictionary<string, string> recurringJob, IScheduleInstant instant)
+        {
+            DateTime lastInstant;
+
+            if (recurringJob.ContainsKey("LastExecution"))
+            {
+                lastInstant = JobHelper.DeserializeDateTime(recurringJob["LastExecution"]);
+            }
+            else if (recurringJob.ContainsKey("CreatedAt"))
+            {
+                lastInstant = JobHelper.DeserializeDateTime(recurringJob["CreatedAt"]);
+            }
+            else if (recurringJob.ContainsKey("NextExecution"))
+            {
+                lastInstant = JobHelper.DeserializeDateTime(recurringJob["NextExecution"]);
+                lastInstant = lastInstant.AddSeconds(-1);
+            }
+            else
+            {
+                lastInstant = instant.NowInstant.AddSeconds(-1);
+            }
+
+            return lastInstant;
         }
     }
 }

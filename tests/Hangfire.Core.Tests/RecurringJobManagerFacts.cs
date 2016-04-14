@@ -127,7 +127,9 @@ namespace Hangfire.Core.Tests
             _transaction.Verify(x => x.SetRangeInHash(
                 String.Format("recurring-job:{0}", _id),
                 It.Is<Dictionary<string, string>>(rj => 
-                    rj["Cron"] == "* * * * *" && !String.IsNullOrEmpty(rj["Job"]))));
+                    rj["Cron"] == "* * * * *" 
+                    && !String.IsNullOrEmpty(rj["Job"])
+                    && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
         }
 
         [Fact]
@@ -138,6 +140,26 @@ namespace Hangfire.Core.Tests
             manager.AddOrUpdate(_id, _job, _cronExpression);
 
             _transaction.Verify(x => x.Commit());
+        }
+
+        [Fact]
+        public void AddOrUpdate_DoesNotUpdateCreatedAtValue_OfExistingJobs()
+        {
+            // Arrange
+            _connection.Setup(x => x.GetAllEntriesFromHash($"recurring-job:{_id}"))
+                .Returns(new Dictionary<string, string>());
+
+            var manager = CreateManager();
+
+            // Act
+            manager.AddOrUpdate(_id, _job, _cronExpression);
+
+            // Assert
+            _transaction.Verify(
+                x => x.SetRangeInHash(
+                    $"recurring-job:{_id}",
+                    It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
+                Times.Never);
         }
 
         [Fact]

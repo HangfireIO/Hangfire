@@ -81,6 +81,7 @@
                         <th>Job</th>
                         <th class="align-right min-width">Next execution</th>
                         <th class="align-right min-width">Last execution</th>
+                        <th class="align-right min-width">Created At</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -153,6 +154,16 @@
                                             @Html.RelativeTime(job.LastExecution.Value)
                                         </em>
                                     }
+                                }
+                                else
+                                {
+                                    <em>N/A</em>
+                                }
+                            </td>
+                            <td class="align-right min-width">
+                                @if (job.CreatedAt != null)
+                                {
+                                    @Html.RelativeTime(job.CreatedAt.Value)
                                 }
                                 else
                                 {
