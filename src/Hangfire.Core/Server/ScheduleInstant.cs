@@ -59,20 +59,17 @@ namespace Hangfire.Server
         public DateTime NowInstant { get; private set; }
         public DateTime? NextInstant { get; private set; }
 
-        public IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant)
+        public IEnumerable<DateTime> GetNextInstants(DateTime lastInstant)
         {
-            if (lastInstant.HasValue && lastInstant.Value.Kind != DateTimeKind.Utc)
+            if (lastInstant.Kind != DateTimeKind.Utc)
             {
                 throw new ArgumentException("Only DateTime values in UTC should be passed.", "lastInstant");
             }
-
-            var baseTime = lastInstant ?? NowInstant.AddSeconds(-1);
-            var endTime = NowInstant.AddSeconds(1);
-
+            
             return _schedule
                 .GetNextOccurrences(
-                    TimeZoneInfo.ConvertTimeFromUtc(baseTime, _timeZone),
-                    TimeZoneInfo.ConvertTimeFromUtc(endTime, _timeZone))
+                    TimeZoneInfo.ConvertTimeFromUtc(lastInstant, _timeZone),
+                    TimeZoneInfo.ConvertTimeFromUtc(NowInstant.AddSeconds(1), _timeZone))
                 .Where(x => !_timeZone.IsInvalidTime(x))
                 .Select(x => TimeZoneInfo.ConvertTimeToUtc(x, _timeZone))
                 .ToList();

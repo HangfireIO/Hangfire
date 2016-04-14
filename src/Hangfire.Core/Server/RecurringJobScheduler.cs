@@ -174,7 +174,7 @@ namespace Hangfire.Server
 
                 var lastExecutionTime = recurringJob.ContainsKey("LastExecution")
                     ? JobHelper.DeserializeDateTime(recurringJob["LastExecution"])
-                    : (DateTime?)null;
+                    : instant.NowInstant.AddSeconds(-1);
 
                 var changedFields = new Dictionary<string, string>();
 

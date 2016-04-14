@@ -33,7 +33,8 @@ namespace Hangfire.Core.Tests.Server
 
             // Setting up the successful path
             _instant = new Mock<IScheduleInstant>();
-            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.NowInstant });
+            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime>())).Returns(new[] { _instant.Object.NowInstant });
+            _instant.Setup(x => x.NowInstant).Returns(DateTime.UtcNow);
             _instant.Setup(x => x.NextInstant).Returns(_instant.Object.NowInstant);
 
             var timeZone1 = TimeZoneInfo.Local;
@@ -147,7 +148,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt()
         {
-            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime?>())).Returns(Enumerable.Empty<DateTime>);
+            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime>())).Returns(Enumerable.Empty<DateTime>);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);

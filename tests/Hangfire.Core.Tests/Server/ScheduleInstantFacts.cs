@@ -127,15 +127,15 @@ namespace Hangfire.Core.Tests.Server
         }
 
         [Fact]
-        public void GetNextInstants_ReturnsSingleMatch_WhenLocalTimeSatisfiesTheSchedule()
+        public void GetNextInstants_ReturnsEmptyCollection_WhenLastInstantIsNow()
         {
             var time = new DateTime(2012, 12, 12, 00, 00, 00, DateTimeKind.Utc);
             var instant = CreateInstant(time);
 
-            var matches = instant.GetNextInstants(null).ToList();
+            var matches = instant.GetNextInstants(_now).ToList();
 
-            Assert.Equal(1, matches.Count);
-            Assert.Equal(time, matches[0]);
+            // LastInstant should be excluded
+            Assert.Equal(0, matches.Count);
         }
 
         [Fact]
