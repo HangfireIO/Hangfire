@@ -1,3 +1,4 @@
+Framework 4.5.1
 Properties {
     $solution = "Hangfire.sln"
     $opencover = "packages\OpenCover.*\opencover.console.exe"

@@ -22,7 +22,7 @@ namespace Hangfire.Server
     internal interface IScheduleInstant
     {
         DateTime NowInstant { get; }
-        DateTime NextInstant { get; }
-        IEnumerable<DateTime> GetNextInstants(DateTime? lastInstant);
+        DateTime? NextInstant { get; }
+        IEnumerable<DateTime> GetNextInstants(DateTime lastInstant);
     }
 }
