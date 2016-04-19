@@ -37,6 +37,14 @@ namespace Hangfire.SqlServer
             TransactionTimeout = TimeSpan.FromMinutes(1);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether job dequeing is ensured ordered (FIFO) 
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> Ensure job order; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnsureJobOrder { get; set; }
+
         public IsolationLevel? TransactionIsolationLevel { get; set; }
 
         public TimeSpan QueuePollInterval
