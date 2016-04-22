@@ -228,9 +228,14 @@ namespace Hangfire.SqlServer
             return connection;
         }
 
+        internal bool IsExistingConnection(IDbConnection connection)
+        {
+            return connection != null && ReferenceEquals(connection, _existingConnection);
+        }
+
         internal void ReleaseConnection(IDbConnection connection)
         {
-            if (connection != null && !ReferenceEquals(connection, _existingConnection))
+            if (connection != null && !IsExistingConnection(connection))
             {
                 connection.Dispose();
             }

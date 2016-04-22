@@ -58,7 +58,10 @@ namespace Hangfire.SqlServer
             JobId = jobId;
             Queue = queue;
 
-            _timer = new Timer(ExecuteKeepAliveQuery, null, TimeSpan.Zero, KeepAliveInterval);
+            if (!_storage.IsExistingConnection(_connection))
+            {
+                _timer = new Timer(ExecuteKeepAliveQuery, null, TimeSpan.Zero, KeepAliveInterval);
+            }
         }
 
         public string JobId { get; private set; }
@@ -80,7 +83,7 @@ namespace Hangfire.SqlServer
             // so we are using lock to avoid unsynchronized calls.
             lock (_lockObject)
             {
-                _timer.Dispose();
+                _timer?.Dispose();
                 _transaction.Dispose();
                 _storage.ReleaseConnection(_connection);
                 _connection = null;
@@ -93,7 +96,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    _connection?.Query<int>("SELECT 1;");
+                    _connection?.Execute("SELECT 1;");
                 }
                 catch
                 {

@@ -69,7 +69,11 @@ namespace Hangfire.SqlServer
             if (!AcquiredLocks.Value.ContainsKey(_resource) || AcquiredLocks.Value[_resource] == 0)
             {
                 Acquire(_connection, _resource, timeout);
-                _timer = new Timer(ExecuteKeepAliveQuery, null, TimeSpan.Zero, KeepAliveInterval);
+
+                if (!_storage.IsExistingConnection(_connection))
+                {
+                    _timer = new Timer(ExecuteKeepAliveQuery, null, TimeSpan.Zero, KeepAliveInterval);
+                }
 
                 AcquiredLocks.Value[_resource] = 1;
             }
@@ -100,7 +104,7 @@ namespace Hangfire.SqlServer
                 {
                     AcquiredLocks.Value.Remove(_resource);
 
-                    _timer.Dispose();
+                    _timer?.Dispose();
 
                     Release(_connection, _resource);
                 }
@@ -118,7 +122,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    _connection?.Query<int>("SELECT 1;");
+                    _connection?.Execute("SELECT 1;");
                 }
                 catch
                 {
