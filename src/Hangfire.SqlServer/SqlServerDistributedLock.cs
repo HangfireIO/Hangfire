@@ -100,7 +100,7 @@ namespace Hangfire.SqlServer
             parameters.Add("@DbPrincipal", "public");
             parameters.Add("@LockMode", LockMode);
             parameters.Add("@LockOwner", LockOwner);
-            parameters.Add("@LockTimeout", timeout.TotalMilliseconds);
+            parameters.Add("@LockTimeout", (int)timeout.TotalMilliseconds);
             parameters.Add("@Result", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
 
             // Ensuring the timeout for the command is longer than the timeout specified for the stored procedure.
