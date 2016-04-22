@@ -16,6 +16,8 @@
 
 using System;
 using System.Data;
+using System.Threading;
+using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -23,9 +25,18 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerFetchedJob : IFetchedJob
     {
+        // Connections to SQL Azure Database that are idle for 30 minutes 
+        // or longer will be terminated. And since we are using separate
+        // connection for a holding a transaction during the background
+        // job processing, we'd like to prevent Resource Governor from 
+        // terminating it.
+        private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
+
         private readonly SqlServerStorage _storage;
-        private readonly IDbConnection _connection;
+        private IDbConnection _connection;
         private readonly IDbTransaction _transaction;
+        private readonly Timer _timer;
+        private readonly object _lockObject = new object();
 
         public SqlServerFetchedJob(
             [NotNull] SqlServerStorage storage,
@@ -46,6 +57,8 @@ namespace Hangfire.SqlServer
 
             JobId = jobId;
             Queue = queue;
+
+            _timer = new Timer(ExecuteKeepAliveQuery, null, TimeSpan.Zero, KeepAliveInterval);
         }
 
         public string JobId { get; private set; }
@@ -63,8 +76,34 @@ namespace Hangfire.SqlServer
 
         public void Dispose()
         {
-            _transaction.Dispose();
-            _storage.ReleaseConnection(_connection);
+            // Timer callback may be invoked after the Dispose method call,
+            // so we are using lock to avoid unsynchronized calls.
+            lock (_lockObject)
+            {
+                _timer.Dispose();
+                _transaction.Dispose();
+                _storage.ReleaseConnection(_connection);
+                _connection = null;
+            }
+        }
+
+        private void ExecuteKeepAliveQuery(object obj)
+        {
+            lock (_lockObject)
+            {
+                try
+                {
+                    _connection?.Query<int>("SELECT 1;");
+                }
+                catch
+                {
+                    // Connection was closed. So we can't continue to send
+                    // keep-alive queries. Unlike for distributed locks,
+                    // there is no any caveats of having this issue for
+                    // queues, because Hangfire guarantees only the "at least
+                    // once" processing.
+                }
+            }
         }
     }
 }
