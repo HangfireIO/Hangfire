@@ -508,4 +508,16 @@
   <data name="Common_Continuations" xml:space="preserve">
     <value>Continuations</value>
   </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>Awaiting</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>Enqueued</value>
+  </data>
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>Enqueued / Queues</value>
+  </data>
+  <data name="Metrics_FailedCountOrNull" xml:space="preserve">
+    <value>{0} failed job(s) found. Retry or delete them manually.</value>
+  </data>
 </root>

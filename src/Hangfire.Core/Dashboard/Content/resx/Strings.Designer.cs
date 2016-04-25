@@ -692,11 +692,47 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Awaiting.
+        /// </summary>
+        public static string Metrics_AwaitingCount {
+            get {
+                return ResourceManager.GetString("Metrics_AwaitingCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Deleted Jobs.
         /// </summary>
         public static string Metrics_DeletedJobs {
             get {
                 return ResourceManager.GetString("Metrics_DeletedJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enqueued.
+        /// </summary>
+        public static string Metrics_EnqueuedCountOrNull {
+            get {
+                return ResourceManager.GetString("Metrics_EnqueuedCountOrNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enqueued / Queues.
+        /// </summary>
+        public static string Metrics_EnqueuedQueuesCount {
+            get {
+                return ResourceManager.GetString("Metrics_EnqueuedQueuesCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} failed job(s) found. Retry or delete them manually..
+        /// </summary>
+        public static string Metrics_FailedCountOrNull {
+            get {
+                return ResourceManager.GetString("Metrics_FailedCountOrNull", resourceCulture);
             }
         }
         
