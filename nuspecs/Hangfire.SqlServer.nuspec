@@ -17,6 +17,10 @@
 1.6.0-beta1
 * Added – Zero latency processing when client and server reside in the same process.
 * Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances.
+
+1.5.6
+* Fixed – Use keep-alive queries to prevent SQL Azure from killing a connection after 30 minute timeout.
+* Fixed – Convert lock timeout value from double to int.
     
 1.5.3
 * Fixed – "Cannot release the application lock" exception when using distributed locks.
