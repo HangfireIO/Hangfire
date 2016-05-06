@@ -18,6 +18,9 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+
+1.6.0-ci
+* Fixed – Don't use collection initializer in GlobalJobFilters (#563).
     
 1.6.0-beta2
 * Added – Ability to change statistics polling interval in dashboard (by @tristal).

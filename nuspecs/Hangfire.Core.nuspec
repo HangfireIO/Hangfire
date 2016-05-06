@@ -14,6 +14,9 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.0-ci
+* Fixed – Don't use collection initializer in GlobalJobFilters (#563).
+    
 1.6.0-beta2
 * Added – Ability to change statistics polling interval in dashboard (by @tristal).
 * Added – Cron expressions for regular intervals for the `Cron` class (by @geirsagberg).
