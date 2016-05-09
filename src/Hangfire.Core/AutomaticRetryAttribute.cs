@@ -233,7 +233,9 @@ namespace Hangfire
         {
             context.CandidateState = new DeletedState
             {
-                Reason = "Exceeded the maximum number of retry attempts."
+                Reason = Attempts > 0
+                    ? "Exceeded the maximum number of retry attempts."
+                    : "Retries were disabled for this job."
             };
 
             if (LogEvents)

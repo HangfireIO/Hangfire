@@ -14,25 +14,16 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.6.0-beta2
+* Changed – `SqlServerObjectsInstaller` class is public now (by @vbfox).
+
+Backported from 1.5.6
+* Fixed – Use keep-alive queries to prevent SQL Azure from killing a connection after 30 minute timeout.
+* Fixed – Convert lock timeout value from double to int.
+
 1.6.0-beta1
 * Added – Zero latency processing when client and server reside in the same process.
 * Changed – `SqlServerStorage` class constructor now takes `DbConnection` instances.
-    
-1.5.3
-* Fixed – "Cannot release the application lock" exception when using distributed locks.
-    
-1.5.1
-* Fixed – Unable to see enqueued jobs in Dashboard UI when using SQL Server queues.
-    
-1.5.0
-* Added – Ability to specify the schema for SQL Server job storage (by @ryanmwright).
-* Added – `TransactionTimeout` option for configuring the `TransactionScope` timeout.
-* Added – `DashboardJobListLimit` option to prevent full table scans in Dashboard.
-* Changed – `SqlServerDistributedLock` class is now public.
-* Changed – Use `rowlock` table hint in job fetch query to prevent escalation.
-* Changed – Dramatically improved page load times in Dashboard.
-* Changed – Instant re-queue for background jobs even after ungraceful shutdown.
-* Changed – `JobQueue.Queue` and `Server.Id` column length increased to 50 and 100 respectively (by @maleet).
     </releaseNotes>
     <dependencies>
       <dependency id="Hangfire.Core" version="[0.0.0]" />

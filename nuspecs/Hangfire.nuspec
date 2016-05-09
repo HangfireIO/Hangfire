@@ -9,6 +9,7 @@
     <projectUrl>http://hangfire.io/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://raw.github.com/HangfireIO/Hangfire/master/LICENSE.md</licenseUrl>
+    <summary>An easy way to perform fire-and-forget, delayed and recurring tasks inside ASP.NET applications. No Windows Service required.</summary>
     <description>
       An easy and reliable way to perform fire-and-forget, delayed and recurring long-running, short-running, CPU or I/O intensive tasks inside ASP.NET application. No Windows Service / Task Scheduler required. Even ASP.NET is not required.
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
@@ -17,6 +18,24 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+
+1.6.0-ci
+* Fixed – Don't use collection initializer in GlobalJobFilters (#563).
+    
+1.6.0-beta2
+* Added – Ability to change statistics polling interval in dashboard (by @tristal).
+* Added – Cron expressions for regular intervals for the `Cron` class (by @geirsagberg).
+* Added – `IRecurringJobManager` interface for the `RecurringJobManager` class (by @arnoldasgudas).
+* Changed – `SqlServerObjectsInstaller` class is public now (by @vbfox).
+
+Backported from 1.5.5, 1.5.6
+
+Hangfire.Core
+* Fixed – Missed recurring jobs sometimes aren't triggered for the first time.
+
+Hangfire.SqlServer
+* Fixed – Use keep-alive queries to prevent SQL Azure from killing a connection after 30 minute timeout.
+* Fixed – Convert lock timeout value from double to int.
 
 1.6.0-beta1
 
