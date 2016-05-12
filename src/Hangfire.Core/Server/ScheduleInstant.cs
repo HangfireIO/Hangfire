@@ -43,17 +43,7 @@ namespace Hangfire.Server
 
             NowInstant = nowInstant.AddSeconds(-nowInstant.Second);
 
-            var nextOccurrences = _schedule.GetNextOccurrences(
-                TimeZoneInfo.ConvertTime(NowInstant, TimeZoneInfo.Utc, _timeZone),
-                DateTime.MaxValue);
-
-            foreach (var nextOccurrence in nextOccurrences)
-            {
-                if (_timeZone.IsInvalidTime(nextOccurrence)) continue;
-
-                NextInstant = TimeZoneInfo.ConvertTime(nextOccurrence, _timeZone, TimeZoneInfo.Utc);
-                break;
-            }
+            NextInstant = _schedule.GetNextOccurrence(NowInstant, DateTime.MaxValue);
         }
 
         public DateTime NowInstant { get; private set; }
