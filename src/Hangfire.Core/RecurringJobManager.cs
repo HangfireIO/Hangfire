@@ -105,7 +105,9 @@ namespace Hangfire
                 }
                 
                 var job = JobHelper.FromJson<InvocationData>(hash["Job"]).Deserialize();
-                var initialParams = JobHelper.FromJson<IDictionary<string, object>>(hash["InitialParams"]);
+                IDictionary<string, object> initialParams = null;
+                if (!string.IsNullOrEmpty(hash["InitialParams"]))
+                    initialParams = JobHelper.FromJson<IDictionary<string, object>>(hash["InitialParams"]);
                 var state = new EnqueuedState { Reason = "Triggered using recurring job manager" };
 
                 if (hash.ContainsKey("Queue"))
