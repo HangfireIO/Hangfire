@@ -14,9 +14,18 @@
       Backed by Redis, SQL Server, SQL Azure or MSMQ. This is a .NET alternative to Sidekiq, Resque and Celery.
       http://hangfire.io/
     </description>
-    <copyright>Copyright © 2013-2015 Sergey Odinokov</copyright>
+    <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+    
+1.5.5
+* Fixed – Missed recurring jobs sometimes aren't triggered for the first time.
+    
+1.5.4
+* Changed – C# 6.0 is now required to compile the solution.
+* Fixed – Recurring jobs failing after moving clock forward for daylight saving time.
+* Fixed – Infinite loops when trying to change state of a background job that doesn't exist (by @mkravchuk7).
+* Fixed – Update StackTraceParser and StackTraceFormatter to prevent critical flaw (by @atifaziz and @lukerogers).
     
 1.5.3
 

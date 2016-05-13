@@ -33,7 +33,9 @@ namespace Hangfire.Core.Tests.Server
 
             // Setting up the successful path
             _instant = new Mock<IScheduleInstant>();
-            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime?>())).Returns(new[] { _instant.Object.NowInstant });
+            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime>())).Returns(new[] { _instant.Object.NowInstant });
+            _instant.Setup(x => x.NowInstant).Returns(DateTime.UtcNow);
+            _instant.Setup(x => x.NextInstant).Returns(_instant.Object.NowInstant);
 
             var timeZone1 = TimeZoneInfo.Local;
 
@@ -146,7 +148,7 @@ namespace Hangfire.Core.Tests.Server
         [Fact]
         public void Execute_DoesNotEnqueueRecurringJob_AndDoesNotUpdateIt_ButNextExecution_WhenItIsNotATimeToRunIt()
         {
-            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime?>())).Returns(Enumerable.Empty<DateTime>);
+            _instant.Setup(x => x.GetNextInstants(It.IsAny<DateTime>())).Returns(Enumerable.Empty<DateTime>);
             var scheduler = CreateScheduler();
 
             scheduler.Execute(_context.Object);
@@ -157,7 +159,7 @@ namespace Hangfire.Core.Tests.Server
                 String.Format("recurring-job:{0}", RecurringJobId),
                 It.Is<Dictionary<string, string>>(rj =>
                     rj.ContainsKey("NextExecution") && rj["NextExecution"]
-                        == JobHelper.SerializeDateTime(_instant.Object.NextInstant))));
+                        == JobHelper.SerializeDateTime(_instant.Object.NextInstant.Value))));
         }
 
         [Fact]
@@ -239,6 +241,76 @@ namespace Hangfire.Core.Tests.Server
             scheduler.Execute(_context.Object);
 
             _factory.Verify(x => x.Create(It.IsAny<CreateContext>()), Times.Never);
+        }
+
+        [Fact]
+        public void Execute_GetNextInstants_IsCalledWithCreatedAtTime_IfExists()
+        {
+            // Arrange
+            var createdAt = DateTime.UtcNow.AddHours(-3);
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(createdAt);
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _instant.Verify(x => x.GetNextInstants(createdAt), Times.Once);
+        }
+
+        [Fact]
+        public void Execute_DoesNotFixCreatedAtField_IfItExists()
+        {
+            // Arrange
+            _recurringJob["CreatedAt"] = JobHelper.SerializeDateTime(DateTime.UtcNow);
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+            
+            // Assert
+            _connection.Verify(
+                x => x.SetRangeInHash(
+                    $"recurring-job:{RecurringJobId}",
+                    It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
+                Times.Never);
+        }
+
+        [Fact]
+        public void Execute_FixedMissingCreatedAtField()
+        {
+            // Arrange
+            _recurringJob.Remove("CreatedAt");
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _connection.Verify(
+                x => x.SetRangeInHash(
+                    $"recurring-job:{RecurringJobId}",
+                    It.Is<Dictionary<string, string>>(rj => rj.ContainsKey("CreatedAt"))),
+                Times.Once);
+        }
+
+        [Fact]
+        public void Execute_PassesNextExecutionTime_ToGetNextInstants_WhenBothLastExecutionAndCreatedAtAreNotAvailable()
+        {
+            // Arrange
+            var nextExecution = DateTime.UtcNow.AddHours(-10);
+            _recurringJob["NextExecution"] = JobHelper.SerializeDateTime(nextExecution);
+            _recurringJob.Remove("CreatedAt");
+            _recurringJob.Remove("LastExecution");
+
+            var scheduler = CreateScheduler();
+
+            // Act
+            scheduler.Execute(_context.Object);
+
+            // Assert
+            _instant.Verify(x => x.GetNextInstants(
+                It.Is<DateTime>(time => time < nextExecution)));
         }
 
         private RecurringJobScheduler CreateScheduler()
