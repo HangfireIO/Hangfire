@@ -77,7 +77,7 @@ namespace Hangfire.Core.Tests
             var client = CreateClient();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => client.Create(null, _state.Object));
+                () => client.Create((Job)null, _state.Object, null));
 
             Assert.Equal("job", exception.ParamName);
         }
