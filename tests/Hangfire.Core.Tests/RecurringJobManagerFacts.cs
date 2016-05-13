@@ -126,7 +126,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, (IDictionary<string, object>)null));
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -137,7 +137,7 @@ namespace Hangfire.Core.Tests
             var manager = CreateManager();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, (IDictionary<string, object>)null));
+                () => manager.AddOrUpdate(_id, _job, _cronExpression, TimeZoneInfo.Utc, null, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
