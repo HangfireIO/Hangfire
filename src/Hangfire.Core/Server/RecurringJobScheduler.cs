@@ -186,36 +186,11 @@ namespace Hangfire.Server
 
         private bool EnqueueNextRecurringJobs(BackgroundProcessContext context)
         {
-            return UseConnectionDistributedLock(context.Storage, connection =>
-            {
-                var result = false;
-
-                if (IsBatchingAvailable(connection))
-                {
-                    var now = _nowFactory();
-                    var timestamp = JobHelper.ToTimestamp(now);
-                    var recurringJobIds = ((JobStorageConnection)connection).GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp, BatchSize);
-
-                    if (recurringJobIds == null || recurringJobIds.Count == 0) return false;
-
-                    foreach (var recurringJobId in recurringJobIds)
-                    {
-                        if (context.IsStopping) return false;
-
-                        if (TryEnqueueBackgroundJob(context, connection, recurringJobId, now))
-                        {
-                            result = true;
-                        }
-                    }
-                }
-                else
-                {
-                    for (var i = 0; i < BatchSize; i++)
-                    {
-                        if (context.IsStopping) return false;
-
-                        var now = _nowFactory();
-                        var timestamp = JobHelper.ToTimestamp(now);
+            var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
+            var initialParams = JobHelper.FromJson<IDictionary<string, object>>(recurringJob["InitialParams"]);
+            var job = serializedJob.Deserialize();
+            var cron = recurringJob["Cron"];
+            var cronSchedule = CrontabSchedule.Parse(cron);
 
                         var recurringJobId = connection.GetFirstByLowestScoreFromSet("recurring-jobs", 0, timestamp);
                         if (recurringJobId == null) return false;
@@ -283,9 +258,8 @@ namespace Hangfire.Server
                         return false;
                     }
 
-                    BackgroundJob backgroundJob = null;
-
-                    var nextExecution = recurringJob.GetNextExecution();
+                    var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state, initialParams));
+                    var jobId = backgroundJob?.Id;
 
                     if (nextExecution.HasValue && nextExecution <= now)
                     {

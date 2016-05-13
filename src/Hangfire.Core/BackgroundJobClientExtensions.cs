@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.States;
+using System.Collections.Generic;
 
 namespace Hangfire
 {
@@ -40,14 +41,16 @@ namespace Hangfire
         /// 
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Static method call expression that will be marshalled to the Server.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Enqueue(
             [NotNull] this IBackgroundJobClient client, 
-            [NotNull, InstantHandle] Expression<Action> methodCall)
+            [NotNull, InstantHandle] Expression<Action> methodCall,
+            IDictionary<string, object> @params = null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new EnqueuedState());
+            return client.Create(methodCall, new EnqueuedState(), @params);
         }
 
         /// <summary>
@@ -79,14 +82,16 @@ namespace Hangfire
         /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Enqueue<T>(
             [NotNull] this IBackgroundJobClient client, 
-            [NotNull, InstantHandle] Expression<Action<T>> methodCall)
+            [NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            IDictionary<string, object> @params=null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new EnqueuedState());
+            return client.Create(methodCall, new EnqueuedState(), @params);
         }
 
         /// <summary>
@@ -116,15 +121,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull, InstantHandle] Expression<Action> methodCall, 
-            TimeSpan delay)
+            TimeSpan delay,
+            IDictionary<string, object> @params = null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(delay));
+            return client.Create(methodCall, new ScheduledState(delay), @params);
         }
 
         /// <summary>
@@ -152,15 +159,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment of time at which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier or a created job.</returns>
         public static string Schedule(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action> methodCall,
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            IDictionary<string, object> @params = null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
+            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime), @params);
         }
 
         /// <summary>
@@ -190,15 +199,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
-            TimeSpan delay)
+            TimeSpan delay,
+            IDictionary<string, object> @params=null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(delay));
+            return client.Create(methodCall, new ScheduledState(delay), @params);
         }
 
         /// <summary>
@@ -229,15 +240,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">Moment at which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            IDictionary<string, object> @params = null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime));
+            return client.Create(methodCall, new ScheduledState(enqueueAt.UtcDateTime), @params);
         }
 
         /// <summary>
@@ -265,15 +278,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Static method call expression that will be marshalled to the Server.</param>
         /// <param name="state">Initial state of a job.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Create(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action> methodCall,
-            [NotNull] IState state)
+            [NotNull] IState state,
+            [CanBeNull]IDictionary<string, object> @params = null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.FromExpression(methodCall), state, @params);
         }
 
         /// <summary>
@@ -300,15 +315,17 @@ namespace Hangfire
         /// <param name="client">A job client instance.</param>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="state">Initial state of a job.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Create<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
-            [NotNull] IState state)
+            [NotNull] IState state,
+            [CanBeNull]IDictionary<string, object> @params=null)
         {
             if (client == null) throw new ArgumentNullException(nameof(client));
 
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.FromExpression(methodCall), state, @params);
         }
 
         /// <summary>
@@ -677,7 +694,8 @@ namespace Hangfire
             [NotNull] string parentId,
             [InstantHandle] Expression<Action> methodCall,
             [NotNull] IState nextState,
-            JobContinuationOptions options)
+            JobContinuationOptions options,
+            IDictionary<string, object> items = null)
         {
             return ContinueJobWith(client, parentId, methodCall, nextState, options);
         }
@@ -701,7 +719,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
 
             var state = new AwaitingState(parentId, nextState, options);
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.FromExpression(methodCall), state, items);
         }
 
         /// <summary>
@@ -765,7 +783,8 @@ namespace Hangfire
             [NotNull] string parentId,
             [NotNull, InstantHandle] Expression<Action<T>> methodCall,
             [NotNull] IState nextState,
-            JobContinuationOptions options)
+            JobContinuationOptions options,
+            IDictionary<string, object> items = null)
         {
             return ContinueJobWith(client, parentId, methodCall, nextState, options);
         }
@@ -789,7 +808,7 @@ namespace Hangfire
             if (client == null) throw new ArgumentNullException(nameof(client));
 
             var state = new AwaitingState(parentId, nextState, options);
-            return client.Create(Job.FromExpression(methodCall), state);
+            return client.Create(Job.FromExpression(methodCall), state, items);
         }
 
         /// <summary>
