@@ -54,7 +54,7 @@ namespace Hangfire.SqlServer
 delete top (1) from [{0}].JobQueue with (readpast, updlock, rowlock)
 output DELETED.Id, DELETED.JobId, DELETED.Queue
 where (FetchedAt is null or FetchedAt < DATEADD(second, @timeout, GETUTCDATE()))
-and Queue in @queues", _storage.GetSchemaName());
+and Queue in @queues {1}", _storage.GetSchemaName(), _options.EnsureJobOrder?" order by Id ASC":"");
 
             do
             {
