@@ -15,6 +15,7 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Hangfire.Annotations;
 using Hangfire.States;
@@ -74,6 +75,7 @@ namespace Hangfire
         /// Creates a new fire-and-forget job based on a given method call expression.
         /// </summary>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of a background job.</returns>
         /// 
         /// <exception cref="ArgumentNullException">
@@ -82,16 +84,18 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue([NotNull, InstantHandle] Expression<Action> methodCall)
+        public static string Enqueue([NotNull, InstantHandle] Expression<Action> methodCall,
+            IDictionary<string, object> @params = null)
         {
             var client = ClientFactory();
-            return client.Enqueue(methodCall);
+            return client.Enqueue(methodCall, @params);
         }
 
         /// <summary>
         /// Creates a new fire-and-forget job based on a given method call expression.
         /// </summary>
         /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of a background job.</returns>
         /// 
         /// <exception cref="ArgumentNullException">
@@ -100,10 +104,11 @@ namespace Hangfire
         /// 
         /// <seealso cref="EnqueuedState"/>
         /// <seealso cref="O:Hangfire.IBackgroundJobClient.Enqueue"/>
-        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall)
+        public static string Enqueue<T>([NotNull, InstantHandle] Expression<Action<T>> methodCall,
+            IDictionary<string, object> @params = null)
         {
             var client = ClientFactory();
-            return client.Enqueue(methodCall);
+            return client.Enqueue(methodCall, @params);
         }
 
         /// <summary>
@@ -113,13 +118,15 @@ namespace Hangfire
         /// 
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule(
             [NotNull, InstantHandle] Expression<Action> methodCall, 
-            TimeSpan delay)
+            TimeSpan delay,
+            IDictionary<string, object> @params = null)
         {
             var client = ClientFactory();
-            return client.Schedule(methodCall, delay);
+            return client.Schedule(methodCall, delay, @params);
         }
 
         /// <summary>
@@ -129,13 +136,15 @@ namespace Hangfire
         /// 
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule(
             [NotNull, InstantHandle] Expression<Action> methodCall, 
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            IDictionary<string, object> @params = null)
         {
             var client = ClientFactory();
-            return client.Schedule(methodCall, enqueueAt);
+            return client.Schedule(methodCall, enqueueAt, @params);
         }
 
         /// <summary>
@@ -146,13 +155,15 @@ namespace Hangfire
         /// <typeparam name="T">Type whose method will be invoked during job processing.</typeparam>
         /// <param name="methodCall">Instance method call expression that will be marshalled to the Server.</param>
         /// <param name="delay">Delay, after which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of the created job.</returns>
         public static string Schedule<T>(
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
-            TimeSpan delay)
+            TimeSpan delay,
+            IDictionary<string, object> @params = null)
         {
             var client = ClientFactory();
-            return client.Schedule(methodCall, delay);
+            return client.Schedule(methodCall, delay, @params);
         }
 
         /// <summary>
@@ -163,13 +174,15 @@ namespace Hangfire
         /// <typeparam name="T">The type whose method will be invoked during the job processing.</typeparam>
         /// <param name="methodCall">Method call expression that will be marshalled to the Server.</param>
         /// <param name="enqueueAt">The moment of time at which the job will be enqueued.</param>
+        /// <param name="params">initial parameters passed by default in creationcontext</param>
         /// <returns>Unique identifier of a created job.</returns>
         public static string Schedule<T>(
             [NotNull, InstantHandle] Expression<Action<T>> methodCall, 
-            DateTimeOffset enqueueAt)
+            DateTimeOffset enqueueAt,
+            IDictionary<string, object> @params = null)
         {
             var client = ClientFactory();
-            return client.Schedule(methodCall, enqueueAt);
+            return client.Schedule(methodCall, enqueueAt, @params);
         }
 
         /// <summary>

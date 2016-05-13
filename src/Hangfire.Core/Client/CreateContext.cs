@@ -29,17 +29,17 @@ namespace Hangfire.Client
     public class CreateContext
     {
         internal CreateContext([NotNull] CreateContext context)
-            : this(context.Storage, context.Connection, context.Job, context.InitialState)
+            : this(context.Storage, context.Connection, context.Job, context.InitialState, context.Parameters)
         {
             Items = context.Items;
-            Parameters = context.Parameters;
         }
 
         public CreateContext(
             [NotNull] JobStorage storage, 
             [NotNull] IStorageConnection connection, 
             [NotNull] Job job, 
-            [CanBeNull] IState initialState)
+            [CanBeNull] IState initialState,
+            IDictionary<string, object> items)
         {
             if (storage == null) throw new ArgumentNullException(nameof(storage));
             if (connection == null) throw new ArgumentNullException(nameof(connection));
@@ -50,8 +50,8 @@ namespace Hangfire.Client
             Job = job;
             InitialState = initialState;
 
+            Parameters = items != null ? items : new Dictionary<string, object>();
             Items = new Dictionary<string, object>();
-            Parameters = new Dictionary<string, object>();
         }
 
         [NotNull]

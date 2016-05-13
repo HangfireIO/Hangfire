@@ -158,6 +158,7 @@ namespace Hangfire.Server
             IReadOnlyDictionary<string, string> recurringJob)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
+            var initialParams = JobHelper.FromJson<IDictionary<string, object>>(recurringJob["InitialParams"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
             var cronSchedule = CrontabSchedule.Parse(cron);
@@ -181,7 +182,7 @@ namespace Hangfire.Server
                         state.Queue = recurringJob["Queue"];
                     }
 
-                    var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state));
+                    var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state, initialParams));
                     var jobId = backgroundJob?.Id;
 
                     if (String.IsNullOrEmpty(jobId))

@@ -88,7 +88,7 @@ namespace Hangfire.Core.Tests
             var client = CreateClient();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => client.Create(_job, null));
+                () => client.Create(_job, null, null));
 
             Assert.Equal("state", exception.ParamName);
         }
@@ -98,7 +98,7 @@ namespace Hangfire.Core.Tests
         {
             var client = CreateClient();
 
-            client.Create(_job, _state.Object);
+            client.Create(_job, _state.Object, null);
 
             _factory.Verify(x => x.Create(It.IsNotNull<CreateContext>()));
         }
@@ -108,7 +108,7 @@ namespace Hangfire.Core.Tests
         {
             var client = CreateClient();
 
-            var id = client.Create(_job, _state.Object);
+            var id = client.Create(_job, _state.Object, null);
 
             Assert.Equal("some-job", id);
         }
@@ -121,7 +121,7 @@ namespace Hangfire.Core.Tests
                 .Throws<InvalidOperationException>();
 
             var exception = Assert.Throws<BackgroundJobClientException>(
-                () => client.Create(_job, _state.Object));
+                () => client.Create(_job, _state.Object, null));
 
             Assert.NotNull(exception.InnerException);
             Assert.IsType<InvalidOperationException>(exception.InnerException);
