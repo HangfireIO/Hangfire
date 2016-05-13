@@ -64,10 +64,7 @@ namespace Hangfire.Server
     public class RecurringJobScheduler : IBackgroundProcess
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromMinutes(1);
-        private static readonly int BatchSize = 1000;
-
-        private readonly ILog _logger = LogProvider.For<RecurringJobScheduler>();
-        private readonly ConcurrentDictionary<Type, bool> _isBatchingAvailableCache = new ConcurrentDictionary<Type, bool>();
+        private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly IBackgroundJobFactory _factory;
         private readonly Func<DateTime> _nowFactory;
@@ -83,7 +80,7 @@ namespace Hangfire.Server
             : this(new BackgroundJobFactory(JobFilterProviders.Providers))
         {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RecurringJobScheduler"/>
         /// class with custom background job factory and a state machine.
@@ -135,8 +132,8 @@ namespace Hangfire.Server
             [NotNull] Func<DateTime> nowFactory)
         {
             if (factory == null) throw new ArgumentNullException(nameof(factory));
-            if (nowFactory == null) throw new ArgumentNullException(nameof(nowFactory));
-            if (timeZoneResolver == null) throw new ArgumentNullException(nameof(timeZoneResolver));
+            if (instantFactory == null) throw new ArgumentNullException(nameof(instantFactory));
+            if (throttler == null) throw new ArgumentNullException(nameof(throttler));
 
             _factory = factory;
             _nowFactory = nowFactory;
@@ -184,10 +181,16 @@ namespace Hangfire.Server
             return GetType().Name;
         }
 
-        private bool EnqueueNextRecurringJobs(BackgroundProcessContext context)
+        private void TryScheduleJob(
+            JobStorage storage,
+            IStorageConnection connection,
+            string recurringJobId,
+            IReadOnlyDictionary<string, string> recurringJob)
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
-            var initialParams = JobHelper.FromJson<IDictionary<string, object>>(recurringJob["InitialParams"]);
+            IDictionary<string, object> initialParams = null;
+            if (recurringJob.ContainsKey("") && !string.IsNullOrEmpty(recurringJob["InitialParams"]))
+                initialParams = JobHelper.FromJson<IDictionary<string, object>>(recurringJob["InitialParams"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
             var cronSchedule = CrontabSchedule.Parse(cron);
@@ -226,15 +229,9 @@ namespace Hangfire.Server
             return false;
         }
 
-        private bool EnqueueBackgroundJob(
-            BackgroundProcessContext context,
-            IStorageConnection connection, 
-            string recurringJobId,
-            DateTime now)
-        {
-            using (connection.AcquireDistributedRecurringJobLock(recurringJobId, LockTimeout))
-            {
-                try
+                var lastInstant = GetLastInstant(recurringJob, nowInstant);
+
+                if (nowInstant.GetNextInstants(lastInstant).Any())
                 {
                     var recurringJob = connection.GetRecurringJob(recurringJobId, _timeZoneResolver, now);
 
@@ -297,8 +294,9 @@ namespace Hangfire.Server
                         return true;
                     }
                 }
-#if !NETSTANDARD1_3
-                catch (TimeZoneNotFoundException ex)
+
+                // Fixing old recurring jobs that doesn't have the CreatedAt field
+                if (!recurringJob.ContainsKey("CreatedAt"))
                 {
 #else
                 catch (Exception ex)
@@ -311,6 +309,8 @@ namespace Hangfire.Server
                         $"Recurring job '{recurringJobId}' was not triggered: {ex.Message}.",
                         ex);
                 }
+
+                changedFields.Add("NextExecution", nowInstant.NextInstant.HasValue ? JobHelper.SerializeDateTime(nowInstant.NextInstant.Value) : null);
 
                 return false;
             }

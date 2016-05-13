@@ -39,15 +39,14 @@ namespace Hangfire.Client
             [NotNull] JobStorage storage,
             [NotNull] IStorageConnection connection,
             [NotNull] Job job,
-            [CanBeNull] IState initialState)
-            : this(storage, connection, job, initialState, EmptyProfiler.Instance)
+            [CanBeNull] IState initialState) : this(storage, connection, job, initialState, null)
         {
         }
 
-        internal CreateContext(
-            [NotNull] JobStorage storage, 
-            [NotNull] IStorageConnection connection, 
-            [NotNull] Job job, 
+        public CreateContext(
+            [NotNull] JobStorage storage,
+            [NotNull] IStorageConnection connection,
+            [NotNull] Job job,
             [CanBeNull] IState initialState,
             IDictionary<string, object> items)
         {
@@ -81,7 +80,7 @@ namespace Hangfire.Client
 
         [NotNull]
         public virtual IDictionary<string, object> Parameters { get; }
-            
+
         [NotNull]
         public Job Job { get; }
 

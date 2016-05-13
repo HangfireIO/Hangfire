@@ -27,7 +27,7 @@ namespace Hangfire.Core.Tests
             _storage.Setup(x => x.GetConnection()).Returns(connection.Object);
 
             _stateChanger = new Mock<IBackgroundJobStateChanger>();
-            
+
             _state = new Mock<IState>();
             _state.Setup(x => x.Name).Returns("Mock");
             _job = Job.FromExpression(() => Method());
