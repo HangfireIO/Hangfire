@@ -46,7 +46,7 @@ namespace Hangfire.Storage
         {
             try
             {
-                // Use DI to solve dependencies.
+                // Use Dependency Injection to solve dependencies.
                 using (var scope = JobActivator.Current.BeginScope())
                 {
                     var type = scope.Resolve(Type)?.GetType() ?? System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
