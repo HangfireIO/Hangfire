@@ -20,7 +20,6 @@ using System.Text.RegularExpressions;
 using Hangfire.Annotations;
 using Hangfire.Common;
 using Hangfire.Storage;
-using Hangfire.Validation;
 
 namespace Hangfire.States
 {
@@ -108,10 +107,32 @@ namespace Hangfire.States
         /// </exception>
         public EnqueuedState([NotNull] string queue)
         {
-            QueueValidator.ValidateName(queue);
+            ValidateQueueName("queue", queue);
 
             _queue = queue;
             EnqueuedAt = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Validates an queue name
+        /// </summary>
+        /// <param name="parameterName">parameter containing the queue name</param>
+        /// <param name="value">queue name to validate</param>
+        public static void ValidateQueueName([InvokerParameterName] string parameterName, string value)
+        {
+            if (String.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentNullException(parameterName);
+            }
+
+            if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'.",
+                        value),
+                    parameterName);
+            }
         }
 
         /// <summary>
@@ -144,7 +165,7 @@ namespace Hangfire.States
             get { return _queue; }
             set
             {
-                QueueValidator.ValidateName(value);
+                ValidateQueueName("value", value);
                 _queue = value;
             }
         }

@@ -21,7 +21,6 @@ using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.States;
 using Hangfire.Storage;
-using Hangfire.Validation;
 using NCrontab;
 
 namespace Hangfire
@@ -83,7 +82,7 @@ namespace Hangfire
             if (cronExpression == null) throw new ArgumentNullException("cronExpression");
             if (timeZone == null) throw new ArgumentNullException("timeZone");
 
-            QueueValidator.ValidateName(queue);
+            EnqueuedState.ValidateQueueName("queue", queue);
             ValidateCronExpression(cronExpression);
 
             using (var connection = _storage.GetConnection())
