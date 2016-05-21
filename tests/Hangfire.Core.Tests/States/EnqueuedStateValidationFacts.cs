@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Hangfire.Core.Tests.States
 {
-    public class EnqueuedStateFactsValidationFacts
+    public class EnqueuedStateValidationFacts
     {
         [Fact]
         public void ValidateQueueName_ThrowsAnException_WhenQueueNameIsEmpty()
