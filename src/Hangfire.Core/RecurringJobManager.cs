@@ -133,7 +133,9 @@ namespace Hangfire
                     state.Queue = hash["Queue"];
                 }
 
-                _factory.Create(new CreateContext(_storage, connection, job, state));
+                var context = new CreateContext(_storage, connection, job, state);
+                context.Parameters["RecurringJobId"] = recurringJobId;
+                _factory.Create(context);
             }
         }
 
