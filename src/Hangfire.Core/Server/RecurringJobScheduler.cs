@@ -159,7 +159,7 @@ namespace Hangfire.Server
         {
             var serializedJob = JobHelper.FromJson<InvocationData>(recurringJob["Job"]);
             IDictionary<string, object> initialParams = null;
-            if (recurringJob.ContainsKey("") && !string.IsNullOrEmpty(recurringJob["InitialParams"]))
+            if (recurringJob.ContainsKey("InitialParams") && !string.IsNullOrEmpty(recurringJob["InitialParams"]))
                 initialParams = JobHelper.FromJson<IDictionary<string, object>>(recurringJob["InitialParams"]);
             var job = serializedJob.Deserialize();
             var cron = recurringJob["Cron"];
