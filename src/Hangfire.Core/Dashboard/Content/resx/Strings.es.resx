@@ -262,16 +262,16 @@
     <value>Estado</value>
   </data>
   <data name="JobDetailsPage_JobAbortedNotActive_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;La tarea ha sido abortada&lt;/strong&gt; - ha sido procesada por el servidor &lt;code&gt;{0}&lt;/code&gt; que no está en la lista de &lt;a href=&quot;{1}&quot;&gt;servidores activos&lt;/a&gt; por ahora. Se recuperará automáticamente despues del periodo de invisibilidad, pero puedes volverla a poner en la cola o eliminarla manualmente.</value>
+    <value>&lt;strong&gt;La tarea ha sido abortada&lt;/strong&gt; - ha sido procesada por el servidor &lt;code&gt;{0}&lt;/code&gt; que no está en la lista de &lt;a href="{1}"&gt;servidores activos&lt;/a&gt; por ahora. Se recuperará automáticamente despues del periodo de invisibilidad, pero puedes volverla a poner en la cola o eliminarla manualmente.</value>
   </data>
   <data name="JobDetailsPage_JobAbortedWithHeartbeat_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;La tarea ha sido abortada&lt;/strong&gt; - ha sido procesada por el servidor &lt;code&gt;{0}&lt;/code&gt; que ha reportado un latido hace más de un minuto. Se recuperará automáticamente despues del periodo de invisibilidad, pero puedes volverla a poner en la cola o eliminarla manualmente.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>La tarea con id &apos;{0}&apos; ha expirado o no se ha encontrado en el servidor</value>
+    <value>La tarea con id '{0}' ha expirado o no se ha encontrado en el servidor</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
-    <value>&lt;strong&gt;La tarea ha finalizado&lt;/strong&gt;. Se va a eliminar automáticamente en &lt;em&gt;&lt;abbr data-moment=&quot;{0}&quot;&gt;{1}&lt;/abbr&gt;&lt;/em&gt;</value>
+    <value>&lt;strong&gt;La tarea ha finalizado&lt;/strong&gt;. Se va a eliminar automáticamente en &lt;em&gt;&lt;abbr data-moment="{0}"&gt;{1}&lt;/abbr&gt;&lt;/em&gt;</value>
   </data>
   <data name="JobDetailsPage_JobId" xml:space="preserve">
     <value>ID Tarea</value>
@@ -374,7 +374,7 @@
             No te preocupes, los reintentos fucionan como deberian, pero tu sistema de almacenamiento de tareas actual no soporta algunas consultas necesarias para mostrar esta página. Actualiza tu sistema de almacenamiento o espera hasta que éste soporte esta funcionalidad
         &lt;/p&gt;
         &lt;p&gt;
-           Visita la página &lt;a href=&quot;{0}&quot;&gt;Tareas programadas&lt;/a&gt; para ver todas las tareas programadas, incluidos los reintentos.
+           Visita la página &lt;a href="{0}"&gt;Tareas programadas&lt;/a&gt; para ver todas las tareas programadas, incluidos los reintentos.
         &lt;/p&gt; </value>
   </data>
   <data name="ScheduledJobsPage_EnqueueNow" xml:space="preserve">
@@ -506,5 +506,7 @@
   <data name="Common_Continuations" xml:space="preserve">
     <value>Continuaciones</value>
   </data>
-
+  <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
+    <value>En la cola / Colas</value>
+  </data>
 </root>

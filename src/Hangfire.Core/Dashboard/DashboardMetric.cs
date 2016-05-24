@@ -15,28 +15,26 @@
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using Hangfire.Dashboard.Resources;
 
 namespace Hangfire.Dashboard
 {
     public class DashboardMetric
     {
-        public DashboardMetric(string name, Func<RazorPage, Metric> func)
+        public DashboardMetric(string name, Func<RazorPage, Metric> func) 
             : this(name, name, func)
         {
         }
 
-        public DashboardMetric(string name, string titleResourceKey, Func<RazorPage, Metric> func)
+        public DashboardMetric(string name, string title, Func<RazorPage, Metric> func)
         {
             Name = name;
-            TitleResourceKey = titleResourceKey;
+            Title = title;
             Func = func;
         }
 
         public string Name { get; }
         public Func<RazorPage, Metric> Func { get; }
 
-        public string Title { get { return Strings.ResourceManager.GetString(TitleResourceKey) ?? TitleResourceKey; } }
-        public string TitleResourceKey { get; set; }
+        public string Title { get; set; }
     }
 }
