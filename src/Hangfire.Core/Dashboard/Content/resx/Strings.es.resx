@@ -506,6 +506,12 @@
   <data name="Common_Continuations" xml:space="preserve">
     <value>Continuaciones</value>
   </data>
+  <data name="Metrics_AwaitingCount" xml:space="preserve">
+    <value>En espera</value>
+  </data>
+  <data name="Metrics_EnqueuedCountOrNull" xml:space="preserve">
+    <value>En la cola</value>
+  </data>
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
     <value>En la cola / Colas</value>
   </data>
