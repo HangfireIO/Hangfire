@@ -468,6 +468,24 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed.
+        /// </summary>
+        public static string HomePage_GraphHover_Failed {
+            get {
+                return ResourceManager.GetString("HomePage_GraphHover_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Succeeded.
+        /// </summary>
+        public static string HomePage_GraphHover_Succeeded {
+            get {
+                return ResourceManager.GetString("HomePage_GraphHover_Succeeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to History graph.
         /// </summary>
         public static string HomePage_HistoryGraph {

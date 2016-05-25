@@ -515,4 +515,10 @@
   <data name="Metrics_EnqueuedQueuesCount" xml:space="preserve">
     <value>En la cola / Colas</value>
   </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>Con errores</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>Completados</value>
+  </data>
 </root>

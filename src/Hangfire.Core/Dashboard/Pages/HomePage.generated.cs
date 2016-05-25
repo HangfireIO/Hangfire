@@ -187,6 +187,26 @@ WriteLiteral("\" data-failed=\"");
             
             #line default
             #line hidden
+WriteLiteral("\"\r\n             data-succeeded-string=\"");
+
+
+            
+            #line 45 "..\..\Dashboard\Pages\HomePage.cshtml"
+                               Write(Strings.HomePage_GraphHover_Succeeded);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n             data-failed-string=\"");
+
+
+            
+            #line 46 "..\..\Dashboard\Pages\HomePage.cshtml"
+                            Write(Strings.HomePage_GraphHover_Failed);
+
+            
+            #line default
+            #line hidden
 WriteLiteral(@"""></div>
         <div style=""display: none;"">
             <span data-metric=""succeeded:count""></span>
@@ -199,7 +219,7 @@ WriteLiteral(@"""></div>
 
 
             
-            #line 52 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                 Write("day".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -209,7 +229,7 @@ WriteLiteral("\">");
 
 
             
-            #line 52 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                                                                                               Write(Strings.Common_PeriodDay);
 
             
@@ -219,7 +239,7 @@ WriteLiteral("</a>\r\n                <a href=\"?period=week\" class=\"btn btn-s
 
 
             
-            #line 53 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 55 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                  Write("week".Equals(period, StringComparison.OrdinalIgnoreCase) ? "active" : null);
 
             
@@ -229,7 +249,7 @@ WriteLiteral("\">");
 
 
             
-            #line 53 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 55 "..\..\Dashboard\Pages\HomePage.cshtml"
                                                                                                                                                 Write(Strings.Common_PeriodWeek);
 
             
@@ -239,7 +259,7 @@ WriteLiteral("</a>\r\n            </div>\r\n            ");
 
 
             
-            #line 55 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 57 "..\..\Dashboard\Pages\HomePage.cshtml"
        Write(Strings.HomePage_HistoryGraph);
 
             
@@ -249,7 +269,7 @@ WriteLiteral("\r\n        </h3>\r\n\r\n");
 
 
             
-            #line 58 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 60 "..\..\Dashboard\Pages\HomePage.cshtml"
          if (succeeded != null && failed != null)
         {
 
@@ -260,7 +280,7 @@ WriteLiteral("            <div id=\"historyGraph\"\r\n                 data-succ
 
 
             
-            #line 61 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 63 "..\..\Dashboard\Pages\HomePage.cshtml"
                             Write(JsonConvert.SerializeObject(succeeded));
 
             
@@ -270,8 +290,28 @@ WriteLiteral("\"\r\n                 data-failed=\"");
 
 
             
-            #line 62 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 64 "..\..\Dashboard\Pages\HomePage.cshtml"
                          Write(JsonConvert.SerializeObject(failed));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                 data-succeeded-string=\"");
+
+
+            
+            #line 65 "..\..\Dashboard\Pages\HomePage.cshtml"
+                                   Write(Strings.HomePage_GraphHover_Succeeded);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"\r\n                 data-failed-string=\"");
+
+
+            
+            #line 66 "..\..\Dashboard\Pages\HomePage.cshtml"
+                                Write(Strings.HomePage_GraphHover_Failed);
 
             
             #line default
@@ -280,7 +320,7 @@ WriteLiteral("\">\r\n            </div>\r\n");
 
 
             
-            #line 64 "..\..\Dashboard\Pages\HomePage.cshtml"
+            #line 68 "..\..\Dashboard\Pages\HomePage.cshtml"
         }
 
             

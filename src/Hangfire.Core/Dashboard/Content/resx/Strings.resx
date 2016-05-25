@@ -520,4 +520,10 @@
   <data name="Metrics_FailedCountOrNull" xml:space="preserve">
     <value>{0} failed job(s) found. Retry or delete them manually.</value>
   </data>
+  <data name="HomePage_GraphHover_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="HomePage_GraphHover_Succeeded" xml:space="preserve">
+    <value>Succeeded</value>
+  </data>
 </root>

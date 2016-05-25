@@ -37,7 +37,7 @@
     })();
 
     hangFire.RealtimeGraph = (function() {
-        function RealtimeGraph(element, succeeded, failed) {
+        function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr) {
             this._succeeded = succeeded;
             this._failed = failed;
             
@@ -50,8 +50,8 @@
                 stroke: true,
 
                 series: new Rickshaw.Series.FixedDuration([
-                        { name: 'failed', color: '#d9534f' },
-                        { name: 'succeeded', color: '#5cb85c' }
+                        { name: failedStr, color: '#d9534f' },
+                        { name: succeededStr, color: '#5cb85c' }
                 ],
                     undefined,
                     { timeInterval: 2000, maxDataPoints: 100 }
@@ -97,7 +97,7 @@
     })();
 
     hangFire.HistoryGraph = (function() {
-        function HistoryGraph(element, succeeded, failed) {
+        function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
             this._graph = new Rickshaw.Graph({
                 element: element,
                 width: $(element).innerWidth(),
@@ -109,11 +109,11 @@
                     {
                         color: '#d9534f',
                         data: failed,
-                        name: 'Failed'
+                        name: failedStr
                     }, {
                         color: '#6ACD65',
                         data: succeeded,
-                        name: 'Succeeded'
+                        name: succeededStr
                     }
                 ]
             });
@@ -232,8 +232,11 @@
             var succeeded = parseInt($(realtimeElement).data('succeeded'));
             var failed = parseInt($(realtimeElement).data('failed'));
 
+            var succeededStr = $(realtimeElement).data('succeeded-string');
+            var failedStr = $(realtimeElement).data('failed-string');
+
             if (realtimeElement) {
-                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed);
+                var realtimeGraph = new Hangfire.RealtimeGraph(realtimeElement, succeeded, failed, succeededStr, failedStr);
 
                 this._poller.addListener(function (data) {
                     realtimeGraph.appendHistory(data);
@@ -263,7 +266,10 @@
                 var succeeded = createSeries($(historyElement).data("succeeded"));
                 var failed = createSeries($(historyElement).data("failed"));
 
-                return new Hangfire.HistoryGraph(historyElement, succeeded, failed);
+                var succeededStr = $(historyElement).data('succeeded-string');
+                var failedStr = $(historyElement).data('failed-string');
+
+                return new Hangfire.HistoryGraph(historyElement, succeeded, failed, succeededStr, failedStr);
             }
 
             return null;
