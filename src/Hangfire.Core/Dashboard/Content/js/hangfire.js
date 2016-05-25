@@ -66,7 +66,8 @@
 
             var hoverDetail = new Rickshaw.Graph.HoverDetail({
                 graph: this._graph,
-                yFormatter: function (y) { return Math.floor(y); }
+                yFormatter: function (y) { return Math.floor(y); },
+                xFormatter: function (x) { return moment(new Date(x * 1000)).format("LLLL"); }
             });
 
             this._graph.render();
@@ -126,7 +127,8 @@
             
             var hoverDetail = new Rickshaw.Graph.HoverDetail({
                 graph: this._graph,
-                yFormatter: function(y) { return Math.floor(y); }
+                yFormatter: function (y) { return Math.floor(y); },
+                xFormatter: function (x) { return moment(new Date(x * 1000)).format("LLLL"); }
             });
 
             this._graph.render();
