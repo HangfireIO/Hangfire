@@ -82,19 +82,22 @@ namespace MQTools
         private const int MQ_ERROR_SERVICE_NOT_AVAILABLE = unchecked((int)0xC00E000B); // The Message Queuing service is not available.
         private const int MQ_INFORMATION_UNSUPPORTED_PROPERTY = unchecked((int)0x400E0004); // An unsupported property identifier was specified in pMgmtProps
 
-        const string QueueRegex = @"^.*\:(?<computerName>.*)\\(?<queueType>.*)\\(?<queue>.*)$";
+        const string QueueRegex = @"^(?:.*\:(?<computerName>.*)|\.)\\(?<queueType>.*)\\(?<queue>.*)$";
         private static readonly Regex regex = new Regex(QueueRegex, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public static long GetCount(this MessageQueue messageQueue)
         {
-            var matches = regex.Matches(messageQueue.FormatName);
+            var matches = regex.Matches(messageQueue.Path);
 
             if (matches.Count != 1)
-                throw new ApplicationException("Unable to parse " + messageQueue.FormatName);
+                throw new ApplicationException("Unable to parse " + messageQueue.Path);
 
             var computerName = matches[0].Groups["computerName"].Value;
             var queueType = matches[0].Groups["queueType"].Value;
             var queue = matches[0].Groups["queue"].Value;
+
+            if (computerName == ".")
+                computerName = null;
 
             return GetQueueCount(computerName, queueType, queue);
         }
