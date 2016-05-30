@@ -143,6 +143,7 @@
     <Compile Include="Utils\PossibleHangingFactAttribute.cs" />
     <Compile Include="Utils\SequenceAttribute.cs" />
     <Compile Include="Utils\StaticLockAttribute.cs" />
+    <Compile Include="States\EnqueuedStateValidationFacts.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

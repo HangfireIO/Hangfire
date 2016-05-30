@@ -82,6 +82,7 @@ namespace Hangfire
             if (cronExpression == null) throw new ArgumentNullException("cronExpression");
             if (timeZone == null) throw new ArgumentNullException("timeZone");
 
+            EnqueuedState.ValidateQueueName("queue", queue);
             ValidateCronExpression(cronExpression);
 
             using (var connection = _storage.GetConnection())
