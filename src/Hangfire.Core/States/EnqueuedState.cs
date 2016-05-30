@@ -114,28 +114,6 @@ namespace Hangfire.States
         }
 
         /// <summary>
-        /// Validates an queue name
-        /// </summary>
-        /// <param name="parameterName">parameter containing the queue name</param>
-        /// <param name="value">queue name to validate</param>
-        public static void ValidateQueueName([InvokerParameterName] string parameterName, string value)
-        {
-            if (String.IsNullOrWhiteSpace(value))
-            {
-                throw new ArgumentNullException(parameterName);
-            }
-
-            if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
-            {
-                throw new ArgumentException(
-                    String.Format(
-                        "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'.",
-                        value),
-                    parameterName);
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a queue name to which a background job identifier
         /// will be added.
         /// </summary>
@@ -236,6 +214,23 @@ namespace Hangfire.States
                 { "EnqueuedAt", JobHelper.SerializeDateTime(EnqueuedAt) },
                 { "Queue", Queue }
             };
+        }
+
+        internal static void ValidateQueueName([InvokerParameterName] string parameterName, string value)
+        {
+            if (String.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentNullException(parameterName);
+            }
+
+            if (!Regex.IsMatch(value, @"^[a-z0-9_]+$"))
+            {
+                throw new ArgumentException(
+                    String.Format(
+                        "The queue name must consist of lowercase letters, digits and underscore characters only. Given: '{0}'.",
+                        value),
+                    parameterName);
+            }
         }
 
         internal class Handler : IStateHandler
