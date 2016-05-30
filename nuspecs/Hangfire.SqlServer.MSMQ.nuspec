@@ -14,6 +14,9 @@
     <tags>Hangfire SqlServer MSMQ</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.7
+* Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
+    
 1.5.0
 * Added – Support for remote MSMQ queues through DTC transactions.
 

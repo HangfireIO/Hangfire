@@ -18,6 +18,17 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.7
+
+Hangfire.Core
+* Fixed – Add queue name validation to the `RecurringJobScheduler` class (by @pzielinski86).
+
+Hangfire.SqlServer
+* Fixed – Add missing transaction to `KeepAliveQuery` (by @maxhauser).
+
+Hangfire.SqlServer.Msmq
+* Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
+    
 1.5.6
 
 Hangfire.SqlServer
