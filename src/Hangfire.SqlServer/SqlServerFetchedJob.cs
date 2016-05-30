@@ -96,7 +96,7 @@ namespace Hangfire.SqlServer
             {
                 try
                 {
-                    _connection?.Execute("SELECT 1;");
+                    _connection?.Execute("SELECT 1;", transaction: _transaction);
                 }
                 catch
                 {

@@ -181,7 +181,10 @@ namespace Hangfire.Server
                         state.Queue = recurringJob["Queue"];
                     }
 
-                    var backgroundJob = _factory.Create(new CreateContext(storage, connection, job, state));
+                    var context = new CreateContext(storage, connection, job, state);
+                    context.Parameters["RecurringJobId"] = recurringJobId;
+
+                    var backgroundJob = _factory.Create(context);
                     var jobId = backgroundJob?.Id;
 
                     if (String.IsNullOrEmpty(jobId))
