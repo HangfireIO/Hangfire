@@ -468,6 +468,24 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed.
+        /// </summary>
+        public static string HomePage_GraphHover_Failed {
+            get {
+                return ResourceManager.GetString("HomePage_GraphHover_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Succeeded.
+        /// </summary>
+        public static string HomePage_GraphHover_Succeeded {
+            get {
+                return ResourceManager.GetString("HomePage_GraphHover_Succeeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to History graph.
         /// </summary>
         public static string HomePage_HistoryGraph {
@@ -692,11 +710,47 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Awaiting.
+        /// </summary>
+        public static string Metrics_AwaitingCount {
+            get {
+                return ResourceManager.GetString("Metrics_AwaitingCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Deleted Jobs.
         /// </summary>
         public static string Metrics_DeletedJobs {
             get {
                 return ResourceManager.GetString("Metrics_DeletedJobs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enqueued.
+        /// </summary>
+        public static string Metrics_EnqueuedCountOrNull {
+            get {
+                return ResourceManager.GetString("Metrics_EnqueuedCountOrNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enqueued / Queues.
+        /// </summary>
+        public static string Metrics_EnqueuedQueuesCount {
+            get {
+                return ResourceManager.GetString("Metrics_EnqueuedQueuesCount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} failed job(s) found. Retry or delete them manually..
+        /// </summary>
+        public static string Metrics_FailedCountOrNull {
+            get {
+                return ResourceManager.GetString("Metrics_FailedCountOrNull", resourceCulture);
             }
         }
         
