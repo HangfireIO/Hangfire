@@ -16,6 +16,9 @@
     
 1.6.0-ci
 * Fixed – Don't use collection initializer in GlobalJobFilters (#563).
+
+Backported from 1.5.7
+* Fixed – Add queue name validation to the `RecurringJobScheduler` class (by @pzielinski86).
     
 1.6.0-beta2
 * Added – Ability to change statistics polling interval in dashboard (by @tristal).

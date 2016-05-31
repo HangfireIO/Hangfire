@@ -49,8 +49,7 @@ namespace Hangfire
             get { return _queueName; }
             set
             {
-                if (value == null) throw new ArgumentNullException(nameof(value));
-
+                EnqueuedState.ValidateQueueName(nameof(value), value);
                 _queueName = value;
             }
         }

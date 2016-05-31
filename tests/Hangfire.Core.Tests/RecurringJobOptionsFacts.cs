@@ -31,5 +31,16 @@ namespace Hangfire.Core.Tests
 
             Assert.Throws<ArgumentNullException>(() => options.QueueName = null);
         }
+
+        [Fact]
+        public void SetQueueName_ThrowsAnException_WhenQueueNameHasInvalidFormat()
+        {
+            var options = new RecurringJobOptions();
+
+            var exception = Assert.Throws<ArgumentException>(
+                () => options.QueueName = "UPPER_CASE");
+
+            Assert.Equal("value", exception.ParamName);
+        }
     }
 }

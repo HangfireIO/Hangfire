@@ -17,6 +17,9 @@
 1.6.0-beta1
 * Fixed – Package now depends on the latest Hangfire.SqlServer instead of version 1.2.2.
     
+1.5.7
+* Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
+    
 1.5.0
 * Added – Support for remote MSMQ queues through DTC transactions.
 

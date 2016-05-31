@@ -28,10 +28,10 @@ namespace Hangfire.Core.Tests
             _cronExpression = Cron.Minutely();
             _storage = new Mock<JobStorage>();
             _factory = new Mock<IBackgroundJobFactory>();
-            
+
             _connection = new Mock<IStorageConnection>();
             _storage.Setup(x => x.GetConnection()).Returns(_connection.Object);
-            
+
             _transaction = new Mock<IWriteOnlyTransaction>();
             _connection.Setup(x => x.CreateWriteTransaction()).Returns(_transaction.Object);
         }
@@ -74,6 +74,17 @@ namespace Hangfire.Core.Tests
                 () => manager.AddOrUpdate(_id, null, Cron.Daily()));
 
             Assert.Equal("job", exception.ParamName);
+        }
+
+        [Fact]
+        public void AddOrUpdate_ThrowsAnException_WhenQueueNameIsNull()
+        {
+            var manager = CreateManager();
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => manager.AddOrUpdate(_id, _job, Cron.Daily(), TimeZoneInfo.Local, null));
+
+            Assert.Equal("queue", exception.ParamName);
         }
 
         [Fact]

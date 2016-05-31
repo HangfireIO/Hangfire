@@ -22,6 +22,11 @@
 1.6.0-ci
 * Fixed – Don't use collection initializer in GlobalJobFilters (#563).
     
+Backported from 1.5.7
+* Fixed – Dashboard crashing when trying to get the MSMQ queue length (by @yangman).
+* Fixed – Add queue name validation to the `RecurringJobScheduler` class (by @pzielinski86).
+* Fixed – Add missing transaction to `KeepAliveQuery` (by @maxhauser).
+
 1.6.0-beta2
 * Added – Ability to change statistics polling interval in dashboard (by @tristal).
 * Added – Cron expressions for regular intervals for the `Cron` class (by @geirsagberg).
