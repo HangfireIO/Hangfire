@@ -14,8 +14,13 @@
     <tags>Hangfire OWIN Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
-1.6.0-ci
-* Fixed – Don't use collection initializer in GlobalJobFilters (#563).
+1.6.0-beta3
+* Added – Spaninsh localization for the Dashboard UI (by @Elph).
+* Added – Enable backtracking from background job to recurrent job (by @teodimache).
+* Changed – Make the realtime/history graph to use localized dates on hover (by @Elph).
+* Changed – Make graph tooltip also localized using data-attributes (by @Elph).
+* Changed – Dashboard metric's title now contains the ResourceKey instead the title (by @Elph).
+* Fixed – Beta2 is not allowing for adding filters to the `GlobalJobFilters` collection.
 
 Backported from 1.5.7
 * Fixed – Add queue name validation to the `RecurringJobScheduler` class (by @pzielinski86).
