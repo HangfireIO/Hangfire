@@ -20,7 +20,7 @@
     <releaseNotes>http://hangfire.io/blog/
 
 1.6.0-beta3
-* Added – Spaninsh localization for the Dashboard UI (by @Elph).
+* Added – Spanish localization for the Dashboard UI (by @Elph).
 * Added – Enable backtracking from background job to recurrent job (by @teodimache).
 * Changed – Make the realtime/history graph to use localized dates on hover (by @Elph).
 * Changed – Make graph tooltip also localized using data-attributes (by @Elph).
