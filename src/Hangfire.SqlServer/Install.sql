@@ -21,6 +21,7 @@ SET @TARGET_SCHEMA_VERSION = 5;
 PRINT 'Installing Hangfire SQL objects...';
 
 BEGIN TRANSACTION;
+BEGIN TRY;
 
 -- Create the database schema if it doesn't exists
 IF NOT EXISTS (SELECT [schema_id] FROM [sys].[schemas] WHERE [name] = '$(HangFireSchema)')
@@ -55,7 +56,7 @@ PRINT 'Current Hangfire schema version: ' + CASE @CURRENT_SCHEMA_VERSION WHEN NU
 IF @CURRENT_SCHEMA_VERSION IS NOT NULL AND @CURRENT_SCHEMA_VERSION > @TARGET_SCHEMA_VERSION
 BEGIN
     ROLLBACK TRANSACTION;
-    RAISERROR(N'HangFire current database schema version %d is newer than the configured SqlServerStorage schema version %d. Please update to the latest HangFire.SqlServer NuGet package.', 11, 1,
+    RAISERROR(N'Hangfire current database schema version %d is newer than the configured SqlServerStorage schema version %d. Please update to the latest Hangfire.SqlServer NuGet package.', 11, 1,
         @CURRENT_SCHEMA_VERSION, @TARGET_SCHEMA_VERSION);
 END
 
@@ -383,3 +384,14 @@ PRINT 'Hangfire database schema installed';
 
 COMMIT TRANSACTION;
 PRINT 'Hangfire SQL objects installed';
+
+END TRY
+BEGIN CATCH
+    DECLARE @ERROR NVARCHAR(MAX);
+	SET @ERROR = ERROR_MESSAGE();
+
+	if @@TRANCOUNT > 0
+		ROLLBACK TRANSACTION
+
+	RAISERROR(N'Hangfire database migration script failed: %s Changes were rolled back, please fix the problem and re-run the script again.', 11, 1, @ERROR);
+END CATCH
