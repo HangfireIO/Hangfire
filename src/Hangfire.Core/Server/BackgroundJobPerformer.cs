@@ -40,12 +40,12 @@ namespace Hangfire.Server
         public BackgroundJobPerformer(
             [NotNull] IJobFilterProvider filterProvider,
             [NotNull] JobActivator activator)
-            : this(filterProvider, new CoreBackgroundJobPerformer(activator))
+            : this(filterProvider, new CoreBackgroundJobPerformer(activator, filterProvider))
         {
         }
 
         internal BackgroundJobPerformer(
-            [NotNull] IJobFilterProvider filterProvider, 
+            [NotNull] IJobFilterProvider filterProvider,
             [NotNull] IBackgroundJobPerformer innerPerformer)
         {
             if (filterProvider == null) throw new ArgumentNullException("filterProvider");
@@ -101,14 +101,14 @@ namespace Hangfire.Server
 
             var thunk = filters.Reverse().Aggregate(continuation,
                 (next, filter) => () => InvokePerformFilter(filter, preContext, next));
-            
+
             thunk();
 
             return result;
         }
 
         private static PerformedContext InvokePerformFilter(
-            IServerFilter filter, 
+            IServerFilter filter,
             PerformingContext preContext,
             Func<PerformedContext> continuation)
         {
@@ -126,7 +126,7 @@ namespace Hangfire.Server
                     "An exception occurred during execution of one of the filters",
                     filterException);
             }
-            
+
             if (preContext.Canceled)
             {
                 return new PerformedContext(

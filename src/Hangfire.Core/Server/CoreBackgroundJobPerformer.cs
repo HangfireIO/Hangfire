@@ -16,10 +16,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire.Annotations;
+using Hangfire.Common;
 
 namespace Hangfire.Server
 {
@@ -33,11 +35,17 @@ namespace Hangfire.Server
             };
 
         private readonly JobActivator _activator;
+        private readonly IJobFilterProvider _filterProvider;
 
-        public CoreBackgroundJobPerformer([NotNull] JobActivator activator)
+        public CoreBackgroundJobPerformer(
+            [NotNull] JobActivator activator,
+            [NotNull] IJobFilterProvider filterProvider)
         {
             if (activator == null) throw new ArgumentNullException("activator");
+            if (filterProvider == null) throw new ArgumentNullException("filterProvider");
+
             _activator = activator;
+            _filterProvider = filterProvider;
         }
 
         public object Perform(PerformContext context)
@@ -48,13 +56,8 @@ namespace Hangfire.Server
 
                 if (!context.BackgroundJob.Job.Method.IsStatic)
                 {
-                    instance = scope.Resolve(context.BackgroundJob.Job.Type);
-
-                    if (instance == null)
-                    {
-                        throw new InvalidOperationException(
-                            String.Format("JobActivator returned NULL instance of the '{0}' type.", context.BackgroundJob.Job.Type));
-                    }
+                    var activationContext = new ActivationContext(context.Connection, context.BackgroundJob);
+                    instance = CreateInstance(scope, activationContext);
                 }
 
                 var arguments = SubstituteArguments(context);
@@ -62,6 +65,74 @@ namespace Hangfire.Server
 
                 return result;
             }
+        }
+
+        private object CreateInstance(JobActivatorScope scope, ActivationContext context)
+        {
+            var filterInfo = new JobFilterInfo(_filterProvider.GetFilters(context.BackgroundJob.Job));
+
+            BeforeActivation(context, filterInfo.ActivationFilters);
+            var activatedContext = ActivateJob(scope, context);
+            AfterActivation(activatedContext, filterInfo.ActivationFilters);
+
+            if (activatedContext.Exception != null)
+            {
+                throw activatedContext.Exception;
+            }
+
+            if (activatedContext.Instance == null)
+            {
+                throw new InvalidOperationException(
+                    String.Format("JobActivator returned NULL instance of the '{0}' type.", context.BackgroundJob.Job.Type));
+            }
+
+            return activatedContext.Instance;
+        }
+
+        private void BeforeActivation(ActivationContext context, IEnumerable<IActivationFilter> activationFilters)
+        {
+            Action<ActivatingContext> onActivating = activationFilters.Aggregate(new Action<ActivatingContext>(c => { }),
+                (previous, filter) => previous + (filter.OnActivating));
+
+            try
+            {
+                onActivating(new ActivatingContext(context));
+            }
+            catch (Exception e)
+            {
+                throw new JobPerformanceException("An exception occurred during execution of one of the filters", e);
+            }
+        }
+
+        private void AfterActivation(ActivatedContext context, IEnumerable<IActivationFilter> activationFilters)
+        {
+            Action<ActivatedContext> onActivated = activationFilters.Aggregate(new Action<ActivatedContext>(c => { }),
+                (previous, filter) => previous + (filter.OnActivated));
+
+            try
+            {
+                onActivated(context);
+            }
+            catch (Exception e)
+            {
+                throw new JobPerformanceException("An exception occurred during execution of one of the filters", e);
+            }
+        }
+
+        private ActivatedContext ActivateJob(JobActivatorScope scope, ActivationContext context)
+        {
+            object instance;
+
+            try
+            {
+                instance = scope.Resolve(context.BackgroundJob.Job.Type);
+            }
+            catch (Exception e)
+            {
+                return new ActivatedContext(context, null, e);
+            }
+
+            return new ActivatedContext(context, instance, null);
         }
 
         private static object InvokeMethod(MethodInfo methodInfo, object instance, object[] arguments)
@@ -102,8 +173,8 @@ namespace Hangfire.Server
                 var parameter = parameters[i];
                 var argument = context.BackgroundJob.Job.Args[i];
 
-                var value = Substitutions.ContainsKey(parameter.ParameterType) 
-                    ? Substitutions[parameter.ParameterType](context) 
+                var value = Substitutions.ContainsKey(parameter.ParameterType)
+                    ? Substitutions[parameter.ParameterType](context)
                     : argument;
 
                 result.Add(value);
