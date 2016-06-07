@@ -92,10 +92,14 @@
     </Compile>
     <Compile Include="JobActivatorScope.cs" />
     <Compile Include="Properties\NamespaceDoc.cs" />
+    <Compile Include="Server\ActivatedContext.cs" />
+    <Compile Include="Server\ActivatingContext.cs" />
+    <Compile Include="Server\ActivationContext.cs" />
     <Compile Include="Server\BackgroundProcessContext.cs" />
     <Compile Include="Obsolete\IServerProcess.cs" />
     <Compile Include="Server\BackgroundProcessingServerOptions.cs" />
     <Compile Include="Server\CoreBackgroundJobPerformer.cs" />
+    <Compile Include="Server\IActivationFilter.cs" />
     <Compile Include="Server\IBackgroundProcess.cs" />
     <Compile Include="Server\IBackgroundProcessWrapper.cs" />
     <Compile Include="Server\InfiniteLoopProcess.cs" />
