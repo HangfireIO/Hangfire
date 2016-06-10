@@ -284,6 +284,7 @@
     <Compile Include="IGlobalConfiguration.cs" />
     <Compile Include="Obsolete\OwinBootstrapper.cs" />
     <Compile Include="Dashboard\MiddlewareExtensions.cs" />
+    <Compile Include="DeleteOnLatencyTimeoutAttribute.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RecurringJob.cs" />
     <Compile Include="RecurringJobManager.cs" />
