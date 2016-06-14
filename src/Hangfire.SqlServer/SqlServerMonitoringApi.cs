@@ -1,24 +1,23 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
-using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -26,6 +25,7 @@ using Hangfire.SqlServer.Entities;
 using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer
 {
@@ -44,7 +44,7 @@ namespace Hangfire.SqlServer
 
         public long ScheduledCount()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetNumberOfJobsByStateName(connection, ScheduledState.StateName));
         }
 
@@ -66,13 +66,13 @@ namespace Hangfire.SqlServer
 
         public long FailedCount()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetNumberOfJobsByStateName(connection, FailedState.StateName));
         }
 
         public long ProcessingCount()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetNumberOfJobsByStateName(connection, ProcessingState.StateName));
         }
 
@@ -106,13 +106,13 @@ namespace Hangfire.SqlServer
 
         public IDictionary<DateTime, long> SucceededByDatesCount()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetTimelineStats(connection, "succeeded"));
         }
 
         public IDictionary<DateTime, long> FailedByDatesCount()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetTimelineStats(connection, "failed"));
         }
 
@@ -240,13 +240,13 @@ namespace Hangfire.SqlServer
 
         public IDictionary<DateTime, long> HourlySucceededJobs()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetHourlyTimelineStats(connection, "succeeded"));
         }
 
         public IDictionary<DateTime, long> HourlyFailedJobs()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetHourlyTimelineStats(connection, "failed"));
         }
 
@@ -294,13 +294,13 @@ select * from [{0}].State where JobId = @id order by Id desc", _storage.GetSchem
 
         public long SucceededListCount()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetNumberOfJobsByStateName(connection, SucceededState.StateName));
         }
 
         public long DeletedListCount()
         {
-            return UseConnection(connection => 
+            return UseConnection(connection =>
                 GetNumberOfJobsByStateName(connection, DeletedState.StateName));
         }
 
@@ -353,7 +353,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
         }
 
         private Dictionary<DateTime, long> GetHourlyTimelineStats(
-            SqlConnection connection,
+            IDbConnection connection,
             string type)
         {
             var endDate = DateTime.UtcNow;
@@ -370,7 +370,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
         }
 
         private Dictionary<DateTime, long> GetTimelineStats(
-            SqlConnection connection,
+            IDbConnection connection,
             string type)
         {
             var endDate = DateTime.UtcNow.Date;
@@ -386,7 +386,7 @@ select count(*) from [{0}].[Set] where [Key] = N'recurring-jobs';
             return GetTimelineStats(connection, keyMaps);
         }
 
-        private Dictionary<DateTime, long> GetTimelineStats(SqlConnection connection,
+        private Dictionary<DateTime, long> GetTimelineStats(IDbConnection connection,
             IDictionary<string, DateTime> keyMaps)
         {
             string sqlQuery = string.Format(@"
@@ -421,17 +421,17 @@ where [Key] in @keys", _storage.GetSchemaName());
             return monitoringApi;
         }
 
-        private T UseConnection<T>(Func<SqlConnection, T> action)
+        private T UseConnection<T>(Func<IDbConnection, T> action)
         {
             return _storage.UseTransaction(action, IsolationLevel.ReadUncommitted);
         }
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(
-            SqlConnection connection,
+            IDbConnection connection,
             IEnumerable<int> jobIds)
         {
             string enqueuedJobsSql = string.Format(@"
-select j.*, s.Reason as StateReason, s.Data as StateData 
+select j.*, s.Reason as StateReason, s.Data as StateData
 from [{0}].Job j
 left join [{0}].State s on s.Id = j.StateId
 where j.Id in @jobIds", _storage.GetSchemaName());
@@ -453,7 +453,7 @@ where j.Id in @jobIds", _storage.GetSchemaName());
                 });
         }
 
-        private long GetNumberOfJobsByStateName(SqlConnection connection, string stateName)
+        private long GetNumberOfJobsByStateName(IDbConnection connection, string stateName)
         {
             var sqlQuery = _jobListLimit.HasValue
                 ? string.Format(@"select count(j.Id) from (select top (@limit) Id from [{0}].Job where StateName = @state) as j", _storage.GetSchemaName())
@@ -483,7 +483,7 @@ where j.Id in @jobIds", _storage.GetSchemaName());
         }
 
         private JobList<TDto> GetJobs<TDto>(
-            SqlConnection connection,
+            IDbConnection connection,
             int from,
             int count,
             string stateName,
@@ -529,11 +529,11 @@ select * from (
         }
 
         private JobList<FetchedJobDto> FetchedJobs(
-            SqlConnection connection,
+            IDbConnection connection,
             IEnumerable<int> jobIds)
         {
             string fetchedJobsSql = string.Format(@"
-select j.*, s.Reason as StateReason, s.Data as StateData 
+select j.*, s.Reason as StateReason, s.Data as StateData
 from [{0}].Job j
 left join [{0}].State s on s.Id = j.StateId
 where j.Id in @jobIds", _storage.GetSchemaName());

@@ -182,7 +182,7 @@ select scope_identity() as Id";
                 Commit(sql, x => x.IncrementCounter("my-key"));
 
                 var record = sql.Query("select * from HangFire.Counter").Single();
-                
+
                 Assert.Equal("my-key", record.Key);
                 Assert.Equal(1, record.Value);
                 Assert.Equal((DateTime?)null, record.ExpireAt);
@@ -221,7 +221,7 @@ select scope_identity() as Id";
                 });
 
                 var recordCount = sql.Query<int>("select count(*) from HangFire.Counter").Single();
-                
+
                 Assert.Equal(2, recordCount);
             });
         }
@@ -322,7 +322,7 @@ select scope_identity() as Id";
                 });
 
                 var recordCount = sql.Query<int>("select count(*) from HangFire.[Set]").Single();
-                
+
                 Assert.Equal(1, recordCount);
             });
         }
@@ -960,7 +960,7 @@ values (@key, @expireAt)";
             });
         }
 
-        private static void UseConnection(Action<SqlConnection> action)
+        private static void UseConnection(Action<IDbConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
             {
@@ -969,7 +969,7 @@ values (@key, @expireAt)";
         }
 
         private void Commit(
-            SqlConnection connection,
+            IDbConnection connection,
             Action<SqlServerWriteOnlyTransaction> action)
         {
             var storage = new Mock<SqlServerStorage>(connection);

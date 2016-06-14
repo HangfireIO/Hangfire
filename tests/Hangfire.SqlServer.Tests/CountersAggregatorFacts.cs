@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -33,12 +34,12 @@ values ('key', 1, @expireAt)";
             }
         }
 
-        private static SqlConnection CreateConnection()
+        private static IDbConnection CreateConnection()
         {
             return ConnectionUtils.CreateConnection();
         }
 
-        private static CountersAggregator CreateAggregator(SqlConnection connection)
+        private static CountersAggregator CreateAggregator(IDbConnection connection)
         {
             var storage = new SqlServerStorage(connection);
             return new CountersAggregator(storage, TimeSpan.Zero);

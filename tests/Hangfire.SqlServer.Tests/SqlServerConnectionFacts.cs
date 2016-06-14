@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
@@ -513,7 +514,7 @@ select @id";
         {
             const string arrangeSql = @"
 insert into HangFire.[Set] ([Key], Score, Value)
-values 
+values
 ('key', 1.0, '1.0'),
 ('key', -1.0, '-1.0'),
 ('key', -5.0, '-5.0'),
@@ -524,7 +525,7 @@ values
                 sql.Execute(arrangeSql);
 
                 var result = connection.GetFirstByLowestScoreFromSet("key", -1.0, 3.0);
-                
+
                 Assert.Equal("-1.0", result);
             });
         }
@@ -575,7 +576,7 @@ values
                 var context2 = new ServerContext
                 {
                     Queues = new[] { "default" },
-                    WorkerCount = 1000 
+                    WorkerCount = 1000
                 };
                 connection.AnnounceServer("server", context2);
                 var sameServer = sql.Query("select * from HangFire.Server").Single();
@@ -596,7 +597,7 @@ values
         {
             const string arrangeSql = @"
 insert into HangFire.Server (Id, Data, LastHeartbeat)
-values 
+values
 ('Server1', '', getutcdate()),
 ('Server2', '', getutcdate())";
 
@@ -1233,7 +1234,7 @@ values (@key, @value)";
 
                 // Act
                 var result = connection.GetRangeFromList("list-1", 1, 2);
-                
+
                 // Assert
                 Assert.Equal(new [] { "4", "3" }, result);
             });
@@ -1328,7 +1329,7 @@ values (@key, @value, @expireAt, 0.0)";
             });
         }
 
-        private void UseConnections(Action<SqlConnection, SqlServerConnection> action)
+        private void UseConnections(Action<IDbConnection, SqlServerConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {

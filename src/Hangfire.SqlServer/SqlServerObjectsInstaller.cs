@@ -1,20 +1,21 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -33,12 +34,12 @@ namespace Hangfire.SqlServer
 
         private static readonly ILog Log = LogProvider.GetLogger(typeof(SqlServerStorage));
 
-        public static void Install(SqlConnection connection)
+        public static void Install(IDbConnection connection)
         {
             Install(connection, null);
         }
 
-        public static void Install(SqlConnection connection, string schema)
+        public static void Install(IDbConnection connection, string schema)
         {
             if (connection == null) throw new ArgumentNullException("connection");
 
@@ -50,7 +51,7 @@ namespace Hangfire.SqlServer
             }
 
             var script = GetStringResource(
-                typeof(SqlServerObjectsInstaller).Assembly, 
+                typeof(SqlServerObjectsInstaller).Assembly,
                 "Hangfire.SqlServer.Install.sql");
 
             script = script.Replace("SET @TARGET_SCHEMA_VERSION = 5;", "SET @TARGET_SCHEMA_VERSION = " + RequiredSchemaVersion + ";");
@@ -80,7 +81,7 @@ namespace Hangfire.SqlServer
             Log.Info("Hangfire SQL objects installed.");
         }
 
-        private static bool IsSqlEditionSupported(SqlConnection connection)
+        private static bool IsSqlEditionSupported(IDbConnection connection)
         {
             var edition = connection.Query<int>("SELECT SERVERPROPERTY ( 'EngineEdition' )").Single();
             return edition >= SqlEngineEdition.Standard && edition <= SqlEngineEdition.SqlAzure;
@@ -90,7 +91,7 @@ namespace Hangfire.SqlServer
         {
             using (var stream = assembly.GetManifestResourceStream(resourceName))
             {
-                if (stream == null) 
+                if (stream == null)
                 {
                     throw new InvalidOperationException(String.Format(
                         "Requested resource `{0}` was not found in the assembly `{1}`.",
