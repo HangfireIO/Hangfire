@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
-using System.Transactions;
 using Dapper;
 using Hangfire.Storage;
 using Xunit;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer.Tests
 {
@@ -122,7 +123,7 @@ namespace Hangfire.SqlServer.Tests
         public void DistributedLocks_AreReEntrant_FromTheSameThread_OnTheSameResource()
         {
             var storage = new SqlServerStorage(ConnectionUtils.GetConnectionString());
-            
+
             using (new SqlServerDistributedLock(storage, "hello", TimeSpan.FromMinutes(5)))
             using (new SqlServerDistributedLock(storage, "hello", TimeSpan.FromMinutes(5)))
             {
@@ -130,12 +131,12 @@ namespace Hangfire.SqlServer.Tests
             }
         }
 
-        private SqlServerStorage CreateStorage(SqlConnection connection)
+        private SqlServerStorage CreateStorage(IDbConnection connection)
         {
             return new SqlServerStorage(connection);
         }
 
-        private void UseConnection(Action<SqlConnection> action)
+        private void UseConnection(Action<IDbConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
             {

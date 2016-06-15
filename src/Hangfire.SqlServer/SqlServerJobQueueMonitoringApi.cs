@@ -1,26 +1,26 @@
 ﻿// This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
-using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
+using IsolationLevel = System.Transactions.IsolationLevel;
 
 namespace Hangfire.SqlServer
 {
@@ -58,14 +58,14 @@ namespace Hangfire.SqlServer
                 }
 
                 return _queuesCache.ToList();
-            }  
+            }
         }
 
         public IEnumerable<int> GetEnqueuedJobIds(string queue, int @from, int perPage)
         {
             string sqlQuery = string.Format(@"
 select r.JobId from (
-  select jq.JobId, row_number() over (order by jq.Id) as row_num 
+  select jq.JobId, row_number() over (order by jq.Id) as row_num
   from [{0}].JobQueue jq
   where jq.Queue = @queue
 ) as r
@@ -103,7 +103,7 @@ select count(Id) from [{0}].JobQueue where [Queue] = @queue", _storage.GetSchema
             });
         }
 
-        private T UseTransaction<T>(Func<SqlConnection, T> func)
+        private T UseTransaction<T>(Func<IDbConnection, T> func)
         {
             return _storage.UseTransaction(func, IsolationLevel.ReadUncommitted);
         }

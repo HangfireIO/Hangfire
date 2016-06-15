@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace Hangfire.SqlServer.Tests
@@ -6,7 +7,7 @@ namespace Hangfire.SqlServer.Tests
     public static class ConnectionUtils
     {
         private const string DatabaseVariable = "Hangfire_SqlServer_DatabaseName";
-        private const string ConnectionStringTemplateVariable 
+        private const string ConnectionStringTemplateVariable
             = "Hangfire_SqlServer_ConnectionStringTemplate";
 
         private const string MasterDatabaseName = "master";
@@ -35,7 +36,7 @@ namespace Hangfire.SqlServer.Tests
                    ?? DefaultConnectionStringTemplate;
         }
 
-        public static SqlConnection CreateConnection()
+        public static IDbConnection CreateConnection()
         {
             var connection = new SqlConnection(GetConnectionString());
             connection.Open();

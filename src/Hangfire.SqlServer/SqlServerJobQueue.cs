@@ -1,17 +1,17 @@
 // This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
@@ -47,8 +47,8 @@ namespace Hangfire.SqlServer
             if (queues.Length == 0) throw new ArgumentException("Queue array must be non-empty.", "queues");
 
             FetchedJob fetchedJob = null;
-            SqlConnection connection = null;
-            SqlTransaction transaction = null;
+            IDbConnection connection = null;
+            IDbTransaction transaction = null;
 
             string fetchJobSqlTemplate = string.Format(@"
 delete top (1) from [{0}].JobQueue with (readpast, updlock, rowlock)
@@ -77,7 +77,7 @@ and Queue in @queues", _storage.GetSchemaName());
                     _storage.ReleaseConnection(connection);
                     throw;
                 }
-                
+
                 if (fetchedJob == null)
                 {
                     transaction.Rollback();

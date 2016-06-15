@@ -1,22 +1,22 @@
 // This file is part of Hangfire.
 // Copyright © 2013-2014 Sergey Odinokov.
-// 
+//
 // Hangfire is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as 
-// published by the Free Software Foundation, either version 3 
+// it under the terms of the GNU Lesser General Public License as
+// published by the Free Software Foundation, either version 3
 // of the License, or any later version.
-// 
+//
 // Hangfire is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
-// You should have received a copy of the GNU Lesser General Public 
+//
+// You should have received a copy of the GNU Lesser General Public
 // License along with Hangfire. If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Transactions;
 using Dapper;
@@ -29,8 +29,8 @@ namespace Hangfire.SqlServer
 {
     internal class SqlServerWriteOnlyTransaction : JobStorageTransaction
     {
-        private readonly Queue<Action<SqlConnection>> _commandQueue
-            = new Queue<Action<SqlConnection>>();
+        private readonly Queue<Action<IDbConnection>> _commandQueue
+            = new Queue<Action<IDbConnection>>();
 
         private readonly SortedSet<string> _lockedResources = new SortedSet<string>();
         private readonly SqlServerStorage _storage;
@@ -107,10 +107,10 @@ values (@jobId, @name, @reason, @createdAt, @data)", _storage.GetSchemaName());
                 addStateSql,
                 new
                 {
-                    jobId = jobId, 
+                    jobId = jobId,
                     name = state.Name,
                     reason = state.Reason,
-                    createdAt = DateTime.UtcNow, 
+                    createdAt = DateTime.UtcNow,
                     data = JobHelper.ToJson(state.SerializeData())
                 }));
         }
@@ -201,7 +201,7 @@ when not matched then insert ([Key], Value, Score) values (Source.[Key], Source.
         {
             string trimSql = string.Format(@"
 ;with cte as (
-    select row_number() over (order by Id desc) as row_num, [Key] 
+    select row_number() over (order by Id desc) as row_num, [Key]
     from [{0}].List
     where [Key] = @key)
 delete from cte where row_num not between @start and @end", _storage.GetSchemaName());
@@ -329,7 +329,7 @@ update [{0}].[List] set ExpireAt = null where [Key] = @key", _storage.GetSchemaN
             QueueCommand(x => x.Execute(query, new { key = key }));
         }
 
-        internal void QueueCommand(Action<SqlConnection> action)
+        internal void QueueCommand(Action<IDbConnection> action)
         {
             _commandQueue.Enqueue(action);
         }

@@ -226,7 +226,7 @@ values (scope_identity(), @queue)";
                 connection.Execute(
                     arrangeSql,
                     new { queue = "critical", invocationData = "", arguments = "" });
-                
+
                 Assert.Throws<OperationCanceledException>(
                     () => queue.Dequeue(
                         DefaultQueues,
@@ -295,13 +295,13 @@ values (scope_identity(), @queue)";
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static SqlServerJobQueue CreateJobQueue(SqlConnection connection)
+        private static SqlServerJobQueue CreateJobQueue(IDbConnection connection)
         {
             var storage = new SqlServerStorage(connection);
             return new SqlServerJobQueue(storage, new SqlServerStorageOptions());
         }
 
-        private static void UseConnection(Action<SqlConnection> action)
+        private static void UseConnection(Action<IDbConnection> action)
         {
             using (var connection = ConnectionUtils.CreateConnection())
             {

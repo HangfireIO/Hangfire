@@ -73,7 +73,7 @@ namespace Hangfire.SqlServer.Tests
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.AggregatedCounter ([Key], [Value], ExpireAt) 
+insert into HangFire.AggregatedCounter ([Key], [Value], ExpireAt)
 values ('key', 1, @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -94,7 +94,7 @@ values ('key', 1, @expireAt)";
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt) 
+insert into HangFire.Job (InvocationData, Arguments, CreatedAt, ExpireAt)
 values ('', '', getutcdate(), @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -115,7 +115,7 @@ values ('', '', getutcdate(), @expireAt)";
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.List ([Key], ExpireAt) 
+insert into HangFire.List ([Key], ExpireAt)
 values ('key', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -136,7 +136,7 @@ values ('key', @expireAt)";
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.[Set] ([Key], [Score], [Value], ExpireAt) 
+insert into HangFire.[Set] ([Key], [Score], [Value], ExpireAt)
 values ('key', 0, '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -157,7 +157,7 @@ values ('key', 0, '', @expireAt)";
             {
                 // Arrange
                 const string createSql = @"
-insert into HangFire.Hash ([Key], [Field], [Value], ExpireAt) 
+insert into HangFire.Hash ([Key], [Field], [Value], ExpireAt)
 values ('key', 'field', '', @expireAt)";
                 connection.Execute(createSql, new { expireAt = DateTime.UtcNow.AddMonths(-1) });
 
@@ -171,7 +171,7 @@ values ('key', 'field', '', @expireAt)";
             }
         }
 
-        private static int CreateExpirationEntry(SqlConnection connection, DateTime? expireAt)
+        private static int CreateExpirationEntry(IDbConnection connection, DateTime? expireAt)
         {
             const string insertSql = @"
 insert into HangFire.AggregatedCounter ([Key], [Value], [ExpireAt])
@@ -183,19 +183,19 @@ select scope_identity() as Id";
             return recordId;
         }
 
-        private static bool IsEntryExpired(SqlConnection connection, int entryId)
+        private static bool IsEntryExpired(IDbConnection connection, int entryId)
         {
             var count = connection.Query<int>(
                     "select count(*) from HangFire.AggregatedCounter where Id = @id", new { id = entryId }).Single();
             return count == 0;
         }
 
-        private SqlConnection CreateConnection()
+        private IDbConnection CreateConnection()
         {
             return ConnectionUtils.CreateConnection();
         }
 
-        private ExpirationManager CreateManager(SqlConnection connection)
+        private ExpirationManager CreateManager(IDbConnection connection)
         {
             var storage = new SqlServerStorage(connection);
             return new ExpirationManager(storage, TimeSpan.Zero);
