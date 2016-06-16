@@ -8,7 +8,7 @@ namespace Hangfire
     /// <summary>
     /// Represents a job filter that <i>automatically deletes a background job</i>,
     /// when a certain amount of time elapsed since its creation. Deletion
-    /// is taking place when a <see cref="Hangfire.Server.Worker"/> tries
+    /// is taking place when a <see cref="Hangfire.Server.Worker"/> attempts
     /// to move a job to the <see cref="ProcessingState"/> state.
     /// </summary>
     public sealed class LatencyTimeoutAttribute : JobFilterAttribute, IElectStateFilter
@@ -35,14 +35,14 @@ namespace Hangfire
             }
 
             _timeoutInSeconds = timeoutInSeconds;
-            LogEvents = true;
+            LogLevel = LogLevel.Debug;
         }
 
         /// <summary>
-        /// Gets or sets whether to produce a warning message, when a background 
-        /// job was deleted after the specified timeout.
+        /// Gets or sets a level for log message that will be produced, when a
+        /// background job was deleted due to exceeded timeout.
         /// </summary>
-        public bool LogEvents { get; set; }
+        public LogLevel LogLevel { get; set; }
 
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
@@ -60,14 +60,12 @@ namespace Hangfire
             {
                 context.CandidateState = new DeletedState
                 {
-                    Reason = $"Job has exceeded latency timeout of {_timeoutInSeconds} seconds"
+                    Reason = $"Background job has exceeded latency timeout of {_timeoutInSeconds} second(s)"
                 };
 
-                if (LogEvents)
-                {
-                    Logger.Warn(
-                        $"Failed to process the job '{context.BackgroundJob.Id}': Job has exceeded latency timeout of {_timeoutInSeconds} seconds");
-                }
+                Logger.Log(
+                    LogLevel,
+                    () => $"Background job '{context.BackgroundJob.Id}' has exceeded latency timeout of {_timeoutInSeconds} second(s) and will be deleted");
             }
         }
 
