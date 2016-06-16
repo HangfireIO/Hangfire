@@ -65,7 +65,7 @@ namespace Hangfire.SqlServer
                     connection.Execute(script);
                     break;
                 }
-                catch (SqlException ex)
+                catch (DbException ex)
                 {
                     if (ex.ErrorCode == 1205)
                     {

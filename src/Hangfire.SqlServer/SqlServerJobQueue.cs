@@ -81,7 +81,7 @@ and Queue in @queues";
                                transaction)
                                .SingleOrDefault();
                 }
-                catch (SqlException)
+                catch (DbException)
                 {
                     transaction.Dispose();
                     _storage.ReleaseConnection(connection);
