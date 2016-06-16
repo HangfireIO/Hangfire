@@ -90,7 +90,7 @@ namespace Hangfire.SqlServer
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SqlServerStorage"/> class with
-        /// explicit instance of the <see cref="SqlConnection"/> class that will be used
+        /// explicit instance of the <see cref="DbConnection"/> class that will be used
         /// to query the data.
         /// </summary>
         /// <param name="existingConnection">Existing connection</param>
