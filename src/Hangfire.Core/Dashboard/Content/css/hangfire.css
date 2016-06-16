@@ -361,7 +361,9 @@ a:hover .label-hover {
 }
 
 .state-card .job-history-body {
-    margin: 10px -12px 0 -12px;
+    margin: 10px -12px -12px -12px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
 
 .state-card .job-history-body dl {
