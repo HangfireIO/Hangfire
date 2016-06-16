@@ -26,7 +26,6 @@ using System.Transactions;
 using Dapper;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
-using Hangfire.Dashboard.Resources;
 using Hangfire.Logging;
 using Hangfire.Server;
 using Hangfire.Storage;
