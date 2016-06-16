@@ -11,14 +11,14 @@ namespace Hangfire
     /// is taking place when a <see cref="Hangfire.Server.Worker"/> tries
     /// to move a job to the <see cref="ProcessingState"/> state.
     /// </summary>
-    public sealed class DeleteOnLatencyTimeoutAttribute : JobFilterAttribute, IElectStateFilter
+    public sealed class LatencyTimeoutAttribute : JobFilterAttribute, IElectStateFilter
     {
         private static readonly ILog Logger = LogProvider.GetCurrentClassLogger();
 
         private readonly int _timeoutInSeconds;
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeleteOnLatencyTimeoutAttribute"/>
+        /// Initializes a new instance of the <see cref="LatencyTimeoutAttribute"/>
         /// class with the given timeout value.
         /// </summary>
         /// <param name="timeoutInSeconds">Non-negative timeout value in seconds 
@@ -27,7 +27,7 @@ namespace Hangfire
         /// <exception cref="ArgumentOutOfRangeException">
         ///   <paramref name="timeoutInSeconds"/> has a negative value.
         /// </exception>
-        public DeleteOnLatencyTimeoutAttribute(int timeoutInSeconds)
+        public LatencyTimeoutAttribute(int timeoutInSeconds)
         {
             if (timeoutInSeconds < 0)
             {

@@ -77,7 +77,7 @@
     <Compile Include="Common\JobLoadExceptionFacts.cs" />
     <Compile Include="Common\TypeExtensionsFacts.cs" />
     <Compile Include="CronFacts.cs" />
-    <Compile Include="DeleteOnLatencyAttributeFacts.cs" />
+    <Compile Include="LatencyTimeoutAttributeFacts.cs" />
     <Compile Include="GlobalStateHandlersFacts.cs" />
     <Compile Include="JobActivatorFacts.cs" />
     <Compile Include="JobCancellationTokenFacts.cs" />

@@ -4,13 +4,13 @@ using Xunit;
 
 namespace Hangfire.Core.Tests
 {
-    public class DeleteOnLatencyAttributeFacts
+    public class LatencyTimeoutAttributeFacts
     {
         private const string JobId = "id";
 
         private readonly ElectStateContextMock _context;
 
-        public DeleteOnLatencyAttributeFacts()
+        public LatencyTimeoutAttributeFacts()
         {
             var state = new ProcessingState("Default", "1");
 
@@ -50,9 +50,9 @@ namespace Hangfire.Core.Tests
             Assert.IsType<ProcessingState>(_context.Object.CandidateState);
         }
 
-        private static DeleteOnLatencyTimeoutAttribute CreateFilter(int timeout)
+        private static LatencyTimeoutAttribute CreateFilter(int timeout)
         {
-            return new DeleteOnLatencyTimeoutAttribute(timeout);
+            return new LatencyTimeoutAttribute(timeout);
         }
     }
 }
