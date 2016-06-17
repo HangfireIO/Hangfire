@@ -15,6 +15,7 @@
     <releaseNotes>http://hangfire.io/blog/
     
 1.5.8
+* Changed – Disable immediate execution of a keep-alive query in queue and distributed locks.
 * Fixed – Background jobs may be processed multiple times.
 * Fixed – Keep-alive queries sometimes failing to execute.
     
