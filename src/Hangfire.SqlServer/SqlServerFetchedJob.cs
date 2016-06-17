@@ -60,7 +60,7 @@ namespace Hangfire.SqlServer
 
             if (!_storage.IsExistingConnection(_connection))
             {
-                _timer = new Timer(ExecuteKeepAliveQuery, null, TimeSpan.Zero, KeepAliveInterval);
+                _timer = new Timer(ExecuteKeepAliveQuery, null, KeepAliveInterval, KeepAliveInterval);
             }
         }
 
