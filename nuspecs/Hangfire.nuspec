@@ -18,6 +18,12 @@
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.8
+
+Hangfire.SqlServer
+* Fixed – Background jobs may be processed multiple times.
+* Fixed – Keep-alive queries sometimes failing to execute.
+    
 1.5.7
 
 Hangfire.Core

@@ -14,6 +14,10 @@
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
     
+1.5.8
+* Fixed – Background jobs may be processed multiple times.
+* Fixed – Keep-alive queries sometimes failing to execute.
+    
 1.5.7
 * Fixed – Add missing transaction to `KeepAliveQuery` (by @maxhauser).
     
