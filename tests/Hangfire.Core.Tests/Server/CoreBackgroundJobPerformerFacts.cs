@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Hangfire.Common;
 using Hangfire.Core.Tests.Common;
 using Hangfire.Server;
 using Moq;
+using Moq.Sequences;
 using Xunit;
 
 namespace Hangfire.Core.Tests.Server
@@ -14,6 +17,9 @@ namespace Hangfire.Core.Tests.Server
         private readonly Mock<JobActivator> _activator;
         private readonly PerformContextMock _context;
 
+        private readonly IList<object> _filters;
+        private readonly Mock<IJobFilterProvider> _filterProvider;
+
         private static readonly DateTime SomeDateTime = new DateTime(2014, 5, 30, 12, 0, 0);
         private static bool _methodInvoked;
         private static bool _disposed;
@@ -22,6 +28,11 @@ namespace Hangfire.Core.Tests.Server
         {
             _activator = new Mock<JobActivator>() { CallBase = true };
             _context = new PerformContextMock();
+
+            _filters = new List<object>();
+            _filterProvider = new Mock<IJobFilterProvider>();
+            _filterProvider.Setup(x => x.GetFilters(It.IsNotNull<Job>())).Returns(
+                _filters.Select(f => new JobFilter(f, JobFilterScope.Type, null)));
         }
 
         [Fact]
@@ -29,9 +40,19 @@ namespace Hangfire.Core.Tests.Server
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 // ReSharper disable once AssignNullToNotNullAttribute
-                () => new CoreBackgroundJobPerformer(null));
+                () => new CoreBackgroundJobPerformer(null, _filterProvider.Object));
 
             Assert.Equal("activator", exception.ParamName);
+        }
+
+        [Fact]
+        public void Ctor_ThrowsAnException_WhenFilterProviderIsNull()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                // ReSharper disable once AssignNullToNotNullAttribute
+                () => new CoreBackgroundJobPerformer(_activator.Object, null));
+
+            Assert.Equal("filterProvider", exception.ParamName);
         }
 
         [Fact, StaticLock]
@@ -202,7 +223,7 @@ namespace Hangfire.Core.Tests.Server
             _methodInvoked = false;
             _context.BackgroundJob.Job = Job.FromExpression<BrokenDispose>(x => x.Method());
             var performer = CreatePerformer();
-            
+
             Assert.Throws<InvalidOperationException>(
                 () => performer.Perform(_context.Object));
 
@@ -256,6 +277,75 @@ namespace Hangfire.Core.Tests.Server
             var result = performer.Perform(_context.Object);
 
             Assert.Equal("Return value", result);
+        }
+
+        [Fact, StaticLock, Sequence]
+        public void Run_CallsActivationFilters_BeforeAndAfterJobActivation()
+        {
+            var filter = CreateFilter<IActivationFilter>();
+            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+
+            filter.Setup(x => x.OnActivating(It.IsNotNull<ActivatingContext>()))
+                .InSequence();
+
+            _activator.Setup(x => x.ActivateJob(_context.BackgroundJob.Job.Type))
+                .InSequence()
+                .Returns(new CoreBackgroundJobPerformerFacts());
+
+            filter.Setup(x => x.OnActivated(It.IsNotNull<ActivatedContext>()))
+                .InSequence();
+
+            var performer = CreatePerformer();
+            performer.Perform(_context.Object);
+        }
+
+        [Fact, StaticLock]
+        public void Run_CallsOnActivated_WithCreatedJobInstance()
+        {
+            var filter = CreateFilter<IActivationFilter>();
+            var createdInstance = new CoreBackgroundJobPerformerFacts();
+            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+
+            _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>()))
+                .Returns(createdInstance);
+
+            var performer = CreatePerformer();
+            performer.Perform(_context.Object);
+
+            filter.Verify(x => x.OnActivated(It.Is<ActivatedContext>(context => context.Instance == createdInstance)));
+        }
+
+        [Fact]
+        public void Run_CallsOnActivated_WithActivationException()
+        {
+            var filter = CreateFilter<IActivationFilter>();
+            var exception = new Exception();
+            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+
+            _activator.Setup(x => x.ActivateJob(It.IsNotNull<Type>())).Throws(exception);
+
+            var performer = CreatePerformer();
+            var thrownException = Assert.Throws<Exception>(
+                () => performer.Perform(_context.Object));
+
+            filter.Verify(x => x.OnActivated(It.Is<ActivatedContext>(context => context.Exception == exception)));
+            Assert.Equal(exception, thrownException);
+        }
+
+        [Fact, StaticLock, Sequence]
+        public void Run_InvokesAllActivationFilters()
+        {
+            var filter1 = CreateFilter<IActivationFilter>();
+            var filter2 = CreateFilter<IActivationFilter>();
+            _context.BackgroundJob.Job = Job.FromExpression<CoreBackgroundJobPerformerFacts>(x => x.InstanceMethod());
+
+            filter1.Setup(x => x.OnActivating(It.IsNotNull<ActivatingContext>())).InSequence();
+            filter2.Setup(x => x.OnActivating(It.IsNotNull<ActivatingContext>())).InSequence();
+            filter1.Setup(x => x.OnActivated(It.IsNotNull<ActivatedContext>())).InSequence();
+            filter2.Setup(x => x.OnActivated(It.IsNotNull<ActivatedContext>())).InSequence();
+
+            var performer = CreatePerformer();
+            performer.Perform(_context.Object);
         }
 
         public void InstanceMethod()
@@ -337,7 +427,16 @@ namespace Hangfire.Core.Tests.Server
 
         private CoreBackgroundJobPerformer CreatePerformer()
         {
-            return new CoreBackgroundJobPerformer(_activator.Object);
+            return new CoreBackgroundJobPerformer(_activator.Object, _filterProvider.Object);
+        }
+
+        private Mock<T> CreateFilter<T>()
+            where T : class
+        {
+            var filter = new Mock<T>();
+            _filters.Add(filter.Object);
+
+            return filter;
         }
     }
 }

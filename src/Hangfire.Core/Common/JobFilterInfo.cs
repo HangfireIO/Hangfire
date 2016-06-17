@@ -31,8 +31,9 @@ namespace Hangfire.Common
         private readonly List<IServerFilter> _serverFilters = new List<IServerFilter>();
         private readonly List<IElectStateFilter> _electStateFilters = new List<IElectStateFilter>();
         private readonly List<IApplyStateFilter> _applyStateFilters = new List<IApplyStateFilter>();
-        private readonly List<IClientExceptionFilter> _clientExceptionFilters = new List<IClientExceptionFilter>(); 
+        private readonly List<IClientExceptionFilter> _clientExceptionFilters = new List<IClientExceptionFilter>();
         private readonly List<IServerExceptionFilter> _serverExceptionFilters = new List<IServerExceptionFilter>();
+        private readonly List<IActivationFilter> _activationFilters = new List<IActivationFilter>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JobFilterInfo"/> class using the specified filters collection.
@@ -50,6 +51,8 @@ namespace Hangfire.Common
 
             _clientExceptionFilters.AddRange(list.OfType<IClientExceptionFilter>());
             _serverExceptionFilters.AddRange(list.OfType<IServerExceptionFilter>());
+
+            _activationFilters.AddRange(list.OfType<IActivationFilter>());
         }
 
         /// <summary>
@@ -122,6 +125,18 @@ namespace Hangfire.Common
         public IList<IServerExceptionFilter> ServerExceptionFilters
         {
             get { return _serverExceptionFilters; }
+        }
+
+        /// <summary>
+        /// Gets all activation filtres in the application
+        /// </summary>
+        /// 
+        /// <returns>
+        /// Activation filtres.
+        /// </returns>
+        public IList<IActivationFilter> ActivationFilters
+        {
+            get { return _activationFilters; }
         }
     }
 }
