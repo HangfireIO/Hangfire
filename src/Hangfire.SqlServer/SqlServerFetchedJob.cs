@@ -69,12 +69,18 @@ namespace Hangfire.SqlServer
 
         public void RemoveFromQueue()
         {
-            _transaction.Commit();
+            lock (_lockObject)
+            {
+                _transaction.Commit();
+            }
         }
 
         public void Requeue()
         {
-            _transaction.Rollback();
+            lock (_lockObject)
+            {
+                _transaction.Rollback();
+            }
         }
 
         public void Dispose()
