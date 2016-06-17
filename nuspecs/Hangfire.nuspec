@@ -18,6 +18,15 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire AspNet MVC OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Jobs Scheduler Threading Queues</tags>
     <releaseNotes>http://hangfire.io/blog/
+    
+1.6.0-ci
+
+Backported from 1.5.8
+
+Hangfire.SqlServer
+* Changed – Disable immediate execution of a keep-alive query in queue and distributed locks.
+* Fixed – Background jobs may be processed multiple times.
+* Fixed – Keep-alive queries sometimes failing to execute.
 
 1.6.0-beta3
 * Added – Spanish localization for the Dashboard UI (by @Elph).

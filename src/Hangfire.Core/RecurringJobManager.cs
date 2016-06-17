@@ -59,7 +59,7 @@ namespace Hangfire
             if (job == null) throw new ArgumentNullException(nameof(job));
             if (cronExpression == null) throw new ArgumentNullException(nameof(cronExpression));
             if (options == null) throw new ArgumentNullException(nameof(options));
-
+            
             ValidateCronExpression(cronExpression);
 
             using (var connection = _storage.GetConnection())

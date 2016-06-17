@@ -86,7 +86,7 @@ namespace Hangfire.Core.Tests
 
             Assert.Equal("queue", exception.ParamName);
         }
-
+        
         [Fact]
         public void AddOrUpdate_ThrowsAnException_WhenCronExpressionIsNull()
         {
@@ -173,7 +173,7 @@ namespace Hangfire.Core.Tests
             _transaction.Verify(x => x.SetRangeInHash(
                 $"recurring-job:{_id}",
                 It.Is<Dictionary<string, string>>(rj => 
-                    rj["Cron"] == "* * * * *" 
+                    rj["Cron"] == "* * * * *"
                     && !String.IsNullOrEmpty(rj["Job"])
                     && JobHelper.DeserializeDateTime(rj["CreatedAt"]) > DateTime.UtcNow.AddMinutes(-1))));
         }

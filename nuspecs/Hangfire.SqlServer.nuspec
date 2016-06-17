@@ -13,6 +13,16 @@
     <copyright>Copyright © 2013-2016 Sergey Odinokov</copyright>
     <tags>Hangfire SqlServer SqlAzure LocalDB</tags>
     <releaseNotes>http://hangfire.io/blog/
+    
+1.6.0-ci
+
+Backported from 1.5.8
+
+* Changed – Disable immediate execution of a keep-alive query in queue and distributed locks.
+* Fixed – Background jobs may be processed multiple times.
+* Fixed – Keep-alive queries sometimes failing to execute.
+    
+1.6.0-beta3
 
 Backported from 1.5.7
 * Fixed – Add missing transaction to `KeepAliveQuery` (by @maxhauser).
