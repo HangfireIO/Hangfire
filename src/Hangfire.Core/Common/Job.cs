@@ -230,7 +230,7 @@ namespace Hangfire.Common
         /// <b>only used to obtain the type</b> for a job. It is not
         /// serialized and not passed across the process boundaries.</note>
         /// </remarks>
-        public static Job FromExpression([InstantHandle] Expression<Action> methodCall)
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
@@ -284,7 +284,7 @@ namespace Hangfire.Common
         /// that uses caching where possible to decrease the performance 
         /// penalty.</para>
         /// </remarks>
-        public static Job FromExpression<TType>([InstantHandle] Expression<Action<TType>> methodCall)
+        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall)
         {
             if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
