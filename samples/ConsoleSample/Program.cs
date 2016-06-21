@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
-
-#pragma warning disable 4014
+using Hangfire.Common;
+using Hangfire.States;
 
 namespace ConsoleSample
 {
@@ -64,10 +64,13 @@ namespace ConsoleSample
                     {
                         try
                         {
+                            var client = new BackgroundJobClient();
                             var workCount = int.Parse(command.Substring(6));
                             for (var i = 0; i < workCount; i++)
                             {
-                                BackgroundJob.Enqueue<Services>(x => x.Async(CancellationToken.None));
+                                client.Create(
+                                    Job.FromExpression<Services>(x => x.Async(CancellationToken.None)),
+                                    new EnqueuedState());
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }

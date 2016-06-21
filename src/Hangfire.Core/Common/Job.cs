@@ -21,6 +21,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Hangfire.Annotations;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Hangfire.Common
 {
@@ -232,36 +233,40 @@ namespace Hangfire.Common
         /// </remarks>
         public static Job FromExpression([NotNull, InstantHandle] Expression<Action> methodCall)
         {
-            if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
+            return FromExpression(methodCall, null);
+        }
 
-            var callExpression = methodCall.Body as MethodCallExpression;
-            if (callExpression == null)
-            {
-                throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
-            }
-
-            Type type;
-
-            if (callExpression.Object != null)
-            {
-                var objectValue = GetExpressionValue(callExpression.Object);
-                if (objectValue == null)
-                {
-                    throw new InvalidOperationException("Expression object should be not null.");
-                }
-
-                type = objectValue.GetType();
-            }
-            else
-            {
-                type = callExpression.Method.DeclaringType;
-            }
-            
-            return new Job(
-                // ReSharper disable once AssignNullToNotNullAttribute
-                type,
-                callExpression.Method,
-                GetExpressionValues(callExpression.Arguments));
+        /// <summary>
+        /// Gets a new instance of the <see cref="Job"/> class based on the
+        /// given expression tree of a method call.
+        /// </summary>
+        /// 
+        /// <param name="methodCall">Expression tree of a method call.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type 
+        /// <see cref="MethodCallExpression"/>.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="methodCall"/> 
+        /// expression contains a method that is not supported.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="methodCall"/>
+        /// instance object of a given expression points to <see langword="null"/>.
+        /// </exception>
+        /// 
+        /// <remarks>
+        /// <para>The <see cref="Job.Type"/> property of a returning job will 
+        /// point to the type of a given instance object when it is specified, 
+        /// or to the declaring type otherwise. All the arguments are evaluated 
+        /// using the expression compiler that uses caching where possible to 
+        /// decrease the performance penalty.</para>
+        /// 
+        /// <note>Instance object (e.g. <c>() => instance.Method()</c>) is 
+        /// <b>only used to obtain the type</b> for a job. It is not
+        /// serialized and not passed across the process boundaries.</note>
+        /// </remarks>
+        public static Job FromExpression([NotNull, InstantHandle] Expression<Func<Task>> methodCall)
+        {
+            return FromExpression(methodCall, null);
         }
 
         /// <summary>
@@ -286,6 +291,36 @@ namespace Hangfire.Common
         /// </remarks>
         public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Action<TType>> methodCall)
         {
+            return FromExpression(methodCall, typeof(TType));
+        }
+
+        /// <summary>
+        /// Gets a new instance of the <see cref="Job"/> class based on the
+        /// given expression tree of an instance method call with explicit
+        /// type specification.
+        /// </summary>
+        /// <typeparam name="TType">Explicit type that should be used on method call.</typeparam>
+        /// <param name="methodCall">Expression tree of a method call on <typeparamref name="TType"/>.</param>
+        /// 
+        /// <exception cref="ArgumentNullException"><paramref name="methodCall"/> is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// <paramref name="methodCall"/> expression body is not of type 
+        /// <see cref="MethodCallExpression"/>.</exception>
+        /// <exception cref="NotSupportedException"><paramref name="methodCall"/> 
+        /// expression contains a method that is not supported.</exception>
+        /// 
+        /// <remarks>
+        /// <para>All the arguments are evaluated using the expression compiler
+        /// that uses caching where possible to decrease the performance 
+        /// penalty.</para>
+        /// </remarks>
+        public static Job FromExpression<TType>([NotNull, InstantHandle] Expression<Func<TType, Task>> methodCall)
+        {
+            return FromExpression(methodCall, typeof(TType));
+        }
+
+        private static Job FromExpression([NotNull] LambdaExpression methodCall, [CanBeNull] Type explicitType)
+        {
             if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
             var callExpression = methodCall.Body as MethodCallExpression;
@@ -294,8 +329,29 @@ namespace Hangfire.Common
                 throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
             }
 
+            var type = explicitType;
+
+            if (type == null)
+            {
+                if (callExpression.Object != null)
+                {
+                    var objectValue = GetExpressionValue(callExpression.Object);
+                    if (objectValue == null)
+                    {
+                        throw new InvalidOperationException("Expression object should be not null.");
+                    }
+
+                    type = objectValue.GetType();
+                }
+                else
+                {
+                    type = callExpression.Method.DeclaringType;
+                }
+            }
+
             return new Job(
-                typeof(TType),
+                // ReSharper disable once AssignNullToNotNullAttribute
+                type,
                 callExpression.Method,
                 GetExpressionValues(callExpression.Arguments));
         }
