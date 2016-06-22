@@ -236,7 +236,7 @@ WriteLiteral("                        <tr class=\"js-jobs-list-row ");
 
             
             #line 63 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                                Write(job.Value != null && !job.Value.InSucceededState ? "obsolete-data" : null);
+                                                Write(job.Value == null || !job.Value.InSucceededState ? "obsolete-data" : null);
 
             
             #line default
@@ -256,7 +256,7 @@ WriteLiteral("\">\r\n                            <td>\r\n");
 
             
             #line 65 "..\..\Dashboard\Pages\SucceededJobs.cshtml"
-                                 if (job.Value != null && job.Value.InSucceededState)
+                                 if (job.Value == null || job.Value.InSucceededState)
                                 {
 
             

@@ -56,9 +56,9 @@
                     <tbody>
                     @foreach (var job in jobs)
                     {
-                        <tr class="js-jobs-list-row @(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null) @(job.Value != null && job.Value.InDeletedState && job.Value != null ? "hover" : null)">
+                        <tr class="js-jobs-list-row @(job.Value == null || !job.Value.InDeletedState ? "obsolete-data" : null) @(job.Value != null && job.Value.InDeletedState && job.Value != null ? "hover" : null)">
                             <td>
-                                @if (job.Value != null && job.Value.InDeletedState)
+                                @if (job.Value == null || job.Value.InDeletedState)
                                 {
                                     <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
                                 }

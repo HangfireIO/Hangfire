@@ -219,7 +219,7 @@ WriteLiteral("                        <tr class=\"js-jobs-list-row ");
 
             
             #line 59 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                                Write(job.Value != null && !job.Value.InDeletedState ? "obsolete-data" : null);
+                                                Write(job.Value == null || !job.Value.InDeletedState ? "obsolete-data" : null);
 
             
             #line default
@@ -239,7 +239,7 @@ WriteLiteral("\">\r\n                            <td>\r\n");
 
             
             #line 61 "..\..\Dashboard\Pages\DeletedJobsPage.cshtml"
-                                 if (job.Value != null && job.Value.InDeletedState)
+                                 if (job.Value == null || job.Value.InDeletedState)
                                 {
 
             
