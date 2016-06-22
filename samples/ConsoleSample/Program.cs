@@ -64,13 +64,10 @@ namespace ConsoleSample
                     {
                         try
                         {
-                            var client = new BackgroundJobClient();
                             var workCount = int.Parse(command.Substring(6));
                             for (var i = 0; i < workCount; i++)
                             {
-                                client.Create(
-                                    Job.FromExpression<Services>(x => x.Async(CancellationToken.None)),
-                                    new EnqueuedState());
+                                BackgroundJob.Enqueue<Services>(x => x.Async(CancellationToken.None));
                             }
                             Console.WriteLine("Jobs enqueued.");
                         }
