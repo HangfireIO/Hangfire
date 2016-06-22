@@ -53,49 +53,51 @@
                     @Html.PerPageSelector(pager)
                 </div>
 
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="min-width">
-                            <input type="checkbox" class="js-jobs-list-select-all"/>
-                        </th>
-                        <th class="min-width">@Strings.Common_Id</th>
-                        <th>@Strings.ScheduledJobsPage_Table_Enqueue</th>
-                        <th>@Strings.Common_Job</th>
-                        <th class="align-right">ScheduledJobsPage_Table_Scheduled</th>
-                    </tr>
-                    </thead>
-                    @foreach (var job in scheduledJobs)
-                    {
-                        <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
-                            <td>
-                                @if (job.Value.InScheduledState)
-                                {
-                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @Html.JobIdLink(job.Key)
-                                @if (!job.Value.InScheduledState)
-                                {
-                                    <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @Html.RelativeTime(job.Value.EnqueueAt)
-                            </td>
-                            <td>
-                                @Html.JobNameLink(job.Key, job.Value.Job)
-                            </td>
-                            <td class="align-right">
-                                @if (job.Value.ScheduledAt.HasValue)
-                                {
-                                    @Html.RelativeTime(job.Value.ScheduledAt.Value)
-                                }
-                            </td>
-                        </tr>
-                    }
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all" />
+                                </th>
+                                <th class="min-width">@Strings.Common_Id</th>
+                                <th>@Strings.ScheduledJobsPage_Table_Enqueue</th>
+                                <th>@Strings.Common_Job</th>
+                                <th class="align-right">ScheduledJobsPage_Table_Scheduled</th>
+                            </tr>
+                        </thead>
+                        @foreach (var job in scheduledJobs)
+                        {
+                            <tr class="js-jobs-list-row @(!job.Value.InScheduledState ? "obsolete-data" : null) @(job.Value.InScheduledState ? "hover" : null)">
+                                <td>
+                                    @if (job.Value.InScheduledState)
+                                    {
+                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                    }
+                                </td>
+                                <td class="min-width">
+                                    @Html.JobIdLink(job.Key)
+                                    @if (!job.Value.InScheduledState)
+                                    {
+                                        <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                    }
+                                </td>
+                                <td class="min-width">
+                                    @Html.RelativeTime(job.Value.EnqueueAt)
+                                </td>
+                                <td>
+                                    @Html.JobNameLink(job.Key, job.Value.Job)
+                                </td>
+                                <td class="align-right">
+                                    @if (job.Value.ScheduledAt.HasValue)
+                                    {
+                                        @Html.RelativeTime(job.Value.ScheduledAt.Value)
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
 
                 @Html.Paginator(pager)
             </div>

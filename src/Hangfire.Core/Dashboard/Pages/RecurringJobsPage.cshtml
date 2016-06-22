@@ -70,110 +70,112 @@
                     }
                 </div>
 
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="min-width">
-                            <input type="checkbox" class="js-jobs-list-select-all"/>
-                        </th>
-                        <th class="min-width">@Strings.Common_Id</th>
-                        <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
-                        <th>@Strings.RecurringJobsPage_Table_TimeZone</th>
-                        <th>@Strings.Common_Job</th>
-                        <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
-                        <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
-                        <th class="align-right min-width">@Strings.Common_Created</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var job in recurringJobs)
-                    {
-                        <tr class="js-jobs-list-row hover">
-                            <td>
-                                <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id"/>
-                            </td>
-                            <td class="min-width">@job.Id</td>
-                            <td class="min-width">
-                                @* ReSharper disable once EmptyGeneralCatchClause *@
-                                @{
-                                    var cronDescription = job.Cron;
-                                    try
-                                    {
-                                        cronDescription = ExpressionDescriptor.GetDescription(job.Cron);
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all" />
+                                </th>
+                                <th class="min-width">@Strings.Common_Id</th>
+                                <th class="min-width">@Strings.RecurringJobsPage_Table_Cron</th>
+                                <th>@Strings.RecurringJobsPage_Table_TimeZone</th>
+                                <th>@Strings.Common_Job</th>
+                                <th class="align-right min-width">@Strings.RecurringJobsPage_Table_NextExecution</th>
+                                <th class="align-right min-width">@Strings.RecurringJobsPage_Table_LastExecution</th>
+                                <th class="align-right min-width">@Strings.Common_Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var job in recurringJobs)
+                            {
+                                <tr class="js-jobs-list-row hover">
+                                    <td>
+                                        <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Id" />
+                                    </td>
+                                    <td class="min-width">@job.Id</td>
+                                    <td class="min-width">
+                                        @* ReSharper disable once EmptyGeneralCatchClause *@
+                                        @{
+                                            var cronDescription = job.Cron;
+                                            try
+                                            {
+                                                cronDescription = ExpressionDescriptor.GetDescription(job.Cron);
+                                            }
+                                            catch (FormatException)
+                                            {
+                                            }
+                                        }
+                                        @cronDescription
+                                    </td>
+                                    <td class="min-width">
+                                        @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
+                                        {
+                                            <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
+                                        }
+                                        else
+                                        {
+                                            @: UTC
                                     }
-                                    catch (FormatException)
-                                    {
+                                    </td>
+                                    <td>
+                                        @if (job.Job != null)
+                                        {
+                                            @: @Html.JobName(job.Job)
                                     }
-                                }
-                                @cronDescription
-                            </td>
-                            <td class="min-width">
-                                @if (!String.IsNullOrWhiteSpace(job.TimeZoneId))
-                                {
-                                    <span title="@TimeZoneInfo.FindSystemTimeZoneById(job.TimeZoneId).DisplayName" data-container="body">@job.TimeZoneId</span>
-                                }
-                                else
-                                {
-                                    @: UTC
-                                }
-                            </td>
-                            <td>
-                                @if (job.Job != null)
-                                {
-                                    @: @Html.JobName(job.Job)
-                                }
-                                else
-                                {
-                                    <em>@job.LoadException.InnerException.Message</em>
-                                }
-                            </td>
-                            <td class="align-right min-width">
-                                @if (job.NextExecution != null)
-                                {
-                                    @Html.RelativeTime(job.NextExecution.Value)
-                                }
-                                else
-                                {
-                                    <em>@Strings.Common_NotAvailable</em>
-                                }
-                            </td>
-                            <td class="align-right min-width">
-                                @if (job.LastExecution != null)
-                                {
-                                    if (!String.IsNullOrEmpty(job.LastJobId))
-                                    {
-                                        <a href="@Url.JobDetails(job.LastJobId)">
-                                            <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState)};")">
-                                                @Html.RelativeTime(job.LastExecution.Value)
-                                            </span>
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <em>
-                                            @Strings.RecurringJobsPage_Canceled @Html.RelativeTime(job.LastExecution.Value)
-                                        </em>
-                                    }
-                                }
-                                else
-                                {
-                                    <em>@Strings.Common_NotAvailable</em>
-                                }
-                            </td>
-                            <td class="align-right min-width">
-                                @if (job.CreatedAt != null)
-                                {
-                                    @Html.RelativeTime(job.CreatedAt.Value)
-                                }
-                                else
-                                {
-                                    <em>N/A</em>
-                                }
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
+                                        else
+                                        {
+                                            <em>@job.LoadException.InnerException.Message</em>
+                                        }
+                                    </td>
+                                    <td class="align-right min-width">
+                                        @if (job.NextExecution != null)
+                                        {
+                                            @Html.RelativeTime(job.NextExecution.Value)
+                                        }
+                                        else
+                                        {
+                                            <em>@Strings.Common_NotAvailable</em>
+                                        }
+                                    </td>
+                                    <td class="align-right min-width">
+                                        @if (job.LastExecution != null)
+                                        {
+                                            if (!String.IsNullOrEmpty(job.LastJobId))
+                                            {
+                                                <a href="@Url.JobDetails(job.LastJobId)">
+                                                    <span class="label label-default label-hover" style="@($"background-color: {JobHistoryRenderer.GetForegroundStateColor(job.LastJobState)};")">
+                                                        @Html.RelativeTime(job.LastExecution.Value)
+                                                    </span>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <em>
+                                                    @Strings.RecurringJobsPage_Canceled @Html.RelativeTime(job.LastExecution.Value)
+                                                </em>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <em>@Strings.Common_NotAvailable</em>
+                                        }
+                                    </td>
+                                    <td class="align-right min-width">
+                                        @if (job.CreatedAt != null)
+                                        {
+                                            @Html.RelativeTime(job.CreatedAt.Value)
+                                        }
+                                        else
+                                        {
+                                            <em>N/A</em>
+                                        }
+                                    </td>
+                                </tr>
+                             }
+                        </tbody>
+                    </table>
+                </div>
 
                 @if (pager != null)
                 {

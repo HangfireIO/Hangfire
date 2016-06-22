@@ -209,60 +209,62 @@ WriteLiteral("\r\n                    </button>\r\n\r\n                    ");
 WriteLiteral(@"
                 </div>
 
-                <table class=""table"">
-                    <thead>
-                    <tr>
-                        <th class=""min-width"">
-                            <input type=""checkbox"" class=""js-jobs-list-select-all""/>
-                        </th>
-                        <th class=""min-width"">");
-
-
-            
-            #line 62 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                         Write(Strings.Common_Id);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</th>\r\n                        <th>");
+                <div class=""table-responsive"">
+                    <table class=""table"">
+                        <thead>
+                            <tr>
+                                <th class=""min-width"">
+                                    <input type=""checkbox"" class=""js-jobs-list-select-all"" />
+                                </th>
+                                <th class=""min-width"">");
 
 
             
             #line 63 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                       Write(Strings.ScheduledJobsPage_Table_Enqueue);
+                                                 Write(Strings.Common_Id);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                        <th>");
+WriteLiteral("</th>\r\n                                <th>");
 
 
             
             #line 64 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                       Write(Strings.Common_Job);
+                               Write(Strings.ScheduledJobsPage_Table_Enqueue);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                        <th class=\"align-right\">ScheduledJobsPage_Table_Sc" +
-"heduled</th>\r\n                    </tr>\r\n                    </thead>\r\n");
+WriteLiteral("</th>\r\n                                <th>");
 
 
             
-            #line 68 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                     foreach (var job in scheduledJobs)
-                    {
+            #line 65 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                               Write(Strings.Common_Job);
 
             
             #line default
             #line hidden
-WriteLiteral("                        <tr class=\"js-jobs-list-row ");
+WriteLiteral("</th>\r\n                                <th class=\"align-right\">ScheduledJobsPage_" +
+"Table_Scheduled</th>\r\n                            </tr>\r\n                       " +
+" </thead>\r\n");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                                Write(!job.Value.InScheduledState ? "obsolete-data" : null);
+            #line 69 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                         foreach (var job in scheduledJobs)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <tr class=\"js-jobs-list-row ");
+
+
+            
+            #line 71 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                                    Write(!job.Value.InScheduledState ? "obsolete-data" : null);
 
             
             #line default
@@ -271,51 +273,51 @@ WriteLiteral(" ");
 
 
             
-            #line 70 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                                                                                        Write(job.Value.InScheduledState ? "hover" : null);
+            #line 71 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                                                                                            Write(job.Value.InScheduledState ? "hover" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                            <td>\r\n");
+WriteLiteral("\">\r\n                                <td>\r\n");
 
 
             
-            #line 72 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                 if (job.Value.InScheduledState)
-                                {
-
-            
-            #line default
-            #line hidden
-WriteLiteral("                                    <input type=\"checkbox\" class=\"js-jobs-list-ch" +
-"eckbox\" name=\"jobs[]\" value=\"");
-
-
-            
-            #line 74 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                                                                                         Write(job.Key);
+            #line 73 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                     if (job.Value.InScheduledState)
+                                    {
 
             
             #line default
             #line hidden
-WriteLiteral("\"/>\r\n");
+WriteLiteral("                                        <input type=\"checkbox\" class=\"js-jobs-lis" +
+"t-checkbox\" name=\"jobs[]\" value=\"");
 
 
             
             #line 75 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                }
+                                                                                                             Write(job.Key);
 
             
             #line default
             #line hidden
-WriteLiteral("                            </td>\r\n                            <td class=\"min-wid" +
-"th\">\r\n                                ");
+WriteLiteral("\" />\r\n");
 
 
             
-            #line 78 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                           Write(Html.JobIdLink(job.Key));
+            #line 76 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                    }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                </td>\r\n                                <td class=" +
+"\"min-width\">\r\n                                    ");
+
+
+            
+            #line 79 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                               Write(Html.JobIdLink(job.Key));
 
             
             #line default
@@ -324,19 +326,19 @@ WriteLiteral("\r\n");
 
 
             
-            #line 79 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                 if (!job.Value.InScheduledState)
-                                {
+            #line 80 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                     if (!job.Value.InScheduledState)
+                                    {
 
             
             #line default
             #line hidden
-WriteLiteral("                                    <span title=\"");
+WriteLiteral("                                        <span title=\"");
 
 
             
-            #line 81 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                            Write(Strings.Common_JobStateChanged_Text);
+            #line 82 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                                Write(Strings.Common_JobStateChanged_Text);
 
             
             #line default
@@ -345,76 +347,76 @@ WriteLiteral("\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
 
 
             
-            #line 82 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                }
+            #line 83 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                    }
 
             
             #line default
             #line hidden
-WriteLiteral("                            </td>\r\n                            <td class=\"min-wid" +
-"th\">\r\n                                ");
+WriteLiteral("                                </td>\r\n                                <td class=" +
+"\"min-width\">\r\n                                    ");
 
 
             
-            #line 85 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                           Write(Html.RelativeTime(job.Value.EnqueueAt));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </td>\r\n                            <td>\r\n          " +
-"                      ");
-
-
-            
-            #line 88 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                           Write(Html.JobNameLink(job.Key, job.Value.Job));
+            #line 86 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                               Write(Html.RelativeTime(job.Value.EnqueueAt));
 
             
             #line default
             #line hidden
-WriteLiteral("\r\n                            </td>\r\n                            <td class=\"align" +
-"-right\">\r\n");
+WriteLiteral("\r\n                                </td>\r\n                                <td>\r\n  " +
+"                                  ");
 
 
             
-            #line 91 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                 if (job.Value.ScheduledAt.HasValue)
-                                {
-                                    
-            
-            #line default
-            #line hidden
-            
-            #line 93 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                               Write(Html.RelativeTime(job.Value.ScheduledAt.Value));
+            #line 89 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                               Write(Html.JobNameLink(job.Key, job.Value.Job));
 
             
             #line default
             #line hidden
+WriteLiteral("\r\n                                </td>\r\n                                <td clas" +
+"s=\"align-right\">\r\n");
+
+
             
-            #line 93 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                                                                                   
-                                }
+            #line 92 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                     if (job.Value.ScheduledAt.HasValue)
+                                    {
+                                        
+            
+            #line default
+            #line hidden
+            
+            #line 94 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                   Write(Html.RelativeTime(job.Value.ScheduledAt.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("                            </td>\r\n                        </tr>\r\n");
-
-
             
-            #line 97 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
-                    }
+            #line 94 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                                                                                       
+                                    }
 
             
             #line default
             #line hidden
-WriteLiteral("                </table>\r\n\r\n                ");
+WriteLiteral("                                </td>\r\n                            </tr>\r\n");
 
 
             
-            #line 100 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 98 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </table>\r\n                </div>\r\n\r\n                ");
+
+
+            
+            #line 102 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
            Write(Html.Paginator(pager));
 
             
@@ -424,7 +426,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 102 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
+            #line 104 "..\..\Dashboard\Pages\ScheduledJobsPage.cshtml"
         }
 
             

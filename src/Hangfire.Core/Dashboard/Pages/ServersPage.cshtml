@@ -25,34 +25,36 @@
         }
         else
         {
-            <table class="table">
-                <thead>
-                <tr>
-                    <th>@Strings.ServersPage_Table_Name</th>
-                    <th>@Strings.ServersPage_Table_Workers</th>
-                    <th>@Strings.ServersPage_Table_Queues</th>
-                    <th>@Strings.ServersPage_Table_Started</th>
-                    <th>@Strings.ServersPage_Table_Heartbeat</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach (var server in servers)
-                {
-                    <tr>
-                        <td>@Html.ServerId(server.Name)</td>
-                        <td>@server.WorkersCount</td>
-                        <td>@Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel)))</td>
-                        <td data-moment="@JobHelper.ToTimestamp(server.StartedAt)">@server.StartedAt</td>
-                        <td>
-                            @if (server.Heartbeat.HasValue)
-                            {
-                                @Html.RelativeTime(server.Heartbeat.Value)
-                            }
-                        </td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>@Strings.ServersPage_Table_Name</th>
+                            <th>@Strings.ServersPage_Table_Workers</th>
+                            <th>@Strings.ServersPage_Table_Queues</th>
+                            <th>@Strings.ServersPage_Table_Started</th>
+                            <th>@Strings.ServersPage_Table_Heartbeat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var server in servers)
+                        {
+                            <tr>
+                                <td>@Html.ServerId(server.Name)</td>
+                                <td>@server.WorkersCount</td>
+                                <td>@Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel)))</td>
+                                <td data-moment="@JobHelper.ToTimestamp(server.StartedAt)">@server.StartedAt</td>
+                                <td>
+                                    @if (server.Heartbeat.HasValue)
+                                    {
+                                        @Html.RelativeTime(server.Heartbeat.Value)
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         }
     </div>
 </div>

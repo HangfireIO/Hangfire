@@ -125,105 +125,106 @@ WriteLiteral("\r\n            </div>\r\n");
             
             #line default
             #line hidden
-WriteLiteral("            <table class=\"table\">\r\n                <thead>\r\n                <tr>\r" +
-"\n                    <th>");
-
-
-            
-            #line 31 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                   Write(Strings.ServersPage_Table_Name);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("</th>\r\n                    <th>");
+WriteLiteral("            <div class=\"table-responsive\">\r\n                <table class=\"table\">" +
+"\r\n                    <thead>\r\n                        <tr>\r\n                   " +
+"         <th>");
 
 
             
             #line 32 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                   Write(Strings.ServersPage_Table_Workers);
+                           Write(Strings.ServersPage_Table_Name);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                    <th>");
+WriteLiteral("</th>\r\n                            <th>");
 
 
             
             #line 33 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                   Write(Strings.ServersPage_Table_Queues);
+                           Write(Strings.ServersPage_Table_Workers);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                    <th>");
+WriteLiteral("</th>\r\n                            <th>");
 
 
             
             #line 34 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                   Write(Strings.ServersPage_Table_Started);
+                           Write(Strings.ServersPage_Table_Queues);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                    <th>");
+WriteLiteral("</th>\r\n                            <th>");
 
 
             
             #line 35 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                   Write(Strings.ServersPage_Table_Heartbeat);
+                           Write(Strings.ServersPage_Table_Started);
 
             
             #line default
             #line hidden
-WriteLiteral("</th>\r\n                </tr>\r\n                </thead>\r\n                <tbody>\r\n" +
-"");
+WriteLiteral("</th>\r\n                            <th>");
 
 
             
-            #line 39 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                 foreach (var server in servers)
-                {
+            #line 36 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                           Write(Strings.ServersPage_Table_Heartbeat);
 
             
             #line default
             #line hidden
-WriteLiteral("                    <tr>\r\n                        <td>");
+WriteLiteral("</th>\r\n                        </tr>\r\n                    </thead>\r\n             " +
+"       <tbody>\r\n");
 
 
             
-            #line 42 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                       Write(Html.ServerId(server.Name));
+            #line 40 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                         foreach (var server in servers)
+                        {
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                        <td>");
+WriteLiteral("                            <tr>\r\n                                <td>");
 
 
             
             #line 43 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                       Write(server.WorkersCount);
+                               Write(Html.ServerId(server.Name));
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                        <td>");
+WriteLiteral("</td>\r\n                                <td>");
 
 
             
             #line 44 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                       Write(Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel))));
+                               Write(server.WorkersCount);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                        <td data-moment=\"");
+WriteLiteral("</td>\r\n                                <td>");
 
 
             
             #line 45 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                                    Write(JobHelper.ToTimestamp(server.StartedAt));
+                               Write(Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel))));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</td>\r\n                                <td data-moment=\"");
+
+
+            
+            #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                            Write(JobHelper.ToTimestamp(server.StartedAt));
 
             
             #line default
@@ -232,53 +233,53 @@ WriteLiteral("\">");
 
 
             
-            #line 45 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                                                                              Write(server.StartedAt);
+            #line 46 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                                                                      Write(server.StartedAt);
 
             
             #line default
             #line hidden
-WriteLiteral("</td>\r\n                        <td>\r\n");
+WriteLiteral("</td>\r\n                                <td>\r\n");
 
 
             
-            #line 47 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                             if (server.Heartbeat.HasValue)
-                            {
-                                
-            
-            #line default
-            #line hidden
-            
-            #line 49 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                           Write(Html.RelativeTime(server.Heartbeat.Value));
-
+            #line 48 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                     if (server.Heartbeat.HasValue)
+                                    {
+                                        
             
             #line default
             #line hidden
             
-            #line 49 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                                                                          
-                            }
+            #line 50 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                   Write(Html.RelativeTime(server.Heartbeat.Value));
 
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                    </tr>\r\n");
-
-
             
-            #line 53 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                }
+            #line 50 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                                                                                  
+                                    }
 
             
             #line default
             #line hidden
-WriteLiteral("                </tbody>\r\n            </table>\r\n");
+WriteLiteral("                                </td>\r\n                            </tr>\r\n");
 
 
             
-            #line 56 "..\..\Dashboard\Pages\ServersPage.cshtml"
+            #line 54 "..\..\Dashboard\Pages\ServersPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </tbody>\r\n                </table>\r\n            </div>\r\n");
+
+
+            
+            #line 58 "..\..\Dashboard\Pages\ServersPage.cshtml"
         }
 
             

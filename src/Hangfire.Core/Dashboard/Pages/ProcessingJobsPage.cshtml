@@ -56,56 +56,58 @@
                     @Html.PerPageSelector(pager)
                 </div>
 
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="min-width">
-                            <input type="checkbox" class="js-jobs-list-select-all"/>
-                        </th>
-                        <th class="min-width">@Strings.Common_Id</th>
-                        <th class="min-width">@Strings.Common_Server</th>
-                        <th>@Strings.Common_Job</th>
-                        <th class="align-right">@Strings.ProcessingJobsPage_Table_Started</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var job in processingJobs)
-                    {
-                        <tr class="js-jobs-list-row @(!job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value.InProcessingState ? "hover" : null)">
-                            <td>
-                                @if (job.Value.InProcessingState)
-                                {
-                                    <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key"/>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @Html.JobIdLink(job.Key)
-                                @if (!job.Value.InProcessingState)
-                                {
-                                    <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
-                                }
-                            </td>
-                            <td class="min-width">
-                                @Html.ServerId(job.Value.ServerId)
-                            </td>
-                            <td>
-                                @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
-                                {
-                                    <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
-                                }
-                                
-                                @Html.JobNameLink(job.Key, job.Value.Job)
-                            </td>
-                            <td class="align-right">
-                                @if (job.Value.StartedAt.HasValue)
-                                {
-                                    @Html.RelativeTime(job.Value.StartedAt.Value)
-                                }
-                            </td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="min-width">
+                                    <input type="checkbox" class="js-jobs-list-select-all" />
+                                </th>
+                                <th class="min-width">@Strings.Common_Id</th>
+                                <th class="min-width">@Strings.Common_Server</th>
+                                <th>@Strings.Common_Job</th>
+                                <th class="align-right">@Strings.ProcessingJobsPage_Table_Started</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var job in processingJobs)
+                            {
+                                <tr class="js-jobs-list-row @(!job.Value.InProcessingState ? "obsolete-data" : null) @(job.Value.InProcessingState ? "hover" : null)">
+                                    <td>
+                                        @if (job.Value.InProcessingState)
+                                        {
+                                            <input type="checkbox" class="js-jobs-list-checkbox" name="jobs[]" value="@job.Key" />
+                                        }
+                                    </td>
+                                    <td class="min-width">
+                                        @Html.JobIdLink(job.Key)
+                                        @if (!job.Value.InProcessingState)
+                                        {
+                                            <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
+                                        }
+                                    </td>
+                                    <td class="min-width">
+                                        @Html.ServerId(job.Value.ServerId)
+                                    </td>
+                                    <td>
+                                        @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))
+                                        {
+                                            <span title="@Strings.ProcessingJobsPage_Aborted" class="glyphicon glyphicon-warning-sign" style="font-size: 10px;"></span>
+                                        }
+
+                                        @Html.JobNameLink(job.Key, job.Value.Job)
+                                    </td>
+                                    <td class="align-right">
+                                        @if (job.Value.StartedAt.HasValue)
+                                        {
+                                            @Html.RelativeTime(job.Value.StartedAt.Value)
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
 
                 @Html.Paginator(pager)
             </div>
