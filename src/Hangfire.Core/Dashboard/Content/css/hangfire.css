@@ -225,10 +225,6 @@ a:hover .label-hover {
     color: #333;
 }
 
-.label-queue {
-    text-transform: uppercase;
-}
-
 /* Job Snippet styles */
 
 .job-snippet {

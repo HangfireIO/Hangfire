@@ -380,7 +380,7 @@ WriteLiteral("                            </td>\r\n                            <
 
             
             #line 89 "..\..\Dashboard\Pages\ProcessingJobsPage.cshtml"
-                           Write(job.Value.ServerId.ToUpperInvariant());
+                           Write(Html.ServerId(job.Value.ServerId));
 
             
             #line default

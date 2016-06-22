@@ -212,10 +212,18 @@ namespace Hangfire.Dashboard
         public NonEscapedString QueueLabel(string queue)
         {
             var label = queue != null 
-                ? $"<span class=\"label label-queue label-primary\">{queue}</span>" 
-                : $"<span class=\"label label-queue label-danger\"><i>{Strings.Common_Unknown}</i></span>";
+                ? $"<a class=\"text-uppercase\" href=\"{_page.Url.Queue(queue)}\">{queue}</a>" 
+                : $"<span class=\"label label-danger\"><i>{Strings.Common_Unknown}</i></span>";
 
             return new NonEscapedString(label);
+        }
+
+        public NonEscapedString ServerId(string serverId)
+        {
+            var shortenedId = String.Join(":", serverId.Split(':').Take(2));
+
+            return new NonEscapedString(
+                $"<span class=\"labe label-defult text-uppercase\" title=\"{serverId}\">{shortenedId}</span>");
         }
 
         private static readonly StackTraceHtmlFragments StackTraceHtmlFragments = new StackTraceHtmlFragments

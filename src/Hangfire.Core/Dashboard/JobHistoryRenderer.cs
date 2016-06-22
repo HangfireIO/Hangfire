@@ -206,7 +206,7 @@ namespace Hangfire.Dashboard
             if (serverId != null)
             {
                 builder.Append("<dt>Server:</dt>");
-                builder.Append($"<dd><span class=\"label label-default text-uppercase\">{serverId}</span></dd>");
+                builder.Append($"<dd>{helper.ServerId(serverId)}</dd>");
             }
 
             if (stateData.ContainsKey("WorkerId"))
@@ -228,7 +228,7 @@ namespace Hangfire.Dashboard
         private static NonEscapedString EnqueuedRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
             return new NonEscapedString(
-                $"<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd><span class=\"label label-queue label-primary\">{stateData["Queue"]}</span></dd></dl>");
+                $"<dl class=\"dl-horizontal\"><dt>Queue:</dt><dd>{helper.QueueLabel(stateData["Queue"])}</dd></dl>");
         }
 
         private static NonEscapedString ScheduledRenderer(HtmlHelper helper, IDictionary<string, string> stateData)

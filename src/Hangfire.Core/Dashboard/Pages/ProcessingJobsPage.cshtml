@@ -86,7 +86,7 @@
                                 }
                             </td>
                             <td class="min-width">
-                                @job.Value.ServerId.ToUpperInvariant()
+                                @Html.ServerId(job.Value.ServerId)
                             </td>
                             <td>
                                 @if (servers.All(x => x.Name != job.Value.ServerId || x.Heartbeat < DateTime.UtcNow.AddMinutes(-1)))

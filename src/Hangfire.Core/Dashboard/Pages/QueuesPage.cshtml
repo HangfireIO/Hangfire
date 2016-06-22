@@ -29,7 +29,7 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <th>@Strings.QueuesPage_Table_Queue</th>
+                    <th style="min-width: 200px;">@Strings.QueuesPage_Table_Queue</th>
                     <th>@Strings.QueuesPage_Table_Length</th>
                     <th>@Strings.Common_Fetched</th>
                     <th>@Strings.QueuesPage_Table_NextsJobs</th>
@@ -39,11 +39,7 @@
                 @foreach (var queue in queues)
                 {
                     <tr>
-                        <td>
-                            <a class="label-queue" href="@Url.Queue(queue.Name)">
-                                @queue.Name
-                            </a>
-                        </td>
+                        <td>@Html.QueueLabel(queue.Name)</td>
                         <td>@queue.Length</td>
                         <td>
                             @if (queue.Fetched.HasValue)

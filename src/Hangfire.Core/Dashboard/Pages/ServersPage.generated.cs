@@ -193,7 +193,7 @@ WriteLiteral("                    <tr>\r\n                        <td>");
 
             
             #line 42 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                       Write(server.Name.ToUpperInvariant());
+                       Write(Html.ServerId(server.Name));
 
             
             #line default
@@ -213,7 +213,7 @@ WriteLiteral("</td>\r\n                        <td>");
 
             
             #line 44 "..\..\Dashboard\Pages\ServersPage.cshtml"
-                       Write(Html.Raw(String.Join(" ", server.Queues.Select(Html.QueueLabel))));
+                       Write(Html.Raw(String.Join(", ", server.Queues.Select(Html.QueueLabel))));
 
             
             #line default
