@@ -556,7 +556,7 @@ namespace Hangfire.Dashboard.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The job with id &apos;{0}&apos; has expired or could not be found on the server..
+        ///   Looks up a localized string similar to Background job &apos;{0}&apos; has expired or could not be found on the server..
         /// </summary>
         public static string JobDetailsPage_JobExpired {
             get {

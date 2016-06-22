@@ -271,7 +271,7 @@
                         also re-queue or delete it manually.</value>
   </data>
   <data name="JobDetailsPage_JobExpired" xml:space="preserve">
-    <value>The job with id '{0}' has expired or could not be found on the server.</value>
+    <value>Background job '{0}' has expired or could not be found on the server.</value>
   </data>
   <data name="JobDetailsPage_JobFinished_Warning_Html" xml:space="preserve">
     <value>&lt;strong&gt;The job is finished&lt;/strong&gt;.

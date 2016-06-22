@@ -33,7 +33,9 @@
 
         @if (job == null)
         {
-            @: @String.Format(Strings.JobDetailsPage_JobExpired, JobId)
+            <div class="alert alert-warning">
+                @String.Format(Strings.JobDetailsPage_JobExpired, JobId)
+            </div>
         }
         else
         {
