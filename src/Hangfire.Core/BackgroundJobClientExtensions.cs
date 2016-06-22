@@ -296,6 +296,14 @@ namespace Hangfire
             return client.ChangeState(jobId, state, fromState);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be triggered in the <see cref="EnqueuedState"/>.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull] string parentId,
@@ -304,6 +312,14 @@ namespace Hangfire
             return ContinueWith(client, parentId, methodCall, new EnqueuedState());
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be triggered in the <see cref="EnqueuedState"/>.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
             [NotNull] this IBackgroundJobClient client, 
             [NotNull] string parentId,
@@ -312,6 +328,16 @@ namespace Hangfire
             return ContinueWith(client, parentId, methodCall, new EnqueuedState());
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion 
+        /// of another background job to be triggered.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="nextState">Next state for a job, when continuation is triggered. 
+        /// If null, then <see cref="EnqueuedState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
             [NotNull] this IBackgroundJobClient client,
             [NotNull] string parentId,
@@ -321,6 +347,16 @@ namespace Hangfire
             return ContinueWith(client, parentId, methodCall, nextState, JobContinuationOptions.OnlyOnSucceededState);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for a successful completion
+        /// of another background job to be triggered.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="nextState">Next state for a job, when continuation is triggered. 
+        /// If null, then <see cref="EnqueuedState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull] string parentId,
@@ -330,6 +366,16 @@ namespace Hangfire
             return ContinueWith(client, parentId, methodCall, nextState, JobContinuationOptions.OnlyOnSucceededState);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be triggered
+        /// in the <see cref="EnqueuedState"/>.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
             [NotNull] this IBackgroundJobClient client,
             [NotNull] string parentId,
@@ -339,6 +385,16 @@ namespace Hangfire
             return ContinueWith(client, parentId, methodCall, new EnqueuedState(), options);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be triggered
+        /// in the <see cref="EnqueuedState"/>.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param> 
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull] string parentId,
@@ -348,6 +404,17 @@ namespace Hangfire
             return ContinueWith(client, parentId, methodCall, new EnqueuedState(), options);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be triggered.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="nextState">Next state for a job, when continuation is triggered. 
+        /// If null, then <see cref="EnqueuedState"/> is used.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith(
             [NotNull] this IBackgroundJobClient client,
             [NotNull] string parentId,
@@ -361,6 +428,17 @@ namespace Hangfire
             return client.Create(Job.FromExpression(methodCall), state);
         }
 
+        /// <summary>
+        /// Creates a new background job that will wait for another background job to be triggered.
+        /// </summary>
+        /// <param name="client">A job client instance.</param>
+        /// <param name="parentId">Identifier of a background job to wait completion for.</param>
+        /// <param name="methodCall">Method call expression that will be marshalled to a server.</param>
+        /// <param name="nextState">Next state for a job, when continuation is triggered. 
+        /// If null, then <see cref="EnqueuedState"/> is used.</param>
+        /// <param name="options">Continuation options. By default, 
+        /// <see cref="JobContinuationOptions.OnlyOnSucceededState"/> is used.</param>
+        /// <returns>Unique identifier of a created job.</returns>
         public static string ContinueWith<T>(
             [NotNull] this IBackgroundJobClient client,
             [NotNull] string parentId,
