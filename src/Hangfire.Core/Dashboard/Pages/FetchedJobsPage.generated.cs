@@ -96,7 +96,7 @@ WriteLiteral("\r\n    </div>\r\n    <div class=\"col-md-9\">\r\n        ");
 
             
             #line 26 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-   Write(Html.Breadcrumbs(Queue.ToUpperInvariant(), new Dictionary<string, string>
+   Write(Html.Breadcrumbs(Strings.FetchedJobsPage_Title, new Dictionary<string, string>
         {
             { "Queues", Url.LinkToQueues() },
             { Queue.ToUpperInvariant(), Url.Queue(Queue) }
@@ -304,83 +304,162 @@ WriteLiteral("</th>\r\n                </tr>\r\n                </thead>\r\n    
             
             #line default
             #line hidden
-WriteLiteral("                    <tr class=\"js-jobs-list-row hover\">\r\n                        " +
-"<td>\r\n                            <input type=\"checkbox\" class=\"js-jobs-list-che" +
-"ckbox\" name=\"jobs[]\" value=\"");
+WriteLiteral("                    <tr class=\"js-jobs-list-row hover ");
+
+
+            
+            #line 81 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                                  Write(job.Value == null ? "obsolete-data" : null);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\">\r\n                        <td>\r\n");
 
 
             
             #line 83 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                                                                                 Write(job.Key);
+                             if (job.Value != null)
+                            {
 
             
             #line default
             #line hidden
-WriteLiteral("\"/>\r\n                        </td>\r\n                        <td class=\"min-width\"" +
-">\r\n                            ");
+WriteLiteral("                                <input type=\"checkbox\" class=\"js-jobs-list-checkb" +
+"ox\" name=\"jobs[]\" value=\"");
+
+
+            
+            #line 85 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                                                                                     Write(job.Key);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\"/>\r\n");
 
 
             
             #line 86 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                       Write(Html.JobIdLink(job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                        </td>\r\n                        <td class=\"min-width\">\r\n" +
-"                            ");
-
-
-            
-            #line 89 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                       Write(Html.StateLabel(job.Value.State));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                        </td>\r\n                        <td>\r\n                  " +
-"          ");
-
-
-            
-            #line 92 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                       Write(Html.JobNameLink(job.Key, job.Value.Job));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                        </td>\r\n                        <td class=\"align-right\">" +
-"\r\n");
-
-
-            
-            #line 95 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                             if (job.Value.FetchedAt.HasValue)
-                            {
-                                
-            
-            #line default
-            #line hidden
-            
-            #line 97 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                           Write(Html.RelativeTime(job.Value.FetchedAt.Value));
-
-            
-            #line default
-            #line hidden
-            
-            #line 97 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
-                                                                             
                             }
 
             
             #line default
             #line hidden
-WriteLiteral("                        </td>\r\n                    </tr>\r\n");
+WriteLiteral("                        </td>\r\n                        <td class=\"min-width\">\r\n  " +
+"                          ");
+
+
+            
+            #line 89 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                       Write(Html.JobIdLink(job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                        </td>\r\n");
+
+
+            
+            #line 91 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                         if (job.Value == null)
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <td colspan=\"3\"><em>");
+
+
+            
+            #line 93 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                           Write(Strings.Common_JobExpired);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</em></td>\r\n");
+
+
+            
+            #line 94 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                        }
+                        else
+                        {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            <td class=\"min-width\">\r\n                             " +
+"   ");
+
+
+            
+            #line 98 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                           Write(Html.StateLabel(job.Value.State));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                            </td>\r\n");
+
+
+
+WriteLiteral("                            <td>\r\n                                ");
 
 
             
             #line 101 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                           Write(Html.JobNameLink(job.Key, job.Value.Job));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                            </td>\r\n");
+
+
+
+WriteLiteral("                            <td class=\"align-right\">\r\n");
+
+
+            
+            #line 104 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                 if (job.Value.FetchedAt.HasValue)
+                                {
+                                    
+            
+            #line default
+            #line hidden
+            
+            #line 106 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                               Write(Html.RelativeTime(job.Value.FetchedAt.Value));
+
+            
+            #line default
+            #line hidden
+            
+            #line 106 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                                                                                 
+                                }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                            </td>\r\n");
+
+
+            
+            #line 109 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+                        }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                    </tr>\r\n");
+
+
+            
+            #line 111 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
                 }
 
             
@@ -390,7 +469,7 @@ WriteLiteral("                </tbody>\r\n            </table>\r\n\r\n          
 
 
             
-            #line 105 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 115 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
        Write(Html.Paginator(pager));
 
             
@@ -400,7 +479,7 @@ WriteLiteral("\r\n        </div>\r\n");
 
 
             
-            #line 107 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
+            #line 117 "..\..\Dashboard\Pages\FetchedJobsPage.cshtml"
         }
 
             

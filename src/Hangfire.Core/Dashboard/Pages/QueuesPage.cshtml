@@ -76,32 +76,39 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    @foreach (var job in queue.FirstJobs.Where(j => j.Value != null))
+                                    @foreach (var job in queue.FirstJobs)
                                     {
-                                        <tr class="@(!job.Value.InEnqueuedState ? "obsolete-data" : null)">
+                                        <tr class="@(job.Value == null || !job.Value.InEnqueuedState ? "obsolete-data" : null)">
                                             <td class="min-width">
                                                 @Html.JobIdLink(job.Key)
-                                                @if (!job.Value.InEnqueuedState)
+                                                @if (job.Value != null && !job.Value.InEnqueuedState)
                                                 {
                                                     <span title="@Strings.Common_JobStateChanged_Text" class="glyphicon glyphicon-question-sign"></span>
                                                 }
                                             </td>
-                                            <td class="min-width">
-                                                @Html.StateLabel(job.Value.State)
-                                            </td>
-                                            <td>
-                                                @Html.JobNameLink(job.Key, job.Value.Job)
-                                            </td>
-                                            <td class="align-right min-width">
-                                                @if (job.Value.EnqueuedAt.HasValue)
-                                                {
-                                                    @Html.RelativeTime(job.Value.EnqueuedAt.Value)
-                                                }
-                                                else
-                                                {
-                                                    <em>@Strings.Common_NotAvailable</em>
-                                                }
-                                            </td>
+                                            @if (job.Value == null)
+                                            {
+                                                <td colspan="3"><em>@Strings.Common_JobExpired</em></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="min-width">
+                                                    @Html.StateLabel(job.Value.State)
+                                                </td>
+                                                <td>
+                                                    @Html.JobNameLink(job.Key, job.Value.Job)
+                                                </td>
+                                                <td class="align-right min-width">
+                                                    @if (job.Value.EnqueuedAt.HasValue)
+                                                    {
+                                                        @Html.RelativeTime(job.Value.EnqueuedAt.Value)
+                                                    }
+                                                    else
+                                                    {
+                                                        <em>@Strings.Common_NotAvailable</em>
+                                                    }
+                                                </td>
+                                            }
                                         </tr>
                                     }
                                     </tbody>

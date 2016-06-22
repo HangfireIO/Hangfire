@@ -212,7 +212,7 @@ namespace Hangfire.SqlServer
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
                 var counters = tuple.Monitoring.GetEnqueuedAndFetchedCount(tuple.Queue);
 
-                var firstJobs = UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds));
+                var firstJobs = UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
 
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
@@ -231,7 +231,7 @@ namespace Hangfire.SqlServer
             var queueApi = GetQueueApi(queue);
             var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
 
-            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds));
+            return UseConnection(connection => EnqueuedJobs(connection, enqueuedJobIds.ToArray()));
         }
 
         public JobList<FetchedJobDto> FetchedJobs(string queue, int @from, int perPage)
@@ -432,7 +432,7 @@ where [Key] in @keys";
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(
             DbConnection connection,
-            IEnumerable<int> jobIds)
+            int[] jobIds)
         {
             string enqueuedJobsSql = 
 $@"select j.*, s.Reason as StateReason, s.Data as StateData 
@@ -443,10 +443,14 @@ where j.Id in @jobIds";
             var jobs = connection.Query<SqlJob>(
                 enqueuedJobsSql,
                 new { jobIds = jobIds })
-                .ToList();
+                .ToDictionary(x => x.Id, x => x);
 
+            var sortedSqlJobs = jobIds
+                .Select(jobId => jobs.ContainsKey(jobId) ? jobs[jobId] : new SqlJob { Id = jobId })
+                .ToList();
+            
             return DeserializeJobs(
-                jobs,
+                sortedSqlJobs,
                 (sqlJob, job, stateData) => new EnqueuedJobDto
                 {
                     Job = job,
@@ -514,16 +518,21 @@ $@"select * from (
             Func<SqlJob, Job, Dictionary<string, string>, TDto> selector)
         {
             var result = new List<KeyValuePair<string, TDto>>(jobs.Count);
-
+            
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var job in jobs)
             {
-                var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
-                var stateData = deserializedData != null
-                    ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
-                    : null;
+                var dto = default(TDto);
+                
+                if (job.InvocationData != null)
+                {
+                    var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.StateData);
+                    var stateData = deserializedData != null
+                        ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
+                        : null;
 
-                var dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+                    dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+                }
 
                 result.Add(new KeyValuePair<string, TDto>(
                     job.Id.ToString(), dto));

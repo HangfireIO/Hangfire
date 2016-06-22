@@ -276,59 +276,38 @@ WriteLiteral("                        <tr class=\"js-jobs-list-row hover ");
 
             
             #line 70 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                                      Write(!job.Value.InEnqueuedState ? "obsolete-data" : null);
+                                                      Write(job.Value == null || !job.Value.InEnqueuedState ? "obsolete-data" : null);
 
             
             #line default
             #line hidden
-WriteLiteral("\">\r\n                            <td>\r\n                                <input type" +
-"=\"checkbox\" class=\"js-jobs-list-checkbox\" name=\"jobs[]\" value=\"");
+WriteLiteral("\">\r\n                            <td>\r\n");
 
 
             
             #line 72 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                                                                                     Write(job.Key);
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\"/>\r\n                            </td>\r\n                            <td class=\"mi" +
-"n-width\">\r\n                                ");
-
-
-            
-            #line 75 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                           Write(Html.JobIdLink(job.Key));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n");
-
-
-            
-            #line 76 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                 if (!job.Value.InEnqueuedState)
+                                 if (job.Value != null)
                                 {
 
             
             #line default
             #line hidden
-WriteLiteral("                                    <span title=\"");
+WriteLiteral("                                    <input type=\"checkbox\" class=\"js-jobs-list-ch" +
+"eckbox\" name=\"jobs[]\" value=\"");
 
 
             
-            #line 78 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                            Write(Strings.Common_JobStateChanged_Text);
+            #line 74 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                                                                                         Write(job.Key);
 
             
             #line default
             #line hidden
-WriteLiteral("\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
+WriteLiteral("\"/>\r\n");
 
 
             
-            #line 79 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+            #line 75 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
                                 }
 
             
@@ -339,58 +318,139 @@ WriteLiteral("                            </td>\r\n                            <
 
 
             
+            #line 78 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                           Write(Html.JobIdLink(job.Key));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n");
+
+
+            
+            #line 79 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                 if (job.Value != null && !job.Value.InEnqueuedState)
+                                {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                    <span title=\"");
+
+
+            
+            #line 81 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                            Write(Strings.Common_JobStateChanged_Text);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\" class=\"glyphicon glyphicon-question-sign\"></span>\r\n");
+
+
+            
             #line 82 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                           Write(Html.StateLabel(job.Value.State));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </td>\r\n                            <td>\r\n          " +
-"                      ");
-
-
-            
-            #line 85 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                           Write(Html.JobNameLink(job.Key, job.Value.Job));
-
-            
-            #line default
-            #line hidden
-WriteLiteral("\r\n                            </td>\r\n                            <td class=\"align" +
-"-right\">\r\n");
-
-
-            
-            #line 88 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                 if (job.Value.EnqueuedAt.HasValue)
-                                {
-                                    
-            
-            #line default
-            #line hidden
-            
-            #line 90 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                               Write(Html.RelativeTime(job.Value.EnqueuedAt.Value));
-
-            
-            #line default
-            #line hidden
-            
-            #line 90 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                                                                  
                                 }
-                                else
-                                {
 
             
             #line default
             #line hidden
-WriteLiteral("                                    <em>");
+WriteLiteral("                            </td>\r\n");
+
+
+            
+            #line 84 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                             if (job.Value == null)
+                            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                <td colspan=\"3\"><em>");
+
+
+            
+            #line 86 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                               Write(Strings.Common_JobExpired);
+
+            
+            #line default
+            #line hidden
+WriteLiteral("</em></td>\r\n");
+
+
+            
+            #line 87 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                            }
+                            else
+                            {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                <td class=\"min-width\">\r\n                         " +
+"           ");
+
+
+            
+            #line 91 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                               Write(Html.StateLabel(job.Value.State));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                </td>\r\n");
+
+
+
+WriteLiteral("                                <td>\r\n                                    ");
 
 
             
             #line 94 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                   Write(Strings.Common_NotAvailable);
+                               Write(Html.JobNameLink(job.Key, job.Value.Job));
+
+            
+            #line default
+            #line hidden
+WriteLiteral("\r\n                                </td>\r\n");
+
+
+
+WriteLiteral("                                <td class=\"align-right\">\r\n");
+
+
+            
+            #line 97 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                     if (job.Value.EnqueuedAt.HasValue)
+                                    {
+                                        
+            
+            #line default
+            #line hidden
+            
+            #line 99 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                   Write(Html.RelativeTime(job.Value.EnqueuedAt.Value));
+
+            
+            #line default
+            #line hidden
+            
+            #line 99 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                                                                      
+                                    }
+                                    else
+                                    {
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                                        <em>");
+
+
+            
+            #line 103 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                       Write(Strings.Common_NotAvailable);
 
             
             #line default
@@ -399,17 +459,27 @@ WriteLiteral("</em>\r\n");
 
 
             
-            #line 95 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
-                                }
+            #line 104 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                                    }
 
             
             #line default
             #line hidden
-WriteLiteral("                            </td>\r\n                        </tr>\r\n");
+WriteLiteral("                                </td>\r\n");
 
 
             
-            #line 98 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+            #line 106 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+                            }
+
+            
+            #line default
+            #line hidden
+WriteLiteral("                        </tr>\r\n");
+
+
+            
+            #line 108 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
                     }
 
             
@@ -419,7 +489,7 @@ WriteLiteral("                    </tbody>\r\n                </table>\r\n\r\n  
 
 
             
-            #line 102 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+            #line 112 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
            Write(Html.Paginator(pager));
 
             
@@ -429,7 +499,7 @@ WriteLiteral("\r\n            </div>\r\n");
 
 
             
-            #line 104 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
+            #line 114 "..\..\Dashboard\Pages\EnqueuedJobsPage.cshtml"
         }
 
             
