@@ -8,21 +8,23 @@
 @using Hangfire.Dashboard.Resources
 @using Hangfire.States
 @using Hangfire.Storage
+@using Hangfire.Storage.Monitoring
 @inherits RazorPage
 @{
-        var monitor = Storage.GetMonitoringApi();
-        var job = monitor.JobDetails(JobId);
+    var monitor = Storage.GetMonitoringApi();
+    var job = monitor.JobDetails(JobId);
+    
+    string title = null;
 
-        string title = null;
-
-        if (job != null)
-        {
-            title = job.Job != null ? Html.JobName(job.Job) : null;
-        }
-
-        title = title ?? Strings.Common_Job;
-        Layout = new LayoutPage(title);
+    if (job != null)
+    {
+        title = job.Job != null ? Html.JobName(job.Job) : null;
+        job.History.Add(new StateHistoryDto { StateName = "Created", CreatedAt = job?.CreatedAt ?? default(DateTime) });
     }
+
+    title = title ?? Strings.Common_Job;
+    Layout = new LayoutPage(title);
+}
 
 <div class="row">
     <div class="col-md-3">
@@ -66,13 +68,6 @@
 
             <div class="job-snippet">
                 <div class="job-snippet-code">
-                    @if (job.CreatedAt.HasValue)
-                    {
-                        <div class="pull-right job-creation-date">
-                            @Strings.JobDetailsPage_Created @Html.RelativeTime(job.CreatedAt.Value)
-                        </div>
-                    }
-
                     <pre><code><span class="comment">// @Strings.JobDetailsPage_JobId: @Html.JobId(JobId.ToString(), false)</span>
 @JobMethodCallRenderer.Render(job.Job)
 </code></pre>
@@ -186,6 +181,10 @@
                                 @if (index == 0)
                                 {
                                     @Html.Raw($"{Html.RelativeTime(entry.CreatedAt)} (<span data-moment-title=\"{JobHelper.ToTimestamp(entry.CreatedAt)}\">{duration}</span>)")
+                                }
+                                else if (index == job.History.Count - 1)
+                                {
+                                    @Html.RelativeTime(entry.CreatedAt);
                                 }
                                 else
                                 {

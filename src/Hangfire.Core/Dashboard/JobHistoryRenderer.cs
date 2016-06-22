@@ -126,6 +126,8 @@ namespace Hangfire.Dashboard
 
         public static NonEscapedString DefaultRenderer(HtmlHelper helper, IDictionary<string, string> stateData)
         {
+            if (stateData == null || stateData.Count == 0) return null;
+
             var builder = new StringBuilder();
             builder.Append("<dl class=\"dl-horizontal\">");
 
