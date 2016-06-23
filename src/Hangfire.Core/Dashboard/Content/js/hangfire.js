@@ -58,7 +58,6 @@
                 )
             });
 
-            var xAxis = new Rickshaw.Graph.Axis.Time({ graph: this._graph });
             var yAxis = new Rickshaw.Graph.Axis.Y({
                 graph: this._graph,
                 tickFormat: Rickshaw.Fixtures.Number.formatKMBT
