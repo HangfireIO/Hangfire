@@ -1,5 +1,5 @@
-(function (hangFire) {
-    hangFire.Metrics = (function() {
+(function (hangfire) {
+    hangfire.Metrics = (function() {
         function Metrics() {
             this._metrics = {};
         }
@@ -36,7 +36,7 @@
         return Metrics;
     })();
 
-    hangFire.RealtimeGraph = (function() {
+    hangfire.RealtimeGraph = (function() {
         function RealtimeGraph(element, succeeded, failed, succeededStr, failedStr) {
             this._succeeded = succeeded;
             this._failed = failed;
@@ -95,7 +95,7 @@
         return RealtimeGraph;
     })();
 
-    hangFire.HistoryGraph = (function() {
+    hangfire.HistoryGraph = (function() {
         function HistoryGraph(element, succeeded, failed, succeededStr, failedStr) {
             this._graph = new Rickshaw.Graph({
                 element: element,
@@ -140,7 +140,7 @@
         return HistoryGraph;
     })();
 
-    hangFire.StatisticsPoller = (function() {
+    hangfire.StatisticsPoller = (function() {
         function StatisticsPoller(metricsCallback, statisticsUrl, pollInterval) {
             this._metricsCallback = metricsCallback;
             this._listeners = [];
@@ -188,7 +188,7 @@
         return StatisticsPoller;
     })();
 
-    hangFire.Page = (function() {
+    hangfire.Page = (function() {
         function Page(config) {
             this._metrics = new Hangfire.Metrics();
 
