@@ -1,4 +1,4 @@
-﻿(function (hangFire) {
+(function (hangFire) {
     hangFire.Metrics = (function() {
         function Metrics() {
             this._metrics = {};
