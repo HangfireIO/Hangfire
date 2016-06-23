@@ -129,7 +129,11 @@ values (@jobId, @name, @reason, @createdAt, @data)";
             var persistentQueue = provider.GetJobQueue();
 
             QueueCommand(x => persistentQueue.Enqueue(x, queue, jobId));
-            _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());
+
+            if (persistentQueue.GetType() == typeof(SqlServerJobQueue))
+            {
+                _afterCommitCommandQueue.Enqueue(() => SqlServerJobQueue.NewItemInQueueEvent.Set());
+            }
         }
 
         public override void IncrementCounter(string key)
