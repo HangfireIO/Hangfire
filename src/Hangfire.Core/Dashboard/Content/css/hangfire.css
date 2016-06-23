@@ -68,6 +68,7 @@ body {
     padding: 7px 0;
     vertical-align: middle;
     display: inline-block;
+    margin-left: 5px;
 }
 
 .btn-toolbar-label-sm {
@@ -75,7 +76,7 @@ body {
 }
 
 .btn-toolbar-spacer {
-    width: 10px;
+    width: 5px;
     display: inline-block;
     height: 1px;
 }
