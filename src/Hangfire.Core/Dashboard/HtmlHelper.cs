@@ -146,6 +146,11 @@ namespace Hangfire.Dashboard
             return Raw($"<span data-moment=\"{JobHelper.ToTimestamp(value)}\">{value}</span>");
         }
 
+        public NonEscapedString MomentTitle(DateTime time, string value)
+        {
+            return Raw($"<span data-moment-title=\"{JobHelper.ToTimestamp(time)}\">{value}</span>");
+        }
+
         public string ToHumanDuration(TimeSpan? duration, bool displaySign = true)
         {
             if (duration == null) return null;

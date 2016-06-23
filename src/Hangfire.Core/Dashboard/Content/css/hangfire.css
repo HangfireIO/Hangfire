@@ -85,31 +85,12 @@ a:hover .label-hover {
     color: #fff!important;
 }
 
-.pre-args {
-    padding: 2px 4px;
-    font-size: 90%;
-    color: #c7254e;
-    background-color: #f9f2f4;
-    border-radius: 4px;
-    border: none;
-    margin: 0;
-}
-
 .expander {
     cursor: pointer;
 }
 
 .expandable {
     display: none;
-}
-
-.table-outer td {
-    background: #f9f9f9;
-}
-
-.table-outer td.table-inner-wrapper {
-    padding: 0;
-    border-top: none;
 }
 
 .table-inner {
@@ -304,12 +285,9 @@ a:hover .label-hover {
 }
 
 .job-snippet-properties pre {
-    display: block;
-    color: #c7254e;
     background-color: white;
     -webkit-box-shadow: none;
     -ms-box-shadow: none;
-    box-shadow: none;
     padding: 2px 4px;
     border: none;
     margin: 0;
@@ -346,21 +324,34 @@ a:hover .label-hover {
     margin-top: 0;
 }
 
-.state-card .job-history-body {
+.state-card-body {
+    padding: 10px;
     margin: 10px -12px -12px -12px;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+    background-color: #f5f5f5;
 }
 
-.state-card .job-history-body dl {
+.state-card-body dl {
+    margin-top: 5px;
     margin-bottom: 0;
 }
 
-.state-card .job-history-body pre {
+.state-card-body pre {
     white-space: pre-wrap;       /* CSS 3 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
     background: transparent;
     padding: 0;
+}
+
+.state-card-body .stack-trace {
+    background-color: transparent;
+    padding: 0 20px;
+    margin-bottom: 5px;
+}
+
+.state-card-body .exception-type {
+    margin-top: 0;
 }
 
 /* Job History styles */
