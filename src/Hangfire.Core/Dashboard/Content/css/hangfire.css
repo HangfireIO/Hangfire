@@ -317,7 +317,7 @@ a:hover .label-hover {
 }
 
 .state-card-text {
-    margin-top: 7px;
+    margin-top: 5px;
     margin-bottom: 0;
 }
 
@@ -348,7 +348,7 @@ a:hover .label-hover {
 .state-card-body .stack-trace {
     background-color: transparent;
     padding: 0 20px;
-    margin-bottom: 5px;
+    margin-bottom: 0px;
 }
 
 .state-card-body .exception-type {
